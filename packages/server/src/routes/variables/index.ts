@@ -10,9 +10,9 @@ router.post('/', variablesController.createVariable)
 router.get('/', variablesController.getAllVariables)
 
 // UPDATE
-router.put('/:id', variablesController.updateVariable)
+router.put(['/', '/:id'], variablesController.updateVariable)
 
 // DELETE
-router.delete('/:id', variablesController.deleteVariable)
+router.delete(['/', '/:id'], variablesController.deleteVariable)
 
 export default router

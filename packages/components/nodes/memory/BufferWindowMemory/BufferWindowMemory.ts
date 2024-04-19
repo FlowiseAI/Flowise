@@ -1,7 +1,17 @@
-import { FlowiseWindowMemory, IMessage, INode, INodeData, INodeParams, MemoryMethods } from '../../../src/Interface'
-import { convertBaseMessagetoIMessage, getBaseClasses } from '../../../src/utils'
+import {
+    FlowiseWindowMemory,
+    ICommonObject,
+    IDatabaseEntity,
+    IMessage,
+    INode,
+    INodeData,
+    INodeParams,
+    MemoryMethods
+} from '../../../src/Interface'
+import { getBaseClasses, mapChatMessageToBaseMessage } from '../../../src/utils'
 import { BufferWindowMemory, BufferWindowMemoryInput } from 'langchain/memory'
 import { BaseMessage } from '@langchain/core/messages'
+import { DataSource } from 'typeorm'
 
 class BufferWindowMemory_Memory implements INode {
     label: string
@@ -17,7 +27,7 @@ class BufferWindowMemory_Memory implements INode {
     constructor() {
         this.label = 'Buffer Window Memory'
         this.name = 'bufferWindowMemory'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'BufferWindowMemory'
         this.icon = 'memory.svg'
         this.category = 'Memory'
@@ -25,69 +35,116 @@ class BufferWindowMemory_Memory implements INode {
         this.baseClasses = [this.type, ...getBaseClasses(BufferWindowMemory)]
         this.inputs = [
             {
-                label: 'Memory Key',
-                name: 'memoryKey',
-                type: 'string',
-                default: 'chat_history'
-            },
-            {
-                label: 'Input Key',
-                name: 'inputKey',
-                type: 'string',
-                default: 'input'
-            },
-            {
                 label: 'Size',
                 name: 'k',
                 type: 'number',
                 default: '4',
                 description: 'Window of size k to surface the last k back-and-forth to use as memory.'
+            },
+            {
+                label: 'Session Id',
+                name: 'sessionId',
+                type: 'string',
+                description:
+                    'If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory#ui-and-embedded-chat">more</a>',
+                default: '',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Memory Key',
+                name: 'memoryKey',
+                type: 'string',
+                default: 'chat_history',
+                additionalParams: true
             }
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const memoryKey = nodeData.inputs?.memoryKey as string
-        const inputKey = nodeData.inputs?.inputKey as string
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const k = nodeData.inputs?.k as string
+        const sessionId = nodeData.inputs?.sessionId as string
+        const memoryKey = (nodeData.inputs?.memoryKey as string) ?? 'chat_history'
 
-        const obj: Partial<BufferWindowMemoryInput> = {
+        const appDataSource = options.appDataSource as DataSource
+        const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const chatflowid = options.chatflowid as string
+
+        const obj: Partial<BufferWindowMemoryInput> & BufferMemoryExtendedInput = {
             returnMessages: true,
-            memoryKey: memoryKey,
-            inputKey: inputKey,
-            k: parseInt(k, 10)
+            sessionId,
+            memoryKey,
+            k: parseInt(k, 10),
+            appDataSource,
+            databaseEntities,
+            chatflowid
         }
 
         return new BufferWindowMemoryExtended(obj)
     }
 }
 
+interface BufferMemoryExtendedInput {
+    sessionId: string
+    appDataSource: DataSource
+    databaseEntities: IDatabaseEntity
+    chatflowid: string
+}
+
 class BufferWindowMemoryExtended extends FlowiseWindowMemory implements MemoryMethods {
-    constructor(fields: BufferWindowMemoryInput) {
+    appDataSource: DataSource
+    databaseEntities: IDatabaseEntity
+    chatflowid: string
+    sessionId = ''
+
+    constructor(fields: BufferWindowMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
+        this.sessionId = fields.sessionId
+        this.appDataSource = fields.appDataSource
+        this.databaseEntities = fields.databaseEntities
+        this.chatflowid = fields.chatflowid
     }
 
-    async getChatMessages(_?: string, returnBaseMessages = false, prevHistory: IMessage[] = []): Promise<IMessage[] | BaseMessage[]> {
-        await this.chatHistory.clear()
+    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+        const id = overrideSessionId ? overrideSessionId : this.sessionId
+        if (!id) return []
 
-        // Insert into chatHistory
-        for (const msg of prevHistory) {
-            if (msg.type === 'userMessage') await this.chatHistory.addUserMessage(msg.message)
-            else if (msg.type === 'apiMessage') await this.chatHistory.addAIChatMessage(msg.message)
+        let chatMessage = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).find({
+            where: {
+                sessionId: id,
+                chatflowid: this.chatflowid
+            },
+            take: this.k + 1,
+            order: {
+                createdDate: 'DESC' // we get the latest top K
+            }
+        })
+
+        // reverse the order of human and ai messages
+        if (chatMessage.length) chatMessage.reverse()
+
+        if (returnBaseMessages) {
+            return mapChatMessageToBaseMessage(chatMessage)
         }
 
-        const memoryResult = await this.loadMemoryVariables({})
-        const baseMessages = memoryResult[this.memoryKey ?? 'chat_history']
-        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
+        let returnIMessages: IMessage[] = []
+        for (const m of chatMessage) {
+            returnIMessages.push({
+                message: m.content as string,
+                type: m.role
+            })
+        }
+        return returnIMessages
     }
 
     async addChatMessages(): Promise<void> {
-        // adding chat messages will be done on the fly in getChatMessages()
+        // adding chat messages is done on server level
         return
     }
 
     async clearChatMessages(): Promise<void> {
-        await this.clear()
+        // clearing chat messages is done on server level
+        return
     }
 }
 

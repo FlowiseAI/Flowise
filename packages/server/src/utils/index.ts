@@ -41,6 +41,8 @@ import { Assistant } from '../database/entities/Assistant'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
 import { Variable } from '../database/entities/Variable'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -224,8 +226,13 @@ export const getAllConnectedNodes = (graph: INodeDirectedGraph, startNodeId: str
  * Get ending node and check if flow is valid
  * @param {INodeDependencies} nodeDependencies
  * @param {INodeDirectedGraph} graph
+ * @param {IReactFlowNode[]} allNodes
  */
-export const getEndingNodes = (nodeDependencies: INodeDependencies, graph: INodeDirectedGraph) => {
+export const getEndingNodes = (
+    nodeDependencies: INodeDependencies,
+    graph: INodeDirectedGraph,
+    allNodes: IReactFlowNode[]
+): IReactFlowNode[] => {
     const endingNodeIds: string[] = []
     Object.keys(graph).forEach((nodeId) => {
         if (Object.keys(nodeDependencies).length === 1) {
@@ -234,7 +241,46 @@ export const getEndingNodes = (nodeDependencies: INodeDependencies, graph: INode
             endingNodeIds.push(nodeId)
         }
     })
-    return endingNodeIds
+
+    let endingNodes = allNodes.filter((nd) => endingNodeIds.includes(nd.id))
+
+    // If there are multiple endingnodes, the failed ones will be automatically ignored.
+    // And only ensure that at least one can pass the verification.
+    const verifiedEndingNodes: typeof endingNodes = []
+    let error: InternalFlowiseError | null = null
+    for (const endingNode of endingNodes) {
+        const endingNodeData = endingNode.data
+        if (!endingNodeData) {
+            error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node ${endingNode.id} data not found`)
+
+            continue
+        }
+
+        const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
+
+        if (!isEndingNode) {
+            if (
+                endingNodeData &&
+                endingNodeData.category !== 'Chains' &&
+                endingNodeData.category !== 'Agents' &&
+                endingNodeData.category !== 'Engine'
+            ) {
+                error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent`)
+                continue
+            }
+        }
+        verifiedEndingNodes.push(endingNode)
+    }
+
+    if (verifiedEndingNodes.length > 0) {
+        return verifiedEndingNodes
+    }
+
+    if (endingNodes.length === 0 || error === null) {
+        error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending nodes not found`)
+    }
+
+    throw error
 }
 
 /**
@@ -1144,16 +1190,18 @@ export const redactCredentialWithPasswordType = (
  * API/Embed + UI:
  * (3) Hard-coded sessionId in UI
  * (4) Not specified on UI nor API, default to chatId
- * @param {any} instance
+ * @param {IReactFlowNode | undefined} memoryNode
  * @param {IncomingInput} incomingInput
  * @param {string} chatId
+ * @param {boolean} isInternal
+ * @returns {string}
  */
 export const getMemorySessionId = (
-    memoryNode: IReactFlowNode,
+    memoryNode: IReactFlowNode | undefined,
     incomingInput: IncomingInput,
     chatId: string,
     isInternal: boolean
-): string | undefined => {
+): string => {
     if (!isInternal) {
         // Provided in API body - incomingInput.overrideConfig: { sessionId: 'abc' }
         if (incomingInput.overrideConfig?.sessionId) {
@@ -1166,7 +1214,7 @@ export const getMemorySessionId = (
     }
 
     // Hard-coded sessionId in UI
-    if (memoryNode.data.inputs?.sessionId) {
+    if (memoryNode && memoryNode.data.inputs?.sessionId) {
         return memoryNode.data.inputs.sessionId
     }
 
@@ -1175,18 +1223,21 @@ export const getMemorySessionId = (
 }
 
 /**
- * Replace chatHistory if incomingInput.history is empty and sessionId/chatId is provided
+ * Get chat messages from sessionId
  * @param {IReactFlowNode} memoryNode
- * @param {IncomingInput} incomingInput
+ * @param {string} sessionId
+ * @param {IReactFlowNode} memoryNode
+ * @param {IComponentNodes} componentNodes
  * @param {DataSource} appDataSource
  * @param {IDatabaseEntity} databaseEntities
  * @param {any} logger
- * @returns {string}
+ * @returns {IMessage[]}
  */
 export const getSessionChatHistory = async (
+    chatflowid: string,
+    sessionId: string,
     memoryNode: IReactFlowNode,
     componentNodes: IComponentNodes,
-    incomingInput: IncomingInput,
     appDataSource: DataSource,
     databaseEntities: IDatabaseEntity,
     logger: any
@@ -1196,19 +1247,18 @@ export const getSessionChatHistory = async (
     const newNodeInstance = new nodeModule.nodeClass()
 
     // Replace memory's sessionId/chatId
-    if (incomingInput.overrideConfig?.sessionId && memoryNode.data.inputs) {
-        memoryNode.data.inputs.sessionId = incomingInput.overrideConfig.sessionId
-    } else if (incomingInput.chatId && memoryNode.data.inputs) {
-        memoryNode.data.inputs.sessionId = incomingInput.chatId
+    if (memoryNode.data.inputs) {
+        memoryNode.data.inputs.sessionId = sessionId
     }
 
     const initializedInstance: FlowiseMemory = await newNodeInstance.init(memoryNode.data, '', {
+        chatflowid,
         appDataSource,
         databaseEntities,
         logger
     })
 
-    return (await initializedInstance.getChatMessages()) as IMessage[]
+    return (await initializedInstance.getChatMessages(sessionId)) as IMessage[]
 }
 
 /**
@@ -1216,7 +1266,7 @@ export const getSessionChatHistory = async (
  * In a chatflow, there should only be 1 memory node
  * @param {IReactFlowNode[]} nodes
  * @param {IReactFlowEdge[]} edges
- * @returns {string | undefined}
+ * @returns {IReactFlowNode | undefined}
  */
 export const findMemoryNode = (nodes: IReactFlowNode[], edges: IReactFlowEdge[]): IReactFlowNode | undefined => {
     const memoryNodes = nodes.filter((node) => node.data.category === 'Memory')
@@ -1228,6 +1278,7 @@ export const findMemoryNode = (nodes: IReactFlowNode[], edges: IReactFlowEdge[])
             return memoryNode
         }
     }
+
     return undefined
 }
 

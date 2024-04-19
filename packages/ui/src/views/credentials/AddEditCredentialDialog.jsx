@@ -134,7 +134,9 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: `Failed to add new Credential: ${error.response.data.message}`,
+                message: `Failed to add new Credential: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -184,7 +186,9 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: `Failed to save Credential: ${error.response.data.message}`,
+                message: `Failed to save Credential: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

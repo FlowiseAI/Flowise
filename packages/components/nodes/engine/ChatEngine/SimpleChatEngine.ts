@@ -68,7 +68,7 @@ class SimpleChatEngine_LlamaIndex implements INode {
 
         const chatEngine = new SimpleChatEngine({ llm: model })
 
-        const msgs = (await memory.getChatMessages(this.sessionId, false, options.chatHistory)) as IMessage[]
+        const msgs = (await memory.getChatMessages(this.sessionId, false)) as IMessage[]
         for (const message of msgs) {
             if (message.type === 'apiMessage') {
                 chatHistory.push({

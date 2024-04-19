@@ -83,32 +83,36 @@
             "data": {
                 "id": "bufferMemory_0",
                 "label": "Buffer Memory",
-                "version": 1,
+                "version": 2,
                 "name": "bufferMemory",
                 "type": "BufferMemory",
                 "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
-                "description": "Remembers previous conversational back and forths directly",
+                "description": "Retrieve chat messages stored in database",
                 "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_0-input-sessionId-string"
+                    },
                     {
                         "label": "Memory Key",
                         "name": "memoryKey",
                         "type": "string",
                         "default": "chat_history",
+                        "additionalParams": true,
                         "id": "bufferMemory_0-input-memoryKey-string"
-                    },
-                    {
-                        "label": "Input Key",
-                        "name": "inputKey",
-                        "type": "string",
-                        "default": "input",
-                        "id": "bufferMemory_0-input-inputKey-string"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "memoryKey": "chat_history",
-                    "inputKey": "input"
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
                 },
                 "outputAnchors": [
                     {
@@ -140,7 +144,7 @@
             "data": {
                 "id": "azureChatOpenAI_LlamaIndex_0",
                 "label": "AzureChatOpenAI",
-                "version": 1,
+                "version": 2.0,
                 "name": "azureChatOpenAI_LlamaIndex",
                 "type": "AzureChatOpenAI",
                 "baseClasses": ["AzureChatOpenAI", "BaseChatModel_LlamaIndex"],
@@ -158,27 +162,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-4",
-                                "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-32k",
-                                "name": "gpt-4-32k"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo",
-                                "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k",
-                                "name": "gpt-3.5-turbo-16k"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo-16k",
-                        "optional": true,
                         "id": "azureChatOpenAI_LlamaIndex_0-input-modelName-options"
                     },
                     {

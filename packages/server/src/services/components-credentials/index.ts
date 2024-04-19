@@ -1,5 +1,8 @@
 import { cloneDeep } from 'lodash'
+import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
 
 // Get all component credentials
 const getAllComponentsCredentials = async (): Promise<any> => {
@@ -12,7 +15,10 @@ const getAllComponentsCredentials = async (): Promise<any> => {
         }
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: componentsCredentialsService.getAllComponentsCredentials - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: componentsCredentialsService.getAllComponentsCredentials - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -23,7 +29,8 @@ const getComponentByName = async (credentialName: string) => {
             if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentCredentials, credentialName)) {
                 return appServer.nodesPool.componentCredentials[credentialName]
             } else {
-                throw new Error(
+                throw new InternalFlowiseError(
+                    StatusCodes.NOT_FOUND,
                     `Error: componentsCredentialsService.getSingleComponentsCredential - Credential ${credentialName} not found`
                 )
             }
@@ -33,13 +40,19 @@ const getComponentByName = async (credentialName: string) => {
                 if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentCredentials, name)) {
                     dbResponse.push(appServer.nodesPool.componentCredentials[name])
                 } else {
-                    throw new Error(`Error: componentsCredentialsService.getSingleComponentsCredential - Credential ${name} not found`)
+                    throw new InternalFlowiseError(
+                        StatusCodes.NOT_FOUND,
+                        `Error: componentsCredentialsService.getSingleComponentsCredential - Credential ${name} not found`
+                    )
                 }
             }
             return dbResponse
         }
     } catch (error) {
-        throw new Error(`Error: componentsCredentialsService.getSingleComponentsCredential - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: componentsCredentialsService.getSingleComponentsCredential - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -50,20 +63,23 @@ const getSingleComponentsCredentialIcon = async (credentialName: string) => {
         if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentCredentials, credentialName)) {
             const credInstance = appServer.nodesPool.componentCredentials[credentialName]
             if (credInstance.icon === undefined) {
-                throw new Error(`Credential ${credentialName} icon not found`)
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialName} icon not found`)
             }
 
             if (credInstance.icon.endsWith('.svg') || credInstance.icon.endsWith('.png') || credInstance.icon.endsWith('.jpg')) {
                 const filepath = credInstance.icon
                 return filepath
             } else {
-                throw new Error(`Credential ${credentialName} icon is missing icon`)
+                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Credential ${credentialName} icon is missing icon`)
             }
         } else {
-            throw new Error(`Credential ${credentialName} not found`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialName} not found`)
         }
     } catch (error) {
-        throw new Error(`Error: componentsCredentialsService.getSingleComponentsCredentialIcon - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: componentsCredentialsService.getSingleComponentsCredentialIcon - ${getErrorMessage(error)}`
+        )
     }
 }
 

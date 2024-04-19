@@ -209,7 +209,7 @@
             "data": {
                 "id": "openAIEmbedding_LlamaIndex_0",
                 "label": "OpenAI Embedding",
-                "version": 1,
+                "version": 2,
                 "name": "openAIEmbedding_LlamaIndex",
                 "type": "OpenAIEmbedding",
                 "baseClasses": ["OpenAIEmbedding", "BaseEmbedding_LlamaIndex", "BaseEmbedding"],
@@ -227,23 +227,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "text-embedding-3-large",
-                                "name": "text-embedding-3-large"
-                            },
-                            {
-                                "label": "text-embedding-3-small",
-                                "name": "text-embedding-3-small"
-                            },
-                            {
-                                "label": "text-embedding-ada-002",
-                                "name": "text-embedding-ada-002"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "optional": true,
                         "id": "openAIEmbedding_LlamaIndex_0-input-modelName-options"
                     },
                     {
@@ -266,7 +252,8 @@
                 "inputAnchors": [],
                 "inputs": {
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
                 },
                 "outputAnchors": [
                     {
@@ -362,7 +349,7 @@
             "data": {
                 "id": "chatAnthropic_LlamaIndex_0",
                 "label": "ChatAnthropic",
-                "version": 1,
+                "version": 3.0,
                 "name": "chatAnthropic_LlamaIndex",
                 "type": "ChatAnthropic",
                 "baseClasses": ["ChatAnthropic", "BaseChatModel_LlamaIndex"],
@@ -380,80 +367,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "claude-3-opus",
-                                "name": "claude-3-opus-20240229",
-                                "description": "Most powerful model for highly complex tasks"
-                            },
-                            {
-                                "label": "claude-3-sonnet",
-                                "name": "claude-3-sonnet-20240229",
-                                "description": "Ideal balance of intelligence and speed for enterprise workloads"
-                            },
-                            {
-                                "label": "claude-2",
-                                "name": "claude-2",
-                                "description": "Claude 2 latest major version, automatically get updates to the model as they are released"
-                            },
-                            {
-                                "label": "claude-2.1",
-                                "name": "claude-2.1",
-                                "description": "Claude 2 latest full version"
-                            },
-                            {
-                                "label": "claude-instant-1",
-                                "name": "claude-instant-1",
-                                "description": "Claude Instant latest major version, automatically get updates to the model as they are released"
-                            },
-                            {
-                                "label": "claude-v1",
-                                "name": "claude-v1"
-                            },
-                            {
-                                "label": "claude-v1-100k",
-                                "name": "claude-v1-100k"
-                            },
-                            {
-                                "label": "claude-v1.0",
-                                "name": "claude-v1.0"
-                            },
-                            {
-                                "label": "claude-v1.2",
-                                "name": "claude-v1.2"
-                            },
-                            {
-                                "label": "claude-v1.3",
-                                "name": "claude-v1.3"
-                            },
-                            {
-                                "label": "claude-v1.3-100k",
-                                "name": "claude-v1.3-100k"
-                            },
-                            {
-                                "label": "claude-instant-v1",
-                                "name": "claude-instant-v1"
-                            },
-                            {
-                                "label": "claude-instant-v1-100k",
-                                "name": "claude-instant-v1-100k"
-                            },
-                            {
-                                "label": "claude-instant-v1.0",
-                                "name": "claude-instant-v1.0"
-                            },
-                            {
-                                "label": "claude-instant-v1.1",
-                                "name": "claude-instant-v1.1"
-                            },
-                            {
-                                "label": "claude-instant-v1.1-100k",
-                                "name": "claude-instant-v1.1-100k"
-                            }
-                        ],
-                        "default": "claude-2",
-                        "optional": true,
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "claude-3-haiku",
                         "id": "chatAnthropic_LlamaIndex_0-input-modelName-options"
                     },
                     {

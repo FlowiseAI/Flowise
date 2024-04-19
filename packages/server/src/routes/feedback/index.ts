@@ -3,12 +3,12 @@ import feedbackController from '../../controllers/feedback'
 const router = express.Router()
 
 // CREATE
-router.post('/:id', feedbackController.createChatMessageFeedbackForChatflow)
+router.post(['/', '/:id'], feedbackController.createChatMessageFeedbackForChatflow)
 
 // READ
-router.get('/:id', feedbackController.getAllChatMessageFeedback)
+router.get(['/', '/:id'], feedbackController.getAllChatMessageFeedback)
 
 // UPDATE
-router.put('/:id', feedbackController.updateChatMessageFeedbackForChatflow)
+router.put(['/', '/:id'], feedbackController.updateChatMessageFeedbackForChatflow)
 
 export default router
