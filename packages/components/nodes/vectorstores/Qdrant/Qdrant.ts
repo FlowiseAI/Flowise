@@ -87,6 +87,13 @@ class Qdrant_VectorStores implements INode {
                 additionalParams: true
             },
             {
+                label: 'Batch Size',
+                name: 'batchSize',
+                type: 'number',
+                default: 100,
+                additionalParams: true
+            },
+            {
                 label: 'Similarity',
                 name: 'qdrantSimilarity',
                 description: 'Similarity measure used in Qdrant.',
@@ -159,6 +166,7 @@ class Qdrant_VectorStores implements INode {
             const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
             const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
             const recordManager = nodeData.inputs?.recordManager
+            const batchSize = nodeData.inputs?.batchSize
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
@@ -257,7 +265,10 @@ class Qdrant_VectorStores implements INode {
 
                     return res
                 } else {
-                    await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+                    for(let i=0; i<finalDocs.length; i+=batchSize) {
+                        const batch = finalDocs.slice(i, i+batchSize)
+                        await QdrantVectorStore.fromDocuments(batch, embeddings, dbConfig)
+                    }
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
