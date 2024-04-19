@@ -9,6 +9,7 @@ import { IconX, IconTrash, IconPlus } from '@tabler/icons'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -118,29 +119,20 @@ const AllowedDomains = ({ dialogProps }) => {
 
     return (
         <>
-            <Box sx={{ mb: 4 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <Typography sx={{ mb: 1 }}>Error Message</Typography>
-                    <OutlinedInput
-                        type='text'
-                        fullWidth
-                        value={errorMessage}
-                        onChange={(e) => {
-                            setErrorMessage(e.target.value)
-                        }}
-                    />
-                </div>
-            </Box>
             <Box>
                 <Box
                     sx={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        mb: 1
+                        flexDirection: 'column'
                     }}
                 >
-                    <Typography sx={{ mb: 1 }}>Allowed Domains</Typography>
-                    <Typography sx={{ fontSize: '0.8rem' }}>Your chatbot will only work when used from the following domains.</Typography>
+                    <Typography sx={{ mb: 1 }}>
+                        Allowed Domains
+                        <TooltipWithParser
+                            style={{ mb: 1, mt: 2, marginLeft: 10 }}
+                            title={'Your chatbot will only work when used from the following domains.'}
+                        />
+                    </Typography>
                 </Box>
                 <List>
                     {inputFields.map((origin, index) => {
@@ -155,6 +147,7 @@ const AllowedDomains = ({ dialogProps }) => {
                                         size='small'
                                         value={origin}
                                         name='origin'
+                                        placeholder='https://example.com'
                                         endAdornment={
                                             <InputAdornment position='end' sx={{ padding: '2px' }}>
                                                 {inputFields.length > 1 && (
@@ -184,6 +177,28 @@ const AllowedDomains = ({ dialogProps }) => {
                         )
                     })}
                 </List>
+            </Box>
+            <Box sx={{ pt: 2, pb: 2 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <Typography sx={{ mb: 1 }}>
+                        Error Message
+                        <TooltipWithParser
+                            style={{ mb: 1, mt: 2, marginLeft: 10 }}
+                            title={'Custom error message that will be shown when for unauthorized domain'}
+                        />
+                    </Typography>
+                    <OutlinedInput
+                        sx={{ width: '100%' }}
+                        type='text'
+                        size='small'
+                        fullWidth
+                        placeholder='Unauthorized domain!'
+                        value={errorMessage}
+                        onChange={(e) => {
+                            setErrorMessage(e.target.value)
+                        }}
+                    />
+                </div>
             </Box>
             <StyledButton variant='contained' onClick={onSave}>
                 Save
