@@ -66,6 +66,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             fileUploads = incomingInput.uploads
             for (let i = 0; i < fileUploads.length; i += 1) {
                 const upload = fileUploads[i]
+
                 if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
                     const filename = upload.name
                     const dir = path.join(getStoragePath(), chatflowid, chatId)
@@ -83,7 +84,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 }
 
                 // Run Speech to Text conversion
-                if (upload.mime === 'audio/webm') {
+                if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4') {
                     let speechToTextConfig: ICommonObject = {}
                     if (chatflow.speechToText) {
                         const speechToTextProviders = JSON.parse(chatflow.speechToText)
