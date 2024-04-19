@@ -276,7 +276,7 @@ class UnstructuredFolder_DocumentLoaders implements INode {
         const strategy = nodeData.inputs?.strategy as UnstructuredLoaderStrategy
         const encoding = nodeData.inputs?.encoding as string
         const coordinates = nodeData.inputs?.coordinates as boolean
-        const skipInferTableTypes = nodeData.inputs?.skipInferTableTypes as SkipInferTableTypes[]
+        const skipInferTableTypes = JSON.parse(nodeData.inputs?.skipInferTableTypes as string) as SkipInferTableTypes[]
         const hiResModelName = nodeData.inputs?.hiResModelName as HiResModelName
         const includePageBreaks = nodeData.inputs?.includePageBreaks as boolean
         const chunkingStrategy = nodeData.inputs?.chunkingStrategy as 'None' | 'by_title'
