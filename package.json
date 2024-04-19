@@ -4,20 +4,26 @@
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
+        "demo",
+        "embeds/*",
         "packages/*",
         "flowise",
         "ui",
         "components"
     ],
     "scripts": {
-        "build": "turbo run build",
+        "build": "turbo run build --filter=\"./packages/*\"",
         "build-force": "pnpm clean && turbo run build --force",
-        "dev": "turbo run dev --parallel",
+        "build:all": "turbo run build",
+        "build:embed": "turbo run build --filter=\"./embeds/*\"",
+        "dev": "turbo run dev --parallel --filter=\"./packages/*\"",
+        "dev:all": "turbo run dev --parallel",
+        "dev:embed": "turbo run dev --parallel --filter=\"./embeds/**/*\"",
         "start": "run-script-os",
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
-        "clean": "pnpm --filter \"./packages/**\" clean",
-        "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
+        "clean": "pnpm --filter \"./packages/**\" --filter \"./embeds/**\" clean",
+        "nuke": "pnpm --filter \"./packages/**\" --filter \"./embeds/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
         "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\"",
         "lint-fix": "pnpm lint --fix",
@@ -63,6 +69,7 @@
         "node": ">=18.15.0 <19.0.0 || ^20"
     },
     "resolutions": {
-        "@qdrant/openapi-typescript-fetch": "1.2.1"
+        "@qdrant/openapi-typescript-fetch": "1.2.1",
+        "globby": "11.1.0"
     }
 }

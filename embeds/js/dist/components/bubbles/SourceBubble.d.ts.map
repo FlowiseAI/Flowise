@@ -1,0 +1,1 @@
+{"version":3,"file":"SourceBubble.d.ts","sourceRoot":"","sources":["../../../src/components/bubbles/SourceBubble.tsx"],"names":[],"mappings":"AAAA,KAAK,KAAK,GAAG;IACX,WAAW,EAAE,MAAM,CAAC;IACpB,QAAQ,EAAE,MAAM,CAAC;IACjB,aAAa,CAAC,EAAE,MAAM,IAAI,CAAC;CAC5B,CAAC;AACF,eAAO,MAAM,YAAY,UAAW,KAAK,mCA0BxC,CAAC"}
