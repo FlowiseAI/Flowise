@@ -41,40 +41,20 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
         const edges = parsedFlowData.edges
         const { graph, nodeDependencies } = constructGraphs(nodes, edges)
 
-        const endingNodeIds = getEndingNodes(nodeDependencies, graph)
-        if (!endingNodeIds.length) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Ending nodes not found`)
-        }
-
-        const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
+        const endingNodes = getEndingNodes(nodeDependencies, graph, nodes)
 
         let isStreaming = false
-        let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
-
         for (const endingNode of endingNodes) {
             const endingNodeData = endingNode.data
-            if (!endingNodeData) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Ending node ${endingNode.id} data not found`)
-            }
-
             const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
-
-            if (!isEndingNode) {
-                if (
-                    endingNodeData &&
-                    endingNodeData.category !== 'Chains' &&
-                    endingNodeData.category !== 'Agents' &&
-                    endingNodeData.category !== 'Engine'
-                ) {
-                    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent`)
-                }
+            // Once custom function ending node exists, flow is always unavailable to stream
+            if (isEndingNode) {
+                return { isStreaming: false }
             }
-
-            isStreaming = isEndingNode ? false : isFlowValidForStream(nodes, endingNodeData)
+            isStreaming = isFlowValidForStream(nodes, endingNodeData)
         }
 
-        // Once custom function ending node exists, flow is always unavailable to stream
-        const dbResponse = { isStreaming: isEndingNodeExists ? false : isStreaming }
+        const dbResponse = { isStreaming: isStreaming }
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
