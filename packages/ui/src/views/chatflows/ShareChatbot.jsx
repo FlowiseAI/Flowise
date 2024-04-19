@@ -61,6 +61,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
     const [titleAvatarSrc, setTitleAvatarSrc] = useState(chatbotConfig?.titleAvatarSrc ?? '')
 
     const [welcomeMessage, setWelcomeMessage] = useState(chatbotConfig?.welcomeMessage ?? '')
+    const [errorMessage, setErrorMessage] = useState(chatbotConfig?.errorMessage ?? '')
     const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
     const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultConfig.fontSize)
     const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultConfig.poweredByTextColor)
@@ -114,6 +115,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
         if (title) obj.title = title
         if (titleAvatarSrc) obj.titleAvatarSrc = titleAvatarSrc
         if (welcomeMessage) obj.welcomeMessage = welcomeMessage
+        if (errorMessage) obj.errorMessage = errorMessage
         if (backgroundColor) obj.backgroundColor = backgroundColor
         if (fontSize) obj.fontSize = fontSize
         if (poweredByTextColor) obj.poweredByTextColor = poweredByTextColor
@@ -268,6 +270,9 @@ const ShareChatbot = ({ isSessionMemory }) => {
             case 'welcomeMessage':
                 setWelcomeMessage(value)
                 break
+            case 'errorMessage':
+                setErrorMessage(value)
+                break
             case 'fontSize':
                 setFontSize(value)
                 break
@@ -417,6 +422,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
                 `https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png`
             )}
             {textField(welcomeMessage, 'welcomeMessage', 'Welcome Message', 'string', 'Hello! This is custom welcome message')}
+            {textField(errorMessage, 'errorMessage', 'Error Message', 'string', 'This is custom error message')}
             {colorField(backgroundColor, 'backgroundColor', 'Background Color')}
             {textField(fontSize, 'fontSize', 'Font Size', 'number')}
             {colorField(poweredByTextColor, 'poweredByTextColor', 'PoweredBy TextColor')}
