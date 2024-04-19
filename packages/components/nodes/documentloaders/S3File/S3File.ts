@@ -15,13 +15,6 @@ import * as fsDefault from 'node:fs'
 import * as path from 'node:path'
 import * as os from 'node:os'
 
-type S3Config = S3ClientConfig & {
-    /** @deprecated Use the credentials object instead */
-    accessKeyId?: string
-    /** @deprecated Use the credentials object instead */
-    secretAccessKey?: string
-}
-
 class S3_DocumentLoaders implements INode {
     label: string
     name: string
@@ -47,7 +40,8 @@ class S3_DocumentLoaders implements INode {
             label: 'AWS Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['awsApi']
+            credentialNames: ['awsApi'],
+            optional: true
         }
         this.inputs = [
             {
@@ -333,19 +327,24 @@ class S3_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
         const sourceIdKey = (nodeData.inputs?.sourceIdKey as string) || 'source'
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-        const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
+        let credentials: S3ClientConfig['credentials'] | undefined
 
-        const s3Config: S3Config & {
-            accessKeyId?: string
-            secretAccessKey?: string
-        } = {
-            region,
-            credentials: {
-                accessKeyId,
-                secretAccessKey
+        if (nodeData.credential) {
+            const credentialData = await getCredentialData(nodeData.credential, options)
+            const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
+            const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
+
+            if (accessKeyId && secretAccessKey) {
+                credentials = {
+                    accessKeyId,
+                    secretAccessKey
+                }
             }
+        }
+
+        const s3Config: S3ClientConfig = {
+            region,
+            credentials
         }
 
         const loader = new S3Loader({
