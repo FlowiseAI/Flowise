@@ -21,7 +21,7 @@ class Folder_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Folder with Files'
         this.name = 'folderFiles'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'folder.svg'
         this.category = 'Document Loaders'
@@ -60,7 +60,9 @@ class Folder_DocumentLoaders implements INode {
                         name: 'perFile'
                     }
                 ],
-                default: 'perPage'
+                default: 'perPage',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Metadata',
