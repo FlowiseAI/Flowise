@@ -189,7 +189,7 @@ const SpeechToText = ({ dialogProps }) => {
                     Providers
                 </Typography>
                 <FormControl fullWidth>
-                    <Select value={selectedProvider} onChange={handleProviderChange}>
+                    <Select size='small' value={selectedProvider} onChange={handleProviderChange}>
                         <MenuItem value='none'>None</MenuItem>
                         <MenuItem value='openAIWhisper'>OpenAI Whisper</MenuItem>
                         <MenuItem value='assemblyAiTranscribe'>Assembly AI</MenuItem>
@@ -198,7 +198,7 @@ const SpeechToText = ({ dialogProps }) => {
             </Box>
             {selectedProvider !== 'none' && (
                 <>
-                    <ListItem style={{ padding: 0, margin: 0 }} alignItems='center'>
+                    <ListItem sx={{ mt: 3 }} alignItems='center'>
                         <ListItemAvatar>
                             <div
                                 style={{
