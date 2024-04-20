@@ -24,6 +24,7 @@ export const availableDependencies = [
     '@gomomento/sdk',
     '@gomomento/sdk-core',
     '@google-ai/generativelanguage',
+    '@google/generative-ai',
     '@huggingface/inference',
     '@notionhq/client',
     '@opensearch-project/opensearch',

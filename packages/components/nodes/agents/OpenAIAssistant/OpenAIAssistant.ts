@@ -2,7 +2,7 @@ import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, IN
 import OpenAI from 'openai'
 import { DataSource } from 'typeorm'
 import { getCredentialData, getCredentialParam, getUserHome } from '../../../src/utils'
-import { MessageContentImageFile, MessageContentText } from 'openai/resources/beta/threads/messages/messages'
+import { ImageFileContentBlock, TextContentBlock } from 'openai/resources/beta/threads/messages/messages'
 import * as fsDefault from 'node:fs'
 import * as path from 'node:path'
 import fetch from 'node-fetch'
@@ -392,7 +392,7 @@ class OpenAIAssistant_Agents implements INode {
             const fileAnnotations = []
             for (let i = 0; i < assistantMessages[0].content.length; i += 1) {
                 if (assistantMessages[0].content[i].type === 'text') {
-                    const content = assistantMessages[0].content[i] as MessageContentText
+                    const content = assistantMessages[0].content[i] as TextContentBlock
 
                     if (content.text.annotations) {
                         const message_content = content.text
@@ -406,8 +406,7 @@ class OpenAIAssistant_Agents implements INode {
                             let filePath = ''
 
                             // Gather citations based on annotation attributes
-                            const file_citation = (annotation as OpenAI.Beta.Threads.Messages.MessageContentText.Text.FileCitation)
-                                .file_citation
+                            const file_citation = (annotation as OpenAI.Beta.Threads.Messages.FileCitationAnnotation).file_citation
                             if (file_citation) {
                                 const cited_file = await openai.files.retrieve(file_citation.file_id)
                                 // eslint-disable-next-line no-useless-escape
@@ -421,7 +420,7 @@ class OpenAIAssistant_Agents implements INode {
                                     })
                                 }
                             } else {
-                                const file_path = (annotation as OpenAI.Beta.Threads.Messages.MessageContentText.Text.FilePath).file_path
+                                const file_path = (annotation as OpenAI.Beta.Threads.Messages.FilePathAnnotation).file_path
                                 if (file_path) {
                                     const cited_file = await openai.files.retrieve(file_path.file_id)
                                     // eslint-disable-next-line no-useless-escape
@@ -452,7 +451,7 @@ class OpenAIAssistant_Agents implements INode {
                     const lenticularBracketRegex = /【[^】]*】/g
                     returnVal = returnVal.replace(lenticularBracketRegex, '')
                 } else {
-                    const content = assistantMessages[0].content[i] as MessageContentImageFile
+                    const content = assistantMessages[0].content[i] as ImageFileContentBlock
                     const fileId = content.image_file.file_id
                     const fileObj = await openai.files.retrieve(fileId)
                     const dirPath = path.join(getUserHome(), '.flowise', 'openai-assistant')
@@ -533,7 +532,7 @@ const downloadFile = async (fileObj: any, filePath: string, dirPath: string, ope
     }
 }
 
-const formatToOpenAIAssistantTool = (tool: any): OpenAI.Beta.AssistantCreateParams.AssistantToolsFunction => {
+const formatToOpenAIAssistantTool = (tool: any): OpenAI.Beta.FunctionTool => {
     return {
         type: 'function',
         function: {

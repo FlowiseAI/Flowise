@@ -1,20 +1,20 @@
 import { flatten } from 'lodash'
 import { BaseMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
-import { AgentStep } from '@langchain/core/agents'
 import { RunnableSequence } from '@langchain/core/runnables'
-import { ChatOpenAI } from '@langchain/openai'
-import { convertToOpenAITool } from '@langchain/core/utils/function_calling'
-import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { OpenAIToolsAgentOutputParser } from 'langchain/agents/openai/output_parser'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
+import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
+import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { getBaseClasses } from '../../../src/utils'
-import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool, IVisionChatModal } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { AgentExecutor, formatAgentSteps } from '../../../src/agents'
+import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
+import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 
-class MistralAIToolAgent_Agents implements INode {
+class ToolAgent_Agents implements INode {
     label: string
     name: string
     version: number
@@ -28,15 +28,15 @@ class MistralAIToolAgent_Agents implements INode {
     badge?: string
 
     constructor(fields?: { sessionId?: string }) {
-        this.label = 'MistralAI Tool Agent'
-        this.name = 'mistralAIToolAgent'
+        this.label = 'Tool Agent'
+        this.name = 'toolAgent'
         this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
-        this.icon = 'MistralAI.svg'
-        this.badge = 'DEPRECATING'
-        this.description = `Agent that uses MistralAI Function Calling to pick the tools and args to call`
+        this.icon = 'toolAgent.png'
+        this.description = `Agent that uses Function Calling to pick the tools and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
+        this.badge = 'NEW'
         this.inputs = [
             {
                 label: 'Tools',
@@ -50,14 +50,17 @@ class MistralAIToolAgent_Agents implements INode {
                 type: 'BaseChatMemory'
             },
             {
-                label: 'MistralAI Chat Model',
+                label: 'Tool Calling Chat Model',
                 name: 'model',
-                type: 'BaseChatModel'
+                type: 'BaseChatModel',
+                description:
+                    'Only compatible with models that are capable of function calling. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI'
             },
             {
                 label: 'System Message',
                 name: 'systemMessage',
                 type: 'string',
+                default: `You are a helpful AI assistant.`,
                 rows: 4,
                 optional: true,
                 additionalParams: true
@@ -82,12 +85,14 @@ class MistralAIToolAgent_Agents implements INode {
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
+        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        const isStreamable = options.socketIO && options.socketIOClientId
 
         if (moderations && moderations.length > 0) {
             try {
@@ -95,12 +100,13 @@ class MistralAIToolAgent_Agents implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (isStreamable)
+                    streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
                 return formatResponse(e.message)
             }
         }
 
-        const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
+        const executor = prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -109,7 +115,7 @@ class MistralAIToolAgent_Agents implements INode {
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
 
-        if (options.socketIO && options.socketIOClientId) {
+        if (isStreamable) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
@@ -130,6 +136,17 @@ class MistralAIToolAgent_Agents implements INode {
             }
         }
 
+        let output = res?.output as string
+
+        // Claude 3 Opus tends to spit out <thinking>..</thinking> as well, discard that in final output
+        const regexPattern: RegExp = /<thinking>[\s\S]*?<\/thinking>/
+        const matches: RegExpMatchArray | null = output.match(regexPattern)
+        if (matches) {
+            for (const match of matches) {
+                output = output.replace(match, '')
+            }
+        }
+
         await memory.addChatMessages(
             [
                 {
@@ -137,17 +154,17 @@ class MistralAIToolAgent_Agents implements INode {
                     type: 'userMessage'
                 },
                 {
-                    text: res?.output,
+                    text: output,
                     type: 'apiMessage'
                 }
             ],
             this.sessionId
         )
 
-        let finalRes = res?.output
+        let finalRes = output
 
         if (sourceDocuments.length || usedTools.length) {
-            finalRes = { text: res?.output }
+            const finalRes: ICommonObject = { text: output }
             if (sourceDocuments.length) {
                 finalRes.sourceDocuments = flatten(sourceDocuments)
             }
@@ -161,10 +178,10 @@ class MistralAIToolAgent_Agents implements INode {
     }
 }
 
-const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
-    const model = nodeData.inputs?.model as ChatOpenAI
-    const memory = nodeData.inputs?.memory as FlowiseMemory
+const prepareAgent = (nodeData: INodeData, options: ICommonObject, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
+    const model = nodeData.inputs?.model as BaseChatModel
     const maxIterations = nodeData.inputs?.maxIterations as string
+    const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
@@ -172,28 +189,59 @@ const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
 
     const prompt = ChatPromptTemplate.fromMessages([
-        ['system', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
+        ['system', systemMessage],
         new MessagesPlaceholder(memoryKey),
         ['human', `{${inputKey}}`],
         new MessagesPlaceholder('agent_scratchpad')
     ])
 
-    const llmWithTools = model.bind({
-        tools: tools.map(convertToOpenAITool)
-    })
+    if (llmSupportsVision(model)) {
+        const visionChatModel = model as IVisionChatModal
+        const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+
+        if (messageContent?.length) {
+            visionChatModel.setVisionModel()
+
+            // Pop the `agent_scratchpad` MessagePlaceHolder
+            let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
+            if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
+                const lastMessage = prompt.promptMessages.pop() as HumanMessagePromptTemplate
+                const template = (lastMessage.prompt as PromptTemplate).template as string
+                const msg = HumanMessagePromptTemplate.fromTemplate([
+                    ...messageContent,
+                    {
+                        text: template
+                    }
+                ])
+                msg.inputVariables = lastMessage.inputVariables
+                prompt.promptMessages.push(msg)
+            }
+
+            // Add the `agent_scratchpad` MessagePlaceHolder back
+            prompt.promptMessages.push(messagePlaceholder)
+        } else {
+            visionChatModel.revertToOriginalModel()
+        }
+    }
+
+    if (model.bindTools === undefined) {
+        throw new Error(`This agent requires that the "bindTools()" method be implemented on the input model.`)
+    }
+
+    const modelWithTools = model.bindTools(tools)
 
     const runnableAgent = RunnableSequence.from([
         {
-            [inputKey]: (i: { input: string; steps: AgentStep[] }) => i.input,
-            agent_scratchpad: (i: { input: string; steps: AgentStep[] }) => formatAgentSteps(i.steps),
-            [memoryKey]: async (_: { input: string; steps: AgentStep[] }) => {
+            [inputKey]: (i: { input: string; steps: ToolsAgentStep[] }) => i.input,
+            agent_scratchpad: (i: { input: string; steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(i.steps),
+            [memoryKey]: async (_: { input: string; steps: ToolsAgentStep[] }) => {
                 const messages = (await memory.getChatMessages(flowObj?.sessionId, true)) as BaseMessage[]
                 return messages ?? []
             }
         },
         prompt,
-        llmWithTools,
-        new OpenAIToolsAgentOutputParser()
+        modelWithTools,
+        new ToolCallingAgentOutputParser()
     ])
 
     const executor = AgentExecutor.fromAgentAndTools({
@@ -209,4 +257,4 @@ const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId
     return executor
 }
 
-module.exports = { nodeClass: MistralAIToolAgent_Agents }
+module.exports = { nodeClass: ToolAgent_Agents }
