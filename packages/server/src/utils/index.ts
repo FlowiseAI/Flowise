@@ -1022,7 +1022,9 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'chatOllama',
             'awsChatBedrock',
             'chatMistralAI',
-            'groqChat'
+            'groqChat',
+            'chatCohere',
+            'chatGoogleGenerativeAI'
         ],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
@@ -1050,10 +1052,22 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'csvAgent',
             'airtableAgent',
             'conversationalRetrievalAgent',
-            'openAIToolAgent'
+            'openAIToolAgent',
+            'toolAgent'
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
+
+        // Anthropic & Groq Function Calling streaming is still not supported - https://docs.anthropic.com/claude/docs/tool-use
+        const model = endingNodeData.inputs?.model
+        if (endingNodeData.name.includes('toolAgent')) {
+            if (typeof model === 'string' && (model.includes('chatAnthropic') || model.includes('groqChat'))) {
+                return false
+            } else if (typeof model === 'object' && 'id' in model && model['id'].includes('chatAnthropic')) {
+                return false
+            }
+        }
     } else if (endingNodeData.category === 'Engine') {
+        // Engines that are available to stream
         const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
         isValidChainOrAgent = whitelistEngine.includes(endingNodeData.name)
     }
