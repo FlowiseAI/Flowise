@@ -33,8 +33,8 @@ class ToolAgent_Agents implements INode {
         this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
-        this.icon = 'function.svg'
-        this.description = `Agent that uses OpenAI Function Calling to pick the tools and args to call`
+        this.icon = 'toolAgent.png'
+        this.description = `Agent that uses Function Calling to pick the tools and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.badge = 'NEW'
         this.inputs = [

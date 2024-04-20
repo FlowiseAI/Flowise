@@ -63,6 +63,7 @@
         "node": ">=18.15.0 <19.0.0 || ^20"
     },
     "resolutions": {
-        "@qdrant/openapi-typescript-fetch": "1.2.1"
+        "@qdrant/openapi-typescript-fetch": "1.2.1",
+        "@google/generative-ai": "^0.7.0"
     }
 }
