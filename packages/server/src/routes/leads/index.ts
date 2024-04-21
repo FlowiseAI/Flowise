@@ -6,6 +6,6 @@ const router = express.Router()
 router.post('/', leadsController.createLeadInChatflow)
 
 // READ
-router.get('/:id', leadsController.getAllLeadsForChatflow)
+router.get(['/', '/:id'], leadsController.getAllLeadsForChatflow)
 
 export default router
