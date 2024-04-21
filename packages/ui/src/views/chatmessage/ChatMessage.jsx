@@ -57,7 +57,6 @@ import { baseURL, maxScroll } from '@/store/constant'
 
 // Utils
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow, getLocalStorageChatflow } from '@/utils/genericHelper'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 
 const messageImageStyle = {
     width: '128px',
@@ -623,11 +622,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             setIsRecording(false)
 
             // leads
-            const savedLead = localStorage.getItem(`${chatflowid}_LEAD`)
+            const savedLead = getLocalStorageChatflow(chatflowid)?.lead
             if (savedLead) {
-                const savedLeadObj = JSON.parse(savedLead)
-                setIsLeadSaved(!!savedLeadObj)
-                setLeadEmail(savedLeadObj.email)
+                setIsLeadSaved(!!savedLead)
+                setLeadEmail(savedLead.email)
             }
 
             // SocketIO
@@ -769,9 +767,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         const result = await leadsApi.addLead(body)
         if (result.data) {
             const data = result.data
-
             if (!chatId) setChatId(data.chatId)
-            localStorage.setItem(`${chatflowid}_LEAD`, JSON.stringify({ name: leadName, email: leadEmail, phone: leadPhone }))
+            setLocalStorageChatflow(chatflowid, data.chatId, { lead: { name: leadName, email: leadEmail, phone: leadPhone } })
             setIsLeadSaved(true)
             setMessages((prevMessages) => {
                 let allMessages = [...cloneDeep(prevMessages)]
@@ -816,7 +813,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                 // The latest message sent by the user will be animated while waiting for a response
                                 <Box
                                     sx={{
-                                        background: message.type === 'apiMessage' ? theme.palette.asyncSelect.main : ''
+                                        background:
+                                            message.type === 'apiMessage' || message.type === 'leadCaptureMessage'
+                                                ? theme.palette.asyncSelect.main
+                                                : ''
                                     }}
                                     key={index}
                                     style={{ display: 'flex' }}
@@ -914,7 +914,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                         )}
                                         <div className='markdownanswer'>
                                             {message.type === 'leadCaptureMessage' &&
-                                            !localStorage.getItem(`${chatflowid}_LEAD`) &&
+                                            !getLocalStorageChatflow(chatflowid)?.lead &&
                                             leadsConfig.status ? (
                                                 <Box
                                                     sx={{
@@ -970,14 +970,17 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                         <Box
                                                             sx={{
                                                                 display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'end',
-                                                                gap: 1
+                                                                alignItems: 'center'
                                                             }}
                                                         >
-                                                            <StyledButton variant='contained' type='submit'>
+                                                            <Button
+                                                                variant='outlined'
+                                                                fullWidth
+                                                                type='submit'
+                                                                sx={{ borderRadius: '20px' }}
+                                                            >
                                                                 {isLeadSaving ? 'Saving...' : 'Save'}
-                                                            </StyledButton>
+                                                            </Button>
                                                         </Box>
                                                     </form>
                                                 </Box>
