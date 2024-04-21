@@ -11,6 +11,8 @@ router.get('/stores', documentStoreController.getAllDocumentStores)
 router.get('/store/:id', documentStoreController.getDocumentStoreById)
 // Update documentStore
 router.put('/store/:id', documentStoreController.updateDocumentStore)
+// Delete documentStore
+router.delete('/store/:id', documentStoreController.deleteDocumentStore)
 
 /** Document Store - Loaders */
 // Get all loaders

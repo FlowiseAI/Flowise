@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
-import { Stack, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Chip } from '@mui/material'
+import { Stack, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Chip } from '@mui/material'
 import { alpha, styled, useTheme } from '@mui/material/styles'
 import Button from '@mui/material/Button'
 import { tableCellClasses } from '@mui/material/TableCell'
@@ -25,7 +25,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // icons
-import { IconPlus, IconEdit, IconRefresh, IconX } from '@tabler/icons'
+import { IconPlus, IconEdit, IconRefresh, IconX, IconTrash } from '@tabler/icons'
 import * as PropTypes from 'prop-types'
 import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -168,6 +168,53 @@ const DocumentStoreDetails = () => {
         }
     }
 
+    const onStoreDelete = async () => {
+        const confirmPayload = {
+            title: `Delete`,
+            description: `Delete Store ${getSpecificDocumentStore.data?.name} ? This will delete all the associated loaders and document chunks.`,
+            confirmButtonName: 'Delete',
+            cancelButtonName: 'Cancel'
+        }
+        const isConfirmed = await confirm(confirmPayload)
+
+        if (isConfirmed) {
+            try {
+                const deleteResp = await documentsApi.deleteDocumentStore(storeId)
+                if (deleteResp.data) {
+                    enqueueSnackbar({
+                        message: 'Store, Loader and associated document chunks deleted',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'success',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                    navigate('/document-stores/')
+                }
+            } catch (error) {
+                setError(error)
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                enqueueSnackbar({
+                    message: `Failed to delete loader: ${errorData}`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        }
+    }
+
     const onEditClicked = async () => {
         const data = {
             name: documentStore.name,
@@ -222,9 +269,14 @@ const DocumentStoreDetails = () => {
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader search={false} title={getSpecificDocumentStore.data?.name}>
                             {getSpecificDocumentStore.data?.status !== 'STALE' && (
-                                <Button variant='outlined' onClick={onEditClicked} sx={{ mr: 2 }} startIcon={<IconEdit />}>
-                                    Edit Description
-                                </Button>
+                                <>
+                                    <Button color='error' variant='outlined' startIcon={<IconTrash />} onClick={onStoreDelete}>
+                                        Delete Store
+                                    </Button>
+                                    <Button variant='outlined' onClick={onEditClicked} sx={{ mr: 2 }} startIcon={<IconEdit />}>
+                                        Edit Description
+                                    </Button>
+                                </>
                             )}
                             {getSpecificDocumentStore.data?.status === 'STALE' && (
                                 <Button variant='outlined' sx={{ mr: 2 }} startIcon={<IconRefresh />} onClick={onConfirm}>

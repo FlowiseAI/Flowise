@@ -119,6 +119,24 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
     }
 }
 
+const deleteDocumentStore = async (storeId: string) => {
+    try {
+        const appServer = getRunningExpressApp()
+        // delete all the chunks associated with the store
+        const tbdChunk = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({
+            storeId: storeId
+        })
+        // now delete the store
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).delete({
+            id: storeId
+        })
+
+        return { deleted: entity.affected }
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.deleteDocumentStore - ${error}`)
+    }
+}
+
 const deleteDocumentStoreFileChunk = async (storeId: string, docId: string, chunkId: string) => {
     try {
         const appServer = getRunningExpressApp()
@@ -492,6 +510,7 @@ const getDocumentLoaders = async () => {
 }
 
 export default {
+    deleteDocumentStore,
     createDocumentStore,
     deleteLoaderFromDocumentStore,
     getAllDocumentStores,

@@ -180,6 +180,18 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
+const deleteDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new Error('Error: documentStoreController.deleteDocumentStore - id not provided!')
+        }
+        const apiResponse = await documentStoreService.deleteDocumentStore(req.params.id)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const previewFileChunks = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined') {
@@ -204,6 +216,7 @@ const getDocumentLoaders = async (req: Request, res: Response, next: NextFunctio
 }
 
 export default {
+    deleteDocumentStore,
     createDocumentStore,
     getAllDocumentStores,
     deleteLoaderFromDocumentStore,
