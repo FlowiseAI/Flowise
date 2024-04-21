@@ -98,7 +98,7 @@ class ReActAgentChat_Agents implements INode {
 
         if (llmSupportsVision(model)) {
             const visionChatModel = model as IVisionChatModal
-            const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+            const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
 
             if (messageContent?.length) {
                 // Change model to vision supported

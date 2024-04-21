@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import path from 'path'
 import contentDisposition from 'content-disposition'
-import { getStoragePath } from 'flowise-components'
-import * as fs from 'fs'
+import { streamStorageFile } from 'flowise-components'
 
 const streamUploadedImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -12,20 +10,16 @@ const streamUploadedImage = async (req: Request, res: Response, next: NextFuncti
         const chatflowId = req.query.chatflowId as string
         const chatId = req.query.chatId as string
         const fileName = req.query.fileName as string
-        const filePath = path.join(getStoragePath(), chatflowId, chatId, fileName)
-        //raise error if file path is not absolute
-        if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
-        //raise error if file path contains '..'
-        if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
-        //only return from the storage folder
-        if (!filePath.startsWith(getStoragePath())) return res.status(500).send(`Invalid file path`)
+        res.setHeader('Content-Disposition', contentDisposition(fileName))
+        const fileStream = await streamStorageFile(chatflowId, chatId, fileName)
 
-        if (fs.existsSync(filePath)) {
-            res.setHeader('Content-Disposition', contentDisposition(path.basename(filePath)))
-            const fileStream = fs.createReadStream(filePath)
+        // ignore the type check for now
+        // @ts-ignore
+        if (fileStream?.pipe) {
+            // @ts-ignore
             fileStream.pipe(res)
         } else {
-            return res.status(404).send(`File ${fileName} not found`)
+            res.send(fileStream)
         }
     } catch (error) {
         next(error)

@@ -1,19 +1,11 @@
-import path from 'path'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { IChatFlow } from '../../Interface'
 import { ChatFlow } from '../../database/entities/ChatFlow'
-import {
-    getAppVersion,
-    getTelemetryFlowObj,
-    deleteFolderRecursive,
-    isFlowValidForStream,
-    constructGraphs,
-    getEndingNodes
-} from '../../utils'
+import { getAppVersion, getTelemetryFlowObj, isFlowValidForStream, constructGraphs, getEndingNodes } from '../../utils'
 import logger from '../../utils/logger'
-import { getStoragePath } from 'flowise-components'
+import { removeFilesFromStorage } from 'flowise-components'
 import { IReactFlowObject } from '../../Interface'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import { ChatMessage } from '../../database/entities/ChatMessage'
@@ -83,9 +75,9 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
         try {
             // Delete all uploads corresponding to this chatflow
-            const directory = path.join(getStoragePath(), chatflowId)
-            deleteFolderRecursive(directory)
-
+            // const directory = path.join(getStoragePath(), chatflowId)
+            // deleteFolderRecursive(directory)
+            await removeFilesFromStorage(chatflowId)
             // Delete all chat messages
             await appServer.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: chatflowId })
 

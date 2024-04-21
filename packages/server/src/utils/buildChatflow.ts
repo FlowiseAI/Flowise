@@ -70,7 +70,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                     const filename = upload.name
                     const splitDataURI = upload.data.split(',')
                     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                    addFileToStorage(bf, filename, chatflowid, chatId)
+                    const mime = splitDataURI[0].split(':')[1].split(';')[0]
+                    await addFileToStorage(mime, bf, filename, chatflowid, chatId)
                     upload.type = 'stored-file'
                     // Omit upload.data since we don't store the content in database
                     fileUploads[i] = omit(upload, ['data'])

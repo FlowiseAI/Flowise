@@ -109,7 +109,7 @@ const initChain = async (nodeData: INodeData, options: ICommonObject) => {
         if (yamlFileBase64.startsWith('FILE-STORAGE::')) {
             const file = yamlFileBase64.replace('FILE-STORAGE::', '')
             const chatflowid = options.chatflowid
-            const fileData = getFileFromStorage(file, chatflowid)
+            const fileData = await getFileFromStorage(file, chatflowid)
             yamlString = fileData.toString()
         } else {
             const splitDataURI = yamlFileBase64.split(',')

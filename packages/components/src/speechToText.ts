@@ -1,9 +1,10 @@
 import { ICommonObject, IFileUpload } from './Interface'
-import { getCredentialData, getStoragePath } from './utils'
+import { getCredentialData } from './utils'
 import { type ClientOptions, OpenAIClient } from '@langchain/openai'
 import fs from 'fs'
 import path from 'path'
 import { AssemblyAI } from 'assemblyai'
+import { getStoragePath } from './storageUtils'
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
     if (speechToTextConfig) {

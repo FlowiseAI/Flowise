@@ -60,7 +60,7 @@ class OpenAPIToolkit_Tools implements INode {
         if (yamlFileBase64.startsWith('FILE-STORAGE::')) {
             const file = yamlFileBase64.replace('FILE-STORAGE::', '')
             const chatflowid = options.chatflowid
-            const fileData = getFileFromStorage(file, chatflowid)
+            const fileData = await getFileFromStorage(file, chatflowid)
             const utf8String = fileData.toString('utf-8')
 
             data = load(utf8String) as JsonObject

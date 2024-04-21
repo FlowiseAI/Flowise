@@ -73,7 +73,7 @@ class Csv_DocumentLoaders implements INode {
             const chatflowid = options.chatflowid
 
             for (const file of files) {
-                const fileData = getFileFromStorage(file, chatflowid)
+                const fileData = await getFileFromStorage(file, chatflowid)
                 const blob = new Blob([fileData])
                 const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
