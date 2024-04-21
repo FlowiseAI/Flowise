@@ -28,6 +28,6 @@ router.delete('/chunks/:storeId/:loaderId/:chunkId', documentStoreController.del
 // edit specific file chunk from the store
 router.put('/chunks/:storeId/:loaderId/:chunkId', documentStoreController.editDocumentStoreFileChunk)
 // Get all file chunks from the store
-router.get('/chunks/:storeId/:fileId', documentStoreController.getDocumentStoreFileChunks)
+router.get('/chunks/:storeId/:fileId/:pageNo', documentStoreController.getDocumentStoreFileChunks)
 
 export default router

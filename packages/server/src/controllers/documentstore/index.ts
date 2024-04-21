@@ -87,7 +87,8 @@ const getDocumentStoreFileChunks = async (req: Request, res: Response, next: Nex
             throw new Error('Error: documentStoreController.getDocumentStoreFileChunks - fileId not provided!')
         }
 
-        const apiResponse = await documentStoreService.getDocumentStoreFileChunks(req.params.storeId, req.params.fileId)
+        const page = req.params.pageNo ? parseInt(req.params.pageNo) : 1
+        const apiResponse = await documentStoreService.getDocumentStoreFileChunks(req.params.storeId, req.params.fileId, page)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

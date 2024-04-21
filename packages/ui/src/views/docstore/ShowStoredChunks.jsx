@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
-import { Button, Grid, Stack, Table, TableHead, TableRow, Typography } from '@mui/material'
+import { Button, Grid, IconButton, Stack, Table, TableHead, TableRow, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
 import moment from 'moment'
-import { IconArrowBack, IconEdit, IconTrash, IconX } from '@tabler/icons'
+import { IconArrowBack, IconEdit, IconTrash, IconX, IconChevronLeft, IconChevronRight } from '@tabler/icons'
 import TableCell from '@mui/material/TableCell'
 
 // project imports
@@ -68,6 +68,10 @@ const ShowStoredChunks = () => {
 
     const [documentChunks, setDocumentChunks] = useState([])
     const [totalChunks, setTotalChunks] = useState(0)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [start, setStart] = useState(1)
+    const [end, setEnd] = useState(50)
+
     const [loading, setLoading] = useState(false)
     const [selectedChunk, setSelectedChunk] = useState()
     const [selectedChunkNumber, setSelectedChunkNumber] = useState()
@@ -81,7 +85,7 @@ const ShowStoredChunks = () => {
 
     const chunkSelected = (chunkId) => {
         setSelectedChunk(documentChunks.find((chunk) => chunk.id === chunkId))
-        setSelectedChunkNumber(documentChunks.findIndex((chunk) => chunk.id === chunkId) + 1)
+        setSelectedChunkNumber(documentChunks.findIndex((chunk) => chunk.id === chunkId) + start)
     }
 
     const editClicked = (chunk) => {
@@ -114,7 +118,7 @@ const ShowStoredChunks = () => {
                     )
                 }
             })
-            getChunksApi.request(storeId, fileId)
+            getChunksApi.request(storeId, fileId, currentPage)
         } catch (error) {
             setLoading(false)
             setError(error)
@@ -164,9 +168,15 @@ const ShowStoredChunks = () => {
 
     useEffect(() => {
         setLoading(true)
-        getChunksApi.request(storeId, fileId)
+        getChunksApi.request(storeId, fileId, currentPage)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    const changePage = (newPage) => {
+        setLoading(true)
+        setCurrentPage(newPage)
+        getChunksApi.request(storeId, fileId, newPage)
+    }
 
     useEffect(() => {
         if (getChunksApi.data) {
@@ -174,6 +184,9 @@ const ShowStoredChunks = () => {
             setTotalChunks(data.count)
             setDocumentChunks(data.chunks)
             setLoading(false)
+            setCurrentPage(data.currentPage)
+            setStart(data.currentPage * 50 - 49)
+            setEnd(data.currentPage * 50 > data.count ? data.count : data.currentPage * 50)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -207,7 +220,27 @@ const ShowStoredChunks = () => {
                                         <TableCell component='th' scope='row'>
                                             <strong>Chunks:</strong>
                                         </TableCell>
-                                        <TableCell>{totalChunks}</TableCell>
+                                        <TableCell>
+                                            <IconButton
+                                                size='small'
+                                                onClick={() => changePage(currentPage - 1)}
+                                                style={{ marginRight: 10 }}
+                                                variant='outlined'
+                                                disabled={currentPage === 1}
+                                            >
+                                                <IconChevronLeft />
+                                            </IconButton>
+                                            Showing {start}-{end} of {totalChunks}
+                                            <IconButton
+                                                size='small'
+                                                onClick={() => changePage(currentPage + 1)}
+                                                style={{ marginLeft: 10 }}
+                                                variant='outlined'
+                                                disabled={end >= totalChunks}
+                                            >
+                                                <IconChevronRight />
+                                            </IconButton>
+                                        </TableCell>
                                         <TableCell component='th' scope='row'>
                                             <strong>Total Chars:</strong>
                                         </TableCell>
@@ -229,7 +262,7 @@ const ShowStoredChunks = () => {
                                             {documentChunks?.map((row, index) => (
                                                 <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
                                                     <Typography variant='h6' color='textSecondary' gutterBottom>{`#${
-                                                        index + 1
+                                                        start + index
                                                     }. Characters: ${row.pageContent.length}`}</Typography>
                                                     <CardWrapper style={{ borderColor: 'red' }} onClick={() => chunkSelected(row.id)}>
                                                         <Card style={{ padding: 0 }}>

@@ -83,7 +83,7 @@ const getDocumentStoreById = async (storeId: string) => {
 }
 
 // Get chunks for a specific file
-const getDocumentStoreFileChunks = async (storeId: string, fileId: string) => {
+const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageNo: number = 1) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -94,16 +94,25 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string) => {
         const found = files.find((file: any) => file.id === fileId)
         if (!found) throw new Error(`Document store file ${fileId} not found`)
 
-        const chunksWithCount = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).findAndCount({
+        const PAGE_SIZE = 50
+        const skip = (pageNo - 1) * PAGE_SIZE
+        const take = PAGE_SIZE
+        const count = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).count({
+            where: { docId: fileId }
+        })
+        const chunksWithCount = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find({
+            skip,
+            take,
             where: { docId: fileId }
         })
 
         if (!chunksWithCount) throw new Error(`File ${fileId} not found`)
         found.storeName = entity.name
         return {
-            chunks: chunksWithCount[0],
-            count: chunksWithCount[1],
-            file: found
+            chunks: chunksWithCount,
+            count: count,
+            file: found,
+            currentPage: pageNo
         }
     } catch (error) {
         throw new Error(`Error: documentStoreServices.getDocumentStoreFileChunks - ${error}`)

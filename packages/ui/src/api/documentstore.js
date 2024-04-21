@@ -11,7 +11,7 @@ const deleteChunkFromStore = (storeId, loaderId, chunkId) => client.delete(`/doc
 const editChunkFromStore = (storeId, loaderId, chunkId, body) =>
     client.put(`/document-store/chunks/${storeId}/${loaderId}/${chunkId}`, body)
 
-const getFileChunks = (storeId, fileId) => client.get(`/document-store/chunks/${storeId}/${fileId}`)
+const getFileChunks = (storeId, fileId, pageNo) => client.get(`/document-store/chunks/${storeId}/${fileId}/${pageNo}`)
 const previewChunks = (body) => client.post('/document-store/loader/preview', body)
 const processChunks = (body) => client.post(`/document-store/loader/process`, body)
 
