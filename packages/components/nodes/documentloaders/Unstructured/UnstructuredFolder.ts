@@ -28,7 +28,7 @@ class UnstructuredFolder_DocumentLoaders implements INode {
         this.icon = 'unstructured-folder.svg'
         this.category = 'Document Loaders'
         this.description =
-            'Use Unstructured.io to load data from a folder. Note: Currently does not support .png and .heic until langchain is updated in flowise.'
+            "Use Unstructured.io to load data from a folder. Note: Currently doesn't support .png and .heic until unstructured is updated."
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',
@@ -91,93 +91,97 @@ class UnstructuredFolder_DocumentLoaders implements INode {
             {
                 label: 'Skip Infer Table Types',
                 name: 'skipInferTableTypes',
-                description: 'The document types that you want to skip table extraction with. Default: pdf, jpg, png, heic.',
+                description: 'The document types that you want to skip table extraction with. Default: pdf, jpg, png.',
                 type: 'multiOptions',
                 options: [
                     {
-                        label: 'txt',
-                        name: 'txt'
-                    },
-                    {
-                        label: 'text',
-                        name: 'text'
-                    },
-                    {
-                        label: 'pdf',
-                        name: 'pdf'
+                        label: 'doc',
+                        name: 'doc'
                     },
                     {
                         label: 'docx',
                         name: 'docx'
                     },
                     {
-                        label: 'doc',
-                        name: 'doc'
-                    },
-                    {
-                        label: 'jpg',
-                        name: 'jpg'
-                    },
-                    {
-                        label: 'jpeg',
-                        name: 'jpeg'
-                    },
-                    {
                         label: 'eml',
                         name: 'eml'
+                    },
+                    {
+                        label: 'epub',
+                        name: 'epub'
                     },
                     {
                         label: 'heic',
                         name: 'heic'
                     },
                     {
+                        label: 'htm',
+                        name: 'htm'
+                    },
+                    {
                         label: 'html',
                         name: 'html'
                     },
                     {
-                        label: 'htm',
-                        name: 'htm'
+                        label: 'jpeg',
+                        name: 'jpeg'
+                    },
+                    {
+                        label: 'jpg',
+                        name: 'jpg'
                     },
                     {
                         label: 'md',
                         name: 'md'
                     },
                     {
-                        label: 'pptx',
-                        name: 'pptx'
-                    },
-                    {
-                        label: 'ppt',
-                        name: 'ppt'
-                    },
-                    {
                         label: 'msg',
                         name: 'msg'
-                    },
-                    {
-                        label: 'rtf',
-                        name: 'rtf'
-                    },
-                    {
-                        label: 'xlsx',
-                        name: 'xlsx'
-                    },
-                    {
-                        label: 'xls',
-                        name: 'xls'
                     },
                     {
                         label: 'odt',
                         name: 'odt'
                     },
                     {
-                        label: 'epub',
-                        name: 'epub'
+                        label: 'pdf',
+                        name: 'pdf'
+                    },
+                    {
+                        label: 'png',
+                        name: 'png'
+                    },
+                    {
+                        label: 'ppt',
+                        name: 'ppt'
+                    },
+                    {
+                        label: 'pptx',
+                        name: 'pptx'
+                    },
+                    {
+                        label: 'rtf',
+                        name: 'rtf'
+                    },
+                    {
+                        label: 'text',
+                        name: 'text'
+                    },
+                    {
+                        label: 'txt',
+                        name: 'txt'
+                    },
+                    {
+                        label: 'xls',
+                        name: 'xls'
+                    },
+                    {
+                        label: 'xlsx',
+                        name: 'xlsx'
                     }
                 ],
                 optional: true,
                 additionalParams: true,
-                default: ['pdf', 'jpg', 'png', 'heic']
+                default: '["pdf", "jpg", "png"]'
             },
             {
                 label: 'Hi-Res Model Name',
@@ -189,7 +193,7 @@ class UnstructuredFolder_DocumentLoaders implements INode {
                         label: 'chipper',
                         name: 'chipper',
                         description:
-                            '(beta version): the Chipper model is Unstructured in-house image-to-text model based on transformer-based Visual Document Understanding (VDU) models.'
+                            'Exlusive to Unstructured hosted API. The Chipper model is Unstructured in-house image-to-text model based on transformer-based Visual Document Understanding (VDU) models.'
                     },
                     {
                         label: 'detectron2_onnx',
@@ -233,6 +237,76 @@ class UnstructuredFolder_DocumentLoaders implements INode {
                 default: 'by_title'
             },
             {
+                label: 'OCR Languages',
+                name: 'ocrLanguages',
+                description: 'The languages to use for OCR. Note: Being depricated as languages is the new type. Pending langchain update.',
+                type: 'multiOptions',
+                options: [
+                    {
+                        label: 'English',
+                        name: 'eng'
+                    },
+                    {
+                        label: 'Spanish (Español)',
+                        name: 'spa'
+                    },
+                    {
+                        label: 'Mandarin Chinese (普通话)',
+                        name: 'cmn'
+                    },
+                    {
+                        label: 'Hindi (हिन्दी)',
+                        name: 'hin'
+                    },
+                    {
+                        label: 'Arabic (اَلْعَرَبِيَّةُ)',
+                        name: 'ara'
+                    },
+                    {
+                        label: 'Portuguese (Português)',
+                        name: 'por'
+                    },
+                    {
+                        label: 'Bengali (বাংলা)',
+                        name: 'ben'
+                    },
+                    {
+                        label: 'Russian (Русский)',
+                        name: 'rus'
+                    },
+                    {
+                        label: 'Japanese (日本語)',
+                        name: 'jpn'
+                    },
+                    {
+                        label: 'Punjabi (ਪੰਜਾਬੀ)',
+                        name: 'pan'
+                    },
+                    {
+                        label: 'German (Deutsch)',
+                        name: 'deu'
+                    },
+                    {
+                        label: 'Korean (한국어)',
+                        name: 'kor'
+                    },
+                    {
+                        label: 'French (Français)',
+                        name: 'fra'
+                    },
+                    {
+                        label: 'Italian (Italiano)',
+                        name: 'ita'
+                    },
+                    {
+                        label: 'Vietnamese (Tiếng Việt)',
+                        name: 'vie'
+                    }
+                ],
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Source ID Key',
                 name: 'sourceIdKey',
                 type: 'string',
@@ -261,6 +335,50 @@ class UnstructuredFolder_DocumentLoaders implements INode {
                 additionalParams: true
             },
             {
+                label: 'XML Keep Tags',
+                name: 'xmlKeepTags',
+                description: 'Whether to keep XML tags in the output.',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Multi-Page Sections',
+                name: 'multiPageSections',
+                description: 'Whether to treat multi-page documents as separate sections.',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Combine Under N Chars',
+                name: 'combineUnderNChars',
+                description:
+                    "If chunking strategy is set, combine elements until a section reaches a length of n chars. Default: value of max_characters. Can't exceed value of max_characters.",
+                type: 'number',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'New After N Chars',
+                name: 'newAfterNChars',
+                description:
+                    "If chunking strategy is set, cut off new sections after reaching a length of n chars (soft max). value of max_characters. Can't exceed value of max_characters.",
+                type: 'number',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Max Characters',
+                name: 'maxCharacters',
+                description:
+                    'If chunking strategy is set, cut off new sections after reaching a length of n chars (hard max). Default: 500',
+                type: 'number',
+                optional: true,
+                additionalParams: true,
+                default: '500'
+            },
+            {
                 label: 'Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -276,12 +394,20 @@ class UnstructuredFolder_DocumentLoaders implements INode {
         const strategy = nodeData.inputs?.strategy as UnstructuredLoaderStrategy
         const encoding = nodeData.inputs?.encoding as string
         const coordinates = nodeData.inputs?.coordinates as boolean
-        const skipInferTableTypes = JSON.parse(nodeData.inputs?.skipInferTableTypes as string) as SkipInferTableTypes[]
+        const skipInferTableTypes = nodeData.inputs?.skipInferTableTypes
+            ? JSON.parse(nodeData.inputs?.skipInferTableTypes as string)
+            : ([] as SkipInferTableTypes[])
         const hiResModelName = nodeData.inputs?.hiResModelName as HiResModelName
         const includePageBreaks = nodeData.inputs?.includePageBreaks as boolean
         const chunkingStrategy = nodeData.inputs?.chunkingStrategy as 'None' | 'by_title'
         const metadata = nodeData.inputs?.metadata
         const sourceIdKey = (nodeData.inputs?.sourceIdKey as string) || 'source'
+        const ocrLanguages = nodeData.inputs?.ocrLanguages ? JSON.parse(nodeData.inputs?.ocrLanguages as string) : ([] as string[])
+        const xmlKeepTags = nodeData.inputs?.xmlKeepTags as boolean
+        const multiPageSections = nodeData.inputs?.multiPageSections as boolean
+        const combineUnderNChars = nodeData.inputs?.combineUnderNChars as number
+        const newAfterNChars = nodeData.inputs?.newAfterNChars as number
+        const maxCharacters = nodeData.inputs?.maxCharacters as number
 
         const obj: UnstructuredLoaderOptions = {
             apiUrl: unstructuredAPIUrl,
@@ -291,7 +417,13 @@ class UnstructuredFolder_DocumentLoaders implements INode {
             skipInferTableTypes,
             hiResModelName,
             includePageBreaks,
-            chunkingStrategy
+            chunkingStrategy,
+            ocrLanguages,
+            xmlKeepTags,
+            multiPageSections,
+            combineUnderNChars,
+            newAfterNChars,
+            maxCharacters
         }
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
