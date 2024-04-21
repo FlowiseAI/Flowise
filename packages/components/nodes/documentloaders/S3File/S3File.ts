@@ -1,19 +1,19 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { S3Loader } from 'langchain/document_loaders/web/s3'
-import { UnstructuredLoader } from 'langchain/document_loaders/fs/unstructured'
+import {
+    UnstructuredLoader,
+    UnstructuredLoaderOptions,
+    UnstructuredLoaderStrategy,
+    SkipInferTableTypes,
+    HiResModelName
+} from 'langchain/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { S3Client, GetObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3'
+import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { Readable } from 'node:stream'
 import * as fsDefault from 'node:fs'
 import * as path from 'node:path'
 import * as os from 'node:os'
-
-type S3Config = S3ClientConfig & {
-    /** @deprecated Use the credentials object instead */
-    accessKeyId?: string
-    /** @deprecated Use the credentials object instead */
-    secretAccessKey?: string
-}
 
 class S3_DocumentLoaders implements INode {
     label: string
@@ -30,7 +30,7 @@ class S3_DocumentLoaders implements INode {
     constructor() {
         this.label = 'S3'
         this.name = 'S3'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Document'
         this.icon = 's3.svg'
         this.category = 'Document Loaders'
@@ -40,7 +40,8 @@ class S3_DocumentLoaders implements INode {
             label: 'AWS Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['awsApi']
+            credentialNames: ['awsApi'],
+            optional: true
         }
         this.inputs = [
             {
@@ -58,44 +59,8 @@ class S3_DocumentLoaders implements INode {
             {
                 label: 'Region',
                 name: 'region',
-                type: 'options',
-                options: [
-                    { label: 'af-south-1', name: 'af-south-1' },
-                    { label: 'ap-east-1', name: 'ap-east-1' },
-                    { label: 'ap-northeast-1', name: 'ap-northeast-1' },
-                    { label: 'ap-northeast-2', name: 'ap-northeast-2' },
-                    { label: 'ap-northeast-3', name: 'ap-northeast-3' },
-                    { label: 'ap-south-1', name: 'ap-south-1' },
-                    { label: 'ap-south-2', name: 'ap-south-2' },
-                    { label: 'ap-southeast-1', name: 'ap-southeast-1' },
-                    { label: 'ap-southeast-2', name: 'ap-southeast-2' },
-                    { label: 'ap-southeast-3', name: 'ap-southeast-3' },
-                    { label: 'ap-southeast-4', name: 'ap-southeast-4' },
-                    { label: 'ap-southeast-5', name: 'ap-southeast-5' },
-                    { label: 'ap-southeast-6', name: 'ap-southeast-6' },
-                    { label: 'ca-central-1', name: 'ca-central-1' },
-                    { label: 'ca-west-1', name: 'ca-west-1' },
-                    { label: 'cn-north-1', name: 'cn-north-1' },
-                    { label: 'cn-northwest-1', name: 'cn-northwest-1' },
-                    { label: 'eu-central-1', name: 'eu-central-1' },
-                    { label: 'eu-central-2', name: 'eu-central-2' },
-                    { label: 'eu-north-1', name: 'eu-north-1' },
-                    { label: 'eu-south-1', name: 'eu-south-1' },
-                    { label: 'eu-south-2', name: 'eu-south-2' },
-                    { label: 'eu-west-1', name: 'eu-west-1' },
-                    { label: 'eu-west-2', name: 'eu-west-2' },
-                    { label: 'eu-west-3', name: 'eu-west-3' },
-                    { label: 'il-central-1', name: 'il-central-1' },
-                    { label: 'me-central-1', name: 'me-central-1' },
-                    { label: 'me-south-1', name: 'me-south-1' },
-                    { label: 'sa-east-1', name: 'sa-east-1' },
-                    { label: 'us-east-1', name: 'us-east-1' },
-                    { label: 'us-east-2', name: 'us-east-2' },
-                    { label: 'us-gov-east-1', name: 'us-gov-east-1' },
-                    { label: 'us-gov-west-1', name: 'us-gov-west-1' },
-                    { label: 'us-west-1', name: 'us-west-1' },
-                    { label: 'us-west-2', name: 'us-west-2' }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listRegions',
                 default: 'us-east-1'
             },
             {
@@ -113,64 +78,339 @@ class S3_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'Element Type',
-                name: 'elementType',
-                description:
-                    'Unstructured partition document into different types, select the types to return. If not selected, all types will be returned',
+                label: 'Strategy',
+                name: 'strategy',
+                description: 'The strategy to use for partitioning PDF/image. Options are fast, hi_res, auto. Default: auto.',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Hi-Res',
+                        name: 'hi_res'
+                    },
+                    {
+                        label: 'Fast',
+                        name: 'fast'
+                    },
+                    {
+                        label: 'OCR Only',
+                        name: 'ocr_only'
+                    },
+                    {
+                        label: 'Auto',
+                        name: 'auto'
+                    }
+                ],
+                optional: true,
+                additionalParams: true,
+                default: 'auto'
+            },
+            {
+                label: 'Encoding',
+                name: 'encoding',
+                description: 'The encoding method used to decode the text input. Default: utf-8.',
+                type: 'string',
+                optional: true,
+                additionalParams: true,
+                default: 'utf-8'
+            },
+            {
+                label: 'Skip Infer Table Types',
+                name: 'skipInferTableTypes',
+                description: 'The document types that you want to skip table extraction with. Default: pdf, jpg, png.',
                 type: 'multiOptions',
                 options: [
                     {
-                        label: 'FigureCaption',
-                        name: 'FigureCaption'
+                        label: 'doc',
+                        name: 'doc'
                     },
                     {
-                        label: 'NarrativeText',
-                        name: 'NarrativeText'
+                        label: 'docx',
+                        name: 'docx'
                     },
                     {
-                        label: 'ListItem',
-                        name: 'ListItem'
+                        label: 'eml',
+                        name: 'eml'
                     },
                     {
-                        label: 'Title',
-                        name: 'Title'
+                        label: 'epub',
+                        name: 'epub'
                     },
                     {
-                        label: 'Address',
-                        name: 'Address'
+                        label: 'heic',
+                        name: 'heic'
                     },
                     {
-                        label: 'Table',
-                        name: 'Table'
+                        label: 'htm',
+                        name: 'htm'
                     },
                     {
-                        label: 'PageBreak',
-                        name: 'PageBreak'
+                        label: 'html',
+                        name: 'html'
                     },
                     {
-                        label: 'Header',
-                        name: 'Header'
+                        label: 'jpeg',
+                        name: 'jpeg'
                     },
                     {
-                        label: 'Footer',
-                        name: 'Footer'
+                        label: 'jpg',
+                        name: 'jpg'
                     },
                     {
-                        label: 'UncategorizedText',
-                        name: 'UncategorizedText'
+                        label: 'md',
+                        name: 'md'
                     },
                     {
-                        label: 'Image',
-                        name: 'Image'
+                        label: 'msg',
+                        name: 'msg'
                     },
                     {
-                        label: 'Formula',
-                        name: 'Formula'
+                        label: 'odt',
+                        name: 'odt'
+                    },
+                    {
+                        label: 'pdf',
+                        name: 'pdf'
+                    },
+                    {
+                        label: 'png',
+                        name: 'png'
+                    },
+                    {
+                        label: 'ppt',
+                        name: 'ppt'
+                    },
+                    {
+                        label: 'pptx',
+                        name: 'pptx'
+                    },
+                    {
+                        label: 'rtf',
+                        name: 'rtf'
+                    },
+                    {
+                        label: 'text',
+                        name: 'text'
+                    },
+                    {
+                        label: 'txt',
+                        name: 'txt'
+                    },
+                    {
+                        label: 'xls',
+                        name: 'xls'
+                    },
+                    {
+                        label: 'xlsx',
+                        name: 'xlsx'
                     }
                 ],
-                default: [],
+                optional: true,
+                additionalParams: true,
+                default: '["pdf", "jpg", "png"]'
+            },
+            {
+                label: 'Hi-Res Model Name',
+                name: 'hiResModelName',
+                description: 'The name of the inference model used when strategy is hi_res. Default: detectron2_onnx.',
+                type: 'options',
+                options: [
+                    {
+                        label: 'chipper',
+                        name: 'chipper',
+                        description:
+                            'Exlusive to Unstructured hosted API. The Chipper model is Unstructured in-house image-to-text model based on transformer-based Visual Document Understanding (VDU) models.'
+                    },
+                    {
+                        label: 'detectron2_onnx',
+                        name: 'detectron2_onnx',
+                        description:
+                            'A Computer Vision model by Facebook AI that provides object detection and segmentation algorithms with ONNX Runtime. It is the fastest model with the hi_res strategy.'
+                    },
+                    {
+                        label: 'yolox',
+                        name: 'yolox',
+                        description: 'A single-stage real-time object detector that modifies YOLOv3 with a DarkNet53 backbone.'
+                    },
+                    {
+                        label: 'yolox_quantized',
+                        name: 'yolox_quantized',
+                        description: 'Runs faster than YoloX and its speed is closer to Detectron2.'
+                    }
+                ],
+                optional: true,
+                additionalParams: true,
+                default: 'detectron2_onnx'
+            },
+            {
+                label: 'Chunking Strategy',
+                name: 'chunkingStrategy',
+                description:
+                    'Use one of the supported strategies to chunk the returned elements. When omitted, no chunking is performed and any other chunking parameters provided are ignored. Default: by_title',
+                type: 'options',
+                options: [
+                    {
+                        label: 'None',
+                        name: 'None'
+                    },
+                    {
+                        label: 'By Title',
+                        name: 'by_title'
+                    }
+                ],
+                optional: true,
+                additionalParams: true,
+                default: 'by_title'
+            },
+            {
+                label: 'OCR Languages',
+                name: 'ocrLanguages',
+                description: 'The languages to use for OCR. Note: Being depricated as languages is the new type. Pending langchain update.',
+                type: 'multiOptions',
+                options: [
+                    {
+                        label: 'English',
+                        name: 'eng'
+                    },
+                    {
+                        label: 'Spanish (Español)',
+                        name: 'spa'
+                    },
+                    {
+                        label: 'Mandarin Chinese (普通话)',
+                        name: 'cmn'
+                    },
+                    {
+                        label: 'Hindi (हिन्दी)',
+                        name: 'hin'
+                    },
+                    {
+                        label: 'Arabic (اَلْعَرَبِيَّةُ)',
+                        name: 'ara'
+                    },
+                    {
+                        label: 'Portuguese (Português)',
+                        name: 'por'
+                    },
+                    {
+                        label: 'Bengali (বাংলা)',
+                        name: 'ben'
+                    },
+                    {
+                        label: 'Russian (Русский)',
+                        name: 'rus'
+                    },
+                    {
+                        label: 'Japanese (日本語)',
+                        name: 'jpn'
+                    },
+                    {
+                        label: 'Punjabi (ਪੰਜਾਬੀ)',
+                        name: 'pan'
+                    },
+                    {
+                        label: 'German (Deutsch)',
+                        name: 'deu'
+                    },
+                    {
+                        label: 'Korean (한국어)',
+                        name: 'kor'
+                    },
+                    {
+                        label: 'French (Français)',
+                        name: 'fra'
+                    },
+                    {
+                        label: 'Italian (Italiano)',
+                        name: 'ita'
+                    },
+                    {
+                        label: 'Vietnamese (Tiếng Việt)',
+                        name: 'vie'
+                    }
+                ],
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Source ID Key',
+                name: 'sourceIdKey',
+                type: 'string',
+                description:
+                    'Key used to get the true source of document, to be compared against the record. Document metadata must contain the Source ID Key.',
+                default: 'source',
+                placeholder: 'source',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Coordinates',
+                name: 'coordinates',
+                type: 'boolean',
+                description: 'If true, return coordinates for each element. Default: false.',
+                optional: true,
+                additionalParams: true,
+                default: false
+            },
+            {
+                label: 'XML Keep Tags',
+                name: 'xmlKeepTags',
+                description:
+                    'If True, will retain the XML tags in the output. Otherwise it will simply extract the text from within the tags. Only applies to partition_xml.',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Include Page Breaks',
+                name: 'includePageBreaks',
+                description: 'When true, the output will include page break elements when the filetype supports it.',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'XML Keep Tags',
+                name: 'xmlKeepTags',
+                description: 'Whether to keep XML tags in the output.',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Multi-Page Sections',
+                name: 'multiPageSections',
+                description: 'Whether to treat multi-page documents as separate sections.',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Combine Under N Chars',
+                name: 'combineUnderNChars',
+                description:
+                    "If chunking strategy is set, combine elements until a section reaches a length of n chars. Default: value of max_characters. Can't exceed value of max_characters.",
+                type: 'number',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'New After N Chars',
+                name: 'newAfterNChars',
+                description:
+                    "If chunking strategy is set, cut off new sections after reaching a length of n chars (soft max). value of max_characters. Can't exceed value of max_characters.",
+                type: 'number',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Max Characters',
+                name: 'maxCharacters',
+                description:
+                    'If chunking strategy is set, cut off new sections after reaching a length of n chars (hard max). Default: 500',
+                type: 'number',
+                optional: true,
+                additionalParams: true,
+                default: '500'
             },
             {
                 label: 'Metadata',
@@ -181,52 +421,64 @@ class S3_DocumentLoaders implements INode {
             }
         ]
     }
+
+    loadMethods = {
+        async listRegions(): Promise<INodeOptionsValue[]> {
+            return await getRegions(MODEL_TYPE.CHAT, 'awsChatBedrock')
+        }
+    }
+
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const bucketName = nodeData.inputs?.bucketName as string
         const keyName = nodeData.inputs?.keyName as string
         const region = nodeData.inputs?.region as string
         const unstructuredAPIUrl = nodeData.inputs?.unstructuredAPIUrl as string
         const unstructuredAPIKey = nodeData.inputs?.unstructuredAPIKey as string
+        const strategy = nodeData.inputs?.strategy as UnstructuredLoaderStrategy
+        const encoding = nodeData.inputs?.encoding as string
+        const coordinates = nodeData.inputs?.coordinates as boolean
+        const skipInferTableTypes = nodeData.inputs?.skipInferTableTypes
+            ? JSON.parse(nodeData.inputs?.skipInferTableTypes as string)
+            : ([] as SkipInferTableTypes[])
+        const hiResModelName = nodeData.inputs?.hiResModelName as HiResModelName
+        const includePageBreaks = nodeData.inputs?.includePageBreaks as boolean
+        const chunkingStrategy = nodeData.inputs?.chunkingStrategy as 'None' | 'by_title'
         const metadata = nodeData.inputs?.metadata
-        const elementType = nodeData.inputs?.elementType as string
+        const sourceIdKey = (nodeData.inputs?.sourceIdKey as string) || 'source'
+        const ocrLanguages = nodeData.inputs?.ocrLanguages ? JSON.parse(nodeData.inputs?.ocrLanguages as string) : ([] as string[])
+        const xmlKeepTags = nodeData.inputs?.xmlKeepTags as boolean
+        const multiPageSections = nodeData.inputs?.multiPageSections as boolean
+        const combineUnderNChars = nodeData.inputs?.combineUnderNChars as number
+        const newAfterNChars = nodeData.inputs?.newAfterNChars as number
+        const maxCharacters = nodeData.inputs?.maxCharacters as number
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-        const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
+        let credentials: S3ClientConfig['credentials'] | undefined
+
+        if (nodeData.credential) {
+            const credentialData = await getCredentialData(nodeData.credential, options)
+            const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
+            const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
+
+            if (accessKeyId && secretAccessKey) {
+                credentials = {
+                    accessKeyId,
+                    secretAccessKey
+                }
+            }
+        }
+
+        const s3Config: S3ClientConfig = {
+            region,
+            credentials
+        }
 
         const loader = new S3Loader({
             bucket: bucketName,
             key: keyName,
-            s3Config: {
-                region,
-                credentials: {
-                    accessKeyId,
-                    secretAccessKey
-                }
-            },
+            s3Config,
             unstructuredAPIURL: unstructuredAPIUrl,
             unstructuredAPIKey: unstructuredAPIKey
         })
-
-        const s3Config: S3Config & {
-            accessKeyId?: string
-            secretAccessKey?: string
-        } = {
-            region,
-            credentials: {
-                accessKeyId,
-                secretAccessKey
-            }
-        }
-
-        let elementTypes: string[] = []
-        if (elementType) {
-            try {
-                elementTypes = JSON.parse(elementType)
-            } catch (e) {
-                elementTypes = []
-            }
-        }
 
         loader.load = async () => {
             const tempDir = fsDefault.mkdtempSync(path.join(os.tmpdir(), 's3fileloader-'))
@@ -263,41 +515,59 @@ class S3_DocumentLoaders implements INode {
             }
 
             try {
-                const options = {
+                const obj: UnstructuredLoaderOptions = {
                     apiUrl: unstructuredAPIUrl,
-                    apiKey: unstructuredAPIKey
+                    strategy,
+                    encoding,
+                    coordinates,
+                    skipInferTableTypes,
+                    hiResModelName,
+                    includePageBreaks,
+                    chunkingStrategy,
+                    ocrLanguages,
+                    xmlKeepTags,
+                    multiPageSections,
+                    combineUnderNChars,
+                    newAfterNChars,
+                    maxCharacters
                 }
 
-                const unstructuredLoader = new UnstructuredLoader(filePath, options)
+                if (unstructuredAPIKey) obj.apiKey = unstructuredAPIKey
 
-                const docs = await unstructuredLoader.load()
+                const unstructuredLoader = new UnstructuredLoader(filePath, obj)
 
-                fsDefault.rmdirSync(path.dirname(filePath), { recursive: true })
+                let docs = await unstructuredLoader.load()
+
+                if (metadata) {
+                    const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+                    docs = docs.map((doc) => ({
+                        ...doc,
+                        metadata: {
+                            ...doc.metadata,
+                            ...parsedMetadata,
+                            [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
+                        }
+                    }))
+                } else {
+                    docs = docs.map((doc) => ({
+                        ...doc,
+                        metadata: {
+                            ...doc.metadata,
+                            [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
+                        }
+                    }))
+                }
+
+                fsDefault.rmSync(path.dirname(filePath), { recursive: true })
 
                 return docs
             } catch {
-                fsDefault.rmdirSync(path.dirname(filePath), { recursive: true })
+                fsDefault.rmSync(path.dirname(filePath), { recursive: true })
                 throw new Error(`Failed to load file ${filePath} using unstructured loader.`)
             }
         }
 
-        const docs = await loader.load()
-
-        if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            const finaldocs = docs.map((doc) => {
-                return {
-                    ...doc,
-                    metadata: {
-                        ...doc.metadata,
-                        ...parsedMetadata
-                    }
-                }
-            })
-            return elementTypes.length ? finaldocs.filter((doc) => elementTypes.includes(doc.metadata.category)) : finaldocs
-        }
-
-        return elementTypes.length ? docs.filter((doc) => elementTypes.includes(doc.metadata.category)) : docs
+        return loader.load()
     }
 }
 module.exports = { nodeClass: S3_DocumentLoaders }
