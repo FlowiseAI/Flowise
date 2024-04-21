@@ -42,7 +42,7 @@ class Groq_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'ft:gpt-3.5-turbo:my-org:custom_suffix:id'
+                placeholder: 'mixtral-8x7b-32768'
             },
             {
                 label: 'Temperature',

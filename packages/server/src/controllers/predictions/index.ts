@@ -2,20 +2,28 @@ import { Request, Response, NextFunction } from 'express'
 import { getRateLimiter } from '../../utils/rateLimit'
 import chatflowsService from '../../services/chatflows'
 import logger from '../../utils/logger'
-import { utilBuildChatflow } from '../../utils/buildChatflow'
+import predictionsServices from '../../services/predictions'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params.id === 'undefined' || req.params.id === '') {
-            throw new Error(`Error: predictionsController.createPrediction - id not provided!`)
+        if (typeof req.params === 'undefined' || !req.params.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: predictionsController.createPrediction - id not provided!`
+            )
         }
-        if (typeof req.body === 'undefined' || req.body === '') {
-            throw new Error(`Error: predictionsController.createPrediction - body not provided!`)
+        if (!req.body) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: predictionsController.createPrediction - body not provided!`
+            )
         }
         const chatflow = await chatflowsService.getChatflowById(req.params.id)
         if (!chatflow) {
-            return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${req.params.id} not found`)
         }
         let isDomainAllowed = true
         logger.info(`[server]: Request originated from ${req.headers.origin}`)
@@ -37,15 +45,12 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                     }).length > 0
             }
         }
-
         if (isDomainAllowed) {
-            const apiResponse = await utilBuildChatflow(req, req.io)
-            if (apiResponse.executionError) {
-                return res.status(apiResponse.status).send(apiResponse.msg)
-            }
+            //@ts-ignore
+            const apiResponse = await predictionsServices.buildChatflow(req, req?.io)
             return res.json(apiResponse)
         } else {
-            return res.status(401).send(`This site is not allowed to access this chatbot`)
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `This site is not allowed to access this chatbot`)
         }
     } catch (error) {
         next(error)

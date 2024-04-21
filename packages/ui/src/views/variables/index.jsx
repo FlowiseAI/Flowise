@@ -149,7 +149,9 @@ const Variables = () => {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: `Failed to delete Variable: ${error.response.data.message}`,
+                    message: `Failed to delete Variable: ${
+                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',

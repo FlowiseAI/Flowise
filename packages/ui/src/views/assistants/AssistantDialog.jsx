@@ -249,7 +249,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: `Failed to add new Assistant: ${error.response.data.message}`,
+                message: `Failed to add new Assistant: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -303,7 +305,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: `Failed to save Assistant: ${error.response.data.message}`,
+                message: `Failed to save Assistant: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -343,7 +347,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: `Failed to sync Assistant: ${error.response.data.message}`,
+                message: `Failed to sync Assistant: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -390,7 +396,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
         } catch (error) {
             setError(error)
             enqueueSnackbar({
-                message: `Failed to delete Assistant: ${error.response.data.message}`,
+                message: `Failed to delete Assistant: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

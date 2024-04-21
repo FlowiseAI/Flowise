@@ -40,7 +40,7 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
     constructor() {
         this.label = 'Upstash Redis-Backed Chat Memory'
         this.name = 'upstashRedisBackedChatMemory'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'UpstashRedisBackedChatMemory'
         this.icon = 'upstash.svg'
         this.category = 'Memory'
@@ -77,6 +77,13 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
                 description: 'Omit this parameter to make sessions never expire',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Memory Key',
+                name: 'memoryKey',
+                type: 'string',
+                default: 'chat_history',
+                additionalParams: true
             }
         ]
     }
@@ -89,8 +96,8 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
 const initalizeUpstashRedis = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
     const baseURL = nodeData.inputs?.baseURL as string
     const sessionId = nodeData.inputs?.sessionId as string
+    const memoryKey = nodeData.inputs?.memoryKey as string
     const _sessionTTL = nodeData.inputs?.sessionTTL as string
-
     const sessionTTL = _sessionTTL ? parseInt(_sessionTTL, 10) : undefined
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -108,7 +115,7 @@ const initalizeUpstashRedis = async (nodeData: INodeData, options: ICommonObject
     })
 
     const memory = new BufferMemoryExtended({
-        memoryKey: 'chat_history',
+        memoryKey: memoryKey ?? 'chat_history',
         chatHistory: redisChatMessageHistory,
         sessionId,
         sessionTTL,
