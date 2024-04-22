@@ -145,7 +145,7 @@ export default class Start extends Command {
 
         // Model list config
         if (flags.MODEL_LIST_CONFIG_JSON) process.env.MODEL_LIST_CONFIG_JSON = flags.MODEL_LIST_CONFIG_JSON
-        
+
         // Symphony
         if (flags.LOGI_SYMPHONY_URL) process.env.LOGI_SYMPHONY_URL = flags.LOGI_SYMPHONY_URL
         if (flags.LOGI_SYMPHONY_VDD_URL) process.env.LOGI_SYMPHONY_VDD_URL = flags.LOGI_SYMPHONY_VDD_URL
