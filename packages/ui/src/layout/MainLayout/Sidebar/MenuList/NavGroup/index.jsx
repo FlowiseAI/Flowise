@@ -60,7 +60,8 @@ const NavGroup = ({ item, drawerToggle, trigger }) => {
                     // hover states
                     '& .MuiListItemButton-root:hover': {
                         bgcolor: '#017744'
-                    }
+                    },
+                    py: '20px'
                 }}
                 subheader={
                     item.title && (
@@ -74,7 +75,6 @@ const NavGroup = ({ item, drawerToggle, trigger }) => {
                         </Typography>
                     )
                 }
-                sx={{ py: '20px' }}
             >
                 {items}
             </List>
