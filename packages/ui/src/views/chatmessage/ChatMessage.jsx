@@ -257,7 +257,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 data: base64data,
                 preview: audioUploadSVG,
                 type: 'audio',
-                name: 'audio.wav',
+                name: `audio_${Date.now()}.wav`,
                 mime: mimeType
             }
             setPreviews((prevPreviews) => [...prevPreviews, upload])

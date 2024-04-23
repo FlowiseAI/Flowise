@@ -106,7 +106,7 @@ class ToolAgent_Agents implements INode {
             }
         }
 
-        const executor = prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
+        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -178,7 +178,11 @@ class ToolAgent_Agents implements INode {
     }
 }
 
-const prepareAgent = (nodeData: INodeData, options: ICommonObject, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
+const prepareAgent = async (
+    nodeData: INodeData,
+    options: ICommonObject,
+    flowObj: { sessionId?: string; chatId?: string; input?: string }
+) => {
     const model = nodeData.inputs?.model as BaseChatModel
     const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
@@ -197,7 +201,7 @@ const prepareAgent = (nodeData: INodeData, options: ICommonObject, flowObj: { se
 
     if (llmSupportsVision(model)) {
         const visionChatModel = model as IVisionChatModal
-        const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+        const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
 
         if (messageContent?.length) {
             visionChatModel.setVisionModel()
