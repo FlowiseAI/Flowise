@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
+import fs from 'fs'
 import contentDisposition from 'content-disposition'
 import { streamStorageFile } from 'flowise-components'
+import { StatusCodes } from 'http-status-codes'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 
-const streamUploadedImage = async (req: Request, res: Response, next: NextFunction) => {
+const streamUploadedFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.query.chatflowId || !req.query.chatId || !req.query.fileName) {
             return res.status(500).send(`Invalid file path`)
@@ -13,10 +16,9 @@ const streamUploadedImage = async (req: Request, res: Response, next: NextFuncti
         res.setHeader('Content-Disposition', contentDisposition(fileName))
         const fileStream = await streamStorageFile(chatflowId, chatId, fileName)
 
-        // ignore the type check for now
-        // @ts-ignore
-        if (fileStream?.pipe) {
-            // @ts-ignore
+        if (!fileStream) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: streamStorageFile`)
+
+        if (fileStream instanceof fs.ReadStream && fileStream?.pipe) {
             fileStream.pipe(res)
         } else {
             res.send(fileStream)
@@ -27,5 +29,5 @@ const streamUploadedImage = async (req: Request, res: Response, next: NextFuncti
 }
 
 export default {
-    streamUploadedImage
+    streamUploadedFile
 }

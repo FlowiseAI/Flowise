@@ -1,6 +1,6 @@
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { IReactFlowObject } from '../Interface'
-import { addFilesToStorage } from 'flowise-components'
+import { addBase64FilesToStorage } from 'flowise-components'
 
 export const containsBase64File = (chatflow: ChatFlow) => {
     const parsedFlowData: IReactFlowObject = JSON.parse(chatflow.flowData)
@@ -46,7 +46,7 @@ export const containsBase64File = (chatflow: ChatFlow) => {
     return found
 }
 
-export const updateFlowDataWithFilePaths = (chatflowid: string, flowData: string) => {
+export const updateFlowDataWithFilePaths = async (chatflowid: string, flowData: string) => {
     try {
         const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
         const re = new RegExp('^data.*;base64', 'i')
@@ -75,14 +75,14 @@ export const updateFlowDataWithFilePaths = (chatflowid: string, flowData: string
                             for (let j = 0; j < files.length; j++) {
                                 const file = files[j]
                                 if (re.test(file)) {
-                                    node.data.inputs[key] = addFilesToStorage(file, chatflowid, fileNames)
+                                    node.data.inputs[key] = await addBase64FilesToStorage(file, chatflowid, fileNames)
                                 }
                             }
                         } catch (e) {
                             continue
                         }
                     } else if (re.test(input)) {
-                        node.data.inputs[key] = addFilesToStorage(input, chatflowid, fileNames)
+                        node.data.inputs[key] = await addBase64FilesToStorage(input, chatflowid, fileNames)
                     }
                 }
             }

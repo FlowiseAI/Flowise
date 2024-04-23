@@ -98,7 +98,7 @@ const removeAllChatMessages = async (chatId: string, chatflowid: string, deleteO
     try {
         const appServer = getRunningExpressApp()
 
-        // remove all related feedback records
+        // Remove all related feedback records
         const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId }
         await appServer.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
 
@@ -106,8 +106,6 @@ const removeAllChatMessages = async (chatId: string, chatflowid: string, deleteO
         if (chatId) {
             try {
                 await removeFilesFromStorage(chatflowid, chatId)
-                // const directory = path.join(getStoragePath(), chatflowid, chatId)
-                // deleteFolderRecursive(directory)
             } catch (e) {
                 logger.error(`[server]: Error deleting file storage for chatflow ${chatflowid}, chatId ${chatId}: ${e}`)
             }
