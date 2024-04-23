@@ -1,8 +1,7 @@
 import { Request } from 'express'
-import { IFileUpload, getStoragePath, convertSpeechToText, ICommonObject } from 'flowise-components'
+import { IFileUpload, convertSpeechToText, ICommonObject, addFileToStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { IncomingInput, IMessage, INodeData, IReactFlowObject, IReactFlowNode, IDepthQueue, chatType, IChatMessage } from '../Interface'
-import path from 'path'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { Server } from 'socket.io'
@@ -69,17 +68,12 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
                 if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
                     const filename = upload.name
-                    const dir = path.join(getStoragePath(), chatflowid, chatId)
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir, { recursive: true })
-                    }
-                    const filePath = path.join(dir, filename)
                     const splitDataURI = upload.data.split(',')
                     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                    fs.writeFileSync(filePath, bf)
-
-                    // Omit upload.data since we don't store the content in database
+                    const mime = splitDataURI[0].split(':')[1].split(';')[0]
+                    await addFileToStorage(mime, bf, filename, chatflowid, chatId)
                     upload.type = 'stored-file'
+                    // Omit upload.data since we don't store the content in database
                     fileUploads[i] = omit(upload, ['data'])
                 }
 

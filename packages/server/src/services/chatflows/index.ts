@@ -1,19 +1,11 @@
-import path from 'path'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { IChatFlow } from '../../Interface'
 import { ChatFlow } from '../../database/entities/ChatFlow'
-import {
-    getAppVersion,
-    getTelemetryFlowObj,
-    deleteFolderRecursive,
-    isFlowValidForStream,
-    constructGraphs,
-    getEndingNodes
-} from '../../utils'
+import { getAppVersion, getTelemetryFlowObj, isFlowValidForStream, constructGraphs, getEndingNodes } from '../../utils'
 import logger from '../../utils/logger'
-import { getStoragePath } from 'flowise-components'
+import { removeFolderFromStorage } from 'flowise-components'
 import { IReactFlowObject } from '../../Interface'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import { ChatMessage } from '../../database/entities/ChatMessage'
@@ -83,8 +75,7 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
         try {
             // Delete all uploads corresponding to this chatflow
-            const directory = path.join(getStoragePath(), chatflowId)
-            deleteFolderRecursive(directory)
+            await removeFolderFromStorage(chatflowId)
 
             // Delete all chat messages
             await appServer.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: chatflowId })
@@ -174,7 +165,7 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
             const step1Results = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
             // step 2 - convert base64 to file paths and update the chatflow
-            step1Results.flowData = updateFlowDataWithFilePaths(step1Results.id, incomingFlowData)
+            step1Results.flowData = await updateFlowDataWithFilePaths(step1Results.id, incomingFlowData)
             dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
         } else {
             const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
@@ -198,7 +189,7 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
     try {
         const appServer = getRunningExpressApp()
         if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
-            updateChatFlow.flowData = updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
+            updateChatFlow.flowData = await updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
         }
         const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
