@@ -68,7 +68,8 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
                 label: 'Dimensions',
                 name: 'dimensions',
                 type: 'number',
-                optional: 'true'
+                optional: true,
+                additionalParams: true
             }
         ]
     }
