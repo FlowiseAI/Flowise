@@ -21,7 +21,7 @@ const HowToUseFunctionDialog = ({ show, onCancel }) => {
                 <ul>
                     <li style={{ marginTop: 10 }}>Вы можете использовать любые библиотеки, импортированные во StartAI.</li>
                     <li style={{ marginTop: 10 }}>
-                        Вы можете использовать свойства, указанные в схеме вывода, как переменные с префиксом $:
+                        You can use properties specified in Input Schema as variables with prefix $:
                         <ul style={{ marginTop: 10 }}>
                             <li>
                                 Свойство = <code>userid</code>

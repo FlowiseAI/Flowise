@@ -68,7 +68,7 @@ const assistantAvailableModels = [
     }
 ]
 
-const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
     useNotifier()
     const dispatch = useDispatch()
@@ -121,6 +121,18 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             syncData(getAssistantObjApi.data)
         }
     }, [getAssistantObjApi.data])
+
+    useEffect(() => {
+        if (getAssistantObjApi.error) {
+            syncData(getAssistantObjApi.error)
+        }
+    }, [getAssistantObjApi.error])
+
+    useEffect(() => {
+        if (getSpecificAssistantApi.error) {
+            syncData(getSpecificAssistantApi.error)
+        }
+    }, [getSpecificAssistantApi.error])
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
@@ -235,9 +247,11 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            setError(error)
             enqueueSnackbar({
-                message: `Ошибка добавления нового ассистента: ${errorData}`,
+                message: `Ошибка добавления нового ассистента: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -289,9 +303,11 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            setError(error)
             enqueueSnackbar({
-                message: `Ошибка сохранения ассистента: ${errorData}`,
+                message: `Ошибка сохранения ассистента: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -329,9 +345,11 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             setLoading(false)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            setError(error)
             enqueueSnackbar({
-                message: `Не удалось синхронизировать Ассистента: ${errorData}`,
+                message: `Не удалось синхронизировать Ассистента: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -376,9 +394,11 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm()
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            setError(error)
             enqueueSnackbar({
-                message: `Ошибка удаления ассистента: ${errorData}`,
+                message: `Ошибка удаления ассистента: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -407,208 +427,191 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
+            <DialogTitle sx={{ fontSize: '1rem', p: 3, pb: 0 }} id='alert-dialog-title'>
                 {dialogProps.title}
             </DialogTitle>
-            <DialogContent>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Имя ассистента
-                            <TooltipWithParser style={{ marginLeft: 10 }} title={'Имя ассистента. Максимум 256 символов.'} />
-                        </Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='assistantName'
-                        type='string'
-                        fullWidth
-                        placeholder='Мой ассистент'
-                        value={assistantName}
-                        name='assistantName'
-                        onChange={(e) => setAssistantName(e.target.value)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Описание ассистента
-                            <TooltipWithParser style={{ marginLeft: 10 }} title={'Описание ассистента. Максимум 512 символов.'} />
-                        </Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='assistantDesc'
-                        type='string'
-                        fullWidth
-                        placeholder='Описание что делает ассистент'
-                        multiline={true}
-                        rows={3}
-                        value={assistantDesc}
-                        name='assistantDesc'
-                        onChange={(e) => setAssistantDesc(e.target.value)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>Иконка ассистента Src</Typography>
-                    </Stack>
-                    <div
-                        style={{
-                            width: 100,
-                            height: 100,
-                            borderRadius: '50%',
-                            backgroundColor: 'white'
-                        }}
-                    >
-                        <img
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                padding: 5,
-                                borderRadius: '50%',
-                                objectFit: 'contain'
-                            }}
-                            alt={assistantName}
-                            src={assistantIcon}
+            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+                    <Box>
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>Имя ассистента</Typography>
+                            <TooltipWithParser title={'Имя ассистента. Максимум 256 символов.'} />
+                        </Stack>
+                        <OutlinedInput
+                            id='assistantName'
+                            type='string'
+                            fullWidth
+                            placeholder='Мой ассистент'
+                            value={assistantName}
+                            name='assistantName'
+                            onChange={(e) => setAssistantName(e.target.value)}
                         />
-                    </div>
-                    <OutlinedInput
-                        id='assistantIcon'
-                        type='string'
-                        fullWidth
-                        placeholder={`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`}
-                        value={assistantIcon}
-                        name='assistantIcon'
-                        onChange={(e) => setAssistantIcon(e.target.value)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Модель ассистента
-                            <span style={{ color: 'red' }}>&nbsp;*</span>
-                        </Typography>
-                    </Stack>
-                    <Dropdown
-                        key={assistantModel}
-                        name={assistantModel}
-                        options={assistantAvailableModels}
-                        onSelect={(newValue) => setAssistantModel(newValue)}
-                        value={assistantModel ?? 'choose an option'}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Учетные данные OpenAI
-                            <span style={{ color: 'red' }}>&nbsp;*</span>
-                        </Typography>
-                    </Stack>
-                    <CredentialInputHandler
-                        key={assistantCredential}
-                        data={assistantCredential ? { credential: assistantCredential } : {}}
-                        inputParam={{
-                            label: 'Connect Credential',
-                            name: 'credential',
-                            type: 'credential',
-                            credentialNames: ['openAIApi']
-                        }}
-                        onSelect={(newValue) => setAssistantCredential(newValue)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Инструкция ассистента
-                            <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title={'Инструкция о том, как работать с ним. Максимум 32768 символов.'}
-                            />
-                        </Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='assistantInstructions'
-                        type='string'
-                        fullWidth
-                        placeholder='Ты проффесиональный математический помошник. Когда задают вопрос, напиши ответ на языке Pytohn.'
-                        multiline={true}
-                        rows={3}
-                        value={assistantInstructions}
-                        name='assistantInstructions'
-                        onChange={(e) => setAssistantInstructions(e.target.value)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Инструменты ассистента
-                            <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title='Список инструментов, включенных в ассистента. На одного ассистента может быть максимум 128 инструментов.'
-                            />
-                        </Typography>
-                    </Stack>
-                    <MultiDropdown
-                        key={JSON.stringify(assistantTools)}
-                        name={JSON.stringify(assistantTools)}
-                        options={[
-                            {
-                                label: 'Интерпретатор кода',
-                                name: 'code_interpreter'
-                            },
-                            {
-                                label: 'Retrieval',
-                                name: 'retrieval'
-                            }
-                        ]}
-                        onSelect={(newValue) => (newValue ? setAssistantTools(JSON.parse(newValue)) : setAssistantTools([]))}
-                        value={assistantTools ?? 'choose an option'}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Файлы знаний
-                            <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title='Разрешить ассистентe использовать содержимое загруженных файлов для поиска и интерпретатора кода. МАКС: 20 файлов'
-                            />
-                        </Typography>
-                    </Stack>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        {assistantFiles.map((file, index) => (
-                            <div
-                                key={index}
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>Описание ассистента</Typography>
+                            <TooltipWithParser title={'Описание ассистента. Максимум 512 символов.'} />
+                        </Stack>
+                        <OutlinedInput
+                            id='assistantDesc'
+                            type='string'
+                            fullWidth
+                            placeholder='Описание что делает ассистент'
+                            multiline={true}
+                            rows={3}
+                            value={assistantDesc}
+                            name='assistantDesc'
+                            onChange={(e) => setAssistantDesc(e.target.value)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative' }} direction='row'>
+                            <Typography variant='overline'>Иконка ассистента Src</Typography>
+                        </Stack>
+                        <div
+                            style={{
+                                width: 100,
+                                height: 100,
+                                borderRadius: '50%',
+                                backgroundColor: 'white'
+                            }}
+                        >
+                            <img
                                 style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    width: 'max-content',
-                                    height: 'max-content',
-                                    borderRadius: 15,
-                                    background: 'rgb(254,252,191)',
-                                    paddingLeft: 15,
-                                    paddingRight: 15,
-                                    paddingTop: 5,
-                                    paddingBottom: 5,
-                                    marginRight: 10
+                                    width: '100%',
+                                    height: '100%',
+                                    padding: 5,
+                                    borderRadius: '50%',
+                                    objectFit: 'contain'
                                 }}
-                            >
-                                <span style={{ color: 'rgb(116,66,16)', marginRight: 10 }}>{file.filename}</span>
-                                <IconButton sx={{ height: 15, width: 15, p: 0 }} onClick={() => onFileDeleteClick(file.id)}>
-                                    <IconX />
-                                </IconButton>
-                            </div>
-                        ))}
-                    </div>
-                    <File
-                        key={uploadAssistantFiles}
-                        fileType='*'
-                        onChange={(newValue) => setUploadAssistantFiles(newValue)}
-                        value={uploadAssistantFiles ?? 'Выберите файлы для загрузки'}
-                    />
+                                alt={assistantName}
+                                src={assistantIcon}
+                            />
+                        </div>
+                        <OutlinedInput
+                            id='assistantIcon'
+                            type='string'
+                            fullWidth
+                            placeholder={`https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`}
+                            value={assistantIcon}
+                            name='assistantIcon'
+                            onChange={(e) => setAssistantIcon(e.target.value)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative' }} direction='row'>
+                            <Typography variant='overline'>
+                                Модель ассистента
+                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
+                        </Stack>
+                        <Dropdown
+                            key={assistantModel}
+                            name={assistantModel}
+                            options={assistantAvailableModels}
+                            onSelect={(newValue) => setAssistantModel(newValue)}
+                            value={assistantModel ?? 'choose an option'}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative' }} direction='row'>
+                            <Typography variant='overline'>
+                                Учетные данные OpenAI
+                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
+                        </Stack>
+                        <CredentialInputHandler
+                            key={assistantCredential}
+                            data={assistantCredential ? { credential: assistantCredential } : {}}
+                            inputParam={{
+                                label: 'Connect Credential',
+                                name: 'credential',
+                                type: 'credential',
+                                credentialNames: ['openAIApi']
+                            }}
+                            onSelect={(newValue) => setAssistantCredential(newValue)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>Инструкция ассистента</Typography>
+                            <TooltipWithParser title={'Инструкция о том, как работать с ним. Максимум 32768 символов.'} />
+                        </Stack>
+                        <OutlinedInput
+                            id='assistantInstructions'
+                            type='string'
+                            fullWidth
+                            placeholder='Ты проффесиональный математический помошник. Когда задают вопрос, напиши ответ на языке Pytohn.'
+                            multiline={true}
+                            rows={3}
+                            value={assistantInstructions}
+                            name='assistantInstructions'
+                            onChange={(e) => setAssistantInstructions(e.target.value)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>Assistant Tools</Typography>
+                            <TooltipWithParser title='Список инструментов, включенных в ассистента. На одного ассистента может быть максимум 128 инструментов.' />
+                        </Stack>
+                        <MultiDropdown
+                            key={JSON.stringify(assistantTools)}
+                            name={JSON.stringify(assistantTools)}
+                            options={[
+                                {
+                                    label: 'Интерпретатор кода',
+                                    name: 'code_interpreter'
+                                },
+                                {
+                                    label: 'Retrieval',
+                                    name: 'retrieval'
+                                }
+                            ]}
+                            onSelect={(newValue) => (newValue ? setAssistantTools(JSON.parse(newValue)) : setAssistantTools([]))}
+                            value={assistantTools ?? 'choose an option'}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>Файлы знаний</Typography>
+                            <TooltipWithParser title='Разрешить ассистентe использовать содержимое загруженных файлов для поиска и интерпретатора кода. МАКС: 20 файлов' />
+                        </Stack>
+                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                            {assistantFiles.map((file, index) => (
+                                <div
+                                    key={index}
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        width: 'max-content',
+                                        height: 'max-content',
+                                        borderRadius: 15,
+                                        background: 'rgb(254,252,191)',
+                                        paddingLeft: 15,
+                                        paddingRight: 15,
+                                        paddingTop: 5,
+                                        paddingBottom: 5,
+                                        marginRight: 10
+                                    }}
+                                >
+                                    <span style={{ color: 'rgb(116,66,16)', marginRight: 10 }}>{file.filename}</span>
+                                    <IconButton sx={{ height: 15, width: 15, p: 0 }} onClick={() => onFileDeleteClick(file.id)}>
+                                        <IconX />
+                                    </IconButton>
+                                </div>
+                            ))}
+                        </div>
+                        <File
+                            key={uploadAssistantFiles}
+                            fileType='*'
+                            onChange={(newValue) => setUploadAssistantFiles(newValue)}
+                            value={uploadAssistantFiles ?? 'Выберите файлы для загрузки'}
+                        />
+                    </Box>
                 </Box>
             </DialogContent>
-            <DialogActions>
+            <DialogActions sx={{ p: 3, pt: 0 }}>
                 {dialogProps.type === 'EDIT' && (
                     <StyledButton color='secondary' variant='contained' onClick={() => onSyncClick()}>
                         Синхронизировать

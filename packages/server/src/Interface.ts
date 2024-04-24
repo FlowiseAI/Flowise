@@ -93,6 +93,14 @@ export interface IVariable {
     createdDate: Date
 }
 
+export interface IUpsertHistory {
+    id: string
+    chatflowid: string
+    result: string
+    flowData: string
+    date: Date
+}
+
 export interface IComponentNodes {
     [key: string]: INode
 }
@@ -187,7 +195,6 @@ export interface IMessage {
 
 export interface IncomingInput {
     question: string
-    history: IMessage[]
     overrideConfig?: ICommonObject
     socketIOClientId?: string
     chatId?: string

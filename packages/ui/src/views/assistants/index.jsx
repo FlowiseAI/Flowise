@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Button } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Box, Stack, Button, Skeleton } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -21,16 +19,17 @@ import assistantsApi from '@/api/assistants'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconFileImport } from '@tabler/icons'
+import { IconPlus, IconFileUpload } from '@tabler/icons'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Assistants = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
-
     const getAllAssistantsApi = useApi(assistantsApi.getAllAssistants)
 
+    const [isLoading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
     const [showLoadDialog, setShowLoadDialog] = useState(false)
@@ -85,6 +84,16 @@ const Assistants = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        setLoading(getAllAssistantsApi.loading)
+    }, [getAllAssistantsApi.loading])
+
+    useEffect(() => {
+        if (getAllAssistantsApi.error) {
+            setError(getAllAssistantsApi.error)
+        }
+    }, [getAllAssistantsApi.error])
+
     return (
         <>
             <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
@@ -93,20 +102,10 @@ const Assistants = () => {
                         <h1>OpenAI Ассистенты</h1>
                         <Box sx={{ flexGrow: 1 }} />
                         <Grid item>
-                            <Button
-                                variant='outlined'
-                                sx={{ mr: 2, borderRadius: '12px' }}
-                                onClick={loadExisting}
-                                startIcon={<IconFileImport />}
-                            >
+                            <Button variant='outlined' sx={{ mr: 2 }} onClick={loadExisting} startIcon={<IconFileImport />}>
                                 Загрузить
                             </Button>
-                            <StyledButton
-                                variant='contained'
-                                sx={{ color: 'white', borderRadius: '12px' }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                            >
+                            <StyledButton variant='contained' sx={{ color: 'white' }} onClick={addNew} startIcon={<IconPlus />}>
                                 Добавить
                             </StyledButton>
                         </Grid>
@@ -131,11 +130,7 @@ const Assistants = () => {
                 {!getAllAssistantsApi.loading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
                     <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                         <Box sx={{ p: 2, height: 'auto' }}>
-                            <img
-                                style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
-                                src={AssistantEmptySvg}
-                                alt='AssistantEmptySvg'
-                            />
+                            <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
                         </Box>
                         <div>Ассистентов еще нет</div>
                     </Stack>
@@ -146,12 +141,14 @@ const Assistants = () => {
                 dialogProps={loadDialogProps}
                 onCancel={() => setShowLoadDialog(false)}
                 onAssistantSelected={onAssistantSelected}
+                setError={setError}
             ></LoadAssistantDialog>
             <AssistantDialog
                 show={showDialog}
                 dialogProps={dialogProps}
                 onCancel={() => setShowDialog(false)}
                 onConfirm={onConfirm}
+                setError={setError}
             ></AssistantDialog>
         </>
     )

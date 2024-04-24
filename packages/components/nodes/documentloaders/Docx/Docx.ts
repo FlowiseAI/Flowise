@@ -1,6 +1,7 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { DocxLoader } from 'langchain/document_loaders/fs/docx'
+import { getFileFromStorage } from '../../../src'
 
 class Docx_DocumentLoaders implements INode {
     label: string
@@ -45,7 +46,7 @@ class Docx_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const docxFileBase64 = nodeData.inputs?.docxFile as string
         const metadata = nodeData.inputs?.metadata
@@ -53,25 +54,49 @@ class Docx_DocumentLoaders implements INode {
         let alldocs = []
         let files: string[] = []
 
-        if (docxFileBase64.startsWith('[') && docxFileBase64.endsWith(']')) {
-            files = JSON.parse(docxFileBase64)
-        } else {
-            files = [docxFileBase64]
-        }
-
-        for (const file of files) {
-            const splitDataURI = file.split(',')
-            splitDataURI.pop()
-            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-            const blob = new Blob([bf])
-            const loader = new DocxLoader(blob)
-
-            if (textSplitter) {
-                const docs = await loader.loadAndSplit(textSplitter)
-                alldocs.push(...docs)
+        if (docxFileBase64.startsWith('FILE-STORAGE::')) {
+            const fileName = docxFileBase64.replace('FILE-STORAGE::', '')
+            if (fileName.startsWith('[') && fileName.endsWith(']')) {
+                files = JSON.parse(fileName)
             } else {
-                const docs = await loader.load()
-                alldocs.push(...docs)
+                files = [fileName]
+            }
+            const chatflowid = options.chatflowid
+
+            for (const file of files) {
+                const fileData = await getFileFromStorage(file, chatflowid)
+                const blob = new Blob([fileData])
+                const loader = new DocxLoader(blob)
+
+                if (textSplitter) {
+                    const docs = await loader.loadAndSplit(textSplitter)
+                    alldocs.push(...docs)
+                } else {
+                    const docs = await loader.load()
+                    alldocs.push(...docs)
+                }
+            }
+        } else {
+            if (docxFileBase64.startsWith('[') && docxFileBase64.endsWith(']')) {
+                files = JSON.parse(docxFileBase64)
+            } else {
+                files = [docxFileBase64]
+            }
+
+            for (const file of files) {
+                const splitDataURI = file.split(',')
+                splitDataURI.pop()
+                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                const blob = new Blob([bf])
+                const loader = new DocxLoader(blob)
+
+                if (textSplitter) {
+                    const docs = await loader.loadAndSplit(textSplitter)
+                    alldocs.push(...docs)
+                } else {
+                    const docs = await loader.load()
+                    alldocs.push(...docs)
+                }
             }
         }
 

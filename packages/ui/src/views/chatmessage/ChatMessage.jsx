@@ -241,7 +241,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
     }
 
     const addRecordingToPreviews = (blob) => {
-        const mimeType = blob.type.substring(0, blob.type.indexOf(';'))
+        let mimeType = ''
+        const pos = blob.type.indexOf(';')
+        if (pos === -1) {
+            mimeType = blob.type
+        } else {
+            mimeType = blob.type.substring(0, pos)
+        }
         // read blob and add to previews
         const reader = new FileReader()
         reader.readAsDataURL(blob)
@@ -251,7 +257,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 data: base64data,
                 preview: audioUploadSVG,
                 type: 'audio',
-                name: 'audio.wav',
+                name: `audio_${Date.now()}.wav`,
                 mime: mimeType
             }
             setPreviews((prevPreviews) => [...prevPreviews, upload])
@@ -392,11 +398,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         clearPreviews()
         setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage', fileUploads: urls }])
 
-        // Send user question and history to API
+        // Send user question to Prediction Internal API
         try {
             const params = {
                 question: input,
-                history: messages.filter((msg) => msg.message !== 'Всем привет! Чем могу помочь?'),
                 chatId
             }
             if (urls && urls.length > 0) params.uploads = urls
@@ -447,7 +452,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                         }
                     ])
                 }
-                setLocalStorageChatflow(chatflowid, data.chatId, messages)
+                setLocalStorageChatflow(chatflowid, data.chatId)
                 setLoading(false)
                 setUserInput('')
                 setTimeout(() => {
@@ -456,8 +461,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 }, 100)
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            handleError(errorData)
+            handleError(error.response.data.message)
             return
         }
     }
@@ -521,7 +525,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
-            setLocalStorageChatflow(chatflowid, chatId, messages)
+            setLocalStorageChatflow(chatflowid, chatId)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -555,7 +559,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                             inputFields.push(config.starterPrompts[key])
                         }
                     })
-                    setStarterPrompts(inputFields)
+                    setStarterPrompts(inputFields.filter((field) => field.prompt !== ''))
                 }
                 if (config.chatFeedback) {
                     setChatFeedbackStatus(config.chatFeedback.status)

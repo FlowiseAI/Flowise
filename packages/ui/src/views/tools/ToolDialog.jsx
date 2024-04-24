@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import { cloneDeep } from 'lodash'
 
-import { Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
+import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Grid } from '@/ui-component/grid/Grid'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
@@ -16,7 +16,7 @@ import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import HowToUseFunctionDialog from './HowToUseFunctionDialog'
 
 // Icons
-import { IconX, IconFileExport } from '@tabler/icons'
+import { IconX, IconFileDownload, IconPlus } from '@tabler/icons'
 
 // API
 import toolsApi from '@/api/tools'
@@ -56,7 +56,7 @@ try {
     return '';
 }`
 
-const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) => {
+const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const customization = useSelector((state) => state.customization)
@@ -162,6 +162,13 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
     }, [getSpecificToolApi.data])
 
     useEffect(() => {
+        if (getSpecificToolApi.error) {
+            setError(getSpecificToolApi.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getSpecificToolApi.error])
+
+    useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
             // When tool dialog is opened from Tools dashboard
             setToolId(dialogProps.data.id)
@@ -226,9 +233,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 linkElement.click()
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Ошибка отправки инструмента ${errorData}`,
+                message: `Ошибка отправки инструмента: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -271,9 +279,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 onConfirm(createResp.data.id)
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Ошибка удаления инструмента: ${errorData}`,
+                message: `Ошибка удаления инструмента: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -314,10 +323,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
-            console.error(error)
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Tool: ${errorData}`,
+                message: `Failed to save Tool: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -361,9 +370,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
                     onConfirm()
                 }
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: `Ошибка удаления инструмента: ${errorData}`,
+                    message: `Ошибка удаления инструмента: ${
+                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -389,136 +399,124 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm }) =
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <DialogTitle sx={{ fontSize: '1rem', p: 3, pb: 0 }} id='alert-dialog-title'>
+                <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     {dialogProps.title}
-                    <div style={{ flex: 1 }} />
                     {dialogProps.type === 'EDIT' && (
-                        <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileExport />}>
+                        <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileDownload />}>
                             Отправить
                         </Button>
                     )}
-                </div>
+                </Box>
             </DialogTitle>
-            <DialogContent>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Название команды
-                            <span style={{ color: 'red' }}>&nbsp;*</span>
+            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+                    <Box>
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>
+                                Название инструмента
+                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
                             <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title={
-                                    translationObject[
-                                        'Название инструмента должно состоять из маленькой заглавной буквы и подчеркивания. Пример: мой_инструмент'
-                                    ] || ''
-                                }
+                                title={'Название инструмента должно состоять из маленькой заглавной буквы и подчеркивания. Пример: мой_инструмент'}
                             />
-                        </Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='toolName'
-                        type='string'
-                        fullWidth
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        placeholder='Мой новый инструмент'
-                        value={toolName}
-                        name='toolName'
-                        onChange={(e) => setToolName(e.target.value)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Описание команды
-                            <span style={{ color: 'red' }}>&nbsp;*</span>
+                        </Stack>
+                        <OutlinedInput
+                            id='toolName'
+                            type='string'
+                            fullWidth
+                            disabled={dialogProps.type === 'TEMPLATE'}
+                            placeholder='Мой новый инструмент'
+                            value={toolName}
+                            name='toolName'
+                            onChange={(e) => setToolName(e.target.value)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>
+                                Описание команды
+                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
                             <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title={
-                                    translationObject[
-                                        'Описание того, что делает инструмент. ChatGPT определяет, когда использовать этот инструмент.'
-                                    ] || ''
-                                }
+                                title={'Описание того, что делает инструмент. ChatGPT определяет, когда использовать этот инструмент.'}
                             />
-                        </Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='toolDesc'
-                        type='string'
-                        fullWidth
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        placeholder='Описание того, что делает инструмент. ChatGPT определяет, когда использовать этот инструмент.'
-                        multiline={true}
-                        rows={3}
-                        value={toolDesc}
-                        name='toolDesc'
-                        onChange={(e) => setToolDesc(e.target.value)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>Иконка команды</Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='toolIcon'
-                        type='string'
-                        fullWidth
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        placeholder='https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg'
-                        value={toolIcon}
-                        name='toolIcon'
-                        onChange={(e) => setToolIcon(e.target.value)}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Схема вывода
-                            <TooltipWithParser style={{ marginLeft: 10 }} title={'Каким должен быть выходной ответ в формате JSON?'} />
-                        </Typography>
-                    </Stack>
-                    <Grid
-                        columns={columns}
-                        rows={toolSchema}
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        addNewRow={addNewRow}
-                        onRowUpdate={onRowUpdate}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>
-                            Функция Javascript
-                            <TooltipWithParser
-                                style={{ marginLeft: 10 }}
-                                title='Функция, выполняемая при использовании инструмента. Вы можете использовать свойства, указанные в схеме вывода, в качестве переменных. Например, если свойство имеет вид <code>userid</code>, вы можете использовать его как <code>$userid</code>. Возвращаемое значение должно быть строкой.'
-                            />
-                        </Typography>
-                    </Stack>
-                    <Button
-                        style={{ marginBottom: 10, marginRight: 10 }}
-                        color='secondary'
-                        variant='outlined'
-                        onClick={() => setShowHowToDialog(true)}
-                    >
-                        Как использовать функцию
-                    </Button>
-                    {dialogProps.type !== 'TEMPLATE' && (
-                        <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
-                            Показать пример
-                        </Button>
-                    )}
-                    <CodeEditor
-                        disabled={dialogProps.type === 'TEMPLATE'}
-                        value={toolFunc}
-                        height='calc(100vh - 220px)'
-                        theme={customization.isDarkMode ? 'dark' : 'light'}
-                        lang={'js'}
-                        onValueChange={(code) => setToolFunc(code)}
-                    />
+                        </Stack>
+                        <OutlinedInput
+                            id='toolDesc'
+                            type='string'
+                            fullWidth
+                            disabled={dialogProps.type === 'TEMPLATE'}
+                            placeholder='Описание того, что делает инструмент. ChatGPT определяет, когда использовать этот инструмент.'
+                            multiline={true}
+                            rows={3}
+                            value={toolDesc}
+                            name='toolDesc'
+                            onChange={(e) => setToolDesc(e.target.value)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative' }} direction='row'>
+                            <Typography variant='overline'>Иконка команды</Typography>
+                        </Stack>
+                        <OutlinedInput
+                            id='toolIcon'
+                            type='string'
+                            fullWidth
+                            disabled={dialogProps.type === 'TEMPLATE'}
+                            placeholder='https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg'
+                            value={toolIcon}
+                            name='toolIcon'
+                            onChange={(e) => setToolIcon(e.target.value)}
+                        />
+                    </Box>
+                    <Box>
+                        <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
+                            <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                                <Typography variant='overline'>Схема вывода</Typography>
+                                <TooltipWithParser title={'Каким должен быть выходной ответ в формате JSON?'} />
+                            </Stack>
+                            {dialogProps.type !== 'TEMPLATE' && (
+                                <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
+                                    Добавить
+                                </Button>
+                            )}
+                        </Stack>
+                        <Grid columns={columns} rows={toolSchema} disabled={dialogProps.type === 'TEMPLATE'} onRowUpdate={onRowUpdate} />
+                    </Box>
+                    <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                                <Typography variant='overline'>Функция Javascript</Typography>
+                                <TooltipWithParser title='Функция, выполняемая при использовании инструмента. Вы можете использовать свойства, указанные в схеме вывода, в качестве переменных. Например, если свойство имеет вид <code>userid</code>, вы можете использовать его как <code>$userid</code>. Возвращаемое значение должно быть строкой.' />
+                            </Stack>
+                            <Stack direction='row'>
+                                <Button
+                                    style={{ marginBottom: 10, marginRight: 10 }}
+                                    color='secondary'
+                                    variant='text'
+                                    onClick={() => setShowHowToDialog(true)}
+                                >
+                                    Как использовать функцию
+                                </Button>
+                                {dialogProps.type !== 'TEMPLATE' && (
+                                    <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
+                                        Показать пример
+                                    </Button>
+                                )}
+                            </Stack>
+                        </Box>
+                        <CodeEditor
+                            disabled={dialogProps.type === 'TEMPLATE'}
+                            value={toolFunc}
+                            theme={customization.isDarkMode ? 'dark' : 'light'}
+                            lang={'js'}
+                            onValueChange={(code) => setToolFunc(code)}
+                        />
+                    </Box>
                 </Box>
             </DialogContent>
-            <DialogActions>
+            <DialogActions sx={{ p: 3 }}>
                 {dialogProps.type === 'EDIT' && (
                     <StyledButton color='error' variant='contained' onClick={() => deleteTool()}>
                         Удалить
@@ -552,7 +550,8 @@ ToolDialog.propTypes = {
     dialogProps: PropTypes.object,
     onUseTemplate: PropTypes.func,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default ToolDialog

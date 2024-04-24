@@ -234,6 +234,15 @@ export const convertDateStringToDateObject = (dateString) => {
 
 export const getFileName = (fileBase64) => {
     let fileNames = []
+    if (fileBase64.startsWith('FILE-STORAGE::')) {
+        const names = fileBase64.substring(14)
+        if (names.includes('[') && names.includes(']')) {
+            const files = JSON.parse(names)
+            return files.join(', ')
+        } else {
+            return fileBase64.substring(14)
+        }
+    }
     if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
         const files = JSON.parse(fileBase64)
         for (const file of files) {
@@ -353,6 +362,11 @@ export const getUpsertDetails = (nodes, edges) => {
                 if (vsNode.data.inputs.embeddings) {
                     const embeddingsId = vsNode.data.inputs.embeddings.replace(/{{|}}/g, '').split('.')[0]
                     innerNodes.push(nodes.find((node) => node.data.id === embeddingsId))
+                }
+
+                if (vsNode.data.inputs.recordManager) {
+                    const recordManagerId = vsNode.data.inputs.recordManager.replace(/{{|}}/g, '').split('.')[0]
+                    innerNodes.push(nodes.find((node) => node.data.id === recordManagerId))
                 }
 
                 for (const doc of connectedDocs) {
@@ -505,11 +519,10 @@ export const formatDataGridRows = (rows) => {
     }
 }
 
-export const setLocalStorageChatflow = (chatflowid, chatId, chatHistory) => {
+export const setLocalStorageChatflow = (chatflowid, chatId) => {
     const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
     const obj = {}
     if (chatId) obj.chatId = chatId
-    if (chatHistory) obj.chatHistory = chatHistory
 
     if (!chatDetails) {
         localStorage.setItem(`${chatflowid}_INTERNAL`, JSON.stringify(obj))

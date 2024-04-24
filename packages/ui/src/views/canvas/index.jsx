@@ -172,9 +172,8 @@ const Canvas = () => {
                 localStorage.removeItem(`${chatflow.id}_INTERNAL`)
                 navigate('/')
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: errorData,
+                    message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -359,10 +358,7 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            const error = getSpecificChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`
-            Не удалось получить поток проекта: ${errorData}`)
+            errorFailed(`Не удалось получить поток проекта: ${getSpecificChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -376,9 +372,7 @@ const Canvas = () => {
             saveChatflowSuccess()
             window.history.replaceState(null, null, `/canvas/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-            const error = createNewChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Ошибка сохранения проекта: ${errorData}`)
+            errorFailed(`Ошибка сохранения проекта: ${createNewChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -390,9 +384,7 @@ const Canvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-            const error = updateChatflowApi.error
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-            errorFailed(`Ошибка сохранения проекта: ${errorData}`)
+            errorFailed(`Ошибка сохранения проекта: ${updateChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

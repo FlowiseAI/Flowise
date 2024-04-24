@@ -111,9 +111,10 @@ const SpeechToText = ({ dialogProps }) => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Speech To Text Configuration: ${errorData}`,
+                message: `Failed to save Speech To Text Configuration: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -187,7 +188,7 @@ const SpeechToText = ({ dialogProps }) => {
                     Providers
                 </Typography>
                 <FormControl fullWidth>
-                    <Select value={selectedProvider} onChange={handleProviderChange}>
+                    <Select size='small' value={selectedProvider} onChange={handleProviderChange}>
                         <MenuItem value='none'>None</MenuItem>
                         <MenuItem value='openAIWhisper'>OpenAI Whisper</MenuItem>
                         <MenuItem value='assemblyAiTranscribe'>Assembly AI</MenuItem>
@@ -196,7 +197,7 @@ const SpeechToText = ({ dialogProps }) => {
             </Box>
             {selectedProvider !== 'none' && (
                 <>
-                    <ListItem style={{ padding: 0, margin: 0 }} alignItems='center'>
+                    <ListItem sx={{ mt: 3 }} alignItems='center'>
                         <ListItemAvatar>
                             <div
                                 style={{

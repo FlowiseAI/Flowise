@@ -7,6 +7,7 @@ import { Box, Typography, Button, OutlinedInput } from '@mui/material'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // Icons
 import { IconX } from '@tabler/icons'
@@ -16,7 +17,6 @@ import chatflowsApi from '@/api/chatflows'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
-import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 const RateLimit = () => {
     const dispatch = useDispatch()
@@ -73,12 +73,10 @@ const RateLimit = () => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
-            console.error(error)
-            const errorData = error.response
-                ? error.response.data || `${error.response.status}: ${error.response.statusText}`
-                : error.message
             enqueueSnackbar({
-                message: `Не удалось сохранить конфигурацию API: ${errorData}`,
+                message: `Не удалось сохранить конфигурацию API: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -119,6 +117,7 @@ const RateLimit = () => {
                         value={message}
                         placeholder={placeholder}
                         name={fieldName}
+                        size='small'
                         onChange={(e) => {
                             onTextChanged(e.target.value, fieldName)
                         }}
@@ -140,9 +139,9 @@ const RateLimit = () => {
                     }
                 />
             </Typography>
-            {textField(limitMax, 'limitMax', 'Лимит сообщений за длительность', 'number')}
-            {textField(limitDuration, 'limitDuration', 'Продолжительность в секундах', 'number')}
-            {textField(limitMsg, 'limitMsg', 'Лимит сообщений', 'string')}
+            {textField(limitMax, 'limitMax', 'Лимит сообщений за длительность', 'number', '5')}
+            {textField(limitDuration, 'limitDuration', 'Продолжительность в секундах', 'number', '60')}
+            {textField(limitMsg, 'limitMsg', 'Лимит сообщений', 'string', 'Вы достигли квоты')}
 
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={() => onSave()}>
                 Сохранить изменения

@@ -62,6 +62,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
     const [titleAvatarSrc, setTitleAvatarSrc] = useState(chatbotConfig?.titleAvatarSrc ?? '')
 
     const [welcomeMessage, setWelcomeMessage] = useState(chatbotConfig?.welcomeMessage ?? '')
+    const [errorMessage, setErrorMessage] = useState(chatbotConfig?.errorMessage ?? '')
     const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
     const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultConfig.fontSize)
     const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultConfig.poweredByTextColor)
@@ -118,6 +119,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
         if (title) obj.title = title
         if (titleAvatarSrc) obj.titleAvatarSrc = titleAvatarSrc
         if (welcomeMessage) obj.welcomeMessage = welcomeMessage
+        if (errorMessage) obj.errorMessage = errorMessage
         if (backgroundColor) obj.backgroundColor = backgroundColor
         if (fontSize) obj.fontSize = fontSize
         if (poweredByTextColor) obj.poweredByTextColor = poweredByTextColor
@@ -166,10 +168,10 @@ const ShareChatbot = ({ isSessionMemory }) => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
-            console.error(error)
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Не удалось сохранить конфигурацию чат-бота. ${errorData}`,
+                message: `Не удалось сохранить конфигурацию чат-бота: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -203,10 +205,10 @@ const ShareChatbot = ({ isSessionMemory }) => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
-            console.error(error)
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Не удалось сохранить конфигурацию чат-бота.: ${errorData}`,
+                message: `Не удалось сохранить конфигурацию чат-бота: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -275,6 +277,9 @@ const ShareChatbot = ({ isSessionMemory }) => {
                 break
             case 'welcomeMessage':
                 setWelcomeMessage(value)
+                break
+            case 'errorMessage':
+                setErrorMessage(value)
                 break
             case 'fontSize':
                 setFontSize(value)
@@ -430,6 +435,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
                 'Привет! Это специальное приветственное сообщение'
             )}
             {colorField(backgroundColor, 'backgroundColor', 'Фоновый цвет')}
+            {textField(errorMessage, 'errorMessage', 'Error Message', 'string', 'This is custom error message')}
             {textField(fontSize, 'fontSize', 'Размер шрифта', 'number')}
             {colorField(poweredByTextColor, 'poweredByTextColor', '"Разработано на" Цвет текста')}
             {colorField(headerBackgroundColor, 'headerBackgroundColor', 'Фоновый цвет шапки')}

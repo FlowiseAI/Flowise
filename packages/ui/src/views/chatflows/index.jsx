@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
 
 // material-ui
-import { Grid, Box, Stack, Toolbar, ToggleButton, ButtonGroup } from '@mui/material'
+import { Box, Skeleton, Stack, ToggleButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -29,15 +28,17 @@ import * as React from 'react'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Chatflows = () => {
     const navigate = useNavigate()
     const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
 
     const [isLoading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [images, setImages] = useState({})
     const [search, setSearch] = useState('')
     const [loginDialogOpen, setLoginDialogOpen] = useState(false)
@@ -92,6 +93,8 @@ const Chatflows = () => {
                     confirmButtonName: 'Войти'
                 })
                 setLoginDialogOpen(true)
+            } else {
+                setError(getAllChatflowsApi.error)
             }
         }
     }, [getAllChatflowsApi.error])
@@ -125,92 +128,89 @@ const Chatflows = () => {
     }, [getAllChatflowsApi.data])
 
     return (
-        <MainCard sx={{ background: customization.isDarkMode ? theme.palette.common.black : '' }}>
-            <Stack flexDirection='column'>
-                <Box sx={{ flexGrow: 1 }}>
-                    <Toolbar
-                        disableGutters={true}
-                        style={{
-                            margin: 1,
-                            padding: 1,
-                            paddingBottom: 10,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            width: '100%'
-                        }}
-                    >
-                        <h1>Проекты</h1>
-
-                        <Box sx={{ flexGrow: 1 }} />
-                        <ButtonGroup
-                            sx={{ maxHeight: 40 }}
-                            disableElevation
-                            variant='contained'
-                            aria-label='outlined secondary button group'
+        <MainCard>
+            {error ? (
+                <ErrorBoundary error={error} />
+            ) : (
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name or Category' title='Chatflows'>
+                        <ToggleButtonGroup
+                            sx={{ borderRadius: 2, maxHeight: 40 }}
+                            value={view}
+                            color='primary'
+                            exclusive
+                            onChange={handleChange}
                         >
-                            <ButtonGroup disableElevation variant='contained' aria-label='outlined secondary button group'>
-                                <ToggleButtonGroup sx={{ maxHeight: 40 }} value={view} color='secondary' exclusive onChange={handleChange}>
-                                    <ToggleButton
-                                        sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                        variant='contained'
-                                        value='card'
-                                        title='Просмотр карты'
-                                    >
-                                        <IconLayoutGrid />
-                                    </ToggleButton>
-                                    <ToggleButton
-                                        sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
-                                        variant='contained'
-                                        value='list'
-                                        title='Посмотреть список'
-                                    >
-                                        <IconList />
-                                    </ToggleButton>
-                                </ToggleButtonGroup>
-                            </ButtonGroup>
-                            <Box sx={{ width: 5 }} />
-                            <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                                <StyledButton
-                                    sx={{ borderRadius: '12px' }}
-                                    color='secondary'
-                                    variant='contained'
-                                    onClick={addNew}
-                                    startIcon={<IconPlus />}
-                                >
-                                    Создать
-                                </StyledButton>
-                            </ButtonGroup>
-                        </ButtonGroup>
-                    </Toolbar>
-                </Box>
-                {!isLoading && (!view || view === 'card') && getAllChatflowsApi.data && (
-                    <Grid container spacing={gridSpacing}>
-                        {getAllChatflowsApi.data.filter(filterFlows).map((data, index) => (
-                            <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
-                {!isLoading && view === 'list' && getAllChatflowsApi.data && (
-                    <FlowListTable
-                        sx={{ mt: 20 }}
-                        data={getAllChatflowsApi.data}
-                        images={images}
-                        filterFunction={filterFlows}
-                        updateFlowsApi={getAllChatflowsApi}
-                    />
-                )}
-            </Stack>
-
-            {!isLoading && (!getAllChatflowsApi.data || getAllChatflowsApi.data.length === 0) && (
-                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                    <Box sx={{ p: 2, height: 'auto' }}>
-                        <img style={{ objectFit: 'cover', height: '30vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />
-                    </Box>
-                    <div>Пока нет чатов</div>
+                            <ToggleButton
+                                sx={{
+                                    borderColor: theme.palette.grey[900] + 25,
+                                    borderRadius: 2,
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                }}
+                                variant='contained'
+                                value='card'
+                                title='Просмотр картыw'
+                            >
+                                <IconLayoutGrid />
+                            </ToggleButton>
+                            <ToggleButton
+                                sx={{
+                                    borderColor: theme.palette.grey[900] + 25,
+                                    borderRadius: 2,
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                }}
+                                variant='contained'
+                                value='list'
+                                title='Посмотреть список'
+                            >
+                                <IconList />
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                        <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
+                            Создать
+                        </StyledButton>
+                    </ViewHeader>
+                    {!view || view === 'card' ? (
+                        <>
+                            {isLoading && !getAllChatflowsApi.data ? (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
+                                </Box>
+                            ) : (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    {getAllChatflowsApi.data?.filter(filterFlows).map((data, index) => (
+                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                    ))}
+                                </Box>
+                            )}
+                        </>
+                    ) : (
+                        <FlowListTable
+                            data={getAllChatflowsApi.data}
+                            images={images}
+                            isLoading={isLoading}
+                            filterFunction={filterFlows}
+                            updateFlowsApi={getAllChatflowsApi}
+                            setError={setError}
+                        />
+                    )}
+                    {!isLoading && (!getAllChatflowsApi.data || getAllChatflowsApi.data.length === 0) && (
+                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                            <Box sx={{ p: 2, height: 'auto' }}>
+                                <img
+                                    style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                    src={WorkflowEmptySVG}
+                                    alt='WorkflowEmptySVG'
+                                />
+                            </Box>
+                            <div>Пока нет чатов</div>
+                        </Stack>
+                    )}
                 </Stack>
             )}
+
             <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
             <ConfirmDialog />
         </MainCard>
