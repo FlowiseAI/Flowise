@@ -32,6 +32,14 @@
                     "name": "meta.llama2-70b-chat-v1"
                 },
                 {
+                    "label": "meta.llama3-8b-instruct-v1:0",
+                    "name": "meta.llama3-8b-instruct-v1:0"
+                },
+                {
+                    "label": "meta.llama3-70b-instruct-v1:0",
+                    "name": "meta.llama3-70b-instruct-v1:0"
+                },
+                {
                     "label": "mistral.mistral-7b-instruct-v0:2",
                     "name": "mistral.mistral-7b-instruct-v0:2"
                 },
