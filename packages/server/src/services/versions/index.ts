@@ -1,5 +1,8 @@
 import path from 'path'
 import * as fs from 'fs'
+import { StatusCodes } from 'http-status-codes'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
 
 const getVersion = async () => {
     try {
@@ -20,11 +23,7 @@ const getVersion = async () => {
         }
         const packagejsonPath = getPackageJsonPath()
         if (!packagejsonPath) {
-            return {
-                executionError: true,
-                status: 404,
-                msg: 'Version not found'
-            }
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Version not found`)
         }
         try {
             const content = await fs.promises.readFile(packagejsonPath, 'utf8')
@@ -33,14 +32,10 @@ const getVersion = async () => {
                 version: parsedContent.version
             }
         } catch (error) {
-            return {
-                executionError: true,
-                status: 500,
-                msg: `Version not found: ${error}`
-            }
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Version not found- ${getErrorMessage(error)}`)
         }
     } catch (error) {
-        throw new Error(`Error: versionService.getVersion - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: versionService.getVersion - ${getErrorMessage(error)}`)
     }
 }
 

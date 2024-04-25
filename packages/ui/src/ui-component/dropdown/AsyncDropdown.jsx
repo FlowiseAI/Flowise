@@ -114,7 +114,7 @@ export const AsyncDropdown = ({
                 disabled={disabled}
                 disableClearable={disableClearable}
                 size='small'
-                sx={{ width: '100%' }}
+                sx={{ mt: 1, width: '100%' }}
                 open={open}
                 onOpen={() => {
                     setOpen(true)
@@ -148,6 +148,7 @@ export const AsyncDropdown = ({
                                 </Fragment>
                             )
                         }}
+                        sx={{ height: '100%', '& .MuiInputBase-root': { height: '100%' } }}
                     />
                 )}
                 renderOption={(props, option) => (

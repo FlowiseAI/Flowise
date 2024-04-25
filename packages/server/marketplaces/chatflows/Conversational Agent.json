@@ -54,32 +54,36 @@
             "data": {
                 "id": "bufferMemory_1",
                 "label": "Buffer Memory",
-                "version": 1,
+                "version": 2,
                 "name": "bufferMemory",
                 "type": "BufferMemory",
                 "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
-                "description": "Remembers previous conversational back and forths directly",
+                "description": "Retrieve chat messages stored in database",
                 "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_1-input-sessionId-string"
+                    },
                     {
                         "label": "Memory Key",
                         "name": "memoryKey",
                         "type": "string",
                         "default": "chat_history",
+                        "additionalParams": true,
                         "id": "bufferMemory_1-input-memoryKey-string"
-                    },
-                    {
-                        "label": "Input Key",
-                        "name": "inputKey",
-                        "type": "string",
-                        "default": "input",
-                        "id": "bufferMemory_1-input-inputKey-string"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "memoryKey": "chat_history",
-                    "inputKey": "input"
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
                 },
                 "outputAnchors": [
                     {
@@ -158,7 +162,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 5,
+                "version": 6.0,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
@@ -175,71 +179,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-4",
-                                "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-turbo-preview",
-                                "name": "gpt-4-turbo-preview"
-                            },
-                            {
-                                "label": "gpt-4-0125-preview",
-                                "name": "gpt-4-0125-preview"
-                            },
-                            {
-                                "label": "gpt-4-1106-preview",
-                                "name": "gpt-4-1106-preview"
-                            },
-                            {
-                                "label": "gpt-4-1106-vision-preview",
-                                "name": "gpt-4-1106-vision-preview"
-                            },
-                            {
-                                "label": "gpt-4-vision-preview",
-                                "name": "gpt-4-vision-preview"
-                            },
-                            {
-                                "label": "gpt-4-0613",
-                                "name": "gpt-4-0613"
-                            },
-                            {
-                                "label": "gpt-4-32k",
-                                "name": "gpt-4-32k"
-                            },
-                            {
-                                "label": "gpt-4-32k-0613",
-                                "name": "gpt-4-32k-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo",
-                                "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0125",
-                                "name": "gpt-3.5-turbo-0125"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-1106",
-                                "name": "gpt-3.5-turbo-1106"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0613",
-                                "name": "gpt-3.5-turbo-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k",
-                                "name": "gpt-3.5-turbo-16k"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k-0613",
-                                "name": "gpt-3.5-turbo-16k-0613"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_0-input-modelName-options"
                     },
                     {
@@ -408,6 +350,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "conversationalAgent_0-input-systemMessage-string"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "conversationalAgent_0-input-maxIterations-number"
                     }
                 ],
                 "inputAnchors": [

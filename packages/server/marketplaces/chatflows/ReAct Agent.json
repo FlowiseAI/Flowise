@@ -1,6 +1,6 @@
 {
     "description": "An agent that uses ReAct logic to decide what action to take",
-    "categories": "Calculator Tool,SerpAPI,ChatOpenAI,MRKL Agent,Langchain",
+    "categories": "Calculator Tool,SerpAPI,ChatOpenAI,ReAct Agent,Langchain",
     "framework": "Langchain",
     "nodes": [
         {
@@ -43,17 +43,17 @@
             "dragging": false
         },
         {
-            "id": "mrklAgentChat_0",
+            "id": "reactAgentChat_0",
             "position": {
                 "x": 905.8535326018256,
                 "y": 388.58312223652564
             },
             "type": "customNode",
             "data": {
-                "id": "mrklAgentChat_0",
+                "id": "reactAgentChat_0",
                 "label": "ReAct Agent for Chat Models",
                 "version": 4,
-                "name": "mrklAgentChat",
+                "name": "reactAgentChat",
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
                 "category": "Agents",
@@ -65,19 +65,19 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
-                        "id": "mrklAgentChat_0-input-tools-Tool"
+                        "id": "reactAgentChat_0-input-tools-Tool"
                     },
                     {
                         "label": "Chat Model",
                         "name": "model",
                         "type": "BaseChatModel",
-                        "id": "mrklAgentChat_0-input-model-BaseChatModel"
+                        "id": "reactAgentChat_0-input-model-BaseChatModel"
                     },
                     {
                         "label": "Memory",
                         "name": "memory",
                         "type": "BaseChatMemory",
-                        "id": "mrklAgentChat_0-input-memory-BaseChatMemory"
+                        "id": "reactAgentChat_0-input-memory-BaseChatMemory"
                     },
                     {
                         "label": "Input Moderation",
@@ -86,7 +86,15 @@
                         "type": "Moderation",
                         "optional": true,
                         "list": true,
-                        "id": "mrklAgentChat_0-input-inputModeration-Moderation"
+                        "id": "reactAgentChat_0-input-inputModeration-Moderation"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "reactAgentChat_0-input-maxIterations-number"
                     }
                 ],
                 "inputs": {
@@ -97,8 +105,8 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "mrklAgentChat_0-output-mrklAgentChat-AgentExecutor|BaseChain|Runnable",
-                        "name": "mrklAgentChat",
+                        "id": "reactAgentChat_0-output-reactAgentChat-AgentExecutor|BaseChain|Runnable",
+                        "name": "reactAgentChat",
                         "label": "AgentExecutor",
                         "description": "Agent that uses the ReAct logic to decide what action to take, optimized to be used with Chat Models",
                         "type": "AgentExecutor | BaseChain | Runnable"
@@ -216,7 +224,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 5,
+                "version": 6.0,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -233,71 +241,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-4",
-                                "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-turbo-preview",
-                                "name": "gpt-4-turbo-preview"
-                            },
-                            {
-                                "label": "gpt-4-0125-preview",
-                                "name": "gpt-4-0125-preview"
-                            },
-                            {
-                                "label": "gpt-4-1106-preview",
-                                "name": "gpt-4-1106-preview"
-                            },
-                            {
-                                "label": "gpt-4-1106-vision-preview",
-                                "name": "gpt-4-1106-vision-preview"
-                            },
-                            {
-                                "label": "gpt-4-vision-preview",
-                                "name": "gpt-4-vision-preview"
-                            },
-                            {
-                                "label": "gpt-4-0613",
-                                "name": "gpt-4-0613"
-                            },
-                            {
-                                "label": "gpt-4-32k",
-                                "name": "gpt-4-32k"
-                            },
-                            {
-                                "label": "gpt-4-32k-0613",
-                                "name": "gpt-4-32k-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo",
-                                "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0125",
-                                "name": "gpt-3.5-turbo-0125"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-1106",
-                                "name": "gpt-3.5-turbo-1106"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0613",
-                                "name": "gpt-3.5-turbo-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k",
-                                "name": "gpt-3.5-turbo-16k"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k-0613",
-                                "name": "gpt-3.5-turbo-16k-0613"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_0-input-modelName-options"
                     },
                     {
@@ -501,34 +447,34 @@
         {
             "source": "calculator_1",
             "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentChat_0",
-            "targetHandle": "mrklAgentChat_0-input-tools-Tool",
+            "target": "reactAgentChat_0",
+            "targetHandle": "reactAgentChat_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool"
+            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-reactAgentChat_0-reactAgentChat_0-input-tools-Tool"
         },
         {
             "source": "RedisBackedChatMemory_0",
             "sourceHandle": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
-            "target": "mrklAgentChat_0",
-            "targetHandle": "mrklAgentChat_0-input-memory-BaseChatMemory",
+            "target": "reactAgentChat_0",
+            "targetHandle": "reactAgentChat_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
-            "id": "RedisBackedChatMemory_0-RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory-mrklAgentChat_0-mrklAgentChat_0-input-memory-BaseChatMemory"
+            "id": "RedisBackedChatMemory_0-RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory-reactAgentChat_0-reactAgentChat_0-input-memory-BaseChatMemory"
         },
         {
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-            "target": "mrklAgentChat_0",
-            "targetHandle": "mrklAgentChat_0-input-model-BaseChatModel",
+            "target": "reactAgentChat_0",
+            "targetHandle": "reactAgentChat_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-mrklAgentChat_0-mrklAgentChat_0-input-model-BaseChatModel"
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-reactAgentChat_0-reactAgentChat_0-input-model-BaseChatModel"
         },
         {
             "source": "serper_0",
             "sourceHandle": "serper_0-output-serper-Serper|Tool|StructuredTool|Runnable",
-            "target": "mrklAgentChat_0",
-            "targetHandle": "mrklAgentChat_0-input-tools-Tool",
+            "target": "reactAgentChat_0",
+            "targetHandle": "reactAgentChat_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool|Runnable-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool"
+            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool|Runnable-reactAgentChat_0-reactAgentChat_0-input-tools-Tool"
         }
     ]
 }

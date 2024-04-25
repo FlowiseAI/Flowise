@@ -241,7 +241,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
     }
 
     const addRecordingToPreviews = (blob) => {
-        const mimeType = blob.type.substring(0, blob.type.indexOf(';'))
+        let mimeType = ''
+        const pos = blob.type.indexOf(';')
+        if (pos === -1) {
+            mimeType = blob.type
+        } else {
+            mimeType = blob.type.substring(0, pos)
+        }
         // read blob and add to previews
         const reader = new FileReader()
         reader.readAsDataURL(blob)
@@ -251,7 +257,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 data: base64data,
                 preview: audioUploadSVG,
                 type: 'audio',
-                name: 'audio.wav',
+                name: `audio_${Date.now()}.wav`,
                 mime: mimeType
             }
             setPreviews((prevPreviews) => [...prevPreviews, upload])
@@ -349,6 +355,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         })
     }
 
+    const updateLastMessageFileAnnotations = (fileAnnotations) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            allMessages[allMessages.length - 1].fileAnnotations = fileAnnotations
+            return allMessages
+        })
+    }
+
     // Handle errors
     const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
         message = message.replace(`Unable to parse JSON response from chat agent.\n\n`, '')
@@ -392,11 +407,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         clearPreviews()
         setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage', fileUploads: urls }])
 
-        // Send user question and history to API
+        // Send user question to Prediction Internal API
         try {
             const params = {
                 question: input,
-                history: messages.filter((msg) => msg.message !== 'Hi there! How can I help?'),
                 chatId
             }
             if (urls && urls.length > 0) params.uploads = urls
@@ -406,10 +420,6 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
 
             if (response.data) {
                 const data = response.data
-                if (data.executionError) {
-                    handleError(data.msg)
-                    return
-                }
 
                 setMessages((prevMessages) => {
                     let allMessages = [...cloneDeep(prevMessages)]
@@ -451,7 +461,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                         }
                     ])
                 }
-                setLocalStorageChatflow(chatflowid, data.chatId, messages)
+                setLocalStorageChatflow(chatflowid, data.chatId)
                 setLoading(false)
                 setUserInput('')
                 setTimeout(() => {
@@ -481,8 +491,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
     const downloadFile = async (fileAnnotation) => {
         try {
             const response = await axios.post(
-                `${baseURL}/api/v1/openai-assistants-file`,
-                { fileName: fileAnnotation.fileName },
+                `${baseURL}/api/v1/openai-assistants-file/download`,
+                { fileName: fileAnnotation.fileName, chatflowId: chatflowid, chatId: chatId },
                 { responseType: 'blob' }
             )
             const blob = new Blob([response.data], { type: response.headers['content-type'] })
@@ -524,7 +534,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
-            setLocalStorageChatflow(chatflowid, chatId, messages)
+            setLocalStorageChatflow(chatflowid, chatId)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -558,7 +568,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                             inputFields.push(config.starterPrompts[key])
                         }
                     })
-                    setStarterPrompts(inputFields)
+                    setStarterPrompts(inputFields.filter((field) => field.prompt !== ''))
                 }
                 if (config.chatFeedback) {
                     setChatFeedbackStatus(config.chatFeedback.status)
@@ -609,6 +619,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             socket.on('sourceDocuments', updateLastMessageSourceDocuments)
 
             socket.on('usedTools', updateLastMessageUsedTools)
+
+            socket.on('fileAnnotations', updateLastMessageFileAnnotations)
 
             socket.on('token', updateLastMessage)
         }

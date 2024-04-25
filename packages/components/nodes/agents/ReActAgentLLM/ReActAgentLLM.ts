@@ -11,7 +11,7 @@ import { createReactAgent } from '../../../src/agents'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
-class MRKLAgentLLM_Agents implements INode {
+class ReActAgentLLM_Agents implements INode {
     label: string
     name: string
     version: number
@@ -24,7 +24,7 @@ class MRKLAgentLLM_Agents implements INode {
 
     constructor() {
         this.label = 'ReAct Agent for LLMs'
-        this.name = 'mrklAgentLLM'
+        this.name = 'reactAgentLLM'
         this.version = 2.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
@@ -50,6 +50,13 @@ class MRKLAgentLLM_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -60,6 +67,7 @@ class MRKLAgentLLM_Agents implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const model = nodeData.inputs?.model as BaseLanguageModel
+        const maxIterations = nodeData.inputs?.maxIterations as string
         let tools = nodeData.inputs?.tools as Tool[]
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
@@ -87,7 +95,8 @@ class MRKLAgentLLM_Agents implements INode {
         const executor = new AgentExecutor({
             agent,
             tools,
-            verbose: process.env.DEBUG === 'true' ? true : false
+            verbose: process.env.DEBUG === 'true' ? true : false,
+            maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
         })
 
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -98,4 +107,4 @@ class MRKLAgentLLM_Agents implements INode {
     }
 }
 
-module.exports = { nodeClass: MRKLAgentLLM_Agents }
+module.exports = { nodeClass: ReActAgentLLM_Agents }

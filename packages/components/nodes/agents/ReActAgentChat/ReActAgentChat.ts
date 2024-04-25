@@ -13,7 +13,7 @@ import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalU
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
-class MRKLAgentChat_Agents implements INode {
+class ReActAgentChat_Agents implements INode {
     label: string
     name: string
     version: number
@@ -27,7 +27,7 @@ class MRKLAgentChat_Agents implements INode {
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'ReAct Agent for Chat Models'
-        this.name = 'mrklAgentChat'
+        this.name = 'reactAgentChat'
         this.version = 4.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
@@ -58,6 +58,13 @@ class MRKLAgentChat_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -69,6 +76,7 @@ class MRKLAgentChat_Agents implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
+        const maxIterations = nodeData.inputs?.maxIterations as string
         const model = nodeData.inputs?.model as BaseChatModel
         let tools = nodeData.inputs?.tools as Tool[]
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
@@ -90,7 +98,7 @@ class MRKLAgentChat_Agents implements INode {
 
         if (llmSupportsVision(model)) {
             const visionChatModel = model as IVisionChatModal
-            const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+            const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
 
             if (messageContent?.length) {
                 // Change model to vision supported
@@ -120,13 +128,13 @@ class MRKLAgentChat_Agents implements INode {
         const executor = new AgentExecutor({
             agent,
             tools,
-            verbose: process.env.DEBUG === 'true'
+            verbose: process.env.DEBUG === 'true',
+            maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
         })
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        const prevChatHistory = options.chatHistory
-        const chatHistory = ((await memory.getChatMessages(this.sessionId, false, prevChatHistory)) as IMessage[]) ?? []
+        const chatHistory = ((await memory.getChatMessages(this.sessionId, false)) as IMessage[]) ?? []
         const chatHistoryString = chatHistory.map((hist) => hist.message).join('\\n')
 
         const result = await executor.invoke({ input, chat_history: chatHistoryString }, { callbacks })
@@ -149,4 +157,4 @@ class MRKLAgentChat_Agents implements INode {
     }
 }
 
-module.exports = { nodeClass: MRKLAgentChat_Agents }
+module.exports = { nodeClass: ReActAgentChat_Agents }

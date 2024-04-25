@@ -2,9 +2,7 @@ import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from 
 import { TextSplitter } from 'langchain/text_splitter'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { Document } from '@langchain/core/documents'
-import { getStoragePath, handleEscapeCharacters } from '../../../src'
-import fs from 'fs'
-import path from 'path'
+import { getFileFromStorage, handleEscapeCharacters } from '../../../src'
 
 class Text_DocumentLoaders implements INode {
     label: string
@@ -85,8 +83,7 @@ class Text_DocumentLoaders implements INode {
             const chatflowid = options.chatflowid
 
             for (const file of files) {
-                const fileInStorage = path.join(getStoragePath(), chatflowid, file)
-                const fileData = fs.readFileSync(fileInStorage)
+                const fileData = await getFileFromStorage(file, chatflowid)
                 const blob = new Blob([fileData])
                 const loader = new TextLoader(blob)
 

@@ -1,4 +1,5 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Anthropic } from 'llamaindex'
 
@@ -18,7 +19,7 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic_LlamaIndex'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatAnthropic'
         this.icon = 'Anthropic.svg'
         this.category = 'Chat Models'
@@ -36,30 +37,8 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'options',
-                options: [
-                    {
-                        label: 'claude-3-opus',
-                        name: 'claude-3-opus',
-                        description: 'Most powerful model for highly complex tasks'
-                    },
-                    {
-                        label: 'claude-3-sonnet',
-                        name: 'claude-3-sonnet',
-                        description: 'Ideal balance of intelligence and speed for enterprise workloads'
-                    },
-                    {
-                        label: 'claude-2.1',
-                        name: 'claude-2.1',
-                        description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
-                    },
-                    {
-                        label: 'claude-instant-1.2',
-                        name: 'claude-instant-1.2',
-                        description: 'Claude Instant latest major version, automatically get updates to the model as they are released'
-                    }
-                ],
-                default: 'claude-2',
-                optional: true
+                loadMethod: 'listModels',
+                default: 'claude-3-haiku'
             },
             {
                 label: 'Temperature',
@@ -86,6 +65,13 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatAnthropic_LlamaIndex')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

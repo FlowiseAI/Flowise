@@ -1,8 +1,9 @@
 import { GoogleAuthOptions } from 'google-auth-library'
 import { BaseCache } from '@langchain/core/caches'
 import { GoogleVertexAI, GoogleVertexAITextInput } from '@langchain/community/llms/googlevertexai'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class GoogleVertexAI_LLMs implements INode {
     label: string
@@ -19,7 +20,7 @@ class GoogleVertexAI_LLMs implements INode {
     constructor() {
         this.label = 'GoogleVertexAI'
         this.name = 'googlevertexai'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'GoogleVertexAI'
         this.icon = 'GoogleVertex.svg'
         this.category = 'LLMs'
@@ -44,33 +45,8 @@ class GoogleVertexAI_LLMs implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'text-bison',
-                        name: 'text-bison'
-                    },
-                    {
-                        label: 'code-bison',
-                        name: 'code-bison'
-                    },
-                    {
-                        label: 'code-gecko',
-                        name: 'code-gecko'
-                    },
-                    {
-                        label: 'text-bison-32k',
-                        name: 'text-bison-32k'
-                    },
-                    {
-                        label: 'code-bison-32k',
-                        name: 'code-bison-32k'
-                    },
-                    {
-                        label: 'code-gecko-32k',
-                        name: 'code-gecko-32k'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'text-bison'
             },
             {
@@ -98,6 +74,13 @@ class GoogleVertexAI_LLMs implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.LLM, 'googlevertexai')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

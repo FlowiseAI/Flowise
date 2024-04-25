@@ -150,7 +150,6 @@ class Astra_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const vectorDimension = nodeData.inputs?.vectorDimension as number
         const similarityMetric = nodeData.inputs?.similarityMetric as 'cosine' | 'euclidean' | 'dot_product' | undefined
@@ -177,14 +176,6 @@ class Astra_VectorStores implements INode {
                     dimension: vectorDimension ?? 1536,
                     metric: similarityMetric ?? 'cosine'
                 }
-            }
-        }
-
-        const flattenDocs = docs && docs.length ? flatten(docs) : []
-        const finalDocs = []
-        for (let i = 0; i < flattenDocs.length; i += 1) {
-            if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                finalDocs.push(new Document(flattenDocs[i]))
             }
         }
 
