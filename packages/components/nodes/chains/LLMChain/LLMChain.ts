@@ -184,7 +184,7 @@ const runPrediction = async (
 
     if (llmSupportsVision(chain.llm)) {
         const visionChatModel = chain.llm as IVisionChatModal
-        const messageContent = addImagesToMessages(nodeData, options, visionChatModel.multiModalOption)
+        const messageContent = await addImagesToMessages(nodeData, options, visionChatModel.multiModalOption)
         if (messageContent?.length) {
             // Change model to gpt-4-vision && max token to higher when using gpt-4-vision
             visionChatModel.setVisionModel()

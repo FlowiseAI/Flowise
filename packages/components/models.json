@@ -32,6 +32,14 @@
                     "name": "meta.llama2-70b-chat-v1"
                 },
                 {
+                    "label": "meta.llama3-8b-instruct-v1:0",
+                    "name": "meta.llama3-8b-instruct-v1:0"
+                },
+                {
+                    "label": "meta.llama3-70b-instruct-v1:0",
+                    "name": "meta.llama3-70b-instruct-v1:0"
+                },
+                {
                     "label": "mistral.mistral-7b-instruct-v0:2",
                     "name": "mistral.mistral-7b-instruct-v0:2"
                 },
@@ -308,6 +316,10 @@
                 {
                     "label": "gemini-pro",
                     "name": "gemini-pro"
+                },
+                {
+                    "label": "gemini-pro-vision",
+                    "name": "gemini-pro-vision"
                 }
             ]
         },
@@ -323,6 +335,18 @@
         {
             "name": "chatGoogleVertexAI",
             "models": [
+                {
+                    "label": "gemini-1.5-pro",
+                    "name": "gemini-1.5-pro"
+                },
+                {
+                    "label": "gemini-1.0-pro",
+                    "name": "gemini-1.0-pro"
+                },
+                {
+                    "label": "gemini-1.0-pro-vision",
+                    "name": "gemini-1.0-pro-vision"
+                },
                 {
                     "label": "chat-bison",
                     "name": "chat-bison"

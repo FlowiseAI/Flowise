@@ -13,7 +13,7 @@ import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalU
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
-class MRKLAgentChat_Agents implements INode {
+class ReActAgentChat_Agents implements INode {
     label: string
     name: string
     version: number
@@ -27,7 +27,7 @@ class MRKLAgentChat_Agents implements INode {
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'ReAct Agent for Chat Models'
-        this.name = 'mrklAgentChat'
+        this.name = 'reactAgentChat'
         this.version = 4.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
@@ -98,7 +98,7 @@ class MRKLAgentChat_Agents implements INode {
 
         if (llmSupportsVision(model)) {
             const visionChatModel = model as IVisionChatModal
-            const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+            const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
 
             if (messageContent?.length) {
                 // Change model to vision supported
@@ -157,4 +157,4 @@ class MRKLAgentChat_Agents implements INode {
     }
 }
 
-module.exports = { nodeClass: MRKLAgentChat_Agents }
+module.exports = { nodeClass: ReActAgentChat_Agents }

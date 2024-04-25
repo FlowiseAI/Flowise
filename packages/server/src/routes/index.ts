@@ -26,6 +26,7 @@ import nodeLoadMethodRouter from './node-load-methods'
 import nodesRouter from './nodes'
 import openaiAssistantsRouter from './openai-assistants'
 import openaiAssistantsFileRouter from './openai-assistants-files'
+import openaiAssistantsVectorStoreRouter from './openai-assistants-vector-store'
 import predictionRouter from './predictions'
 import promptListsRouter from './prompts-lists'
 import publicChatbotRouter from './public-chatbots'
@@ -67,6 +68,7 @@ router.use('/node-load-method', nodeLoadMethodRouter)
 router.use('/nodes', nodesRouter)
 router.use('/openai-assistants', openaiAssistantsRouter)
 router.use('/openai-assistants-file', openaiAssistantsFileRouter)
+router.use('/openai-assistants-vector-store', openaiAssistantsVectorStoreRouter)
 router.use('/prediction', predictionRouter)
 router.use('/prompts-list', promptListsRouter)
 router.use('/public-chatbotConfig', publicChatbotRouter)
