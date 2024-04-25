@@ -18,7 +18,7 @@ class OpenAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'OpenAI Embeddings'
         this.name = 'openAIEmbeddings'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'OpenAIEmbeddings'
         this.icon = 'openai.svg'
         this.category = 'Embeddings'
@@ -105,7 +105,7 @@ class OpenAIEmbedding_Embeddings implements INode {
         if (stripNewLines) obj.stripNewLines = stripNewLines
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (dimensions) obj.dimensions = parseInt(dimensions,10)
+        if (dimensions) obj.dimensions = parseInt(dimensions, 10)
 
         const model = new OpenAIEmbeddings(obj, { basePath })
         return model
