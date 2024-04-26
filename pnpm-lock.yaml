@@ -60,6 +60,9 @@ importers:
       lint-staged:
         specifier: ^13.0.3
         version: 13.3.0(enquirer@2.4.1)
+      pnpm:
+        specifier: ^9.0.6
+        version: 9.0.6
       prettier:
         specifier: ^2.7.1
         version: 2.8.8
@@ -11894,6 +11897,11 @@ packages:
   playwright@1.42.1:
     resolution: {integrity: sha512-PgwB03s2DZBcNRoW+1w9E+VkLBxweib6KTXM0M3tkiT4jVxKSi6PmVJ591J+0u10LUrgxB7dLRbiJqO5s2QPMg==}
     engines: {node: '>=16'}
+    hasBin: true
+
+  pnpm@9.0.6:
+    resolution: {integrity: sha512-9thjEwlzIHy3ozbWtDmiQqJqyAaAd99TDWqGBpQZhT3B/+ZAKexZSpxQWjpBDRlkPIcKumd2Mw9c/dzxCpwWFw==}
+    engines: {node: '>=18.12'}
     hasBin: true
 
   popmotion@9.3.6:
@@ -30298,6 +30306,8 @@ snapshots:
       playwright-core: 1.42.1
     optionalDependencies:
       fsevents: 2.3.2
+
+  pnpm@9.0.6: {}
 
   popmotion@9.3.6:
     dependencies:
