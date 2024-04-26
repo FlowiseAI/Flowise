@@ -300,7 +300,13 @@ class OpenAIAssistant_Agents implements INode {
                                         // eslint-disable-next-line no-useless-escape
                                         const fileName = cited_file.filename.split(/[\/\\]/).pop() ?? cited_file.filename
                                         if (!disableFileDownload) {
-                                            filePath = await downloadFile(openAIApiKey, cited_file, fileName, options.chatflowid, threadId)
+                                            filePath = await downloadFile(
+                                                openAIApiKey,
+                                                cited_file,
+                                                fileName,
+                                                options.chatflowid,
+                                                options.chatId
+                                            )
                                             fileAnnotations.push({
                                                 filePath,
                                                 fileName
@@ -318,7 +324,7 @@ class OpenAIAssistant_Agents implements INode {
                                                     cited_file,
                                                     fileName,
                                                     options.chatflowid,
-                                                    threadId
+                                                    options.chatId
                                                 )
                                                 fileAnnotations.push({
                                                     filePath,
@@ -370,7 +376,7 @@ class OpenAIAssistant_Agents implements INode {
                             const fileId = chunk.image_file.file_id
                             const fileObj = await openai.files.retrieve(fileId)
 
-                            const buffer = await downloadImg(openai, fileId, `${fileObj.filename}.png`, options.chatflowid, threadId)
+                            const buffer = await downloadImg(openai, fileId, `${fileObj.filename}.png`, options.chatflowid, options.chatId)
                             const base64String = Buffer.from(buffer).toString('base64')
 
                             // TODO: Use a file path and retrieve image on the fly. Storing as base64 to localStorage and database will easily hit limits
@@ -641,7 +647,7 @@ class OpenAIAssistant_Agents implements INode {
                                 // eslint-disable-next-line no-useless-escape
                                 const fileName = cited_file.filename.split(/[\/\\]/).pop() ?? cited_file.filename
                                 if (!disableFileDownload) {
-                                    filePath = await downloadFile(openAIApiKey, cited_file, fileName, options.chatflowid, threadId)
+                                    filePath = await downloadFile(openAIApiKey, cited_file, fileName, options.chatflowid, options.chatId)
                                     fileAnnotations.push({
                                         filePath,
                                         fileName
@@ -654,7 +660,13 @@ class OpenAIAssistant_Agents implements INode {
                                     // eslint-disable-next-line no-useless-escape
                                     const fileName = cited_file.filename.split(/[\/\\]/).pop() ?? cited_file.filename
                                     if (!disableFileDownload) {
-                                        filePath = await downloadFile(openAIApiKey, cited_file, fileName, options.chatflowid, threadId)
+                                        filePath = await downloadFile(
+                                            openAIApiKey,
+                                            cited_file,
+                                            fileName,
+                                            options.chatflowid,
+                                            options.chatId
+                                        )
                                         fileAnnotations.push({
                                             filePath,
                                             fileName
@@ -681,7 +693,7 @@ class OpenAIAssistant_Agents implements INode {
                     const fileId = content.image_file.file_id
                     const fileObj = await openai.files.retrieve(fileId)
 
-                    const buffer = await downloadImg(openai, fileId, `${fileObj.filename}.png`, options.chatflowid, threadId)
+                    const buffer = await downloadImg(openai, fileId, `${fileObj.filename}.png`, options.chatflowid, options.chatId)
                     const base64String = Buffer.from(buffer).toString('base64')
 
                     // TODO: Use a file path and retrieve image on the fly. Storing as base64 to localStorage and database will easily hit limits
