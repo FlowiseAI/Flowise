@@ -1,9 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
-import { getStoragePath } from '../../../src'
-import fs from 'fs'
-import path from 'path'
+import { getFileFromStorage } from '../../../src'
 
 class Json_DocumentLoaders implements INode {
     label: string
@@ -82,8 +80,7 @@ class Json_DocumentLoaders implements INode {
             const chatflowid = options.chatflowid
 
             for (const file of files) {
-                const fileInStorage = path.join(getStoragePath(), chatflowid, file)
-                const fileData = fs.readFileSync(fileInStorage)
+                const fileData = await getFileFromStorage(file, chatflowid)
                 const blob = new Blob([fileData])
                 const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined)
 

@@ -17,7 +17,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
     constructor() {
         this.label = 'OpenAI Embeddings Custom'
         this.name = 'openAIEmbeddingsCustom'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'OpenAIEmbeddingsCustom'
         this.icon = 'openai.svg'
         this.category = 'Embeddings'
@@ -63,6 +63,13 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
                 name: 'modelName',
                 type: 'string',
                 optional: true
+            },
+            {
+                label: 'Dimensions',
+                name: 'dimensions',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -73,6 +80,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basepath as string
         const modelName = nodeData.inputs?.modelName as string
+        const dimensions = nodeData.inputs?.dimensions as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -85,6 +93,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (modelName) obj.modelName = modelName
+        if (dimensions) obj.dimensions = parseInt(dimensions, 10)
 
         const model = new OpenAIEmbeddings(obj, { basePath })
         return model
