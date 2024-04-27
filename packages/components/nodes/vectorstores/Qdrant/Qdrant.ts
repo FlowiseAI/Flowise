@@ -83,14 +83,14 @@ class Qdrant_VectorStores implements INode {
                 label: 'Vector Dimension',
                 name: 'qdrantVectorDimension',
                 type: 'number',
-                default: 1536,
+                default: 1024,
                 additionalParams: true
             },
             {
                 label: 'Batch Size',
                 name: 'batchSize',
                 type: 'number',
-                default: 100,
+                default: 1000,
                 additionalParams: true,
                 optional: true
             },
@@ -266,18 +266,18 @@ class Qdrant_VectorStores implements INode {
 
                     return res
                 } else {
-                    try {
-                        // try first to upsert all documents in one go
-                        await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
-                        return { numAdded: finalDocs.length, addedDocs: finalDocs }
-                    } catch (e) {
+                    // try {
+                    //     // try first to upsert all documents in one go
+                    //     await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+                    //     return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                    // } catch (e) {
                         // in this case we fallback to batch mode
-                        for(let i=0; i<finalDocs.length; i+=batchSize) {
-                            const batch = finalDocs.slice(i, i+batchSize)
-                            await QdrantVectorStore.fromDocuments(batch, embeddings, dbConfig)
-                        }
-                        return { numAdded: finalDocs.length, addedDocs: finalDocs }
-                    }                    
+                    for(let i=0; i<finalDocs.length; i+=batchSize) {
+                        const batch = finalDocs.slice(i, i+batchSize)
+                        await QdrantVectorStore.fromDocuments(batch, embeddings, dbConfig)
+                    }
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                    // }                    
                 }
             } catch (e) {
                 throw new Error(e)

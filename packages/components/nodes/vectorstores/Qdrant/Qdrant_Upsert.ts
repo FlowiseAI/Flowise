@@ -68,14 +68,14 @@ class QdrantUpsert_VectorStores implements INode {
                 label: 'Vector Dimension',
                 name: 'qdrantVectorDimension',
                 type: 'number',
-                default: 1536,
+                default: 1024,
                 additionalParams: true
             },
             {
                 label: 'Batch Size',
                 name: 'batchSize',
                 type: 'number',
-                default: 100,
+                default: 1000,
                 additionalParams: true,
                 optional: true
             },
@@ -184,16 +184,16 @@ class QdrantUpsert_VectorStores implements INode {
         }
 
         let vectorStore: QdrantVectorStore | undefined = undefined;
-        try {
-            // try first to upsert all documents in one go
-            vectorStore = await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
-        } catch (e) {
+        // try {
+        //     // try first to upsert all documents in one go
+        //     vectorStore = await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+        // } catch (e) {
             // in this case we fallback to batch mode
-            for(let i=0; i<finalDocs.length; i+=batchSize) {
-                const batch = finalDocs.slice(i, i+batchSize)
-                vectorStore = await QdrantVectorStore.fromDocuments(batch, embeddings, dbConfig)
-            }
+        for(let i=0; i<finalDocs.length; i+=batchSize) {
+            const batch = finalDocs.slice(i, i+batchSize)
+            vectorStore = await QdrantVectorStore.fromDocuments(batch, embeddings, dbConfig)
         }
+        // }
         
 
         if(vectorStore === undefined) {
