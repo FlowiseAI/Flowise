@@ -203,7 +203,7 @@ const prepareAgent = async (
 
     if (llmSupportsVision(model)) {
         const visionChatModel = model as IVisionChatModal
-        const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+        const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
 
         if (messageContent?.length) {
             visionChatModel.setVisionModel()

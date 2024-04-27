@@ -420,6 +420,11 @@ export class AnalyticHandler {
             }
 
             if (langfuseTraceClient) {
+                langfuseTraceClient.update({
+                    input: {
+                        text: input
+                    }
+                })
                 const span = langfuseTraceClient.span({
                     name,
                     input: {
@@ -472,6 +477,14 @@ export class AnalyticHandler {
                 span.end({
                     output
                 })
+                const langfuseTraceClient = this.handlers['langFuse'].trace[returnIds['langFuse'].trace]
+                if (langfuseTraceClient) {
+                    langfuseTraceClient.update({
+                        output: {
+                            output
+                        }
+                    })
+                }
                 if (shutdown) {
                     const langfuse: Langfuse = this.handlers['langFuse'].client
                     await langfuse.shutdownAsync()
@@ -513,6 +526,14 @@ export class AnalyticHandler {
                         error
                     }
                 })
+                const langfuseTraceClient = this.handlers['langFuse'].trace[returnIds['langFuse'].trace]
+                if (langfuseTraceClient) {
+                    langfuseTraceClient.update({
+                        output: {
+                            error
+                        }
+                    })
+                }
                 if (shutdown) {
                     const langfuse: Langfuse = this.handlers['langFuse'].client
                     await langfuse.shutdownAsync()

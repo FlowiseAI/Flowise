@@ -1,12 +1,10 @@
 import OpenAI from 'openai'
-import path from 'path'
-import * as fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
-import { uniqWith, isEqual } from 'lodash'
+import { uniqWith, isEqual, cloneDeep } from 'lodash'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Assistant } from '../../database/entities/Assistant'
 import { Credential } from '../../database/entities/Credential'
-import { getUserHome, decryptCredentialData, getAppVersion } from '../../utils'
+import { decryptCredentialData, getAppVersion } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 
@@ -34,6 +32,7 @@ const createAssistant = async (requestBody: any): Promise<any> => {
             }
             const openai = new OpenAI({ apiKey: openAIApiKey })
 
+            // Prepare tools
             let tools = []
             if (assistantDetails.tools) {
                 for (const tool of assistantDetails.tools ?? []) {
@@ -43,40 +42,25 @@ const createAssistant = async (requestBody: any): Promise<any> => {
                 }
             }
 
-            if (assistantDetails.uploadFiles) {
-                // Base64 strings
-                let files: string[] = []
-                const fileBase64 = assistantDetails.uploadFiles
-                if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
-                    files = JSON.parse(fileBase64)
-                } else {
-                    files = [fileBase64]
-                }
+            // Save tool_resources to be stored later into database
+            const savedToolResources = cloneDeep(assistantDetails.tool_resources)
 
-                const uploadedFiles = []
-                for (const file of files) {
-                    const splitDataURI = file.split(',')
-                    const filename = splitDataURI.pop()?.split(':')[1] ?? ''
-                    const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                    const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', filename)
-                    if (!fs.existsSync(path.join(getUserHome(), '.flowise', 'openai-assistant'))) {
-                        fs.mkdirSync(path.dirname(filePath), { recursive: true })
+            // Cleanup tool_resources for creating assistant
+            if (assistantDetails.tool_resources) {
+                for (const toolResource in assistantDetails.tool_resources) {
+                    if (toolResource === 'file_search') {
+                        assistantDetails.tool_resources['file_search'] = {
+                            vector_store_ids: assistantDetails.tool_resources['file_search'].vector_store_ids
+                        }
+                    } else if (toolResource === 'code_interpreter') {
+                        assistantDetails.tool_resources['code_interpreter'] = {
+                            file_ids: assistantDetails.tool_resources['code_interpreter'].file_ids
+                        }
                     }
-                    if (!fs.existsSync(filePath)) {
-                        fs.writeFileSync(filePath, bf)
-                    }
-
-                    const createdFile = await openai.files.create({
-                        file: fs.createReadStream(filePath),
-                        purpose: 'assistants'
-                    })
-                    uploadedFiles.push(createdFile)
-
-                    fs.unlinkSync(filePath)
                 }
-                assistantDetails.files = [...assistantDetails.files, ...uploadedFiles]
             }
 
+            // If the assistant doesn't exist, create a new one
             if (!assistantDetails.id) {
                 const newAssistant = await openai.beta.assistants.create({
                     name: assistantDetails.name,
@@ -84,12 +68,15 @@ const createAssistant = async (requestBody: any): Promise<any> => {
                     instructions: assistantDetails.instructions,
                     model: assistantDetails.model,
                     tools,
-                    file_ids: (assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)
+                    tool_resources: assistantDetails.tool_resources,
+                    temperature: assistantDetails.temperature,
+                    top_p: assistantDetails.top_p
                 })
                 assistantDetails.id = newAssistant.id
             } else {
                 const retrievedAssistant = await openai.beta.assistants.retrieve(assistantDetails.id)
-                let filteredTools = uniqWith([...retrievedAssistant.tools, ...tools], isEqual)
+                let filteredTools = uniqWith([...retrievedAssistant.tools.filter((tool) => tool.type === 'function'), ...tools], isEqual)
+                // Remove empty functions
                 filteredTools = filteredTools.filter((tool) => !(tool.type === 'function' && !(tool as any).function))
 
                 await openai.beta.assistants.update(assistantDetails.id, {
@@ -98,17 +85,16 @@ const createAssistant = async (requestBody: any): Promise<any> => {
                     instructions: assistantDetails.instructions ?? '',
                     model: assistantDetails.model,
                     tools: filteredTools,
-                    file_ids: uniqWith(
-                        [...retrievedAssistant.file_ids, ...(assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)],
-                        isEqual
-                    )
+                    tool_resources: assistantDetails.tool_resources,
+                    temperature: assistantDetails.temperature,
+                    top_p: assistantDetails.top_p
                 })
             }
 
             const newAssistantDetails = {
                 ...assistantDetails
             }
-            if (newAssistantDetails.uploadFiles) delete newAssistantDetails.uploadFiles
+            if (savedToolResources) newAssistantDetails.tool_resources = savedToolResources
 
             requestBody.details = JSON.stringify(newAssistantDetails)
         } catch (error) {
@@ -117,7 +103,7 @@ const createAssistant = async (requestBody: any): Promise<any> => {
         const newAssistant = new Assistant()
         Object.assign(newAssistant, requestBody)
 
-        const assistant = await appServer.AppDataSource.getRepository(Assistant).create(newAssistant)
+        const assistant = appServer.AppDataSource.getRepository(Assistant).create(newAssistant)
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
 
         await appServer.telemetry.sendTelemetry('assistant_created', {
@@ -249,42 +235,26 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<a
                 }
             }
 
-            if (assistantDetails.uploadFiles) {
-                // Base64 strings
-                let files: string[] = []
-                const fileBase64 = assistantDetails.uploadFiles
-                if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
-                    files = JSON.parse(fileBase64)
-                } else {
-                    files = [fileBase64]
-                }
+            // Save tool_resources to be stored later into database
+            const savedToolResources = cloneDeep(assistantDetails.tool_resources)
 
-                const uploadedFiles = []
-                for (const file of files) {
-                    const splitDataURI = file.split(',')
-                    const filename = splitDataURI.pop()?.split(':')[1] ?? ''
-                    const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                    const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', filename)
-                    if (!fs.existsSync(path.join(getUserHome(), '.flowise', 'openai-assistant'))) {
-                        fs.mkdirSync(path.dirname(filePath), { recursive: true })
+            // Cleanup tool_resources before updating
+            if (assistantDetails.tool_resources) {
+                for (const toolResource in assistantDetails.tool_resources) {
+                    if (toolResource === 'file_search') {
+                        assistantDetails.tool_resources['file_search'] = {
+                            vector_store_ids: assistantDetails.tool_resources['file_search'].vector_store_ids
+                        }
+                    } else if (toolResource === 'code_interpreter') {
+                        assistantDetails.tool_resources['code_interpreter'] = {
+                            file_ids: assistantDetails.tool_resources['code_interpreter'].file_ids
+                        }
                     }
-                    if (!fs.existsSync(filePath)) {
-                        fs.writeFileSync(filePath, bf)
-                    }
-
-                    const createdFile = await openai.files.create({
-                        file: fs.createReadStream(filePath),
-                        purpose: 'assistants'
-                    })
-                    uploadedFiles.push(createdFile)
-
-                    fs.unlinkSync(filePath)
                 }
-                assistantDetails.files = [...assistantDetails.files, ...uploadedFiles]
             }
 
             const retrievedAssistant = await openai.beta.assistants.retrieve(openAIAssistantId)
-            let filteredTools = uniqWith([...retrievedAssistant.tools, ...tools], isEqual)
+            let filteredTools = uniqWith([...retrievedAssistant.tools.filter((tool) => tool.type === 'function'), ...tools], isEqual)
             filteredTools = filteredTools.filter((tool) => !(tool.type === 'function' && !(tool as any).function))
 
             await openai.beta.assistants.update(openAIAssistantId, {
@@ -293,23 +263,22 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<a
                 instructions: assistantDetails.instructions,
                 model: assistantDetails.model,
                 tools: filteredTools,
-                file_ids: uniqWith(
-                    [...retrievedAssistant.file_ids, ...(assistantDetails.files ?? []).map((file: OpenAI.Files.FileObject) => file.id)],
-                    isEqual
-                )
+                tool_resources: assistantDetails.tool_resources,
+                temperature: assistantDetails.temperature,
+                top_p: assistantDetails.top_p
             })
 
             const newAssistantDetails = {
                 ...assistantDetails,
                 id: openAIAssistantId
             }
-            if (newAssistantDetails.uploadFiles) delete newAssistantDetails.uploadFiles
+            if (savedToolResources) newAssistantDetails.tool_resources = savedToolResources
 
             const updateAssistant = new Assistant()
             body.details = JSON.stringify(newAssistantDetails)
             Object.assign(updateAssistant, body)
 
-            await appServer.AppDataSource.getRepository(Assistant).merge(assistant, updateAssistant)
+            appServer.AppDataSource.getRepository(Assistant).merge(assistant, updateAssistant)
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
             return dbResponse
         } catch (error) {

@@ -1,9 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { CSVLoader } from 'langchain/document_loaders/fs/csv'
-import path from 'path'
-import { getStoragePath } from '../../../src'
-import fs from 'fs'
+import { getFileFromStorage } from '../../../src'
 
 class Csv_DocumentLoaders implements INode {
     label: string
@@ -75,8 +73,7 @@ class Csv_DocumentLoaders implements INode {
             const chatflowid = options.chatflowid
 
             for (const file of files) {
-                const fileInStorage = path.join(getStoragePath(), chatflowid, file)
-                const fileData = fs.readFileSync(fileInStorage)
+                const fileData = await getFileFromStorage(file, chatflowid)
                 const blob = new Blob([fileData])
                 const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 

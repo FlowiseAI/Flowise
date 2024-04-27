@@ -57,7 +57,6 @@ class XMLAgent_Agents implements INode {
         this.type = 'XMLAgent'
         this.category = 'Agents'
         this.icon = 'xmlagent.svg'
-        this.badge = 'NEW'
         this.description = `Agent that is designed for LLMs that are good for reasoning/writing XML (e.g: Anthropic Claude)`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [
