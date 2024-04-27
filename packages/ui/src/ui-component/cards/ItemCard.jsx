@@ -144,7 +144,6 @@ const ItemCard = ({ data, images, onClick }) => {
 }
 
 ItemCard.propTypes = {
-    isLoading: PropTypes.bool,
     data: PropTypes.object,
     images: PropTypes.array,
     onClick: PropTypes.func

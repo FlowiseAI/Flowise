@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import useApi from '@/hooks/useApi'
 
 // material-ui
-import { Grid, Box, Stack, Button } from '@mui/material'
+import { Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -14,30 +13,49 @@ import { gridSpacing } from '@/store/constant'
 import ToolEmptySVG from '@/assets/images/tools_empty.svg'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
+import ErrorBoundary from '@/ErrorBoundary'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // API
 import documentsApi from '@/api/documentstore'
 
 // icons
-import { IconPlus } from '@tabler/icons'
-import ErrorBoundary from '@/ErrorBoundary'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons'
+
+// const
+import { baseURL } from '@/store/constant'
 
 // ==============================|| DOCUMENTS ||============================== //
 
 const Documents = () => {
     const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
-    const [error, setError] = useState(null)
-    const [isLoading, setLoading] = useState(true)
-
     const getAllDocumentStores = useApi(documentsApi.getAllDocumentStores)
 
+    const [error, setError] = useState(null)
+    const [isLoading, setLoading] = useState(true)
+    const [images, setImages] = useState({})
+    const [search, setSearch] = useState('')
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
+    const [docStores, setDocStores] = useState([])
+    const [view, setView] = useState(localStorage.getItem('docStoreDisplayStyle') || 'card')
 
-    const openDS = (id) => {
+    const handleChange = (event, nextView) => {
+        if (nextView === null) return
+        localStorage.setItem('docStoreDisplayStyle', nextView)
+        setView(nextView)
+    }
+
+    function filterDocStores(data) {
+        return data.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+    }
+
+    const onSearchChange = (event) => {
+        setSearch(event.target.value)
+    }
+
+    const goToDocumentStore = (id) => {
         navigate('/document-stores/' + id)
     }
 
@@ -63,48 +81,132 @@ const Documents = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    useEffect(() => {
+        if (getAllDocumentStores.data) {
+            try {
+                const docStores = getAllDocumentStores.data
+                const loaderImages = {}
+
+                for (let i = 0; i < docStores.length; i += 1) {
+                    const loaders = docStores[i].loaders
+                    let totalFiles = 0
+                    let totalChunks = 0
+                    let totalChars = 0
+                    loaderImages[docStores[i].id] = []
+                    for (let j = 0; j < loaders.length; j += 1) {
+                        const imageSrc = `${baseURL}/api/v1/node-icon/${loaders[j].loaderId}`
+                        if (!loaderImages[docStores[i].id].includes(imageSrc)) {
+                            loaderImages[docStores[i].id].push(imageSrc)
+                        }
+                        totalFiles += loaders[j]?.files?.length ?? 0
+                        totalChunks += loaders[j]?.totalChunks ?? 0
+                        totalChars += loaders[j]?.totalChars ?? 0
+                    }
+                    docStores[i].totalFiles = totalFiles
+                    docStores[i].totalChunks = totalChunks
+                    docStores[i].totalChars = totalChars
+                }
+
+                console.log(docStores)
+                setDocStores(docStores)
+                setImages(loaderImages)
+            } catch (e) {
+                console.error(e)
+            }
+        }
+    }, [getAllDocumentStores.data])
+
+    useEffect(() => {
+        setLoading(getAllDocumentStores.loading)
+    }, [getAllDocumentStores.loading])
+
+    useEffect(() => {
+        setError(getAllDocumentStores.error)
+    }, [getAllDocumentStores.error])
+
     return (
-        <>
-            <MainCard>
-                {error ? (
-                    <ErrorBoundary error={error} />
-                ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader search={false} title='Document Store'>
-                            <StyledButton
+        <MainCard>
+            {error ? (
+                <ErrorBoundary error={error} />
+            ) : (
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name' title='Document Store'>
+                        <ToggleButtonGroup
+                            sx={{ borderRadius: 2, maxHeight: 40 }}
+                            value={view}
+                            color='primary'
+                            exclusive
+                            onChange={handleChange}
+                        >
+                            <ToggleButton
+                                sx={{
+                                    borderColor: theme.palette.grey[900] + 25,
+                                    borderRadius: 2,
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                }}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                                id='btn_createVariable'
+                                value='card'
+                                title='Card View'
                             >
-                                New Document Store
-                            </StyledButton>
-                        </ViewHeader>
-                        <Grid container spacing={gridSpacing}>
-                            {!getAllDocumentStores.loading &&
-                                getAllDocumentStores.data &&
-                                getAllDocumentStores.data.map((data, index) => (
-                                    <Grid key={index} item lg={3} md={4} sm={6} xs={12}>
-                                        <DocumentStoreCard data={data} onClick={() => openDS(data.id)} />
-                                    </Grid>
-                                ))}
-                        </Grid>
-                        {!getAllDocumentStores.loading && (!getAllDocumentStores.data || getAllDocumentStores.data.length === 0) && (
-                            <Stack style={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '30vh', width: 'auto' }}
-                                        src={ToolEmptySVG}
-                                        alt='ToolEmptySVG'
-                                    />
+                                <IconLayoutGrid />
+                            </ToggleButton>
+                            <ToggleButton
+                                sx={{
+                                    borderColor: theme.palette.grey[900] + 25,
+                                    borderRadius: 2,
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                }}
+                                variant='contained'
+                                value='list'
+                                title='List View'
+                            >
+                                <IconList />
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                        <StyledButton
+                            variant='contained'
+                            sx={{ borderRadius: 2, height: '100%' }}
+                            onClick={addNew}
+                            startIcon={<IconPlus />}
+                            id='btn_createVariable'
+                        >
+                            Add New
+                        </StyledButton>
+                    </ViewHeader>
+                    {!view || view === 'card' ? (
+                        <>
+                            {isLoading && !docStores ? (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
                                 </Box>
-                                <div>No Document Stores Created Yet</div>
-                            </Stack>
-                        )}
-                    </Stack>
-                )}
-            </MainCard>
+                            ) : (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    {docStores?.filter(filterDocStores).map((data, index) => (
+                                        <DocumentStoreCard
+                                            key={index}
+                                            images={images[data.id]}
+                                            data={data}
+                                            onClick={() => goToDocumentStore(data.id)}
+                                        />
+                                    ))}
+                                </Box>
+                            )}
+                        </>
+                    ) : (
+                        <>{/*TODO: Implement Table View*/}</>
+                    )}
+                    {!isLoading && (!docStores || docStores.length === 0) && (
+                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                            <Box sx={{ p: 2, height: 'auto' }}>
+                                <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
+                            </Box>
+                            <div>No Document Stores Created Yet</div>
+                        </Stack>
+                    )}
+                </Stack>
+            )}
             {showDialog && (
                 <AddDocStoreDialog
                     dialogProps={dialogProps}
@@ -113,7 +215,7 @@ const Documents = () => {
                     onConfirm={onConfirm}
                 />
             )}
-        </>
+        </MainCard>
     )
 }
 
