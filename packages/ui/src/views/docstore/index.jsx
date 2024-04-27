@@ -3,7 +3,21 @@ import { useNavigate } from 'react-router-dom'
 import useApi from '@/hooks/useApi'
 
 // material-ui
-import { Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import {
+    Box,
+    Paper,
+    Skeleton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -20,15 +34,19 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import documentsApi from '@/api/documentstore'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons'
+import { IconPlus, IconLayoutGrid, IconList, IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons'
 
 // const
 import { baseURL } from '@/store/constant'
+import { kFormatter } from '@/utils/genericHelper'
+import { useSelector } from 'react-redux'
 
 // ==============================|| DOCUMENTS ||============================== //
 
 const Documents = () => {
     const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
+
     const navigate = useNavigate()
     const getAllDocumentStores = useApi(documentsApi.getAllDocumentStores)
 
@@ -195,7 +213,122 @@ const Documents = () => {
                             )}
                         </>
                     ) : (
-                        <>{/*TODO: Implement Table View*/}</>
+                        <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
+                            <Table aria-label='documents table' size='small'>
+                                <TableHead
+                                    sx={{
+                                        backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
+                                        height: 56
+                                    }}
+                                >
+                                    <TableRow>
+                                        <TableCell>Name</TableCell>
+                                        <TableCell>Description</TableCell>
+                                        <TableCell colspan={3} style={{ textAlign: 'center' }}>
+                                            Metrics
+                                        </TableCell>
+                                        <TableCell>Icons</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {docStores?.filter(filterDocStores).map((data, index) => (
+                                        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                            <TableCell>{data.name}</TableCell>
+                                            <TableCell>{data.description || ' '}</TableCell>
+                                            <TableCell>
+                                                <div
+                                                    style={{
+                                                        marginRight: 15,
+                                                        display: 'flex',
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center'
+                                                    }}
+                                                >
+                                                    <IconVectorBezier2 size={20} />
+                                                    {kFormatter(data.whereUsed?.length ?? 0)}
+                                                    {data.whereUsed?.length === 1 ? ' Flow' : ' Flows'}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div
+                                                    style={{
+                                                        marginRight: 15,
+                                                        display: 'flex',
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center'
+                                                    }}
+                                                >
+                                                    <IconLanguage size={20} />
+                                                    {kFormatter(data.totalChars ?? 0)} chars
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div
+                                                    style={{
+                                                        marginRight: 15,
+                                                        display: 'flex',
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center'
+                                                    }}
+                                                >
+                                                    <IconScissors size={20} />
+                                                    {kFormatter(data.totalChunks ?? 0)} chunks
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {images[data.id] && (
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'start',
+                                                            gap: 1
+                                                        }}
+                                                    >
+                                                        {images[data.id].slice(0, images.length > 3 ? 3 : images.length).map((img) => (
+                                                            <Box
+                                                                key={img}
+                                                                sx={{
+                                                                    width: 30,
+                                                                    height: 30,
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: customization.isDarkMode
+                                                                        ? theme.palette.common.white
+                                                                        : theme.palette.grey[300] + 75
+                                                                }}
+                                                            >
+                                                                <img
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        height: '100%',
+                                                                        padding: 5,
+                                                                        objectFit: 'contain'
+                                                                    }}
+                                                                    alt=''
+                                                                    src={img}
+                                                                />
+                                                            </Box>
+                                                        ))}
+                                                        {images.length > 3 && (
+                                                            <Typography
+                                                                sx={{
+                                                                    alignItems: 'center',
+                                                                    display: 'flex',
+                                                                    fontSize: '.9rem',
+                                                                    fontWeight: 200
+                                                                }}
+                                                            >
+                                                                + {images.length - 3} More
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
                     )}
                     {!isLoading && (!docStores || docStores.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>

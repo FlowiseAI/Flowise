@@ -31,6 +31,7 @@ export class DocumentStoreDTO {
         documentStoreDTO.name = entity.name
         documentStoreDTO.description = entity.description
         documentStoreDTO.subFolder = entity.subFolder
+        documentStoreDTO.status = entity.status
         if (entity.whereUsed) {
             documentStoreDTO.whereUsed = JSON.parse(entity.whereUsed)
         } else {
@@ -38,7 +39,6 @@ export class DocumentStoreDTO {
         }
         if (entity.loaders) {
             documentStoreDTO.loaders = JSON.parse(entity.loaders)
-            documentStoreDTO.status = DocumentStoreStatus.SYNC
             documentStoreDTO.loaders.map((loader) => {
                 documentStoreDTO.totalChars += loader.totalChars
                 documentStoreDTO.totalChunks += loader.totalChunks

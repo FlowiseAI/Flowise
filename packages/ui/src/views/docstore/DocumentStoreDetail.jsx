@@ -268,6 +268,17 @@ const DocumentStoreDetails = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader search={false} title={getSpecificDocumentStore.data?.name}>
+                            {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
+                                <Chip
+                                    variant={'filled'}
+                                    color={'success'}
+                                    label={
+                                        'Used in ' +
+                                        getSpecificDocumentStore.data?.whereUsed.length +
+                                        (getSpecificDocumentStore.data?.whereUsed.length === 1 ? ' Chatflow' : ' Chatflows')
+                                    }
+                                />
+                            )}
                             {getSpecificDocumentStore.data?.status !== 'STALE' && (
                                 <>
                                     <Button color='error' variant='outlined' startIcon={<IconTrash />} onClick={onStoreDelete}>

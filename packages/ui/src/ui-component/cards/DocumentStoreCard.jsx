@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 // material-ui
 import { styled } from '@mui/material/styles'
 import { Box, Grid, Typography, useTheme } from '@mui/material'
-import { IconFiles, IconLanguage, IconScissors } from '@tabler/icons'
+import { IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -113,22 +113,20 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                                 <span style={{ color: getColor(data.status)[2], marginLeft: 5 }}>{data.status}</span>
                             </div>
                         </div>
-                        {data.description && (
-                            <span
-                                style={{
-                                    display: '-webkit-box',
-                                    marginTop: 10,
-                                    overflowWrap: 'break-word',
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: 'vertical',
-                                    textOverflow: 'ellipsis',
-                                    overflow: 'hidden',
-                                    marginBottom: 10
-                                }}
-                            >
-                                {data.description}
-                            </span>
-                        )}
+                        <span
+                            style={{
+                                display: '-webkit-box',
+                                marginTop: 10,
+                                overflowWrap: 'break-word',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                textOverflow: 'ellipsis',
+                                overflow: 'hidden',
+                                marginBottom: 10
+                            }}
+                        >
+                            {data.description || ' '}
+                        </span>
                         <div
                             style={{
                                 width: '100%',
@@ -141,8 +139,8 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                             }}
                         >
                             <div style={{ marginRight: 15, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <IconFiles size={20} />
-                                {kFormatter(data.totalFiles ?? 0)} files
+                                <IconVectorBezier2 size={20} />
+                                {kFormatter(data.whereUsed?.length ?? 0)} {data.whereUsed?.length === 1 ? 'Flow' : 'Flows'}
                             </div>
                             <div style={{ marginRight: 15, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <IconLanguage size={20} />

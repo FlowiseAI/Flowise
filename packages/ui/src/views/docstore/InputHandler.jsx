@@ -328,6 +328,7 @@ const InputHandler = ({ inputParam, data, disabled = false, isAdditionalParams =
                         )}
                         {inputParam.type === 'multiOptions' && (
                             <MultiDropdown
+                                key={reloadTimestamp}
                                 disabled={disabled}
                                 name={inputParam.name}
                                 options={inputParam.options}

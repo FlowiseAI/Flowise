@@ -1,9 +1,13 @@
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { DocumentStore } from '../../database/entities/DocumentStore'
 // @ts-ignore
-import { getStoragePath, ICommonObject } from 'flowise-components'
-import fs from 'fs'
-import path from 'path'
+import {
+    addFileToStorage,
+    getFileFromStorage,
+    ICommonObject,
+    removeFilesFromStorage,
+    removeSpecificFileFromStorage
+} from 'flowise-components'
 import { DocumentStoreStatus } from '../../Interface'
 import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
 import { v4 as uuidv4 } from 'uuid'
@@ -40,16 +44,12 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) 
             id: storeId
         })
         if (!entity) throw new Error(`Document store ${storeId} not found`)
-        const dir = path.join(getStoragePath(), 'datasource', entity.subFolder)
-        if (!fs.existsSync(dir)) {
-            throw new Error(`Missing folder to delete files for Document Store ${entity.name}`)
-        }
         const existingLoaders = JSON.parse(entity.loaders)
         const found = existingLoaders.find((uFile: any) => uFile.id === loaderId)
         if (found) {
             if (found.path) {
                 //remove the existing files, if any of the file loaders were used.
-                fs.unlinkSync(found.path)
+                await removeSpecificFileFromStorage('datasource', entity.subFolder, found.path)
             }
             const index = existingLoaders.indexOf(found)
             if (index > -1) {
@@ -126,12 +126,18 @@ const deleteDocumentStore = async (storeId: string) => {
         const tbdChunk = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({
             storeId: storeId
         })
+        // now delete the files associated with the store
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+            id: storeId
+        })
+        if (!entity) throw new Error(`Document store ${storeId} not found`)
+        await removeFilesFromStorage('datasource', entity.subFolder)
         // now delete the store
-        const entity = await appServer.AppDataSource.getRepository(DocumentStore).delete({
+        const tbd = await appServer.AppDataSource.getRepository(DocumentStore).delete({
             id: storeId
         })
 
-        return { deleted: entity.affected }
+        return { deleted: tbd.affected }
     } catch (error) {
         throw new Error(`Error: documentStoreServices.deleteDocumentStore - ${error}`)
     }
@@ -202,27 +208,29 @@ const updateDocumentStore = async (documentStore: DocumentStore, updatedDocument
     }
 }
 
-const _saveFileToStorage = (fileBase64: string, entity: DocumentStore) => {
-    const dir = path.join(getStoragePath(), 'datasource', entity.subFolder)
-    if (!fs.existsSync(dir)) {
-        throw new Error(`Missing folder to upload files for Document Store ${entity.name}`)
-    }
+const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore) => {
+    // const dir = path.join(getStoragePath(), 'datasource', entity.subFolder)
+    // if (!fs.existsSync(dir)) {
+    //     throw new Error(`Missing folder to upload files for Document Store ${entity.name}`)
+    // }
     const splitDataURI = fileBase64.split(',')
     const filename = splitDataURI.pop()?.split(':')[1] ?? ''
     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-    const filePath = path.join(dir, filename)
-    fs.writeFileSync(filePath, bf)
-    const stats = fs.statSync(filePath)
+    // const filePath = path.join(dir, filename)
+    const mimePrefix = splitDataURI.pop()
+    let mime = ''
+    if (mimePrefix) {
+        //data:text/plain;base64
+        mime = mimePrefix.split(';')[0].split(':')[1]
+    }
+    await addFileToStorage(mime, bf, filename, 'datasource', entity.subFolder)
     return {
         id: uuidv4(),
-        path: filePath,
         name: filename,
-        mimePrefix: splitDataURI.pop(),
-        size: stats.size,
+        mimePrefix: mime,
+        size: bf.length,
         status: DocumentStoreStatus.NEW,
-        uploaded: stats.birthtime,
-        totalChunks: 0,
-        totalChars: 0
+        uploaded: new Date()
     }
 }
 
@@ -289,21 +297,20 @@ const _normalizeFilePaths = async (data: any, entity: DocumentStore | null) => {
             } else {
                 files = [fileName]
             }
-            const dir = path.join(getStoragePath(), 'datasource', documentStoreEntity.subFolder)
-            if (!fs.existsSync(dir)) {
-                throw new Error(`Missing folder to upload files for Document Store ${documentStoreEntity.name}`)
-            }
+            //const dir = path.join(getStoragePath(), 'datasource', documentStoreEntity.subFolder)
+            // if (!fs.existsSync(dir)) {
+            //     throw new Error(`Missing folder to upload files for Document Store ${documentStoreEntity.name}`)
+            // }
             const loaders = JSON.parse(documentStoreEntity.loaders)
             const currentLoader = loaders.find((ldr: any) => ldr.id === data.id)
             if (currentLoader) {
                 const base64Files: string[] = []
                 for (const file of files) {
-                    const fileInStorage = path.join(dir, file)
-                    const fileData = fs.readFileSync(fileInStorage)
-                    const bf = Buffer.from(fileData)
+                    const bf = await getFileFromStorage(file, 'datasource', documentStoreEntity.subFolder)
                     // find the file entry that has the same name as the file
                     const uploadedFile = currentLoader.files.find((uFile: any) => uFile.name === file)
-                    const base64String = uploadedFile.mimePrefix + ',' + bf.toString('base64') + `,filename:${file}`
+                    const mimePrefix = 'data:' + uploadedFile.mimePrefix + ';base64'
+                    const base64String = mimePrefix + ',' + bf.toString('base64') + `,filename:${file}`
                     base64Files.push(base64String)
                 }
                 data.loaderConfig[keys[i]] = JSON.stringify(base64Files)
@@ -415,7 +422,7 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
                     for (let j = 0; j < files.length; j++) {
                         const file = files[j]
                         if (re.test(file)) {
-                            const fileMetadata = _saveFileToStorage(file, entity)
+                            const fileMetadata = await _saveFileToStorage(file, entity)
                             fileNames.push(fileMetadata.name)
                             filesWithMetadata.push(fileMetadata)
                         }
@@ -423,45 +430,37 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
                     data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
                 } else if (re.test(input)) {
                     const fileNames: string[] = []
-                    const fileMetadata = _saveFileToStorage(input, entity)
+                    const fileMetadata = await _saveFileToStorage(input, entity)
                     fileNames.push(fileMetadata.name)
                     filesWithMetadata.push(fileMetadata)
                     data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
                     break
                 }
             }
-            //step 4: create a new loader and save it to the document store
             const existingLoaders = JSON.parse(entity.loaders)
-            // let loader: any = {
-            //     id: newLoaderId,
-            //     loaderId: data.loaderId,
-            //     loaderName: data.loaderName,
-            //     loaderConfig: data.loaderConfig,
-            //     splitterId: data.splitterId,
-            //     splitterName: data.splitterName,
-            //     splitterConfig: data.splitterConfig
-            // }
-            // if (data.credential) {
-            //     loader.credential = data.credential
-            // }
             const loader = existingLoaders.find((ldr: any) => ldr.id === newLoaderId)
-            if (filesWithMetadata.length > 0) {
-                loader.files = filesWithMetadata
-            }
-            //existingLoaders.push(loader)
             if (data.id) {
-                //step 5: remove all files and chunks associated with the previous loader
+                //step 4: remove all files and chunks associated with the previous loader
                 const index = existingLoaders.indexOf(loader)
                 if (index > -1) {
                     existingLoaders.splice(index, 1)
                     if (!data.rehydrated) {
                         if (loader.files) {
-                            loader.files.map((file: any) => {
-                                fs.unlinkSync(file.path)
+                            loader.files.map(async (file: any) => {
+                                await removeSpecificFileFromStorage('datasource', entity.subFolder, file.name)
                             })
                         }
                     }
                 }
+            }
+            //step 5: upload with the new files and loaderConfig
+            if (filesWithMetadata.length > 0) {
+                loader.loaderConfig = data.loaderConfig
+                loader.files = filesWithMetadata
+            }
+            //step 6: update the loaders with the new loaderConfig
+            if (data.id) {
+                existingLoaders.push(loader)
             }
             //step 7: remove all previous chunks
             await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: newLoaderId })
@@ -509,7 +508,51 @@ const getDocumentLoaders = async () => {
     }
 }
 
+const updateDocumentStoreUsage = async (chatId: string, storeId: string | undefined) => {
+    try {
+        // find the document store
+        const appServer = getRunningExpressApp()
+        // find all entities that have the chatId in their whereUsed
+        const entities = await appServer.AppDataSource.getRepository(DocumentStore).find()
+        entities.map(async (entity: DocumentStore) => {
+            const whereUsed = JSON.parse(entity.whereUsed)
+            const found = whereUsed.find((w: any) => w === chatId)
+            if (found) {
+                if (!storeId) {
+                    // remove the chatId from the whereUsed, as the store is being deleted
+                    const index = whereUsed.indexOf(chatId)
+                    if (index > -1) {
+                        whereUsed.splice(index, 1)
+                        entity.whereUsed = JSON.stringify(whereUsed)
+                        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+                    }
+                } else if (entity.id === storeId) {
+                    // do nothing, already found and updated
+                } else if (entity.id !== storeId) {
+                    // remove the chatId from the whereUsed, as a new store is being used
+                    const index = whereUsed.indexOf(chatId)
+                    if (index > -1) {
+                        whereUsed.splice(index, 1)
+                        entity.whereUsed = JSON.stringify(whereUsed)
+                        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+                    }
+                }
+            } else {
+                if (entity.id === storeId) {
+                    // add the chatId to the whereUsed
+                    whereUsed.push(chatId)
+                    entity.whereUsed = JSON.stringify(whereUsed)
+                    await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+                }
+            }
+        })
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.updateUsage - ${error}`)
+    }
+}
+
 export default {
+    updateDocumentStoreUsage,
     deleteDocumentStore,
     createDocumentStore,
     deleteLoaderFromDocumentStore,

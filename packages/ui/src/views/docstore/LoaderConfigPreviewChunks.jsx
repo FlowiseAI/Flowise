@@ -407,7 +407,19 @@ const LoaderConfigPreviewChunks = () => {
 
     useEffect(() => {
         if (previewChunksApi.error) {
-            setError(previewChunksApi.error)
+            setLoading(false)
+            enqueueSnackbar({
+                message: 'Error invoking Process Chunks API. Please try again.',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
