@@ -76,7 +76,8 @@ class QdrantUpsert_VectorStores implements INode {
                 name: 'batchSize',
                 type: 'number',
                 default: 100,
-                additionalParams: true
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Similarity',
@@ -183,10 +184,17 @@ class QdrantUpsert_VectorStores implements INode {
         }
 
         let vectorStore: QdrantVectorStore | undefined = undefined;
-        for(let i=0; i<finalDocs.length; i+=batchSize) {
-            const batch = finalDocs.slice(i, i+batchSize)
-            vectorStore = await QdrantVectorStore.fromDocuments(batch, embeddings, dbConfig)
+        try {
+            // try first to upsert all documents in one go
+            vectorStore = await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+        } catch (e) {
+            // in this case we fallback to batch mode
+            for(let i=0; i<finalDocs.length; i+=batchSize) {
+                const batch = finalDocs.slice(i, i+batchSize)
+                vectorStore = await QdrantVectorStore.fromDocuments(batch, embeddings, dbConfig)
+            }
         }
+        
 
         if(vectorStore === undefined) {
             throw new Error('No documents to upsert')
