@@ -245,6 +245,13 @@ export const executeFlow = async ({
     const userMessageDateTime = new Date()
     const chatflowid = chatflow.id
 
+    // Logi Symphony session ID override config injection check.
+    if (process.env.LOGI_SYMPHONY_URL) {
+        const importPath = './LogiSymphony/logisymphony'
+        const logiSymphony = await import(importPath)
+        logiSymphony.checkSessionIdOverrideConfig(req, incomingInput)
+    }
+
     /* Process file uploads from the chat
      * - Images
      * - Files

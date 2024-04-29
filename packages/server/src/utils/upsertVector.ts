@@ -207,6 +207,13 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
     try {
         const chatflowid = req.params.id
 
+        // Logi Symphony session ID override config injection check.
+        if (process.env.LOGI_SYMPHONY_URL) {
+            const importPath = './LogiSymphony/logisymphony'
+            const logiSymphony = await import(importPath)
+            logiSymphony.checkSessionIdOverrideConfig(req, incomingInput)
+        }
+
         // Check if chatflow exists
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowid
