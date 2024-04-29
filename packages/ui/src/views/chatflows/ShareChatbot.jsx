@@ -28,6 +28,7 @@ const defaultConfig = {
     fontSize: 16,
     poweredByTextColor: '#303235',
     headerBackgroundColor: '#362CFA',
+    headerTitleColor: '#ffffff',
     botMessage: {
         backgroundColor: '#f7f8ff',
         textColor: '#303235'
@@ -68,6 +69,9 @@ const ShareChatbot = ({ isSessionMemory }) => {
     const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultConfig.poweredByTextColor)
     const [headerBackgroundColor, setHeaderBackgroundColor] = useState(
         chatbotConfig?.headerBackgroundColor ?? defaultConfig.headerBackgroundColor
+    )
+    const [headerTitleColor, setHeaderTitleColor] = useState(
+      chatbotConfig?.headerTitleColor ?? defaultConfig.headerTitleColor
     )
 
     const [botMessageBackgroundColor, setBotMessageBackgroundColor] = useState(
@@ -124,6 +128,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
         if (fontSize) obj.fontSize = fontSize
         if (poweredByTextColor) obj.poweredByTextColor = poweredByTextColor
         if (headerBackgroundColor) obj.headerBackgroundColor = headerBackgroundColor
+        if (headerTitleColor) obj.headerTitleColor = headerTitleColor
 
         if (botMessageBackgroundColor) obj.botMessage.backgroundColor = botMessageBackgroundColor
         if (botMessageTextColor) obj.botMessage.textColor = botMessageTextColor
@@ -241,6 +246,9 @@ const ShareChatbot = ({ isSessionMemory }) => {
                 break
             case 'headerBackgroundColor':
                 setHeaderBackgroundColor(hexColor)
+                break
+            case 'headerTitleColor':
+                setHeaderTitleColor(hexColor)
                 break
             case 'botMessageBackgroundColor':
                 setBotMessageBackgroundColor(hexColor)
@@ -439,6 +447,7 @@ const ShareChatbot = ({ isSessionMemory }) => {
             {textField(fontSize, 'fontSize', 'Размер шрифта', 'number')}
             {colorField(poweredByTextColor, 'poweredByTextColor', '"Разработано на" Цвет текста')}
             {colorField(headerBackgroundColor, 'headerBackgroundColor', 'Фоновый цвет шапки')}
+            {colorField(headerTitleColor, 'headerTitleColor', 'Цвет текста шапки')}
 
             {/*BOT Message*/}
             <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
