@@ -184,7 +184,7 @@ class QdrantUpsert_VectorStores implements INode {
             retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : JSON.parse(queryFilter)
         }
 
-        let vectorStore: QdrantVectorStore | undefined = undefined;
+        let vectorStore: QdrantVectorStore | undefined = undefined
         if (_batchSize) {
             const batchSize = parseInt(_batchSize, 10)
             for (let i = 0; i < finalDocs.length; i += batchSize) {
@@ -195,7 +195,7 @@ class QdrantUpsert_VectorStores implements INode {
             vectorStore = await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
         }
 
-        if(vectorStore === undefined) {
+        if (vectorStore === undefined) {
             throw new Error('No documents to upsert')
         } else {
             if (output === 'retriever') {
@@ -206,7 +206,7 @@ class QdrantUpsert_VectorStores implements INode {
                 return vectorStore
             }
             return vectorStore
-        }     
+        }
     }
 }
 
