@@ -114,6 +114,13 @@ class Weaviate_VectorStores implements INode {
                 type: 'number',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Weaviate Search Filter',
+                name: 'weaviateFilter',
+                type: 'json',
+                additionalParams: true,
+                optional: true
             }
         ]
         addMMRInputParams(this.inputs)
@@ -203,6 +210,7 @@ class Weaviate_VectorStores implements INode {
         const weaviateTextKey = nodeData.inputs?.weaviateTextKey as string
         const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        let weaviateFilter = nodeData.inputs?.weaviateFilter
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
@@ -223,10 +231,13 @@ class Weaviate_VectorStores implements INode {
 
         if (weaviateTextKey) obj.textKey = weaviateTextKey
         if (weaviateMetadataKeys) obj.metadataKeys = JSON.parse(weaviateMetadataKeys.replace(/\s/g, ''))
+        if (weaviateFilter) {
+            weaviateFilter = typeof weaviateFilter === 'object' ? weaviateFilter : JSON.parse(weaviateFilter)
+        }
 
         const vectorStore = await WeaviateStore.fromExistingIndex(embeddings, obj)
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore, weaviateFilter)
     }
 }
 
