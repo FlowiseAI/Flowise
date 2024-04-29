@@ -174,7 +174,7 @@ class Upstash_VectorStores implements INode {
 
 		const vectorStore = await UpstashVectorStore.fromExistingIndex(embeddings, obj)
 
-		return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+		return resolveVectorStoreOrRetriever(nodeData, vectorStore, obj.filter)
 	}
 }
 
