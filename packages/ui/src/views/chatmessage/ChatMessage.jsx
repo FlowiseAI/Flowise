@@ -425,6 +425,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                     let allMessages = [...cloneDeep(prevMessages)]
                     if (allMessages[allMessages.length - 1].type === 'apiMessage') {
                         allMessages[allMessages.length - 1].id = data?.chatMessageId
+
+                        if (data.text) allMessages[allMessages.length - 1].message = data.text
                     }
                     return allMessages
                 })
