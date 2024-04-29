@@ -83,7 +83,7 @@ class Qdrant_VectorStores implements INode {
                 label: 'Vector Dimension',
                 name: 'qdrantVectorDimension',
                 type: 'number',
-                default: 1024,
+                default: 1536,
                 additionalParams: true
             },
             {
