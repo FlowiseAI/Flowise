@@ -69,6 +69,13 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
         }
 
+        // Logi Symphony session ID override config injection check.
+        if (process.env.LOGI_SYMPHONY_URL) {
+            const importPath = './LogiSymphony/logisymphony'
+            const logiSymphony = await import(importPath)
+            logiSymphony.checkSessionIdOverrideConfig(req, incomingInput)
+        }
+
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
         const userMessageDateTime = new Date()
 
