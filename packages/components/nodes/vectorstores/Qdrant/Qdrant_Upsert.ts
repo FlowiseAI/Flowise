@@ -26,7 +26,7 @@ class QdrantUpsert_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant Upsert Document'
         this.name = 'qdrantUpsert'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'
