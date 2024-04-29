@@ -1,17 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import ReactJson from 'flowise-react-json-view'
 
 // material-ui
-import { Button, Grid, IconButton, Stack, Table, TableHead, TableRow, Typography } from '@mui/material'
-import { styled } from '@mui/material/styles'
+import { Collapse, Box, Skeleton, Card, Button, Grid, IconButton, Stack, Table, TableHead, TableRow, Typography } from '@mui/material'
+import { useTheme, styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
-import moment from 'moment'
-import { IconArrowBack, IconEdit, IconTrash, IconX, IconChevronLeft, IconChevronRight } from '@tabler/icons'
+import { IconLanguage, IconEdit, IconTrash, IconX, IconChevronLeft, IconChevronRight, IconChevronUp, IconChevronDown } from '@tabler/icons'
 import TableCell from '@mui/material/TableCell'
+import chunks_emptySVG from '@/assets/images/chunks_empty.svg'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 
 // API
 import documentsApi from '@/api/documentstore'
@@ -21,17 +26,9 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
-// icons
-import Card from '@mui/material/Card'
-
-import { useNavigate } from 'react-router-dom'
-import { StyledButton } from '@/ui-component/button/StyledButton'
-import ReactJson from 'flowise-react-json-view'
-import ErrorBoundary from '@/ErrorBoundary'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+// store
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
-import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
+import { IconClick } from '@tabler/icons'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -56,11 +53,12 @@ const ShowStoredChunks = () => {
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const theme = useTheme()
+    const ref = useRef(null)
     useNotifier()
+    const { confirm } = useConfirm()
 
     const getChunksApi = useApi(documentsApi.getFileChunks)
-    const deleteChunkApi = useApi(documentsApi.deleteChunkFromStore)
-    const editChunkApi = useApi(documentsApi.editChunkFromStore)
 
     const URLpath = document.location.pathname.toString().split('/')
     const fileId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
@@ -71,24 +69,28 @@ const ShowStoredChunks = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [start, setStart] = useState(1)
     const [end, setEnd] = useState(50)
+    const [expanded, setExpanded] = useState(false)
 
     const [loading, setLoading] = useState(false)
     const [selectedChunk, setSelectedChunk] = useState()
     const [selectedChunkNumber, setSelectedChunkNumber] = useState()
-    const [error, setError] = useState(null)
-    const { confirm } = useConfirm()
+
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [pageContentHeight, setPageContentHeight] = useState(0)
 
     const chunkSelected = (chunkId) => {
         setSelectedChunk(documentChunks.find((chunk) => chunk.id === chunkId))
         setSelectedChunkNumber(documentChunks.findIndex((chunk) => chunk.id === chunkId) + start)
+        setTimeout(() => {
+            setPageContentHeight(ref.current.clientHeight)
+        }, 100)
     }
 
-    const editClicked = (chunk) => {
+    const onChunkEdit = (chunk) => {
         const dialogProps = {
             value: chunk.pageContent,
             inputParam: { name: chunk.id, type: 'string', label: 'Edit Content' },
@@ -100,46 +102,19 @@ const ShowStoredChunks = () => {
         setShowExpandDialog(true)
     }
 
-    const onEditDialogSave = async (chunk, newValue) => {
-        setShowExpandDialog(false)
-
-        try {
-            setLoading(true)
-            await editChunkApi.request(chunk.storeId, chunk.docId, chunk.id, { pageContent: newValue })
-            enqueueSnackbar({
-                message: 'Document Chunk Successfully Edited',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'success',
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-            getChunksApi.request(storeId, fileId, currentPage)
-        } catch (error) {
-            setLoading(false)
-            setError(error)
-        }
+    const onClear = () => {
+        setSelectedChunk()
+        setSelectedChunkNumber()
     }
 
-    const deleteChunk = async (chunk) => {
-        const confirmPayload = {
-            title: `Delete`,
-            description: `Delete chunk ${chunk.id} ? This action cannot be undone.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
-
-        if (isConfirmed) {
-            try {
-                setLoading(true)
-                await deleteChunkApi.request(chunk.storeId, chunk.docId, chunk.id)
+    const onEditDialogSave = async (chunk, newValue) => {
+        setShowExpandDialog(false)
+        setLoading(true)
+        try {
+            const editResp = await documentsApi.editChunkFromStore(chunk.storeId, chunk.docId, chunk.id, { pageContent: newValue }, true)
+            if (editResp.data) {
                 enqueueSnackbar({
-                    message: 'Document Chunk deleted',
+                    message: 'Document chunk successfully edited!',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -150,21 +125,82 @@ const ShowStoredChunks = () => {
                         )
                     }
                 })
-                getChunksApi.request(storeId, fileId)
-            } catch (error) {
-                setLoading(false)
-                setError(error)
+                const newChunks = editResp.data?.chunks ?? []
+                setSelectedChunk(newChunks.find((newChunk) => newChunk.id === chunk.id))
+                setSelectedChunkNumber(newChunks.findIndex((newChunk) => newChunk.id === chunk.id) + start)
+                setTimeout(() => {
+                    setPageContentHeight(ref.current.clientHeight)
+                }, 100)
+                getChunksApi.request(storeId, fileId, currentPage)
             }
+            setLoading(false)
+        } catch (error) {
+            setLoading(false)
+            enqueueSnackbar({
+                message: `Failed to edit chunk: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
         }
     }
 
-    useEffect(() => {
-        if (deleteChunkApi.error) {
-            setLoading(false)
-            setError(deleteChunkApi.error)
+    const onDeleteChunk = async (chunk) => {
+        const confirmPayload = {
+            title: `Delete`,
+            description: `Delete chunk ${chunk.id} ? This action cannot be undone.`,
+            confirmButtonName: 'Delete',
+            cancelButtonName: 'Cancel'
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [deleteChunkApi.error])
+        const isConfirmed = await confirm(confirmPayload)
+
+        if (isConfirmed) {
+            setLoading(true)
+            try {
+                const delResp = await documentsApi.deleteChunkFromStore(chunk.storeId, chunk.docId, chunk.id)
+                if (delResp.data) {
+                    enqueueSnackbar({
+                        message: 'Document chunk successfully deleted!',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'success',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                    getChunksApi.request(storeId, fileId)
+                }
+                setLoading(false)
+            } catch (error) {
+                setLoading(false)
+                enqueueSnackbar({
+                    message: `Failed to delete chunk: ${
+                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        }
+    }
 
     useEffect(() => {
         setLoading(true)
@@ -192,183 +228,310 @@ const ShowStoredChunks = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChunksApi.data])
 
-    const openDS = (storeId) => {
-        navigate('/document-stores/' + storeId)
-    }
-
     return (
         <>
             <MainCard>
-                {error ? (
-                    <ErrorBoundary error={error} />
-                ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader search={false} title={getChunksApi.data?.file.loaderName}>
-                            <StyledButton
-                                variant='contained'
-                                sx={{ color: 'white' }}
-                                startIcon={<IconArrowBack />}
-                                onClick={() => openDS(storeId)}
-                            >
-                                Back to {getChunksApi.data?.file.storeName}
-                            </StyledButton>
-                        </ViewHeader>
-                        <div style={{ width: '100%' }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell component='th' scope='row'>
-                                            <strong>Chunks:</strong>
-                                        </TableCell>
-                                        <TableCell>
-                                            <IconButton
-                                                size='small'
-                                                onClick={() => changePage(currentPage - 1)}
-                                                style={{ marginRight: 10 }}
-                                                variant='outlined'
-                                                disabled={currentPage === 1}
-                                            >
-                                                <IconChevronLeft />
-                                            </IconButton>
-                                            Showing {start}-{end} of {totalChunks}
-                                            <IconButton
-                                                size='small'
-                                                onClick={() => changePage(currentPage + 1)}
-                                                style={{ marginLeft: 10 }}
-                                                variant='outlined'
-                                                disabled={end >= totalChunks}
-                                            >
-                                                <IconChevronRight />
-                                            </IconButton>
-                                        </TableCell>
-                                        <TableCell component='th' scope='row'>
-                                            <strong>Total Chars:</strong>
-                                        </TableCell>
-                                        <TableCell>{getChunksApi.data?.file?.totalChars?.toLocaleString()}</TableCell>
-                                        <TableCell component='th' scope='row'>
-                                            <strong>Uploaded:</strong>
-                                        </TableCell>
-                                        <TableCell>{moment(getChunksApi.data?.file?.uploaded).format('DD-MMM-YY hh:mm a')}</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                            </Table>
+                <Stack flexDirection='column'>
+                    <ViewHeader
+                        isBackButton={true}
+                        search={false}
+                        title={getChunksApi.data?.file.loaderName}
+                        description={getChunksApi.data?.file.splitterName}
+                        onBack={() => navigate(-1)}
+                    ></ViewHeader>
+                    <div style={{ width: '100%' }}>
+                        <div
+                            style={{
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                alignContent: 'center',
+                                overflow: 'hidden',
+                                marginTop: 15
+                            }}
+                        >
+                            <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                <IconButton
+                                    size='small'
+                                    onClick={() => changePage(currentPage - 1)}
+                                    style={{ marginRight: 10 }}
+                                    variant='outlined'
+                                    disabled={currentPage === 1}
+                                >
+                                    <IconChevronLeft />
+                                </IconButton>
+                                Showing {start}-{end} of {totalChunks} chunks
+                                <IconButton
+                                    size='small'
+                                    onClick={() => changePage(currentPage + 1)}
+                                    style={{ marginLeft: 10 }}
+                                    variant='outlined'
+                                    disabled={end >= totalChunks}
+                                >
+                                    <IconChevronRight />
+                                </IconButton>
+                            </div>
+                            <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                <IconLanguage size={20} />
+                                {getChunksApi.data?.file?.totalChars?.toLocaleString()} characters
+                            </div>
                         </div>
-                        {loading && <BackdropLoader open={loading} />}
-                        <div>
-                            <Grid container spacing='2'>
-                                <Grid item xs={12} md={8} lg={8} sm={12} style={{ borderRight: '1px', borderRightStyle: 'outset' }}>
-                                    <div style={{ height: '800px', overflow: 'scroll', padding: '8px' }}>
-                                        <Grid container spacing={2}>
-                                            {documentChunks?.map((row, index) => (
-                                                <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
-                                                    <Typography variant='h6' color='textSecondary' gutterBottom>{`#${
-                                                        start + index
-                                                    }. Characters: ${row.pageContent.length}`}</Typography>
-                                                    <CardWrapper style={{ borderColor: 'red' }} onClick={() => chunkSelected(row.id)}>
-                                                        <Card style={{ padding: 0 }}>
-                                                            <CardContent style={{ padding: 0 }}>
-                                                                <Typography
-                                                                    sx={{ wordWrap: 'break-word' }}
-                                                                    variant='body2'
-                                                                    style={{ fontSize: 10 }}
-                                                                >
-                                                                    {row.pageContent}
-                                                                </Typography>
-                                                            </CardContent>
-                                                        </Card>
-                                                    </CardWrapper>
-                                                </Grid>
-                                            ))}
-                                        </Grid>
-                                    </div>
-                                </Grid>
-                                <Grid item xs={0} md={4} lg={4} sm={0}>
-                                    <div style={{ height: '800px', overflow: 'scroll', padding: '8px' }}>
-                                        <Table size='small'>
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell colSpan={2}>
-                                                        <Typography variant='h4' gutterBottom>
-                                                            Selected Chunk : #{selectedChunkNumber}
-                                                        </Typography>
-                                                    </TableCell>
-                                                </TableRow>
-                                                {selectedChunk && (
-                                                    <>
-                                                        <TableRow>
-                                                            <TableCell component='th' scope='row' colSpan={2}>
-                                                                <Button
-                                                                    variant='outlined'
-                                                                    startIcon={<IconEdit />}
-                                                                    onClick={() => editClicked(selectedChunk)}
-                                                                >
-                                                                    Edit Content
-                                                                </Button>{' '}
-                                                                <Button
-                                                                    variant='outlined'
-                                                                    sx={{ color: 'red' }}
-                                                                    startIcon={<IconTrash />}
-                                                                    onClick={() => deleteChunk(selectedChunk)}
-                                                                >
-                                                                    Delete Chunk
-                                                                </Button>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell component='th' scope='row'>
-                                                                <strong>Id</strong>
-                                                            </TableCell>
-                                                            <TableCell>{selectedChunk.id}</TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell component='th' scope='row'>
-                                                                <strong>Chars</strong>
-                                                            </TableCell>
-                                                            <TableCell>{selectedChunk.pageContent.length}</TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell style={{ border: 0 }} component='th' scope='row' colSpan={2}>
-                                                                <strong>Content</strong>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell colSpan={2}>
-                                                                <Typography
-                                                                    sx={{ wordWrap: 'break-word' }}
-                                                                    variant='body2'
-                                                                    style={{ fontSize: 12 }}
-                                                                >
-                                                                    {selectedChunk.pageContent}
-                                                                </Typography>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell style={{ border: 0 }} component='th' scope='row' colSpan={2}>
-                                                                <strong>Metadata</strong>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                        <TableRow>
-                                                            <TableCell colSpan={2}>
-                                                                <ReactJson
-                                                                    theme={customization.isDarkMode ? 'ocean' : 'rjv-default'}
-                                                                    style={{ padding: 10, borderRadius: 10 }}
-                                                                    src={JSON.parse(selectedChunk.metadata)}
-                                                                    name={null}
-                                                                    quotesOnKeys={false}
-                                                                    displayDataTypes={false}
-                                                                />
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    </>
-                                                )}
-                                            </TableHead>
-                                        </Table>
-                                    </div>
-                                </Grid>
+                    </div>
+                    <div>
+                        <Grid container spacing='2'>
+                            <Grid item xs={12} md={8} lg={8} sm={12}>
+                                <div style={{ height: 'max-content', overflow: 'scroll', padding: '8px' }}>
+                                    <Grid container spacing={2}>
+                                        {!documentChunks.length && (
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    width: '100%'
+                                                }}
+                                            >
+                                                <Box sx={{ mt: 5, p: 2, height: 'auto' }}>
+                                                    <img
+                                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                                        src={chunks_emptySVG}
+                                                        alt='chunks_emptySVG'
+                                                    />
+                                                </Box>
+                                                <div>No Chunks</div>
+                                            </div>
+                                        )}
+                                        {[
+                                            ...documentChunks,
+                                            ...documentChunks,
+                                            ...documentChunks,
+                                            ...documentChunks,
+                                            ...documentChunks,
+                                            ...documentChunks,
+                                            ...documentChunks
+                                        ]?.map((row, index) => (
+                                            <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
+                                                <CardWrapper
+                                                    content={false}
+                                                    onClick={() => chunkSelected(row.id)}
+                                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                                >
+                                                    <Card>
+                                                        <CardContent sx={{ p: 2 }}>
+                                                            <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
+                                                                {`#${index + 1}. Characters: ${row.pageContent.length}`}
+                                                            </Typography>
+                                                            <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
+                                                                {row.pageContent}
+                                                            </Typography>
+                                                        </CardContent>
+                                                    </Card>
+                                                </CardWrapper>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </div>
                             </Grid>
-                        </div>
-                    </Stack>
-                )}
+                            <Grid item xs={0} md={4} lg={4} sm={0}>
+                                {!selectedChunk && (
+                                    <div style={{ position: 'relative' }}>
+                                        <Box>
+                                            <Skeleton
+                                                animation={false}
+                                                sx={{ bgcolor: customization.isDarkMode ? '#23262c' : '#fafafa' }}
+                                                variant='text'
+                                                height={50}
+                                                width={200}
+                                            />
+                                            <Skeleton
+                                                animation={false}
+                                                sx={{ bgcolor: customization.isDarkMode ? '#23262c' : '#fafafa' }}
+                                                variant='text'
+                                                height={50}
+                                            />
+                                            <Skeleton
+                                                animation={false}
+                                                sx={{ bgcolor: customization.isDarkMode ? '#23262c' : '#fafafa' }}
+                                                variant='text'
+                                                height={50}
+                                            />
+                                            <Skeleton
+                                                animation={false}
+                                                sx={{ bgcolor: customization.isDarkMode ? '#23262c' : '#fafafa' }}
+                                                variant='text'
+                                                height={70}
+                                            />
+                                            <Skeleton
+                                                animation={false}
+                                                sx={{ mt: 1, bgcolor: customization.isDarkMode ? '#23262c' : '#fafafa' }}
+                                                variant='rounded'
+                                                height={120}
+                                            />
+                                            <Skeleton
+                                                animation={false}
+                                                sx={{ mt: 2, bgcolor: customization.isDarkMode ? '#23262c' : '#fafafa' }}
+                                                variant='rounded'
+                                                height={80}
+                                            />
+                                            <Skeleton
+                                                animation={false}
+                                                sx={{ mt: 2, bgcolor: customization.isDarkMode ? '#23262c' : '#fafafa' }}
+                                                variant='rounded'
+                                                height={50}
+                                            />
+                                        </Box>
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                right: 0,
+                                                width: '100%',
+                                                height: '100%',
+                                                backdropFilter: `blur(1px)`,
+                                                background: `transparent`,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row' }}>
+                                                <IconClick style={{ marginRight: '10px' }} />
+                                                <Typography
+                                                    sx={{
+                                                        fontSize: '1rem',
+                                                        fontWeight: 500
+                                                    }}
+                                                >
+                                                    Select a chunk to view details
+                                                </Typography>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {selectedChunk && selectedChunkNumber && (
+                                    <>
+                                        <Box sx={{ pl: 2 }}>
+                                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                                <Typography sx={{ flex: 1 }} variant='h4'>
+                                                    #{selectedChunkNumber}. Characters: {selectedChunk.pageContent.length}
+                                                </Typography>
+                                                <IconButton
+                                                    onClick={() => onChunkEdit(selectedChunk)}
+                                                    size='small'
+                                                    color='primary'
+                                                    title='Edit Chunk'
+                                                    sx={{ ml: 2 }}
+                                                >
+                                                    <IconEdit />
+                                                </IconButton>
+                                                <IconButton
+                                                    onClick={() => onDeleteChunk(selectedChunk)}
+                                                    size='small'
+                                                    color='error'
+                                                    title='Delete Chunk'
+                                                    sx={{ ml: 1 }}
+                                                >
+                                                    <IconTrash />
+                                                </IconButton>
+                                                <IconButton
+                                                    onClick={() => onClear()}
+                                                    size='small'
+                                                    color='inherit'
+                                                    title='Clear Selected Chunk'
+                                                    sx={{ ml: 1 }}
+                                                >
+                                                    <IconX />
+                                                </IconButton>
+                                            </div>
+                                        </Box>
+                                        <div style={{ height: '100vh', overflow: 'scroll', padding: '8px' }}>
+                                            <Table size='small'>
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell component='th' scope='row'>
+                                                            <strong>ID</strong>
+                                                        </TableCell>
+                                                        <TableCell>{selectedChunk.id}</TableCell>
+                                                    </TableRow>
+
+                                                    <TableRow>
+                                                        <TableCell style={{ border: 0 }} component='th' scope='row' colSpan={2}>
+                                                            <strong>Content</strong>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell colSpan={2}>
+                                                            <div ref={ref}>
+                                                                {pageContentHeight > 300 && (
+                                                                    <>
+                                                                        {expanded && (
+                                                                            <Button
+                                                                                startIcon={<IconChevronUp />}
+                                                                                onClick={() => setExpanded(false)}
+                                                                            >
+                                                                                Collapse
+                                                                            </Button>
+                                                                        )}
+                                                                        <Collapse collapsedSize={300} in={expanded}>
+                                                                            <Typography
+                                                                                sx={{
+                                                                                    whiteSpace: 'pre-line',
+                                                                                    wordWrap: 'break-word',
+                                                                                    mb: 2
+                                                                                }}
+                                                                                variant='body2'
+                                                                            >
+                                                                                {selectedChunk.pageContent}
+                                                                            </Typography>
+                                                                        </Collapse>
+                                                                        {!expanded && (
+                                                                            <Button
+                                                                                startIcon={<IconChevronDown />}
+                                                                                onClick={() => setExpanded(true)}
+                                                                            >
+                                                                                Expand
+                                                                            </Button>
+                                                                        )}
+                                                                    </>
+                                                                )}
+                                                                {pageContentHeight < 300 && (
+                                                                    <Typography
+                                                                        sx={{ whiteSpace: 'pre-line', wordWrap: 'break-word', mb: 2 }}
+                                                                        variant='body2'
+                                                                    >
+                                                                        {selectedChunk.pageContent}
+                                                                    </Typography>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell style={{ border: 0 }} component='th' scope='row' colSpan={2}>
+                                                            <strong>Metadata</strong>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                        <TableCell colSpan={2}>
+                                                            <ReactJson
+                                                                theme={customization.isDarkMode ? 'ocean' : 'rjv-default'}
+                                                                style={{ padding: 10, borderRadius: 10 }}
+                                                                src={JSON.parse(selectedChunk.metadata)}
+                                                                name={null}
+                                                                quotesOnKeys={false}
+                                                                displayDataTypes={false}
+                                                            />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                            </Table>
+                                        </div>
+                                    </>
+                                )}
+                            </Grid>
+                        </Grid>
+                    </div>
+                </Stack>
             </MainCard>
             <ConfirmDialog />
             <ExpandTextDialog
@@ -377,6 +540,7 @@ const ShowStoredChunks = () => {
                 onCancel={() => setShowExpandDialog(false)}
                 onConfirm={(newValue) => onEditDialogSave(selectedChunk, newValue)}
             ></ExpandTextDialog>
+            {loading && <BackdropLoader open={loading} />}
         </>
     )
 }

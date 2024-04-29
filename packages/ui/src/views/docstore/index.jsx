@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import useApi from '@/hooks/useApi'
+import { useSelector } from 'react-redux'
 
 // material-ui
 import {
@@ -23,23 +23,22 @@ import { useTheme } from '@mui/material/styles'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
-import { gridSpacing } from '@/store/constant'
-import ToolEmptySVG from '@/assets/images/tools_empty.svg'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // API
+import useApi from '@/hooks/useApi'
 import documentsApi from '@/api/documentstore'
 
 // icons
 import { IconPlus, IconLayoutGrid, IconList, IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons'
+import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
 // const
-import { baseURL } from '@/store/constant'
+import { baseURL, gridSpacing } from '@/store/constant'
 import { kFormatter } from '@/utils/genericHelper'
-import { useSelector } from 'react-redux'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -79,10 +78,10 @@ const Documents = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Create New Document Store',
+            title: 'Add New Document Store',
             type: 'ADD',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Create New Document Store'
+            confirmButtonName: 'Add'
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -107,7 +106,6 @@ const Documents = () => {
 
                 for (let i = 0; i < docStores.length; i += 1) {
                     const loaders = docStores[i].loaders
-                    let totalFiles = 0
                     let totalChunks = 0
                     let totalChars = 0
                     loaderImages[docStores[i].id] = []
@@ -116,16 +114,13 @@ const Documents = () => {
                         if (!loaderImages[docStores[i].id].includes(imageSrc)) {
                             loaderImages[docStores[i].id].push(imageSrc)
                         }
-                        totalFiles += loaders[j]?.files?.length ?? 0
                         totalChunks += loaders[j]?.totalChunks ?? 0
                         totalChars += loaders[j]?.totalChars ?? 0
                     }
-                    docStores[i].totalFiles = totalFiles
+                    docStores[i].totalDocs = loaders.length
                     docStores[i].totalChunks = totalChunks
                     docStores[i].totalChars = totalChars
                 }
-
-                console.log(docStores)
                 setDocStores(docStores)
                 setImages(loaderImages)
             } catch (e) {
@@ -333,7 +328,11 @@ const Documents = () => {
                     {!isLoading && (!docStores || docStores.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
-                                <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
+                                <img
+                                    style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                    src={doc_store_empty}
+                                    alt='doc_store_empty'
+                                />
                             </Box>
                             <div>No Document Stores Created Yet</div>
                         </Stack>

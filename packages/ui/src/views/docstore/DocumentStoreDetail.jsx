@@ -1,10 +1,29 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import * as PropTypes from 'prop-types'
+import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Stack, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Chip } from '@mui/material'
+import {
+    IconButton,
+    Box,
+    Skeleton,
+    Stack,
+    Typography,
+    TableContainer,
+    Paper,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+    Chip,
+    Menu,
+    MenuItem,
+    Divider,
+    Button
+} from '@mui/material'
 import { alpha, styled, useTheme } from '@mui/material/styles'
-import Button from '@mui/material/Button'
 import { tableCellClasses } from '@mui/material/TableCell'
 
 // project imports
@@ -13,34 +32,52 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import DocumentLoaderListDialog from '@/views/docstore/DocumentLoaderListDialog'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import ErrorBoundary from '@/ErrorBoundary'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // API
 import documentsApi from '@/api/documentstore'
 
 // Hooks
 import useApi from '@/hooks/useApi'
-import { useNavigate } from 'react-router-dom'
 import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // icons
-import { IconPlus, IconEdit, IconRefresh, IconX, IconTrash } from '@tabler/icons'
-import * as PropTypes from 'prop-types'
-import ErrorBoundary from '@/ErrorBoundary'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import { IconPlus, IconRefresh, IconX, IconTrash } from '@tabler/icons'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import MenuItem from '@mui/material/MenuItem'
-import Divider from '@mui/material/Divider'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileEditIcon from '@mui/icons-material/Edit'
 import FileChunksIcon from '@mui/icons-material/AppRegistration'
 import InsertVectorStoreIcon from '@mui/icons-material/ArchiveOutlined'
 import TestVectorRetrievalIcon from '@mui/icons-material/QuizOutlined'
+import doc_store_details_emptySVG from '@/assets/images/doc_store_details_empty.svg'
 
-import Menu from '@mui/material/Menu'
+// store
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
 // ==============================|| DOCUMENTS ||============================== //
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    borderColor: theme.palette.grey[900] + 25,
+    padding: '6px 16px',
+
+    [`&.${tableCellClasses.head}`]: {
+        color: theme.palette.grey[900]
+    },
+    [`&.${tableCellClasses.body}`]: {
+        fontSize: 14,
+        height: 64
+    }
+}))
+
+const StyledTableRow = styled(TableRow)(() => ({
+    // hide last border
+    '&:last-child td, &:last-child th': {
+        border: 0
+    }
+}))
+
 const StyledMenu = styled((props) => (
     <Menu
         elevation={0}
@@ -92,13 +129,14 @@ const DocumentStoreDetails = () => {
 
     const [error, setError] = useState(null)
     const [isLoading, setLoading] = useState(true)
-
     const [showDialog, setShowDialog] = useState(false)
     const [documentStore, setDocumentStore] = useState({})
     const [dialogProps, setDialogProps] = useState({})
-
     const [showDocumentLoaderListDialog, setShowDocumentLoaderListDialog] = useState(false)
     const [documentLoaderListDialogProps, setDocumentLoaderListDialogProps] = useState({})
+
+    const URLpath = document.location.pathname.toString().split('/')
+    const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
 
     const openPreviewSettings = (id) => {
         navigate('/document-stores/' + storeId + '/' + id)
@@ -108,9 +146,9 @@ const DocumentStoreDetails = () => {
         navigate('/document-stores/chunks/' + storeId + '/' + id)
     }
 
-    const onDocLoaderSelected = (docLoaderComponent) => {
+    const onDocLoaderSelected = (docLoaderComponentName) => {
         setShowDocumentLoaderListDialog(false)
-        navigate('/document-stores/' + storeId + '/' + docLoaderComponent)
+        navigate('/document-stores/' + storeId + '/' + docLoaderComponentName)
     }
 
     const listLoaders = () => {
@@ -215,7 +253,7 @@ const DocumentStoreDetails = () => {
         }
     }
 
-    const onEditClicked = async () => {
+    const onEditClicked = () => {
         const data = {
             name: documentStore.name,
             description: documentStore.description,
@@ -225,7 +263,7 @@ const DocumentStoreDetails = () => {
             title: 'Edit Document Store',
             type: 'EDIT',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Update Document Store',
+            confirmButtonName: 'Update',
             data: data
         }
         setDialogProps(dialogProp)
@@ -237,8 +275,6 @@ const DocumentStoreDetails = () => {
         getSpecificDocumentStore.request(storeId)
     }
 
-    const URLpath = document.location.pathname.toString().split('/')
-    const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
     useEffect(() => {
         getSpecificDocumentStore.request(storeId)
 
@@ -260,6 +296,10 @@ const DocumentStoreDetails = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getSpecificDocumentStore.error])
 
+    useEffect(() => {
+        setLoading(getSpecificDocumentStore.loading)
+    }, [getSpecificDocumentStore.loading])
+
     return (
         <>
             <MainCard>
@@ -267,7 +307,15 @@ const DocumentStoreDetails = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader search={false} title={getSpecificDocumentStore.data?.name}>
+                        <ViewHeader
+                            isBackButton={true}
+                            isEditButton={true}
+                            search={false}
+                            title={documentStore?.name}
+                            description={documentStore?.description}
+                            onBack={() => navigate('/document-stores')}
+                            onEdit={() => onEditClicked()}
+                        >
                             {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
                                 <Chip
                                     variant={'filled'}
@@ -279,76 +327,137 @@ const DocumentStoreDetails = () => {
                                     }
                                 />
                             )}
-                            {getSpecificDocumentStore.data?.status !== 'STALE' && (
-                                <>
-                                    <Button color='error' variant='outlined' startIcon={<IconTrash />} onClick={onStoreDelete}>
-                                        Delete Store
-                                    </Button>
-                                    <Button variant='outlined' onClick={onEditClicked} sx={{ mr: 2 }} startIcon={<IconEdit />}>
-                                        Edit Description
-                                    </Button>
-                                </>
-                            )}
-                            {getSpecificDocumentStore.data?.status === 'STALE' && (
+                            <IconButton onClick={onStoreDelete} size='small' color='error' title='Delete Document Store' sx={{ mr: 2 }}>
+                                <IconTrash />
+                            </IconButton>
+                            {documentStore?.status === 'STALE' && (
                                 <Button variant='outlined' sx={{ mr: 2 }} startIcon={<IconRefresh />} onClick={onConfirm}>
                                     Refresh
                                 </Button>
                             )}
-                            <StyledButton variant='contained' sx={{ color: 'white' }} startIcon={<IconPlus />} onClick={listLoaders}>
+                            <StyledButton
+                                variant='contained'
+                                sx={{ borderRadius: 2, height: '100%', color: 'white' }}
+                                startIcon={<IconPlus />}
+                                onClick={listLoaders}
+                            >
                                 Add Document Loader
                             </StyledButton>
                         </ViewHeader>
-                        {!getSpecificDocumentStore.loading && getSpecificDocumentStore.data && (
-                            <>
-                                <Typography style={{ wordWrap: 'break-word' }} variant='h4'>
-                                    {getSpecificDocumentStore.data?.description}
-                                </Typography>
-                            </>
-                        )}
-                        <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-                            <Table aria-label='documents table' size='small'>
-                                <TableHead
-                                    sx={{
-                                        backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
-                                        height: 56
-                                    }}
+                        {!isLoading && documentStore && !documentStore?.loaders?.length ? (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                        src={doc_store_details_emptySVG}
+                                        alt='doc_store_details_emptySVG'
+                                    />
+                                </Box>
+                                <div>No Document Added Yet</div>
+                                <StyledButton
+                                    variant='contained'
+                                    sx={{ borderRadius: 2, height: '100%', mt: 2, color: 'white' }}
+                                    startIcon={<IconPlus />}
+                                    onClick={listLoaders}
                                 >
-                                    <TableRow>
-                                        <TableCell>&nbsp;</TableCell>
-                                        <TableCell>Loader</TableCell>
-                                        <TableCell>Splitter</TableCell>
-                                        <TableCell>Source(s)</TableCell>
-                                        <TableCell style={{ textAlign: 'center' }}>Chunks</TableCell>
-                                        <TableCell style={{ textAlign: 'center' }}>Chars</TableCell>
-                                        <TableCell style={{ textAlign: 'center', width: '20%' }}>Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {getSpecificDocumentStore.data?.loaders &&
-                                        getSpecificDocumentStore.data?.loaders.length > 0 &&
-                                        getSpecificDocumentStore.data?.loaders.map((loader, index) => (
-                                            <LoaderRow
-                                                key={index}
-                                                index={index}
-                                                loader={loader}
-                                                theme={theme}
-                                                onEditClick={() => openPreviewSettings(loader.id)}
-                                                onViewChunksClick={() => showStoredChunks(loader.id)}
-                                                onDeleteClick={() => onLoaderDelete(loader)}
-                                            />
-                                        ))}
-                                    {getSpecificDocumentStore.data?.loaders?.length === 0 && (
-                                        <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                            <TableCell colSpan='6'>
-                                                <Typography style={{ color: 'darkred' }} variant='h5'>
-                                                    Empty Document Store. Please add a document to this store.
-                                                </Typography>
-                                            </TableCell>
+                                    Add Document Loader
+                                </StyledButton>
+                            </Stack>
+                        ) : (
+                            <TableContainer
+                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                component={Paper}
+                            >
+                                <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                                    <TableHead
+                                        sx={{
+                                            backgroundColor: customization.isDarkMode
+                                                ? theme.palette.common.black
+                                                : theme.palette.grey[100],
+                                            height: 56
+                                        }}
+                                    >
+                                        <TableRow>
+                                            <StyledTableCell>&nbsp;</StyledTableCell>
+                                            <StyledTableCell>Loader</StyledTableCell>
+                                            <StyledTableCell>Splitter</StyledTableCell>
+                                            <StyledTableCell>Source(s)</StyledTableCell>
+                                            <StyledTableCell>Chunks</StyledTableCell>
+                                            <StyledTableCell>Chars</StyledTableCell>
+                                            <StyledTableCell>Actions</StyledTableCell>
                                         </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                                    </TableHead>
+                                    <TableBody>
+                                        {isLoading ? (
+                                            <>
+                                                <StyledTableRow>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                </StyledTableRow>
+                                                <StyledTableRow>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
+                                                </StyledTableRow>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {documentStore?.loaders &&
+                                                    documentStore?.loaders.length > 0 &&
+                                                    documentStore?.loaders.map((loader, index) => (
+                                                        <LoaderRow
+                                                            key={index}
+                                                            index={index}
+                                                            loader={loader}
+                                                            theme={theme}
+                                                            onEditClick={() => openPreviewSettings(loader.id)}
+                                                            onViewChunksClick={() => showStoredChunks(loader.id)}
+                                                            onDeleteClick={() => onLoaderDelete(loader)}
+                                                        />
+                                                    ))}
+                                            </>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        )}
                         {getSpecificDocumentStore.data?.status === 'STALE' && (
                             <div style={{ width: '100%', textAlign: 'center', marginTop: '20px' }}>
                                 <Typography
@@ -383,33 +492,24 @@ const DocumentStoreDetails = () => {
     )
 }
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    borderColor: theme.palette.grey[900] + 25,
-    padding: '6px 16px',
-
-    [`&.${tableCellClasses.head}`]: {
-        color: theme.palette.grey[900]
-    },
-    [`&.${tableCellClasses.body}`]: {
-        fontSize: 14
-    }
-}))
-
 function LoaderRow(props) {
-    // actions
     const [anchorEl, setAnchorEl] = useState(null)
     const open = Boolean(anchorEl)
+
     const handleClick = (event) => {
+        event.preventDefault()
+        event.stopPropagation()
         setAnchorEl(event.currentTarget)
     }
 
     const handleClose = () => {
         setAnchorEl(null)
     }
+
     return (
         <>
-            <TableRow key={props.index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                <StyledTableCell scope='row' style={{ width: '5%' }}>
+            <TableRow hover key={props.index} sx={{ '&:last-child td, &:last-child th': { border: 0 }, cursor: 'pointer' }}>
+                <StyledTableCell onClick={props.onViewChunksClick} scope='row' style={{ width: '5%' }}>
                     <div
                         style={{
                             display: 'flex',
@@ -420,24 +520,18 @@ function LoaderRow(props) {
                         }}
                     ></div>
                 </StyledTableCell>
-                <StyledTableCell scope='row' style={{ width: '15%' }}>
-                    {props.loader.loaderName}{' '}
+                <StyledTableCell onClick={props.onViewChunksClick} scope='row'>
+                    {props.loader.loaderName}
                 </StyledTableCell>
-                <StyledTableCell style={{ width: '20%' }}>{props.loader.splitterName ?? 'None'}</StyledTableCell>
-                <StyledTableCell style={{ width: '10%' }}>{props.loader.source}</StyledTableCell>
-                <StyledTableCell style={{ width: '10%', textAlign: 'center' }}>
-                    {!props.loader.totalChunks && <Chip variant='outlined' size='small' label='0' />}
-                    {props.loader.totalChunks && props.loader.totalChunks > 0 && (
-                        <Chip variant='outlined' size='small' label={props.loader.totalChunks.toLocaleString()} />
-                    )}
+                <StyledTableCell onClick={props.onViewChunksClick}>{props.loader.splitterName ?? 'None'}</StyledTableCell>
+                <StyledTableCell onClick={props.onViewChunksClick}>{props.loader.source}</StyledTableCell>
+                <StyledTableCell onClick={props.onViewChunksClick}>
+                    {props.loader.totalChunks && <Chip variant='outlined' size='small' label={props.loader.totalChunks.toLocaleString()} />}
                 </StyledTableCell>
-                <StyledTableCell style={{ width: '10%', textAlign: 'center' }}>
-                    {!props.loader.totalChars && <Chip variant='outlined' size='small' label='0' />}
-                    {props.loader.totalChars && props.loader.totalChars > 0 && (
-                        <Chip variant='outlined' size='small' label={props.loader.totalChars.toLocaleString()} />
-                    )}
+                <StyledTableCell onClick={props.onViewChunksClick}>
+                    {props.loader.totalChars && <Chip variant='outlined' size='small' label={props.loader.totalChars.toLocaleString()} />}
                 </StyledTableCell>
-                <StyledTableCell style={{ width: '10%', textAlign: 'center' }}>
+                <StyledTableCell>
                     <div>
                         <Button
                             id='document-store-action-button'
@@ -445,7 +539,7 @@ function LoaderRow(props) {
                             aria-haspopup='true'
                             aria-expanded={open ? 'true' : undefined}
                             disableElevation
-                            onClick={handleClick}
+                            onClick={(e) => handleClick(e)}
                             endIcon={<KeyboardArrowDownIcon />}
                         >
                             Options

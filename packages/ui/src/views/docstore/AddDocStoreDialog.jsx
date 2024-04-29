@@ -2,7 +2,12 @@ import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
+import {
+    HIDE_CANVAS_DIALOG,
+    SHOW_CANVAS_DIALOG,
+    enqueueSnackbar as enqueueSnackbarAction,
+    closeSnackbar as closeSnackbarAction
+} from '@/store/actions'
 
 // Material
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, OutlinedInput } from '@mui/material'
@@ -17,13 +22,8 @@ import { IconX, IconFileStack } from '@tabler/icons'
 // API
 import documentStoreApi from '@/api/documentstore'
 
-// Hooks
-
 // utils
 import useNotifier from '@/utils/useNotifier'
-
-// const
-import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
@@ -151,7 +151,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const component = show ? (
         <Dialog
             fullWidth
-            maxWidth='md'
+            maxWidth='sm'
             open={show}
             onClose={onCancel}
             aria-labelledby='alert-dialog-title'
@@ -178,7 +178,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             }}
                         />
                     </div>
-                    {'Document Store'}
+                    {dialogProps.title}
                 </div>
             </DialogTitle>
             <DialogContent>
@@ -221,9 +221,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <StyledButton color='error' variant='contained' onClick={() => onCancel()}>
-                    Cancel
-                </StyledButton>
+                <Button onClick={() => onCancel()}>Cancel</Button>
                 <StyledButton
                     disabled={!documentStoreName}
                     variant='contained'

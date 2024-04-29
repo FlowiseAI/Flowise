@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 // material-ui
 import { styled } from '@mui/material/styles'
 import { Box, Grid, Typography, useTheme } from '@mui/material'
-import { IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons'
+import { IconFiles, IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -138,11 +138,15 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                                 marginTop: 15
                             }}
                         >
-                            <div style={{ marginRight: 15, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <IconVectorBezier2 size={20} />
                                 {kFormatter(data.whereUsed?.length ?? 0)} {data.whereUsed?.length === 1 ? 'Flow' : 'Flows'}
                             </div>
-                            <div style={{ marginRight: 15, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                <IconFiles size={20} />
+                                {kFormatter(data.totalDocs ?? 0)} docs
+                            </div>
+                            <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <IconLanguage size={20} />
                                 {kFormatter(data.totalChars ?? 0)} chars
                             </div>
