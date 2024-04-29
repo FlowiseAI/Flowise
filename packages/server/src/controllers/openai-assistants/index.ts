@@ -1,11 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
-import path from 'path'
 import * as fs from 'fs'
 import openaiAssistantsService from '../../services/openai-assistants'
-import { getUserHome } from '../../utils'
 import contentDisposition from 'content-disposition'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { streamStorageFile } from 'flowise-components'
 
 // List available assistants
 const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFunction) => {
@@ -48,20 +47,49 @@ const getSingleOpenaiAssistant = async (req: Request, res: Response, next: NextF
 // Download file from assistant
 const getFileFromAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const filePath = path.join(getUserHome(), '.flowise', 'openai-assistant', req.body.fileName)
-        //raise error if file path is not absolute
-        if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
-        //raise error if file path contains '..'
-        if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
-        //only return from the .flowise openai-assistant folder
-        if (!(filePath.includes('.flowise') && filePath.includes('openai-assistant'))) return res.status(500).send(`Invalid file path`)
-        if (fs.existsSync(filePath)) {
-            res.setHeader('Content-Disposition', contentDisposition(path.basename(filePath)))
-            const fileStream = fs.createReadStream(filePath)
+        if (!req.body.chatflowId || !req.body.chatId || !req.body.fileName) {
+            return res.status(500).send(`Invalid file path`)
+        }
+        const chatflowId = req.body.chatflowId as string
+        const chatId = req.body.chatId as string
+        const fileName = req.body.fileName as string
+        res.setHeader('Content-Disposition', contentDisposition(fileName))
+        const fileStream = await streamStorageFile(chatflowId, chatId, fileName)
+
+        if (!fileStream) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: getFileFromAssistant`)
+
+        if (fileStream instanceof fs.ReadStream && fileStream?.pipe) {
             fileStream.pipe(res)
         } else {
-            return res.status(404).send(`File ${req.body.fileName} not found`)
+            res.send(fileStream)
         }
+    } catch (error) {
+        next(error)
+    }
+}
+
+const uploadAssistantFiles = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.query === 'undefined' || !req.query.credential) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: openaiAssistantsVectorStoreController.uploadFilesToAssistantVectorStore - credential not provided!`
+            )
+        }
+        const files = req.files ?? []
+        const uploadFiles: { filePath: string; fileName: string }[] = []
+
+        if (Array.isArray(files)) {
+            for (const file of files) {
+                uploadFiles.push({
+                    filePath: file.path,
+                    fileName: file.originalname
+                })
+            }
+        }
+
+        const apiResponse = await openaiAssistantsService.uploadFilesToAssistant(req.query.credential as string, uploadFiles)
+        return res.json(apiResponse)
     } catch (error) {
         next(error)
     }
@@ -70,5 +98,6 @@ const getFileFromAssistant = async (req: Request, res: Response, next: NextFunct
 export default {
     getAllOpenaiAssistants,
     getSingleOpenaiAssistant,
-    getFileFromAssistant
+    getFileFromAssistant,
+    uploadAssistantFiles
 }

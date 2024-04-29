@@ -20,14 +20,13 @@ const DeleteConfirmDialog = ({ show, dialogProps, onCancel, onDelete, onDeleteBo
             </DialogTitle>
             <DialogContent>
                 <span>{dialogProps.description}</span>
-                <div style={{ display: 'flex', flexDirection: 'column', marginTop: 20 }}>
-                    <StyledButton sx={{ mb: 1 }} color='orange' variant='contained' onClick={onDelete}>
+                <div style={{ display: 'flex', flexDirection: 'row', marginTop: 20 }}>
+                    <Button sx={{ flex: 1, mb: 1, mr: 1 }} color='error' variant='outlined' onClick={onDelete}>
                         Удалить только из StartAI
-                    </StyledButton>
-                    <StyledButton sx={{ mb: 1 }} color='error' variant='contained' onClick={onDeleteBoth}>
+                    </Button>
+                    <StyledButton sx={{ flex: 1, mb: 1, ml: 1 }} color='error' variant='contained' onClick={onDeleteBoth}>
                         Удалить из OpenAI и StartAI
                     </StyledButton>
-                    <Button onClick={onCancel}>Отменить</Button>
                 </div>
             </DialogContent>
         </Dialog>

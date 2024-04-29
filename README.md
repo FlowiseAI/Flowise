@@ -6,8 +6,7 @@
 
 ### - pnpm build
 
-### - pnpm start
-English | [中文](./README-ZH.md) | [日本語](./README-JA.md)
+English | [中文](./README-ZH.md) | [日本語](./README-JA.md) | [한국어](./README-KR.md)
 
 ## PM2
 

@@ -10,7 +10,7 @@
 [![GitHub星图](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub分支](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](./README.md) | 中文 | [日本語](./README-JA.md)
+[English](./README.md) | 中文 | [日本語](./README-JA.md) | [한국어](./README-KR.md)
 
 <h3>拖放界面构建定制化的LLM流程</h3>
 <a href="https://github.com/FlowiseAI/Flowise">

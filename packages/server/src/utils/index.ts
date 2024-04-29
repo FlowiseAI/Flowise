@@ -1066,6 +1066,9 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
                 return false
             }
         }
+
+        // If agent is openAIAssistant, streaming is enabled
+        if (endingNodeData.name === 'openAIAssistant') return true
     } else if (endingNodeData.category === 'Engine') {
         // Engines that are available to stream
         const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
