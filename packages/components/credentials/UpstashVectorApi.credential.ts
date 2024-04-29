@@ -13,12 +13,12 @@ class UpstashVectorApi implements INodeCredential {
 		this.version = 1.0
 		this.inputs = [
 			{
-				label: 'UPSTASH_VECTOR_REST_URL',
+				label: 'Upstash Vector REST URL',
 				name: 'UPSTASH_VECTOR_REST_URL',
 				type: 'string'
 			},
 			{
-				label: 'UPSTASH_VECTOR_REST_TOKEN',
+				label: 'Upstash Vector REST Token',
 				name: 'UPSTASH_VECTOR_REST_TOKEN',
 				type: 'password'
 			}
