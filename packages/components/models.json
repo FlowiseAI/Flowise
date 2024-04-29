@@ -528,6 +528,10 @@
                     "name": "open-mixtral-8x7b"
                 },
                 {
+                    "label": "open-mixtral-8x22b",
+                    "name": "open-mixtral-8x22b"
+                },
+                {
                     "label": "mistral-small-2312",
                     "name": "mistral-small-2312"
                 },
