@@ -27,6 +27,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
 
 // API
 import useApi from '@/hooks/useApi'
@@ -38,7 +39,6 @@ import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
-import DocumentStoreStatus from '@/ui-component/cards/DocumentStoreStatus'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -223,7 +223,6 @@ const Documents = () => {
                                         <TableCell>Name</TableCell>
                                         <TableCell>Description</TableCell>
                                         <TableCell>Connected flows</TableCell>
-                                        <TableCell>Total documents</TableCell>
                                         <TableCell>Total characters</TableCell>
                                         <TableCell>Total chunks</TableCell>
                                         <TableCell>Loader types</TableCell>
@@ -238,12 +237,35 @@ const Documents = () => {
                                             sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
                                         >
                                             <TableCell align='center'>
-                                                <DocumentStoreStatus status={data.status} />
+                                                <DocumentStoreStatus isTableView={true} status={data.status} />
                                             </TableCell>
-                                            <TableCell>{data.name}</TableCell>
-                                            <TableCell>{data.description || ' '}</TableCell>
+                                            <TableCell>
+                                                <Typography
+                                                    sx={{
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 5,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        textOverflow: 'ellipsis',
+                                                        overflow: 'hidden'
+                                                    }}
+                                                >
+                                                    {data.name}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography
+                                                    sx={{
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 5,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        textOverflow: 'ellipsis',
+                                                        overflow: 'hidden'
+                                                    }}
+                                                >
+                                                    {data?.description}
+                                                </Typography>
+                                            </TableCell>
                                             <TableCell>{data.whereUsed?.length ?? 0}</TableCell>
-                                            <TableCell>{data.totalDocs}</TableCell>
                                             <TableCell>{data.totalChars}</TableCell>
                                             <TableCell>{data.totalChunks}</TableCell>
                                             <TableCell>

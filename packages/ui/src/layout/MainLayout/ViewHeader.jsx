@@ -44,7 +44,14 @@ const ViewHeader = ({
                         <Typography
                             sx={{
                                 fontSize: '2rem',
-                                fontWeight: 600
+                                fontWeight: 600,
+                                display: '-webkit-box',
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: 'vertical',
+                                textOverflow: 'ellipsis',
+                                overflow: 'hidden',
+                                flex: 1,
+                                maxWidth: 'calc(100vh - 100px)'
                             }}
                             variant='h1'
                         >
@@ -55,7 +62,14 @@ const ViewHeader = ({
                                 sx={{
                                     fontSize: '1rem',
                                     fontWeight: 500,
-                                    mt: 2
+                                    mt: 2,
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 5,
+                                    WebkitBoxOrient: 'vertical',
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden',
+                                    flex: 1,
+                                    maxWidth: 'calc(100vh - 100px)'
                                 }}
                             >
                                 {description}

@@ -531,7 +531,7 @@ function LoaderRow(props) {
                             display: 'flex',
                             width: '20px',
                             height: '20px',
-                            backgroundColor: props.loader?.status === 'SYNC' ? 'green' : '#ffe57f',
+                            backgroundColor: props.loader?.status === 'SYNC' ? '#00e676' : '#ffe57f',
                             borderRadius: '50%'
                         }}
                     ></div>
@@ -577,14 +577,6 @@ function LoaderRow(props) {
                                 <FileChunksIcon />
                                 View & Edit Chunks
                             </MenuItem>
-                            {/*<MenuItem disabled={true} onClick={props.onViewChunksClick} disableRipple>*/}
-                            {/*    <InsertVectorStoreIcon />*/}
-                            {/*    Insert into Vector Store*/}
-                            {/*</MenuItem>*/}
-                            {/*<MenuItem disabled={true} onClick={props.onViewChunksClick} disableRipple>*/}
-                            {/*    <TestVectorRetrievalIcon />*/}
-                            {/*    Test Retrieval*/}
-                            {/*</MenuItem>*/}
                             <Divider sx={{ my: 0.5 }} />
                             <MenuItem onClick={props.onDeleteClick} disableRipple>
                                 <FileDeleteIcon />

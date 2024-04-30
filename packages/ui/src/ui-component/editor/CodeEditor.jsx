@@ -7,7 +7,17 @@ import { sublime } from '@uiw/codemirror-theme-sublime'
 import { EditorView } from '@codemirror/view'
 import { useTheme } from '@mui/material/styles'
 
-export const CodeEditor = ({ value, height, theme, lang, placeholder, disabled = false, basicSetup = {}, onValueChange }) => {
+export const CodeEditor = ({
+    value,
+    height,
+    theme,
+    lang,
+    placeholder,
+    disabled = false,
+    autoFocus = false,
+    basicSetup = {},
+    onValueChange
+}) => {
     const colorTheme = useTheme()
 
     const customStyle = EditorView.baseTheme({
@@ -45,6 +55,8 @@ export const CodeEditor = ({ value, height, theme, lang, placeholder, disabled =
             onChange={onValueChange}
             readOnly={disabled}
             editable={!disabled}
+            // eslint-disable-next-line
+            autoFocus={autoFocus}
             basicSetup={basicSetup}
         />
     )
@@ -57,6 +69,7 @@ CodeEditor.propTypes = {
     lang: PropTypes.string,
     placeholder: PropTypes.string,
     disabled: PropTypes.bool,
+    autoFocus: PropTypes.bool,
     basicSetup: PropTypes.object,
     onValueChange: PropTypes.func
 }

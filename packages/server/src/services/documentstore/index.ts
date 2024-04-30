@@ -19,7 +19,7 @@ import { StatusCodes } from 'http-status-codes'
 import { getErrorMessage } from '../../errors/utils'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
-// Create new document store
+
 const createDocumentStore = async (newDocumentStore: DocumentStore) => {
     try {
         const appServer = getRunningExpressApp()
@@ -294,11 +294,9 @@ const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore) => 
     const splitDataURI = fileBase64.split(',')
     const filename = splitDataURI.pop()?.split(':')[1] ?? ''
     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-    // const filePath = path.join(dir, filename)
     const mimePrefix = splitDataURI.pop()
     let mime = ''
     if (mimePrefix) {
-        //data:text/plain;base64
         mime = mimePrefix.split(';')[0].split(':')[1]
     }
     await addFileToStorage(mime, bf, filename, DOCUMENT_STORE_BASE_FOLDER, entity.id)

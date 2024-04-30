@@ -635,7 +635,7 @@ const LoaderConfigPreviewChunks = () => {
                                                                             quotesOnKeys={false}
                                                                             enableClipboard={false}
                                                                             displayDataTypes={false}
-                                                                            collapsed={true}
+                                                                            collapsed={1}
                                                                         />
                                                                     </CardContent>
                                                                 </Card>

@@ -142,6 +142,7 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                                 display: 'flex',
                                 flexDirection: 'row',
                                 alignItems: 'center',
+                                marginTop: '5px',
                                 marginBottom: '10px'
                             }}
                         >
@@ -149,19 +150,37 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                             {selectedChunk?.pageContent?.length} characters
                         </div>
                         <div style={{ marginTop: '5px' }}></div>
-                        <CodeEditor
-                            disabled={!isEdit}
-                            height='max-content'
-                            value={contentValue}
-                            theme={customization.isDarkMode ? 'dark' : 'light'}
-                            basicSetup={{
-                                lineNumbers: false,
-                                foldGutter: false,
-                                autocompletion: false,
-                                highlightActiveLine: false
-                            }}
-                            onValueChange={(text) => setContentValue(text)}
-                        />
+                        {!isEdit && (
+                            <CodeEditor
+                                disabled={true}
+                                height='max-content'
+                                value={contentValue}
+                                theme={customization.isDarkMode ? 'dark' : 'light'}
+                                basicSetup={{
+                                    lineNumbers: false,
+                                    foldGutter: false,
+                                    autocompletion: false,
+                                    highlightActiveLine: false
+                                }}
+                            />
+                        )}
+                        {isEdit && (
+                            <CodeEditor
+                                disabled={false}
+                                // eslint-disable-next-line
+                                autoFocus={true}
+                                height='max-content'
+                                value={contentValue}
+                                theme={customization.isDarkMode ? 'dark' : 'light'}
+                                basicSetup={{
+                                    lineNumbers: false,
+                                    foldGutter: false,
+                                    autocompletion: false,
+                                    highlightActiveLine: false
+                                }}
+                                onValueChange={(text) => setContentValue(text)}
+                            />
+                        )}
                         <div style={{ marginTop: '20px', marginBottom: '15px' }}>
                             {!isEdit && (
                                 <ReactJson

@@ -17,7 +17,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
-import { IconX, IconFileStack } from '@tabler/icons'
+import { IconX, IconFiles } from '@tabler/icons'
 
 // API
 import documentStoreApi from '@/api/documentstore'
@@ -159,25 +159,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         >
             <DialogTitle style={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <div
-                        style={{
-                            width: 50,
-                            height: 50,
-                            marginRight: 10,
-                            borderRadius: '50%',
-                            backgroundColor: 'white'
-                        }}
-                    >
-                        <IconFileStack
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                padding: 7,
-                                borderRadius: '50%',
-                                objectFit: 'contain'
-                            }}
-                        />
-                    </div>
+                    <IconFiles style={{ marginRight: '10px' }} />
                     {dialogProps.title}
                 </div>
             </DialogTitle>
@@ -209,7 +191,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     <OutlinedInput
                         size='small'
                         multiline={true}
-                        rows={2}
+                        rows={7}
                         sx={{ mt: 1 }}
                         type='string'
                         fullWidth

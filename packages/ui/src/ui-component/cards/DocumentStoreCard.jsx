@@ -8,7 +8,7 @@ import { IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import DocumentStoreStatus from '@/ui-component/cards/DocumentStoreStatus'
+import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
 
 import { kFormatter } from '@/utils/genericHelper'
 
@@ -40,8 +40,8 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
     return (
         <CardWrapper content={false} onClick={onClick} sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}>
             <Box sx={{ height: '100%', p: 2.25 }}>
-                <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
-                    <Box display='flex' flexDirection='column' sx={{ width: '100%' }}>
+                <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%' }} gap={2}>
+                    <Box display='flex' flexDirection='column' sx={{ flex: 1, width: '100%' }}>
                         <div
                             style={{
                                 width: '100%',
@@ -75,78 +75,77 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                                 WebkitLineClamp: 2,
                                 WebkitBoxOrient: 'vertical',
                                 textOverflow: 'ellipsis',
-                                overflow: 'hidden',
-                                marginBottom: 10
+                                overflow: 'hidden'
                             }}
                         >
                             {data.description || ' '}
                         </span>
-                        <Grid sx={{ mt: 1 }} container justifyContent='space-between'>
-                            <div
-                                style={{
-                                    paddingLeft: '7px',
-                                    paddingRight: '7px',
-                                    paddingTop: '3px',
-                                    paddingBottom: '3px',
-                                    fontSize: '11px',
-                                    width: 'max-content',
-                                    borderRadius: '25px',
-                                    boxShadow: customization.isDarkMode
-                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
-                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
-
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                <IconVectorBezier2 style={{ marginRight: 5 }} size={15} />
-                                {data.whereUsed?.length ?? 0} {data.whereUsed?.length <= 1 ? 'flow' : 'flows'}
-                            </div>
-                            <div
-                                style={{
-                                    paddingLeft: '7px',
-                                    paddingRight: '7px',
-                                    paddingTop: '3px',
-                                    paddingBottom: '3px',
-                                    fontSize: '11px',
-                                    width: 'max-content',
-                                    borderRadius: '25px',
-                                    boxShadow: customization.isDarkMode
-                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
-                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
-
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                <IconLanguage style={{ marginRight: 5 }} size={15} />
-                                {kFormatter(data.totalChars ?? 0)} chars
-                            </div>
-                            <div
-                                style={{
-                                    paddingLeft: '7px',
-                                    paddingRight: '7px',
-                                    paddingTop: '3px',
-                                    paddingBottom: '3px',
-                                    fontSize: '11px',
-                                    width: 'max-content',
-                                    borderRadius: '25px',
-                                    boxShadow: customization.isDarkMode
-                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
-                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                <IconScissors style={{ marginRight: 5 }} size={15} />
-                                {kFormatter(data.totalChunks ?? 0)} chunks
-                            </div>
-                        </Grid>
                     </Box>
-                    {images && (
+                    <Grid container columnGap={2} rowGap={1}>
+                        <div
+                            style={{
+                                paddingLeft: '7px',
+                                paddingRight: '7px',
+                                paddingTop: '3px',
+                                paddingBottom: '3px',
+                                fontSize: '11px',
+                                width: 'max-content',
+                                borderRadius: '25px',
+                                boxShadow: customization.isDarkMode
+                                    ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
+                                    : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <IconVectorBezier2 style={{ marginRight: 5 }} size={15} />
+                            {data.whereUsed?.length ?? 0} {data.whereUsed?.length <= 1 ? 'flow' : 'flows'}
+                        </div>
+                        <div
+                            style={{
+                                paddingLeft: '7px',
+                                paddingRight: '7px',
+                                paddingTop: '3px',
+                                paddingBottom: '3px',
+                                fontSize: '11px',
+                                width: 'max-content',
+                                borderRadius: '25px',
+                                boxShadow: customization.isDarkMode
+                                    ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
+                                    : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <IconLanguage style={{ marginRight: 5 }} size={15} />
+                            {kFormatter(data.totalChars ?? 0)} chars
+                        </div>
+                        <div
+                            style={{
+                                paddingLeft: '7px',
+                                paddingRight: '7px',
+                                paddingTop: '3px',
+                                paddingBottom: '3px',
+                                fontSize: '11px',
+                                width: 'max-content',
+                                borderRadius: '25px',
+                                boxShadow: customization.isDarkMode
+                                    ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
+                                    : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <IconScissors style={{ marginRight: 5 }} size={15} />
+                            {kFormatter(data.totalChunks ?? 0)} chunks
+                        </div>
+                    </Grid>
+                    {images && images.length > 0 && (
                         <Box
                             sx={{
                                 display: 'flex',

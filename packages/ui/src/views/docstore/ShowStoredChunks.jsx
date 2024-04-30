@@ -160,7 +160,7 @@ const ShowStoredChunks = () => {
                             )
                         }
                     })
-                    getChunksApi.request(storeId, fileId)
+                    getChunksApi.request(storeId, fileId, currentPage)
                 }
                 setLoading(false)
             } catch (error) {
@@ -219,7 +219,7 @@ const ShowStoredChunks = () => {
     return (
         <>
             <MainCard style={{ position: 'relative' }}>
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
+                <Stack flexDirection='column' sx={{ gap: 1 }}>
                     <ViewHeader
                         isBackButton={true}
                         search={false}
@@ -275,9 +275,19 @@ const ShowStoredChunks = () => {
                                     variant='outlined'
                                     disabled={currentPage === 1}
                                 >
-                                    <IconChevronLeft color={customization.isDarkMode ? 'white' : 'black'} />
+                                    <IconChevronLeft
+                                        color={
+                                            customization.isDarkMode
+                                                ? currentPage === 1
+                                                    ? '#616161'
+                                                    : 'white'
+                                                : currentPage === 1
+                                                ? '#e0e0e0'
+                                                : 'black'
+                                        }
+                                    />
                                 </IconButton>
-                                Showing {start}-{end} of {totalChunks} chunks
+                                Showing {Math.min(start, totalChunks)}-{end} of {totalChunks} chunks
                                 <IconButton
                                     size='small'
                                     onClick={() => changePage(currentPage + 1)}
@@ -285,7 +295,17 @@ const ShowStoredChunks = () => {
                                     variant='outlined'
                                     disabled={end >= totalChunks}
                                 >
-                                    <IconChevronRight color={customization.isDarkMode ? 'white' : 'black'} />
+                                    <IconChevronRight
+                                        color={
+                                            customization.isDarkMode
+                                                ? end >= totalChunks
+                                                    ? '#616161'
+                                                    : 'white'
+                                                : end >= totalChunks
+                                                ? '#e0e0e0'
+                                                : 'black'
+                                        }
+                                    />
                                 </IconButton>
                             </div>
                             <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -326,7 +346,7 @@ const ShowStoredChunks = () => {
                                             <Card>
                                                 <CardContent sx={{ p: 2 }}>
                                                     <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                        {`#${index + 1}. Characters: ${row.pageContent.length}`}
+                                                        {`#${index + start}. Characters: ${row.pageContent.length}`}
                                                     </Typography>
                                                     <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
                                                         {row.pageContent}
@@ -339,7 +359,7 @@ const ShowStoredChunks = () => {
                                                         quotesOnKeys={false}
                                                         enableClipboard={false}
                                                         displayDataTypes={false}
-                                                        collapsed={true}
+                                                        collapsed={1}
                                                     />
                                                 </CardContent>
                                             </Card>
