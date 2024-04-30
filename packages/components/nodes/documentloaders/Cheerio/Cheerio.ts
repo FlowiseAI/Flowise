@@ -55,8 +55,8 @@ class Cheerio_DocumentLoaders implements INode {
                         description: 'Scrape relative links from XML sitemap URL'
                     }
                 ],
-                optional: true,
                 default: 'webCrawl',
+                optional: true,
                 additionalParams: true
             },
             {
