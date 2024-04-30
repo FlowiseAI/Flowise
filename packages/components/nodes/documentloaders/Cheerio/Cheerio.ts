@@ -56,6 +56,7 @@ class Cheerio_DocumentLoaders implements INode {
                     }
                 ],
                 optional: true,
+                default: 'webCrawl',
                 additionalParams: true
             },
             {

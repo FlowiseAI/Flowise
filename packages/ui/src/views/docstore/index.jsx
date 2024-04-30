@@ -33,12 +33,11 @@ import useApi from '@/hooks/useApi'
 import documentsApi from '@/api/documentstore'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList, IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons'
+import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons'
 import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
-import { kFormatter } from '@/utils/genericHelper'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -102,10 +101,12 @@ const Documents = () => {
         if (getAllDocumentStores.data) {
             try {
                 const docStores = getAllDocumentStores.data
+                if (!Array.isArray(docStores)) return
                 const loaderImages = {}
 
                 for (let i = 0; i < docStores.length; i += 1) {
-                    const loaders = docStores[i].loaders
+                    const loaders = docStores[i].loaders ?? []
+
                     let totalChunks = 0
                     let totalChars = 0
                     loaderImages[docStores[i].id] = []
@@ -117,7 +118,7 @@ const Documents = () => {
                         totalChunks += loaders[j]?.totalChunks ?? 0
                         totalChars += loaders[j]?.totalChars ?? 0
                     }
-                    docStores[i].totalDocs = loaders.length
+                    docStores[i].totalDocs = loaders?.length ?? 0
                     docStores[i].totalChunks = totalChunks
                     docStores[i].totalChars = totalChars
                 }
@@ -209,7 +210,7 @@ const Documents = () => {
                         </>
                     ) : (
                         <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-                            <Table aria-label='documents table' size='small'>
+                            <Table aria-label='documents table'>
                                 <TableHead
                                     sx={{
                                         backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
@@ -219,57 +220,27 @@ const Documents = () => {
                                     <TableRow>
                                         <TableCell>Name</TableCell>
                                         <TableCell>Description</TableCell>
-                                        <TableCell colspan={3} style={{ textAlign: 'center' }}>
-                                            Metrics
-                                        </TableCell>
-                                        <TableCell>Icons</TableCell>
+                                        <TableCell>Connected flows</TableCell>
+                                        <TableCell>Total documents</TableCell>
+                                        <TableCell>Total characters</TableCell>
+                                        <TableCell>Total chunks</TableCell>
+                                        <TableCell>Loader types</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {docStores?.filter(filterDocStores).map((data, index) => (
-                                        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                        <TableRow
+                                            onClick={() => goToDocumentStore(data.id)}
+                                            hover
+                                            key={index}
+                                            sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
+                                        >
                                             <TableCell>{data.name}</TableCell>
                                             <TableCell>{data.description || ' '}</TableCell>
-                                            <TableCell>
-                                                <div
-                                                    style={{
-                                                        marginRight: 15,
-                                                        display: 'flex',
-                                                        flexDirection: 'row',
-                                                        alignItems: 'center'
-                                                    }}
-                                                >
-                                                    <IconVectorBezier2 size={20} />
-                                                    {kFormatter(data.whereUsed?.length ?? 0)}
-                                                    {data.whereUsed?.length === 1 ? ' Flow' : ' Flows'}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div
-                                                    style={{
-                                                        marginRight: 15,
-                                                        display: 'flex',
-                                                        flexDirection: 'row',
-                                                        alignItems: 'center'
-                                                    }}
-                                                >
-                                                    <IconLanguage size={20} />
-                                                    {kFormatter(data.totalChars ?? 0)} chars
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div
-                                                    style={{
-                                                        marginRight: 15,
-                                                        display: 'flex',
-                                                        flexDirection: 'row',
-                                                        alignItems: 'center'
-                                                    }}
-                                                >
-                                                    <IconScissors size={20} />
-                                                    {kFormatter(data.totalChunks ?? 0)} chunks
-                                                </div>
-                                            </TableCell>
+                                            <TableCell>{data.whereUsed?.length ?? 0}</TableCell>
+                                            <TableCell>{data.totalDocs}</TableCell>
+                                            <TableCell>{data.totalChars}</TableCell>
+                                            <TableCell>{data.totalChunks}</TableCell>
                                             <TableCell>
                                                 {images[data.id] && (
                                                     <Box

@@ -506,6 +506,13 @@ function LoaderRow(props) {
         setAnchorEl(null)
     }
 
+    const formatSources = (source) => {
+        if (source && typeof source === 'string' && source.startsWith('[') && source.endsWith(']')) {
+            return JSON.parse(source).join(', ')
+        }
+        return source
+    }
+
     return (
         <>
             <TableRow hover key={props.index} sx={{ '&:last-child td, &:last-child th': { border: 0 }, cursor: 'pointer' }}>
@@ -524,7 +531,7 @@ function LoaderRow(props) {
                     {props.loader.loaderName}
                 </StyledTableCell>
                 <StyledTableCell onClick={props.onViewChunksClick}>{props.loader.splitterName ?? 'None'}</StyledTableCell>
-                <StyledTableCell onClick={props.onViewChunksClick}>{props.loader.source}</StyledTableCell>
+                <StyledTableCell onClick={props.onViewChunksClick}>{formatSources(props.loader.source)}</StyledTableCell>
                 <StyledTableCell onClick={props.onViewChunksClick}>
                     {props.loader.totalChunks && <Chip variant='outlined' size='small' label={props.loader.totalChunks.toLocaleString()} />}
                 </StyledTableCell>

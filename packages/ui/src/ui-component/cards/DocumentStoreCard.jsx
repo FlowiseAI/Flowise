@@ -127,34 +127,91 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                         >
                             {data.description || ' '}
                         </span>
-                        <div
-                            style={{
-                                width: '100%',
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                alignContent: 'center',
-                                overflow: 'hidden',
-                                marginTop: 15
-                            }}
-                        >
-                            <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <IconVectorBezier2 size={20} />
-                                {kFormatter(data.whereUsed?.length ?? 0)} {data.whereUsed?.length === 1 ? 'Flow' : 'Flows'}
+                        <Grid sx={{ mt: 1 }} container justifyContent='space-between'>
+                            <div
+                                style={{
+                                    paddingLeft: '7px',
+                                    paddingRight: '7px',
+                                    paddingTop: '3px',
+                                    paddingBottom: '3px',
+                                    fontSize: '11px',
+                                    width: 'max-content',
+                                    borderRadius: '25px',
+                                    boxShadow: customization.isDarkMode
+                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
+                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <IconVectorBezier2 style={{ marginRight: 5 }} size={15} />
+                                {data.whereUsed?.length ?? 0} {data.whereUsed?.length <= 1 ? 'flow' : 'flows'}
                             </div>
-                            <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <IconFiles size={20} />
+                            <div
+                                style={{
+                                    paddingLeft: '7px',
+                                    paddingRight: '7px',
+                                    paddingTop: '3px',
+                                    paddingBottom: '3px',
+                                    fontSize: '11px',
+                                    width: 'max-content',
+                                    borderRadius: '25px',
+                                    boxShadow: customization.isDarkMode
+                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
+                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <IconFiles style={{ marginRight: 5 }} size={15} />
                                 {kFormatter(data.totalDocs ?? 0)} docs
                             </div>
-                            <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <IconLanguage size={20} />
+                            <div
+                                style={{
+                                    paddingLeft: '7px',
+                                    paddingRight: '7px',
+                                    paddingTop: '3px',
+                                    paddingBottom: '3px',
+                                    fontSize: '11px',
+                                    width: 'max-content',
+                                    borderRadius: '25px',
+                                    boxShadow: customization.isDarkMode
+                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
+                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <IconLanguage style={{ marginRight: 5 }} size={15} />
                                 {kFormatter(data.totalChars ?? 0)} chars
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <IconScissors size={20} />
+                            <div
+                                style={{
+                                    paddingLeft: '7px',
+                                    paddingRight: '7px',
+                                    paddingTop: '3px',
+                                    paddingBottom: '3px',
+                                    fontSize: '11px',
+                                    width: 'max-content',
+                                    borderRadius: '25px',
+                                    boxShadow: customization.isDarkMode
+                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
+                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <IconScissors style={{ marginRight: 5 }} size={15} />
                                 {kFormatter(data.totalChunks ?? 0)} chunks
                             </div>
-                        </div>
+                        </Grid>
                     </Box>
                     {images && (
                         <Box
