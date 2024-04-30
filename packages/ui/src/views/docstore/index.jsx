@@ -38,6 +38,7 @@ import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
+import DocumentStoreStatus from '@/ui-component/cards/DocumentStoreStatus'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -218,6 +219,7 @@ const Documents = () => {
                                     }}
                                 >
                                     <TableRow>
+                                        <TableCell>&nbsp;</TableCell>
                                         <TableCell>Name</TableCell>
                                         <TableCell>Description</TableCell>
                                         <TableCell>Connected flows</TableCell>
@@ -235,6 +237,9 @@ const Documents = () => {
                                             key={index}
                                             sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
                                         >
+                                            <TableCell align='center'>
+                                                <DocumentStoreStatus status={data.status} />
+                                            </TableCell>
                                             <TableCell>{data.name}</TableCell>
                                             <TableCell>{data.description || ' '}</TableCell>
                                             <TableCell>{data.whereUsed?.length ?? 0}</TableCell>

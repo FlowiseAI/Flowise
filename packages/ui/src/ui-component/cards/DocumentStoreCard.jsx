@@ -8,6 +8,7 @@ import { IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
+import DocumentStoreStatus from '@/ui-component/cards/DocumentStoreStatus'
 
 import { kFormatter } from '@/utils/genericHelper'
 
@@ -35,27 +36,6 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 const DocumentStoreCard = ({ data, images, onClick }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
-
-    const getColor = (status) => {
-        switch (status) {
-            case 'STALE':
-                return customization.isDarkMode
-                    ? [theme.palette.grey[400], theme.palette.grey[600], theme.palette.grey[700]]
-                    : [theme.palette.grey[300], theme.palette.grey[500], theme.palette.grey[700]]
-            case 'EMPTY':
-                return ['#673ab7', '#673ab7', '#673ab7']
-            case 'SYNCING':
-                return ['#fff8e1', '#ffe57f', '#ffc107']
-            case 'SYNC':
-                return ['#cdf5d8', '#00e676', '#00c853']
-            case 'NEW':
-                return ['#e3f2fd', '#2196f3', '#1e88e5']
-            default:
-                return customization.isDarkMode
-                    ? [theme.palette.grey[300], theme.palette.grey[500], theme.palette.grey[700]]
-                    : [theme.palette.grey[300], theme.palette.grey[500], theme.palette.grey[700]]
-        }
-    }
 
     return (
         <CardWrapper content={false} onClick={onClick} sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}>
@@ -85,33 +65,7 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                             >
                                 {data.name}
                             </Typography>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignContent: 'center',
-                                    alignItems: 'center',
-                                    background: data.status === 'EMPTY' ? 'transparent' : getColor(data.status)[0],
-                                    border: data.status === 'EMPTY' ? '1px solid' : 'none',
-                                    borderColor: data.status === 'EMPTY' ? getColor(data.status)[0] : 'transparent',
-                                    borderRadius: 15,
-                                    padding: 5,
-                                    paddingLeft: 7,
-                                    paddingRight: 7
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        width: 15,
-                                        height: 15,
-                                        borderRadius: '50%',
-                                        backgroundColor: data.status === 'EMPTY' ? 'transparent' : getColor(data.status)[1],
-                                        border: data.status === 'EMPTY' ? '3px solid' : 'none',
-                                        borderColor: data.status === 'EMPTY' ? getColor(data.status)[1] : 'transparent'
-                                    }}
-                                />
-                                <span style={{ color: getColor(data.status)[2], marginLeft: 5 }}>{data.status}</span>
-                            </div>
+                            <DocumentStoreStatus status={data.status} />
                         </div>
                         <span
                             style={{
@@ -149,27 +103,6 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                                 <IconVectorBezier2 style={{ marginRight: 5 }} size={15} />
                                 {data.whereUsed?.length ?? 0} {data.whereUsed?.length <= 1 ? 'flow' : 'flows'}
                             </div>
-                            {/*<div
-                                style={{
-                                    paddingLeft: '7px',
-                                    paddingRight: '7px',
-                                    paddingTop: '3px',
-                                    paddingBottom: '3px',
-                                    fontSize: '11px',
-                                    width: 'max-content',
-                                    borderRadius: '25px',
-                                    boxShadow: customization.isDarkMode
-                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
-                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
-
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center'
-                                }}
-                            >*/}
-                            {/*    <IconFiles style={{ marginRight: 5 }} size={15} />*/}
-                            {/*    {kFormatter(data.totalDocs ?? 0)} docs*/}
-                            {/*</div>*/}
                             <div
                                 style={{
                                     paddingLeft: '7px',
