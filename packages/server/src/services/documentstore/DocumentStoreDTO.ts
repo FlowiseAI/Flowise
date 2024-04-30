@@ -1,12 +1,10 @@
 import { DocumentStoreStatus } from '../../Interface'
 import { DocumentStore } from '../../database/entities/DocumentStore'
-import { convertToValidFilename } from '../../utils'
 
 export class DocumentStoreDTO {
     id: string
     name: string
     description: string
-    subFolder: string
     files: any[]
     whereUsed: any[]
     createdDate: Date
@@ -14,7 +12,6 @@ export class DocumentStoreDTO {
     status: DocumentStoreStatus
     chunkOverlap: number
     splitter: string
-    codeLanguage: string
     totalFiles: number
     totalChunks: number
     totalChars: number
@@ -30,8 +27,11 @@ export class DocumentStoreDTO {
         documentStoreDTO.id = entity.id
         documentStoreDTO.name = entity.name
         documentStoreDTO.description = entity.description
-        documentStoreDTO.subFolder = entity.subFolder
         documentStoreDTO.status = entity.status
+        documentStoreDTO.totalChars = 0
+        documentStoreDTO.totalChunks = 0
+        documentStoreDTO.totalChunks = 0
+        documentStoreDTO.totalChunks = 0
         if (entity.whereUsed) {
             documentStoreDTO.whereUsed = JSON.parse(entity.whereUsed)
         } else {
@@ -84,7 +84,6 @@ export class DocumentStoreDTO {
     static toEntity(body: any): DocumentStore {
         const docStore = new DocumentStore()
         Object.assign(docStore, body)
-        docStore.subFolder = convertToValidFilename(docStore.name)
         docStore.loaders = '[]'
         docStore.whereUsed = '[]'
         // when a new document store is created, it is empty and in sync

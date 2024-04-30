@@ -14,9 +14,10 @@ router.put('/store/:id', documentStoreController.updateDocumentStore)
 // Delete documentStore
 router.delete('/store/:id', documentStoreController.deleteDocumentStore)
 
-/** Document Store - Loaders */
+/** Component Nodes = Document Store - Loaders */
 // Get all loaders
 router.get('/loaders', documentStoreController.getDocumentLoaders)
+
 // delete loader from document store
 router.delete('/loader/:id/:loaderId', documentStoreController.deleteLoaderFromDocumentStore)
 // chunking preview

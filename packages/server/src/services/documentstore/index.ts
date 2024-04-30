@@ -15,6 +15,7 @@ import { databaseEntities } from '../../utils'
 import logger from '../../utils/logger'
 import nodesService from '../nodes'
 
+const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 // Create new document store
 const createDocumentStore = async (newDocumentStore: DocumentStore) => {
     try {
@@ -49,7 +50,7 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) 
         if (found) {
             if (found.path) {
                 //remove the existing files, if any of the file loaders were used.
-                await removeSpecificFileFromStorage('datasource', entity.subFolder, found.path)
+                await removeSpecificFileFromStorage(DOCUMENT_STORE_BASE_FOLDER, entity.id, found.path)
             }
             const index = existingLoaders.indexOf(found)
             if (index > -1) {
@@ -82,7 +83,7 @@ const getDocumentStoreById = async (storeId: string) => {
     }
 }
 
-// Get chunks for a specific file
+// Get chunks for a specific loader or store
 const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageNo: number = 1) => {
     try {
         const appServer = getRunningExpressApp()
@@ -91,23 +92,38 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
         })
         if (!entity) throw new Error(`Document store ${storeId} not found`)
         const files = JSON.parse(entity.loaders)
-        const found = files.find((file: any) => file.id === fileId)
-        if (!found) throw new Error(`Document store file ${fileId} not found`)
-
+        let found: any = {}
+        if (fileId !== 'all') {
+            found = files.find((file: any) => file.id === fileId)
+            if (!found) throw new Error(`Document store file ${fileId} not found`)
+        }
+        let totalChars = 0
+        files.forEach((file: any) => {
+            totalChars += file.totalChars
+        })
+        found.totalChars = totalChars
+        found.storeName = entity.name
+        found.id = entity.id
+        found.description = entity.description
+        found.status = entity.status
+        found.whereUsed = JSON.parse(entity.whereUsed)
         const PAGE_SIZE = 50
         const skip = (pageNo - 1) * PAGE_SIZE
         const take = PAGE_SIZE
+        let whereCondition: any = { docId: fileId }
+        if (fileId === 'all') {
+            whereCondition = { storeId: storeId }
+        }
         const count = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).count({
-            where: { docId: fileId }
+            where: whereCondition
         })
         const chunksWithCount = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find({
             skip,
             take,
-            where: { docId: fileId }
+            where: whereCondition
         })
 
         if (!chunksWithCount) throw new Error(`File ${fileId} not found`)
-        found.storeName = entity.name
         return {
             chunks: chunksWithCount,
             count: count,
@@ -131,7 +147,7 @@ const deleteDocumentStore = async (storeId: string) => {
             id: storeId
         })
         if (!entity) throw new Error(`Document store ${storeId} not found`)
-        await removeFilesFromStorage('datasource', entity.subFolder)
+        await removeFilesFromStorage(DOCUMENT_STORE_BASE_FOLDER, entity.id)
         // now delete the store
         const tbd = await appServer.AppDataSource.getRepository(DocumentStore).delete({
             id: storeId
@@ -209,10 +225,6 @@ const updateDocumentStore = async (documentStore: DocumentStore, updatedDocument
 }
 
 const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore) => {
-    // const dir = path.join(getStoragePath(), 'datasource', entity.subFolder)
-    // if (!fs.existsSync(dir)) {
-    //     throw new Error(`Missing folder to upload files for Document Store ${entity.name}`)
-    // }
     const splitDataURI = fileBase64.split(',')
     const filename = splitDataURI.pop()?.split(':')[1] ?? ''
     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
@@ -223,7 +235,7 @@ const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore) => 
         //data:text/plain;base64
         mime = mimePrefix.split(';')[0].split(':')[1]
     }
-    await addFileToStorage(mime, bf, filename, 'datasource', entity.subFolder)
+    await addFileToStorage(mime, bf, filename, DOCUMENT_STORE_BASE_FOLDER, entity.id)
     return {
         id: uuidv4(),
         name: filename,
@@ -253,7 +265,7 @@ const _splitIntoChunks = async (data: any) => {
         // doc loader configs
         const nodeData = {
             credential: data.credential || undefined,
-            inputs: { textSplitter: splitterInstance, ...data.loaderConfig },
+            inputs: { ...data.loaderConfig, textSplitter: splitterInstance },
             outputs: { output: 'document' }
         }
         const options: ICommonObject = {
@@ -297,16 +309,12 @@ const _normalizeFilePaths = async (data: any, entity: DocumentStore | null) => {
             } else {
                 files = [fileName]
             }
-            //const dir = path.join(getStoragePath(), 'datasource', documentStoreEntity.subFolder)
-            // if (!fs.existsSync(dir)) {
-            //     throw new Error(`Missing folder to upload files for Document Store ${documentStoreEntity.name}`)
-            // }
             const loaders = JSON.parse(documentStoreEntity.loaders)
             const currentLoader = loaders.find((ldr: any) => ldr.id === data.id)
             if (currentLoader) {
                 const base64Files: string[] = []
                 for (const file of files) {
-                    const bf = await getFileFromStorage(file, 'datasource', documentStoreEntity.subFolder)
+                    const bf = await getFileFromStorage(file, DOCUMENT_STORE_BASE_FOLDER, documentStoreEntity.id)
                     // find the file entry that has the same name as the file
                     const uploadedFile = currentLoader.files.find((uFile: any) => uFile.name === file)
                     const mimePrefix = 'data:' + uploadedFile.mimePrefix + ';base64'
@@ -447,7 +455,7 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
                     if (!data.rehydrated) {
                         if (loader.files) {
                             loader.files.map(async (file: any) => {
-                                await removeSpecificFileFromStorage('datasource', entity.subFolder, file.name)
+                                await removeSpecificFileFromStorage(DOCUMENT_STORE_BASE_FOLDER, entity.id, file.name)
                             })
                         }
                     }
@@ -562,7 +570,7 @@ export default {
     updateDocumentStore,
     previewChunks,
     processAndSaveChunks,
-    getDocumentLoaders,
     deleteDocumentStoreFileChunk,
-    editDocumentStoreFileChunk
+    editDocumentStoreFileChunk,
+    getDocumentLoaders
 }

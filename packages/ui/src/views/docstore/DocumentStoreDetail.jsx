@@ -5,9 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 // material-ui
 import {
-    IconButton,
     Box,
-    Skeleton,
     Stack,
     Typography,
     TableContainer,
@@ -21,19 +19,19 @@ import {
     Menu,
     MenuItem,
     Divider,
-    Button
+    Button,
+    Skeleton,
+    IconButton
 } from '@mui/material'
 import { alpha, styled, useTheme } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import DocumentLoaderListDialog from '@/views/docstore/DocumentLoaderListDialog'
 import ErrorBoundary from '@/ErrorBoundary'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // API
 import documentsApi from '@/api/documentstore'
@@ -44,7 +42,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // icons
-import { IconPlus, IconRefresh, IconX, IconTrash } from '@tabler/icons'
+import { IconPlus, IconRefresh, IconScissors, IconTrash, IconX } from '@tabler/icons'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileEditIcon from '@mui/icons-material/Edit'
@@ -55,6 +53,8 @@ import doc_store_details_emptySVG from '@/assets/images/doc_store_details_empty.
 
 // store
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import { StyledButton } from "@/ui-component/button/StyledButton";
+import ViewHeader from "@/layout/MainLayout/ViewHeader";
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -284,6 +284,7 @@ const DocumentStoreDetails = () => {
     useEffect(() => {
         if (getSpecificDocumentStore.data) {
             setDocumentStore(getSpecificDocumentStore.data)
+            // total the chunks and chars
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -318,8 +319,8 @@ const DocumentStoreDetails = () => {
                         >
                             {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
                                 <Chip
-                                    variant={'filled'}
-                                    color={'success'}
+                                    variant='filled'
+                                    color='success'
                                     label={
                                         'Used in ' +
                                         getSpecificDocumentStore.data?.whereUsed.length +
@@ -333,6 +334,16 @@ const DocumentStoreDetails = () => {
                             {documentStore?.status === 'STALE' && (
                                 <Button variant='outlined' sx={{ mr: 2 }} startIcon={<IconRefresh />} onClick={onConfirm}>
                                     Refresh
+                                </Button>
+                            )}
+                            {documentStore?.totalChunks > 0 && (
+                                <Button
+                                    variant='outlined'
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    startIcon={<IconScissors />}
+                                    onClick={() => showStoredChunks('all')}
+                                >
+                                    View Chunks
                                 </Button>
                             )}
                             <StyledButton
@@ -561,14 +572,14 @@ function LoaderRow(props) {
                                 <FileChunksIcon />
                                 View & Edit Chunks
                             </MenuItem>
-                            <MenuItem disabled={true} onClick={props.onViewChunksClick} disableRipple>
-                                <InsertVectorStoreIcon />
-                                Insert into Vector Store
-                            </MenuItem>
-                            <MenuItem disabled={true} onClick={props.onViewChunksClick} disableRipple>
-                                <TestVectorRetrievalIcon />
-                                Test Retrieval
-                            </MenuItem>
+                            {/*<MenuItem disabled={true} onClick={props.onViewChunksClick} disableRipple>*/}
+                            {/*    <InsertVectorStoreIcon />*/}
+                            {/*    Insert into Vector Store*/}
+                            {/*</MenuItem>*/}
+                            {/*<MenuItem disabled={true} onClick={props.onViewChunksClick} disableRipple>*/}
+                            {/*    <TestVectorRetrievalIcon />*/}
+                            {/*    Test Retrieval*/}
+                            {/*</MenuItem>*/}
                             <Divider sx={{ my: 0.5 }} />
                             <MenuItem onClick={props.onDeleteClick} disableRipple>
                                 <FileDeleteIcon />

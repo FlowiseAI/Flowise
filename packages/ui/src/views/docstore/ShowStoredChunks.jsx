@@ -7,16 +7,26 @@ import ReactJson from 'flowise-react-json-view'
 import { Collapse, Box, Skeleton, Card, Button, Grid, IconButton, Stack, Table, TableHead, TableRow, Typography } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
-import { IconLanguage, IconEdit, IconTrash, IconX, IconChevronLeft, IconChevronRight, IconChevronUp, IconChevronDown } from '@tabler/icons'
+import {
+    IconClick,
+    IconLanguage,
+    IconEdit,
+    IconTrash,
+    IconX,
+    IconChevronLeft,
+    IconChevronRight,
+    IconChevronUp,
+    IconChevronDown
+} from '@tabler/icons'
 import TableCell from '@mui/material/TableCell'
 import chunks_emptySVG from '@/assets/images/chunks_empty.svg'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // API
 import documentsApi from '@/api/documentstore'
@@ -28,7 +38,6 @@ import useNotifier from '@/utils/useNotifier'
 
 // store
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
-import { IconClick } from '@tabler/icons'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -223,6 +232,8 @@ const ShowStoredChunks = () => {
             setCurrentPage(data.currentPage)
             setStart(data.currentPage * 50 - 49)
             setEnd(data.currentPage * 50 > data.count ? data.count : data.currentPage * 50)
+            setSelectedChunkNumber(undefined)
+            setSelectedChunk(undefined)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -231,11 +242,11 @@ const ShowStoredChunks = () => {
     return (
         <>
             <MainCard>
-                <Stack flexDirection='column'>
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
                     <ViewHeader
                         isBackButton={true}
                         search={false}
-                        title={getChunksApi.data?.file.loaderName}
+                        title={getChunksApi.data?.file.loaderName || getChunksApi.data?.file.storeName}
                         description={getChunksApi.data?.file.splitterName}
                         onBack={() => navigate(-1)}
                     ></ViewHeader>
@@ -303,12 +314,6 @@ const ShowStoredChunks = () => {
                                             </div>
                                         )}
                                         {[
-                                            ...documentChunks,
-                                            ...documentChunks,
-                                            ...documentChunks,
-                                            ...documentChunks,
-                                            ...documentChunks,
-                                            ...documentChunks,
                                             ...documentChunks
                                         ]?.map((row, index) => (
                                             <Grid item lg={6} md={6} sm={6} xs={6} key={index}>

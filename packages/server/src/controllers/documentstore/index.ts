@@ -14,13 +14,6 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
             throw new Error(`Error: documentStoreController.createDocumentStore - body not provided!`)
         }
         const body = req.body
-        const subFolder = convertToValidFilename(body.name)
-        const dir = path.join(getStoragePath(), 'datasource', subFolder)
-        if (fs.existsSync(dir)) {
-            return res.status(500).send(new Error(`Document store ${body.name} already exists. Subfolder: ${subFolder}`))
-        } else {
-            fs.mkdirSync(dir, { recursive: true })
-        }
         const docStore = DocumentStoreDTO.toEntity(body)
         const apiResponse = await documentStoreService.createDocumentStore(docStore)
         return res.json(apiResponse)
@@ -50,20 +43,6 @@ const deleteLoaderFromDocumentStore = async (req: Request, res: Response, next: 
         next(error)
     }
 }
-
-// const uploadFileToDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//         const body = req.body
-//         if (!req.params.id || !body.uploadFiles) {
-//             return res.status(500).send(new Error(`Document store upload missing key information.`))
-//         }
-//
-//         const apiResponse = await documentStoreService.uploadFileToDocumentStore(body.storeId, body.uploadFiles)
-//         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
-//     } catch (error) {
-//         next(error)
-//     }
-// }
 
 const getDocumentStoreById = async (req: Request, res: Response, next: NextFunction) => {
     try {

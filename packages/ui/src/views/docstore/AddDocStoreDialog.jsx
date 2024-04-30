@@ -194,7 +194,6 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         size='small'
                         sx={{ mt: 1 }}
                         type='string'
-                        disabled={dialogType === 'EDIT'}
                         fullWidth
                         key='documentStoreName'
                         onChange={(e) => setDocumentStoreName(e.target.value)}

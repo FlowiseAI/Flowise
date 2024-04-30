@@ -7,10 +7,8 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
                 "id" varchar PRIMARY KEY NOT NULL, 
                 "name" varchar NOT NULL, 
                 "description" varchar, 
-                "subFolder" varchar NOT NULL, 
                 "status" varchar NOT NULL, 
                 "loaders" text, 
-                "metrics" text, 
                 "whereUsed" text, 
                 "updatedDate" datetime NOT NULL DEFAULT (datetime('now')),
                 "createdDate" datetime NOT NULL DEFAULT (datetime('now')));`

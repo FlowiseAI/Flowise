@@ -84,7 +84,7 @@ const DocumentLoaderListDialog = ({ show, dialogProps, onCancel, onDocLoaderSele
                         id='input-search-credential'
                         value={searchValue}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder='Search Loader'
+                        placeholder='Search'
                         startAdornment={
                             <InputAdornment position='start'>
                                 <IconSearch stroke={1.5} size='1rem' color={theme.palette.grey[500]} />

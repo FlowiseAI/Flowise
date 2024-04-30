@@ -12,9 +12,6 @@ export class DocumentStore implements IDocumentStore {
     @Column({ nullable: true, type: 'text' })
     description: string
 
-    @Column({ nullable: false, type: 'text' })
-    subFolder: string
-
     @Column({ nullable: true, type: 'text' })
     loaders: string
 

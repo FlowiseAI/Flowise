@@ -142,10 +142,10 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                                 <IconVectorBezier2 size={20} />
                                 {kFormatter(data.whereUsed?.length ?? 0)} {data.whereUsed?.length === 1 ? 'Flow' : 'Flows'}
                             </div>
-                            <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <IconFiles size={20} />
-                                {kFormatter(data.totalDocs ?? 0)} docs
-                            </div>
+                            {/*<div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>*/}
+                            {/*    <IconFiles size={20} />*/}
+                            {/*    {kFormatter(data.totalDocs ?? 0)} docs*/}
+                            {/*</div>*/}
                             <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <IconLanguage size={20} />
                                 {kFormatter(data.totalChars ?? 0)} chars
