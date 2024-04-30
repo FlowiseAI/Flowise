@@ -34,7 +34,7 @@ class MistralAIToolAgent_Agents implements INode {
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'MistralAI.svg'
-        this.badge = 'NEW'
+        this.badge = 'DEPRECATING'
         this.description = `Agent that uses MistralAI Function Calling to pick the tools and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [

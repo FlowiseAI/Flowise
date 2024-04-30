@@ -165,7 +165,7 @@ class Zep_VectorStores implements INode {
 
         const vectorStore = await ZepExistingVS.fromExistingIndex(embeddings, zepConfig)
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore, zepConfig.filter)
     }
 }
 

@@ -96,6 +96,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [chatMessages, setChatMessages] = useState([])
     const [stats, setStats] = useState([])
     const [selectedMessageIndex, setSelectedMessageIndex] = useState(0)
+    const [selectedChatId, setSelectedChatId] = useState('')
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
     const [chatTypeFilter, setChatTypeFilter] = useState([])
@@ -284,6 +285,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         const loadedMessages = []
         for (let i = 0; i < chatmessages.length; i += 1) {
             const chatmsg = chatmessages[i]
+            setSelectedChatId(chatmsg.chatId)
             if (!prevDate) {
                 prevDate = chatmsg.createdDate.split('T')[0]
                 loadedMessages.push({
@@ -384,8 +386,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const downloadFile = async (fileAnnotation) => {
         try {
             const response = await axios.post(
-                `${baseURL}/api/v1/openai-assistants-file`,
-                { fileName: fileAnnotation.fileName },
+                `${baseURL}/api/v1/openai-assistants-file/download`,
+                { fileName: fileAnnotation.fileName, chatflowId: dialogProps.chatflow.id, chatId: selectedChatId },
                 { responseType: 'blob' }
             )
             const blob = new Blob([response.data], { type: response.headers['content-type'] })
@@ -450,6 +452,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setChatMessages([])
             setChatTypeFilter([])
             setSelectedMessageIndex(0)
+            setSelectedChatId('')
             setStartDate(new Date().setMonth(new Date().getMonth() - 1))
             setEndDate(new Date())
             setStats([])

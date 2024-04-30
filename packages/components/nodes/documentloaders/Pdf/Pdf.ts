@@ -1,9 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf'
-import { getStoragePath } from '../../../src'
-import fs from 'fs'
-import path from 'path'
+import { getFileFromStorage } from '../../../src'
 
 class Pdf_DocumentLoaders implements INode {
     label: string
@@ -92,8 +90,7 @@ class Pdf_DocumentLoaders implements INode {
             const chatflowid = options.chatflowid
 
             for (const file of files) {
-                const fileInStorage = path.join(getStoragePath(), chatflowid, file)
-                const fileData = fs.readFileSync(fileInStorage)
+                const fileData = await getFileFromStorage(file, chatflowid)
                 const bf = Buffer.from(fileData)
                 await this.extractDocs(usage, bf, legacyBuild, textSplitter, alldocs)
             }
