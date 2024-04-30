@@ -47,14 +47,12 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileEditIcon from '@mui/icons-material/Edit'
 import FileChunksIcon from '@mui/icons-material/AppRegistration'
-import InsertVectorStoreIcon from '@mui/icons-material/ArchiveOutlined'
-import TestVectorRetrievalIcon from '@mui/icons-material/QuizOutlined'
 import doc_store_details_emptySVG from '@/assets/images/doc_store_details_empty.svg'
 
 // store
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
-import { StyledButton } from "@/ui-component/button/StyledButton";
-import ViewHeader from "@/layout/MainLayout/ViewHeader";
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| DOCUMENTS ||============================== //
 

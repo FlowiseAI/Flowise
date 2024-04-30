@@ -313,9 +313,7 @@ const ShowStoredChunks = () => {
                                                 <div>No Chunks</div>
                                             </div>
                                         )}
-                                        {[
-                                            ...documentChunks
-                                        ]?.map((row, index) => (
+                                        {[...documentChunks]?.map((row, index) => (
                                             <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
                                                 <CardWrapper
                                                     content={false}
