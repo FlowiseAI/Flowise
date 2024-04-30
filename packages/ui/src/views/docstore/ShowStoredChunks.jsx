@@ -7,14 +7,7 @@ import ReactJson from 'flowise-react-json-view'
 import { Box, Card, Button, Grid, IconButton, Stack, Typography } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
-import {
-    IconClick,
-    IconLanguage,
-
-    IconX,
-    IconChevronLeft,
-    IconChevronRight
-} from '@tabler/icons'
+import { IconLanguage, IconX, IconChevronLeft, IconChevronRight } from '@tabler/icons'
 import chunks_emptySVG from '@/assets/images/chunks_empty.svg'
 
 // project imports
@@ -22,7 +15,6 @@ import MainCard from '@/ui-component/cards/MainCard'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ExpandedChunkDialog from './ExpandedChunkDialog'
-import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // API
