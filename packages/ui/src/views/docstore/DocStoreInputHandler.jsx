@@ -198,7 +198,6 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
                         )}
                         {inputParam.type === 'multiOptions' && (
                             <MultiDropdown
-                                key={reloadTimestamp}
                                 disabled={disabled}
                                 name={inputParam.name}
                                 options={inputParam.options}

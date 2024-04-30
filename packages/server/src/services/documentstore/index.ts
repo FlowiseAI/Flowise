@@ -14,6 +14,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { databaseEntities } from '../../utils'
 import logger from '../../utils/logger'
 import nodesService from '../nodes'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
+import { getErrorMessage } from '../../errors/utils'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 // Create new document store
@@ -24,7 +27,10 @@ const createDocumentStore = async (newDocumentStore: DocumentStore) => {
         const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(documentStore)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.createDocumentStore - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.createDocumentStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -34,7 +40,10 @@ const getAllDocumentStores = async () => {
         const entities = await appServer.AppDataSource.getRepository(DocumentStore).find()
         return entities
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.getAllDocumentStores - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getAllDocumentStores - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -44,7 +53,12 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) 
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
             id: storeId
         })
-        if (!entity) throw new Error(`Document store ${storeId} not found`)
+        if (!entity) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.deleteLoaderFromDocumentStore - Document store ${storeId} not found`
+            )
+        }
         const existingLoaders = JSON.parse(entity.loaders)
         const found = existingLoaders.find((uFile: any) => uFile.id === loaderId)
         if (found) {
@@ -63,10 +77,13 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) 
             const results = await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
             return results
         } else {
-            throw new Error(`Unable to locate loader in Document Store ${entity.name}`)
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Unable to locate loader in Document Store ${entity.name}`)
         }
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.deleteLoaderFromDocumentStore - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.deleteLoaderFromDocumentStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -76,10 +93,18 @@ const getDocumentStoreById = async (storeId: string) => {
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
             id: storeId
         })
-        if (!entity) throw new Error(`Document store ${storeId} not found`)
+        if (!entity) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.getDocumentStoreById - Document store ${storeId} not found`
+            )
+        }
         return entity
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.getDocumentStoreById - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getDocumentStoreById - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -90,12 +115,23 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
             id: storeId
         })
-        if (!entity) throw new Error(`Document store ${storeId} not found`)
+        if (!entity) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.getDocumentStoreById - Document store ${storeId} not found`
+            )
+        }
         const files = JSON.parse(entity.loaders)
+
         let found: any = {}
         if (fileId !== 'all') {
             found = files.find((file: any) => file.id === fileId)
-            if (!found) throw new Error(`Document store file ${fileId} not found`)
+            if (!found) {
+                throw new InternalFlowiseError(
+                    StatusCodes.NOT_FOUND,
+                    `Error: documentStoreServices.getDocumentStoreById - Document file ${fileId} not found`
+                )
+            }
         }
         let totalChars = 0
         files.forEach((file: any) => {
@@ -123,7 +159,10 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
             where: whereCondition
         })
 
-        if (!chunksWithCount) throw new Error(`File ${fileId} not found`)
+        if (!chunksWithCount) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `File ${fileId} not found`)
+        }
+        found.storeName = entity.name
         return {
             chunks: chunksWithCount,
             count: count,
@@ -131,7 +170,10 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
             currentPage: pageNo
         }
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.getDocumentStoreFileChunks - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getDocumentStoreFileChunks - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -139,7 +181,7 @@ const deleteDocumentStore = async (storeId: string) => {
     try {
         const appServer = getRunningExpressApp()
         // delete all the chunks associated with the store
-        const tbdChunk = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({
+        await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({
             storeId: storeId
         })
         // now delete the files associated with the store
@@ -155,7 +197,10 @@ const deleteDocumentStore = async (storeId: string) => {
 
         return { deleted: tbd.affected }
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.deleteDocumentStore - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.deleteDocumentStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -165,15 +210,21 @@ const deleteDocumentStoreFileChunk = async (storeId: string, docId: string, chun
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
             id: storeId
         })
-        if (!entity) throw new Error(`Document store ${storeId} not found`)
+        if (!entity) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${storeId} not found`)
+        }
         const loaders = JSON.parse(entity.loaders)
         const found = loaders.find((ldr: any) => ldr.id === docId)
-        if (!found) throw new Error(`Document store loader ${docId} not found`)
+        if (!found) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store loader ${docId} not found`)
+        }
 
         const tbdChunk = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).findOneBy({
             id: chunkId
         })
-        if (!tbdChunk) throw new Error(`Document Chunk ${chunkId} not found`)
+        if (!tbdChunk) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document Chunk ${chunkId} not found`)
+        }
         await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete(chunkId)
         found.totalChunks--
         found.totalChars -= tbdChunk.pageContent.length
@@ -181,7 +232,10 @@ const deleteDocumentStoreFileChunk = async (storeId: string, docId: string, chun
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
         return getDocumentStoreFileChunks(storeId, docId)
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.deleteDocumentStoreFileChunk - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.deleteDocumentStoreFileChunk - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -191,15 +245,21 @@ const editDocumentStoreFileChunk = async (storeId: string, docId: string, chunkI
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
             id: storeId
         })
-        if (!entity) throw new Error(`Document store ${storeId} not found`)
+        if (!entity) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${storeId} not found`)
+        }
         const loaders = JSON.parse(entity.loaders)
         const found = loaders.find((ldr: any) => ldr.id === docId)
-        if (!found) throw new Error(`Document store loader ${docId} not found`)
+        if (!found) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store loader ${docId} not found`)
+        }
 
         const editChunk = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).findOneBy({
             id: chunkId
         })
-        if (!editChunk) throw new Error(`Document Chunk ${chunkId} not found`)
+        if (!editChunk) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document Chunk ${chunkId} not found`)
+        }
         found.totalChars -= editChunk.pageContent.length
         editChunk.pageContent = content
         found.totalChars += content.length
@@ -208,7 +268,10 @@ const editDocumentStoreFileChunk = async (storeId: string, docId: string, chunkI
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
         return getDocumentStoreFileChunks(storeId, docId)
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.editDocumentStoreFileChunk - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.editDocumentStoreFileChunk - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -220,7 +283,10 @@ const updateDocumentStore = async (documentStore: DocumentStore, updatedDocument
         const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(tmpUpdatedDocumentStore)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.updateDocumentStore - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.updateDocumentStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -278,7 +344,10 @@ const _splitIntoChunks = async (data: any) => {
         let docs = await docNodeInstance.init(nodeData, '', options)
         return docs
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.splitIntoChunks - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.splitIntoChunks - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -300,7 +369,9 @@ const _normalizeFilePaths = async (data: any, entity: DocumentStore | null) => {
                 documentStoreEntity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
                     id: data.storeId
                 })
-                if (!documentStoreEntity) throw new Error(`Document store ${data.storeId} not found`)
+                if (!documentStoreEntity) {
+                    throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${data.storeId} not found`)
+                }
             }
             const fileName = input.replace('FILE-STORAGE::', '')
             let files: string[] = []
@@ -354,7 +425,10 @@ const previewChunks = async (data: any) => {
 
         return { chunks: docs, totalChunks: totalChunks, previewChunkCount: data.previewChunkCount }
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.previewChunks - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.previewChunks - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -364,7 +438,12 @@ const processAndSaveChunks = async (data: any) => {
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
             id: data.storeId
         })
-        if (!entity) throw new Error(`Document store ${data.storeId} not found`)
+        if (!entity) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.processAndSaveChunks - Document store ${data.storeId} not found`
+            )
+        }
 
         const newLoaderId = data.id ?? uuidv4()
         const existingLoaders = JSON.parse(entity.loaders)
@@ -399,7 +478,10 @@ const processAndSaveChunks = async (data: any) => {
         _saveChunksToStorage(data, entity, newLoaderId).then(() => {})
         return getDocumentStoreFileChunks(data.storeId, newLoaderId)
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.processAndSaveChunks - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.processAndSaveChunks - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -500,7 +582,10 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
             return
         })
     } catch (error) {
-        throw new Error(`Error: documentStoreServices._saveChunksToStorage - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices._saveChunksToStorage - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -512,7 +597,10 @@ const getDocumentLoaders = async () => {
         const dbResponse = await nodesService.getAllNodesForCategory('Document Loaders')
         return dbResponse.filter((node) => !removeDocumentLoadersWithName.includes(node.name))
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.getDocumentLoaders - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getDocumentLoaders - ${getErrorMessage(error)}`
+        )
     }
 }
 

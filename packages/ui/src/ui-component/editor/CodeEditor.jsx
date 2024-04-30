@@ -5,8 +5,11 @@ import { json } from '@codemirror/lang-json'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
 import { sublime } from '@uiw/codemirror-theme-sublime'
 import { EditorView } from '@codemirror/view'
+import { useTheme } from '@mui/material/styles'
 
 export const CodeEditor = ({ value, height, theme, lang, placeholder, disabled = false, basicSetup = {}, onValueChange }) => {
+    const colorTheme = useTheme()
+
     const customStyle = EditorView.baseTheme({
         '&': {
             color: '#191b1f',
@@ -14,7 +17,18 @@ export const CodeEditor = ({ value, height, theme, lang, placeholder, disabled =
         },
         '.cm-placeholder': {
             color: 'rgba(120, 120, 120, 0.5)'
-        }
+        },
+        '.cm-content':
+            lang !== 'js'
+                ? {
+                      fontFamily: 'Roboto, sans-serif',
+                      fontSize: '0.95rem',
+                      letterSpacing: '0em',
+                      fontWeight: 400,
+                      lineHeight: '1.5em',
+                      color: colorTheme.darkTextPrimary
+                  }
+                : {}
     })
 
     return (

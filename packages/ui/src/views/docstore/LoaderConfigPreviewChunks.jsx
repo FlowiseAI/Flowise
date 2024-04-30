@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { validate as uuidValidate, v4 as uuidv4 } from 'uuid'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import ReactJson from 'flowise-react-json-view'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -20,6 +21,7 @@ import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import { StyledFab } from '@/ui-component/button/StyledFab'
 import ErrorBoundary from '@/ErrorBoundary'
+import ExpandedChunkDialog from './ExpandedChunkDialog'
 
 // API
 import nodesApi from '@/api/nodes'
@@ -84,6 +86,9 @@ const LoaderConfigPreviewChunks = () => {
     const [previewChunkCount, setPreviewChunkCount] = useState(20)
     const [existingLoaderFromDocStoreTable, setExistingLoaderFromDocStoreTable] = useState()
 
+    const [showExpandedChunkDialog, setShowExpandedChunkDialog] = useState(false)
+    const [expandedChunkDialogProps, setExpandedChunkDialogProps] = useState({})
+
     const dispatch = useDispatch()
 
     // ==============================|| Snackbar ||============================== //
@@ -100,9 +105,15 @@ const LoaderConfigPreviewChunks = () => {
         }
     }
 
-    const onChunkClick = (chunk) => {
-        // TODO: Implement chunk click
-        console.log(chunk)
+    const onChunkClick = (selectedChunk, selectedChunkNumber) => {
+        const dialogProps = {
+            data: {
+                selectedChunk,
+                selectedChunkNumber
+            }
+        }
+        setExpandedChunkDialogProps(dialogProps)
+        setShowExpandedChunkDialog(true)
     }
 
     const checkMandatoryFields = () => {
@@ -601,7 +612,7 @@ const LoaderConfigPreviewChunks = () => {
                                                         <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
                                                             <CardWrapper
                                                                 content={false}
-                                                                onClick={() => onChunkClick(row)}
+                                                                onClick={() => onChunkClick(row, index + 1)}
                                                                 sx={{
                                                                     border: 1,
                                                                     borderColor: theme.palette.grey[900] + 25,
@@ -616,6 +627,16 @@ const LoaderConfigPreviewChunks = () => {
                                                                         <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
                                                                             {row.pageContent}
                                                                         </Typography>
+                                                                        <ReactJson
+                                                                            theme={customization.isDarkMode ? 'ocean' : 'rjv-default'}
+                                                                            style={{ paddingTop: 10 }}
+                                                                            src={row.metadata}
+                                                                            name={null}
+                                                                            quotesOnKeys={false}
+                                                                            enableClipboard={false}
+                                                                            displayDataTypes={false}
+                                                                            collapsed={true}
+                                                                        />
                                                                     </CardContent>
                                                                 </Card>
                                                             </CardWrapper>
@@ -631,6 +652,12 @@ const LoaderConfigPreviewChunks = () => {
                     </Stack>
                 )}
             </MainCard>
+            <ExpandedChunkDialog
+                show={showExpandedChunkDialog}
+                isReadOnly={true}
+                dialogProps={expandedChunkDialogProps}
+                onCancel={() => setShowExpandedChunkDialog(false)}
+            ></ExpandedChunkDialog>
             {loading && <BackdropLoader open={loading} />}
         </>
     )
