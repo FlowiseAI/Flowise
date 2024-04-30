@@ -56,7 +56,6 @@ class Upstash_VectorStores implements INode {
 				label: 'Embeddings',
 				name: 'embeddings',
 				type: 'Embeddings',
-				optional: true
 			},
 			{
 				label: 'Record Manager',
