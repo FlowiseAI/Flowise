@@ -72,7 +72,7 @@ const DocumentLoaderListDialog = ({ show, dialogProps, onCancel, onDocLoaderSele
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
                 <Box
                     sx={{
-                        backgroundColor: customization.isDarkMode ? theme.palette.background.darkPaper : theme.palette.background.paper,
+                        backgroundColor: theme.palette.background.paper,
                         pt: 2,
                         position: 'sticky',
                         top: 0,
