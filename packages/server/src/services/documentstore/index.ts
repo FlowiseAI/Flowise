@@ -347,7 +347,7 @@ const _splitIntoChunks = async (data: IDocumentStoreLoaderForPreview) => {
             logger
         }
         const docNodeInstance = new nodeModule.nodeClass()
-        let docs = await docNodeInstance.init(nodeData, '', options)
+        let docs: IDocument[] = await docNodeInstance.init(nodeData, '', options)
         return docs
     } catch (error) {
         throw new InternalFlowiseError(
@@ -562,7 +562,7 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
             await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: newLoaderId })
             if (response.chunks) {
                 //step 8: now save the new chunks
-                const totalChars = response.chunks.reduce((acc: number, chunk: any) => acc + chunk.pageContent.length, 0)
+                const totalChars = response.chunks.reduce((acc: number, chunk) => acc + chunk.pageContent.length, 0)
                 response.chunks.map(async (chunk: IDocument) => {
                     const docChunk: DocumentStoreFileChunk = {
                         docId: newLoaderId,
