@@ -425,6 +425,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 chatId
             }
             if (urls && urls.length > 0) params.uploads = urls
+            if (leadEmail) params.leadEmail = leadEmail
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
 
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
