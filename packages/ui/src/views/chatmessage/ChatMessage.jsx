@@ -782,6 +782,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             if (!chatId) setChatId(data.chatId)
             setLocalStorageChatflow(chatflowid, data.chatId, { lead: { name: leadName, email: leadEmail, phone: leadPhone } })
             setIsLeadSaved(true)
+            setLeadEmail(leadEmail)
             setMessages((prevMessages) => {
                 let allMessages = [...cloneDeep(prevMessages)]
                 if (allMessages[allMessages.length - 1].type !== 'leadCaptureMessage') return allMessages
@@ -1251,7 +1252,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                             // eslint-disable-next-line
                             autoFocus
                             sx={{ width: '100%' }}
-                            disabled={loading || !chatflowid || !isLeadSaved}
+                            disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
                             onKeyDown={handleEnter}
                             id='userInput'
                             name='userInput'
@@ -1266,7 +1267,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                         <IconButton
                                             onClick={handleUploadClick}
                                             type='button'
-                                            disabled={loading || !chatflowid}
+                                            disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
                                             edge='start'
                                         >
                                             <IconPhotoPlus
@@ -1283,7 +1284,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                             <IconButton
                                                 onClick={() => onMicrophonePressed()}
                                                 type='button'
-                                                disabled={loading || !chatflowid || !isLeadSaved}
+                                                disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
                                                 edge='end'
                                             >
                                                 <IconMicrophone
@@ -1296,7 +1297,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                         </InputAdornment>
                                     )}
                                     <InputAdornment position='end' sx={{ padding: '15px' }}>
-                                        <IconButton type='submit' disabled={loading || !chatflowid} edge='end'>
+                                        <IconButton
+                                            type='submit'
+                                            disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
+                                            edge='end'
+                                        >
                                             {loading ? (
                                                 <div>
                                                     <CircularProgress color='inherit' size={20} />
