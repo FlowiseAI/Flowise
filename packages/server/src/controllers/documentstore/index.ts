@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import documentStoreService from '../../services/documentstore'
 import { DocumentStore } from '../../database/entities/DocumentStore'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { DocumentStoreDTO } from '../../services/documentstore/DocumentStoreDTO'
+import { DocumentStoreDTO } from '../../Interface'
 
 const createDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {

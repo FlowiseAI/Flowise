@@ -1,22 +1,94 @@
-import { DocumentStoreStatus } from '../../Interface'
-import { DocumentStore } from '../../database/entities/DocumentStore'
+import { DocumentStore } from './database/entities/DocumentStore'
+
+export enum DocumentStoreStatus {
+    EMPTY_SYNC = 'EMPTY',
+    SYNC = 'SYNC',
+    SYNCING = 'SYNCING',
+    STALE = 'STALE',
+    NEW = 'NEW'
+}
+
+export interface IDocumentStore {
+    id: string
+    name: string
+    description: string
+    loaders: string // JSON string
+    whereUsed: string // JSON string
+    updatedDate: Date
+    createdDate: Date
+    status: DocumentStoreStatus
+}
+
+export interface IDocumentStoreFileChunk {
+    id: string
+    docId: string
+    storeId: string
+    pageContent: string
+    metadata: string
+}
+
+// export interface IDocumentStoreFileChunkPagedLoader extends IDocumentStoreLoader {
+//     storeName: string
+//     description: string
+//     whereUsed: string[]
+// }
+
+export interface IDocumentStoreFileChunkPagedResponse {
+    chunks: IDocumentStoreFileChunk[]
+    count: number
+    file?: IDocumentStoreLoader
+    currentPage: number
+    storeName: string
+    description: string
+}
+
+export interface IDocumentStoreLoader {
+    id: string
+    loaderId: string
+    loaderName: string
+    loaderConfig: any // JSON string
+    splitterId: string
+    splitterName: string
+    splitterConfig: any // JSON string
+    totalChunks: number
+    totalChars: number
+    status: DocumentStoreStatus
+    storeId?: string
+    files?: IDocumentStoreLoaderFile[]
+    source?: string
+    credential?: string
+}
+
+export interface IDocumentStoreLoaderForPreview extends IDocumentStoreLoader {
+    rehydrated: boolean
+    preview: boolean
+    previewChunkCount: number
+}
+
+export interface IDocumentStoreLoaderFile {
+    id: string
+    name: string
+    mimePrefix: string
+    size: number
+    status: DocumentStoreStatus
+    uploaded: Date
+}
 
 export class DocumentStoreDTO {
     id: string
     name: string
     description: string
-    files: any[]
-    whereUsed: any[]
+    files: IDocumentStoreLoaderFile[]
+    whereUsed: string[]
     createdDate: Date
     updatedDate: Date
     status: DocumentStoreStatus
     chunkOverlap: number
     splitter: string
-    totalFiles: number
     totalChunks: number
     totalChars: number
     chunkSize: number
-    loaders: any[]
+    loaders: IDocumentStoreLoader[]
 
     constructor() {}
 

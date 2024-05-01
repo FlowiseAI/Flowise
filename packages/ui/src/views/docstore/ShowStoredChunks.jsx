@@ -223,8 +223,8 @@ const ShowStoredChunks = () => {
                     <ViewHeader
                         isBackButton={true}
                         search={false}
-                        title={getChunksApi.data?.file.loaderName || getChunksApi.data?.file.storeName}
-                        description={getChunksApi.data?.file.splitterName}
+                        title={getChunksApi.data?.file?.loaderName || getChunksApi.data?.storeName}
+                        description={getChunksApi.data?.file?.splitterName || getChunksApi.data?.description}
                         onBack={() => navigate(-1)}
                     ></ViewHeader>
                     <div style={{ width: '100%' }}>

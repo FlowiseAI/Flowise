@@ -243,28 +243,4 @@ export interface IUploadFileSizeAndTypes {
 }
 
 // DocumentStore related
-export enum DocumentStoreStatus {
-    EMPTY_SYNC = 'EMPTY',
-    SYNC = 'SYNC',
-    SYNCING = 'SYNCING',
-    STALE = 'STALE',
-    NEW = 'NEW'
-}
-
-export interface IDocumentStore {
-    id: string
-    name: string
-    description: string
-    loaders: string // JSON string
-    whereUsed: string // JSON string
-    updatedDate: Date
-    createdDate: Date
-    status: DocumentStoreStatus
-}
-export interface IDocumentStoreFileChunk {
-    id: string
-    docId: string
-    storeId: string
-    pageContent: string
-    metadata: string
-}
+export * from './Interface.DocumentStore'

@@ -5,10 +5,17 @@ import {
     addFileToStorage,
     getFileFromStorage,
     ICommonObject,
+    IDocument,
     removeFilesFromStorage,
     removeSpecificFileFromStorage
 } from 'flowise-components'
-import { DocumentStoreStatus } from '../../Interface'
+import {
+    DocumentStoreStatus,
+    IDocumentStoreFileChunkPagedResponse,
+    IDocumentStoreLoader,
+    IDocumentStoreLoaderFile,
+    IDocumentStoreLoaderForPreview
+} from '../../Interface'
 import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
 import { v4 as uuidv4 } from 'uuid'
 import { databaseEntities } from '../../utils'
@@ -60,7 +67,7 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) 
             )
         }
         const existingLoaders = JSON.parse(entity.loaders)
-        const found = existingLoaders.find((uFile: any) => uFile.id === loaderId)
+        const found = existingLoaders.find((uFile: IDocumentStoreLoader) => uFile.id === loaderId)
         if (found) {
             if (found.path) {
                 //remove the existing files, if any of the file loaders were used.
@@ -121,11 +128,11 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
                 `Error: documentStoreServices.getDocumentStoreById - Document store ${storeId} not found`
             )
         }
-        const files = JSON.parse(entity.loaders)
+        const loaders = JSON.parse(entity.loaders)
 
-        let found: any = {}
+        let found: IDocumentStoreLoader | undefined
         if (fileId !== 'all') {
-            found = files.find((file: any) => file.id === fileId)
+            found = loaders.find((loader: IDocumentStoreLoader) => loader.id === fileId)
             if (!found) {
                 throw new InternalFlowiseError(
                     StatusCodes.NOT_FOUND,
@@ -134,15 +141,14 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
             }
         }
         let totalChars = 0
-        files.forEach((file: any) => {
-            totalChars += file.totalChars
+        loaders.forEach((loader: IDocumentStoreLoader) => {
+            totalChars += loader.totalChars
         })
-        found.totalChars = totalChars
-        found.storeName = entity.name
-        found.id = entity.id
-        found.description = entity.description
-        found.status = entity.status
-        found.whereUsed = JSON.parse(entity.whereUsed)
+        if (found) {
+            found.totalChars = totalChars
+            found.id = entity.id
+            found.status = entity.status
+        }
         const PAGE_SIZE = 50
         const skip = (pageNo - 1) * PAGE_SIZE
         const take = PAGE_SIZE
@@ -162,13 +168,15 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
         if (!chunksWithCount) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `File ${fileId} not found`)
         }
-        found.storeName = entity.name
-        return {
+        const response: IDocumentStoreFileChunkPagedResponse = {
             chunks: chunksWithCount,
             count: count,
             file: found,
-            currentPage: pageNo
+            currentPage: pageNo,
+            storeName: entity.name,
+            description: entity.description
         }
+        return response
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -214,7 +222,7 @@ const deleteDocumentStoreFileChunk = async (storeId: string, docId: string, chun
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${storeId} not found`)
         }
         const loaders = JSON.parse(entity.loaders)
-        const found = loaders.find((ldr: any) => ldr.id === docId)
+        const found = loaders.find((ldr: IDocumentStoreLoader) => ldr.id === docId)
         if (!found) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store loader ${docId} not found`)
         }
@@ -249,7 +257,7 @@ const editDocumentStoreFileChunk = async (storeId: string, docId: string, chunkI
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${storeId} not found`)
         }
         const loaders = JSON.parse(entity.loaders)
-        const found = loaders.find((ldr: any) => ldr.id === docId)
+        const found = loaders.find((ldr: IDocumentStoreLoader) => ldr.id === docId)
         if (!found) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store loader ${docId} not found`)
         }
@@ -310,7 +318,7 @@ const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore) => 
     }
 }
 
-const _splitIntoChunks = async (data: any) => {
+const _splitIntoChunks = async (data: IDocumentStoreLoaderForPreview) => {
     try {
         const appServer = getRunningExpressApp()
         let splitterInstance = null
@@ -349,7 +357,7 @@ const _splitIntoChunks = async (data: any) => {
     }
 }
 
-const _normalizeFilePaths = async (data: any, entity: DocumentStore | null) => {
+const _normalizeFilePaths = async (data: IDocumentStoreLoaderForPreview, entity: DocumentStore | null) => {
     const keys = Object.getOwnPropertyNames(data.loaderConfig)
     let rehydrated = false
     for (let i = 0; i < keys.length; i++) {
@@ -379,13 +387,13 @@ const _normalizeFilePaths = async (data: any, entity: DocumentStore | null) => {
                 files = [fileName]
             }
             const loaders = JSON.parse(documentStoreEntity.loaders)
-            const currentLoader = loaders.find((ldr: any) => ldr.id === data.id)
+            const currentLoader = loaders.find((ldr: IDocumentStoreLoader) => ldr.id === data.id)
             if (currentLoader) {
                 const base64Files: string[] = []
                 for (const file of files) {
                     const bf = await getFileFromStorage(file, DOCUMENT_STORE_BASE_FOLDER, documentStoreEntity.id)
                     // find the file entry that has the same name as the file
-                    const uploadedFile = currentLoader.files.find((uFile: any) => uFile.name === file)
+                    const uploadedFile = currentLoader.files.find((uFile: IDocumentStoreLoaderFile) => uFile.name === file)
                     const mimePrefix = 'data:' + uploadedFile.mimePrefix + ';base64'
                     const base64String = mimePrefix + ',' + bf.toString('base64') + `,filename:${file}`
                     base64Files.push(base64String)
@@ -398,7 +406,7 @@ const _normalizeFilePaths = async (data: any, entity: DocumentStore | null) => {
     data.rehydrated = rehydrated
 }
 
-const previewChunks = async (data: any) => {
+const previewChunks = async (data: IDocumentStoreLoaderForPreview) => {
     try {
         if (data.preview) {
             if (
@@ -430,7 +438,7 @@ const previewChunks = async (data: any) => {
     }
 }
 
-const processAndSaveChunks = async (data: any) => {
+const processAndSaveChunks = async (data: IDocumentStoreLoaderForPreview) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -445,7 +453,7 @@ const processAndSaveChunks = async (data: any) => {
 
         const newLoaderId = data.id ?? uuidv4()
         const existingLoaders = JSON.parse(entity.loaders)
-        const found = existingLoaders.find((ldr: any) => ldr.id === newLoaderId)
+        const found = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
         if (found) {
             // clean up the current status and mark the loader as pending_sync
             found.totalChunks = 0
@@ -453,7 +461,7 @@ const processAndSaveChunks = async (data: any) => {
             found.status = DocumentStoreStatus.SYNCING
             entity.loaders = JSON.stringify(existingLoaders)
         } else {
-            let loader: any = {
+            let loader: IDocumentStoreLoader = {
                 id: newLoaderId,
                 loaderId: data.loaderId,
                 loaderName: data.loaderName,
@@ -474,7 +482,7 @@ const processAndSaveChunks = async (data: any) => {
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
         // this method will run async, will have to be moved to a worker thread
         _saveChunksToStorage(data, entity, newLoaderId).then(() => {})
-        return getDocumentStoreFileChunks(data.storeId, newLoaderId)
+        return getDocumentStoreFileChunks(data.storeId as string, newLoaderId)
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -483,7 +491,7 @@ const processAndSaveChunks = async (data: any) => {
     }
 }
 
-const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderId: string) => {
+const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity: DocumentStore, newLoaderId: string) => {
     const re = new RegExp('^data.*;base64', 'i')
 
     try {
@@ -526,7 +534,7 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
                 }
             }
             const existingLoaders = JSON.parse(entity.loaders)
-            const loader = existingLoaders.find((ldr: any) => ldr.id === newLoaderId)
+            const loader = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
             if (data.id) {
                 //step 4: remove all files and chunks associated with the previous loader
                 const index = existingLoaders.indexOf(loader)
@@ -534,7 +542,7 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
                     existingLoaders.splice(index, 1)
                     if (!data.rehydrated) {
                         if (loader.files) {
-                            loader.files.map(async (file: any) => {
+                            loader.files.map(async (file: IDocumentStoreLoaderFile) => {
                                 await removeSpecificFileFromStorage(DOCUMENT_STORE_BASE_FOLDER, entity.id, file.name)
                             })
                         }
@@ -555,10 +563,10 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
             if (response.chunks) {
                 //step 8: now save the new chunks
                 const totalChars = response.chunks.reduce((acc: number, chunk: any) => acc + chunk.pageContent.length, 0)
-                response.chunks.map(async (chunk: any) => {
+                response.chunks.map(async (chunk: IDocument) => {
                     const docChunk: DocumentStoreFileChunk = {
                         docId: newLoaderId,
-                        storeId: data.storeId,
+                        storeId: data.storeId || '',
                         id: uuidv4(),
                         pageContent: chunk.pageContent,
                         metadata: JSON.stringify(chunk.metadata)
@@ -572,7 +580,7 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
             }
             loader.status = 'SYNC'
             // have a flag and iterate over the loaders and update the entity status to SYNC
-            const allSynced = existingLoaders.every((ldr: any) => ldr.status === 'SYNC')
+            const allSynced = existingLoaders.every((ldr: IDocumentStoreLoader) => ldr.status === 'SYNC')
             entity.status = allSynced ? DocumentStoreStatus.SYNC : DocumentStoreStatus.STALE
             entity.loaders = JSON.stringify(existingLoaders)
             //step 9: update the entity in the database
@@ -610,7 +618,7 @@ const updateDocumentStoreUsage = async (chatId: string, storeId: string | undefi
         const entities = await appServer.AppDataSource.getRepository(DocumentStore).find()
         entities.map(async (entity: DocumentStore) => {
             const whereUsed = JSON.parse(entity.whereUsed)
-            const found = whereUsed.find((w: any) => w === chatId)
+            const found = whereUsed.find((w: string) => w === chatId)
             if (found) {
                 if (!storeId) {
                     // remove the chatId from the whereUsed, as the store is being deleted
