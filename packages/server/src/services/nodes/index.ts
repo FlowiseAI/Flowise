@@ -23,7 +23,7 @@ const getAllNodes = async () => {
     }
 }
 
-// Get all component nodes
+// Get all component nodes for a specific category
 const getAllNodesForCategory = async (category: string) => {
     try {
         const appServer = getRunningExpressApp()
@@ -37,7 +37,10 @@ const getAllNodesForCategory = async (category: string) => {
         }
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: nodesService.getAllNodes - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: nodesService.getAllNodesForCategory - ${getErrorMessage(error)}`
+        )
     }
 }
 

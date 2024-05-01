@@ -22,8 +22,8 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
                 "metadata" text 
             );`
         )
-        await queryRunner.query(`CREATE INDEX "IDX_e674527422272fd838f4f0f3d4" ON "document_store_file_chunk" ("docId") ;`)
-        await queryRunner.query(`CREATE INDEX "IDX_e774527522272fd838f4f0f3d5" ON "document_store_file_chunk" ("storeId") ;`)
+        await queryRunner.query(`CREATE INDEX "IDX_e76bae1780b77e56aab1h2asd4" ON "document_store_file_chunk" ("docId") ;`)
+        await queryRunner.query(`CREATE INDEX "IDX_e213b811b01405a42309a6a410" ON "document_store_file_chunk" ("storeId") ;`)
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {

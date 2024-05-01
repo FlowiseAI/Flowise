@@ -78,6 +78,7 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
             // Delete all uploads corresponding to this chatflow
             await removeFolderFromStorage(chatflowId)
             await documentStoreService.updateDocumentStoreUsage(chatflowId, undefined)
+
             // Delete all chat messages
             await appServer.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: chatflowId })
 

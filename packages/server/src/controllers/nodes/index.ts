@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
+import _ from 'lodash'
 import nodesService from '../../services/nodes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 
-import _ from 'lodash'
 const getAllNodes = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await nodesService.getAllNodes()
@@ -28,7 +28,10 @@ const getNodeByName = async (req: Request, res: Response, next: NextFunction) =>
 const getNodesByCategory = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.name === 'undefined' || req.params.name === '') {
-            throw new Error(`Error: nodesController.getNodesByCategory - name not provided!`)
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: nodesController.getNodesByCategory - name not provided!`
+            )
         }
         const name = _.unescape(req.params.name)
         const apiResponse = await nodesService.getAllNodesForCategory(name)

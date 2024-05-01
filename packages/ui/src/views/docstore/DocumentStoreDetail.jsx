@@ -42,7 +42,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // icons
-import { IconPlus, IconRefresh, IconScissors, IconTrash, IconX } from '@tabler/icons'
+import { IconPlus, IconRefresh, IconScissors, IconTrash, IconX, IconVectorBezier2 } from '@tabler/icons'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileEditIcon from '@mui/icons-material/Edit'
@@ -315,17 +315,6 @@ const DocumentStoreDetails = () => {
                             onBack={() => navigate('/document-stores')}
                             onEdit={() => onEditClicked()}
                         >
-                            {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
-                                <Chip
-                                    variant='filled'
-                                    color='success'
-                                    label={
-                                        'Used in ' +
-                                        getSpecificDocumentStore.data?.whereUsed.length +
-                                        (getSpecificDocumentStore.data?.whereUsed.length === 1 ? ' Chatflow' : ' Chatflows')
-                                    }
-                                />
-                            )}
                             <IconButton onClick={onStoreDelete} size='small' color='error' title='Delete Document Store' sx={{ mr: 2 }}>
                                 <IconTrash />
                             </IconButton>
@@ -353,6 +342,31 @@ const DocumentStoreDetails = () => {
                                 Add Document Loader
                             </StyledButton>
                         </ViewHeader>
+                        {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
+                            <div
+                                style={{
+                                    paddingLeft: '15px',
+                                    paddingRight: '15px',
+                                    paddingTop: '10px',
+                                    paddingBottom: '10px',
+                                    fontSize: '0.9rem',
+                                    width: 'max-content',
+                                    borderRadius: '25px',
+                                    boxShadow: customization.isDarkMode
+                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
+                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    marginRight: '10px'
+                                }}
+                            >
+                                <IconVectorBezier2 style={{ marginRight: 5 }} size={17} />
+                                {'Used in ' +
+                                    getSpecificDocumentStore.data?.whereUsed.length +
+                                    (getSpecificDocumentStore.data?.whereUsed.length === 1 ? ' Chatflow' : ' Chatflows')}
+                            </div>
+                        )}
                         {!isLoading && documentStore && !documentStore?.loaders?.length ? (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>

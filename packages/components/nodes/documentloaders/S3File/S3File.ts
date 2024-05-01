@@ -1,3 +1,4 @@
+import { omit } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { S3Loader } from 'langchain/document_loaders/web/s3'
 import {
@@ -413,9 +414,21 @@ class S3_DocumentLoaders implements INode {
                 default: '500'
             },
             {
-                label: 'Metadata',
+                label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
+                description: 'Additional metadata to be added to the extracted documents',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Omit Metadata Keys',
+                name: 'omitMetadataKeys',
+                type: 'string',
+                rows: 4,
+                description:
+                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma',
+                placeholder: 'key1, key2, key3.nestedKey1',
                 optional: true,
                 additionalParams: true
             }
@@ -451,6 +464,12 @@ class S3_DocumentLoaders implements INode {
         const combineUnderNChars = nodeData.inputs?.combineUnderNChars as number
         const newAfterNChars = nodeData.inputs?.newAfterNChars as number
         const maxCharacters = nodeData.inputs?.maxCharacters as number
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+
+        let omitMetadataKeys: string[] = []
+        if (_omitMetadataKeys) {
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
 
         let credentials: S3ClientConfig['credentials'] | undefined
 
@@ -542,19 +561,25 @@ class S3_DocumentLoaders implements INode {
                     const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
                     docs = docs.map((doc) => ({
                         ...doc,
-                        metadata: {
-                            ...doc.metadata,
-                            ...parsedMetadata,
-                            [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                        }
+                        metadata: omit(
+                            {
+                                ...doc.metadata,
+                                ...parsedMetadata,
+                                [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
+                            },
+                            omitMetadataKeys
+                        )
                     }))
                 } else {
                     docs = docs.map((doc) => ({
                         ...doc,
-                        metadata: {
-                            ...doc.metadata,
-                            [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                        }
+                        metadata: omit(
+                            {
+                                ...doc.metadata,
+                                [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
+                            },
+                            omitMetadataKeys
+                        )
                     }))
                 }
 

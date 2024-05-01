@@ -30,13 +30,13 @@ export class DocumentStoreDTO {
         documentStoreDTO.status = entity.status
         documentStoreDTO.totalChars = 0
         documentStoreDTO.totalChunks = 0
-        documentStoreDTO.totalChunks = 0
-        documentStoreDTO.totalChunks = 0
+
         if (entity.whereUsed) {
             documentStoreDTO.whereUsed = JSON.parse(entity.whereUsed)
         } else {
             documentStoreDTO.whereUsed = []
         }
+
         if (entity.loaders) {
             documentStoreDTO.loaders = JSON.parse(entity.loaders)
             documentStoreDTO.loaders.map((loader) => {

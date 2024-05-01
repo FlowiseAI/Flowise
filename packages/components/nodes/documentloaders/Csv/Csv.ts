@@ -1,4 +1,5 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { omit } from 'lodash'
+import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { CSVLoader } from 'langchain/document_loaders/fs/csv'
 import { getFileFromStorage } from '../../../src'
@@ -45,9 +46,21 @@ class Csv_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'Metadata',
+                label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
+                description: 'Additional metadata to be added to the extracted documents',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Omit Metadata Keys',
+                name: 'omitMetadataKeys',
+                type: 'string',
+                rows: 4,
+                description:
+                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma',
+                placeholder: 'key1, key2, key3.nestedKey1',
                 optional: true,
                 additionalParams: true
             }
@@ -59,8 +72,14 @@ class Csv_DocumentLoaders implements INode {
         const csvFileBase64 = nodeData.inputs?.csvFile as string
         const columnName = nodeData.inputs?.columnName as string
         const metadata = nodeData.inputs?.metadata
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
 
-        let alldocs = []
+        let omitMetadataKeys: string[] = []
+        if (_omitMetadataKeys) {
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
+
+        let docs: IDocument[] = []
         let files: string[] = []
 
         if (csvFileBase64.startsWith('FILE-STORAGE::')) {
@@ -78,11 +97,9 @@ class Csv_DocumentLoaders implements INode {
                 const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
                 if (textSplitter) {
-                    const docs = await loader.loadAndSplit(textSplitter)
-                    alldocs.push(...docs)
+                    docs.push(...(await loader.loadAndSplit(textSplitter)))
                 } else {
-                    const docs = await loader.load()
-                    alldocs.push(...docs)
+                    docs.push(...(await loader.loadAndSplit(textSplitter)))
                 }
             }
         } else {
@@ -100,32 +117,38 @@ class Csv_DocumentLoaders implements INode {
                 const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
                 if (textSplitter) {
-                    const docs = await loader.loadAndSplit(textSplitter)
-                    alldocs.push(...docs)
+                    docs.push(...(await loader.loadAndSplit(textSplitter)))
                 } else {
-                    const docs = await loader.load()
-                    alldocs.push(...docs)
+                    docs.push(...(await loader.load()))
                 }
             }
         }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of alldocs) {
-                const newdoc = {
-                    ...doc,
-                    metadata: {
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata: omit(
+                    {
                         ...doc.metadata,
                         ...parsedMetadata
-                    }
-                }
-                finaldocs.push(newdoc)
-            }
-            return finaldocs
+                    },
+                    omitMetadataKeys
+                )
+            }))
+        } else {
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata: omit(
+                    {
+                        ...doc.metadata
+                    },
+                    omitMetadataKeys
+                )
+            }))
         }
 
-        return alldocs
+        return docs
     }
 }
 

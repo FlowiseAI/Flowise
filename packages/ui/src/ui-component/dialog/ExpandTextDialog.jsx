@@ -31,7 +31,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 
     const [inputValue, setInputValue] = useState('')
     const [inputParam, setInputParam] = useState(null)
-    const [languageType, setLanguageType] = useState('text')
+    const [languageType, setLanguageType] = useState('json')
     const [loading, setLoading] = useState(false)
     const [codeExecutedResult, setCodeExecutedResult] = useState('')
 
@@ -50,7 +50,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setInputValue('')
             setLoading(false)
             setInputParam(null)
-            setLanguageType('text')
+            setLanguageType('json')
             setCodeExecutedResult('')
         }
     }, [dialogProps])

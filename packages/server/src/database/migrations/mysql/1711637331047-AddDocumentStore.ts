@@ -22,7 +22,9 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
                 \`storeId\` varchar(36) NOT NULL,
                 \`pageContent\` text,
                 \`metadata\` text,
-                PRIMARY KEY (\`id\`)
+                PRIMARY KEY (\`id\`),
+                KEY \`IDX_e76bae1780b77e56aab1h2asd4\` (\`docId\`),
+                KEY \`IDX_e213b811b01405a42309a6a410\` (\`storeId\`)
               ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;`
         )
     }

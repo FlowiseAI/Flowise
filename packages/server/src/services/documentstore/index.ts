@@ -504,7 +504,7 @@ const _saveChunksToStorage = async (data: any, entity: DocumentStore, newLoaderI
                 if (typeof input !== 'string') {
                     continue
                 }
-                if (input.startsWith('[')) {
+                if (input.startsWith('[') && input.endsWith(']')) {
                     const files = JSON.parse(input)
                     const fileNames: string[] = []
                     for (let j = 0; j < files.length; j++) {
@@ -641,7 +641,10 @@ const updateDocumentStoreUsage = async (chatId: string, storeId: string | undefi
             }
         })
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.updateUsage - ${error}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.updateDocumentStoreUsage - ${getErrorMessage(error)}`
+        )
     }
 }
 
