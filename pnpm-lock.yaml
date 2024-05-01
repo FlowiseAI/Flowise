@@ -142,8 +142,8 @@ importers:
                 specifier: ^0.0.8
                 version: 0.0.8(encoding@0.1.13)
             '@langchain/mistralai':
-                specifier: ^0.0.18
-                version: 0.0.18(encoding@0.1.13)
+                specifier: ^0.0.19
+                version: 0.0.19(encoding@0.1.13)
             '@langchain/mongodb':
                 specifier: ^0.0.1
                 version: 0.0.1(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1)
@@ -3143,8 +3143,8 @@ packages:
         resolution: { integrity: sha512-xqbe35K+12fiYtC/uqkaTT4AXxqL5uvhCrHzc+nBoFkTwM6YfTFE1ch95RZ5G2JnK1U9pKAre/trUSzlU1/6Kg== }
         engines: { node: '>=18' }
 
-    '@langchain/mistralai@0.0.18':
-        resolution: { integrity: sha512-9xjQQEF90A5tYPQCvNjj9vaJMJ+oP7/cvr0UTx0p/uKvbyS+3WyMFbVRmJgHUw5ERm2j8HYfES8ZyUiJTfFJUw== }
+    '@langchain/mistralai@0.0.19':
+        resolution: { integrity: sha512-Uin/jve1NCZLAFa9dpOKzE3Y2+uSnMJQX5ria9vO3lnTGRlvBwcMhyGDoTYdI+gnQgHH4ceBoIBzJDlVG+WVWw== }
         engines: { node: '>=18' }
 
     '@langchain/mongodb@0.0.1':
@@ -18628,13 +18628,13 @@ snapshots:
         transitivePeerDependencies:
             - encoding
 
-    '@langchain/mistralai@0.0.18(encoding@0.1.13)':
+    '@langchain/mistralai@0.0.19(encoding@0.1.13)':
         dependencies:
             '@langchain/core': 0.1.57
             '@mistralai/mistralai': 0.1.3(encoding@0.1.13)
             uuid: 9.0.1
             zod: 3.22.4
-            zod-to-json-schema: 3.22.4(zod@3.22.4)
+            zod-to-json-schema: 3.22.5(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
 

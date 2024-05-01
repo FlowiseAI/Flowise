@@ -186,7 +186,7 @@ class Supabase_VectorStores implements INode {
 
         const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, obj)
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore, obj.filter)
     }
 }
 
