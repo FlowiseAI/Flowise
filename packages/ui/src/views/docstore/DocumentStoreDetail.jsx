@@ -343,28 +343,41 @@ const DocumentStoreDetails = () => {
                             </StyledButton>
                         </ViewHeader>
                         {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
-                            <div
-                                style={{
-                                    paddingLeft: '15px',
-                                    paddingRight: '15px',
-                                    paddingTop: '10px',
-                                    paddingBottom: '10px',
-                                    fontSize: '0.9rem',
-                                    width: 'max-content',
-                                    borderRadius: '25px',
-                                    boxShadow: customization.isDarkMode
-                                        ? '0 2px 14px 0 rgb(255 255 255 / 20%)'
-                                        : '0 2px 14px 0 rgb(32 40 45 / 20%)',
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    marginRight: '10px'
-                                }}
-                            >
-                                <IconVectorBezier2 style={{ marginRight: 5 }} size={17} />
-                                {'Used in ' +
-                                    getSpecificDocumentStore.data?.whereUsed.length +
-                                    (getSpecificDocumentStore.data?.whereUsed.length === 1 ? ' Chatflow' : ' Chatflows')}
+                            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
+                                <div
+                                    style={{
+                                        paddingLeft: '15px',
+                                        paddingRight: '15px',
+                                        paddingTop: '10px',
+                                        paddingBottom: '10px',
+                                        fontSize: '0.9rem',
+                                        width: 'max-content',
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        marginRight: '10px'
+                                    }}
+                                >
+                                    <IconVectorBezier2 style={{ marginRight: 5 }} size={17} />
+                                    Chatflows Used:
+                                </div>
+                                {getSpecificDocumentStore.data.whereUsed.map((chatflowUsed, index) => (
+                                    <Chip
+                                        key={index}
+                                        clickable
+                                        style={{
+                                            width: 'max-content',
+                                            borderRadius: '25px',
+                                            boxShadow: customization.isDarkMode
+                                                ? '0 2px 14px 0 rgb(255 255 255 / 10%)'
+                                                : '0 2px 14px 0 rgb(32 40 45 / 10%)',
+                                            marginRight: '10px',
+                                            marginBottom: '10px'
+                                        }}
+                                        label={chatflowUsed}
+                                        onClick={() => navigate('/canvas/' + chatflowUsed)}
+                                    ></Chip>
+                                ))}
                             </div>
                         )}
                         {!isLoading && documentStore && !documentStore?.loaders?.length ? (
