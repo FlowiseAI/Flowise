@@ -19,12 +19,6 @@ export const Grid = ({ columns, rows, style, disabled = false, onRowUpdate }) =>
                         onProcessRowUpdateError={(error) => console.error(error)}
                         rows={rows}
                         columns={columns}
-                        localeText={localizedTextsMap}
-                        componentsProps={{
-                            pagination: {
-                                labelRowsPerPage: 'Строк на странице'
-                            }
-                        }}
                     />
                 </div>
             )}
