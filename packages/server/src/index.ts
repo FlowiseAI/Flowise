@@ -137,6 +137,7 @@ export class App {
                 '/api/v1/chatflows-uploads',
                 '/api/v1/openai-assistants-file/download',
                 '/api/v1/feedback',
+                '/api/v1/leads',
                 '/api/v1/get-upload-file',
                 '/api/v1/ip'
             ]
