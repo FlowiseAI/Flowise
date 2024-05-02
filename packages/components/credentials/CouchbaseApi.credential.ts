@@ -1,0 +1,34 @@
+import { INodeParams, INodeCredential } from '../src/Interface'
+
+class CouchbaseApi implements INodeCredential {
+    label: string
+    name: string
+    version: number
+    description: string
+    inputs: INodeParams[]
+
+    constructor() {
+        this.label = 'Couchbase API'
+        this.name = 'CouchbaseApi'
+        this.version = 2.0
+        this.inputs = [
+            {
+                label: 'Couchbase Connection String',
+                name: 'connectionString',
+                type: 'string'
+            },
+            {
+                label: 'Couchbase Username',
+                name: 'username',
+                type: 'string'
+            },
+            {
+                label: 'Couchbase Password',
+                name: 'password',
+                type: 'password'
+            }
+        ]
+    }
+}
+
+module.exports = { credClass: CouchbaseApi }
