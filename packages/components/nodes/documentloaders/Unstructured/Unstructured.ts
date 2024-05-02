@@ -26,7 +26,7 @@ type Element = {
     }
 }
 
-export class CustomUnstructuredLoader extends BaseDocumentLoader {
+export class UnstructuredLoader extends BaseDocumentLoader {
     public filePath: string
 
     private apiUrl = 'https://api.unstructured.io/general/v0/general'
@@ -171,6 +171,6 @@ export class CustomUnstructuredLoader extends BaseDocumentLoader {
     }
 
     async load(): Promise<Document[]> {
-        return Promise.reject(new Error('load() is not supported for CustomUnstructuredLoader. Use loadAndSplitBuffer() instead.'))
+        return Promise.reject(new Error('load() is not supported for UnstructuredLoader. Use loadAndSplitBuffer() instead.'))
     }
 }

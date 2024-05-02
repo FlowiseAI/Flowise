@@ -4,11 +4,11 @@ import {
     UnstructuredLoaderStrategy,
     SkipInferTableTypes,
     HiResModelName,
-    UnstructuredLoader
+    UnstructuredLoader as LCUnstructuredLoader
 } from 'langchain/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { getFileFromStorage } from '../../../src'
-import { CustomUnstructuredLoader } from './CustomUnstructuredLoader'
+import { UnstructuredLoader } from './Unstructured'
 
 class UnstructuredFile_DocumentLoaders implements INode {
     label: string
@@ -49,9 +49,10 @@ class UnstructuredFile_DocumentLoaders implements INode {
                     'Use the File Upload instead of File path. If file is uploaded, this path is ignored. Path will be deprecated in future releases.'
             },
             {
-                label: 'File Upload',
+                label: 'Files Upload',
                 name: 'fileObject',
                 type: 'file',
+                description: 'Files to be processed. Multiple files can be uploaded.',
                 fileType:
                     '.txt, .text, .pdf, .docx, .doc, .jpg, .jpeg, .eml, .html, .htm, .md, .pptx, .ppt, .msg, .rtf, .xlsx, .xls, .odt, .epub'
             },
@@ -455,7 +456,7 @@ class UnstructuredFile_DocumentLoaders implements INode {
         let files: string[] = []
 
         if (fileBase64) {
-            const loader = new CustomUnstructuredLoader(obj)
+            const loader = new UnstructuredLoader(obj)
             //FILE-STORAGE::["CONTRIBUTING.md","LICENSE.md","README.md"]
             if (fileBase64.startsWith('FILE-STORAGE::')) {
                 const fileName = fileBase64.replace('FILE-STORAGE::', '')
@@ -487,7 +488,7 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 }
             }
         } else if (filePath) {
-            const loader = new UnstructuredLoader(filePath, obj)
+            const loader = new LCUnstructuredLoader(filePath, obj)
             const loaderDocs = await loader.load()
             docs.push(...loaderDocs)
         } else {
