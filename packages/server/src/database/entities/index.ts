@@ -7,6 +7,7 @@ import { Assistant } from './Assistant'
 import { Variable } from './Variable'
 import { DocumentStore } from './DocumentStore'
 import { DocumentStoreFileChunk } from './DocumentStoreFileChunk'
+import { Lead } from './Lead'
 import { UpsertHistory } from './UpsertHistory'
 
 export const entities = {
@@ -19,5 +20,6 @@ export const entities = {
     Variable,
     DocumentStore,
     DocumentStoreFileChunk,
+    Lead,
     UpsertHistory
 }

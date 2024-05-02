@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "1.6.9",
+    "version": "1.6.10",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -103,6 +103,7 @@
         "socket.io": "^4.6.1",
         "srt-parser-2": "^1.2.3",
         "typeorm": "^0.3.6",
+        "@upstash/vector": "1.0.7",
         "vm2": "^3.9.19",
         "weaviate-ts-client": "^1.1.0",
         "winston": "^3.9.0",

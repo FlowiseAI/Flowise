@@ -325,7 +325,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             memoryType,
             sessionId,
             createdDate: userMessageDateTime,
-            fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined
+            fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
+            leadEmail: incomingInput.leadEmail
         }
         await utilAddChatMessage(userMessage)
 
