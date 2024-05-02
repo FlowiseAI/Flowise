@@ -548,6 +548,24 @@ export const getLocalStorageChatflow = (chatflowid) => {
     }
 }
 
+export const removeLocalStorageChatHistory = (chatflowid) => {
+    const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
+    if (!chatDetails) return
+    try {
+        const parsedChatDetails = JSON.parse(chatDetails)
+        if (parsedChatDetails.lead) {
+            // Dont remove lead when chat is cleared
+            const obj = { lead: parsedChatDetails.lead }
+            localStorage.removeItem(`${chatflowid}_INTERNAL`)
+            localStorage.setItem(`${chatflowid}_INTERNAL`, JSON.stringify(obj))
+        } else {
+            localStorage.removeItem(`${chatflowid}_INTERNAL`)
+        }
+    } catch (e) {
+        return
+    }
+}
+
 export const unshiftFiles = (configData) => {
     const filesConfig = configData.find((config) => config.name === 'files')
     if (filesConfig) {

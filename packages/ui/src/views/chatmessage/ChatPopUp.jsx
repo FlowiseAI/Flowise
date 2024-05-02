@@ -24,7 +24,7 @@ import useNotifier from '@/utils/useNotifier'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // Utils
-import { getLocalStorageChatflow } from '@/utils/genericHelper'
+import { getLocalStorageChatflow, removeLocalStorageChatHistory } from '@/utils/genericHelper'
 
 export const ChatPopUp = ({ chatflowid }) => {
     const theme = useTheme()
@@ -92,7 +92,7 @@ export const ChatPopUp = ({ chatflowid }) => {
                 const objChatDetails = getLocalStorageChatflow(chatflowid)
                 if (!objChatDetails.chatId) return
                 await chatmessageApi.deleteChatmessage(chatflowid, { chatId: objChatDetails.chatId, chatType: 'INTERNAL' })
-                localStorage.removeItem(`${chatflowid}_INTERNAL`)
+                removeLocalStorageChatHistory(chatflowid)
                 resetChatDialog()
                 enqueueSnackbar({
                     message: 'Succesfully cleared all chat history',

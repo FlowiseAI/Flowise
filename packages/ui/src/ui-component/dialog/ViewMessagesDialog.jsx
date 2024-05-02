@@ -192,6 +192,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     source: chatmsg.chatType === 'INTERNAL' ? 'UI' : 'API/Embed',
                     sessionId: chatmsg.sessionId ?? null,
                     memoryType: chatmsg.memoryType ?? null,
+                    email: leadEmail ?? null,
                     messages: [msg]
                 }
             } else if (Object.prototype.hasOwnProperty.call(obj, chatPK)) {
@@ -409,8 +410,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     useEffect(() => {
-        const leadEmailFromChatMessages = chatMessages.filter((message) => message.type === 'userMessage')[0]?.leadEmail
-        setLeadEmail(leadEmailFromChatMessages)
+        const leadEmailFromChatMessages = chatMessages.filter((message) => message.type === 'userMessage' && message.leadEmail)
+        if (leadEmailFromChatMessages.length) {
+            setLeadEmail(leadEmailFromChatMessages[0].leadEmail)
+        }
     }, [chatMessages, selectedMessageIndex])
 
     useEffect(() => {
@@ -646,6 +649,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                     Memory:&nbsp;<b>{chatMessages[1].memoryType}</b>
                                                 </div>
                                             )}
+                                            {leadEmail && (
+                                                <div>
+                                                    Email:&nbsp;<b>{leadEmail}</b>
+                                                </div>
+                                            )}
                                         </div>
                                         <div
                                             style={{
@@ -679,25 +687,6 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                             )}
                                         </div>
                                     </div>
-                                )}
-                                {leadEmail && (
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'start',
-                                            width: '100%',
-                                            height: '48px',
-                                            padding: '12px',
-                                            marginLeft: '20px',
-                                            marginBottom: '20px',
-                                            border: '1px solid #e0e0e0',
-                                            borderRadius: `${customization.borderRadius}px`,
-                                            fontWeight: 'bold'
-                                        }}
-                                    >
-                                        {leadEmail}
-                                    </Box>
                                 )}
                                 <div
                                     style={{

@@ -17,6 +17,12 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
+const formTitle = `Hey 👋 thanks for your interest!
+Let us know where we can reach you`
+
+const endTitle = `Thank you!
+What can I do for you?`
+
 const Leads = ({ dialogProps }) => {
     const dispatch = useDispatch()
 
@@ -111,9 +117,12 @@ const Leads = ({ dialogProps }) => {
                                 id='form-title'
                                 type='text'
                                 fullWidth
+                                multiline={true}
+                                minRows={4}
                                 value={leadsConfig.title}
-                                placeholder='Let us know where we can reach you'
+                                placeholder={formTitle}
                                 name='form-title'
+                                size='small'
                                 onChange={(e) => {
                                     handleChange('title', e.target.value)
                                 }}
@@ -125,9 +134,12 @@ const Leads = ({ dialogProps }) => {
                                 id='success-message'
                                 type='text'
                                 fullWidth
+                                multiline={true}
+                                minRows={4}
                                 value={leadsConfig.successMessage}
-                                placeholder='Thank you for submitting your contact information!'
+                                placeholder={endTitle}
                                 name='form-title'
+                                size='small'
                                 onChange={(e) => {
                                     handleChange('successMessage', e.target.value)
                                 }}

@@ -894,7 +894,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                 {message.fileUploads.map((item, index) => {
                                                     return (
                                                         <>
-                                                            {item.mime.startsWith('image/') ? (
+                                                            {item?.mime?.startsWith('image/') ? (
                                                                 <Card
                                                                     key={index}
                                                                     sx={{
@@ -937,13 +937,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                         marginTop: 2
                                                     }}
                                                 >
-                                                    <Typography>{leadsConfig.title || 'Let us know where we can reach you:'}</Typography>
+                                                    <Typography sx={{ lineHeight: '1.5rem', whiteSpace: 'pre-line' }}>
+                                                        {leadsConfig.title || 'Let us know where we can reach you:'}
+                                                    </Typography>
                                                     <form
                                                         style={{
                                                             display: 'flex',
                                                             flexDirection: 'column',
                                                             gap: '8px',
-                                                            width: '100%'
+                                                            width: isDialog ? '50%' : '100%'
                                                         }}
                                                         onSubmit={handleLeadCaptureSubmit}
                                                     >
@@ -955,6 +957,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                                 placeholder='Name'
                                                                 name='leadName'
                                                                 value={leadName}
+                                                                // eslint-disable-next-line
+                                                                autoFocus={true}
                                                                 onChange={(e) => setLeadName(e.target.value)}
                                                             />
                                                         )}
@@ -1271,7 +1275,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                             edge='start'
                                         >
                                             <IconPhotoPlus
-                                                color={loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                                                color={
+                                                    loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
+                                                        ? '#9e9e9e'
+                                                        : customization.isDarkMode
+                                                        ? 'white'
+                                                        : '#1e88e5'
+                                                }
                                             />
                                         </IconButton>
                                     </InputAdornment>
@@ -1290,7 +1300,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                 <IconMicrophone
                                                     className={'start-recording-button'}
                                                     color={
-                                                        loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
+                                                        loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
+                                                            ? '#9e9e9e'
+                                                            : customization.isDarkMode
+                                                            ? 'white'
+                                                            : '#1e88e5'
                                                     }
                                                 />
                                             </IconButton>
@@ -1310,7 +1324,11 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                 // Send icon SVG in input field
                                                 <IconSend
                                                     color={
-                                                        loading || !chatflowid ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
+                                                        loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
+                                                            ? '#9e9e9e'
+                                                            : customization.isDarkMode
+                                                            ? 'white'
+                                                            : '#1e88e5'
                                                     }
                                                 />
                                             )}

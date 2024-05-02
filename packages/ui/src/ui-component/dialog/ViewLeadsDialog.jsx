@@ -19,9 +19,11 @@ import {
     TableHead,
     TableRow,
     Stack,
-    Box
+    Box,
+    OutlinedInput
 } from '@mui/material'
-import { IconFileExport } from '@tabler/icons'
+import { useTheme } from '@mui/material/styles'
+import { IconFileExport, IconSearch } from '@tabler/icons'
 import leadsEmptySVG from '@/assets/images/leads_empty.svg'
 
 // store
@@ -50,10 +52,23 @@ DatePickerCustomInput.propTypes = {
 const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
+    const theme = useTheme()
 
     const [leads, setLeads] = useState([])
-
+    const [search, setSearch] = useState('')
     const getLeadsApi = useApi(leadsApi.getLeads)
+
+    const onSearchChange = (event) => {
+        setSearch(event.target.value)
+    }
+
+    function filterLeads(data) {
+        return (
+            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
+            (data.email && data.email.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
+            (data.phone && data.phone.toLowerCase().indexOf(search.toLowerCase()) > -1)
+        )
+    }
 
     const exportMessages = async () => {
         const exportData = {
@@ -104,8 +119,38 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     {dialogProps.title}
+                    <OutlinedInput
+                        size='small'
+                        sx={{
+                            ml: 3,
+                            width: '280px',
+                            height: '100%',
+                            display: { xs: 'none', sm: 'flex' },
+                            borderRadius: 2,
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                borderRadius: 2
+                            }
+                        }}
+                        variant='outlined'
+                        placeholder='Search Name or Email or Phone'
+                        onChange={onSearchChange}
+                        startAdornment={
+                            <Box
+                                sx={{
+                                    color: theme.palette.grey[400],
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    mr: 1
+                                }}
+                            >
+                                <IconSearch style={{ color: 'inherit', width: 16, height: 16 }} />
+                            </Box>
+                        }
+                        type='search'
+                    />
                     <div style={{ flex: 1 }} />
                     {leads && leads.length > 0 && (
                         <Button variant='outlined' onClick={() => exportMessages()} startIcon={<IconFileExport />}>
@@ -135,7 +180,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {leads.map((lead, index) => (
+                                {leads.filter(filterLeads).map((lead, index) => (
                                     <TableRow key={index}>
                                         <TableCell>{lead.name}</TableCell>
                                         <TableCell>{lead.email}</TableCell>
