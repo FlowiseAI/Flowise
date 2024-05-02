@@ -2,6 +2,7 @@
  * @fileoverview This file contains the API to handle audio recording.
  * Originally from 'https://ralzohairi.medium.com/audio-recording-in-javascript-96eed45b75ee'
  */
+import { isSafari } from 'react-device-detect'
 
 // audio-recording.js ---------------
 let microphoneButton, elapsedTimeTag
@@ -277,7 +278,13 @@ export const audioRecorder = {
                         })
 
                         //start the recording by calling the start method on the media recorder
-                        audioRecorder.mediaRecorder.start()
+                        if (isSafari) {
+                            // https://community.openai.com/t/whisper-problem-with-audio-mp4-blobs-from-safari/322252
+                            // https://community.openai.com/t/whisper-api-cannot-read-files-correctly/93420/46
+                            audioRecorder.mediaRecorder.start(1000)
+                        } else {
+                            audioRecorder.mediaRecorder.start()
+                        }
                     })
             )
 

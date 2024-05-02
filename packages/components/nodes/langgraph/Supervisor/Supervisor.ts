@@ -4,7 +4,8 @@ import { OllamaFunctions } from 'langchain/experimental/chat_models/ollama_funct
 import { Runnable } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { JsonOutputToolsParser } from 'langchain/output_parsers'
-import { ILangGraphNode, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { IMultiAgentNode, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { Moderation } from '../../moderation/Moderation'
 
 const sysPrompt = `You are a supervisor tasked with managing a conversation between the following workers: {team_members}.
 Given the following user request, respond with the worker to act next.
@@ -13,7 +14,7 @@ When finished, respond with FINISH.
 
 Select strategically to minimize the number of steps taken.`
 
-class Supervisor_LangGraph implements INode {
+class Supervisor_MultiAgents implements INode {
     label: string
     name: string
     version: number
@@ -32,7 +33,7 @@ class Supervisor_LangGraph implements INode {
         this.version = 1.0
         this.type = 'Supervisor'
         this.icon = 'supervisor.svg'
-        this.category = 'LangGraph'
+        this.category = 'Multi Agents'
         this.baseClasses = [this.type]
         this.badge = 'BETA'
         this.inputs = [
@@ -40,14 +41,15 @@ class Supervisor_LangGraph implements INode {
                 label: 'Supervisor Name',
                 name: 'supervisorName',
                 type: 'string',
-                placeholder: 'My Supervisor'
+                placeholder: 'My Supervisor',
+                default: 'supervisor'
             },
             {
                 label: 'Supervisor Prompt',
                 name: 'supervisorPrompt',
                 type: 'string',
+                description: 'Prompt must contains {team_members}',
                 rows: 4,
-                warning: 'Prompt must contains {team_members}',
                 default: sysPrompt
             },
             {
@@ -55,13 +57,21 @@ class Supervisor_LangGraph implements INode {
                 name: 'llm',
                 type: 'BaseChatModel',
                 description:
-                    'Only compatible with Chat Model with Function Calling: ChatOpenAI, AzureChatOpenAI, ChatMistral, OllamaFunctions'
+                    'Only compatible with models that are capable of function calling, ex: OpenAI, Mistral, Anthropic, VertexAI, Gemini'
             },
             {
                 label: 'Recursion Limit',
                 name: 'recursionLimit',
                 type: 'number',
                 default: 100
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -72,10 +82,11 @@ class Supervisor_LangGraph implements INode {
         const supervisorName = nodeData.inputs?.supervisorName as string
         const _recursionLimit = nodeData.inputs?.recursionLimit as string
         const recursionLimit = _recursionLimit ? parseFloat(_recursionLimit) : 100
+        const moderations = (nodeData.inputs?.inputModeration as Moderation[]) ?? []
 
-        const workersNodes: ILangGraphNode[] =
+        const workersNodes: IMultiAgentNode[] =
             nodeData.inputs?.workerNodes && nodeData.inputs?.workerNodes.length ? flatten(nodeData.inputs?.workerNodes) : []
-        const workersNodeNames = workersNodes.map((node: ILangGraphNode) => node.name)
+        const workersNodeNames = workersNodes.map((node: IMultiAgentNode) => node.name)
 
         async function createTeamSupervisor(llm: ChatOpenAI | OllamaFunctions, systemPrompt: string, members: string[]): Promise<Runnable> {
             const options = ['FINISH', ...members]
@@ -131,17 +142,18 @@ class Supervisor_LangGraph implements INode {
 
         const supervisorAgent = await createTeamSupervisor(llm, supervisorPrompt ? supervisorPrompt : sysPrompt, workersNodeNames)
 
-        const returnOutput: ILangGraphNode = {
+        const returnOutput: IMultiAgentNode = {
             node: supervisorAgent,
-            name: supervisorName,
+            name: supervisorName ?? 'supervisor',
             type: 'supervisor',
             workers: workersNodeNames,
             recursionLimit,
-            llm
+            llm,
+            moderations
         }
 
         return returnOutput
     }
 }
 
-module.exports = { nodeClass: Supervisor_LangGraph }
+module.exports = { nodeClass: Supervisor_MultiAgents }

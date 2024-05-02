@@ -2,6 +2,8 @@ import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent,
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
+export type ChatflowCategoryType = 'CHATFLOW' | 'MULTIAGENT'
+
 export enum chatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL'
@@ -26,6 +28,7 @@ export interface IChatFlow {
     analytic?: string
     chatbotConfig?: string
     apiConfig?: any
+    category?: ChatflowCategoryType
 }
 
 export interface IChatMessage {
@@ -43,6 +46,7 @@ export interface IChatMessage {
     memoryType?: string
     sessionId?: string
     createdDate: Date
+    leadEmail?: string
 }
 
 export interface IChatMessageFeedback {
@@ -92,6 +96,24 @@ export interface IVariable {
     type: string
     updatedDate: Date
     createdDate: Date
+}
+
+export interface ILead {
+    id: string
+    name?: string
+    email?: string
+    phone?: string
+    chatflowid: string
+    chatId: string
+    createdDate: Date
+}
+
+export interface IUpsertHistory {
+    id: string
+    chatflowid: string
+    result: string
+    flowData: string
+    date: Date
 }
 
 export interface IComponentNodes {
@@ -188,12 +210,12 @@ export interface IMessage {
 
 export interface IncomingInput {
     question: string
-    history: IMessage[]
     overrideConfig?: ICommonObject
     socketIOClientId?: string
     chatId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]
+    leadEmail?: string
 }
 
 export interface IActiveChatflows {
@@ -235,3 +257,6 @@ export interface IUploadFileSizeAndTypes {
     fileTypes: string[]
     maxUploadSize: number
 }
+
+// DocumentStore related
+export * from './Interface.DocumentStore'

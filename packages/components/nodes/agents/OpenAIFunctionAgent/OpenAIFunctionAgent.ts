@@ -7,7 +7,7 @@ import { ChatOpenAI, formatToOpenAIFunction } from '@langchain/openai'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { OpenAIFunctionsAgentOutputParser } from 'langchain/agents/openai/output_parser'
 import { getBaseClasses } from '../../../src/utils'
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, formatAgentSteps } from '../../../src/agents'
 import { Moderation, checkInputs } from '../../moderation/Moderation'
@@ -23,6 +23,7 @@ class OpenAIFunctionAgent_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    badge?: string
     sessionId?: string
 
     constructor(fields?: { sessionId?: string }) {
@@ -32,8 +33,9 @@ class OpenAIFunctionAgent_Agents implements INode {
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'function.svg'
-        this.description = `An agent that uses Function Calling to pick the tool and args to call`
+        this.description = `An agent that uses OpenAI Function Calling to pick the tool and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
+        this.badge = 'DEPRECATING'
         this.inputs = [
             {
                 label: 'Allowed Tools',
@@ -66,13 +68,20 @@ class OpenAIFunctionAgent_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+        return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
@@ -90,7 +99,7 @@ class OpenAIFunctionAgent_Agents implements INode {
             }
         }
 
-        const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+        const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -151,12 +160,9 @@ class OpenAIFunctionAgent_Agents implements INode {
     }
 }
 
-const prepareAgent = (
-    nodeData: INodeData,
-    flowObj: { sessionId?: string; chatId?: string; input?: string },
-    chatHistory: IMessage[] = []
-) => {
+const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
     const model = nodeData.inputs?.model as ChatOpenAI
+    const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
@@ -180,7 +186,7 @@ const prepareAgent = (
             [inputKey]: (i: { input: string; steps: AgentStep[] }) => i.input,
             agent_scratchpad: (i: { input: string; steps: AgentStep[] }) => formatAgentSteps(i.steps),
             [memoryKey]: async (_: { input: string; steps: AgentStep[] }) => {
-                const messages = (await memory.getChatMessages(flowObj?.sessionId, true, chatHistory)) as BaseMessage[]
+                const messages = (await memory.getChatMessages(flowObj?.sessionId, true)) as BaseMessage[]
                 return messages ?? []
             }
         },
@@ -195,7 +201,8 @@ const prepareAgent = (
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
-        verbose: process.env.DEBUG === 'true' ? true : false
+        verbose: process.env.DEBUG === 'true' ? true : false,
+        maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
 
     return executor

@@ -23,6 +23,9 @@ import useNotifier from '@/utils/useNotifier'
 // Const
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
+// Utils
+import { getLocalStorageChatflow, removeLocalStorageChatHistory } from '@/utils/genericHelper'
+
 export const ChatPopUp = ({ chatflowid }) => {
     const theme = useTheme()
     const { confirm } = useConfirm()
@@ -86,11 +89,10 @@ export const ChatPopUp = ({ chatflowid }) => {
 
         if (isConfirmed) {
             try {
-                const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
-                if (!chatDetails) return
-                const objChatDetails = JSON.parse(chatDetails)
+                const objChatDetails = getLocalStorageChatflow(chatflowid)
+                if (!objChatDetails.chatId) return
                 await chatmessageApi.deleteChatmessage(chatflowid, { chatId: objChatDetails.chatId, chatType: 'INTERNAL' })
-                localStorage.removeItem(`${chatflowid}_INTERNAL`)
+                removeLocalStorageChatHistory(chatflowid)
                 resetChatDialog()
                 enqueueSnackbar({
                     message: 'Succesfully cleared all chat history',
@@ -105,9 +107,8 @@ export const ChatPopUp = ({ chatflowid }) => {
                     }
                 })
             } catch (error) {
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: errorData,
+                    message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',

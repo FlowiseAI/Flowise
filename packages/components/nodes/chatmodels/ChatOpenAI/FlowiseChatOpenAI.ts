@@ -5,7 +5,7 @@ import { IMultiModalOption, IVisionChatModal } from '../../../src'
 
 export class ChatOpenAI extends LangchainChatOpenAI implements IVisionChatModal {
     configuredModel: string
-    configuredMaxToken: number
+    configuredMaxToken?: number
     multiModalOption: IMultiModalOption
     id: string
 
@@ -19,8 +19,8 @@ export class ChatOpenAI extends LangchainChatOpenAI implements IVisionChatModal 
     ) {
         super(fields, configuration)
         this.id = id
-        this.configuredModel = fields?.modelName ?? 'gpt-3.5-turbo'
-        this.configuredMaxToken = fields?.maxTokens ?? 256
+        this.configuredModel = fields?.modelName ?? ''
+        this.configuredMaxToken = fields?.maxTokens
     }
 
     revertToOriginalModel(): void {
@@ -33,7 +33,9 @@ export class ChatOpenAI extends LangchainChatOpenAI implements IVisionChatModal 
     }
 
     setVisionModel(): void {
-        super.modelName = 'gpt-4-vision-preview'
-        super.maxTokens = 1024
+        if (this.modelName !== 'gpt-4-turbo' && !this.modelName.includes('vision')) {
+            super.modelName = 'gpt-4-turbo'
+            super.maxTokens = this.configuredMaxToken ? this.configuredMaxToken : 1024
+        }
     }
 }

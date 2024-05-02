@@ -5,14 +5,14 @@ import { ChatOpenAI } from '@langchain/openai'
 import { convertToOpenAITool } from '@langchain/core/utils/function_calling'
 import { HumanMessage } from '@langchain/core/messages'
 import { OllamaFunctions } from 'langchain/experimental/chat_models/ollama_functions'
-import { AgentExecutor } from 'langchain/agents'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { OpenAIToolsAgentOutputParser, type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
-import { INode, INodeData, INodeParams, ILangGraphNode, ITeamState } from '../../../src/Interface'
+import { INode, INodeData, INodeParams, IMultiAgentNode, ITeamState } from '../../../src/Interface'
+import { AgentExecutor } from '../../../src/agents'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 
-class Worker_LangGraph implements INode {
+class Worker_MultiAgents implements INode {
     label: string
     name: string
     version: number
@@ -30,7 +30,7 @@ class Worker_LangGraph implements INode {
         this.version = 1.0
         this.type = 'Worker'
         this.icon = 'worker.svg'
-        this.category = 'LangGraph'
+        this.category = 'Multi Agents'
         this.baseClasses = [this.type]
         this.badge = 'BETA'
         this.inputs = [
@@ -58,6 +58,13 @@ class Worker_LangGraph implements INode {
                 type: 'Tool',
                 list: true,
                 optional: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -67,10 +74,14 @@ class Worker_LangGraph implements INode {
         tools = flatten(tools)
         const workerPrompt = nodeData.inputs?.workerPrompt as string
         const workerName = nodeData.inputs?.workerName as string
-        const supervisor = nodeData.inputs?.supervisor as ILangGraphNode
+        const supervisor = nodeData.inputs?.supervisor as IMultiAgentNode
+        const maxIterations = nodeData.inputs?.maxIterations as string
+
+        if (!workerName) throw new Error('Worker name is required!')
+
         const llm = supervisor.llm
 
-        const agent = await createAgent(llm, [...tools], workerPrompt)
+        const agent = await createAgent(llm, [...tools], workerPrompt, maxIterations)
 
         const workerNode = async (state: ITeamState, config: RunnableConfig) =>
             await agentNode(
@@ -82,18 +93,23 @@ class Worker_LangGraph implements INode {
                 config
             )
 
-        const returnOutput: ILangGraphNode = {
+        const returnOutput: IMultiAgentNode = {
             node: workerNode,
             name: workerName,
             type: 'worker',
-            parentSupervisorName: supervisor.name
+            parentSupervisorName: supervisor.name ?? 'supervisor'
         }
 
         return returnOutput
     }
 }
 
-async function createAgent(llm: ChatOpenAI | OllamaFunctions, tools: any[], systemPrompt: string): Promise<AgentExecutor> {
+async function createAgent(
+    llm: ChatOpenAI | OllamaFunctions,
+    tools: any[],
+    systemPrompt: string,
+    maxIterations?: string
+): Promise<AgentExecutor> {
     const combinedPrompt =
         systemPrompt +
         '\nWork autonomously according to your specialty, using the tools available to you.' +
@@ -127,7 +143,8 @@ async function createAgent(llm: ChatOpenAI | OllamaFunctions, tools: any[], syst
     const executor = AgentExecutor.fromAgentAndTools({
         agent: agent,
         tools,
-        verbose: process.env.DEBUG === 'true' ? true : false
+        verbose: process.env.DEBUG === 'true' ? true : false,
+        maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
     return executor
 }
@@ -139,4 +156,4 @@ async function agentNode({ state, agent, name }: { state: any; agent: AgentExecu
     }
 }
 
-module.exports = { nodeClass: Worker_LangGraph }
+module.exports = { nodeClass: Worker_MultiAgents }
