@@ -3,8 +3,9 @@ import {
     UnstructuredLoaderOptions,
     UnstructuredLoaderStrategy,
     SkipInferTableTypes,
-    HiResModelName, UnstructuredLoader
-} from "langchain/document_loaders/fs/unstructured";
+    HiResModelName,
+    UnstructuredLoader
+} from 'langchain/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { getFileFromStorage } from '../../../src'
 import { CustomUnstructuredLoader } from './CustomUnstructuredLoader'
@@ -44,13 +45,15 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 type: 'string',
                 placeholder: '',
                 optional: true,
-                warning: 'Use the File Upload instead of File path. If file is uploaded, this path is ignored. Path will be deprecated in future releases.'
+                warning:
+                    'Use the File Upload instead of File path. If file is uploaded, this path is ignored. Path will be deprecated in future releases.'
             },
             {
                 label: 'File Upload',
                 name: 'fileObject',
                 type: 'file',
-                fileType: '.txt, .text, .pdf, .docx, .doc, .jpg, .jpeg, .eml, .html, .htm, .md, .pptx, .ppt, .msg, .rtf, .xlsx, .xls, .odt, .epub'
+                fileType:
+                    '.txt, .text, .pdf, .docx, .doc, .jpg, .jpeg, .eml, .html, .htm, .md, .pptx, .ppt, .msg, .rtf, .xlsx, .xls, .odt, .epub'
             },
             {
                 label: 'Unstructured API URL',
