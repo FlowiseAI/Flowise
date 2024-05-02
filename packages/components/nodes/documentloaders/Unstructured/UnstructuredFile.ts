@@ -3,8 +3,8 @@ import {
     UnstructuredLoaderOptions,
     UnstructuredLoaderStrategy,
     SkipInferTableTypes,
-    HiResModelName
-} from 'langchain/document_loaders/fs/unstructured'
+    HiResModelName, UnstructuredLoader
+} from "langchain/document_loaders/fs/unstructured";
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { getFileFromStorage } from '../../../src'
 import { CustomUnstructuredLoader } from './CustomUnstructuredLoader'
@@ -43,13 +43,14 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 name: 'filePath',
                 type: 'string',
                 placeholder: '',
-                optional: true
+                optional: true,
+                warning: 'Use the File Upload instead of File path. If file is uploaded, this path is ignored. Path will be deprecated in future releases.'
             },
             {
-                label: 'File',
+                label: 'File Upload',
                 name: 'fileObject',
                 type: 'file',
-                fileType: '.*'
+                fileType: '.txt, .text, .pdf, .docx, .doc, .jpg, .jpeg, .eml, .html, .htm, .md, .pptx, .ppt, .msg, .rtf, .xlsx, .xls, .odt, .epub'
             },
             {
                 label: 'Unstructured API URL',
@@ -449,37 +450,45 @@ class UnstructuredFile_DocumentLoaders implements INode {
 
         let docs: any[] = []
         let files: string[] = []
-        const loader = new CustomUnstructuredLoader(obj)
 
-        //FILE-STORAGE::["CONTRIBUTING.md","LICENSE.md","README.md"]
-        if (fileBase64.startsWith('FILE-STORAGE::')) {
-            const fileName = fileBase64.replace('FILE-STORAGE::', '')
-            if (fileName.startsWith('[') && fileName.endsWith(']')) {
-                files = JSON.parse(fileName)
+        if (fileBase64) {
+            const loader = new CustomUnstructuredLoader(obj)
+            //FILE-STORAGE::["CONTRIBUTING.md","LICENSE.md","README.md"]
+            if (fileBase64.startsWith('FILE-STORAGE::')) {
+                const fileName = fileBase64.replace('FILE-STORAGE::', '')
+                if (fileName.startsWith('[') && fileName.endsWith(']')) {
+                    files = JSON.parse(fileName)
+                } else {
+                    files = [fileName]
+                }
+                const chatflowid = options.chatflowid
+
+                for (const file of files) {
+                    const fileData = await getFileFromStorage(file, chatflowid)
+                    const loaderDocs = await loader.loadAndSplitBuffer(fileData, file)
+                    docs.push(...loaderDocs)
+                }
             } else {
-                files = [fileName]
-            }
-            const chatflowid = options.chatflowid
+                if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+                    files = JSON.parse(fileBase64)
+                } else {
+                    files = [fileBase64]
+                }
 
-            for (const file of files) {
-                const fileData = await getFileFromStorage(file, chatflowid)
-                const loaderDocs = await loader.loadAndSplitBuffer(fileData, file)
-                docs.push(...loaderDocs)
+                for (const file of files) {
+                    const splitDataURI = file.split(',')
+                    const filename = splitDataURI.pop()?.split(':')[1] ?? ''
+                    const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                    const loaderDocs = await loader.loadAndSplitBuffer(bf, filename)
+                    docs.push(...loaderDocs)
+                }
             }
+        } else if (filePath) {
+            const loader = new UnstructuredLoader(filePath, obj)
+            const loaderDocs = await loader.load()
+            docs.push(...loaderDocs)
         } else {
-            if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
-                files = JSON.parse(fileBase64)
-            } else {
-                files = [fileBase64]
-            }
-
-            for (const file of files) {
-                const splitDataURI = file.split(',')
-                const filename = splitDataURI.pop()?.split(':')[1] ?? ''
-                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                const loaderDocs = await loader.loadAndSplitBuffer(bf, filename)
-                docs.push(...loaderDocs)
-            }
+            throw new Error('File path or File upload is required')
         }
 
         if (metadata) {

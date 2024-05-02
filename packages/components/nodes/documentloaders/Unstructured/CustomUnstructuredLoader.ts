@@ -84,9 +84,7 @@ export class CustomUnstructuredLoader extends BaseDocumentLoader {
     }
 
     async _partition(buffer: Buffer, fileName: string): Promise<Element[]> {
-        // I'm aware this reads the file into memory first, but we have lots of work
-        // to do on then consuming Documents in a streaming fashion anyway, so not
-        // worried about this for now.
+
         const formData = new FormData()
         formData.append('files', new Blob([buffer]), fileName)
         formData.append('strategy', this.strategy)
