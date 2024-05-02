@@ -1,20 +1,8 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
-import {
-    List,
-    ListItemButton,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-    Box,
-    OutlinedInput,
-    InputAdornment
-} from '@mui/material'
+import { List, ListItemButton, Dialog, DialogContent, DialogTitle, Box, OutlinedInput, InputAdornment, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconSearch, IconX } from '@tabler/icons'
 
@@ -24,7 +12,6 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelected }) => {
     const portalElement = document.getElementById('portal')
-    const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
     const theme = useTheme()
     const [searchValue, setSearchValue] = useState('')
@@ -58,17 +45,27 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
     const component = show ? (
         <Dialog
             fullWidth
-            maxWidth='xs'
+            maxWidth='md'
             open={show}
             onClose={onCancel}
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
+            <DialogTitle sx={{ fontSize: '1rem', p: 3, pb: 0 }} id='alert-dialog-title'>
                 {dialogProps.title}
-                <Box sx={{ p: 2 }}>
+            </DialogTitle>
+            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
+                <Box
+                    sx={{
+                        backgroundColor: theme.palette.background.paper,
+                        pt: 2,
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 10
+                    }}
+                >
                     <OutlinedInput
-                        sx={{ width: '100%', pr: 2, pl: 2, my: 2 }}
+                        sx={{ width: '100%', pr: 2, pl: 2, position: 'sticky' }}
                         id='input-search-credential'
                         value={searchValue}
                         onChange={(e) => filterSearch(e.target.value)}
@@ -106,60 +103,59 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                         }}
                     />
                 </Box>
-            </DialogTitle>
-            <DialogContent>
                 <List
                     sx={{
                         width: '100%',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: 2,
                         py: 0,
+                        zIndex: 9,
                         borderRadius: '10px',
                         [theme.breakpoints.down('md')]: {
                             maxWidth: 370
-                        },
-                        '& .MuiListItemSecondaryAction-root': {
-                            top: 22
-                        },
-                        '& .MuiDivider-root': {
-                            my: 0
-                        },
-                        '& .list-container': {
-                            pl: 7
                         }
                     }}
                 >
                     {[...componentsCredentials].map((componentCredential) => (
-                        <div key={componentCredential.name}>
-                            <ListItemButton
-                                onClick={() => onCredentialSelected(componentCredential)}
-                                sx={{ p: 0, borderRadius: `${customization.borderRadius}px` }}
+                        <ListItemButton
+                            alignItems='center'
+                            key={componentCredential.name}
+                            onClick={() => onCredentialSelected(componentCredential)}
+                            sx={{
+                                border: 1,
+                                borderColor: theme.palette.grey[900] + 25,
+                                borderRadius: 2,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'start',
+                                textAlign: 'left',
+                                gap: 1,
+                                p: 2
+                            }}
+                        >
+                            <div
+                                style={{
+                                    width: 50,
+                                    height: 50,
+                                    borderRadius: '50%',
+                                    backgroundColor: 'white'
+                                }}
                             >
-                                <ListItem alignItems='center'>
-                                    <ListItemAvatar>
-                                        <div
-                                            style={{
-                                                width: 50,
-                                                height: 50,
-                                                borderRadius: '50%',
-                                                backgroundColor: 'white'
-                                            }}
-                                        >
-                                            <img
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    padding: 7,
-                                                    borderRadius: '50%',
-                                                    objectFit: 'contain'
-                                                }}
-                                                alt={componentCredential.name}
-                                                src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
-                                            />
-                                        </div>
-                                    </ListItemAvatar>
-                                    <ListItemText sx={{ ml: 1 }} primary={componentCredential.label} />
-                                </ListItem>
-                            </ListItemButton>
-                        </div>
+                                <img
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        padding: 7,
+                                        borderRadius: '50%',
+                                        objectFit: 'contain'
+                                    }}
+                                    alt={componentCredential.name}
+                                    src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
+                                />
+                            </div>
+                            <Typography>{componentCredential.label}</Typography>
+                        </ListItemButton>
                     ))}
                 </List>
             </DialogContent>

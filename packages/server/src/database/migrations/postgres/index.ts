@@ -13,8 +13,11 @@ import { AddFileAnnotationsToChatMessage1700271021237 } from './1700271021237-Ad
 import { AddFileUploadsToChatMessage1701788586491 } from './1701788586491-AddFileUploadsToChatMessage'
 import { AddVariableEntity1699325775451 } from './1702200925471-AddVariableEntity'
 import { AddSpeechToText1706364937060 } from './1706364937060-AddSpeechToText'
+import { AddUpsertHistoryEntity1709814301358 } from './1709814301358-AddUpsertHistoryEntity'
 import { AddFeedback1707213601923 } from './1707213601923-AddFeedback'
 import { FieldTypes1710497452584 } from './1710497452584-FieldTypes'
+import { AddLead1710832137905 } from './1710832137905-AddLead'
+import { AddLeadToChatMessage1711538016098 } from './1711538016098-AddLeadToChatMessage'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -32,6 +35,9 @@ export const postgresMigrations = [
     AddFileUploadsToChatMessage1701788586491,
     AddVariableEntity1699325775451,
     AddSpeechToText1706364937060,
+    AddUpsertHistoryEntity1709814301358,
     AddFeedback1707213601923,
-    FieldTypes1710497452584
+    FieldTypes1710497452584,
+    AddLead1710832137905,
+    AddLeadToChatMessage1711538016098
 ]

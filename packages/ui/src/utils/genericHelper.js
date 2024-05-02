@@ -234,6 +234,15 @@ export const convertDateStringToDateObject = (dateString) => {
 
 export const getFileName = (fileBase64) => {
     let fileNames = []
+    if (fileBase64.startsWith('FILE-STORAGE::')) {
+        const names = fileBase64.substring(14)
+        if (names.includes('[') && names.includes(']')) {
+            const files = JSON.parse(names)
+            return files.join(', ')
+        } else {
+            return fileBase64.substring(14)
+        }
+    }
     if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
         const files = JSON.parse(fileBase64)
         for (const file of files) {
@@ -353,6 +362,11 @@ export const getUpsertDetails = (nodes, edges) => {
                 if (vsNode.data.inputs.embeddings) {
                     const embeddingsId = vsNode.data.inputs.embeddings.replace(/{{|}}/g, '').split('.')[0]
                     innerNodes.push(nodes.find((node) => node.data.id === embeddingsId))
+                }
+
+                if (vsNode.data.inputs.recordManager) {
+                    const recordManagerId = vsNode.data.inputs.recordManager.replace(/{{|}}/g, '').split('.')[0]
+                    innerNodes.push(nodes.find((node) => node.data.id === recordManagerId))
                 }
 
                 for (const doc of connectedDocs) {
@@ -505,11 +519,10 @@ export const formatDataGridRows = (rows) => {
     }
 }
 
-export const setLocalStorageChatflow = (chatflowid, chatId, chatHistory) => {
+export const setLocalStorageChatflow = (chatflowid, chatId, saveObj = {}) => {
     const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
-    const obj = {}
+    const obj = { ...saveObj }
     if (chatId) obj.chatId = chatId
-    if (chatHistory) obj.chatHistory = chatHistory
 
     if (!chatDetails) {
         localStorage.setItem(`${chatflowid}_INTERNAL`, JSON.stringify(obj))
@@ -522,6 +535,34 @@ export const setLocalStorageChatflow = (chatflowid, chatId, chatHistory) => {
             obj.chatId = chatId
             localStorage.setItem(`${chatflowid}_INTERNAL`, JSON.stringify(obj))
         }
+    }
+}
+
+export const getLocalStorageChatflow = (chatflowid) => {
+    const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
+    if (!chatDetails) return {}
+    try {
+        return JSON.parse(chatDetails)
+    } catch (e) {
+        return {}
+    }
+}
+
+export const removeLocalStorageChatHistory = (chatflowid) => {
+    const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
+    if (!chatDetails) return
+    try {
+        const parsedChatDetails = JSON.parse(chatDetails)
+        if (parsedChatDetails.lead) {
+            // Dont remove lead when chat is cleared
+            const obj = { lead: parsedChatDetails.lead }
+            localStorage.removeItem(`${chatflowid}_INTERNAL`)
+            localStorage.setItem(`${chatflowid}_INTERNAL`, JSON.stringify(obj))
+        } else {
+            localStorage.removeItem(`${chatflowid}_INTERNAL`)
+        }
+    } catch (e) {
+        return
     }
 }
 
@@ -628,4 +669,16 @@ export const getOS = () => {
     }
 
     return os
+}
+
+export const formatBytes = (bytes, decimals = 2) => {
+    if (!+bytes) return '0 Bytes'
+
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }

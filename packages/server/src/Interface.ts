@@ -42,6 +42,7 @@ export interface IChatMessage {
     memoryType?: string
     sessionId?: string
     createdDate: Date
+    leadEmail?: string
 }
 
 export interface IChatMessageFeedback {
@@ -91,6 +92,24 @@ export interface IVariable {
     type: string
     updatedDate: Date
     createdDate: Date
+}
+
+export interface ILead {
+    id: string
+    name?: string
+    email?: string
+    phone?: string
+    chatflowid: string
+    chatId: string
+    createdDate: Date
+}
+
+export interface IUpsertHistory {
+    id: string
+    chatflowid: string
+    result: string
+    flowData: string
+    date: Date
 }
 
 export interface IComponentNodes {
@@ -187,12 +206,12 @@ export interface IMessage {
 
 export interface IncomingInput {
     question: string
-    history: IMessage[]
     overrideConfig?: ICommonObject
     socketIOClientId?: string
     chatId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]
+    leadEmail?: string
 }
 
 export interface IActiveChatflows {

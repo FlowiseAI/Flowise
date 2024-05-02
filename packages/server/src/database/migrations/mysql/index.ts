@@ -13,7 +13,10 @@ import { AddFileAnnotationsToChatMessage1700271021237 } from './1700271021237-Ad
 import { AddFileUploadsToChatMessage1701788586491 } from './1701788586491-AddFileUploadsToChatMessage'
 import { AddVariableEntity1699325775451 } from './1702200925471-AddVariableEntity'
 import { AddSpeechToText1706364937060 } from './1706364937060-AddSpeechToText'
+import { AddUpsertHistoryEntity1709814301358 } from './1709814301358-AddUpsertHistoryEntity'
 import { AddFeedback1707213626553 } from './1707213626553-AddFeedback'
+import { AddLead1710832127079 } from './1710832127079-AddLead'
+import { AddLeadToChatMessage1711538023578 } from './1711538023578-AddLeadToChatMessage'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -31,5 +34,8 @@ export const mysqlMigrations = [
     AddFileUploadsToChatMessage1701788586491,
     AddVariableEntity1699325775451,
     AddSpeechToText1706364937060,
-    AddFeedback1707213626553
+    AddUpsertHistoryEntity1709814301358,
+    AddFeedback1707213626553,
+    AddLead1710832127079,
+    AddLeadToChatMessage1711538023578
 ]

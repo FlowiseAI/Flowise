@@ -1,26 +1,22 @@
 import { ICommonObject, IFileUpload } from './Interface'
-import { getCredentialData, getStoragePath } from './utils'
+import { getCredentialData } from './utils'
 import { type ClientOptions, OpenAIClient } from '@langchain/openai'
-import fs from 'fs'
-import path from 'path'
 import { AssemblyAI } from 'assemblyai'
+import { getFileFromStorage } from './storageUtils'
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
     if (speechToTextConfig) {
         const credentialId = speechToTextConfig.credentialId as string
         const credentialData = await getCredentialData(credentialId ?? '', options)
-        const filePath = path.join(getStoragePath(), options.chatflowid, options.chatId, upload.name)
-
-        const audio_file = fs.createReadStream(filePath)
+        const audio_file = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
 
         if (speechToTextConfig.name === 'openAIWhisper') {
             const openAIClientOptions: ClientOptions = {
                 apiKey: credentialData.openAIApiKey
             }
             const openAIClient = new OpenAIClient(openAIClientOptions)
-
             const transcription = await openAIClient.audio.transcriptions.create({
-                file: audio_file,
+                file: new File([new Blob([audio_file])], upload.name),
                 model: 'whisper-1',
                 language: speechToTextConfig?.language,
                 temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
