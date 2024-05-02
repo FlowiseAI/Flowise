@@ -1,8 +1,10 @@
 import { v4 as uuidv4 } from 'uuid'
-
+import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Lead } from '../../database/entities/Lead'
 import { ILead } from '../../Interface'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
 
 const getAllLeads = async (chatflowid: string) => {
     try {
@@ -14,7 +16,7 @@ const getAllLeads = async (chatflowid: string) => {
         })
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: leadsService.getAllLeads - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: leadsService.getAllLeads - ${getErrorMessage(error)}`)
     }
 }
 
@@ -31,7 +33,7 @@ const createLead = async (body: Partial<ILead>) => {
         const dbResponse = await appServer.AppDataSource.getRepository(Lead).save(lead)
         return dbResponse
     } catch (error) {
-        throw new Error(`Error: leadsService.createLead - ${error}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: leadsService.createLead - ${getErrorMessage(error)}`)
     }
 }
 
