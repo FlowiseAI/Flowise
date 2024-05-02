@@ -14,7 +14,8 @@ import {
     IDocumentStoreFileChunkPagedResponse,
     IDocumentStoreLoader,
     IDocumentStoreLoaderFile,
-    IDocumentStoreLoaderForPreview
+    IDocumentStoreLoaderForPreview,
+    IDocumentStoreWhereUsed
 } from '../../Interface'
 import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
 import { v4 as uuidv4 } from 'uuid'
@@ -24,6 +25,7 @@ import nodesService from '../nodes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { getErrorMessage } from '../../errors/utils'
+import { ChatFlow } from '../../database/entities/ChatFlow'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
@@ -115,6 +117,35 @@ const getDocumentStoreById = async (storeId: string) => {
     }
 }
 
+const getUsedChatflowNames = async (entity: DocumentStore) => {
+    try {
+        const appServer = getRunningExpressApp()
+        if (entity.whereUsed) {
+            const whereUsed = JSON.parse(entity.whereUsed)
+            const updatedWhereUsed: IDocumentStoreWhereUsed[] = []
+            for (let i = 0; i < whereUsed.length; i++) {
+                const associatedChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+                    where: { id: whereUsed[i] },
+                    select: ['id', 'name']
+                })
+                if (associatedChatflow) {
+                    updatedWhereUsed.push({
+                        id: whereUsed[i],
+                        name: associatedChatflow.name
+                    })
+                }
+            }
+            return updatedWhereUsed
+        }
+        return []
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getUsedChatflowNames - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 // Get chunks for a specific loader or store
 const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageNo: number = 1) => {
     try {
@@ -168,6 +199,8 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
         if (!chunksWithCount) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `File ${fileId} not found`)
         }
+        //sort by chunkNo
+        chunksWithCount.sort((a, b) => a.chunkNo - b.chunkNo)
         const response: IDocumentStoreFileChunkPagedResponse = {
             chunks: chunksWithCount,
             count: count,
@@ -563,11 +596,12 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
             if (response.chunks) {
                 //step 8: now save the new chunks
                 const totalChars = response.chunks.reduce((acc: number, chunk) => acc + chunk.pageContent.length, 0)
-                response.chunks.map(async (chunk: IDocument) => {
+                response.chunks.map(async (chunk: IDocument, index: number) => {
                     const docChunk: DocumentStoreFileChunk = {
                         docId: newLoaderId,
                         storeId: data.storeId || '',
                         id: uuidv4(),
+                        chunkNo: index + 1,
                         pageContent: chunk.pageContent,
                         metadata: JSON.stringify(chunk.metadata)
                     }
@@ -663,6 +697,7 @@ export default {
     deleteLoaderFromDocumentStore,
     getAllDocumentStores,
     getDocumentStoreById,
+    getUsedChatflowNames,
     getDocumentStoreFileChunks,
     updateDocumentStore,
     previewChunks,

@@ -18,6 +18,7 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
                 "id" varchar PRIMARY KEY NOT NULL, 
                 "docId" varchar NOT NULL, 
                 "storeId" varchar NOT NULL, 
+                "chunkNo" INTEGER NOT NULL, 
                 "pageContent" text, 
                 "metadata" text 
             );`

@@ -14,6 +14,9 @@ export class DocumentStoreFileChunk implements IDocumentStoreFileChunk {
     @Column({ type: 'uuid' })
     storeId: string
 
+    @Column()
+    chunkNo: number
+
     @Column({ nullable: false, type: 'text' })
     pageContent: string
 

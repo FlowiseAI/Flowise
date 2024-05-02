@@ -21,17 +21,12 @@ export interface IDocumentStore {
 
 export interface IDocumentStoreFileChunk {
     id: string
+    chunkNo: number
     docId: string
     storeId: string
     pageContent: string
     metadata: string
 }
-
-// export interface IDocumentStoreFileChunkPagedLoader extends IDocumentStoreLoader {
-//     storeName: string
-//     description: string
-//     whereUsed: string[]
-// }
 
 export interface IDocumentStoreFileChunkPagedResponse {
     chunks: IDocumentStoreFileChunk[]
@@ -74,12 +69,17 @@ export interface IDocumentStoreLoaderFile {
     uploaded: Date
 }
 
+export interface IDocumentStoreWhereUsed {
+    id: string
+    name: string
+}
+
 export class DocumentStoreDTO {
     id: string
     name: string
     description: string
     files: IDocumentStoreLoaderFile[]
-    whereUsed: string[]
+    whereUsed: IDocumentStoreWhereUsed[]
     createdDate: Date
     updatedDate: Date
     status: DocumentStoreStatus

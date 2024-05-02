@@ -19,6 +19,7 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
             `CREATE TABLE IF NOT EXISTS document_store_file_chunk (
                 id uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "docId" uuid NOT NULL,
+                "chunkNo" integer NOT NULL,
                 "storeId" uuid NOT NULL,
                 "pageContent" text,
                 "metadata" text,

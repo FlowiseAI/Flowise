@@ -374,8 +374,8 @@ const DocumentStoreDetails = () => {
                                             marginRight: '10px',
                                             marginBottom: '10px'
                                         }}
-                                        label={chatflowUsed}
-                                        onClick={() => navigate('/canvas/' + chatflowUsed)}
+                                        label={chatflowUsed.name}
+                                        onClick={() => navigate('/canvas/' + chatflowUsed.id)}
                                     ></Chip>
                                 ))}
                             </div>

@@ -346,7 +346,7 @@ const ShowStoredChunks = () => {
                                             <Card>
                                                 <CardContent sx={{ p: 2 }}>
                                                     <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                        {`#${index + start}. Characters: ${row.pageContent.length}`}
+                                                        {`#${row.chunkNo}. Characters: ${row.pageContent.length}`}
                                                     </Typography>
                                                     <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
                                                         {row.pageContent}
