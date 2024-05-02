@@ -193,14 +193,16 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
         const chunksWithCount = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find({
             skip,
             take,
-            where: whereCondition
+            where: whereCondition,
+            order: {
+                chunkNo: 'ASC'
+            }
         })
 
         if (!chunksWithCount) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `File ${fileId} not found`)
         }
-        //sort by chunkNo
-        chunksWithCount.sort((a, b) => a.chunkNo - b.chunkNo)
+
         const response: IDocumentStoreFileChunkPagedResponse = {
             chunks: chunksWithCount,
             count: count,

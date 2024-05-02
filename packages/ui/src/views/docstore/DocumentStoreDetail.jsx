@@ -343,7 +343,7 @@ const DocumentStoreDetails = () => {
                             </StyledButton>
                         </ViewHeader>
                         {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <Stack flexDirection='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                                 <div
                                     style={{
                                         paddingLeft: '15px',
@@ -354,8 +354,7 @@ const DocumentStoreDetails = () => {
                                         width: 'max-content',
                                         display: 'flex',
                                         flexDirection: 'row',
-                                        alignItems: 'center',
-                                        marginRight: '10px'
+                                        alignItems: 'center'
                                     }}
                                 >
                                     <IconVectorBezier2 style={{ marginRight: 5 }} size={17} />
@@ -370,15 +369,13 @@ const DocumentStoreDetails = () => {
                                             borderRadius: '25px',
                                             boxShadow: customization.isDarkMode
                                                 ? '0 2px 14px 0 rgb(255 255 255 / 10%)'
-                                                : '0 2px 14px 0 rgb(32 40 45 / 10%)',
-                                            marginRight: '10px',
-                                            marginBottom: '10px'
+                                                : '0 2px 14px 0 rgb(32 40 45 / 10%)'
                                         }}
                                         label={chatflowUsed.name}
                                         onClick={() => navigate('/canvas/' + chatflowUsed.id)}
                                     ></Chip>
                                 ))}
-                            </div>
+                            </Stack>
                         )}
                         {!isLoading && documentStore && !documentStore?.loaders?.length ? (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
