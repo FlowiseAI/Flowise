@@ -8,7 +8,7 @@ import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons'
+import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
@@ -32,7 +32,7 @@ import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -53,6 +53,8 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [upsertHistoryDialogProps, setUpsertHistoryDialogProps] = useState({})
     const [chatflowConfigurationDialogOpen, setChatflowConfigurationDialogOpen] = useState(false)
     const [chatflowConfigurationDialogProps, setChatflowConfigurationDialogProps] = useState({})
+
+    const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -82,13 +84,19 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             setUpsertHistoryDialogOpen(true)
         } else if (setting === 'chatflowConfiguration') {
             setChatflowConfigurationDialogProps({
-                title: 'Chatflow Configuration',
+                title: `${title} Configuration`,
                 chatflow: chatflow
             })
             setChatflowConfigurationDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
             try {
-                localStorage.setItem('duplicatedFlowData', chatflow.flowData)
+                let flowData = chatflow.flowData
+                if (isAgentCanvas) {
+                    const parsedFlowData = JSON.parse(flowData)
+                    parsedFlowData.isAgentCanvas = true
+                    flowData = JSON.stringify(parsedFlowData)
+                }
+                localStorage.setItem('duplicatedFlowData', flowData)
                 window.open(`${uiBaseURL}/canvas`, '_blank')
             } catch (e) {
                 console.error(e)
@@ -99,7 +107,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
                 let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
-                let exportFileDefaultName = `${chatflow.name} Chatflow.json`
+                let exportFileDefaultName = `${chatflow.name} ${title}.json`
 
                 let linkElement = document.createElement('a')
                 linkElement.setAttribute('href', dataUri)
@@ -192,12 +200,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             // if configuration dialog is open, update its data
             if (chatflowConfigurationDialogOpen) {
                 setChatflowConfigurationDialogProps({
-                    title: 'Chatflow Configuration',
+                    title: `${title} Configuration`,
                     chatflow
                 })
             }
         }
-    }, [chatflow, chatflowConfigurationDialogOpen])
+    }, [chatflow, title, chatflowConfigurationDialogOpen])
 
     return (
         <>
@@ -346,7 +354,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                             </Avatar>
                         </ButtonBase>
                     )}
-                    <ButtonBase title='Save Chatflow' sx={{ borderRadius: '50%', mr: 2 }}>
+                    <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
                         <Avatar
                             variant='rounded'
                             sx={{
@@ -394,11 +402,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 onClose={() => setSettingsOpen(false)}
                 onSettingsItemClick={onSettingsItemClick}
                 onUploadFile={onUploadFile}
+                isAgentCanvas={isAgentCanvas}
             />
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
-                    title: `Save New Chatflow`,
+                    title: `Save New ${title}`,
                     confirmButtonName: 'Save',
                     cancelButtonName: 'Cancel'
                 }}
@@ -431,7 +440,8 @@ CanvasHeader.propTypes = {
     chatflow: PropTypes.object,
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
-    handleLoadFlow: PropTypes.func
+    handleLoadFlow: PropTypes.func,
+    isAgentCanvas: PropTypes.bool
 }
 
 export default CanvasHeader

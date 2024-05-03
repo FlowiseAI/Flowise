@@ -24,7 +24,7 @@ const icons = {
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
 
-const settings = {
+const agent_settings = {
     id: 'settings',
     title: '',
     type: 'group',
@@ -44,13 +44,6 @@ const settings = {
             icon: icons.IconUsers
         },
         {
-            id: 'viewUpsertHistory',
-            title: 'Upsert History',
-            type: 'item',
-            url: '',
-            icon: icons.IconDatabaseExport
-        },
-        {
             id: 'chatflowConfiguration',
             title: 'Configuration',
             type: 'item',
@@ -59,28 +52,28 @@ const settings = {
         },
         {
             id: 'duplicateChatflow',
-            title: 'Duplicate Chatflow',
+            title: 'Duplicate Agents',
             type: 'item',
             url: '',
             icon: icons.IconCopy
         },
         {
             id: 'loadChatflow',
-            title: 'Load Chatflow',
+            title: 'Load Agents',
             type: 'item',
             url: '',
             icon: icons.IconFileUpload
         },
         {
             id: 'exportChatflow',
-            title: 'Export Chatflow',
+            title: 'Export Agents',
             type: 'item',
             url: '',
             icon: icons.IconFileExport
         },
         {
             id: 'deleteChatflow',
-            title: 'Delete Chatflow',
+            title: 'Delete Agents',
             type: 'item',
             url: '',
             icon: icons.IconTrash
@@ -88,4 +81,4 @@ const settings = {
     ]
 }
 
-export default settings
+export default agent_settings

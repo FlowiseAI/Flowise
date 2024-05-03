@@ -38,7 +38,7 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
 // icons
-import { IconX, IconRefreshAlert } from '@tabler/icons'
+import { IconX, IconRefreshAlert } from '@tabler/icons-react'
 
 // utils
 import {
@@ -74,6 +74,8 @@ const Canvas = () => {
     const dispatch = useDispatch()
     const canvas = useSelector((state) => state.canvas)
     const [canvasDataStore, setCanvasDataStore] = useState(canvas)
+    const [isAgentCanvas, setIsAgentCanvas] = useState(state ? state.isAgentCanvas : false)
+    const [title, setTitle] = useState(state?.isAgentCanvas ? 'Agents' : 'Chatflow')
     const [chatflow, setChatflow] = useState(null)
 
     const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
@@ -99,7 +101,6 @@ const Canvas = () => {
 
     const getNodesApi = useApi(nodesApi.getAllNodes)
     const createNewChatflowApi = useApi(chatflowsApi.createNewChatflow)
-    const testChatflowApi = useApi(chatflowsApi.testChatflow)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
 
@@ -159,6 +160,8 @@ const Canvas = () => {
 
             setNodes(nodes)
             setEdges(flowData.edges || [])
+            setIsAgentCanvas(flowData.isAgentCanvas ?? false)
+            setTitle(flowData.isAgentCanvas ? 'Agents' : 'Chatflow')
             setDirty()
         } catch (e) {
             console.error(e)
@@ -168,7 +171,7 @@ const Canvas = () => {
     const handleDeleteFlow = async () => {
         const confirmPayload = {
             title: `Delete`,
-            description: `Delete chatflow ${chatflow.name}?`,
+            description: `Delete ${title} ${chatflow.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }
@@ -221,7 +224,8 @@ const Canvas = () => {
                     name: chatflowName,
                     deployed: false,
                     isPublic: false,
-                    flowData
+                    flowData,
+                    type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW'
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
@@ -338,7 +342,7 @@ const Canvas = () => {
     const saveChatflowSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: 'Chatflow saved',
+            message: `${title} saved`,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -403,7 +407,7 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            errorFailed(`Failed to retrieve chatflow: ${getSpecificChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to retrieve ${title}: ${getSpecificChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -415,9 +419,9 @@ const Canvas = () => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            window.history.replaceState(null, null, `/canvas/${chatflow.id}`)
+            window.history.replaceState(state, null, `/canvas/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-            errorFailed(`Failed to save chatflow: ${createNewChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to save ${title}: ${createNewChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -429,32 +433,11 @@ const Canvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-            errorFailed(`Failed to save chatflow: ${updateChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to save ${title}: ${updateChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateChatflowApi.data, updateChatflowApi.error])
-
-    // Test chatflow failed
-    useEffect(() => {
-        if (testChatflowApi.error) {
-            enqueueSnackbar({
-                message: 'Test chatflow failed',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'error',
-                    persist: true,
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [testChatflowApi.error])
 
     useEffect(() => {
         setChatflow(canvasDataStore.chatflow)
@@ -484,7 +467,7 @@ const Canvas = () => {
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {
-                    name: 'Untitled chatflow'
+                    name: `Untitled ${title}`
                 }
             })
         }
@@ -549,6 +532,7 @@ const Canvas = () => {
                             handleSaveFlow={handleSaveFlow}
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
+                            isAgentCanvas={isAgentCanvas}
                         />
                     </Toolbar>
                 </AppBar>
@@ -581,7 +565,7 @@ const Canvas = () => {
                                     }}
                                 />
                                 <Background color='#aaa' gap={16} />
-                                <AddNodes nodesData={getNodesApi.data} node={selectedNode} />
+                                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
                                 {isSyncNodesButtonEnabled && (
                                     <Fab
                                         sx={{

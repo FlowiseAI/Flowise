@@ -1,4 +1,4 @@
-import { IconClipboard, IconDownload } from '@tabler/icons'
+import { IconClipboard, IconDownload } from '@tabler/icons-react'
 import { memo, useState } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'

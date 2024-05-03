@@ -7,7 +7,7 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 // Material
 import { Button, Dialog, IconButton, DialogContent, DialogTitle, Typography } from '@mui/material'
-import { IconEdit, IconTrash, IconX, IconLanguage } from '@tabler/icons'
+import { IconEdit, IconTrash, IconX, IconLanguage } from '@tabler/icons-react'
 
 // Project imports
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'

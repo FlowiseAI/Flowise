@@ -29,9 +29,9 @@ import { baseURL } from '@/store/constant'
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 
-// ==============================|| CHATFLOWS ||============================== //
+// ==============================|| AGENTS ||============================== //
 
-const Chatflows = () => {
+const Agents = () => {
     const navigate = useNavigate()
     const theme = useTheme()
 
@@ -42,7 +42,7 @@ const Chatflows = () => {
     const [loginDialogOpen, setLoginDialogOpen] = useState(false)
     const [loginDialogProps, setLoginDialogProps] = useState({})
 
-    const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
+    const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
 
     const handleChange = (event, nextView) => {
@@ -69,41 +69,41 @@ const Chatflows = () => {
     }
 
     const addNew = () => {
-        navigate('/canvas')
+        navigate('/canvas', { state: { isAgentCanvas: true } })
     }
 
     const goToCanvas = (selectedChatflow) => {
-        navigate(`/canvas/${selectedChatflow.id}`)
+        navigate(`/canvas/${selectedChatflow.id}`, { state: { isAgentCanvas: true } })
     }
 
     useEffect(() => {
-        getAllChatflowsApi.request()
+        getAllAgentflows.request()
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
-        if (getAllChatflowsApi.error) {
-            if (getAllChatflowsApi.error?.response?.status === 401) {
+        if (getAllAgentflows.error) {
+            if (getAllAgentflows.error?.response?.status === 401) {
                 setLoginDialogProps({
                     title: 'Login',
                     confirmButtonName: 'Login'
                 })
                 setLoginDialogOpen(true)
             } else {
-                setError(getAllChatflowsApi.error)
+                setError(getAllAgentflows.error)
             }
         }
-    }, [getAllChatflowsApi.error])
+    }, [getAllAgentflows.error])
 
     useEffect(() => {
-        setLoading(getAllChatflowsApi.loading)
-    }, [getAllChatflowsApi.loading])
+        setLoading(getAllAgentflows.loading)
+    }, [getAllAgentflows.loading])
 
     useEffect(() => {
-        if (getAllChatflowsApi.data) {
+        if (getAllAgentflows.data) {
             try {
-                const chatflows = getAllChatflowsApi.data
+                const chatflows = getAllAgentflows.data
                 const images = {}
                 for (let i = 0; i < chatflows.length; i += 1) {
                     const flowDataStr = chatflows[i].flowData
@@ -122,7 +122,7 @@ const Chatflows = () => {
                 console.error(e)
             }
         }
-    }, [getAllChatflowsApi.data])
+    }, [getAllAgentflows.data])
 
     return (
         <MainCard>
@@ -130,7 +130,7 @@ const Chatflows = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name or Category' title='Chatflows'>
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name or Category' title='Agents'>
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={view}
@@ -169,7 +169,7 @@ const Chatflows = () => {
                     </ViewHeader>
                     {!view || view === 'card' ? (
                         <>
-                            {isLoading && !getAllChatflowsApi.data ? (
+                            {isLoading && !getAllAgentflows.data ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                     <Skeleton variant='rounded' height={160} />
                                     <Skeleton variant='rounded' height={160} />
@@ -177,7 +177,7 @@ const Chatflows = () => {
                                 </Box>
                             ) : (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllChatflowsApi.data?.filter(filterFlows).map((data, index) => (
+                                    {getAllAgentflows.data?.filter(filterFlows).map((data, index) => (
                                         <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                                     ))}
                                 </Box>
@@ -185,15 +185,15 @@ const Chatflows = () => {
                         </>
                     ) : (
                         <FlowListTable
-                            data={getAllChatflowsApi.data}
+                            data={getAllAgentflows.data}
                             images={images}
                             isLoading={isLoading}
                             filterFunction={filterFlows}
-                            updateFlowsApi={getAllChatflowsApi}
+                            updateFlowsApi={getAllAgentflows}
                             setError={setError}
                         />
                     )}
-                    {!isLoading && (!getAllChatflowsApi.data || getAllChatflowsApi.data.length === 0) && (
+                    {!isLoading && (!getAllAgentflows.data || getAllAgentflows.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img
@@ -202,7 +202,7 @@ const Chatflows = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Chatflows Yet</div>
+                            <div>No Agents Yet</div>
                         </Stack>
                     )}
                 </Stack>
@@ -214,4 +214,4 @@ const Chatflows = () => {
     )
 }
 
-export default Chatflows
+export default Agents

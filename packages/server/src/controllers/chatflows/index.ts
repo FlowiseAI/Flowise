@@ -5,6 +5,7 @@ import { createRateLimiter } from '../../utils/rateLimit'
 import { getApiKey } from '../../utils/apiKey'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { ChatflowType } from '../../Interface'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -50,7 +51,7 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
 
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await chatflowsService.getAllChatflows()
+        const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

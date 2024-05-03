@@ -584,9 +584,9 @@ importers:
             '@mui/x-data-grid':
                 specifier: 6.8.0
                 version: 6.8.0(@mui/material@5.15.0(@emotion/react@11.11.4(@types/react@18.2.65)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.4(@types/react@18.2.65)(react@18.2.0))(@types/react@18.2.65)(react@18.2.0))(@types/react@18.2.65)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@mui/system@5.15.12(@emotion/react@11.11.4(@types/react@18.2.65)(react@18.2.0))(@emotion/styled@11.11.0(@emotion/react@11.11.4(@types/react@18.2.65)(react@18.2.0))(@types/react@18.2.65)(react@18.2.0))(@types/react@18.2.65)(react@18.2.0))(@types/react@18.2.65)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-            '@tabler/icons':
-                specifier: ^1.39.1
-                version: 1.119.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+            '@tabler/icons-react':
+                specifier: ^3.3.0
+                version: 3.3.0(react@18.2.0)
             '@uiw/codemirror-theme-sublime':
                 specifier: ^4.21.21
                 version: 4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)
@@ -598,7 +598,7 @@ importers:
                 version: 4.21.24(@babel/runtime@7.24.0)(@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)(@lezer/common@1.2.1))(@codemirror/language@6.10.1)(@codemirror/lint@6.5.0)(@codemirror/search@6.5.6)(@codemirror/state@6.4.1)(@codemirror/theme-one-dark@6.1.2)(@codemirror/view@6.25.1)(codemirror@6.0.1(@lezer/common@1.2.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
             axios:
                 specifier: 1.6.2
-                version: 1.6.2(debug@4.3.4)
+                version: 1.6.2
             clsx:
                 specifier: ^1.1.1
                 version: 1.2.1
@@ -4174,16 +4174,13 @@ packages:
         resolution: { integrity: sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w== }
         engines: { node: '>=10' }
 
-    '@tabler/icons@1.119.0':
-        resolution: { integrity: sha512-Fk3Qq4w2SXcTjc/n1cuL5bccPkylrOMo7cYpQIf/yw6zP76LQV9dtLcHQUjFiUnaYuswR645CnURIhlafyAh9g== }
+    '@tabler/icons-react@3.3.0':
+        resolution: { integrity: sha512-Qn1Po+0gErh1zCWlaOdoVoGqeonWfSuiboYgwZBs6PIJNsj7yr3bIa4BkHmgJgtlXLT9LvCzt/RvwlgjxLfjjg== }
         peerDependencies:
-            react: ^16.x || 17.x || 18.x
-            react-dom: ^16.x || 17.x || 18.x
-        peerDependenciesMeta:
-            react:
-                optional: true
-            react-dom:
-                optional: true
+            react: '>= 16'
+
+    '@tabler/icons@3.3.0':
+        resolution: { integrity: sha512-PLVe9d7b59sKytbx00KgeGhQG3N176Ezv8YMmsnSz4s0ifDzMWlp/h2wEfQZ0ZNe8e377GY2OW6kovUe3Rnd0g== }
 
     '@testing-library/dom@9.3.4':
         resolution: { integrity: sha512-FlS4ZWlp97iiNWig0Muq8p+3rVDjRiYE+YKGbAqXOu9nwJFFOdL00kFpz42M+4huzYi86vAK1sOOfyOG45muIQ== }
@@ -20059,10 +20056,12 @@ snapshots:
         dependencies:
             defer-to-connect: 2.0.1
 
-    '@tabler/icons@1.119.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
-        optionalDependencies:
+    '@tabler/icons-react@3.3.0(react@18.2.0)':
+        dependencies:
+            '@tabler/icons': 3.3.0
             react: 18.2.0
-            react-dom: 18.2.0(react@18.2.0)
+
+    '@tabler/icons@3.3.0': {}
 
     '@testing-library/dom@9.3.4':
         dependencies:
@@ -21628,6 +21627,14 @@ snapshots:
     axe-core@4.7.0: {}
 
     axe-core@4.8.4: {}
+
+    axios@1.6.2:
+        dependencies:
+            follow-redirects: 1.15.5
+            form-data: 4.0.0
+            proxy-from-env: 1.1.0
+        transitivePeerDependencies:
+            - debug
 
     axios@1.6.2(debug@4.3.4):
         dependencies:
@@ -23536,6 +23543,10 @@ snapshots:
         dependencies:
             ms: 2.0.0
 
+    debug@3.2.7:
+        dependencies:
+            ms: 2.1.3
+
     debug@3.2.7(supports-color@5.5.0):
         dependencies:
             ms: 2.1.3
@@ -24278,7 +24289,7 @@ snapshots:
 
     eslint-import-resolver-node@0.3.9:
         dependencies:
-            debug: 3.2.7(supports-color@5.5.0)
+            debug: 3.2.7
             is-core-module: 2.13.1
             resolve: 1.22.8
         transitivePeerDependencies:
@@ -24286,7 +24297,7 @@ snapshots:
 
     eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint@8.57.0):
         dependencies:
-            debug: 3.2.7(supports-color@5.5.0)
+            debug: 3.2.7
         optionalDependencies:
             '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@4.9.5)
             eslint: 8.57.0
@@ -24308,7 +24319,7 @@ snapshots:
             array.prototype.findlastindex: 1.2.4
             array.prototype.flat: 1.3.2
             array.prototype.flatmap: 1.3.2
-            debug: 3.2.7(supports-color@5.5.0)
+            debug: 3.2.7
             doctrine: 2.1.0
             eslint: 8.57.0
             eslint-import-resolver-node: 0.3.9
@@ -25146,6 +25157,8 @@ snapshots:
             - encoding
 
     fn.name@1.1.0: {}
+
+    follow-redirects@1.15.5: {}
 
     follow-redirects@1.15.5(debug@4.3.4):
         optionalDependencies:
@@ -26223,7 +26236,7 @@ snapshots:
     http-proxy@1.18.1:
         dependencies:
             eventemitter3: 4.0.7
-            follow-redirects: 1.15.5(debug@4.3.4)
+            follow-redirects: 1.15.5
             requires-port: 1.0.0
         transitivePeerDependencies:
             - debug

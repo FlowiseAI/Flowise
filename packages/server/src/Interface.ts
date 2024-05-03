@@ -2,7 +2,7 @@ import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent,
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type ChatflowCategoryType = 'CHATFLOW' | 'MULTIAGENT'
+export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT'
 
 export enum chatType {
     INTERNAL = 'INTERNAL',
@@ -27,8 +27,9 @@ export interface IChatFlow {
     apikeyid?: string
     analytic?: string
     chatbotConfig?: string
-    apiConfig?: any
-    category?: ChatflowCategoryType
+    apiConfig?: string
+    category?: string
+    type?: ChatflowType
 }
 
 export interface IChatMessage {

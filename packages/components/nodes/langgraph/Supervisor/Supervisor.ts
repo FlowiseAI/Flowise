@@ -35,7 +35,6 @@ class Supervisor_MultiAgents implements INode {
         this.icon = 'supervisor.svg'
         this.category = 'Multi Agents'
         this.baseClasses = [this.type]
-        this.badge = 'BETA'
         this.inputs = [
             {
                 label: 'Supervisor Name',

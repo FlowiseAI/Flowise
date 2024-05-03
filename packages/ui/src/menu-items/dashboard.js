@@ -1,8 +1,18 @@
 // assets
-import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable, IconFiles } from '@tabler/icons'
+import {
+    IconUsersGroup,
+    IconHierarchy,
+    IconBuildingStore,
+    IconKey,
+    IconTool,
+    IconLock,
+    IconRobot,
+    IconVariable,
+    IconFiles
+} from '@tabler/icons-react'
 
 // constant
-const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable, IconFiles }
+const icons = { IconUsersGroup, IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable, IconFiles }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -17,6 +27,14 @@ const dashboard = {
             type: 'item',
             url: '/chatflows',
             icon: icons.IconHierarchy,
+            breadcrumbs: true
+        },
+        {
+            id: 'agents',
+            title: 'Agents',
+            type: 'item',
+            url: '/agents',
+            icon: icons.IconUsersGroup,
             breadcrumbs: true
         },
         {
