@@ -233,7 +233,8 @@ class PineconeVectorStore implements VectorStore {
     private async getDb(): Promise<Pinecone> {
         if (!this.db) {
             this.db = new Pinecone({
-                apiKey: this.apiKey
+                apiKey: this.apiKey,
+                sourceTag: 'flowise'
             })
         }
         return Promise.resolve(this.db)
