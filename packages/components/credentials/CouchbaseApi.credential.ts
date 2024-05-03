@@ -9,8 +9,8 @@ class CouchbaseApi implements INodeCredential {
 
     constructor() {
         this.label = 'Couchbase API'
-        this.name = 'CouchbaseApi'
-        this.version = 2.0
+        this.name = 'couchbaseApi'
+        this.version = 1.0
         this.inputs = [
             {
                 label: 'Couchbase Connection String',

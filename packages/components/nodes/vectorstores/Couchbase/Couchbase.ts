@@ -23,8 +23,8 @@ class Couchbase_VectorStores implements INode {
 
     constructor() {
         this.label = 'Couchbase'
-        this.name = 'Couchbase'
-        this.version = 2.0
+        this.name = 'couchbase'
+        this.version = 1.0
         this.type = 'Couchbase'
         this.icon = 'couchbase.svg'
         this.category = 'Vector Stores'
@@ -34,7 +34,7 @@ class Couchbase_VectorStores implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['CouchbaseApi']
+            credentialNames: ['couchbaseApi']
         }
         this.inputs = [
             {
@@ -90,6 +90,13 @@ class Couchbase_VectorStores implements INode {
                 default: 'embedding',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Couchbase Metadata Filter',
+                name: 'couchbaseMetadataFilter',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Top K',
@@ -179,10 +186,12 @@ class Couchbase_VectorStores implements INode {
         let textKey = nodeData.inputs?.textKey as string
         let embeddingKey = nodeData.inputs?.embeddingKey as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const couchbaseMetadataFilter = nodeData.inputs?.couchbaseMetadataFilter
 
         let connectionString = getCredentialParam('connectionString', credentialData, nodeData)
         let databaseUsername = getCredentialParam('username', credentialData, nodeData)
         let databasePassword = getCredentialParam('password', credentialData, nodeData)
+        let metadatafilter
 
         const couchbaseClient = await Cluster.connect(connectionString, {
             username: databaseUsername,
@@ -204,9 +213,13 @@ class Couchbase_VectorStores implements INode {
             if (!textKey || textKey === '') couchbaseConfig.textKey = 'text'
             if (!embeddingKey || embeddingKey === '') couchbaseConfig.embeddingKey = 'embedding'
 
+            if (couchbaseMetadataFilter) {
+                metadatafilter = typeof couchbaseMetadataFilter === 'object' ? couchbaseMetadataFilter : JSON.parse(couchbaseMetadataFilter)
+            }
+
             const vectorStore = await CouchbaseVectorStore.initialize(embeddings, couchbaseConfig)
 
-            return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+            return resolveVectorStoreOrRetriever(nodeData, vectorStore, metadatafilter)
         } catch (e) {
             throw new Error(e)
         }
