@@ -14,6 +14,8 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # You can install a specific version like: flowise@1.0.0
+# added on nmay 4
+ENV package-manager-strict=false
 RUN npm install -g flowise
 
 WORKDIR /data
