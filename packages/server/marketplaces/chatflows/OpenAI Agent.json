@@ -1,0 +1,510 @@
+{
+    "description": "An agent that uses OpenAI's Function Calling functionality to pick the tool and args to call",
+    "categories": "Buffer Memory,Custom Tool, SerpAPI,OpenAI Tool Agent,Calculator Tool,ChatOpenAI,Langchain",
+    "framework": "Langchain",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 142,
+            "id": "calculator_0",
+            "position": {
+                "x": 288.06681362611545,
+                "y": 289.1385194199715
+            },
+            "type": "customNode",
+            "data": {
+                "id": "calculator_0",
+                "label": "Calculator",
+                "version": 1,
+                "name": "calculator",
+                "type": "Calculator",
+                "baseClasses": ["Calculator", "Tool", "StructuredTool", "BaseLangChain", "Serializable"],
+                "category": "Tools",
+                "description": "Perform calculations on response",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable",
+                        "name": "calculator",
+                        "label": "Calculator",
+                        "type": "Calculator | Tool | StructuredTool | BaseLangChain | Serializable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 288.06681362611545,
+                "y": 289.1385194199715
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 376,
+            "id": "bufferMemory_0",
+            "position": {
+                "x": 285.7750469157585,
+                "y": 465.1140427303788
+            },
+            "type": "customNode",
+            "data": {
+                "id": "bufferMemory_0",
+                "label": "Buffer Memory",
+                "version": 2,
+                "name": "bufferMemory",
+                "type": "BufferMemory",
+                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Retrieve chat messages stored in database",
+                "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "bufferMemory_0-input-memoryKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+                        "name": "bufferMemory",
+                        "label": "BufferMemory",
+                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 285.7750469157585,
+                "y": 465.1140427303788
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 276,
+            "id": "customTool_0",
+            "position": {
+                "x": 883.9529939431576,
+                "y": -32.32503903826486
+            },
+            "type": "customNode",
+            "data": {
+                "id": "customTool_0",
+                "label": "Custom Tool",
+                "version": 1,
+                "name": "customTool",
+                "type": "CustomTool",
+                "baseClasses": ["CustomTool", "Tool", "StructuredTool"],
+                "category": "Tools",
+                "description": "Use custom tool you've created in Flowise within chatflow",
+                "inputParams": [
+                    {
+                        "label": "Select Tool",
+                        "name": "selectedTool",
+                        "type": "asyncOptions",
+                        "loadMethod": "listTools",
+                        "id": "customTool_0-input-selectedTool-asyncOptions"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "selectedTool": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool",
+                        "name": "customTool",
+                        "label": "CustomTool",
+                        "type": "CustomTool | Tool | StructuredTool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 883.9529939431576,
+                "y": -32.32503903826486
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 276,
+            "id": "serper_0",
+            "position": {
+                "x": 504.3508341937219,
+                "y": -10.324432507151982
+            },
+            "type": "customNode",
+            "data": {
+                "id": "serper_0",
+                "label": "Serper",
+                "version": 1,
+                "name": "serper",
+                "type": "Serper",
+                "baseClasses": ["Serper", "Tool", "StructuredTool"],
+                "category": "Tools",
+                "description": "Wrapper around Serper.dev - Google Search API",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["serperApi"],
+                        "id": "serper_0-input-credential-credential"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "serper_0-output-serper-Serper|Tool|StructuredTool",
+                        "name": "serper",
+                        "label": "Serper",
+                        "type": "Serper | Tool | StructuredTool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 504.3508341937219,
+                "y": -10.324432507151982
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 670,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 817.8210275868742,
+                "y": 627.7677030233751
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "version": 6.0,
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 817.8210275868742,
+                "y": 627.7677030233751
+            },
+            "dragging": false
+        },
+        {
+            "id": "openAIToolAgent_0",
+            "position": {
+                "x": 1248.5254972140808,
+                "y": 343.77259824664554
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIToolAgent_0",
+                "label": "OpenAI Tool Agent",
+                "version": 1,
+                "name": "openAIToolAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "category": "Agents",
+                "description": "Agent that uses OpenAI Function Calling to pick the tools and args to call",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessage",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIToolAgent_0-input-systemMessage-string"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIToolAgent_0-input-maxIterations-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "openAIToolAgent_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "openAIToolAgent_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "OpenAI/Azure Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "openAIToolAgent_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "openAIToolAgent_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{customTool_0.data.instance}}", "{{serper_0.data.instance}}", "{{calculator_0.data.instance}}"],
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "systemMessage": "",
+                    "inputModeration": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIToolAgent_0-output-openAIToolAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "openAIToolAgent",
+                        "label": "AgentExecutor",
+                        "description": "Agent that uses OpenAI Function Calling to pick the tools and args to call",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 433,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1248.5254972140808,
+                "y": 343.77259824664554
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "customTool_0",
+            "sourceHandle": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "customTool_0-customTool_0-output-customTool-CustomTool|Tool|StructuredTool-openAIToolAgent_0-openAIToolAgent_0-input-tools-Tool"
+        },
+        {
+            "source": "serper_0",
+            "sourceHandle": "serper_0-output-serper-Serper|Tool|StructuredTool",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool-openAIToolAgent_0-openAIToolAgent_0-input-tools-Tool"
+        },
+        {
+            "source": "calculator_0",
+            "sourceHandle": "calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "calculator_0-calculator_0-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain|Serializable-openAIToolAgent_0-openAIToolAgent_0-input-tools-Tool"
+        },
+        {
+            "source": "bufferMemory_0",
+            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-memory-BaseChatMemory",
+            "type": "buttonedge",
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-openAIToolAgent_0-openAIToolAgent_0-input-memory-BaseChatMemory"
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "openAIToolAgent_0",
+            "targetHandle": "openAIToolAgent_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-openAIToolAgent_0-openAIToolAgent_0-input-model-BaseChatModel"
+        }
+    ]
+}

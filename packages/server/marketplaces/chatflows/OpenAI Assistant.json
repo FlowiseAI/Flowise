@@ -1,0 +1,251 @@
+{
+    "description": "OpenAI Assistant that has instructions and can leverage models, tools, and knowledge to respond to user queries",
+    "categories": "Custom Tool, SerpAPI,OpenAI Assistant,Calculator Tool,Langchain",
+    "framework": "Langchain",
+    "badge": "NEW",
+    "nodes": [
+        {
+            "id": "openAIAssistant_0",
+            "position": {
+                "x": 1237.914576178543,
+                "y": 140
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIAssistant_0",
+                "label": "OpenAI Assistant",
+                "version": 3,
+                "name": "openAIAssistant",
+                "type": "OpenAIAssistant",
+                "baseClasses": ["OpenAIAssistant"],
+                "category": "Agents",
+                "description": "An agent that uses OpenAI Assistant API to pick the tool and args to call",
+                "inputParams": [
+                    {
+                        "label": "Select Assistant",
+                        "name": "selectedAssistant",
+                        "type": "asyncOptions",
+                        "loadMethod": "listAssistants",
+                        "id": "openAIAssistant_0-input-selectedAssistant-asyncOptions"
+                    },
+                    {
+                        "label": "Disable File Download",
+                        "name": "disableFileDownload",
+                        "type": "boolean",
+                        "description": "Messages can contain text, images, or files. In some cases, you may want to prevent others from downloading the files. Learn more from OpenAI File Annotation <a target=\"_blank\" href=\"https://platform.openai.com/docs/assistants/how-it-works/managing-threads-and-messages\">docs</a>",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIAssistant_0-input-disableFileDownload-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "openAIAssistant_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "openAIAssistant_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "selectedAssistant": "",
+                    "tools": ["{{calculator_0.data.instance}}", "{{serper_0.data.instance}}", "{{customTool_0.data.instance}}"],
+                    "inputModeration": "",
+                    "disableFileDownload": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIAssistant_0-output-openAIAssistant-OpenAIAssistant",
+                        "name": "openAIAssistant",
+                        "label": "OpenAIAssistant",
+                        "description": "An agent that uses OpenAI Assistant API to pick the tool and args to call",
+                        "type": "OpenAIAssistant"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 419,
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 1237.914576178543,
+                "y": 140
+            }
+        },
+        {
+            "id": "calculator_0",
+            "position": {
+                "x": 854.0341531341463,
+                "y": 48.134746169036475
+            },
+            "type": "customNode",
+            "data": {
+                "id": "calculator_0",
+                "label": "Calculator",
+                "version": 1,
+                "name": "calculator",
+                "type": "Calculator",
+                "baseClasses": ["Calculator", "Tool", "StructuredTool", "Runnable"],
+                "category": "Tools",
+                "description": "Perform calculations on response",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "calculator_0-output-calculator-Calculator|Tool|StructuredTool|Runnable",
+                        "name": "calculator",
+                        "label": "Calculator",
+                        "description": "Perform calculations on response",
+                        "type": "Calculator | Tool | StructuredTool | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 142,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 854.0341531341463,
+                "y": 48.134746169036475
+            },
+            "dragging": false
+        },
+        {
+            "id": "serper_0",
+            "position": {
+                "x": 852.623106275503,
+                "y": 205.46647090775525
+            },
+            "type": "customNode",
+            "data": {
+                "id": "serper_0",
+                "label": "Serper",
+                "version": 1,
+                "name": "serper",
+                "type": "Serper",
+                "baseClasses": ["Serper", "Tool", "StructuredTool", "Runnable"],
+                "category": "Tools",
+                "description": "Wrapper around Serper.dev - Google Search API",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["serperApi"],
+                        "id": "serper_0-input-credential-credential"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "serper_0-output-serper-Serper|Tool|StructuredTool|Runnable",
+                        "name": "serper",
+                        "label": "Serper",
+                        "description": "Wrapper around Serper.dev - Google Search API",
+                        "type": "Serper | Tool | StructuredTool | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 276,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 852.623106275503,
+                "y": 205.46647090775525
+            },
+            "dragging": false
+        },
+        {
+            "id": "customTool_0",
+            "position": {
+                "x": 850.6759101766447,
+                "y": 496.68759375469654
+            },
+            "type": "customNode",
+            "data": {
+                "id": "customTool_0",
+                "label": "Custom Tool",
+                "version": 1,
+                "name": "customTool",
+                "type": "CustomTool",
+                "baseClasses": ["CustomTool", "Tool", "StructuredTool", "Runnable"],
+                "category": "Tools",
+                "description": "Use custom tool you've created in Flowise within chatflow",
+                "inputParams": [
+                    {
+                        "label": "Select Tool",
+                        "name": "selectedTool",
+                        "type": "asyncOptions",
+                        "loadMethod": "listTools",
+                        "id": "customTool_0-input-selectedTool-asyncOptions"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "selectedTool": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+                        "name": "customTool",
+                        "label": "CustomTool",
+                        "description": "Use custom tool you've created in Flowise within chatflow",
+                        "type": "CustomTool | Tool | StructuredTool | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 276,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 850.6759101766447,
+                "y": 496.68759375469654
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "calculator_0",
+            "sourceHandle": "calculator_0-output-calculator-Calculator|Tool|StructuredTool|Runnable",
+            "target": "openAIAssistant_0",
+            "targetHandle": "openAIAssistant_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "calculator_0-calculator_0-output-calculator-Calculator|Tool|StructuredTool|Runnable-openAIAssistant_0-openAIAssistant_0-input-tools-Tool"
+        },
+        {
+            "source": "serper_0",
+            "sourceHandle": "serper_0-output-serper-Serper|Tool|StructuredTool|Runnable",
+            "target": "openAIAssistant_0",
+            "targetHandle": "openAIAssistant_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool|Runnable-openAIAssistant_0-openAIAssistant_0-input-tools-Tool"
+        },
+        {
+            "source": "customTool_0",
+            "sourceHandle": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+            "target": "openAIAssistant_0",
+            "targetHandle": "openAIAssistant_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "customTool_0-customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable-openAIAssistant_0-openAIAssistant_0-input-tools-Tool"
+        }
+    ]
+}

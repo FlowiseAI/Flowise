@@ -1,0 +1,258 @@
+{
+    "description": "Simple chat engine to handle back and forth conversations using LlamaIndex",
+    "categories": "BufferMemory,AzureChatOpenAI,LlamaIndex",
+    "framework": "LlamaIndex",
+    "badge": "NEW",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 462,
+            "id": "simpleChatEngine_0",
+            "position": {
+                "x": 1210.127368000538,
+                "y": 324.98110560103896
+            },
+            "type": "customNode",
+            "data": {
+                "id": "simpleChatEngine_0",
+                "label": "Simple Chat Engine",
+                "version": 1,
+                "name": "simpleChatEngine",
+                "type": "SimpleChatEngine",
+                "baseClasses": ["SimpleChatEngine"],
+                "tags": ["LlamaIndex"],
+                "category": "Engine",
+                "description": "Simple engine to handle back and forth conversations",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "placeholder": "You are a helpful assistant",
+                        "id": "simpleChatEngine_0-input-systemMessagePrompt-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel_LlamaIndex",
+                        "id": "simpleChatEngine_0-input-model-BaseChatModel_LlamaIndex"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "simpleChatEngine_0-input-memory-BaseChatMemory"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{azureChatOpenAI_LlamaIndex_0.data.instance}}",
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "systemMessagePrompt": "You are a helpful assistant."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "simpleChatEngine_0-output-simpleChatEngine-SimpleChatEngine",
+                        "name": "simpleChatEngine",
+                        "label": "SimpleChatEngine",
+                        "type": "SimpleChatEngine"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 1210.127368000538,
+                "y": 324.98110560103896
+            }
+        },
+        {
+            "width": 300,
+            "height": 376,
+            "id": "bufferMemory_0",
+            "position": {
+                "x": 393.9823478014782,
+                "y": 415.7414943210391
+            },
+            "type": "customNode",
+            "data": {
+                "id": "bufferMemory_0",
+                "label": "Buffer Memory",
+                "version": 2,
+                "name": "bufferMemory",
+                "type": "BufferMemory",
+                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Retrieve chat messages stored in database",
+                "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "bufferMemory_0-input-memoryKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+                        "name": "bufferMemory",
+                        "label": "BufferMemory",
+                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 393.9823478014782,
+                "y": 415.7414943210391
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 529,
+            "id": "azureChatOpenAI_LlamaIndex_0",
+            "position": {
+                "x": 746.5530862509605,
+                "y": -54.107978373323306
+            },
+            "type": "customNode",
+            "data": {
+                "id": "azureChatOpenAI_LlamaIndex_0",
+                "label": "AzureChatOpenAI",
+                "version": 2.0,
+                "name": "azureChatOpenAI_LlamaIndex",
+                "type": "AzureChatOpenAI",
+                "baseClasses": ["AzureChatOpenAI", "BaseChatModel_LlamaIndex"],
+                "tags": ["LlamaIndex"],
+                "category": "Chat Models",
+                "description": "Wrapper around Azure OpenAI Chat LLM specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["azureOpenAIApi"],
+                        "id": "azureChatOpenAI_LlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo-16k",
+                        "id": "azureChatOpenAI_LlamaIndex_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "azureChatOpenAI_LlamaIndex_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "azureChatOpenAI_LlamaIndex_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "azureChatOpenAI_LlamaIndex_0-input-topP-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "azureChatOpenAI_LlamaIndex_0-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo-16k",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "azureChatOpenAI_LlamaIndex_0-output-azureChatOpenAI_LlamaIndex-AzureChatOpenAI|BaseChatModel_LlamaIndex",
+                        "name": "azureChatOpenAI_LlamaIndex",
+                        "label": "AzureChatOpenAI",
+                        "type": "AzureChatOpenAI | BaseChatModel_LlamaIndex"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 746.5530862509605,
+                "y": -54.107978373323306
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "bufferMemory_0",
+            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+            "target": "simpleChatEngine_0",
+            "targetHandle": "simpleChatEngine_0-input-memory-BaseChatMemory",
+            "type": "buttonedge",
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-simpleChatEngine_0-simpleChatEngine_0-input-memory-BaseChatMemory",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "azureChatOpenAI_LlamaIndex_0",
+            "sourceHandle": "azureChatOpenAI_LlamaIndex_0-output-azureChatOpenAI_LlamaIndex-AzureChatOpenAI|BaseChatModel_LlamaIndex",
+            "target": "simpleChatEngine_0",
+            "targetHandle": "simpleChatEngine_0-input-model-BaseChatModel_LlamaIndex",
+            "type": "buttonedge",
+            "id": "azureChatOpenAI_LlamaIndex_0-azureChatOpenAI_LlamaIndex_0-output-azureChatOpenAI_LlamaIndex-AzureChatOpenAI|BaseChatModel_LlamaIndex-simpleChatEngine_0-simpleChatEngine_0-input-model-BaseChatModel_LlamaIndex",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

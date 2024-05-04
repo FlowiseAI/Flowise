@@ -1,0 +1,9 @@
+{
+    "name": "add_contact_hubspot",
+    "framework": "Langchain",
+    "description": "Add new contact to Hubspot",
+    "color": "linear-gradient(rgb(85,198,123), rgb(0,230,99))",
+    "iconSrc": "https://cdn.worldvectorlogo.com/logos/hubspot-1.svg",
+    "schema": "[{\"id\":1,\"property\":\"email\",\"description\":\"email address of contact\",\"type\":\"string\",\"required\":true},{\"id\":2,\"property\":\"firstname\",\"description\":\"first name of contact\",\"type\":\"string\",\"required\":false},{\"id\":3,\"property\":\"lastname\",\"description\":\"last name of contact\",\"type\":\"string\",\"required\":false}]",
+    "func": "const fetch = require('node-fetch');\nconst url = 'https://api.hubapi.com/crm/v3/objects/contacts'\nconst token = 'YOUR-TOKEN';\n\nconst body = {\n\t\"properties\": {\n\t        \"email\": $email\n\t}\n};\n\nif ($firstname) body.properties.firstname = $firstname;\nif ($lastname) body.properties.lastname = $lastname;\n\nconst options = {\n\tmethod: 'POST',\n\theaders: {\n\t        'Authorization': `Bearer ${token}`,\n\t\t'Content-Type': 'application/json'\n\t},\n\tbody: JSON.stringify(body)\n};\n\ntry {\n\tconst response = await fetch(url, options);\n\tconst text = await response.text();\n\treturn text;\n} catch (error) {\n\tconsole.error(error);\n\treturn '';\n}"
+}

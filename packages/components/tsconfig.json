@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "lib": ["ES2020", "ES2021.String"],
+        "experimentalDecorators": true /* Enable experimental support for TC39 stage 2 draft decorators. */,
+        "emitDecoratorMetadata": true /* Emit design-type metadata for decorated declarations in source files. */,
+        "target": "ES2020", // or higher
+        "outDir": "./dist/",
+        "resolveJsonModule": true,
+        "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
+        "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
+        "strict": true /* Enable all strict type-checking options. */,
+        "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+        "sourceMap": true,
+        "strictPropertyInitialization": false,
+        "useUnknownInCatchVariables": false,
+        "declaration": true,
+        "module": "commonjs"
+    },
+    "include": ["src", "nodes", "credentials"],
+    "exclude": ["gulpfile.ts", "node_modules", "dist"]
+}

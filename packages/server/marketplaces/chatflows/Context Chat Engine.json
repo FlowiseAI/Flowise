@@ -1,0 +1,798 @@
+{
+    "description": "Answer question based on retrieved documents (context) with built-in memory to remember conversation using LlamaIndex",
+    "categories": "Text File,Prompt Template,ChatOpenAI,Conversation Chain,Pinecone,LlamaIndex,Redis",
+    "framework": "LlamaIndex",
+    "badge": "NEW",
+    "nodes": [
+        {
+            "width": 300,
+            "height": 438,
+            "id": "textFile_0",
+            "position": {
+                "x": 221.215421786192,
+                "y": 94.91489477412404
+            },
+            "type": "customNode",
+            "data": {
+                "id": "textFile_0",
+                "label": "Text File",
+                "version": 3,
+                "name": "textFile",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from text files",
+                "inputParams": [
+                    {
+                        "label": "Txt File",
+                        "name": "txtFile",
+                        "type": "file",
+                        "fileType": ".txt, .html, .aspx, .asp, .cpp, .c, .cs, .css, .go, .h, .java, .js, .less, .ts, .php, .proto, .python, .py, .rst, .ruby, .rb, .rs, .scala, .sc, .scss, .sol, .sql, .swift, .markdown, .md, .tex, .ltx, .vb, .xml",
+                        "id": "textFile_0-input-txtFile-file"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "textFile_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "textFile_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "textSplitter": "{{recursiveCharacterTextSplitter_0.data.instance}}",
+                    "metadata": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "textFile_0-output-document-Document|json",
+                                "name": "document",
+                                "label": "Document",
+                                "type": "Document | json"
+                            },
+                            {
+                                "id": "textFile_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "document"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 221.215421786192,
+                "y": 94.91489477412404
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 429,
+            "id": "recursiveCharacterTextSplitter_0",
+            "position": {
+                "x": -203.4868320229876,
+                "y": 101.32475976329766
+            },
+            "type": "customNode",
+            "data": {
+                "id": "recursiveCharacterTextSplitter_0",
+                "label": "Recursive Character Text Splitter",
+                "version": 2,
+                "name": "recursiveCharacterTextSplitter",
+                "type": "RecursiveCharacterTextSplitter",
+                "baseClasses": ["RecursiveCharacterTextSplitter", "TextSplitter", "BaseDocumentTransformer", "Runnable"],
+                "category": "Text Splitters",
+                "description": "Split documents recursively by different characters - starting with \"\\n\\n\", then \"\\n\", then \" \"",
+                "inputParams": [
+                    {
+                        "label": "Chunk Size",
+                        "name": "chunkSize",
+                        "type": "number",
+                        "default": 1000,
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-chunkSize-number"
+                    },
+                    {
+                        "label": "Chunk Overlap",
+                        "name": "chunkOverlap",
+                        "type": "number",
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-chunkOverlap-number"
+                    },
+                    {
+                        "label": "Custom Separators",
+                        "name": "separators",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "Array of custom separators to determine when to split the text, will override the default separators",
+                        "placeholder": "[\"|\", \"##\", \">\", \"-\"]",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "recursiveCharacterTextSplitter_0-input-separators-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "chunkSize": 1000,
+                    "chunkOverlap": "",
+                    "separators": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer|Runnable",
+                        "name": "recursiveCharacterTextSplitter",
+                        "label": "RecursiveCharacterTextSplitter",
+                        "type": "RecursiveCharacterTextSplitter | TextSplitter | BaseDocumentTransformer | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": -203.4868320229876,
+                "y": 101.32475976329766
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 334,
+            "id": "openAIEmbedding_LlamaIndex_0",
+            "position": {
+                "x": 176.27434578083106,
+                "y": 953.3664298122493
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbedding_LlamaIndex_0",
+                "label": "OpenAI Embedding",
+                "version": 2,
+                "name": "openAIEmbedding_LlamaIndex",
+                "type": "OpenAIEmbedding",
+                "baseClasses": ["OpenAIEmbedding", "BaseEmbedding_LlamaIndex", "BaseEmbedding"],
+                "tags": ["LlamaIndex"],
+                "category": "Embeddings",
+                "description": "OpenAI Embedding specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbedding_LlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "text-embedding-ada-002",
+                        "id": "openAIEmbedding_LlamaIndex_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbedding_LlamaIndex_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbedding_LlamaIndex_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "timeout": "",
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+                        "name": "openAIEmbedding_LlamaIndex",
+                        "label": "OpenAIEmbedding",
+                        "type": "OpenAIEmbedding | BaseEmbedding_LlamaIndex | BaseEmbedding"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 176.27434578083106,
+                "y": 953.3664298122493
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 585,
+            "id": "pineconeLlamaIndex_0",
+            "position": {
+                "x": 609.3087433345761,
+                "y": 488.2141798951578
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeLlamaIndex_0",
+                "label": "Pinecone",
+                "version": 1,
+                "name": "pineconeLlamaIndex",
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorIndexRetriever"],
+                "tags": ["LlamaIndex"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["pineconeApi"],
+                        "id": "pineconeLlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeLlamaIndex_0-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pineconeLlamaIndex_0-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_0-input-document-Document"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel_LlamaIndex",
+                        "id": "pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "BaseEmbedding_LlamaIndex",
+                        "id": "pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex"
+                    }
+                ],
+                "inputs": {
+                    "document": ["{{textFile_0.data.instance}}"],
+                    "model": "{{chatOpenAI_LlamaIndex_1.data.instance}}",
+                    "embeddings": "{{openAIEmbedding_LlamaIndex_0.data.instance}}",
+                    "pineconeIndex": "",
+                    "pineconeNamespace": "",
+                    "pineconeMetadataFilter": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeLlamaIndex_0-output-retriever-Pinecone|VectorIndexRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorIndexRetriever"
+                            },
+                            {
+                                "id": "pineconeLlamaIndex_0-output-retriever-Pinecone|VectorStoreIndex",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store Index",
+                                "type": "Pinecone | VectorStoreIndex"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 609.3087433345761,
+                "y": 488.2141798951578
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 529,
+            "id": "chatOpenAI_LlamaIndex_1",
+            "position": {
+                "x": -195.15244974578656,
+                "y": 584.9467028201428
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_LlamaIndex_1",
+                "label": "ChatOpenAI",
+                "version": 2.0,
+                "name": "chatOpenAI_LlamaIndex",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel_LlamaIndex"],
+                "tags": ["LlamaIndex"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI Chat LLM specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_LlamaIndex_1-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_LlamaIndex_1-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_LlamaIndex_1-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_1-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_1-input-topP-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_1-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo-16k",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_LlamaIndex_1-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex",
+                        "name": "chatOpenAI_LlamaIndex",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel_LlamaIndex"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": -195.15244974578656,
+                "y": 584.9467028201428
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 513,
+            "id": "contextChatEngine_0",
+            "position": {
+                "x": 1550.2553933740128,
+                "y": 270.7914631777829
+            },
+            "type": "customNode",
+            "data": {
+                "id": "contextChatEngine_0",
+                "label": "Context Chat Engine",
+                "version": 1,
+                "name": "contextChatEngine",
+                "type": "ContextChatEngine",
+                "baseClasses": ["ContextChatEngine"],
+                "tags": ["LlamaIndex"],
+                "category": "Engine",
+                "description": "Answer question based on retrieved documents (context) with built-in memory to remember conversation",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "contextChatEngine_0-input-returnSourceDocuments-boolean"
+                    },
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
+                        "id": "contextChatEngine_0-input-systemMessagePrompt-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel_LlamaIndex",
+                        "id": "contextChatEngine_0-input-model-BaseChatModel_LlamaIndex"
+                    },
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "VectorIndexRetriever",
+                        "id": "contextChatEngine_0-input-vectorStoreRetriever-VectorIndexRetriever"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "contextChatEngine_0-input-memory-BaseChatMemory"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_LlamaIndex_2.data.instance}}",
+                    "vectorStoreRetriever": "{{pineconeLlamaIndex_0.data.instance}}",
+                    "memory": "{{RedisBackedChatMemory_0.data.instance}}",
+                    "systemMessagePrompt": "",
+                    "returnSourceDocuments": true
+                },
+                "outputAnchors": [
+                    {
+                        "id": "contextChatEngine_0-output-contextChatEngine-ContextChatEngine",
+                        "name": "contextChatEngine",
+                        "label": "ContextChatEngine",
+                        "type": "ContextChatEngine"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1550.2553933740128,
+                "y": 270.7914631777829
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 329,
+            "id": "RedisBackedChatMemory_0",
+            "position": {
+                "x": 1081.252815805786,
+                "y": 990.1701092562037
+            },
+            "type": "customNode",
+            "data": {
+                "id": "RedisBackedChatMemory_0",
+                "label": "Redis-Backed Chat Memory",
+                "version": 2,
+                "name": "RedisBackedChatMemory",
+                "type": "RedisBackedChatMemory",
+                "baseClasses": ["RedisBackedChatMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Summarizes the conversation and stores the memory in Redis server",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "optional": true,
+                        "credentialNames": ["redisCacheApi", "redisCacheUrlApi"],
+                        "id": "RedisBackedChatMemory_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Session Timeouts",
+                        "name": "sessionTTL",
+                        "type": "number",
+                        "description": "Omit this parameter to make sessions never expire",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-sessionTTL-number"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "RedisBackedChatMemory_0-input-memoryKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "sessionTTL": "",
+                    "memoryKey": "chat_history"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+                        "name": "RedisBackedChatMemory",
+                        "label": "RedisBackedChatMemory",
+                        "type": "RedisBackedChatMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 1081.252815805786,
+                "y": 990.1701092562037
+            }
+        },
+        {
+            "width": 300,
+            "height": 529,
+            "id": "chatOpenAI_LlamaIndex_2",
+            "position": {
+                "x": 1015.1605888108386,
+                "y": -38.31143117572401
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_LlamaIndex_2",
+                "label": "ChatOpenAI",
+                "version": 2.0,
+                "name": "chatOpenAI_LlamaIndex",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel_LlamaIndex"],
+                "tags": ["LlamaIndex"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI Chat LLM specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_LlamaIndex_2-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_LlamaIndex_2-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_LlamaIndex_2-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_2-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_2-input-topP-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_2-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_LlamaIndex_2-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex",
+                        "name": "chatOpenAI_LlamaIndex",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel_LlamaIndex"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1015.1605888108386,
+                "y": -38.31143117572401
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "recursiveCharacterTextSplitter_0",
+            "sourceHandle": "recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer|Runnable",
+            "target": "textFile_0",
+            "targetHandle": "textFile_0-input-textSplitter-TextSplitter",
+            "type": "buttonedge",
+            "id": "recursiveCharacterTextSplitter_0-recursiveCharacterTextSplitter_0-output-recursiveCharacterTextSplitter-RecursiveCharacterTextSplitter|TextSplitter|BaseDocumentTransformer|Runnable-textFile_0-textFile_0-input-textSplitter-TextSplitter",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "textFile_0",
+            "sourceHandle": "textFile_0-output-document-Document|json",
+            "target": "pineconeLlamaIndex_0",
+            "targetHandle": "pineconeLlamaIndex_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "textFile_0-textFile_0-output-document-Document|json-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-document-Document",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_LlamaIndex_1",
+            "sourceHandle": "chatOpenAI_LlamaIndex_1-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex",
+            "target": "pineconeLlamaIndex_0",
+            "targetHandle": "pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex",
+            "type": "buttonedge",
+            "id": "chatOpenAI_LlamaIndex_1-chatOpenAI_LlamaIndex_1-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbedding_LlamaIndex_0",
+            "sourceHandle": "openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+            "target": "pineconeLlamaIndex_0",
+            "targetHandle": "pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex",
+            "type": "buttonedge",
+            "id": "openAIEmbedding_LlamaIndex_0-openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "pineconeLlamaIndex_0",
+            "sourceHandle": "pineconeLlamaIndex_0-output-pineconeLlamaIndex-Pinecone|VectorIndexRetriever",
+            "target": "contextChatEngine_0",
+            "targetHandle": "contextChatEngine_0-input-vectorStoreRetriever-VectorIndexRetriever",
+            "type": "buttonedge",
+            "id": "pineconeLlamaIndex_0-pineconeLlamaIndex_0-output-pineconeLlamaIndex-Pinecone|VectorIndexRetriever-contextChatEngine_0-contextChatEngine_0-input-vectorStoreRetriever-VectorIndexRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "RedisBackedChatMemory_0",
+            "sourceHandle": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+            "target": "contextChatEngine_0",
+            "targetHandle": "contextChatEngine_0-input-memory-BaseChatMemory",
+            "type": "buttonedge",
+            "id": "RedisBackedChatMemory_0-RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory-contextChatEngine_0-contextChatEngine_0-input-memory-BaseChatMemory",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatOpenAI_LlamaIndex_2",
+            "sourceHandle": "chatOpenAI_LlamaIndex_2-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex",
+            "target": "contextChatEngine_0",
+            "targetHandle": "contextChatEngine_0-input-model-BaseChatModel_LlamaIndex",
+            "type": "buttonedge",
+            "id": "chatOpenAI_LlamaIndex_2-chatOpenAI_LlamaIndex_2-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex-contextChatEngine_0-contextChatEngine_0-input-model-BaseChatModel_LlamaIndex",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}

@@ -1,0 +1,205 @@
+.messagelist {
+    width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+}
+
+.messagelistloading {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.usermessage {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+}
+
+.usermessagewaiting-light {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+    background: linear-gradient(to left, #ede7f6, #e3f2fd, #ede7f6);
+    background-size: 200% 200%;
+    background-position: -100% 0;
+    animation: loading-gradient 2s ease-in-out infinite;
+    animation-direction: alternate;
+    animation-name: loading-gradient;
+}
+
+.usermessagewaiting-dark {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+    color: #ececf1;
+    background: linear-gradient(to left, #2e2352, #1d3d60, #2e2352);
+    background-size: 200% 200%;
+    background-position: -100% 0;
+    animation: loading-gradient 2s ease-in-out infinite;
+    animation-direction: alternate;
+    animation-name: loading-gradient;
+}
+
+@keyframes loading-gradient {
+    0% {
+        background-position: -100% 0;
+    }
+    100% {
+        background-position: 100% 0;
+    }
+}
+
+.apimessage {
+    padding: 1rem 1.5rem 1rem 1.5rem;
+    animation: fadein 0.5s;
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.apimessage,
+.usermessage,
+.usermessagewaiting {
+    display: flex;
+}
+
+.markdownanswer {
+    line-height: 1.75;
+}
+
+.markdownanswer a:hover {
+    opacity: 0.8;
+}
+
+.markdownanswer a {
+    display: block;
+    margin-right: 2.5rem;
+    word-wrap: break-word;
+    color: #16bed7;
+    font-weight: 500;
+}
+
+.markdownanswer code {
+    color: #0ab126;
+    font-weight: 500;
+    white-space: pre-wrap !important;
+}
+
+.markdownanswer ol,
+.markdownanswer ul {
+    margin: 1rem;
+}
+
+.boticon,
+.usericon {
+    margin-top: 1rem;
+    margin-right: 1rem;
+    border-radius: 1rem;
+}
+
+.markdownanswer h1,
+.markdownanswer h2,
+.markdownanswer h3 {
+    font-size: inherit;
+}
+
+.center {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    flex-direction: column;
+    padding: 12px;
+}
+
+.cloud-wrapper {
+    width: 400px;
+    height: calc(100vh - 180px);
+}
+
+.cloud-dialog-wrapper {
+    width: 100%;
+    height: calc(100vh - 120px);
+}
+
+.cloud-wrapper > div,
+.cloud-dialog-wrapper > div {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    position: relative;
+}
+
+.image-dropzone {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 2001; /* Ensure it's above other content */
+}
+
+.cloud,
+.cloud-dialog {
+    width: 100%;
+    height: auto;
+    max-height: calc(100% - 54px);
+    overflow-y: scroll;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-grow: 1;
+}
+
+.cloud-message {
+    width: 100%;
+    height: calc(100vh - 260px);
+    overflow-y: scroll;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.preview {
+    position: absolute;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* For momentum scroll on mobile devices */
+    scrollbar-width: none; /* For Firefox */
+}
+
+.file-drop-field {
+    position: relative; /* Needed to position the icon correctly */
+    /* Other styling for the field */
+}
+
+.drop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(137, 134, 134, 0.83); /* Semi-transparent white */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Ensure it's above other content */
+    border: 2px dashed #0094ff; /* Example style */
+}
+
+.center audio {
+    height: 100%;
+    border-radius: 0;
+}
