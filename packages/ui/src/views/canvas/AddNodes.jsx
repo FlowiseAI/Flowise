@@ -53,7 +53,10 @@ function a11yProps(index) {
     }
 }
 
-const allowedCategoriesForAgentCanvas = ['Tools', 'Chat Models', 'Multi Agents']
+const blacklistCategoriesForAgentCanvas = ['Agents', 'Document Loaders', 'Memory', 'Record Manager', 'Text Splitters']
+const allowedAgentModel = {
+    'Chat Models': ['chatOpenAI']
+}
 
 const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const theme = useTheme()
@@ -106,7 +109,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
     const getSearchedNodes = (value) => {
         if (isAgentCanvas) {
-            const nodes = nodesData.filter((nd) => allowedCategoriesForAgentCanvas.includes(nd.category))
+            const nodes = nodesData.filter((nd) => !blacklistCategoriesForAgentCanvas.includes(nd.category))
             const passed = nodes.filter((nd) => {
                 const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
                 const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
@@ -114,7 +117,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             })
             return passed
         }
-        const passed = nodesData.filter((nd) => {
+        const nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents')
+        const passed = nodes.filter((nd) => {
             const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
             const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
             return passesQuery || passesCategory
@@ -158,12 +162,22 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
             const filteredResult = {}
             for (const category in result) {
-                if (allowedCategoriesForAgentCanvas.includes(category)) {
-                    filteredResult[category] = result[category].filter((nd) => !nd.tags || !nd.tags.includes('LlamaIndex'))
+                // Filter out blacklisted categories
+                if (!blacklistCategoriesForAgentCanvas.includes(category)) {
+                    // Filter out LlamaIndex nodes
+                    const nodes = result[category].filter((nd) => !nd.tags || !nd.tags.includes('LlamaIndex'))
+                    if (!nodes.length) continue
+
+                    // Only allow specific models for specific categories
+                    if (Object.keys(allowedAgentModel).includes(category)) {
+                        const allowedModels = allowedAgentModel[category]
+                        filteredResult[category] = nodes.filter((nd) => allowedModels.includes(nd.name))
+                    } else {
+                        filteredResult[category] = nodes
+                    }
                 }
             }
             setNodes(filteredResult)
-
             accordianCategories['Multi Agents'] = true
             setCategoryExpanded(accordianCategories)
         } else {
@@ -175,8 +189,16 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                 accordianCategories[a.category] = isFilter ? true : false
                 return r
             }, Object.create(null))
-            setNodes(result)
-            categorizeVectorStores(result, accordianCategories, isFilter)
+
+            const filteredResult = {}
+            for (const category in result) {
+                if (category === 'Multi Agents') {
+                    continue
+                }
+                filteredResult[category] = result[category]
+            }
+            setNodes(filteredResult)
+            categorizeVectorStores(filteredResult, accordianCategories, isFilter)
             setCategoryExpanded(accordianCategories)
         }
     }

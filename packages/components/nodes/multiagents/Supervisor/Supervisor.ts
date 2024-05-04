@@ -1,11 +1,10 @@
 import { flatten } from 'lodash'
-import { ChatOpenAI } from '@langchain/openai'
-import { OllamaFunctions } from 'langchain/experimental/chat_models/ollama_functions'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { Runnable } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { JsonOutputToolsParser } from 'langchain/output_parsers'
 import { IMultiAgentNode, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { Moderation } from '../../moderation/Moderation'
+import { JsonOutputToolsParser } from 'langchain/output_parsers'
 
 const sysPrompt = `You are a supervisor tasked with managing a conversation between the following workers: {team_members}.
 Given the following user request, respond with the worker to act next.
@@ -52,11 +51,10 @@ class Supervisor_MultiAgents implements INode {
                 default: sysPrompt
             },
             {
-                label: 'Chat Model',
-                name: 'llm',
+                label: 'OpenAI Model',
+                name: 'model',
                 type: 'BaseChatModel',
-                description:
-                    'Only compatible with models that are capable of function calling, ex: OpenAI, Mistral, Anthropic, VertexAI, Gemini'
+                description: 'Only compatible with OpenAI model for now.'
             },
             {
                 label: 'Recursion Limit',
@@ -76,7 +74,7 @@ class Supervisor_MultiAgents implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const llm = nodeData.inputs?.llm as ChatOpenAI | OllamaFunctions
+        const llm = nodeData.inputs?.model as BaseChatModel
         const supervisorPrompt = nodeData.inputs?.supervisorPrompt as string
         const supervisorName = nodeData.inputs?.supervisorName as string
         const _recursionLimit = nodeData.inputs?.recursionLimit as string
@@ -87,7 +85,7 @@ class Supervisor_MultiAgents implements INode {
             nodeData.inputs?.workerNodes && nodeData.inputs?.workerNodes.length ? flatten(nodeData.inputs?.workerNodes) : []
         const workersNodeNames = workersNodes.map((node: IMultiAgentNode) => node.name)
 
-        async function createTeamSupervisor(llm: ChatOpenAI | OllamaFunctions, systemPrompt: string, members: string[]): Promise<Runnable> {
+        async function createTeamSupervisor(llm: BaseChatModel, systemPrompt: string, members: string[]): Promise<Runnable> {
             const options = ['FINISH', ...members]
             const functionDef = {
                 name: 'route',

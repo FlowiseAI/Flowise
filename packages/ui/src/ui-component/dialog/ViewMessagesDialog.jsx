@@ -32,7 +32,8 @@ import DatePicker from 'react-datepicker'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
 import msgEmptySVG from '@/assets/images/message_empty.svg'
-import agentPNG from '@/assets/images/agentgraph.png'
+import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
+import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
 import { IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons-react'
 
 // Project import
@@ -835,7 +836,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                         height: '25px',
                                                                                                         width: 'auto'
                                                                                                     }}
-                                                                                                    src={agentPNG}
+                                                                                                    src={
+                                                                                                        agent.instructions
+                                                                                                            ? multiagent_supervisorPNG
+                                                                                                            : multiagent_workerPNG
+                                                                                                    }
                                                                                                     alt='agentPNG'
                                                                                                 />
                                                                                             </Box>

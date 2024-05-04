@@ -28,7 +28,8 @@ import { useTheme } from '@mui/material/styles'
 import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconTrash, IconX, IconTool } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
-import agentPNG from '@/assets/images/agentgraph.png'
+import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
+import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
 import audioUploadSVG from '@/assets/images/wave-sound.jpg'
 
 // project import
@@ -969,12 +970,41 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                                                 height: '25px',
                                                                                 width: 'auto'
                                                                             }}
-                                                                            src={agentPNG}
+                                                                            src={
+                                                                                agent.instructions
+                                                                                    ? multiagent_supervisorPNG
+                                                                                    : multiagent_workerPNG
+                                                                            }
                                                                             alt='agentPNG'
                                                                         />
                                                                     </Box>
                                                                     <div>{agent.agentName}</div>
                                                                 </Stack>
+                                                                {agent.usedTools && (
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'block',
+                                                                            flexDirection: 'row',
+                                                                            width: '100%'
+                                                                        }}
+                                                                    >
+                                                                        {agent.usedTools.map((tool, index) => {
+                                                                            return (
+                                                                                <Chip
+                                                                                    size='small'
+                                                                                    key={index}
+                                                                                    label={tool.tool}
+                                                                                    component='a'
+                                                                                    sx={{ mr: 1, mt: 1 }}
+                                                                                    variant='outlined'
+                                                                                    clickable
+                                                                                    icon={<IconTool size={15} />}
+                                                                                    onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                                                />
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
                                                                 {agent.messages.length > 0 && (
                                                                     <MemoizedReactMarkdown
                                                                         remarkPlugins={[remarkGfm, remarkMath]}

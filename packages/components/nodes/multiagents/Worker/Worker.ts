@@ -1,14 +1,12 @@
 import { flatten } from 'lodash'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { ChatOpenAI } from '@langchain/openai'
-import { convertToOpenAITool } from '@langchain/core/utils/function_calling'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { HumanMessage } from '@langchain/core/messages'
-import { OllamaFunctions } from 'langchain/experimental/chat_models/ollama_functions'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
-import { OpenAIToolsAgentOutputParser, type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
+import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { INode, INodeData, INodeParams, IMultiAgentNode, ITeamState } from '../../../src/Interface'
-import { AgentExecutor } from '../../../src/agents'
+import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 
@@ -47,16 +45,16 @@ class Worker_MultiAgents implements INode {
                 default: examplePrompt
             },
             {
-                label: 'Supervisor',
-                name: 'supervisor',
-                type: 'Supervisor'
-            },
-            {
                 label: 'Tools',
                 name: 'tools',
                 type: 'Tool',
                 list: true,
                 optional: true
+            },
+            {
+                label: 'Supervisor',
+                name: 'supervisor',
+                type: 'Supervisor'
             },
             {
                 label: 'Max Iterations',
@@ -78,7 +76,7 @@ class Worker_MultiAgents implements INode {
 
         if (!workerName) throw new Error('Worker name is required!')
 
-        const llm = supervisor.llm
+        const llm = supervisor.llm as BaseChatModel
 
         const agent = await createAgent(llm, [...tools], workerPrompt, maxIterations)
 
@@ -103,12 +101,7 @@ class Worker_MultiAgents implements INode {
     }
 }
 
-async function createAgent(
-    llm: ChatOpenAI | OllamaFunctions,
-    tools: any[],
-    systemPrompt: string,
-    maxIterations?: string
-): Promise<AgentExecutor> {
+async function createAgent(llm: BaseChatModel, tools: any[], systemPrompt: string, maxIterations?: string): Promise<AgentExecutor> {
     const combinedPrompt =
         systemPrompt +
         '\nWork autonomously according to your specialty, using the tools available to you.' +
@@ -130,14 +123,17 @@ async function createAgent(
         ]
     ])
 
-    const modelWithTools = tools.length ? llm.bind({ tools: tools.map(convertToOpenAITool) }) : llm.bind({ tools: undefined })
+    if (llm.bindTools === undefined) {
+        throw new Error(`This agent only compatible with function calling models.`)
+    }
+    const modelWithTools = tools.length ? llm.bindTools(tools) : llm.bindTools([])
 
     const agent = RunnableSequence.from([
         //@ts-ignore
         RunnablePassthrough.assign({ agent_scratchpad: (input: { steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(input.steps) }),
         prompt,
         modelWithTools,
-        new OpenAIToolsAgentOutputParser()
+        new ToolCallingAgentOutputParser()
     ])
     const executor = AgentExecutor.fromAgentAndTools({
         agent: agent,
@@ -151,7 +147,13 @@ async function createAgent(
 async function agentNode({ state, agent, name }: { state: any; agent: AgentExecutor; name: string }, config: RunnableConfig) {
     const result = await agent.invoke(state, config)
     return {
-        messages: [new HumanMessage({ content: result.output, name })]
+        messages: [
+            new HumanMessage({
+                content: result.output,
+                name,
+                additional_kwargs: result.usedTools ? { usedTools: result.usedTools } : undefined
+            })
+        ]
     }
 }
 

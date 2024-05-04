@@ -6,7 +6,7 @@ import { getRunningExpressApp } from './getRunningExpressApp'
 import logger from './logger'
 import { StateGraph, END } from '@langchain/langgraph'
 import { BaseMessage, HumanMessage } from '@langchain/core/messages'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, flatten } from 'lodash'
 import { replaceInputsWithConfig, resolveVariables } from '.'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
@@ -89,12 +89,16 @@ export const buildAgentGraph = async (chatflow: IChatFlow, incomingInput: ICommo
             for await (const output of await streamResults) {
                 if (!output?.__end__) {
                     const agentName = Object.keys(output)[0]
+                    const usedTools = output[agentName]?.messages
+                        ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.usedTools)
+                        : []
                     const messages = output[agentName]?.messages ? output[agentName].messages.map((msg: any) => msg.content) : []
                     const reasoning = {
                         agentName,
                         messages,
                         next: output[agentName]?.next,
-                        instructions: output[agentName]?.instructions
+                        instructions: output[agentName]?.instructions,
+                        usedTools: flatten(usedTools)
                     }
                     agentReasoning.push(reasoning)
                     if (socketIO && incomingInput.socketIOClientId) {

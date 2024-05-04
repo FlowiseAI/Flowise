@@ -35,7 +35,8 @@ const dashboard = {
             type: 'item',
             url: '/agents',
             icon: icons.IconUsersGroup,
-            breadcrumbs: true
+            breadcrumbs: true,
+            isBeta: true
         },
         {
             id: 'marketplaces',
