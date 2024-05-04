@@ -39,7 +39,7 @@ class Supervisor_MultiAgents implements INode {
                 label: 'Supervisor Name',
                 name: 'supervisorName',
                 type: 'string',
-                placeholder: 'My Supervisor',
+                placeholder: 'supervisor',
                 default: 'supervisor'
             },
             {
@@ -51,10 +51,10 @@ class Supervisor_MultiAgents implements INode {
                 default: sysPrompt
             },
             {
-                label: 'OpenAI Model',
+                label: 'Chat OpenAI',
                 name: 'model',
-                type: 'BaseChatModel',
-                description: 'Only compatible with OpenAI model for now.'
+                type: 'ChatOpenAI',
+                description: 'Only compatible with Chat OpenAI model for now.'
             },
             {
                 label: 'Recursion Limit',

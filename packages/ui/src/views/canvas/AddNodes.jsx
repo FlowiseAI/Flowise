@@ -54,9 +54,7 @@ function a11yProps(index) {
 }
 
 const blacklistCategoriesForAgentCanvas = ['Agents', 'Document Loaders', 'Memory', 'Record Manager', 'Text Splitters']
-const allowedAgentModel = {
-    'Chat Models': ['chatOpenAI']
-}
+const allowedAgentModel = {}
 
 const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const theme = useTheme()
