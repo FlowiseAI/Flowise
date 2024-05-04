@@ -11,7 +11,7 @@ import { createReactAgent } from '../../../src/agents'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
-class MRKLAgentLLM_Agents implements INode {
+class ReActAgentLLM_Agents implements INode {
     label: string
     name: string
     version: number
@@ -24,7 +24,7 @@ class MRKLAgentLLM_Agents implements INode {
 
     constructor() {
         this.label = 'ReAct Agent for LLMs'
-        this.name = 'mrklAgentLLM'
+        this.name = 'reactAgentLLM'
         this.version = 2.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
@@ -107,4 +107,4 @@ class MRKLAgentLLM_Agents implements INode {
     }
 }
 
-module.exports = { nodeClass: MRKLAgentLLM_Agents }
+module.exports = { nodeClass: ReActAgentLLM_Agents }

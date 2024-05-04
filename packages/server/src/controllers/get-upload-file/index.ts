@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
-import path from 'path'
+import fs from 'fs'
 import contentDisposition from 'content-disposition'
-import { getStoragePath } from 'flowise-components'
-import * as fs from 'fs'
+import { streamStorageFile } from 'flowise-components'
+import { StatusCodes } from 'http-status-codes'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 
-const streamUploadedImage = async (req: Request, res: Response, next: NextFunction) => {
+const streamUploadedFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.query.chatflowId || !req.query.chatId || !req.query.fileName) {
             return res.status(500).send(`Invalid file path`)
@@ -12,20 +13,15 @@ const streamUploadedImage = async (req: Request, res: Response, next: NextFuncti
         const chatflowId = req.query.chatflowId as string
         const chatId = req.query.chatId as string
         const fileName = req.query.fileName as string
-        const filePath = path.join(getStoragePath(), chatflowId, chatId, fileName)
-        //raise error if file path is not absolute
-        if (!path.isAbsolute(filePath)) return res.status(500).send(`Invalid file path`)
-        //raise error if file path contains '..'
-        if (filePath.includes('..')) return res.status(500).send(`Invalid file path`)
-        //only return from the storage folder
-        if (!filePath.startsWith(getStoragePath())) return res.status(500).send(`Invalid file path`)
+        res.setHeader('Content-Disposition', contentDisposition(fileName))
+        const fileStream = await streamStorageFile(chatflowId, chatId, fileName)
 
-        if (fs.existsSync(filePath)) {
-            res.setHeader('Content-Disposition', contentDisposition(path.basename(filePath)))
-            const fileStream = fs.createReadStream(filePath)
+        if (!fileStream) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: streamStorageFile`)
+
+        if (fileStream instanceof fs.ReadStream && fileStream?.pipe) {
             fileStream.pipe(res)
         } else {
-            return res.status(404).send(`File ${fileName} not found`)
+            res.send(fileStream)
         }
     } catch (error) {
         next(error)
@@ -33,5 +29,5 @@ const streamUploadedImage = async (req: Request, res: Response, next: NextFuncti
 }
 
 export default {
-    streamUploadedImage
+    streamUploadedFile
 }

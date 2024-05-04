@@ -358,7 +358,7 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            errorFailed(`Failed to retrieve chatflow: ${error.response.data.message}`)
+            errorFailed(`Failed to retrieve chatflow: ${getSpecificChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -372,7 +372,7 @@ const Canvas = () => {
             saveChatflowSuccess()
             window.history.replaceState(null, null, `/canvas/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-            errorFailed(`Failed to save chatflow: ${error.response.data.message}`)
+            errorFailed(`Failed to save chatflow: ${createNewChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -384,7 +384,7 @@ const Canvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-            errorFailed(`Failed to save chatflow: ${error.response.data.message}`)
+            errorFailed(`Failed to save chatflow: ${updateChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

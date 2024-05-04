@@ -241,7 +241,13 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
     }
 
     const addRecordingToPreviews = (blob) => {
-        const mimeType = blob.type.substring(0, blob.type.indexOf(';'))
+        let mimeType = ''
+        const pos = blob.type.indexOf(';')
+        if (pos === -1) {
+            mimeType = blob.type
+        } else {
+            mimeType = blob.type.substring(0, pos)
+        }
         // read blob and add to previews
         const reader = new FileReader()
         reader.readAsDataURL(blob)
@@ -251,7 +257,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                 data: base64data,
                 preview: audioUploadSVG,
                 type: 'audio',
-                name: 'audio.wav',
+                name: `audio_${Date.now()}.wav`,
                 mime: mimeType
             }
             setPreviews((prevPreviews) => [...prevPreviews, upload])
@@ -345,6 +351,15 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             let allMessages = [...cloneDeep(prevMessages)]
             if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
             allMessages[allMessages.length - 1].usedTools = usedTools
+            return allMessages
+        })
+    }
+
+    const updateLastMessageFileAnnotations = (fileAnnotations) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            allMessages[allMessages.length - 1].fileAnnotations = fileAnnotations
             return allMessages
         })
     }
@@ -476,8 +491,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
     const downloadFile = async (fileAnnotation) => {
         try {
             const response = await axios.post(
-                `${baseURL}/api/v1/openai-assistants-file`,
-                { fileName: fileAnnotation.fileName },
+                `${baseURL}/api/v1/openai-assistants-file/download`,
+                { fileName: fileAnnotation.fileName, chatflowId: chatflowid, chatId: chatId },
                 { responseType: 'blob' }
             )
             const blob = new Blob([response.data], { type: response.headers['content-type'] })
@@ -604,6 +619,8 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             socket.on('sourceDocuments', updateLastMessageSourceDocuments)
 
             socket.on('usedTools', updateLastMessageUsedTools)
+
+            socket.on('fileAnnotations', updateLastMessageFileAnnotations)
 
             socket.on('token', updateLastMessage)
         }

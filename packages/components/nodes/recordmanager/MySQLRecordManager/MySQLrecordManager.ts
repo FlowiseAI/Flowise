@@ -192,8 +192,8 @@ class MySQLRecordManager implements RecordManagerInterface {
 
             await this.queryRunner.manager.query(`create table if not exists \`${this.tableName}\` (
                 \`uuid\` varchar(36) primary key default (UUID()),
-                \`key\` varchar(36) not null,
-                \`namespace\` varchar(36) not null,
+                \`key\` varchar(255) not null,
+                \`namespace\` varchar(255) not null,
                 \`updated_at\` DOUBLE precision not null,
                 \`group_id\` varchar(36),
                 unique key \`unique_key_namespace\` (\`key\`,
