@@ -1,10 +1,9 @@
 import { BaseCache } from '@langchain/core/caches'
-import { ChatGroq, ChatGroqInput } from '@langchain/groq'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+import { ChatTogetherAI } from '@langchain/community/chat_models/togetherai'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
-class Groq_ChatModels implements INode {
+class ChatTogetherAI_ChatModels implements INode {
     label: string
     name: string
     version: number
@@ -13,24 +12,23 @@ class Groq_ChatModels implements INode {
     category: string
     description: string
     baseClasses: string[]
-    credential: INodeParams
     inputs: INodeParams[]
+    credential: INodeParams
 
     constructor() {
-        this.label = 'GroqChat'
-        this.name = 'groqChat'
-        this.version = 3.0
-        this.type = 'GroqChat'
-        this.icon = 'groq.png'
+        this.label = 'ChatTogetherAI'
+        this.name = 'chatTogetherAI'
+        this.version = 1.0
+        this.type = 'ChatTogetherAI'
+        this.icon = 'togetherai.png'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around Groq API with LPU Inference Engine'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatGroq)]
+        this.description = 'Wrapper around TogetherAI large language models'
+        this.baseClasses = [this.type, ...getBaseClasses(ChatTogetherAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['groqApi'],
-            optional: true
+            credentialNames: ['togetherAIApi']
         }
         this.inputs = [
             {
@@ -42,9 +40,9 @@ class Groq_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'asyncOptions',
-                loadMethod: 'listModels',
-                placeholder: 'llama3-70b-8192'
+                type: 'string',
+                placeholder: 'mixtral-8x7b-32768',
+                description: 'Refer to <a target="_blank" href="https://docs.together.ai/docs/inference-models">models</a> page'
             },
             {
                 label: 'Temperature',
@@ -57,13 +55,6 @@ class Groq_ChatModels implements INode {
         ]
     }
 
-    //@ts-ignore
-    loadMethods = {
-        async listModels(): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.CHAT, 'groqChat')
-        }
-    }
-
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const modelName = nodeData.inputs?.modelName as string
         const cache = nodeData.inputs?.cache as BaseCache
@@ -71,19 +62,19 @@ class Groq_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const groqApiKey = getCredentialParam('groqApiKey', credentialData, nodeData)
+        const togetherAIApiKey = getCredentialParam('togetherAIApiKey', credentialData, nodeData)
 
-        const obj: ChatGroqInput = {
-            modelName,
+        const obj: any = {
+            model: modelName,
             temperature: parseFloat(temperature),
-            apiKey: groqApiKey,
+            togetherAIApiKey: togetherAIApiKey,
             streaming: streaming ?? true
         }
         if (cache) obj.cache = cache
 
-        const model = new ChatGroq(obj)
+        const model = new ChatTogetherAI(obj)
         return model
     }
 }
 
-module.exports = { nodeClass: Groq_ChatModels }
+module.exports = { nodeClass: ChatTogetherAI_ChatModels }
