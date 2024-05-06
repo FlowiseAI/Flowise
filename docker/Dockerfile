@@ -4,6 +4,7 @@ USER root
 
 RUN apk add --no-cache git
 RUN apk add --no-cache python3 py3-pip make g++
+RUN apk add --no-cache cmake
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev
 
