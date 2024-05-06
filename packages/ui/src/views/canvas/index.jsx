@@ -324,7 +324,8 @@ const Canvas = () => {
             const node = cloneNodes[i]
             const componentNode = componentNodes.find((cn) => cn.name === node.data.name)
             if (componentNode && componentNode.version > node.data.version) {
-                cloneNodes[i].data = updateOutdatedNodeData(componentNode, node.data)
+                const clonedComponentNode = cloneDeep(componentNode)
+                cloneNodes[i].data = updateOutdatedNodeData(clonedComponentNode, node.data)
                 toBeRemovedEdges.push(...updateOutdatedNodeEdge(cloneNodes[i].data, cloneEdges))
             }
         }
