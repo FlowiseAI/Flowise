@@ -2,3 +2,4 @@
 **/dist
 **/build
 **/public/web.js
+**/pnpm-lock.yaml
