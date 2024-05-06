@@ -366,6 +366,27 @@
             ]
         },
         {
+            "name": "groqChat",
+            "models": [
+                {
+                    "label": "gemma-7b-it",
+                    "name": "gemma-7b-it"
+                },
+                {
+                    "label": "llama3-70b-8192",
+                    "name": "llama3-70b-8192"
+                },
+                {
+                    "label": "llama3-8b-8192",
+                    "name": "llama3-8b-8192"
+                },
+                {
+                    "label": "mixtral-8x7b-32768",
+                    "name": "mixtral-8x7b-32768"
+                }
+            ]
+        },
+        {
             "name": "chatCohere",
             "models": [
                 {
