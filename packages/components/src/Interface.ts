@@ -104,6 +104,7 @@ export interface INodeProperties {
     description?: string
     filePath?: string
     badge?: string
+    deprecateMessage?: string
 }
 
 export interface INode extends INodeProperties {

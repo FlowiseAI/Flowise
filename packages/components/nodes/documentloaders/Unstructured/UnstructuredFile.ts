@@ -1,12 +1,14 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import {
-    UnstructuredLoader,
     UnstructuredLoaderOptions,
     UnstructuredLoaderStrategy,
     SkipInferTableTypes,
-    HiResModelName
+    HiResModelName,
+    UnstructuredLoader as LCUnstructuredLoader
 } from 'langchain/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getFileFromStorage } from '../../../src'
+import { UnstructuredLoader } from './Unstructured'
 
 class UnstructuredFile_DocumentLoaders implements INode {
     label: string
@@ -23,7 +25,7 @@ class UnstructuredFile_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Unstructured File Loader'
         this.name = 'unstructuredFileLoader'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Document'
         this.icon = 'unstructured-file.svg'
         this.category = 'Document Loaders'
@@ -41,7 +43,18 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 label: 'File Path',
                 name: 'filePath',
                 type: 'string',
-                placeholder: ''
+                placeholder: '',
+                optional: true,
+                warning:
+                    'Use the File Upload instead of File path. If file is uploaded, this path is ignored. Path will be deprecated in future releases.'
+            },
+            {
+                label: 'Files Upload',
+                name: 'fileObject',
+                type: 'file',
+                description: 'Files to be processed. Multiple files can be uploaded.',
+                fileType:
+                    '.txt, .text, .pdf, .docx, .doc, .jpg, .jpeg, .eml, .html, .htm, .md, .pptx, .ppt, .msg, .rtf, .xlsx, .xls, .odt, .epub'
             },
             {
                 label: 'Unstructured API URL',
@@ -416,6 +429,7 @@ class UnstructuredFile_DocumentLoaders implements INode {
         const combineUnderNChars = nodeData.inputs?.combineUnderNChars as number
         const newAfterNChars = nodeData.inputs?.newAfterNChars as number
         const maxCharacters = nodeData.inputs?.maxCharacters as number
+        const fileBase64 = nodeData.inputs?.fileObject as string
 
         const obj: UnstructuredLoaderOptions = {
             apiUrl: unstructuredAPIUrl,
@@ -438,8 +452,48 @@ class UnstructuredFile_DocumentLoaders implements INode {
         const unstructuredAPIKey = getCredentialParam('unstructuredAPIKey', credentialData, nodeData)
         if (unstructuredAPIKey) obj.apiKey = unstructuredAPIKey
 
-        const loader = new UnstructuredLoader(filePath, obj)
-        let docs = await loader.load()
+        let docs: any[] = []
+        let files: string[] = []
+
+        if (fileBase64) {
+            const loader = new UnstructuredLoader(obj)
+            //FILE-STORAGE::["CONTRIBUTING.md","LICENSE.md","README.md"]
+            if (fileBase64.startsWith('FILE-STORAGE::')) {
+                const fileName = fileBase64.replace('FILE-STORAGE::', '')
+                if (fileName.startsWith('[') && fileName.endsWith(']')) {
+                    files = JSON.parse(fileName)
+                } else {
+                    files = [fileName]
+                }
+                const chatflowid = options.chatflowid
+
+                for (const file of files) {
+                    const fileData = await getFileFromStorage(file, chatflowid)
+                    const loaderDocs = await loader.loadAndSplitBuffer(fileData, file)
+                    docs.push(...loaderDocs)
+                }
+            } else {
+                if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
+                    files = JSON.parse(fileBase64)
+                } else {
+                    files = [fileBase64]
+                }
+
+                for (const file of files) {
+                    const splitDataURI = file.split(',')
+                    const filename = splitDataURI.pop()?.split(':')[1] ?? ''
+                    const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                    const loaderDocs = await loader.loadAndSplitBuffer(bf, filename)
+                    docs.push(...loaderDocs)
+                }
+            }
+        } else if (filePath) {
+            const loader = new LCUnstructuredLoader(filePath, obj)
+            const loaderDocs = await loader.load()
+            docs.push(...loaderDocs)
+        } else {
+            throw new Error('File path or File upload is required')
+        }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)

@@ -185,6 +185,72 @@ export const initNode = (nodeData, newNodeId) => {
     return nodeData
 }
 
+export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNodeData) => {
+    const initNewComponentNodeData = initNode(newComponentNodeData, existingComponentNodeData.id)
+
+    // Update credentials with existing credentials
+    if (existingComponentNodeData.credential) {
+        initNewComponentNodeData.credential = existingComponentNodeData.credential
+    }
+
+    // Update inputs with existing inputs
+    if (existingComponentNodeData.inputs) {
+        for (const key in existingComponentNodeData.inputs) {
+            if (key in initNewComponentNodeData.inputs) {
+                initNewComponentNodeData.inputs[key] = existingComponentNodeData.inputs[key]
+            }
+        }
+    }
+
+    // Update outputs with existing outputs
+    if (existingComponentNodeData.outputs) {
+        for (const key in existingComponentNodeData.outputs) {
+            if (key in initNewComponentNodeData.outputs) {
+                initNewComponentNodeData.outputs[key] = existingComponentNodeData.outputs[key]
+            }
+        }
+    }
+
+    return initNewComponentNodeData
+}
+
+export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
+    const removedEdges = []
+    for (const edge of edges) {
+        const targetNodeId = edge.targetHandle.split('-')[0]
+        const sourceNodeId = edge.sourceHandle.split('-')[0]
+
+        if (targetNodeId === newComponentNodeData.id) {
+            // Check if targetHandle is in inputParams or inputAnchors
+            const inputParam = newComponentNodeData.inputParams.find((param) => param.id === edge.targetHandle)
+            const inputAnchor = newComponentNodeData.inputAnchors.find((param) => param.id === edge.targetHandle)
+
+            if (!inputParam && !inputAnchor) {
+                removedEdges.push(edge)
+            }
+        }
+
+        if (sourceNodeId === newComponentNodeData.id) {
+            if (newComponentNodeData.outputAnchors?.length) {
+                for (const outputAnchor of newComponentNodeData.outputAnchors) {
+                    const outputAnchorType = outputAnchor.type
+                    if (outputAnchorType === 'options') {
+                        if (!outputAnchor.options.find((outputOption) => outputOption.id === edge.sourceHandle)) {
+                            removedEdges.push(edge)
+                        }
+                    } else {
+                        if (outputAnchor.id !== edge.sourceHandle) {
+                            removedEdges.push(edge)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return removedEdges
+}
+
 export const isValidConnection = (connection, reactFlowInstance) => {
     const sourceHandle = connection.sourceHandle
     const targetHandle = connection.targetHandle
