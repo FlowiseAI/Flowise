@@ -56,7 +56,7 @@ class Groq_ChatModels implements INode {
             }
         ]
     }
-    
+
     //@ts-ignore
     loadMethods = {
         async listModels(): Promise<INodeOptionsValue[]> {
