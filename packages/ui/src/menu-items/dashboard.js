@@ -1,8 +1,32 @@
 // assets
-import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable, IconFiles, IconSettings } from '@tabler/icons'
+import {
+    IconHierarchy,
+    IconBuildingStore,
+    IconKey,
+    IconTool,
+    IconLock,
+    IconRobot,
+    IconVariable,
+    IconFiles,
+    IconMenu2,
+    IconHome,
+    IconSettings
+} from '@tabler/icons'
 
 // constant
-const icons = { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable, IconFiles, IconSettings }
+const icons = {
+    IconHierarchy,
+    IconBuildingStore,
+    IconKey,
+    IconTool,
+    IconLock,
+    IconRobot,
+    IconVariable,
+    IconFiles,
+    IconMenu2,
+    IconHome,
+    IconSettings
+}
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
