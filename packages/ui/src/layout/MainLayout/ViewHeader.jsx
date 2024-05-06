@@ -1,13 +1,26 @@
 import PropTypes from 'prop-types'
 
 // material-ui
-import { Box, OutlinedInput, Toolbar, Typography } from '@mui/material'
+import { IconButton, Box, OutlinedInput, Toolbar, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { StyledFab } from '@/ui-component/button/StyledFab'
 
 // icons
-import { IconSearch } from '@tabler/icons'
+import { IconSearch, IconArrowLeft, IconEdit } from '@tabler/icons'
 
-const ViewHeader = ({ children, filters = null, onSearchChange, search, searchPlaceholder = 'Search', title }) => {
+const ViewHeader = ({
+    children,
+    filters = null,
+    onSearchChange,
+    search,
+    searchPlaceholder = 'Search',
+    title,
+    description,
+    isBackButton,
+    onBack,
+    isEditButton,
+    onEdit
+}) => {
     const theme = useTheme()
 
     return (
@@ -21,15 +34,54 @@ const ViewHeader = ({ children, filters = null, onSearchChange, search, searchPl
                     width: '100%'
                 }}
             >
-                <Typography
-                    sx={{
-                        fontSize: '2rem',
-                        fontWeight: 600
-                    }}
-                    variant='h1'
-                >
-                    {title}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+                    {isBackButton && (
+                        <StyledFab sx={{ mr: 3 }} size='small' color='secondary' aria-label='back' title='Back' onClick={onBack}>
+                            <IconArrowLeft />
+                        </StyledFab>
+                    )}
+                    <Box sx={{ display: 'flex', alignItems: 'start', flexDirection: 'column' }}>
+                        <Typography
+                            sx={{
+                                fontSize: '2rem',
+                                fontWeight: 600,
+                                display: '-webkit-box',
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: 'vertical',
+                                textOverflow: 'ellipsis',
+                                overflow: 'hidden',
+                                flex: 1,
+                                maxWidth: 'calc(100vh - 100px)'
+                            }}
+                            variant='h1'
+                        >
+                            {title}
+                        </Typography>
+                        {description && (
+                            <Typography
+                                sx={{
+                                    fontSize: '1rem',
+                                    fontWeight: 500,
+                                    mt: 2,
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 5,
+                                    WebkitBoxOrient: 'vertical',
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden',
+                                    flex: 1,
+                                    maxWidth: 'calc(100vh - 100px)'
+                                }}
+                            >
+                                {description}
+                            </Typography>
+                        )}
+                    </Box>
+                    {isEditButton && (
+                        <IconButton sx={{ ml: 3 }} color='secondary' title='Edit' onClick={onEdit}>
+                            <IconEdit />
+                        </IconButton>
+                    )}
+                </Box>
                 <Box sx={{ height: 40, display: 'flex', alignItems: 'center', gap: 1 }}>
                     {search && (
                         <OutlinedInput
@@ -77,7 +129,12 @@ ViewHeader.propTypes = {
     onSearchChange: PropTypes.func,
     search: PropTypes.bool,
     searchPlaceholder: PropTypes.string,
-    title: PropTypes.string
+    title: PropTypes.string,
+    description: PropTypes.string,
+    isBackButton: PropTypes.bool,
+    onBack: PropTypes.func,
+    isEditButton: PropTypes.bool,
+    onEdit: PropTypes.func
 }
 
 export default ViewHeader

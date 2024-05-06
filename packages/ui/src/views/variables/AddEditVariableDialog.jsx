@@ -187,25 +187,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <div
-                        style={{
-                            width: 50,
-                            height: 50,
-                            marginRight: 10,
-                            borderRadius: '50%',
-                            backgroundColor: 'white'
-                        }}
-                    >
-                        <IconVariable
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                padding: 7,
-                                borderRadius: '50%',
-                                objectFit: 'contain'
-                            }}
-                        />
-                    </div>
+                    <IconVariable style={{ marginRight: '10px' }} />
                     {dialogProps.type === 'ADD' ? 'Add Variable' : 'Edit Variable'}
                 </div>
             </DialogTitle>

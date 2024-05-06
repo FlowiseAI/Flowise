@@ -176,6 +176,11 @@ export type MessageContentImageUrl = {
           }
 }
 
+export interface IDocument<Metadata extends Record<string, any> = Record<string, any>> {
+    pageContent: string
+    metadata: Metadata
+}
+
 /**
  * Classes
  */

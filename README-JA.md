@@ -16,7 +16,7 @@
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
-## ⚡クイックスタート
+## ⚡ クイックスタート
 
 [NodeJS](https://nodejs.org/en/download) >= 18.15.0 をダウンロードしてインストール
 
@@ -67,7 +67,7 @@
 
 ## 👨‍💻 開発者向け
 
-Flowise には、3つの異なるモジュールが1つの mono リポジトリにあります。
+Flowise には、3 つの異なるモジュールが 1 つの mono リポジトリにあります。
 
 -   `server`: API ロジックを提供する Node バックエンド
 -   `ui`: React フロントエンド
