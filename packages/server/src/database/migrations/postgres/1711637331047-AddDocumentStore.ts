@@ -27,10 +27,10 @@ export class AddDocumentStore1711637331047 implements MigrationInterface {
             );`
         )
         await queryRunner.query(
-            `CREATE INDEX IF NOT EXISTS "IDX_e76bae1780b77e56aab1h2asd4" ON document_store_file_chunk USING btree (docId);`
+            `CREATE INDEX IF NOT EXISTS "IDX_e76bae1780b77e56aab1h2asd4" ON document_store_file_chunk USING btree ("docId");`
         )
         await queryRunner.query(
-            `CREATE INDEX IF NOT EXISTS "IDX_e213b811b01405a42309a6a410" ON document_store_file_chunk USING btree (storeId);`
+            `CREATE INDEX IF NOT EXISTS "IDX_e213b811b01405a42309a6a410" ON document_store_file_chunk USING btree ("storeId");`
         )
     }
 
