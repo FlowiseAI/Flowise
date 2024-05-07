@@ -1,5 +1,6 @@
 {
-    "description": "Scrape web pages for QnA with long term memory Motorhead and return source documents",
+    "description": "Скрейпинг веб-страниц для вопросов и ответов с долговременной памятью Motorhead и возвращение исходных документов",
+    "title": "QnA веб-страниц",
     "categories": "HtmlToMarkdown,Cheerio Web Scraper,ChatOpenAI,Redis,Pinecone,Langchain",
     "framework": "Langchain",
     "badge": "POPULAR",

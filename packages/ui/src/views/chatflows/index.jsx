@@ -133,7 +133,12 @@ const Chatflows = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name or Category' title='Chatflows'>
+                    <ViewHeader
+                        onSearchChange={onSearchChange}
+                        search={true}
+                        searchPlaceholder='Найти по имени или категории'
+                        title='Проекты'
+                    >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={view}

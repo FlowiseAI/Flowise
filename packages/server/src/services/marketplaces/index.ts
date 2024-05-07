@@ -22,7 +22,8 @@ const getAllTemplates = async () => {
                 framework: fileDataObj?.framework,
                 categories: fileDataObj?.categories,
                 type: 'Chatflow',
-                description: fileDataObj?.description || ''
+                description: fileDataObj?.description || '',
+                title: fileDataObj.title
             }
             templates.push(template)
         })

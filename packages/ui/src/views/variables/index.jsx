@@ -200,7 +200,7 @@ const Variables = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Variables' title='Variables'>
+                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Найти переменные' title='Переменные'>
                             <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
                               Как использовать
                             </Button>
@@ -340,10 +340,10 @@ const Variables = () => {
                                                             />
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            {moment(variable.updatedDate).format('MMMM Do, YYYY')}
+                                                            {moment(variable.updatedDate).format('DD.MM.YYYY')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            {moment(variable.createdDate).format('MMMM Do, YYYY')}
+                                                            {moment(variable.createdDate).format('DD.MM.YYYY')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
                                                             <IconButton title='Редактировать' color='primary' onClick={() => edit(variable)}>

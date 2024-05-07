@@ -231,8 +231,8 @@ const Credentials = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Credentials'
-                            title='Credentials'
+                            searchPlaceholder='Найти учетные данные'
+                            title='Учетные данные'
                         >
                             <StyledButton
                                 variant='contained'
@@ -269,9 +269,9 @@ const Credentials = () => {
                                         }}
                                     >
                                         <TableRow>
-                                            <StyledTableCell>Name</StyledTableCell>
-                                            <StyledTableCell>Last Updated</StyledTableCell>
-                                            <StyledTableCell>Created</StyledTableCell>
+                                            <StyledTableCell>Наименование</StyledTableCell>
+                                            <StyledTableCell>Последнее обновление</StyledTableCell>
+                                            <StyledTableCell>Создано</StyledTableCell>
                                             <StyledTableCell> </StyledTableCell>
                                             <StyledTableCell> </StyledTableCell>
                                         </TableRow>
@@ -352,10 +352,10 @@ const Credentials = () => {
                                                             </Box>
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            {moment(credential.updatedDate).format('MMMM Do, YYYY')}
+                                                            {moment(credential.updatedDate).format('DD.MM.YYYY')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            {moment(credential.createdDate).format('MMMM Do, YYYY')}
+                                                            {moment(credential.createdDate).format('DD.MM.YYYY')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
                                                             <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>

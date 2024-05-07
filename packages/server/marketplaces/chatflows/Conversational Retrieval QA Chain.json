@@ -1,5 +1,6 @@
 {
-    "description": "Text file QnA using conversational retrieval QA chain",
+    "description": "Вопросы и ответы в текстовых файлах с использованием цепочки вопросов и ответов с консультативным поиском",
+    "title": "Цепочка вопросов и ответов с консультативным поиском",
     "categories": "TextFile,ChatOpenAI,Conversational Retrieval QA Chain,Pinecone,Langchain",
     "badge": "POPULAR",
     "framework": "Langchain",

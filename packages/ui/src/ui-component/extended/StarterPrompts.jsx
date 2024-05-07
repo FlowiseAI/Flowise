@@ -199,7 +199,7 @@ const StarterPrompts = ({ dialogProps }) => {
                 </List>
             </Box>
             <StyledButton variant='contained' onClick={onSave}>
-                Сохранять
+                Сохранить
             </StyledButton>
         </>
     )

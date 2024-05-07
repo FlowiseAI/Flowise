@@ -1,5 +1,6 @@
 {
-    "description": "Return response as a list (array) instead of a string/text",
+    "description": "Возвращает ответ в виде списка (массива), а не текста/строки",
+    "title": "Парсер списочного вывода",
     "badge": "NEW",
     "categories": "CSV Output Parser,ChatOpenAI,LLM Chain,Langchain",
     "framework": "Langchain",

@@ -1,5 +1,6 @@
 {
-    "description": "Simple chat engine to handle back and forth conversations using LlamaIndex",
+    "description": "Простой движок чата для ведения диалогов туда-сюда с использованием LlamaIndex",
+    "title": "Простой движок чата",
     "categories": "BufferMemory,AzureChatOpenAI,LlamaIndex",
     "framework": "LlamaIndex",
     "badge": "NEW",

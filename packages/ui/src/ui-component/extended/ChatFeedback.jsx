@@ -92,10 +92,10 @@ const ChatFeedback = ({ dialogProps }) => {
     return (
         <>
             <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <SwitchInput label='Enable chat feedback' onChange={handleChange} value={chatFeedbackStatus} />
+                <SwitchInput label='Включить функционал обратной связи' onChange={handleChange} value={chatFeedbackStatus} />
             </Box>
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
-                Сохранять
+                Сохранить
             </StyledButton>
         </>
     )

@@ -1,5 +1,6 @@
 {
-    "description": "Use OpenAI Tool Agent and Chain to automatically decide which API to call, generating url and body request from conversation",
+    "description": "Использует инструменты и цепочки OpenAI для автоматического выбора API, генерации URL и тела запроса из разговора",
+    "title": "Агент API OpenAI",
     "categories": "Buffer Memory,ChainTool,API Chain,ChatOpenAI,OpenAI Tool Agent,Langchain",
     "framework": "Langchain",
     "nodes": [

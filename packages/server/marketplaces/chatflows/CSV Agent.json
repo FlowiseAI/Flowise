@@ -1,5 +1,6 @@
 {
-    "description": "Analyse and summarize CSV data",
+    "description": "Анализ и суммирование данных в формате CSV",
+    "title": "Агент CSV",
     "categories": "CSV Agent,ChatOpenAI,Langchain",
     "framework": "Langchain",
     "nodes": [

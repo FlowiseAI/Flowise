@@ -1,5 +1,6 @@
 {
-    "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+    "description": "Обнаружение текста, который может генерировать вредоносный вывод, и предотвращение его отправки в языковую модель",
+    "title": "Модерация ввода",
     "badge": "NEW",
     "categories": "Moderation,ChatOpenAI,LLM Chain,Langchain",
     "framework": "Langchain",

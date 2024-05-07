@@ -69,7 +69,7 @@ const speechToTextProviders = {
         url: 'https://www.assemblyai.com/',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'Подключить учетные данные',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['assemblyAIApi']
@@ -185,12 +185,12 @@ const SpeechToText = ({ dialogProps }) => {
         <>
             <Box fullWidth sx={{ mb: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography variant='h4' sx={{ mb: 1 }}>
-                    Providers
+                    Выберите сервис для распознования речи
                 </Typography>
                 <FormControl fullWidth>
                     <Select size='small' value={selectedProvider} onChange={handleProviderChange}>
-                        <MenuItem value='none'>None</MenuItem>
-                        <MenuItem value='openAIWhisper'>OpenAI Whisper</MenuItem>
+                        <MenuItem value='none'>Отсутствует</MenuItem>
+                        <MenuItem value='openAIWhisper'>StartAI Whisper</MenuItem>
                         <MenuItem value='assemblyAiTranscribe'>Assembly AI</MenuItem>
                     </Select>
                 </FormControl>
@@ -296,7 +296,7 @@ const SpeechToText = ({ dialogProps }) => {
                 variant='contained'
                 onClick={onSave}
             >
-                Save
+                Сохранить
             </StyledButton>
         </>
     )

@@ -1,5 +1,6 @@
 {
-    "description": "Split flows based on if else condition",
+    "description": "Разделение процессов на основе условия if else",
+    "title": "IfElse",
     "categories": "IfElse Function,ChatOpenAI,OpenAI,LLM Chain,Langchain",
     "framework": "Langchain",
     "badge": "new",

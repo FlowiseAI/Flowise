@@ -1,5 +1,6 @@
 {
-    "description": "Simple LLM Chain using HuggingFace Inference API on falcon-7b-instruct model",
+    "description": "Простая цепочка LLM, использующая API вывода HuggingFace на модели falcon-7b-instruct",
+    "title": "Цепочка LLM HuggingFace",
     "categories": "HuggingFace,LLM Chain,Langchain",
     "framework": "Langchain",
     "nodes": [

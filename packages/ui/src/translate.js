@@ -189,6 +189,9 @@ export const translationObject = {
     'Connect Credential': 'Подключить учетные данные',
     'Allowed Tools': 'Доступные инструменты',
     'Vector Store Retriever': 'Векторный магазин Ретривер',
+    'Voyage AI API to generate embeddings for a given text': 'API Voyage AI для создания вложений для заданного текста',
+    'Voyage AI Rerank indexes the documents from most to least semantically relevant to the query.':
+        'Voyage AI Rerank индексирует документы от наиболее до наименее семантически релевантных запросу.',
     'Chat Model': 'Чат модель',
     'AutoGPT Name': 'Имя AutoGPT',
     'AutoGPT Role': 'Роль AutoGPT',
@@ -196,6 +199,12 @@ export const translationObject = {
     'Select Assistant': 'Выбор Ассистента',
     'Base Path': 'Базовый путь',
     'Example Prompt': 'Пример запроса',
+    'Use MySQL to keep track of document writes into the vector databases':
+        'Используйте MySQL для отслеживания записей документов в векторные базы данных.',
+    'Use Postgres to keep track of document writes into the vector databases':
+        'Используйте Postgres для отслеживания записей документов в векторные базы данных.',
+    'Use SQLite to keep track of document writes into the vector databases':
+        'Используйте SQLite для отслеживания записей документов в векторные базы данных.',
     Cache: 'Кэш',
     Memory: 'Память',
     'Base Chain': 'Базовая цепочка',
@@ -293,6 +302,10 @@ export const translationObject = {
     'Штраф за повторение': 'Штраф за повторение',
     'Error Message': 'Сообщение ошибки',
     'Input Moderation': 'Модерация ввода',
+    'Tools': 'Инструменты',
+    'Tool Calling Chat Model': 'Инструмент вызвова модели чата',
+    'Only compatible with models that are capable of function calling. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI':
+        'Совместимо только с моделями, поддерживающими вызов функций. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI',
     'Get Relative Links Limit': 'Получить лимит относительных ссылок',
     'Selector (CSS)': 'Селектор (CSS)',
     'Session Id': 'ID сессии',
@@ -1408,6 +1421,8 @@ export const translationObject = {
     'MistralAI Chat Model': 'Модель чата MistralAI',
     'Agent that uses OpenAI Function Calling to pick the tools and args to call':
         'Агент, который использует вызов функций OpenAI для выбора инструментов и аргументов для вызова.',
+    'Agent that uses Function Calling to pick the tools and args to call':
+        'Агент, который использует вызов функций для выбора инструментов и аргументов для вызова',
     'Agent that is designed for LLMs that are good for reasoning/writing XML (e.g: Anthropic Claude)':
         'Агент, предназначенный для LLM, которые хороши для рассуждений/написания XML (например, Anthropic Claude)',
     'Prompt must include input variables: {tools}, {chat_history}, {input} and {agent_scratchpad}':

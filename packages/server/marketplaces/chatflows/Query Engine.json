@@ -1,5 +1,6 @@
 {
-    "description": "Stateless query engine designed to answer question over your data using LlamaIndex",
+    "description": "Безсостояний движок запросов, разработанный для ответа на вопросы по вашим данным с использованием LlamaIndex",
+    "title": "Движок запросов",
     "categories": "ChatAnthropic,Compact and Refine,Pinecone,LlamaIndex",
     "badge": "NEW",
     "framework": "LlamaIndex",

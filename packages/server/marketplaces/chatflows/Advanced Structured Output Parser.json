@@ -1,5 +1,6 @@
 {
-    "description": "Return response as a JSON structure as specified by a Zod schema",
+    "description": "Возвращает ответ в виде структуры JSON, указанной в схеме Zod",
+    "title": "Расширенный парсер структурированных данных",
     "badge": "NEW",
     "nodes": [
         {

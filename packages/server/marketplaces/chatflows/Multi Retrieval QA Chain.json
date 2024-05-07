@@ -1,5 +1,6 @@
 {
-    "description": "A chain that automatically picks an appropriate retriever from multiple different vector databases",
+    "description": "Цепочка, которая автоматически выбирает подходящий инструмент для извлечения данных из нескольких баз векторных данных",
+    "title": "Мульти-цепочка поиска вопросов и ответов",
     "categories": "ChatOpenAI,Multi Retrieval QA Chain,Pinecone,Chroma,Supabase,Langchain",
     "framework": "Langchain",
     "nodes": [

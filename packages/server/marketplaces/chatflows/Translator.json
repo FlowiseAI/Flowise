@@ -1,5 +1,6 @@
 {
-    "description": "Language translation using LLM Chain with a Chat Prompt Template and Chat Model",
+    "description": "Перевод языка с использованием LLM цепочки с шаблоном чат-подсказки и моделью чата",
+    "title": "Переводчик",
     "categories": "Chat Prompt Template,ChatOpenAI,LLM Chain,Langchain",
     "framework": "Langchain",
     "nodes": [

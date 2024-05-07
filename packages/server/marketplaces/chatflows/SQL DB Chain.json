@@ -1,5 +1,6 @@
 {
-    "description": "Answer questions over a SQL database",
+    "description": "Ответы на вопросы по базе данных SQL",
+    "title": "Цепочка SQL DB",
     "categories": "ChatOpenAI,Sql Database Chain,Langchain",
     "framework": "Langchain",
     "nodes": [

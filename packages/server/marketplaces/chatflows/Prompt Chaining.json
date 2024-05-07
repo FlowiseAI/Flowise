@@ -1,5 +1,6 @@
 {
-    "description": "Use output from a chain as prompt for another chain",
+    "description": "Использование вывода одной цепочки в качестве подсказки для другой цепочки",
+    "title": "Цепочка подсказок",
     "categories": "Custom Tool,OpenAI,LLM Chain,Langchain",
     "framework": "Langchain",
     "nodes": [

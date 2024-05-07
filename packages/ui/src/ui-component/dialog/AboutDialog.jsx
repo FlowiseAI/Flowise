@@ -2,7 +2,6 @@ import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Dialog, DialogContent, DialogTitle, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@mui/material'
-import moment from 'moment'
 import axios from 'axios'
 import { baseURL } from '@/store/constant'
 
@@ -60,7 +59,6 @@ const AboutDialog = ({ show, onCancel }) => {
                                 <TableRow>
                                     <TableCell>Текущая версия</TableCell>
                                     <TableCell>Последняя версия</TableCell>
-                                    <TableCell>Опубликовано</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -69,11 +67,10 @@ const AboutDialog = ({ show, onCancel }) => {
                                         {data.currentVersion}
                                     </TableCell>
                                     <TableCell component='th' scope='row'>
-                                        <a target='_blank' rel='noreferrer' href={data.html_url}>
-                                            {data.name}
-                                        </a>
+                                        <span target='_blank' rel='noreferrer'>
+                                            {data.name?.replace('flowise', 'startai')}
+                                        </span>
                                     </TableCell>
-                                    <TableCell>{moment(data.published_at).fromNow()}</TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>

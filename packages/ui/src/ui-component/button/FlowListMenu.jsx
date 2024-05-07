@@ -111,7 +111,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
     const handleFlowStarterPrompts = () => {
         setAnchorEl(null)
         setConversationStartersDialogProps({
-            title: 'Starter Prompts - ' + chatflow.name,
+            title: 'Подсказки - ' + chatflow.name,
             chatflow: chatflow
         })
         setConversationStartersDialogOpen(true)
@@ -120,7 +120,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
     const handleFlowChatFeedback = () => {
         setAnchorEl(null)
         setChatFeedbackDialogProps({
-            title: 'Chat Feedback - ' + chatflow.name,
+            title: 'Обратная связь - ' + chatflow.name,
             chatflow: chatflow
         })
         setChatFeedbackDialogOpen(true)
@@ -129,7 +129,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
     const handleAllowedDomains = () => {
         setAnchorEl(null)
         setAllowedDomainsDialogProps({
-            title: 'Allowed Domains - ' + chatflow.name,
+            title: 'Параметры доступа - ' + chatflow.name,
             chatflow: chatflow
         })
         setAllowedDomainsDialogOpen(true)
@@ -138,7 +138,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
     const handleSpeechToText = () => {
         setAnchorEl(null)
         setSpeechToTextDialogProps({
-            title: 'Speech To Text - ' + chatflow.name,
+            title: 'Голосовой доступ - ' + chatflow.name,
             chatflow: chatflow
         })
         setSpeechToTextDialogOpen(true)
@@ -212,8 +212,8 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
     const handleDelete = async () => {
         setAnchorEl(null)
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete chatflow ${chatflow.name}?`,
+            title: `Удалить`,
+            description: `Удалить проект ${chatflow.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }
@@ -281,7 +281,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
                 onClick={handleClick}
                 endIcon={<KeyboardArrowDownIcon />}
             >
-                Options
+                Настройки
             </Button>
             <StyledMenu
                 id='demo-customized-menu'
@@ -294,47 +294,47 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
             >
                 <MenuItem onClick={handleFlowRename} disableRipple>
                     <EditIcon />
-                    Rename
+                    Переименовать
                 </MenuItem>
                 <MenuItem onClick={handleDuplicate} disableRipple>
                     <FileCopyIcon />
-                    Duplicate
+                    Скопировать
                 </MenuItem>
                 <MenuItem onClick={handleExport} disableRipple>
                     <FileDownloadIcon />
-                    Export
+                    Скачать
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
                 <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
                     <PictureInPictureAltIcon />
-                    Starter Prompts
+                    Подсказки
                 </MenuItem>
                 <MenuItem onClick={handleFlowChatFeedback} disableRipple>
                     <ThumbsUpDownOutlinedIcon />
-                    Chat Feedback
+                    Обратная связь
                 </MenuItem>
                 <MenuItem onClick={handleAllowedDomains} disableRipple>
                     <VpnLockOutlinedIcon />
-                    Allowed Domains
+                    Параметры доступа
                 </MenuItem>
                 <MenuItem onClick={handleSpeechToText} disableRipple>
                     <MicNoneOutlinedIcon />
-                    Speech To Text
+                    Голосовой доступ
                 </MenuItem>
                 <MenuItem onClick={handleFlowCategory} disableRipple>
                     <FileCategoryIcon />
-                    Update Category
+                    Обновить категорию
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
                 <MenuItem onClick={handleDelete} disableRipple>
                     <FileDeleteIcon />
-                    Delete
+                    Удалить
                 </MenuItem>
             </StyledMenu>
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
-                    title: `Rename Chatflow`,
+                    title: `Переименовать проект`,
                     confirmButtonName: 'Rename',
                     cancelButtonName: 'Cancel'
                 }}

@@ -203,7 +203,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                 </Box>
                                             )}
                                         </StyledTableCell>
-                                        <StyledTableCell key='3'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                        <StyledTableCell key='3'>{moment(row.updatedDate).format('DD.MM.YYYY')}</StyledTableCell>
                                         <StyledTableCell key='4'>
                                             <Stack
                                                 direction={{ xs: 'column', sm: 'row' }}

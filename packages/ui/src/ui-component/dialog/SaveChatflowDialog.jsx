@@ -34,7 +34,7 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     id='chatflow-name'
                     type='text'
                     fullWidth
-                    placeholder='Мой новый проект'
+                    placeholder='Наименование проекта'
                     value={chatflowName}
                     onChange={(e) => setChatflowName(e.target.value)}
                 />

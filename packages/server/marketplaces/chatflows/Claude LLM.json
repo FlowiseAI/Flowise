@@ -1,5 +1,6 @@
 {
-    "description": "Use Anthropic Claude with 200k context window to ingest whole document for QnA",
+    "description": "Использование Claude от Anthropic с окном контекста 200k для анализа целых документов для вопросов и ответов",
+    "title": "Claude LLM",
     "categories": "Buffer Memory,Prompt Template,Conversation Chain,ChatAnthropic,Langchain",
     "framework": "Langchain",
     "nodes": [

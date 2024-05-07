@@ -58,7 +58,6 @@ const dashboard = {
         },
         {
             id: 'credentials',
-
             title: 'Учетные данные',
             type: 'item',
             url: '/credentials',

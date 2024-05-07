@@ -1,5 +1,6 @@
 {
-    "description": "Engage with data sources such as YouTube Transcripts, Google, and more through intelligent Q&A interactions",
+    "description": "Взаимодействие с источниками данных, такими как транскрипты YouTube, Google и др. через интеллектуальные вопросы и ответы",
+    "title": "Общение с подкастом",
     "categories": "Memory Vector Store,SearchAPI,ChatOpenAI,Conversational Retrieval QA Chain,Langchain",
     "framework": "Langchain",
     "nodes": [

@@ -1,5 +1,6 @@
 {
-    "description": "Use the agent to choose between multiple different vector databases, with the ability to use other tools",
+    "description": "Использование агента для выбора между несколькими различными базами векторных данных с возможностью использования других инструментов",
+    "title": "Множественные базы векторных данных",
     "categories": "Buffer Memory,ChatOpenAI,Chain Tool,Retrieval QA Chain,Redis,Faiss,Conversational Agent,Langchain",
     "framework": "Langchain",
     "nodes": [

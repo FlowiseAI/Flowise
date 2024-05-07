@@ -98,7 +98,7 @@ const ItemCard = ({ data, images, onClick }) => {
                                     overflow: 'hidden'
                                 }}
                             >
-                                {data.templateName || data.name}
+                                {data.title || data.templateName || data.name}
                             </Typography>
                         </div>
                         {data.description && (

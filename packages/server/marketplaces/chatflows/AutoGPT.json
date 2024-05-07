@@ -1,5 +1,6 @@
 {
-    "description": "Use AutoGPT - Autonomous agent with chain of thoughts for self-guided task completion",
+    "description": "Использование AutoGPT - автономный агент с цепочкой мыслей для самостоятельного выполнения задач",
+    "title": "AutoGPT",
     "categories": "AutoGPT,SERP Tool,File Read/Write,ChatOpenAI,Pinecone,Langchain",
     "framework": "Langchain",
     "nodes": [

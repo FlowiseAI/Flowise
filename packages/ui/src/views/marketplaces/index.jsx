@@ -348,7 +348,7 @@ const Marketplace = () => {
                             }
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Name/Description/Node'
+                            searchPlaceholder='Найти по имени или описанию'
                             title='Marketplace'
                         >
                             <ToggleButtonGroup

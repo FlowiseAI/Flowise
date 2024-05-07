@@ -145,7 +145,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     <ListItemIcon>
                                                         <IconInfoCircle stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>О программе StartAI</Typography>} />
                                                 </ListItemButton>
                                                 {localStorage.getItem('username') && localStorage.getItem('password') && (
                                                     <ListItemButton

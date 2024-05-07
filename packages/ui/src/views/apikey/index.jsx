@@ -116,7 +116,7 @@ function APIKeyRow(props) {
                         </IconButton>
                     )}
                 </StyledTableCell>
-                <StyledTableCell>{moment(props.apiKey.createdAt).format('MMMM Do, YYYY')}</StyledTableCell>
+                <StyledTableCell>{moment(props.apiKey.createdAt).format('DD.MM.YYYY')}</StyledTableCell>
                 <StyledTableCell>
                     <IconButton title='Изменить' color='primary' onClick={props.onEditClick}>
                         <IconEdit />
@@ -145,7 +145,7 @@ function APIKeyRow(props) {
                                         {props.apiKey.chatFlows.map((flow, index) => (
                                             <TableRow key={index}>
                                                 <StyledTableCell>{flow.flowName}</StyledTableCell>
-                                                <StyledTableCell>{moment(flow.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                                <StyledTableCell>{moment(flow.updatedDate).format('DD.MM.YYYY')}</StyledTableCell>
                                                 <StyledTableCell>
                                                     &nbsp;
                                                     {flow.category &&
@@ -339,10 +339,10 @@ const APIKey = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Поиск по имени ключа' title='API Keys'>
+                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Поиск по имени ключа' title='API-ключи'>
                             <StyledButton
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ borderRadius: 2, height: '100%', textTransform: 'unset' }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                                 id='btn_createApiKey'
@@ -376,10 +376,10 @@ const APIKey = () => {
                                         }}
                                     >
                                         <TableRow>
-                                            <StyledTableCell>Key Name</StyledTableCell>
-                                            <StyledTableCell>API Key</StyledTableCell>
-                                            <StyledTableCell>Usage</StyledTableCell>
-                                            <StyledTableCell>Created</StyledTableCell>
+                                            <StyledTableCell>Название ключа</StyledTableCell>
+                                            <StyledTableCell>API-ключ</StyledTableCell>
+                                            <StyledTableCell>Использовано</StyledTableCell>
+                                            <StyledTableCell>Дата создания</StyledTableCell>
                                             <StyledTableCell> </StyledTableCell>
                                             <StyledTableCell> </StyledTableCell>
                                         </TableRow>

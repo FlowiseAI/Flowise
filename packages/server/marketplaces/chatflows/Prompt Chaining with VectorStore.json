@@ -1,5 +1,6 @@
 {
-    "description": "Use chat history to rephrase user question, and answer the rephrased question using retrieved docs from vector store",
+    "description": "Использование истории чата для переформулирования вопроса пользователя и ответа на переформулированный вопрос с использованием извлеченных документов из векторного хранилища",
+    "title": "Цепочка подсказок с VectorStore",
     "categories": "ChatOpenAI,LLM Chain,SingleStore,Langchain",
     "badge": "POPULAR",
     "framework": "Langchain",

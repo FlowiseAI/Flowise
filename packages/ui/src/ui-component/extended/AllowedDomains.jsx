@@ -127,7 +127,7 @@ const AllowedDomains = ({ dialogProps }) => {
                     }}
                 >
                     <Typography sx={{ mb: 1 }}>
-                        Allowed Domains
+                        Адреса сайта
                         <TooltipWithParser
                             style={{ mb: 1, mt: 2, marginLeft: 10 }}
                             title={'Ваш чат-бот будет работать только при использовании из следующих доменов.'}
@@ -181,10 +181,10 @@ const AllowedDomains = ({ dialogProps }) => {
             <Box sx={{ pt: 2, pb: 2 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     <Typography sx={{ mb: 1 }}>
-                        Error Message
+                        Название ошибки
                         <TooltipWithParser
                             style={{ mb: 1, mt: 2, marginLeft: 10 }}
-                            title={'Custom error message that will be shown when for unauthorized domain'}
+                            title={'Ваше сообщение об ошибке которое будет показано при использовании чат бота на стороннем домене'}
                         />
                     </Typography>
                     <OutlinedInput
@@ -192,7 +192,7 @@ const AllowedDomains = ({ dialogProps }) => {
                         type='text'
                         size='small'
                         fullWidth
-                        placeholder='Unauthorized domain!'
+                        placeholder='Неавторизированный домен!'
                         value={errorMessage}
                         onChange={(e) => {
                             setErrorMessage(e.target.value)
@@ -201,7 +201,7 @@ const AllowedDomains = ({ dialogProps }) => {
                 </div>
             </Box>
             <StyledButton variant='contained' onClick={onSave}>
-                Сохранять
+                Сохранить
             </StyledButton>
         </>
     )

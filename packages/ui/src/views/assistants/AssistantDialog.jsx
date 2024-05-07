@@ -673,7 +673,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     <Box>
                         <Stack sx={{ position: 'relative' }} direction='row'>
                             <Typography variant='overline'>
-                                OpenAI Credential
+                                Учетные данные OpenAI
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                         </Stack>
@@ -692,7 +692,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     <Box>
                         <Stack sx={{ position: 'relative' }} direction='row'>
                             <Typography variant='overline'>
-                                Assistant Model
+                                Модель ассистента
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                         </Stack>
@@ -793,10 +793,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Assistant Temperature</Typography>
+                            <Typography variant='overline'>Температура ассистента</Typography>
                             <TooltipWithParser
                                 title={
-                                    'Controls randomness: Lowering results in less random completions. As the temperature approaches zero, the model will become deterministic and repetitive.'
+                                    'Контролирует случайность: снижение приводит к меньшему количеству случайных завершений. Когда температура приближается к нулю, модель станет детерминированной и повторяющейся.'
                                 }
                             />
                         </Stack>
@@ -812,10 +812,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Assistant Top P</Typography>
+                            <Typography variant='overline'>ТОП K помощника</Typography>
                             <TooltipWithParser
                                 title={
-                                    'Controls diversity via nucleus sampling: 0.5 means half of all likelihood-weighted options are considered.'
+                                    'Контролирует разнообразие посредством выборки ядер: 0,5 означает, что рассматривается половина всех вариантов, взвешенных по правдоподобию.'
                                 }
                             />
                         </Stack>
@@ -835,8 +835,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                         <>
                             <Box>
                                 <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                    <Typography variant='overline'>Assistant Tools</Typography>
-                                    <TooltipWithParser title='A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant.' />
+                                    <Typography variant='overline'>Инструменты ассистента</Typography>
+                                    <TooltipWithParser title='Список инструментов, включенных в помощнике. На одного помощника может быть максимум 128 инструментов.' />
                                 </Stack>
                                 <MultiDropdown
                                     key={JSON.stringify(assistantTools)}
@@ -865,8 +865,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                     <Card sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: `${customization.borderRadius}px` }}>
                                         <CardContent>
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                                <Typography variant='overline'>Code Interpreter Files</Typography>
-                                                <TooltipWithParser title='Code Interpreter enables the assistant to write and run code. This tool can process files with diverse data and formatting, and generate files such as graphs' />
+                                                <Typography variant='overline'>Файлы для интерпретации кода</Typography>
+                                                <TooltipWithParser title='Code Interpreter позволяет помощнику писать и запускать код. Этот инструмент может обрабатывать файлы с различными данными и форматированием, а также создавать файлы, такие как графики.' />
                                             </Stack>
                                             {toolResources?.code_interpreter?.files?.length > 0 && (
                                                 <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -917,8 +917,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                     <Card sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: `${customization.borderRadius}px` }}>
                                         <CardContent>
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                                <Typography variant='overline'>File Search Files</Typography>
-                                                <TooltipWithParser title='File search enables the assistant with knowledge from files that you or your users upload. Once a file is uploaded, the assistant automatically decides when to retrieve content based on user requests' />
+                                                <Typography variant='overline'>Файлы для поиска по файлам</Typography>
+                                                <TooltipWithParser title='Поиск файлов позволяет помощнику получать знания из файлов, которые вы или ваши пользователи загружаете. После загрузки файла помощник автоматически решает, когда получить контент, исходя из запросов пользователей.' />
                                             </Stack>
                                             {toolResources?.file_search?.vector_store_object && (
                                                 <Chip
@@ -981,7 +981,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                                     sx={{ marginRight: '1rem' }}
                                                     onClick={() => onAddAssistantVectorStoreClick()}
                                                 >
-                                                    Add Vector Store
+                                                    Добавить векторное хранилище
                                                 </Button>
                                             ) : (
                                                 <File

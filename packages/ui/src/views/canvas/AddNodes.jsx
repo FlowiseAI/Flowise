@@ -556,7 +556,6 @@ const AddNodes = ({ nodesData, node }) => {
                                                                                                     </div>
                                                                                                 }
                                                                                                 secondary={
-                                                                                                    translationObject[node.label] ||
                                                                                                     translationObject[node.description] ||
                                                                                                     node.description
                                                                                                 }

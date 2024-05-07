@@ -1,5 +1,6 @@
 {
-    "description": "Use BabyAGI to create tasks and reprioritize for a given objective",
+    "description": "Использование BabyAGI для создания задач и переприоритизации в соответствии с заданной целью",
+    "title": "BabyAGI",
     "categories": "BabyAGI,ChatOpenAI,Pinecone,Langchain",
     "framework": "Langchain",
     "nodes": [

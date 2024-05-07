@@ -1,5 +1,6 @@
 {
-    "description": "An agent that uses ReAct logic to decide what action to take",
+    "description": "Агент, использующий логику ReAct для принятия решений о действиях",
+    "title": "Агент ReAct",
     "categories": "Calculator Tool,SerpAPI,ChatOpenAI,ReAct Agent,Langchain",
     "framework": "Langchain",
     "nodes": [

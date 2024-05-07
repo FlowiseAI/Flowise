@@ -1,5 +1,6 @@
 {
-    "description": "Use Replicate API that runs Llama 13b v2 model with LLMChain",
+    "description": "Использование API Replicate, который запускает модель Llama 13b v2 с LLMChain",
+    "title": "Replicate LLM",
     "categories": "Replicate,LLM Chain,Langchain",
     "framework": "Langchain",
     "nodes": [
