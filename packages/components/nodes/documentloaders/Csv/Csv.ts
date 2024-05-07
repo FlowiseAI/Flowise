@@ -99,7 +99,7 @@ class Csv_DocumentLoaders implements INode {
                 if (textSplitter) {
                     docs.push(...(await loader.loadAndSplit(textSplitter)))
                 } else {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    docs.push(...(await loader.load()))
                 }
             }
         } else {
