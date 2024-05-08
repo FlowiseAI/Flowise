@@ -141,7 +141,7 @@ const editDocumentStoreFileChunk = async (req: Request, res: Response, next: Nex
             )
         }
         const body = req.body
-        if (typeof body === 'undefined' || body.pageContent === 'undefined' || body.pageContent === '') {
+        if (typeof body === 'undefined') {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: documentStoreController.editDocumentStoreFileChunk - body not provided!`
@@ -151,7 +151,8 @@ const editDocumentStoreFileChunk = async (req: Request, res: Response, next: Nex
             req.params.storeId,
             req.params.loaderId,
             req.params.chunkId,
-            body.pageContent
+            body.pageContent,
+            body.metadata
         )
         return res.json(apiResponse)
     } catch (error) {
