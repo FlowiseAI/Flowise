@@ -41,6 +41,10 @@ import { Assistant } from '../database/entities/Assistant'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
 import { Variable } from '../database/entities/Variable'
+import { DocumentStore } from '../database/entities/DocumentStore'
+import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -52,7 +56,9 @@ export const databaseEntities: IDatabaseEntity = {
     Tool: Tool,
     Credential: Credential,
     Assistant: Assistant,
-    Variable: Variable
+    Variable: Variable,
+    DocumentStore: DocumentStore,
+    DocumentStoreFileChunk: DocumentStoreFileChunk
 }
 
 /**
@@ -224,8 +230,13 @@ export const getAllConnectedNodes = (graph: INodeDirectedGraph, startNodeId: str
  * Get ending node and check if flow is valid
  * @param {INodeDependencies} nodeDependencies
  * @param {INodeDirectedGraph} graph
+ * @param {IReactFlowNode[]} allNodes
  */
-export const getEndingNodes = (nodeDependencies: INodeDependencies, graph: INodeDirectedGraph) => {
+export const getEndingNodes = (
+    nodeDependencies: INodeDependencies,
+    graph: INodeDirectedGraph,
+    allNodes: IReactFlowNode[]
+): IReactFlowNode[] => {
     const endingNodeIds: string[] = []
     Object.keys(graph).forEach((nodeId) => {
         if (Object.keys(nodeDependencies).length === 1) {
@@ -234,7 +245,46 @@ export const getEndingNodes = (nodeDependencies: INodeDependencies, graph: INode
             endingNodeIds.push(nodeId)
         }
     })
-    return endingNodeIds
+
+    let endingNodes = allNodes.filter((nd) => endingNodeIds.includes(nd.id))
+
+    // If there are multiple endingnodes, the failed ones will be automatically ignored.
+    // And only ensure that at least one can pass the verification.
+    const verifiedEndingNodes: typeof endingNodes = []
+    let error: InternalFlowiseError | null = null
+    for (const endingNode of endingNodes) {
+        const endingNodeData = endingNode.data
+        if (!endingNodeData) {
+            error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node ${endingNode.id} data not found`)
+
+            continue
+        }
+
+        const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
+
+        if (!isEndingNode) {
+            if (
+                endingNodeData &&
+                endingNodeData.category !== 'Chains' &&
+                endingNodeData.category !== 'Agents' &&
+                endingNodeData.category !== 'Engine'
+            ) {
+                error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent`)
+                continue
+            }
+        }
+        verifiedEndingNodes.push(endingNode)
+    }
+
+    if (verifiedEndingNodes.length > 0) {
+        return verifiedEndingNodes
+    }
+
+    if (endingNodes.length === 0 || error === null) {
+        error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending nodes not found`)
+    }
+
+    throw error
 }
 
 /**
@@ -425,6 +475,7 @@ export const buildFlow = async (
                     appDataSource,
                     databaseEntities,
                     cachePool,
+                    isUpsert,
                     dynamicVariables,
                     uploads
                 })
@@ -976,7 +1027,10 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'chatOllama',
             'awsChatBedrock',
             'chatMistralAI',
-            'groqChat'
+            'groqChat',
+            'chatCohere',
+            'chatGoogleGenerativeAI',
+            'chatTogetherAI'
         ],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
@@ -1004,10 +1058,25 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'csvAgent',
             'airtableAgent',
             'conversationalRetrievalAgent',
-            'openAIToolAgent'
+            'openAIToolAgent',
+            'toolAgent'
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
+
+        // Anthropic & Groq Function Calling streaming is still not supported - https://docs.anthropic.com/claude/docs/tool-use
+        const model = endingNodeData.inputs?.model
+        if (endingNodeData.name.includes('toolAgent')) {
+            if (typeof model === 'string' && (model.includes('chatAnthropic') || model.includes('groqChat'))) {
+                return false
+            } else if (typeof model === 'object' && 'id' in model && model['id'].includes('chatAnthropic')) {
+                return false
+            }
+        }
+
+        // If agent is openAIAssistant, streaming is enabled
+        if (endingNodeData.name === 'openAIAssistant') return true
     } else if (endingNodeData.category === 'Engine') {
+        // Engines that are available to stream
         const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
         isValidChainOrAgent = whitelistEngine.includes(endingNodeData.name)
     }
@@ -1265,34 +1334,6 @@ export const getAllValuesFromJson = (obj: any): any[] => {
 }
 
 /**
- * Delete file & folder recursively
- * @param {string} directory
- */
-export const deleteFolderRecursive = (directory: string) => {
-    if (fs.existsSync(directory)) {
-        fs.readdir(directory, (error, files) => {
-            if (error) throw new Error('Could not read directory')
-
-            files.forEach((file) => {
-                const file_path = path.join(directory, file)
-
-                fs.stat(file_path, (error, stat) => {
-                    if (error) throw new Error('File do not exist')
-
-                    if (!stat.isDirectory()) {
-                        fs.unlink(file_path, (error) => {
-                            if (error) throw new Error('Could not delete file')
-                        })
-                    } else {
-                        deleteFolderRecursive(file_path)
-                    }
-                })
-            })
-        })
-    }
-}
-
-/**
  * Get only essential flow data items for telemetry
  * @param {IReactFlowNode[]} nodes
  * @param {IReactFlowEdge[]} edges
@@ -1347,4 +1388,11 @@ export const getAppVersion = async () => {
     } catch (error) {
         return ''
     }
+}
+
+export const convertToValidFilename = (word: string) => {
+    return word
+        .replace(/[/|\\:*?"<>]/g, ' ')
+        .replace(' ', '')
+        .toLowerCase()
 }

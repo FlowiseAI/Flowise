@@ -32,7 +32,7 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const exampleAPIFunc = `/*
 * You can use any libraries imported in Flowise
-* You can use properties specified in Output Schema as variables. Ex: Property = userid, Variable = $userid
+* You can use properties specified in Input Schema as variables. Ex: Property = userid, Variable = $userid
 * You can get default flow config: $flow.sessionId, $flow.chatId, $flow.chatflowId, $flow.input
 * You can get custom variables: $vars.<variable-name>
 * Must return a string value at the end of function
@@ -470,8 +470,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                     <Box>
                         <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                <Typography variant='overline'>Output Schema</Typography>
-                                <TooltipWithParser title={'What should be the output response in JSON format?'} />
+                                <Typography variant='overline'>Input Schema</Typography>
+                                <TooltipWithParser title={'What is the input format in JSON?'} />
                             </Stack>
                             {dialogProps.type !== 'TEMPLATE' && (
                                 <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
@@ -485,7 +485,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
                                 <Typography variant='overline'>Javascript Function</Typography>
-                                <TooltipWithParser title='Function to execute when tool is being used. You can use properties specified in Output Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string. You can also override the code from API by following this <a target="_blank" href="https://docs.flowiseai.com/tools/custom-tool#override-function-from-api">guide</a>' />
+                                <TooltipWithParser title='Function to execute when tool is being used. You can use properties specified in Input Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string. You can also override the code from API by following this <a target="_blank" href="https://docs.flowiseai.com/tools/custom-tool#override-function-from-api">guide</a>' />
                             </Stack>
                             <Stack direction='row'>
                                 <Button

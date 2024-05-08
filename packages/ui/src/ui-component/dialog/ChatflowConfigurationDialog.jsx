@@ -2,12 +2,14 @@ import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
+import { tabsClasses } from '@mui/material/Tabs'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
 import RateLimit from '@/ui-component/extended/RateLimit'
 import AllowedDomains from '@/ui-component/extended/AllowedDomains'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
+import Leads from '@/ui-component/extended/Leads'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
@@ -33,6 +35,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Analyse Chatflow',
         id: 'analyseChatflow'
+    },
+    {
+        label: 'Leads',
+        id: 'leads'
     }
 ]
 
@@ -83,10 +89,19 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
             </DialogTitle>
             <DialogContent>
                 <Tabs
-                    sx={{ position: 'relative', minHeight: '40px', height: '40px' }}
+                    sx={{
+                        position: 'relative',
+                        minHeight: '40px',
+                        height: '40px',
+                        [`& .${tabsClasses.scrollButtons}`]: {
+                            '&.Mui-disabled': { opacity: 0.3 }
+                        }
+                    }}
                     value={tabValue}
                     onChange={(event, value) => setTabValue(value)}
                     aria-label='tabs'
+                    variant='scrollable'
+                    scrollButtons='auto'
                 >
                     {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
                         <Tab
@@ -105,6 +120,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
                         {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
                         {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
+                        {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>

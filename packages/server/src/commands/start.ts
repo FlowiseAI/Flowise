@@ -46,7 +46,12 @@ export default class Start extends Command {
         LANGCHAIN_API_KEY: Flags.string(),
         LANGCHAIN_PROJECT: Flags.string(),
         DISABLE_FLOWISE_TELEMETRY: Flags.string(),
-        MODEL_LIST_CONFIG_JSON: Flags.string()
+        MODEL_LIST_CONFIG_JSON: Flags.string(),
+        STORAGE_TYPE: Flags.string(),
+        S3_STORAGE_BUCKET_NAME: Flags.string(),
+        S3_STORAGE_ACCESS_KEY_ID: Flags.string(),
+        S3_STORAGE_SECRET_ACCESS_KEY: Flags.string(),
+        S3_STORAGE_REGION: Flags.string()
     }
 
     async stopProcess() {
@@ -94,10 +99,7 @@ export default class Start extends Command {
         if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
         if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
 
-        // Storage
-        if (flags.BLOB_STORAGE_PATH) process.env.BLOB_STORAGE_PATH = flags.BLOB_STORAGE_PATH
-
-        //API Configuration
+        // API Configuration
         if (flags.FLOWISE_FILE_SIZE_LIMIT) process.env.FLOWISE_FILE_SIZE_LIMIT = flags.FLOWISE_FILE_SIZE_LIMIT
 
         // Credentials
@@ -137,6 +139,14 @@ export default class Start extends Command {
 
         // Model list config
         if (flags.MODEL_LIST_CONFIG_JSON) process.env.MODEL_LIST_CONFIG_JSON = flags.MODEL_LIST_CONFIG_JSON
+
+        // Storage
+        if (flags.STORAGE_TYPE) process.env.STORAGE_TYPE = flags.STORAGE_TYPE
+        if (flags.BLOB_STORAGE_PATH) process.env.BLOB_STORAGE_PATH = flags.BLOB_STORAGE_PATH
+        if (flags.S3_STORAGE_BUCKET_NAME) process.env.S3_STORAGE_BUCKET_NAME = flags.S3_STORAGE_BUCKET_NAME
+        if (flags.S3_STORAGE_ACCESS_KEY_ID) process.env.S3_STORAGE_ACCESS_KEY_ID = flags.S3_STORAGE_ACCESS_KEY_ID
+        if (flags.S3_STORAGE_SECRET_ACCESS_KEY) process.env.S3_STORAGE_SECRET_ACCESS_KEY = flags.S3_STORAGE_SECRET_ACCESS_KEY
+        if (flags.S3_STORAGE_REGION) process.env.S3_STORAGE_REGION = flags.S3_STORAGE_REGION
 
         await (async () => {
             try {

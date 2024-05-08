@@ -161,7 +161,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                     <Typography sx={{ fontWeight: 500 }}>Scraped Links</Typography>
                     {selectedLinks.length > 0 ? (
-                        <StyledButton
+                        <Button
                             sx={{ height: 'max-content', width: 'max-content' }}
                             variant='outlined'
                             color='error'
@@ -170,7 +170,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                             startIcon={<IconEraser />}
                         >
                             Clear All
-                        </StyledButton>
+                        </Button>
                     ) : null}
                 </Box>
                 <>

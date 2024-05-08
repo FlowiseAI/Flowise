@@ -157,11 +157,13 @@ function UpsertHistoryRow(props) {
                                                 </div>
                                             </AccordionSummary>
                                             <AccordionDetails>
-                                                <TableViewOnly
-                                                    sx={{ minWidth: 150 }}
-                                                    rows={node.paramValues}
-                                                    columns={Object.keys(node.paramValues[0])}
-                                                />
+                                                {node.paramValues[0] && (
+                                                    <TableViewOnly
+                                                        sx={{ minWidth: 150 }}
+                                                        rows={node.paramValues}
+                                                        columns={Object.keys(node.paramValues[0])}
+                                                    />
+                                                )}
                                             </AccordionDetails>
                                         </Accordion>
                                     )

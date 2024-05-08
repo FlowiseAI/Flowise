@@ -32,6 +32,14 @@
                     "name": "meta.llama2-70b-chat-v1"
                 },
                 {
+                    "label": "meta.llama3-8b-instruct-v1:0",
+                    "name": "meta.llama3-8b-instruct-v1:0"
+                },
+                {
+                    "label": "meta.llama3-70b-instruct-v1:0",
+                    "name": "meta.llama3-70b-instruct-v1:0"
+                },
+                {
                     "label": "mistral.mistral-7b-instruct-v0:2",
                     "name": "mistral.mistral-7b-instruct-v0:2"
                 },
@@ -308,6 +316,10 @@
                 {
                     "label": "gemini-pro",
                     "name": "gemini-pro"
+                },
+                {
+                    "label": "gemini-pro-vision",
+                    "name": "gemini-pro-vision"
                 }
             ]
         },
@@ -324,6 +336,18 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
+                    "label": "gemini-1.5-pro",
+                    "name": "gemini-1.5-pro-preview-0409"
+                },
+                {
+                    "label": "gemini-1.0-pro",
+                    "name": "gemini-1.0-pro"
+                },
+                {
+                    "label": "gemini-1.0-pro-vision",
+                    "name": "gemini-1.0-pro-vision"
+                },
+                {
                     "label": "chat-bison",
                     "name": "chat-bison"
                 },
@@ -338,6 +362,27 @@
                 {
                     "label": "codechat-bison-32k",
                     "name": "codechat-bison-32k"
+                }
+            ]
+        },
+        {
+            "name": "groqChat",
+            "models": [
+                {
+                    "label": "gemma-7b-it",
+                    "name": "gemma-7b-it"
+                },
+                {
+                    "label": "llama3-70b-8192",
+                    "name": "llama3-70b-8192"
+                },
+                {
+                    "label": "llama3-8b-8192",
+                    "name": "llama3-8b-8192"
+                },
+                {
+                    "label": "mixtral-8x7b-32768",
+                    "name": "mixtral-8x7b-32768"
                 }
             ]
         },
@@ -502,6 +547,10 @@
                 {
                     "label": "open-mixtral-8x7b",
                     "name": "open-mixtral-8x7b"
+                },
+                {
+                    "label": "open-mixtral-8x22b",
+                    "name": "open-mixtral-8x22b"
                 },
                 {
                     "label": "mistral-small-2312",
