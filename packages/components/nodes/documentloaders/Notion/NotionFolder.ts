@@ -1,4 +1,5 @@
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { omit } from 'lodash'
+import { IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { NotionLoader } from 'langchain/document_loaders/fs/notion'
 
@@ -37,9 +38,21 @@ class NotionFolder_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'Metadata',
+                label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
+                description: 'Additional metadata to be added to the extracted documents',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Omit Metadata Keys',
+                name: 'omitMetadataKeys',
+                type: 'string',
+                rows: 4,
+                description:
+                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma',
+                placeholder: 'key1, key2, key3.nestedKey1',
                 optional: true,
                 additionalParams: true
             }
@@ -50,9 +63,15 @@ class NotionFolder_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const notionFolder = nodeData.inputs?.notionFolder as string
         const metadata = nodeData.inputs?.metadata
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+
+        let omitMetadataKeys: string[] = []
+        if (_omitMetadataKeys) {
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
 
         const loader = new NotionLoader(notionFolder)
-        let docs = []
+        let docs: IDocument[] = []
 
         if (textSplitter) {
             docs = await loader.loadAndSplit(textSplitter)
@@ -62,18 +81,26 @@ class NotionFolder_DocumentLoaders implements INode {
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of docs) {
-                const newdoc = {
-                    ...doc,
-                    metadata: {
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata: omit(
+                    {
                         ...doc.metadata,
                         ...parsedMetadata
-                    }
-                }
-                finaldocs.push(newdoc)
-            }
-            return finaldocs
+                    },
+                    omitMetadataKeys
+                )
+            }))
+        } else {
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata: omit(
+                    {
+                        ...doc.metadata
+                    },
+                    omitMetadataKeys
+                )
+            }))
         }
 
         return docs

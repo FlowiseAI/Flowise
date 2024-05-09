@@ -5,11 +5,10 @@ import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
-import logger from './utils/logger'
-import { expressRequestLogger } from './utils/logger'
 import { DataSource } from 'typeorm'
 import { IChatFlow } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
+import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
@@ -82,7 +81,7 @@ export class App {
 
     async config(socketIO?: Server) {
         // Limit is needed to allow sending/receiving base64 encoded string
-        const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT ?? '50mb'
+        const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))
         this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
         if (process.env.NUMBER_OF_PROXIES && parseInt(process.env.NUMBER_OF_PROXIES) > 0)

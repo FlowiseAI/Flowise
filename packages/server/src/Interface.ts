@@ -253,3 +253,6 @@ export interface IUploadFileSizeAndTypes {
     fileTypes: string[]
     maxUploadSize: number
 }
+
+// DocumentStore related
+export * from './Interface.DocumentStore'

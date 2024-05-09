@@ -1,4 +1,5 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { omit } from 'lodash'
+import { IDocument, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf'
 import { getFileFromStorage } from '../../../src'
@@ -60,9 +61,21 @@ class Pdf_DocumentLoaders implements INode {
                 additionalParams: true
             },
             {
-                label: 'Metadata',
+                label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
+                description: 'Additional metadata to be added to the extracted documents',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Omit Metadata Keys',
+                name: 'omitMetadataKeys',
+                type: 'string',
+                rows: 4,
+                description:
+                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma',
+                placeholder: 'key1, key2, key3.nestedKey1',
                 optional: true,
                 additionalParams: true
             }
@@ -75,8 +88,14 @@ class Pdf_DocumentLoaders implements INode {
         const usage = nodeData.inputs?.usage as string
         const metadata = nodeData.inputs?.metadata
         const legacyBuild = nodeData.inputs?.legacyBuild as boolean
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
 
-        let alldocs: any[] = []
+        let omitMetadataKeys: string[] = []
+        if (_omitMetadataKeys) {
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
+
+        let docs: IDocument[] = []
         let files: string[] = []
 
         //FILE-STORAGE::["CONTRIBUTING.md","LICENSE.md","README.md"]
@@ -92,7 +111,7 @@ class Pdf_DocumentLoaders implements INode {
             for (const file of files) {
                 const fileData = await getFileFromStorage(file, chatflowid)
                 const bf = Buffer.from(fileData)
-                await this.extractDocs(usage, bf, legacyBuild, textSplitter, alldocs)
+                await this.extractDocs(usage, bf, legacyBuild, textSplitter, docs)
             }
         } else {
             if (pdfFileBase64.startsWith('[') && pdfFileBase64.endsWith(']')) {
@@ -105,30 +124,38 @@ class Pdf_DocumentLoaders implements INode {
                 const splitDataURI = file.split(',')
                 splitDataURI.pop()
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                await this.extractDocs(usage, bf, legacyBuild, textSplitter, alldocs)
+                await this.extractDocs(usage, bf, legacyBuild, textSplitter, docs)
             }
         }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of alldocs) {
-                const newdoc = {
-                    ...doc,
-                    metadata: {
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata: omit(
+                    {
                         ...doc.metadata,
                         ...parsedMetadata
-                    }
-                }
-                finaldocs.push(newdoc)
-            }
-            return finaldocs
+                    },
+                    omitMetadataKeys
+                )
+            }))
+        } else {
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata: omit(
+                    {
+                        ...doc.metadata
+                    },
+                    omitMetadataKeys
+                )
+            }))
         }
 
-        return alldocs
+        return docs
     }
 
-    private async extractDocs(usage: string, bf: Buffer, legacyBuild: boolean, textSplitter: TextSplitter, alldocs: any[]) {
+    private async extractDocs(usage: string, bf: Buffer, legacyBuild: boolean, textSplitter: TextSplitter, docs: IDocument[]) {
         if (usage === 'perFile') {
             const loader = new PDFLoader(new Blob([bf]), {
                 splitPages: false,
@@ -137,11 +164,9 @@ class Pdf_DocumentLoaders implements INode {
                     legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
             })
             if (textSplitter) {
-                const docs = await loader.loadAndSplit(textSplitter)
-                alldocs.push(...docs)
+                docs.push(...(await loader.loadAndSplit(textSplitter)))
             } else {
-                const docs = await loader.load()
-                alldocs.push(...docs)
+                docs.push(...(await loader.load()))
             }
         } else {
             const loader = new PDFLoader(new Blob([bf]), {
@@ -150,11 +175,9 @@ class Pdf_DocumentLoaders implements INode {
                     legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
             })
             if (textSplitter) {
-                const docs = await loader.loadAndSplit(textSplitter)
-                alldocs.push(...docs)
+                docs.push(...(await loader.loadAndSplit(textSplitter)))
             } else {
-                const docs = await loader.load()
-                alldocs.push(...docs)
+                docs.push(...(await loader.load()))
             }
         }
     }

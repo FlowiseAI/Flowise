@@ -15,6 +15,7 @@ import { AddVariableEntity1699325775451 } from './1702200925471-AddVariableEntit
 import { AddSpeechToText1706364937060 } from './1706364937060-AddSpeechToText'
 import { AddUpsertHistoryEntity1709814301358 } from './1709814301358-AddUpsertHistoryEntity'
 import { AddFeedback1707213626553 } from './1707213626553-AddFeedback'
+import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
 import { AddLead1710832127079 } from './1710832127079-AddLead'
 import { AddLeadToChatMessage1711538023578 } from './1711538023578-AddLeadToChatMessage'
 
@@ -36,6 +37,7 @@ export const mysqlMigrations = [
     AddSpeechToText1706364937060,
     AddUpsertHistoryEntity1709814301358,
     AddFeedback1707213626553,
+    AddDocumentStore1711637331047,
     AddLead1710832127079,
     AddLeadToChatMessage1711538023578
 ]
