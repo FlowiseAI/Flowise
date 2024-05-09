@@ -207,9 +207,6 @@ importers:
             cohere-ai:
                 specifier: ^6.2.0
                 version: 6.2.2
-            couchbase:
-                specifier: 4.3.1
-                version: 4.3.1
             crypto-js:
                 specifier: ^4.1.1
                 version: 4.2.0
@@ -607,10 +604,10 @@ importers:
                 version: 16.4.5
             flowise-embed:
                 specifier: latest
-                version: 1.2.4
+                version: 1.2.6
             flowise-embed-react:
                 specifier: latest
-                version: 1.0.2(@types/node@20.11.26)(flowise-embed@1.2.4)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5)
+                version: 1.0.2(@types/node@20.11.26)(flowise-embed@1.2.6)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5)
             flowise-react-json-view:
                 specifier: '*'
                 version: 1.21.7(@types/react@18.2.65)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -8419,8 +8416,8 @@ packages:
             flowise-embed: '*'
             react: 18.x
 
-    flowise-embed@1.2.4:
-        resolution: { integrity: sha512-Cj0R4iOoAx585RbQn868NVzkgrO9U51jNlPujrnWJnLA+lwibT+EpHxacuO4Bio/JtYL/MJFztYleeuWIlKMJw== }
+    flowise-embed@1.2.6:
+        resolution: { integrity: sha512-rBl4QhcxY91V2fOm/L1kuwQSyQjimdTLT4uss7Lw9XBbOFQTVflJnzDxttp5an/pQcxQ+Y1TWCM/twMH05BV/g== }
 
     flowise-react-json-view@1.21.7:
         resolution: { integrity: sha512-oFjwtSLJkUWk6waLh8heCQ4o9b60FJRA2X8LefaZp5WaJvj/Rr2HILjk+ocf1JkfTcq8jc6t2jfIybg4leWsaQ== }
@@ -23912,6 +23909,7 @@ snapshots:
             yargs: 17.7.2
         transitivePeerDependencies:
             - supports-color
+        optional: true
 
     cmd-shim@5.0.0:
         dependencies:
@@ -24226,6 +24224,7 @@ snapshots:
             '@couchbase/couchbase-win32-x64-napi': 4.3.1
         transitivePeerDependencies:
             - supports-color
+        optional: true
 
     create-require@1.1.1: {}
 
@@ -26129,10 +26128,10 @@ snapshots:
 
     flatted@3.3.1: {}
 
-    flowise-embed-react@1.0.2(@types/node@20.11.26)(flowise-embed@1.2.4)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5):
+    flowise-embed-react@1.0.2(@types/node@20.11.26)(flowise-embed@1.2.6)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5):
         dependencies:
             '@ladle/react': 2.5.1(@types/node@20.11.26)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5)
-            flowise-embed: 1.2.4
+            flowise-embed: 1.2.6
             react: 18.2.0
         transitivePeerDependencies:
             - '@types/node'
@@ -26146,7 +26145,7 @@ snapshots:
             - terser
             - typescript
 
-    flowise-embed@1.2.4:
+    flowise-embed@1.2.6:
         dependencies:
             '@babel/core': 7.24.0
             '@ts-stack/markdown': 1.5.0
@@ -29145,7 +29144,8 @@ snapshots:
 
     lodash.isequal@4.5.0: {}
 
-    lodash.isplainobject@4.0.6: {}
+    lodash.isplainobject@4.0.6:
+        optional: true
 
     lodash.istypedarray@3.0.6: {}
 
@@ -29719,6 +29719,7 @@ snapshots:
     memory-stream@1.0.0:
         dependencies:
             readable-stream: 3.6.2
+        optional: true
 
     merge-deep@3.0.3:
         dependencies:
@@ -30315,7 +30316,8 @@ snapshots:
 
     node-addon-api@7.1.0: {}
 
-    node-api-headers@1.1.0: {}
+    node-api-headers@1.1.0:
+        optional: true
 
     node-cleanup@2.1.2: {}
 
