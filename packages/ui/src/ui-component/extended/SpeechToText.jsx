@@ -5,7 +5,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 
 // material-ui
 import { Typography, Box, Button, FormControl, ListItem, ListItemAvatar, ListItemText, MenuItem, Select } from '@mui/material'
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 // Project import
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'

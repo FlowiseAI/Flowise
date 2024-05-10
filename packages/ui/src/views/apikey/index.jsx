@@ -44,7 +44,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconCopy, IconChevronsUp, IconChevronsDown, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons'
+import { IconTrash, IconEdit, IconCopy, IconChevronsUp, IconChevronsDown, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons-react'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
 
 // ==============================|| APIKey ||============================== //

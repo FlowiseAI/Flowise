@@ -18,7 +18,7 @@ import toolsApi from '@/api/tools'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconFileUpload } from '@tabler/icons'
+import { IconPlus, IconFileUpload } from '@tabler/icons-react'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 
