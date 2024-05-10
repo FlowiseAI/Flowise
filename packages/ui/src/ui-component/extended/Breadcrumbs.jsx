@@ -12,7 +12,7 @@ import config from '@/config'
 import { gridSpacing } from '@/store/constant'
 
 // assets
-import { IconTallymark1 } from '@tabler/icons'
+import { IconTallymark1 } from '@tabler/icons-react'
 import AccountTreeTwoToneIcon from '@mui/icons-material/AccountTreeTwoTone'
 import HomeIcon from '@mui/icons-material/Home'
 import HomeTwoToneIcon from '@mui/icons-material/HomeTwoTone'

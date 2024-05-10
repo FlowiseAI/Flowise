@@ -8,7 +8,7 @@ import { useTheme, styled } from '@mui/material/styles'
 import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material'
 import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons'
+import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons-react'
 
 // project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'

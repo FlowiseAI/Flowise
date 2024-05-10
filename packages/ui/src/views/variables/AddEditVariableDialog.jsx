@@ -12,7 +12,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
-import { IconX, IconVariable } from '@tabler/icons'
+import { IconX, IconVariable } from '@tabler/icons-react'
 
 // API
 import variablesApi from '@/api/variables'
