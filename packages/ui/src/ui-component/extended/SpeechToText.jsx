@@ -16,7 +16,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import openAISVG from '@/assets/images/openai.svg'
 import assemblyAIPng from '@/assets/images/assemblyai.png'
-import localAISVG from '@/assets/images/robot.png'
+import localAiPng from '@/assets/images/localai.png'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -24,12 +24,12 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-// TODO: Import this?
-//import {SpeechToTextType} from 'flowise-components'
-export const SpeechToTextType = {
+// If implementing a new provider, this must be updated in
+// components/src/speechToText.ts as well
+const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
-    LOCALAI_STT: 'LocalAISTT'
+    LOCALAI_STT: 'localAISTT'
 }
 
 // Weird quirk - the key must match the name property value.
@@ -90,7 +90,7 @@ const speechToTextProviders = {
     [SpeechToTextType.LOCALAI_STT]: {
         label: 'LocalAi STT',
         name: SpeechToTextType.LOCALAI_STT,
-        icon: localAISVG,
+        icon: localAiPng,
         url: 'https://localai.io/features/audio-to-text/',
         inputs: [
             {
@@ -118,8 +118,7 @@ const speechToTextProviders = {
                 label: 'Model',
                 name: 'model',
                 type: 'string',
-                rows: 4,
-                description: `The model to load. `,
+                description: `The STT model to load. Defaults to whisper-1 if left blank.`,
                 placeholder: 'whisper-1',
                 optional: true
             },

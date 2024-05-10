@@ -4,10 +4,10 @@ import { type ClientOptions, OpenAIClient } from '@langchain/openai'
 import { AssemblyAI } from 'assemblyai'
 import { getFileFromStorage } from './storageUtils'
 
-export const SpeechToTextType = {
+const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
-    LOCALAI_STT: 'LocalAISTT'
+    LOCALAI_STT: 'localAISTT'
 }
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
@@ -58,7 +58,7 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                 const localAIClient = new OpenAIClient(LocalAIClientOptions)
                 const localAITranscription = await localAIClient.audio.transcriptions.create({
                     file: new File([new Blob([audio_file])], upload.name),
-                    model: speechToTextConfig?.model,
+                    model: speechToTextConfig?.model || 'whisper-1',
                     language: speechToTextConfig?.language,
                     temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
                     prompt: speechToTextConfig?.prompt
