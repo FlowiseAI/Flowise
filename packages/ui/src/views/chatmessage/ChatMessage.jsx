@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, Fragment } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 import socketIOClient from 'socket.io-client'
 import { cloneDeep } from 'lodash'
@@ -8,6 +8,7 @@ import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
+import { v4 as uuidv4 } from 'uuid'
 
 import {
     Box,
@@ -25,12 +26,23 @@ import {
     Stack
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconTrash, IconX, IconTool } from '@tabler/icons-react'
+import {
+    IconCircleDot,
+    IconDownload,
+    IconSend,
+    IconMicrophone,
+    IconPhotoPlus,
+    IconTrash,
+    IconX,
+    IconTool,
+    IconSquareFilled
+} from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
 import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
 import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
 import audioUploadSVG from '@/assets/images/wave-sound.jpg'
+import nextAgentGIF from '@/assets/images/next-agent.gif'
 
 // project import
 import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
@@ -58,9 +70,11 @@ import useApi from '@/hooks/useApi'
 
 // Const
 import { baseURL, maxScroll } from '@/store/constant'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // Utils
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow, getLocalStorageChatflow } from '@/utils/genericHelper'
+import useNotifier from '@/utils/useNotifier'
 
 const messageImageStyle = {
     width: '128px',
@@ -68,11 +82,17 @@ const messageImageStyle = {
     objectFit: 'cover'
 }
 
-export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews }) => {
+export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
     const ps = useRef()
+
+    const dispatch = useDispatch()
+
+    useNotifier()
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [userInput, setUserInput] = useState('')
     const [loading, setLoading] = useState(false)
@@ -87,7 +107,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
     const [isChatFlowAvailableForSpeech, setIsChatFlowAvailableForSpeech] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
-    const [chatId, setChatId] = useState(undefined)
+    const [chatId, setChatId] = useState(uuidv4())
 
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
@@ -291,6 +311,40 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         }
     }
 
+    const handleAbort = async () => {
+        try {
+            const abortResp = await chatmessageApi.abortMessage(chatflowid, chatId)
+            if (abortResp.data) {
+                enqueueSnackbar({
+                    message: 'Message stopped',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        } catch (error) {
+            enqueueSnackbar({
+                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+    }
+
     const handleDeletePreview = (itemToDelete) => {
         if (itemToDelete.type === 'file') {
             URL.revokeObjectURL(itemToDelete.preview) // Clean up for file
@@ -368,6 +422,34 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             allMessages[allMessages.length - 1].agentReasoning = JSON.parse(agentReasoning)
             return allMessages
         })
+    }
+
+    const updateLastMessageNextAgent = (nextAgent) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            const lastAgentReasoning = allMessages[allMessages.length - 1].agentReasoning
+            if (lastAgentReasoning && lastAgentReasoning.length > 0) {
+                lastAgentReasoning.push({ nextAgent })
+            }
+            allMessages[allMessages.length - 1].agentReasoning = lastAgentReasoning
+            return allMessages
+        })
+    }
+
+    const abortMessage = () => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            const lastAgentReasoning = allMessages[allMessages.length - 1].agentReasoning
+            if (lastAgentReasoning && lastAgentReasoning.length > 0) {
+                allMessages[allMessages.length - 1].agentReasoning = lastAgentReasoning.filter((reasoning) => !reasoning.nextAgent)
+            }
+            return allMessages
+        })
+        setTimeout(() => {
+            inputRef.current?.focus()
+        }, 100)
     }
 
     const updateLastMessageUsedTools = (usedTools) => {
@@ -454,7 +536,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                     return allMessages
                 })
 
-                if (!chatId) setChatId(data.chatId)
+                setChatId(data.chatId)
 
                 if (input === '' && data.question) {
                     // the response contains the question even if it was in an audio format
@@ -673,6 +755,10 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
             socket.on('token', updateLastMessage)
 
             socket.on('agentReasoning', updateLastMessageAgentReasoning)
+
+            socket.on('nextAgent', updateLastMessageNextAgent)
+
+            socket.on('abort', abortMessage)
         }
 
         return () => {
@@ -796,7 +882,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
         const result = await leadsApi.addLead(body)
         if (result.data) {
             const data = result.data
-            if (!chatId) setChatId(data.chatId)
+            setChatId(data.chatId)
             setLocalStorageChatflow(chatflowid, data.chatId, { lead: { name: leadName, email: leadEmail, phone: leadPhone } })
             setIsLeadSaved(true)
             setLeadEmail(leadEmail)
@@ -882,7 +968,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                 }}
                                             >
                                                 {message.usedTools.map((tool, index) => {
-                                                    return (
+                                                    return tool ? (
                                                         <Chip
                                                             size='small'
                                                             key={index}
@@ -894,7 +980,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                             icon={<IconTool size={15} />}
                                                             onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                         />
-                                                    )
+                                                    ) : null
                                                 })}
                                             </div>
                                         )}
@@ -945,12 +1031,51 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                         {message.agentReasoning && (
                                             <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                                                 {message.agentReasoning.map((agent, index) => {
-                                                    return (
+                                                    return agent.nextAgent ? (
                                                         <Card
                                                             key={index}
                                                             sx={{
-                                                                border: '1px solid #e0e0e0',
+                                                                border: customization.isDarkMode ? 'none' : '1px solid #e0e0e0',
                                                                 borderRadius: `${customization.borderRadius}px`,
+                                                                background: customization.isDarkMode
+                                                                    ? `linear-gradient(to top, #303030, #212121)`
+                                                                    : `linear-gradient(to top, #f6f3fb, #f2f8fc)`,
+                                                                mb: 1
+                                                            }}
+                                                        >
+                                                            <CardContent>
+                                                                <Stack
+                                                                    sx={{
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'flex-start',
+                                                                        width: '100%'
+                                                                    }}
+                                                                    flexDirection='row'
+                                                                >
+                                                                    <Box sx={{ height: 'auto', pr: 1 }}>
+                                                                        <img
+                                                                            style={{
+                                                                                objectFit: 'cover',
+                                                                                height: '35px',
+                                                                                width: 'auto'
+                                                                            }}
+                                                                            src={nextAgentGIF}
+                                                                            alt='agentPNG'
+                                                                        />
+                                                                    </Box>
+                                                                    <div>{agent.nextAgent}</div>
+                                                                </Stack>
+                                                            </CardContent>
+                                                        </Card>
+                                                    ) : (
+                                                        <Card
+                                                            key={index}
+                                                            sx={{
+                                                                border: customization.isDarkMode ? 'none' : '1px solid #e0e0e0',
+                                                                borderRadius: `${customization.borderRadius}px`,
+                                                                background: customization.isDarkMode
+                                                                    ? `linear-gradient(to top, #303030, #212121)`
+                                                                    : `linear-gradient(to top, #f6f3fb, #f2f8fc)`,
                                                                 mb: 1
                                                             }}
                                                         >
@@ -980,7 +1105,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                                     </Box>
                                                                     <div>{agent.agentName}</div>
                                                                 </Stack>
-                                                                {agent.usedTools && (
+                                                                {agent.usedTools && agent.usedTools.length > 0 && (
                                                                     <div
                                                                         style={{
                                                                             display: 'block',
@@ -989,7 +1114,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                                         }}
                                                                     >
                                                                         {agent.usedTools.map((tool, index) => {
-                                                                            return (
+                                                                            return tool !== null ? (
                                                                                 <Chip
                                                                                     size='small'
                                                                                     key={index}
@@ -1001,7 +1126,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                                                     icon={<IconTool size={15} />}
                                                                                     onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                                                 />
-                                                                            )
+                                                                            ) : null
                                                                         })}
                                                                     </div>
                                                                 )}
@@ -1036,6 +1161,44 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                                                 )}
                                                                 {agent.instructions && <p>{agent.instructions}</p>}
                                                                 {agent.messages.length === 0 && !agent.instructions && <p>Finished</p>}
+                                                                {agent.sourceDocuments && agent.sourceDocuments.length > 0 && (
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'block',
+                                                                            flexDirection: 'row',
+                                                                            width: '100%'
+                                                                        }}
+                                                                    >
+                                                                        {removeDuplicateURL(agent).map((source, index) => {
+                                                                            const URL =
+                                                                                source && source.metadata && source.metadata.source
+                                                                                    ? isValidURL(source.metadata.source)
+                                                                                    : undefined
+                                                                            return (
+                                                                                <Chip
+                                                                                    size='small'
+                                                                                    key={index}
+                                                                                    label={
+                                                                                        URL
+                                                                                            ? URL.pathname.substring(0, 15) === '/'
+                                                                                                ? URL.host
+                                                                                                : `${URL.pathname.substring(0, 15)}...`
+                                                                                            : `${source.pageContent.substring(0, 15)}...`
+                                                                                    }
+                                                                                    component='a'
+                                                                                    sx={{ mr: 1, mb: 1 }}
+                                                                                    variant='outlined'
+                                                                                    clickable
+                                                                                    onClick={() =>
+                                                                                        URL
+                                                                                            ? onURLClick(source.metadata.source)
+                                                                                            : onSourceDialogClick(source)
+                                                                                    }
+                                                                                />
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
                                                             </CardContent>
                                                         </Card>
                                                     )
@@ -1427,30 +1590,67 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
                                             </IconButton>
                                         </InputAdornment>
                                     )}
-                                    <InputAdornment position='end' sx={{ padding: '15px' }}>
-                                        <IconButton
-                                            type='submit'
-                                            disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
-                                            edge='end'
-                                        >
-                                            {loading ? (
-                                                <div>
-                                                    <CircularProgress color='inherit' size={20} />
-                                                </div>
-                                            ) : (
-                                                // Send icon SVG in input field
-                                                <IconSend
-                                                    color={
-                                                        loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
-                                                            ? '#9e9e9e'
-                                                            : customization.isDarkMode
-                                                            ? 'white'
-                                                            : '#1e88e5'
-                                                    }
-                                                />
+                                    {!isAgentCanvas && (
+                                        <InputAdornment position='end' sx={{ padding: '15px' }}>
+                                            <IconButton
+                                                type='submit'
+                                                disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
+                                                edge='end'
+                                            >
+                                                {loading ? (
+                                                    <div>
+                                                        <CircularProgress color='inherit' size={20} />
+                                                    </div>
+                                                ) : (
+                                                    // Send icon SVG in input field
+                                                    <IconSend
+                                                        color={
+                                                            loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
+                                                                ? '#9e9e9e'
+                                                                : customization.isDarkMode
+                                                                ? 'white'
+                                                                : '#1e88e5'
+                                                        }
+                                                    />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )}
+                                    {isAgentCanvas && (
+                                        <>
+                                            {!loading && (
+                                                <InputAdornment position='end' sx={{ padding: '15px' }}>
+                                                    <IconButton
+                                                        type='submit'
+                                                        disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
+                                                        edge='end'
+                                                    >
+                                                        <IconSend
+                                                            color={
+                                                                loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
+                                                                    ? '#9e9e9e'
+                                                                    : customization.isDarkMode
+                                                                    ? 'white'
+                                                                    : '#1e88e5'
+                                                            }
+                                                        />
+                                                    </IconButton>
+                                                </InputAdornment>
                                             )}
-                                        </IconButton>
-                                    </InputAdornment>
+                                            {loading && (
+                                                <InputAdornment position='end' sx={{ padding: '15px', mr: 1 }}>
+                                                    <IconButton
+                                                        edge='end'
+                                                        title='Stop'
+                                                        style={{ border: '2px solid red' }}
+                                                        onClick={() => handleAbort()}
+                                                    >
+                                                        <IconSquareFilled size={15} color='red' />
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            )}
+                                        </>
+                                    )}
                                 </>
                             }
                         />
@@ -1473,6 +1673,7 @@ export const ChatMessage = ({ open, chatflowid, isDialog, previews, setPreviews 
 ChatMessage.propTypes = {
     open: PropTypes.bool,
     chatflowid: PropTypes.string,
+    isAgentCanvas: PropTypes.bool,
     isDialog: PropTypes.bool,
     previews: PropTypes.array,
     setPreviews: PropTypes.func

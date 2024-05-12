@@ -160,6 +160,7 @@ export interface IMultiAgentNode {
     llm?: any
     parentSupervisorName?: string
     workers?: string[]
+    workerPrompt?: string
     recursionLimit?: number
     moderations?: Moderation[]
 }

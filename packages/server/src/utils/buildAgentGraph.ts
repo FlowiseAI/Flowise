@@ -1,7 +1,14 @@
-import { ICommonObject, IMultiAgentNode, IAgentReasoning, ITeamState } from 'flowise-components'
+import {
+    ICommonObject,
+    IMultiAgentNode,
+    IAgentReasoning,
+    ITeamState,
+    ConsoleCallbackHandler,
+    additionalCallbacks
+} from 'flowise-components'
 import { IChatFlow, IComponentNodes, IDepthQueue, IReactFlowNode, IReactFlowObject } from '../Interface'
 import { Server } from 'socket.io'
-import { buildFlow, getStartingNodes, getEndingNodes, constructGraphs } from '../utils'
+import { buildFlow, getStartingNodes, getEndingNodes, constructGraphs, databaseEntities } from '../utils'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import logger from './logger'
 import { StateGraph, END } from '@langchain/langgraph'
@@ -15,10 +22,20 @@ import { getErrorMessage } from '../errors/utils'
 /**
  * Build Agent Graph
  * @param {IChatFlow} chatflow
+ * @param {string} chatId
+ * @param {string} sessionId
  * @param {ICommonObject} incomingInput
+ * @param {string} baseURL
  * @param {Server} socketIO
  */
-export const buildAgentGraph = async (chatflow: IChatFlow, incomingInput: ICommonObject, socketIO?: Server): Promise<any> => {
+export const buildAgentGraph = async (
+    chatflow: IChatFlow,
+    chatId: string,
+    sessionId: string,
+    incomingInput: ICommonObject,
+    baseURL?: string,
+    socketIO?: Server
+): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const chatflowid = chatflow.id
@@ -48,10 +65,7 @@ export const buildAgentGraph = async (chatflow: IChatFlow, incomingInput: ICommo
         }
         startingNodeIds = [...new Set(startingNodeIds)]
 
-        let chatHistory = incomingInput?.history
-        let chatId = incomingInput.chatId ?? ''
-        const sessionId = incomingInput.sessionId ?? ''
-
+        // Initialize nodes like ChatModels, Tools, etc.
         const reactFlowNodes = await buildFlow(
             startingNodeIds,
             nodes,
@@ -60,7 +74,7 @@ export const buildAgentGraph = async (chatflow: IChatFlow, incomingInput: ICommo
             depthQueue,
             appServer.nodesPool.componentNodes,
             incomingInput.question,
-            chatHistory,
+            [],
             chatId,
             sessionId,
             chatflowid,
@@ -69,57 +83,103 @@ export const buildAgentGraph = async (chatflow: IChatFlow, incomingInput: ICommo
             appServer.cachePool,
             false,
             undefined,
-            incomingInput.uploads
+            incomingInput.uploads,
+            baseURL
         )
 
-        const streamResults = await compileGraph(
-            reactFlowNodes,
-            endingNodeIds,
-            appServer.nodesPool.componentNodes,
-            incomingInput.question,
-            incomingInput?.overrideConfig,
-            socketIO,
-            incomingInput.socketIOClientId
-        )
+        const options = {
+            chatId,
+            sessionId,
+            chatflowid,
+            logger,
+            analytic: chatflow.analytic,
+            appDataSource: appServer.AppDataSource,
+            databaseEntities: databaseEntities,
+            cachePool: appServer.cachePool,
+            uploads: incomingInput.uploads,
+            baseURL,
+            signal: new AbortController()
+        }
 
-        if (streamResults) {
-            let finalResult = ''
-            let agentReasoning: IAgentReasoning[] = []
-            let isStreamingStarted = false
-            for await (const output of await streamResults) {
-                if (!output?.__end__) {
-                    const agentName = Object.keys(output)[0]
-                    const usedTools = output[agentName]?.messages
-                        ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.usedTools)
-                        : []
-                    const messages = output[agentName]?.messages ? output[agentName].messages.map((msg: any) => msg.content) : []
-                    const reasoning = {
-                        agentName,
-                        messages,
-                        next: output[agentName]?.next,
-                        instructions: output[agentName]?.instructions,
-                        usedTools: flatten(usedTools)
-                    }
-                    agentReasoning.push(reasoning)
-                    if (socketIO && incomingInput.socketIOClientId) {
-                        if (!isStreamingStarted) {
-                            isStreamingStarted = true
-                            socketIO.to(incomingInput.socketIOClientId).emit('start', JSON.stringify(agentReasoning))
+        let streamResults
+        let finalResult = ''
+        let agentReasoning: IAgentReasoning[] = []
+
+        try {
+            streamResults = await compileGraph(
+                chatflow,
+                reactFlowNodes,
+                endingNodeIds,
+                appServer.nodesPool.componentNodes,
+                options,
+                startingNodeIds,
+                incomingInput.question,
+                incomingInput?.overrideConfig
+            )
+
+            if (streamResults) {
+                let isStreamingStarted = false
+                for await (const output of await streamResults) {
+                    if (!output?.__end__) {
+                        const agentName = Object.keys(output)[0]
+                        const usedTools = output[agentName]?.messages
+                            ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.usedTools)
+                            : []
+                        const sourceDocuments = output[agentName]?.messages
+                            ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.sourceDocuments)
+                            : []
+                        const messages = output[agentName]?.messages ? output[agentName].messages.map((msg: any) => msg.content) : []
+                        const reasoning = {
+                            agentName,
+                            messages,
+                            next: output[agentName]?.next,
+                            instructions: output[agentName]?.instructions,
+                            usedTools: flatten(usedTools),
+                            sourceDocuments: flatten(sourceDocuments)
                         }
-                        socketIO.to(incomingInput.socketIOClientId).emit('agentReasoning', JSON.stringify(agentReasoning))
-                    }
-                } else {
-                    finalResult = output.__end__.messages.length ? output.__end__.messages.pop()?.content : ''
-                    if (socketIO && incomingInput.socketIOClientId) {
-                        socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
+                        agentReasoning.push(reasoning)
+                        if (socketIO && incomingInput.socketIOClientId) {
+                            if (!isStreamingStarted) {
+                                isStreamingStarted = true
+                                socketIO.to(incomingInput.socketIOClientId).emit('start', JSON.stringify(agentReasoning))
+                            }
+
+                            socketIO.to(incomingInput.socketIOClientId).emit('agentReasoning', JSON.stringify(agentReasoning))
+
+                            // Send loading next agent indicator
+                            if (reasoning.next && reasoning.next !== 'FINISH' && reasoning.next !== 'END') {
+                                socketIO.to(incomingInput.socketIOClientId).emit('nextAgent', reasoning.next)
+                            }
+                        }
+                    } else {
+                        finalResult = output.__end__.messages.length ? output.__end__.messages.pop()?.content : ''
+                        if (Array.isArray(finalResult)) finalResult = output.__end__.instructions
+
+                        if (finalResult === incomingInput.question) {
+                            const supervisorNode = reactFlowNodes.find((node: IReactFlowNode) => node.data.name === 'supervisor')
+                            const llm = supervisorNode?.data?.instance?.llm
+                            if (llm) {
+                                const res = await llm.invoke(incomingInput.question)
+                                finalResult = res?.content
+                            }
+                        }
+
+                        if (socketIO && incomingInput.socketIOClientId) {
+                            socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
+                        }
                     }
                 }
-            }
 
+                return { finalResult, agentReasoning }
+            }
+        } catch (e) {
+            if (socketIO && incomingInput.socketIOClientId) {
+                socketIO.to(incomingInput.socketIOClientId).emit('abort')
+            }
             return { finalResult, agentReasoning }
         }
         return streamResults
-    } catch (e: any) {
+    } catch (e) {
         logger.error('[server]: Error:', e)
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error buildAgentGraph - ${getErrorMessage(e)}`)
     }
@@ -127,21 +187,26 @@ export const buildAgentGraph = async (chatflow: IChatFlow, incomingInput: ICommo
 
 /**
  * Compile Graph
+ * @param {IChatFlow} chatflow
  * @param {IReactFlowNode[]} reactflowNodes
  * @param {string[]} workerNodeIds
  * @param {IComponentNodes} componentNodes
+ * @param {ICommonObject} options
+ * @param {string[]} startingNodeIds
  * @param {string} question
  * @param {ICommonObject} overrideConfig
  */
 const compileGraph = async (
+    chatflow: IChatFlow,
     reactflowNodes: IReactFlowNode[] = [],
     workerNodeIds: string[],
     componentNodes: IComponentNodes,
+    options: ICommonObject,
+    startingNodeIds: string[],
     question: string,
-    overrideConfig?: ICommonObject,
-    socketIO?: Server,
-    socketIOClientId?: string
+    overrideConfig?: ICommonObject
 ) => {
+    const appServer = getRunningExpressApp()
     const channels: ITeamState = {
         messages: {
             value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
@@ -172,7 +237,7 @@ const compileGraph = async (
         flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, [])
 
         try {
-            const workerResult: IMultiAgentNode = await newNodeInstance.init(flowNodeData, question, { socketIO, socketIOClientId })
+            const workerResult: IMultiAgentNode = await newNodeInstance.init(flowNodeData, question, options)
             const parentSupervisor = workerResult.parentSupervisorName
             if (!parentSupervisor || workerResult.type !== 'worker') continue
             if (Object.prototype.hasOwnProperty.call(supervisorWorkers, parentSupervisor)) {
@@ -204,7 +269,7 @@ const compileGraph = async (
         if (flowNodeData.inputs) flowNodeData.inputs.workerNodes = supervisorWorkers[supervisor]
 
         try {
-            const supervisorResult: IMultiAgentNode = await newNodeInstance.init(flowNodeData, question, { socketIO, socketIOClientId })
+            const supervisorResult: IMultiAgentNode = await newNodeInstance.init(flowNodeData, question, options)
             if (!supervisorResult.workers?.length) continue
 
             if (supervisorResult.moderations && supervisorResult.moderations.length > 0) {
@@ -212,7 +277,7 @@ const compileGraph = async (
                     for (const moderation of supervisorResult.moderations) {
                         question = await moderation.checkForViolations(question)
                     }
-                } catch (e: any) {
+                } catch (e) {
                     throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
                 }
             }
@@ -228,21 +293,35 @@ const compileGraph = async (
                 conditionalEdges[supervisorResult.workers[i]] = supervisorResult.workers[i]
             }
 
-            workflowGraph.addConditionalEdges(supervisorResult.name, (x: any) => x.next, {
+            workflowGraph.addConditionalEdges(supervisorResult.name, (x: ITeamState) => x.next, {
                 ...conditionalEdges,
                 FINISH: END
             })
 
             workflowGraph.setEntryPoint(supervisorResult.name)
 
+            // Add agentflow to pool
+            ;(workflowGraph as any).signal = options.signal
+            appServer.chatflowPool.add(
+                `${chatflow.id}_${options.chatId}`,
+                workflowGraph as any,
+                reactflowNodes.filter((node) => startingNodeIds.includes(node.id)),
+                overrideConfig
+            )
+
+            // TODO: add persistence
+            // const memory = new MemorySaver()
             const graph = workflowGraph.compile()
+
+            const loggerHandler = new ConsoleCallbackHandler(logger)
+            const callbacks = await additionalCallbacks(flowNodeData, options)
 
             // Return stream result as we should only have 1 supervisor
             return await graph.stream(
                 {
                     messages: [new HumanMessage({ content: question })]
                 },
-                { recursionLimit: supervisorResult?.recursionLimit ?? 100 }
+                { recursionLimit: supervisorResult?.recursionLimit ?? 100, callbacks: [loggerHandler, ...callbacks] }
             )
         } catch (e) {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize supervisor nodes - ${getErrorMessage(e)}`)

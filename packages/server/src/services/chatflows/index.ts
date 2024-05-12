@@ -122,6 +122,7 @@ const getAllChatflows = async (type?: ChatflowType): Promise<IChatFlow[]> => {
 
 const getChatflowByApiKey = async (apiKeyId: string): Promise<any> => {
     try {
+        // Here we only get chatflows that are bounded by the apikeyid and chatflows that are not bounded by any apikey
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('cf')

@@ -7,6 +7,7 @@ import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/o
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { INode, INodeData, INodeParams, IMultiAgentNode, ITeamState, ICommonObject } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
+import { StringOutputParser } from '@langchain/core/output_parsers'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 
@@ -61,7 +62,7 @@ class Worker_MultiAgents implements INode {
                 name: 'model',
                 type: 'BaseChatModel',
                 optional: true,
-                description: `Only compatible with models that are capable of function calling. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI. If not specified, supervisor's model will be used`
+                description: `Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat. If not specified, supervisor's model will be used`
             },
             {
                 label: 'Max Iterations',
@@ -73,7 +74,7 @@ class Worker_MultiAgents implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
         const workerPrompt = nodeData.inputs?.workerPrompt as string
@@ -84,7 +85,9 @@ class Worker_MultiAgents implements INode {
 
         if (!workerName) throw new Error('Worker name is required!')
 
-        const llm = model ?? (supervisor.llm as BaseChatModel)
+        const llm = model || (supervisor.llm as BaseChatModel)
+
+        const abortControllerSignal = options.signal as AbortController
 
         const agent = await createAgent(llm, [...tools], workerPrompt, maxIterations)
 
@@ -93,7 +96,8 @@ class Worker_MultiAgents implements INode {
                 {
                     state,
                     agent: agent,
-                    name: workerName
+                    name: workerName,
+                    abortControllerSignal
                 },
                 config
             )
@@ -102,6 +106,7 @@ class Worker_MultiAgents implements INode {
             node: workerNode,
             name: workerName,
             type: 'worker',
+            workerPrompt,
             parentSupervisorName: supervisor.name ?? 'supervisor'
         }
 
@@ -109,67 +114,103 @@ class Worker_MultiAgents implements INode {
     }
 }
 
-async function createAgent(llm: BaseChatModel, tools: any[], systemPrompt: string, maxIterations?: string): Promise<AgentExecutor> {
-    const combinedPrompt =
-        systemPrompt +
-        '\nWork autonomously according to your specialty, using the tools available to you.' +
-        ' Do not ask for clarification.' +
-        ' Your other team members (and other teams) will collaborate with you with their own specialties.' +
-        ' You are chosen for a reason! You are one of the following team members: {team_members}.'
-    //const toolNames = tools.length ? tools.map((t) => t.name).join(', ') : ''
-    const prompt = ChatPromptTemplate.fromMessages([
-        ['system', combinedPrompt],
-        new MessagesPlaceholder('messages'),
-        new MessagesPlaceholder('agent_scratchpad')
-        /* Gettind rid of this for now because other LLMs dont support system message at later stage
-        [
-            'system',
+async function createAgent(
+    llm: BaseChatModel,
+    tools: any[],
+    systemPrompt: string,
+    maxIterations?: string
+): Promise<AgentExecutor | RunnableSequence> {
+    if (tools.length) {
+        const combinedPrompt =
+            systemPrompt +
+            '\nWork autonomously according to your specialty, using the tools available to you.' +
+            ' Do not ask for clarification.' +
+            ' Your other team members (and other teams) will collaborate with you with their own specialties.' +
+            ' You are chosen for a reason! You are one of the following team members: {team_members}.'
+
+        //const toolNames = tools.length ? tools.map((t) => t.name).join(', ') : ''
+        const prompt = ChatPromptTemplate.fromMessages([
+            ['system', combinedPrompt],
+            new MessagesPlaceholder('messages'),
+            new MessagesPlaceholder('agent_scratchpad')
+            /* Gettind rid of this for now because other LLMs dont support system message at later stage
             [
-                'Supervisor instructions: {instructions}\n' + tools.length
-                    ? `Remember, you individually can only use these tools: ${toolNames}`
-                    : '' + '\n\nEnd if you have already completed the requested task. Communicate the work completed.'
-            ].join('\n')
-        ]*/
-    ])
+                'system',
+                [
+                    'Supervisor instructions: {instructions}\n' + tools.length
+                        ? `Remember, you individually can only use these tools: ${toolNames}`
+                        : '' + '\n\nEnd if you have already completed the requested task. Communicate the work completed.'
+                ].join('\n')
+            ]*/
+        ])
+        if (llm.bindTools === undefined) {
+            throw new Error(`This agent only compatible with function calling models.`)
+        }
+        const modelWithTools = llm.bindTools(tools)
 
-    if (llm.bindTools === undefined) {
-        throw new Error(`This agent only compatible with function calling models.`)
+        const agent = RunnableSequence.from([
+            //@ts-ignore
+            RunnablePassthrough.assign({
+                agent_scratchpad: (input: { steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(input.steps)
+            }),
+            prompt,
+            modelWithTools,
+            new ToolCallingAgentOutputParser()
+        ])
+
+        const executor = AgentExecutor.fromAgentAndTools({
+            agent: agent,
+            tools,
+            verbose: process.env.DEBUG === 'true' ? true : false,
+            maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
+        })
+        return executor
+    } else {
+        const combinedPrompt =
+            systemPrompt +
+            '\nWork autonomously according to your specialty, using the tools available to you.' +
+            ' Do not ask for clarification.' +
+            ' Your other team members (and other teams) will collaborate with you with their own specialties.' +
+            ' You are chosen for a reason! You are one of the following team members: {team_members}.'
+
+        const prompt = ChatPromptTemplate.fromMessages([['system', combinedPrompt], new MessagesPlaceholder('messages')])
+        const conversationChain = RunnableSequence.from([prompt, llm, new StringOutputParser()])
+        return conversationChain
     }
-    const modelWithTools = tools.length ? llm.bindTools(tools) : llm.bindTools([])
-
-    const agent = RunnableSequence.from([
-        //@ts-ignore
-        RunnablePassthrough.assign({ agent_scratchpad: (input: { steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(input.steps) }),
-        prompt,
-        modelWithTools,
-        new ToolCallingAgentOutputParser()
-    ])
-    const executor = AgentExecutor.fromAgentAndTools({
-        agent: agent,
-        tools,
-        verbose: process.env.DEBUG === 'true' ? true : false,
-        maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
-    })
-    return executor
 }
 
-async function agentNode({ state, agent, name }: { state: any; agent: AgentExecutor; name: string }, config: RunnableConfig) {
-    const result = await agent.invoke(state, config)
-    const additional_kwargs: ICommonObject = {}
-    if (result.usedTools) {
-        additional_kwargs.usedTools = result.usedTools
-    }
-    if (result.sourceDocuments) {
-        additional_kwargs.sourceDocuments = result.sourceDocuments
-    }
-    return {
-        messages: [
-            new HumanMessage({
-                content: result.output,
-                name,
-                additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
-            })
-        ]
+async function agentNode(
+    {
+        state,
+        agent,
+        name,
+        abortControllerSignal
+    }: { state: ITeamState; agent: AgentExecutor | RunnableSequence; name: string; abortControllerSignal: AbortController },
+    config: RunnableConfig
+) {
+    try {
+        if (abortControllerSignal.signal.aborted) {
+            throw new Error('Aborted!')
+        }
+        const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
+        const additional_kwargs: ICommonObject = {}
+        if (result.usedTools) {
+            additional_kwargs.usedTools = result.usedTools
+        }
+        if (result.sourceDocuments) {
+            additional_kwargs.sourceDocuments = result.sourceDocuments
+        }
+        return {
+            messages: [
+                new HumanMessage({
+                    content: typeof result === 'string' ? result : result.output,
+                    name,
+                    additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
+                })
+            ]
+        }
+    } catch (error) {
+        throw new Error('Aborted!')
     }
 }
 

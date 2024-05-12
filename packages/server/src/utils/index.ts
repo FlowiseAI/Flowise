@@ -406,7 +406,8 @@ export const buildFlow = async (
     cachePool?: CachePool,
     isUpsert?: boolean,
     stopNodeId?: string,
-    uploads?: IFileUpload[]
+    uploads?: IFileUpload[],
+    baseURL?: string
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -460,7 +461,8 @@ export const buildFlow = async (
                     databaseEntities,
                     cachePool,
                     dynamicVariables,
-                    uploads
+                    uploads,
+                    baseURL
                 })
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
@@ -478,7 +480,8 @@ export const buildFlow = async (
                     cachePool,
                     isUpsert,
                     dynamicVariables,
-                    uploads
+                    uploads,
+                    baseURL
                 })
 
                 // Save dynamic variables
