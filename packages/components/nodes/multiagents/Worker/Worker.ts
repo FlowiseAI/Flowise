@@ -149,8 +149,8 @@ async function createAgent(
         const modelWithTools = llm.bindTools(tools)
 
         const agent = RunnableSequence.from([
-            //@ts-ignore
             RunnablePassthrough.assign({
+                //@ts-ignore
                 agent_scratchpad: (input: { steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(input.steps)
             }),
             prompt,

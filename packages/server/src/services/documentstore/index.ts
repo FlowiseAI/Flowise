@@ -282,7 +282,7 @@ const deleteDocumentStoreFileChunk = async (storeId: string, docId: string, chun
     }
 }
 
-const editDocumentStoreFileChunk = async (storeId: string, docId: string, chunkId: string, content: string) => {
+const editDocumentStoreFileChunk = async (storeId: string, docId: string, chunkId: string, content: string, metadata: ICommonObject) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -305,6 +305,7 @@ const editDocumentStoreFileChunk = async (storeId: string, docId: string, chunkI
         }
         found.totalChars -= editChunk.pageContent.length
         editChunk.pageContent = content
+        editChunk.metadata = JSON.stringify(metadata)
         found.totalChars += content.length
         await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).save(editChunk)
         entity.loaders = JSON.stringify(loaders)

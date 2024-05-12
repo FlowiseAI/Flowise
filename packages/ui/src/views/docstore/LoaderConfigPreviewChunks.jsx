@@ -120,9 +120,14 @@ const LoaderConfigPreviewChunks = () => {
         let canSubmit = true
         const inputParams = (selectedDocumentLoader.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
         for (const inputParam of inputParams) {
-            if (!inputParam.optional && !selectedDocumentLoader.inputs[inputParam.name]) {
-                canSubmit = false
-                break
+            if (!inputParam.optional && (!selectedDocumentLoader.inputs[inputParam.name] || !selectedDocumentLoader.credential)) {
+                if (inputParam.type === 'credential' && !selectedDocumentLoader.credential) {
+                    canSubmit = false
+                    break
+                } else if (inputParam.type !== 'credential' && !selectedDocumentLoader.inputs[inputParam.name]) {
+                    canSubmit = false
+                    break
+                }
             }
         }
         if (!canSubmit) {

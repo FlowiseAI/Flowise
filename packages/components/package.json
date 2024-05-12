@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "1.6.10",
+    "version": "1.7.2",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -61,7 +61,6 @@
         "assemblyai": "^4.2.2",
         "axios": "1.6.2",
         "cheerio": "^1.0.0-rc.12",
-        "couchbase": "4.3.1",
         "chromadb": "^1.5.11",
         "cohere-ai": "^6.2.0",
         "crypto-js": "^4.1.1",
