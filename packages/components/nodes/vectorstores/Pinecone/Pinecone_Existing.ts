@@ -97,7 +97,8 @@ class Pinecone_Existing_VectorStores implements INode {
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
 
         const client = new Pinecone({
-            apiKey: pineconeApiKey
+            apiKey: pineconeApiKey,
+            sourceTag: 'flowise'
         })
 
         const pineconeIndex = client.Index(index)
