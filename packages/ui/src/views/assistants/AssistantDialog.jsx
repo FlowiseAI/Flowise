@@ -672,7 +672,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
                     <Box>
                         <Stack sx={{ position: 'relative' }} direction='row'>
-                            <Typography variant='overline'>
+                            <Typography variant='overline' style={{ textTransform: 'unset' }}>
                                 Учетные данные OpenAI
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
@@ -691,7 +691,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative' }} direction='row'>
-                            <Typography variant='overline'>
+                            <Typography variant='overline' style={{ textTransform: 'unset' }}>
                                 Модель ассистента
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
@@ -706,7 +706,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Имя ассистента</Typography>
+                            <Typography variant='overline' style={{ textTransform: 'unset' }}>
+                              Имя ассистента
+                            </Typography>
                             <TooltipWithParser title={'Имя ассистента. Максимум 256 символов.'} />
                         </Stack>
                         <OutlinedInput
@@ -722,7 +724,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Описание ассистента</Typography>
+                            <Typography variant='overline' style={{ textTransform: 'unset' }}>
+                              Описание ассистента
+                            </Typography>
                             <TooltipWithParser title={'Описание ассистента. Максимум 512 символов.'} />
                         </Stack>
                         <OutlinedInput
@@ -740,7 +744,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative' }} direction='row'>
-                            <Typography variant='overline'>Иконка ассистента Src</Typography>
+                            <Typography variant='overline' style={{ textTransform: 'unset' }}>
+                              Иконка ассистента Src
+                            </Typography>
                         </Stack>
                         <div
                             style={{
@@ -775,7 +781,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Инструкция ассистента</Typography>
+                            <Typography variant='overline' style={{ textTransform: 'unset' }}>
+                              Инструкция ассистента
+                            </Typography>
                             <TooltipWithParser title={'Инструкция о том, как работать с ним. Максимум 32768 символов.'} />
                         </Stack>
                         <OutlinedInput
@@ -793,7 +801,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Температура ассистента</Typography>
+                            <Typography variant='overline' style={{ textTransform: 'unset' }}>
+                              Температура ассистента
+                            </Typography>
                             <TooltipWithParser
                                 title={
                                     'Контролирует случайность: снижение приводит к меньшему количеству случайных завершений. Когда температура приближается к нулю, модель станет детерминированной и повторяющейся.'
@@ -812,7 +822,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>ТОП K помощника</Typography>
+                            <Typography variant='overline' style={{ textTransform: 'unset' }}>
+                              ТОП K помощника
+                            </Typography>
                             <TooltipWithParser
                                 title={
                                     'Контролирует разнообразие посредством выборки ядер: 0,5 означает, что рассматривается половина всех вариантов, взвешенных по правдоподобию.'
@@ -835,7 +847,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                         <>
                             <Box>
                                 <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                    <Typography variant='overline'>Инструменты ассистента</Typography>
+                                    <Typography variant='overline' style={{ textTransform: 'unset' }}>
+                                      Инструменты ассистента
+                                    </Typography>
                                     <TooltipWithParser title='Список инструментов, включенных в помощнике. На одного помощника может быть максимум 128 инструментов.' />
                                 </Stack>
                                 <MultiDropdown
@@ -865,8 +879,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                     <Card sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: `${customization.borderRadius}px` }}>
                                         <CardContent>
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                                <Typography variant='overline'>Файлы для интерпретации кода</Typography>
-                                                <TooltipWithParser title='Code Interpreter позволяет помощнику писать и запускать код. Этот инструмент может обрабатывать файлы с различными данными и форматированием, а также создавать файлы, такие как графики.' />
+                                                <Typography variant='overline' style={{ textTransform: 'unset' }}>
+                                                  Файлы для интерпретации кода
+                                                </Typography>
+                                                <TooltipWithParser title='Интерпретатор кода позволяет помощнику писать и запускать код. Этот инструмент может обрабатывать файлы с различными данными и форматированием, а также создавать файлы, такие как графики.' />
                                             </Stack>
                                             {toolResources?.code_interpreter?.files?.length > 0 && (
                                                 <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -917,7 +933,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                     <Card sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: `${customization.borderRadius}px` }}>
                                         <CardContent>
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                                <Typography variant='overline'>Файлы для поиска по файлам</Typography>
+                                                <Typography variant='overline' style={{ textTransform: 'unset' }}>
+                                                  Файлы для поиска по файлам
+                                                </Typography>
                                                 <TooltipWithParser title='Поиск файлов позволяет помощнику получать знания из файлов, которые вы или ваши пользователи загружаете. После загрузки файла помощник автоматически решает, когда получить контент, исходя из запросов пользователей.' />
                                             </Stack>
                                             {toolResources?.file_search?.vector_store_object && (

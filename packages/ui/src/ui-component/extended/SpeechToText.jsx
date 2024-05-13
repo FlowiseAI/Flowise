@@ -45,7 +45,7 @@ const speechToTextProviders = {
                 optional: true
             },
             {
-                label: 'Prompt',
+                label: 'Подсказка',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,

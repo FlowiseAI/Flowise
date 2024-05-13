@@ -946,22 +946,22 @@
                 {
                     "label": "voyage-2",
                     "name": "voyage-2",
-                    "description": "Base generalist embedding model optimized for both latency and quality"
+                    "description": "Базовая универсальная модель внедрения, оптимизированная как по задержке, так и по качеству."
                 },
                 {
                     "label": "voyage-code-2",
                     "name": "voyage-code-2",
-                    "description": "Optimized for code retrieval"
+                    "description": "Оптимизирован для поиска кода"
                 },
                 {
                     "label": "voyage-large-2",
                     "name": "voyage-large-2",
-                    "description": "Powerful generalist embedding model"
+                    "description": "Мощная универсальная модель встраивания"
                 },
                 {
                     "label": "voyage-lite-02-instruct",
                     "name": "voyage-lite-02-instruct",
-                    "description": "Instruction-tuned for classification, clustering, and sentence textual similarity tasks"
+                    "description": "Инструкции настроены для задач классификации, кластеризации и текстового сходства предложений."
                 }
             ]
         },

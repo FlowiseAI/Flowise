@@ -233,7 +233,7 @@ const APIKey = () => {
             title: 'Добавить новый ключ API',
             type: 'ADD',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            confirmButtonName: 'Добавить',
             customBtnId: 'btn_confirmAddingApiKey'
         }
         setDialogProps(dialogProp)
@@ -245,7 +245,7 @@ const APIKey = () => {
             title: 'Изменить API ключ',
             type: 'EDIT',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            confirmButtonName: 'Сохранить',
             customBtnId: 'btn_confirmEditingApiKey',
             key
         }
@@ -255,13 +255,13 @@ const APIKey = () => {
 
     const deleteKey = async (key) => {
         const confirmPayload = {
-            title: `Delete`,
+            title: `Удалить`,
             description:
                 key.chatFlows.length === 0
                     ? `Удалить ключ [${key.keyName}] ? `
                     : `Удалить ключ [${key.keyName}] ?\n There are ${key.chatFlows.length} chatflows using this key.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel',
+            confirmButtonName: 'Удалить',
+            cancelButtonName: 'Отменить',
             customBtnId: 'btn_initiateDeleteApiKey'
         }
         const isConfirmed = await confirm(confirmPayload)

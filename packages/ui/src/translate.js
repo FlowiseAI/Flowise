@@ -733,6 +733,7 @@ export const translationObject = {
     'Remembers previous conversational back and forths directly': 'Запоминает предыдущие разговоры напрямую',
     'Uses a window of size k to surface the last k back-and-forth to use as memory':
         'Использует окно размером k, чтобы отображать последние k обратных сообщений для использования в качестве памяти',
+    'Uses token length to decide when to summarize conversations': 'Использует длину токена, чтобы решить, когда подводить итоги разговоров.',
     'Summarizes the conversation and stores the current summary in memory': 'Суммирует беседу и хранит текущее резюме в памяти',
     'Stores the conversation in dynamo db table': 'Сохраняет беседу в таблице DynamoDB',
     'Stores the conversation in MongoDB Atlas': 'Сохраняет беседу в MongoDB Atlas',
@@ -1421,6 +1422,8 @@ export const translationObject = {
     'MistralAI Chat Model': 'Модель чата MistralAI',
     'Agent that uses OpenAI Function Calling to pick the tools and args to call':
         'Агент, который использует вызов функций OpenAI для выбора инструментов и аргументов для вызова.',
+    'An agent that uses OpenAI Function Calling to pick the tool and args to call':
+        'Агент, который использует вызов функций OpenAI для выбора инструмента и аргументов для вызова.',
     'Agent that uses Function Calling to pick the tools and args to call':
         'Агент, который использует вызов функций для выбора инструментов и аргументов для вызова',
     'Agent that is designed for LLMs that are good for reasoning/writing XML (e.g: Anthropic Claude)':
