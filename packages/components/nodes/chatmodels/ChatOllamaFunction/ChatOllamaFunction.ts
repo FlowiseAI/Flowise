@@ -63,6 +63,7 @@ class ChatOllamaFunction_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
+                description: 'Only compatible with function calling model like mistral',
                 placeholder: 'mistral'
             },
             {
