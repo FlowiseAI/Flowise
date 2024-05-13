@@ -34,7 +34,7 @@ import useApi from '@/hooks/useApi'
 import documentsApi from '@/api/documentstore'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons'
+import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
 // const

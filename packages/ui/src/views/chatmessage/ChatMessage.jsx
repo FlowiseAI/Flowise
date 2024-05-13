@@ -23,7 +23,7 @@ import {
     Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconTrash, IconX, IconTool } from '@tabler/icons'
+import { IconCircleDot, IconDownload, IconSend, IconMicrophone, IconPhotoPlus, IconTrash, IconX, IconTool } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
 import audioUploadSVG from '@/assets/images/wave-sound.jpg'

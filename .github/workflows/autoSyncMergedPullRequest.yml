@@ -11,14 +11,14 @@ jobs:
         permissions:
             contents: write
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Show PR info
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   echo The PR #${{ github.event.pull_request.number }} was merged on main branch!
             - name: Repository Dispatch
-              uses: peter-evans/repository-dispatch@v2
+              uses: peter-evans/repository-dispatch@v3
               with:
                   token: ${{ secrets.AUTOSYNC_TOKEN }}
                   repository: ${{ secrets.AUTOSYNC_CH_URL }}
@@ -28,6 +28,6 @@ jobs:
                         "ref": "${{ github.ref }}",
                         "prNumber": "${{ github.event.pull_request.number }}",
                         "prTitle": "${{ github.event.pull_request.title }}",
-                        "prDescription": "${{ toJSON(github.event.pull_request.description) }}",
+                        "prDescription": "",
                         "sha": "${{ github.sha }}"
                       }

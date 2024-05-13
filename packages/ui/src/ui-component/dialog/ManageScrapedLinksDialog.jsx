@@ -16,7 +16,7 @@ import {
     Stack,
     Typography
 } from '@mui/material'
-import { IconEraser, IconTrash, IconX } from '@tabler/icons'
+import { IconEraser, IconTrash, IconX } from '@tabler/icons-react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'

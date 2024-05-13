@@ -42,7 +42,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // icons
-import { IconPlus, IconRefresh, IconScissors, IconTrash, IconX, IconVectorBezier2 } from '@tabler/icons'
+import { IconPlus, IconRefresh, IconScissors, IconTrash, IconX, IconVectorBezier2 } from '@tabler/icons-react'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileEditIcon from '@mui/icons-material/Edit'
