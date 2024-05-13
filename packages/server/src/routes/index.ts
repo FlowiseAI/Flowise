@@ -8,6 +8,7 @@ import chatMessageRouter from './chat-messages'
 import componentsCredentialsRouter from './components-credentials'
 import componentsCredentialsIconRouter from './components-credentials-icon'
 import credentialsRouter from './credentials'
+import documentStoreRouter from './documentstore'
 import feedbackRouter from './feedback'
 import fetchLinksRouter from './fetch-links'
 import flowConfigRouter from './flow-config'
@@ -49,6 +50,7 @@ router.use('/components-credentials', componentsCredentialsRouter)
 router.use('/components-credentials-icon', componentsCredentialsIconRouter)
 router.use('/chatflows-uploads', chatflowsUploadsRouter)
 router.use('/credentials', credentialsRouter)
+router.use('/document-store', documentStoreRouter)
 router.use('/feedback', feedbackRouter)
 router.use('/fetch-links', fetchLinksRouter)
 router.use('/flow-config', flowConfigRouter)

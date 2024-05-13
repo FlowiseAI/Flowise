@@ -32,7 +32,7 @@ import DeleteConfirmDialog from './DeleteConfirmDialog'
 import AssistantVectorStoreDialog from './AssistantVectorStoreDialog'
 
 // Icons
-import { IconX, IconPlus } from '@tabler/icons'
+import { IconX, IconPlus } from '@tabler/icons-react'
 
 // API
 import assistantsApi from '@/api/assistants'

@@ -737,14 +737,37 @@ export const getOS = () => {
     return os
 }
 
-export const formatBytes = (bytes, decimals = 2) => {
-    if (!+bytes) return '0 Bytes'
+export const formatBytes = (number) => {
+    if (number == null || number === undefined || number <= 0) {
+        return '0 Bytes'
+    }
+    var scaleCounter = 0
+    var scaleInitials = [' Bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB']
+    while (number >= 1024 && scaleCounter < scaleInitials.length - 1) {
+        number /= 1024
+        scaleCounter++
+    }
+    if (scaleCounter >= scaleInitials.length) scaleCounter = scaleInitials.length - 1
+    let compactNumber = number
+        .toFixed(2)
+        .replace(/\.?0+$/, '')
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    compactNumber += scaleInitials[scaleCounter]
+    return compactNumber.trim()
+}
 
-    const k = 1024
-    const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+// Formatter from: https://stackoverflow.com/a/9462382
+export const kFormatter = (num) => {
+    const lookup = [
+        { value: 1, symbol: '' },
+        { value: 1e3, symbol: 'k' },
+        { value: 1e6, symbol: 'M' },
+        { value: 1e9, symbol: 'G' },
+        { value: 1e12, symbol: 'T' },
+        { value: 1e15, symbol: 'P' },
+        { value: 1e18, symbol: 'E' }
+    ]
+    const regexp = /\.0+$|(?<=\.[0-9]*[1-9])0+$/
+    const item = lookup.findLast((item) => num >= item.value)
+    return item ? (num / item.value).toFixed(1).replace(regexp, '').concat(item.symbol) : '0'
 }

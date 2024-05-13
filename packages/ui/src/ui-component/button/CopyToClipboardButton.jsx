@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { IconButton } from '@mui/material'
-import { IconClipboard } from '@tabler/icons'
+import { IconClipboard } from '@tabler/icons-react'
 
 const CopyToClipboardButton = (props) => {
     const customization = useSelector((state) => state.customization)

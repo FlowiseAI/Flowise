@@ -31,7 +31,7 @@ import DatePicker from 'react-datepicker'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
 import msgEmptySVG from '@/assets/images/message_empty.svg'
-import { IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons'
+import { IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons-react'
 
 // Project import
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'

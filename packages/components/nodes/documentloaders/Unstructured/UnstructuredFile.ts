@@ -1,4 +1,5 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { omit } from 'lodash'
+import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import {
     UnstructuredLoaderOptions,
     UnstructuredLoaderStrategy,
@@ -400,9 +401,21 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 default: '500'
             },
             {
-                label: 'Metadata',
+                label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
+                description: 'Additional metadata to be added to the extracted documents',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Omit Metadata Keys',
+                name: 'omitMetadataKeys',
+                type: 'string',
+                rows: 4,
+                description:
+                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field',
+                placeholder: 'key1, key2, key3.nestedKey1',
                 optional: true,
                 additionalParams: true
             }
@@ -429,6 +442,12 @@ class UnstructuredFile_DocumentLoaders implements INode {
         const combineUnderNChars = nodeData.inputs?.combineUnderNChars as number
         const newAfterNChars = nodeData.inputs?.newAfterNChars as number
         const maxCharacters = nodeData.inputs?.maxCharacters as number
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+
+        let omitMetadataKeys: string[] = []
+        if (_omitMetadataKeys) {
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
         const fileBase64 = nodeData.inputs?.fileObject as string
 
         const obj: UnstructuredLoaderOptions = {
@@ -452,7 +471,7 @@ class UnstructuredFile_DocumentLoaders implements INode {
         const unstructuredAPIKey = getCredentialParam('unstructuredAPIKey', credentialData, nodeData)
         if (unstructuredAPIKey) obj.apiKey = unstructuredAPIKey
 
-        let docs: any[] = []
+        let docs: IDocument[] = []
         let files: string[] = []
 
         if (fileBase64) {
@@ -499,19 +518,33 @@ class UnstructuredFile_DocumentLoaders implements INode {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
             docs = docs.map((doc) => ({
                 ...doc,
-                metadata: {
-                    ...doc.metadata,
-                    ...parsedMetadata,
-                    [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                }
+                metadata:
+                    _omitMetadataKeys === '*'
+                        ? {
+                              ...parsedMetadata
+                          }
+                        : omit(
+                              {
+                                  ...doc.metadata,
+                                  ...parsedMetadata,
+                                  [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
+                              },
+                              omitMetadataKeys
+                          )
             }))
         } else {
             docs = docs.map((doc) => ({
                 ...doc,
-                metadata: {
-                    ...doc.metadata,
-                    [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                }
+                metadata:
+                    _omitMetadataKeys === '*'
+                        ? {}
+                        : omit(
+                              {
+                                  ...doc.metadata,
+                                  [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
+                              },
+                              omitMetadataKeys
+                          )
             }))
         }
 

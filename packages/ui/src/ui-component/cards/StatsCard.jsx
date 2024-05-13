@@ -23,7 +23,7 @@ const StatsCard = ({ title, stat }) => {
 
 StatsCard.propTypes = {
     title: PropTypes.string,
-    stat: PropTypes.string
+    stat: PropTypes.string | PropTypes.number
 }
 
 export default StatsCard
