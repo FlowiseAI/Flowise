@@ -355,7 +355,7 @@ const APIKey = () => {
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
                                     <img
-                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
                                         src={APIEmptySVG}
                                         alt='APIEmptySVG'
                                     />

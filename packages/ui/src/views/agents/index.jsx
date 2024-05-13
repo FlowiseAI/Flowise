@@ -9,7 +9,7 @@ import { useTheme } from '@mui/material/styles'
 import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
-import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
+import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
 import LoginDialog from '@/ui-component/dialog/LoginDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
@@ -197,9 +197,9 @@ const Agents = () => {
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img
-                                    style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
-                                    src={WorkflowEmptySVG}
-                                    alt='WorkflowEmptySVG'
+                                    style={{ objectFit: 'cover', height: '12vh', width: 'auto' }}
+                                    src={AgentsEmptySVG}
+                                    alt='AgentsEmptySVG'
                                 />
                             </Box>
                             <div>No Agents Yet</div>
