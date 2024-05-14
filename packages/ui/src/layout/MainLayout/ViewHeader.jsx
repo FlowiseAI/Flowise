@@ -6,7 +6,7 @@ import { useTheme } from '@mui/material/styles'
 import { StyledFab } from '@/ui-component/button/StyledFab'
 
 // icons
-import { IconSearch, IconArrowLeft, IconEdit } from '@tabler/icons'
+import { IconSearch, IconArrowLeft, IconEdit } from '@tabler/icons-react'
 
 const ViewHeader = ({
     children,

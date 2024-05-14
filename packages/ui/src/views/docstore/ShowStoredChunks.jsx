@@ -7,7 +7,7 @@ import ReactJson from 'flowise-react-json-view'
 import { Box, Card, Button, Grid, IconButton, Stack, Typography } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
-import { IconLanguage, IconX, IconChevronLeft, IconChevronRight } from '@tabler/icons'
+import { IconLanguage, IconX, IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 import chunks_emptySVG from '@/assets/images/chunks_empty.svg'
 
 // project imports

@@ -38,7 +38,7 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
 // icons
-import { IconX, IconRefreshAlert } from '@tabler/icons'
+import { IconX, IconRefreshAlert } from '@tabler/icons-react'
 
 // utils
 import {

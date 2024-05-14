@@ -5,7 +5,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 
 // material-ui
 import { Typography, Box, Button, FormControl, ListItem, ListItemAvatar, ListItemText, MenuItem, Select } from '@mui/material'
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 // Project import
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
@@ -16,6 +16,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import openAISVG from '@/assets/images/openai.svg'
 import assemblyAIPng from '@/assets/images/assemblyai.png'
+import localAiPng from '@/assets/images/localai.png'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -23,10 +24,19 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
+// If implementing a new provider, this must be updated in
+// components/src/speechToText.ts as well
+const SpeechToTextType = {
+    OPENAI_WHISPER: 'openAIWhisper',
+    ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
+    LOCALAI_STT: 'localAISTT'
+}
+
+// Weird quirk - the key must match the name property value.
 const speechToTextProviders = {
-    openAIWhisper: {
+    [SpeechToTextType.OPENAI_WHISPER]: {
         label: 'OpenAI Whisper',
-        name: 'openAIWhisper',
+        name: SpeechToTextType.OPENAI_WHISPER,
         icon: openAISVG,
         url: 'https://platform.openai.com/docs/guides/speech-to-text',
         inputs: [
@@ -63,9 +73,9 @@ const speechToTextProviders = {
             }
         ]
     },
-    assemblyAiTranscribe: {
+    [SpeechToTextType.ASSEMBLYAI_TRANSCRIBE]: {
         label: 'Assembly AI',
-        name: 'assemblyAiTranscribe',
+        name: SpeechToTextType.ASSEMBLYAI_TRANSCRIBE,
         icon: assemblyAIPng,
         url: 'https://www.assemblyai.com/',
         inputs: [
@@ -74,6 +84,59 @@ const speechToTextProviders = {
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['assemblyAIApi']
+            }
+        ]
+    },
+    [SpeechToTextType.LOCALAI_STT]: {
+        label: 'LocalAi STT',
+        name: SpeechToTextType.LOCALAI_STT,
+        icon: localAiPng,
+        url: 'https://localai.io/features/audio-to-text/',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['localAIApi']
+            },
+            {
+                label: 'Base URL',
+                name: 'baseUrl',
+                type: 'string',
+                description: 'The base URL of the local AI server'
+            },
+            {
+                label: 'Language',
+                name: 'language',
+                type: 'string',
+                description:
+                    'The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
+                placeholder: 'en',
+                optional: true
+            },
+            {
+                label: 'Model',
+                name: 'model',
+                type: 'string',
+                description: `The STT model to load. Defaults to whisper-1 if left blank.`,
+                placeholder: 'whisper-1',
+                optional: true
+            },
+            {
+                label: 'Prompt',
+                name: 'prompt',
+                type: 'string',
+                rows: 4,
+                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                optional: true
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
+                optional: true
             }
         ]
     }
@@ -191,8 +254,11 @@ const SpeechToText = ({ dialogProps }) => {
                 <FormControl fullWidth>
                     <Select size='small' value={selectedProvider} onChange={handleProviderChange}>
                         <MenuItem value='none'>None</MenuItem>
-                        <MenuItem value='openAIWhisper'>OpenAI Whisper</MenuItem>
-                        <MenuItem value='assemblyAiTranscribe'>Assembly AI</MenuItem>
+                        {Object.values(speechToTextProviders).map((provider) => (
+                            <MenuItem key={provider.name} value={provider.name}>
+                                {provider.label}
+                            </MenuItem>
+                        ))}
                     </Select>
                 </FormControl>
             </Box>

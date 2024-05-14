@@ -35,7 +35,7 @@ import cURLSVG from '@/assets/images/cURL.svg'
 import EmbedSVG from '@/assets/images/embed.svg'
 import ShareChatbotSVG from '@/assets/images/sharing.png'
 import settingsSVG from '@/assets/images/settings.svg'
-import { IconBulb } from '@tabler/icons'
+import { IconBulb } from '@tabler/icons-react'
 
 // API
 import apiKeyApi from '@/api/apikey'
