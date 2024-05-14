@@ -310,6 +310,10 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
+                    "label": "gemini-1.5-flash-latest",
+                    "name": "gemini-1.5-flash-latest"
+                },
+                {
                     "label": "gemini-1.5-pro-latest",
                     "name": "gemini-1.5-pro-latest"
                 },
@@ -335,6 +339,10 @@
         {
             "name": "chatGoogleVertexAI",
             "models": [
+                {
+                    "label": "gemini-1.5-flash",
+                    "name": "gemini-1.5-flash-preview-0514"
+                },
                 {
                     "label": "gemini-1.5-pro",
                     "name": "gemini-1.5-pro-preview-0409"
