@@ -340,7 +340,7 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
-                    "label": "gemini-1.5-flash-preview-0514",
+                    "label": "gemini-1.5-flash",
                     "name": "gemini-1.5-flash-preview-0514"
                 },
                 {
