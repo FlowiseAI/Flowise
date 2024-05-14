@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { IFileUpload, convertSpeechToText, ICommonObject, addFileToStorage } from 'flowise-components'
+import { IFileUpload, convertSpeechToText, ICommonObject, addSingleFileToStorage, addArrayFilesToStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { IncomingInput, IMessage, INodeData, IReactFlowObject, IReactFlowNode, IDepthQueue, chatType, IChatMessage } from '../Interface'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
@@ -71,7 +71,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                     const splitDataURI = upload.data.split(',')
                     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                     const mime = splitDataURI[0].split(':')[1].split(';')[0]
-                    await addFileToStorage(mime, bf, filename, chatflowid, chatId)
+                    await addSingleFileToStorage(mime, bf, filename, chatflowid, chatId)
                     upload.type = 'stored-file'
                     // Omit upload.data since we don't store the content in database
                     fileUploads[i] = omit(upload, ['data'])
@@ -111,20 +111,21 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
         let isStreamValid = false
 
-        const files = (req.files as any[]) || []
+        const files = (req.files as Express.Multer.File[]) || []
 
         if (files.length) {
             const overrideConfig: ICommonObject = { ...req.body }
+            const fileNames: string[] = []
             for (const file of files) {
-                const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
-                const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
+                const fileBuffer = fs.readFileSync(file.path)
+
+                const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
                 const fileInputField = mapMimeTypeToInputField(file.mimetype)
-                if (overrideConfig[fileInputField]) {
-                    overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
-                } else {
-                    overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
-                }
+
+                overrideConfig[fileInputField] = storagePath
+
+                fs.unlinkSync(file.path)
             }
             incomingInput = {
                 question: req.body.question ?? 'hello',

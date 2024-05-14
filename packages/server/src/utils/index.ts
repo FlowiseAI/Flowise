@@ -446,7 +446,6 @@ export const buildFlow = async (
 
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory)
 
-            // TODO: Avoid processing Text Splitter + Doc Loader once Upsert & Load Existing Vector Nodes are deprecated
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
                 logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 const indexResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
@@ -464,6 +463,12 @@ export const buildFlow = async (
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
+            } else if (
+                !isUpsert &&
+                (reactFlowNode.data.category === 'Text Splitters' || reactFlowNode.data.category === 'Document Loaders')
+            ) {
+                // Skip processing Text Splitter + Doc Loader nodes when not upserting
+                initializedNodes.add(nodeId)
             } else {
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 let outputResult = await newNodeInstance.init(reactFlowNodeData, question, {
@@ -935,7 +940,7 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
         case 'text/yaml':
             return 'yamlFile'
         default:
-            return ''
+            return 'txtFile'
     }
 }
 
