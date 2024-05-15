@@ -4,12 +4,12 @@ import { DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObject
 import { Readable } from 'node:stream'
 import { getUserHome } from './utils'
 
-export const addBase64FilesToStorage = async (file: string, chatflowid: string, fileNames: string[]) => {
+export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: string, fileNames: string[]) => {
     const storageType = getStorageType()
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
 
-        const splitDataURI = file.split(',')
+        const splitDataURI = fileBase64.split(',')
         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
         const mime = splitDataURI[0].split(':')[1].split(';')[0]
@@ -32,7 +32,7 @@ export const addBase64FilesToStorage = async (file: string, chatflowid: string, 
             fs.mkdirSync(dir, { recursive: true })
         }
 
-        const splitDataURI = file.split(',')
+        const splitDataURI = fileBase64.split(',')
         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
 
@@ -43,7 +43,40 @@ export const addBase64FilesToStorage = async (file: string, chatflowid: string, 
     }
 }
 
-export const addFileToStorage = async (mime: string, bf: Buffer, fileName: string, ...paths: string[]) => {
+export const addArrayFilesToStorage = async (mime: string, bf: Buffer, fileName: string, fileNames: string[], ...paths: string[]) => {
+    const storageType = getStorageType()
+    if (storageType === 's3') {
+        const { s3Client, Bucket } = getS3Config()
+
+        let Key = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + fileName
+        if (Key.startsWith('/')) {
+            Key = Key.substring(1)
+        }
+
+        const putObjCmd = new PutObjectCommand({
+            Bucket,
+            Key,
+            ContentEncoding: 'base64', // required for binary data
+            ContentType: mime,
+            Body: bf
+        })
+        await s3Client.send(putObjCmd)
+        fileNames.push(fileName)
+        return 'FILE-STORAGE::' + JSON.stringify(fileNames)
+    } else {
+        const dir = path.join(getStoragePath(), ...paths)
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true })
+        }
+
+        const filePath = path.join(dir, fileName)
+        fs.writeFileSync(filePath, bf)
+        fileNames.push(fileName)
+        return 'FILE-STORAGE::' + JSON.stringify(fileNames)
+    }
+}
+
+export const addSingleFileToStorage = async (mime: string, bf: Buffer, fileName: string, ...paths: string[]) => {
     const storageType = getStorageType()
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
@@ -273,7 +306,7 @@ export const streamStorageFile = async (
     }
 }
 
-const getS3Config = () => {
+export const getS3Config = () => {
     const accessKeyId = process.env.S3_STORAGE_ACCESS_KEY_ID
     const secretAccessKey = process.env.S3_STORAGE_SECRET_ACCESS_KEY
     const region = process.env.S3_STORAGE_REGION
