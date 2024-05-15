@@ -94,7 +94,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 }
 
                 // Run Speech to Text conversion
-                if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4') {
+                if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg') {
+                    logger.debug(`Attempting a speech to text conversion...`)
                     let speechToTextConfig: ICommonObject = {}
                     if (chatflow.speechToText) {
                         const speechToTextProviders = JSON.parse(chatflow.speechToText)
@@ -115,6 +116,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                             databaseEntities: databaseEntities
                         }
                         const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
+                        logger.debug(`Speech to text result: ${speechToTextResult}`)
                         if (speechToTextResult) {
                             incomingInput.question = speechToTextResult
                         }
