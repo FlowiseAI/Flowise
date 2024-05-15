@@ -8,6 +8,7 @@ import chatMessageRouter from './chat-messages'
 import componentsCredentialsRouter from './components-credentials'
 import componentsCredentialsIconRouter from './components-credentials-icon'
 import credentialsRouter from './credentials'
+import documentStoreRouter from './documentstore'
 import feedbackRouter from './feedback'
 import fetchLinksRouter from './fetch-links'
 import flowConfigRouter from './flow-config'
@@ -15,6 +16,7 @@ import internalChatmessagesRouter from './internal-chat-messages'
 import internalPredictionRouter from './internal-predictions'
 import getUploadFileRouter from './get-upload-file'
 import getUploadPathRouter from './get-upload-path'
+import leadsRouter from './leads'
 import loadPromptRouter from './load-prompts'
 import marketplacesRouter from './marketplaces'
 import nodeConfigRouter from './node-configs'
@@ -48,6 +50,7 @@ router.use('/components-credentials', componentsCredentialsRouter)
 router.use('/components-credentials-icon', componentsCredentialsIconRouter)
 router.use('/chatflows-uploads', chatflowsUploadsRouter)
 router.use('/credentials', credentialsRouter)
+router.use('/document-store', documentStoreRouter)
 router.use('/feedback', feedbackRouter)
 router.use('/fetch-links', fetchLinksRouter)
 router.use('/flow-config', flowConfigRouter)
@@ -55,6 +58,7 @@ router.use('/internal-chatmessage', internalChatmessagesRouter)
 router.use('/internal-prediction', internalPredictionRouter)
 router.use('/get-upload-file', getUploadFileRouter)
 router.use('/get-upload-path', getUploadPathRouter)
+router.use('/leads', leadsRouter)
 router.use('/load-prompt', loadPromptRouter)
 router.use('/marketplaces', marketplacesRouter)
 router.use('/node-config', nodeConfigRouter)

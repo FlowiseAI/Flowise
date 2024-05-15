@@ -135,6 +135,21 @@ export const removeFilesFromStorage = async (...paths: string[]) => {
     }
 }
 
+export const removeSpecificFileFromStorage = async (...paths: string[]) => {
+    const storageType = getStorageType()
+    if (storageType === 's3') {
+        let Key = paths.reduce((acc, cur) => acc + '/' + cur, '')
+        // remove the first '/' if it exists
+        if (Key.startsWith('/')) {
+            Key = Key.substring(1)
+        }
+        await _deleteS3Folder(Key)
+    } else {
+        const file = path.join(getStoragePath(), ...paths)
+        fs.unlinkSync(file)
+    }
+}
+
 export const removeFolderFromStorage = async (...paths: string[]) => {
     const storageType = getStorageType()
     if (storageType === 's3') {

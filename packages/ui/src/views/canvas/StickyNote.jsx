@@ -9,7 +9,7 @@ import { useTheme } from '@mui/material/styles'
 import NodeCardWrapper from '@/ui-component/cards/NodeCardWrapper'
 import NodeTooltip from '@/ui-component/tooltip/NodeTooltip'
 import { IconButton, Box } from '@mui/material'
-import { IconCopy, IconTrash } from '@tabler/icons'
+import { IconCopy, IconTrash } from '@tabler/icons-react'
 import { Input } from '@/ui-component/input/Input'
 
 // const

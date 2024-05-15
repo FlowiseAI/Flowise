@@ -23,6 +23,27 @@ const getAllNodes = async () => {
     }
 }
 
+// Get all component nodes for a specific category
+const getAllNodesForCategory = async (category: string) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const dbResponse = []
+        for (const nodeName in appServer.nodesPool.componentNodes) {
+            const componentNode = appServer.nodesPool.componentNodes[nodeName]
+            if (componentNode.category === category) {
+                const clonedNode = cloneDeep(componentNode)
+                dbResponse.push(clonedNode)
+            }
+        }
+        return dbResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: nodesService.getAllNodesForCategory - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 // Get specific component node via name
 const getNodeByName = async (nodeName: string) => {
     try {
@@ -138,5 +159,6 @@ export default {
     getNodeByName,
     getSingleNodeIcon,
     getSingleNodeAsyncOptions,
-    executeCustomFunction
+    executeCustomFunction,
+    getAllNodesForCategory
 }
