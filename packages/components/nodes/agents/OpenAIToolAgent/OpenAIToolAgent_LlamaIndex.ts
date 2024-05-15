@@ -20,7 +20,7 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'OpenAI Tool Agent'
         this.name = 'openAIToolAgentLlamaIndex'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'OpenAIToolAgent'
         this.category = 'Agents'
         this.icon = 'function.svg'
@@ -95,7 +95,7 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
         const agent = new OpenAIAgent({
             tools,
             llm: model,
-            prefixMessages: chatHistory,
+            chatHistory: chatHistory,
             verbose: process.env.DEBUG === 'true' ? true : false
         })
 
@@ -108,11 +108,11 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
 
         if (response.sources.length) {
             for (const sourceTool of response.sources) {
-                usedTools.push({
-                    tool: sourceTool.toolName,
-                    toolInput: sourceTool.rawInput,
-                    toolOutput: sourceTool.rawOutput
-                })
+                // usedTools.push({
+                //     tool: sourceTool.tool,
+                //     toolInput: sourceTool.input,
+                //     toolOutput: sourceTool.output
+                // })
             }
         }
 
