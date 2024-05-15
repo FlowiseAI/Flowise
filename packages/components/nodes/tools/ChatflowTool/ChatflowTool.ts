@@ -1,6 +1,9 @@
 import { DataSource } from 'typeorm'
-import { Tool } from '@langchain/core/tools'
+import { z } from 'zod'
 import fetch from 'node-fetch'
+import { RunnableConfig } from '@langchain/core/runnables'
+import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
+import { StructuredTool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -125,7 +128,7 @@ class ChatflowTool_Tools implements INode {
     }
 }
 
-class ChatflowTool extends Tool {
+class ChatflowTool extends StructuredTool {
     static lc_name() {
         return 'ChatflowTool'
     }
@@ -141,6 +144,10 @@ class ChatflowTool extends Tool {
     baseURL = 'http://localhost:3000'
 
     headers = {}
+
+    schema = z.object({
+        input: z.string().describe('input question')
+    })
 
     constructor({
         name,
@@ -166,13 +173,67 @@ class ChatflowTool extends Tool {
         this.chatflowid = chatflowid
     }
 
-    async _call(_input: string): Promise<string> {
-        const inputQuestion = this.input || _input
+    async call(
+        arg: z.infer<typeof this.schema>,
+        configArg?: RunnableConfig | Callbacks,
+        tags?: string[],
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+    ): Promise<string> {
+        const config = parseCallbackConfigArg(configArg)
+        if (config.runName === undefined) {
+            config.runName = this.name
+        }
+        let parsed
+        try {
+            parsed = await this.schema.parseAsync(arg)
+        } catch (e) {
+            throw new Error(`Received tool input did not match expected schema: ${JSON.stringify(arg)}`)
+        }
+        const callbackManager_ = await CallbackManager.configure(
+            config.callbacks,
+            this.callbacks,
+            config.tags || tags,
+            this.tags,
+            config.metadata,
+            this.metadata,
+            { verbose: this.verbose }
+        )
+        const runManager = await callbackManager_?.handleToolStart(
+            this.toJSON(),
+            typeof parsed === 'string' ? parsed : JSON.stringify(parsed),
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            config.runName
+        )
+        let result
+        try {
+            result = await this._call(parsed, runManager, flowConfig)
+        } catch (e) {
+            await runManager?.handleToolError(e)
+            throw e
+        }
+        await runManager?.handleToolEnd(result)
+        return result
+    }
 
-        const url = `${this.baseURL}/api/v1/prediction/${this.chatflowid}?disableSaveMessage=true`
+    // @ts-ignore
+    protected async _call(
+        arg: z.infer<typeof this.schema>,
+        _?: CallbackManagerForToolRun,
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+    ): Promise<string> {
+        const inputQuestion = this.input || arg.input
+
+        const url = `${this.baseURL}/api/v1/prediction/${this.chatflowid}`
 
         const body = {
-            question: inputQuestion
+            question: inputQuestion,
+            chatId: flowConfig?.chatId,
+            overrideConfig: {
+                sessionId: flowConfig?.sessionId
+            }
         }
 
         const options = {

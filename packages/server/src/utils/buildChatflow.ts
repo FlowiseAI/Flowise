@@ -54,7 +54,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
     try {
         const appServer = getRunningExpressApp()
         const chatflowid = req.params.id
-        const disableSaveMessage = (req.query.disableSaveMessage as string) || undefined
         const baseURL = `${req.protocol}://${req.get('host')}`
 
         let incomingInput: IncomingInput = req.body
@@ -179,7 +178,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 nodes,
                 edges,
                 socketIO,
-                disableSaveMessage,
                 baseURL
             )
         }
@@ -364,7 +362,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
             leadEmail: incomingInput.leadEmail
         }
-        if (!disableSaveMessage) await utilAddChatMessage(userMessage)
+        await utilAddChatMessage(userMessage)
 
         let resultText = ''
         if (result.text) resultText = result.text
@@ -383,7 +381,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
         if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
-        const chatMessage = disableSaveMessage ? null : await utilAddChatMessage(apiMessage)
+        const chatMessage = await utilAddChatMessage(apiMessage)
 
         logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
         await appServer.telemetry.sendTelemetry('prediction_sent', {
@@ -422,7 +420,6 @@ const utilBuildAgentResponse = async (
     nodes: IReactFlowNode[],
     edges: IReactFlowEdge[],
     socketIO?: Server,
-    disableSaveMessage?: string,
     baseURL?: string
 ) => {
     try {
@@ -442,7 +439,7 @@ const utilBuildAgentResponse = async (
                 fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
                 leadEmail: incomingInput.leadEmail
             }
-            if (!disableSaveMessage) await utilAddChatMessage(userMessage)
+            await utilAddChatMessage(userMessage)
 
             const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
                 role: 'apiMessage',
@@ -454,7 +451,7 @@ const utilBuildAgentResponse = async (
                 sessionId
             }
             if (agentReasoning.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
-            const chatMessage = disableSaveMessage ? null : await utilAddChatMessage(apiMessage)
+            const chatMessage = await utilAddChatMessage(apiMessage)
 
             await appServer.telemetry.sendTelemetry('prediction_sent', {
                 version: await getAppVersion(),

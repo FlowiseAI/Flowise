@@ -74,7 +74,7 @@ class Worker_MultiAgents implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
         const workerPrompt = nodeData.inputs?.workerPrompt as string
@@ -89,7 +89,11 @@ class Worker_MultiAgents implements INode {
 
         const abortControllerSignal = options.signal as AbortController
 
-        const agent = await createAgent(llm, [...tools], workerPrompt, maxIterations)
+        const agent = await createAgent(llm, [...tools], workerPrompt, maxIterations, {
+            sessionId: options.sessionId,
+            chatId: options.chatId,
+            input
+        })
 
         const workerNode = async (state: ITeamState, config: RunnableConfig) =>
             await agentNode(
@@ -118,7 +122,8 @@ async function createAgent(
     llm: BaseChatModel,
     tools: any[],
     systemPrompt: string,
-    maxIterations?: string
+    maxIterations?: string,
+    flowObj?: { sessionId?: string; chatId?: string; input?: string }
 ): Promise<AgentExecutor | RunnableSequence> {
     if (tools.length) {
         const combinedPrompt =
@@ -161,6 +166,9 @@ async function createAgent(
         const executor = AgentExecutor.fromAgentAndTools({
             agent: agent,
             tools,
+            sessionId: flowObj?.sessionId,
+            chatId: flowObj?.chatId,
+            input: flowObj?.input,
             verbose: process.env.DEBUG === 'true' ? true : false,
             maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
         })

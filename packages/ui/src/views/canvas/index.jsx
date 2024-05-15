@@ -160,8 +160,8 @@ const Canvas = () => {
 
             setNodes(nodes)
             setEdges(flowData.edges || [])
-            setIsAgentCanvas(flowData.isAgentCanvas ?? false)
-            setTitle(flowData.isAgentCanvas ? 'Agents' : 'Chatflow')
+            setIsAgentCanvas(isAgentCanvas)
+            setTitle(isAgentCanvas ? 'Agents' : 'Chatflow')
             setDirty()
         } catch (e) {
             console.error(e)
