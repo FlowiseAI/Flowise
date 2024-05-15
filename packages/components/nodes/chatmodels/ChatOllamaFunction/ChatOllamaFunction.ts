@@ -81,9 +81,12 @@ class ChatOllamaFunction_ChatModels implements INode {
                 name: 'toolSystemPromptTemplate',
                 type: 'string',
                 rows: 4,
-                description: `System prompt for LLM models to use tools`,
+                description: `Under the hood, Ollama's JSON mode is being used to constrain output to JSON. Output JSON will contains two keys: tool and tool_input fields. We then parse it to execute the tool. Because different models have different strengths, it may be helpful to pass in your own system prompt.`,
+                warning: `Prompt must always contains {tools} and instructions to respond with a JSON object with tool and tool_input fields`,
                 default: DEFAULT_TOOL_SYSTEM_TEMPLATE,
-                additionalParams: true
+                placeholder: DEFAULT_TOOL_SYSTEM_TEMPLATE,
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Top P',
