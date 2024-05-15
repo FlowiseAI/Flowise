@@ -375,6 +375,44 @@ export const saveUpsertFlowData = (nodeData: INodeData, upsertHistory: Record<st
 }
 
 /**
+ * Check if doc loader should be bypassed, ONLY if doc loader is connected to a vector store
+ * Reason being we dont want to load the doc loader again whenever we are building the flow, because it was already done during upserting
+ * TODO: Remove this logic when we remove doc loader nodes from the canvas
+ * @param {IReactFlowNode} reactFlowNode
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {IReactFlowEdge[]} reactFlowEdges
+ * @returns {boolean}
+ */
+const checkIfDocLoaderShouldBeIgnored = (
+    reactFlowNode: IReactFlowNode,
+    reactFlowNodes: IReactFlowNode[],
+    reactFlowEdges: IReactFlowEdge[]
+): boolean => {
+    let outputId = ''
+
+    if (reactFlowNode.data.outputAnchors.length) {
+        if (Object.keys(reactFlowNode.data.outputs || {}).length) {
+            const output = reactFlowNode.data.outputs?.output
+            const node = reactFlowNode.data.outputAnchors[0].options?.find((anchor) => anchor.name === output)
+            if (node) outputId = (node as ICommonObject).id
+        } else {
+            outputId = (reactFlowNode.data.outputAnchors[0] as ICommonObject).id
+        }
+    }
+
+    const targetNodeId = reactFlowEdges.find((edge) => edge.sourceHandle === outputId)?.target
+
+    if (targetNodeId) {
+        const targetNodeCategory = reactFlowNodes.find((nd) => nd.id === targetNodeId)?.data.category || ''
+        if (targetNodeCategory === 'Vector Stores') {
+            return true
+        }
+    }
+
+    return false
+}
+
+/**
  * Build langchain from start to end
  * @param {string[]} startingNodeIds
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -465,9 +503,9 @@ export const buildFlow = async (
                 break
             } else if (
                 !isUpsert &&
-                (reactFlowNode.data.category === 'Text Splitters' || reactFlowNode.data.category === 'Document Loaders')
+                reactFlowNode.data.category === 'Document Loaders' &&
+                checkIfDocLoaderShouldBeIgnored(reactFlowNode, reactFlowNodes, reactFlowEdges)
             ) {
-                // Skip processing Text Splitter + Doc Loader nodes when not upserting
                 initializedNodes.add(nodeId)
             } else {
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
