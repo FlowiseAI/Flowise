@@ -212,6 +212,7 @@ export interface IncomingInput {
     stopNodeId?: string
     uploads?: IFileUpload[]
     leadEmail?: string
+    history?: IMessage[]
 }
 
 export interface IActiveChatflows {

@@ -144,6 +144,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const memoryType = memoryNode?.data.label
         let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
+        // Get prepend messages
+        const prependMessages = incomingInput.history
+
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
          * - Node Data already exists in pool
          * - Still in sync (i.e the flow has not been modified since)
@@ -225,7 +228,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                     appServer.nodesPool.componentNodes,
                     appServer.AppDataSource,
                     databaseEntities,
-                    logger
+                    logger,
+                    prependMessages
                 )
             }
 
@@ -300,7 +304,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                   analytic: chatflow.analytic,
                   uploads: incomingInput.uploads,
                   socketIO,
-                  socketIOClientId: incomingInput.socketIOClientId
+                  socketIOClientId: incomingInput.socketIOClientId,
+                  prependMessages
               })
             : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,
@@ -309,7 +314,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                   appDataSource: appServer.AppDataSource,
                   databaseEntities,
                   analytic: chatflow.analytic,
-                  uploads: incomingInput.uploads
+                  uploads: incomingInput.uploads,
+                  prependMessages
               })
         result = typeof result === 'string' ? { text: result } : result
 
