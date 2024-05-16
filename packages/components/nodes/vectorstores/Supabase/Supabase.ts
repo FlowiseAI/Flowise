@@ -2,7 +2,7 @@ import { flatten } from 'lodash'
 import { createClient } from '@supabase/supabase-js'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
-import { SupabaseVectorStore, SupabaseLibArgs } from '@langchain/community/vectorstores/supabase'
+import { SupabaseVectorStore, SupabaseLibArgs, SupabaseFilterRPCCall } from '@langchain/community/vectorstores/supabase'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
@@ -25,7 +25,7 @@ class Supabase_VectorStores implements INode {
     constructor() {
         this.label = 'Supabase'
         this.name = 'supabase'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Supabase'
         this.icon = 'supabase.svg'
         this.category = 'Vector Stores'
@@ -77,6 +77,19 @@ class Supabase_VectorStores implements INode {
                 label: 'Supabase Metadata Filter',
                 name: 'supabaseMetadataFilter',
                 type: 'json',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Supabase RPC Filter',
+                name: 'supabaseRPCFilter',
+                type: 'string',
+                rows: 4,
+                placeholder: `filter("metadata->a::int", "gt", 5)
+.filter("metadata->c::int", "gt", 7)
+.filter("metadata->>stuff", "eq", "right");`,
+                description:
+                    'Query builder-style filtering. If this is set, will override the metadata filter. Refer <a href="https://js.langchain.com/v0.1/docs/integrations/vectorstores/supabase/#metadata-query-builder-filtering" target="_blank">here</a> for more information',
                 optional: true,
                 additionalParams: true
             },
@@ -167,6 +180,7 @@ class Supabase_VectorStores implements INode {
         const queryName = nodeData.inputs?.queryName as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const supabaseMetadataFilter = nodeData.inputs?.supabaseMetadataFilter
+        const supabaseRPCFilter = nodeData.inputs?.supabaseRPCFilter
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const supabaseApiKey = getCredentialParam('supabaseApiKey', credentialData, nodeData)
@@ -182,6 +196,14 @@ class Supabase_VectorStores implements INode {
         if (supabaseMetadataFilter) {
             const metadatafilter = typeof supabaseMetadataFilter === 'object' ? supabaseMetadataFilter : JSON.parse(supabaseMetadataFilter)
             obj.filter = metadatafilter
+        }
+
+        if (supabaseRPCFilter) {
+            const funcString = `return rpc.${supabaseRPCFilter};`
+            const funcFilter = new Function('rpc', funcString)
+            obj.filter = (rpc: SupabaseFilterRPCCall) => {
+                return funcFilter(rpc)
+            }
         }
 
         const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, obj)
