@@ -641,6 +641,7 @@ class OpenAIAssistant_Agents implements INode {
 
                             // Gather citations based on annotation attributes
                             const file_citation = (annotation as OpenAI.Beta.Threads.Messages.FileCitationAnnotation).file_citation
+
                             if (file_citation) {
                                 const cited_file = await openai.files.retrieve(file_citation.file_id)
                                 // eslint-disable-next-line no-useless-escape
