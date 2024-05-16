@@ -31,7 +31,7 @@ const dashboard = {
         },
         {
             id: 'agents',
-            title: 'Agents',
+            title: 'Agentflows',
             type: 'item',
             url: '/agents',
             icon: icons.IconUsersGroup,
