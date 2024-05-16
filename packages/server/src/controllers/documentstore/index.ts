@@ -248,6 +248,45 @@ const getDocumentLoaders = async (req: Request, res: Response, next: NextFunctio
     }
 }
 
+const insertIntoVectorStore = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.previewFileChunks - body not provided!')
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.insertIntoVectorStore(body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+const getEmbeddingProviders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await documentStoreService.getEmbeddingProviders()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getVectorStoreProviders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await documentStoreService.getVectorStoreProviders()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getRecordManagerProviders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await documentStoreService.getRecordManagerProviders()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     deleteDocumentStore,
     createDocumentStore,
@@ -260,5 +299,9 @@ export default {
     previewFileChunks,
     getDocumentLoaders,
     deleteDocumentStoreFileChunk,
-    editDocumentStoreFileChunk
+    editDocumentStoreFileChunk,
+    insertIntoVectorStore,
+    getEmbeddingProviders,
+    getVectorStoreProviders,
+    getRecordManagerProviders
 }

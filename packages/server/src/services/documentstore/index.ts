@@ -693,6 +693,75 @@ const updateDocumentStoreUsage = async (chatId: string, storeId: string | undefi
     }
 }
 
+const insertIntoVectorStore = async (data: any) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+            id: data.storeId
+        })
+        if (!entity) throw new Error(`Document store ${data.storeId} not found`)
+
+        const nodeInstanceFilePath = appServer.nodesPool.componentNodes[data.embeddingName].filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const nodeData = {
+            inputs: { ...data.embeddingConfig.inputs },
+            outputs: { output: 'document' }
+        }
+        if (data.embeddingCredential) {
+            nodeData.inputs.credentialId = data.embeddingCredential
+        }
+        const options: ICommonObject = {
+            chatflowid: uuidv4(),
+            appDataSource: appServer.AppDataSource,
+            databaseEntities,
+            logger
+        }
+        const embeddingNodeInstance = new nodeModule.nodeClass()
+        let embeddingObj = await embeddingNodeInstance.init(nodeData, '', options)
+        if (!embeddingObj) {
+            throw new Error(`failed to create EmbeddingObj`)
+        }
+        // return docs
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.insertIntoVectorStore - ${error}`)
+    }
+}
+
+// Get all component nodes - Embeddings
+const getEmbeddingProviders = async () => {
+    const removeNodesWithName: any[] = []
+    // remove all nodes that have the name 'LlamaIndex'
+    try {
+        const dbResponse = await nodesService.getAllNodesForCategory('Embeddings')
+        return dbResponse.filter((node) => !removeNodesWithName.includes(node.name)).filter((node) => !node.name.endsWith('LlamaIndex'))
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.getEmbeddingProviders - ${error}`)
+    }
+}
+
+// Get all component nodes - Vector Stores
+const getVectorStoreProviders = async () => {
+    const removeNodesWithBadge: any[] = ['DEPRECATING']
+
+    try {
+        const dbResponse = await nodesService.getAllNodesForCategory('Vector Stores')
+        return dbResponse.filter((node) => !removeNodesWithBadge.includes(node.badge)).filter((node) => !node.name.endsWith('LlamaIndex'))
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.getVectorStoreProviders - ${error}`)
+    }
+}
+// Get all component nodes - Vector Stores
+const getRecordManagerProviders = async () => {
+    const removeNodesWithBadge: any[] = ['DEPRECATING']
+
+    try {
+        const dbResponse = await nodesService.getAllNodesForCategory('Record Manager')
+        return dbResponse.filter((node) => !removeNodesWithBadge.includes(node.badge)).filter((node) => !node.name.endsWith('LlamaIndex'))
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.getRecordManagerProviders - ${error}`)
+    }
+}
+
 export default {
     updateDocumentStoreUsage,
     deleteDocumentStore,
@@ -707,5 +776,9 @@ export default {
     processAndSaveChunks,
     deleteDocumentStoreFileChunk,
     editDocumentStoreFileChunk,
-    getDocumentLoaders
+    getDocumentLoaders,
+    insertIntoVectorStore,
+    getEmbeddingProviders,
+    getVectorStoreProviders,
+    getRecordManagerProviders
 }
