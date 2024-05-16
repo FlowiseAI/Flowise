@@ -8,6 +8,7 @@ import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { INode, INodeData, INodeParams, IMultiAgentNode, ITeamState, ICommonObject } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
 import { StringOutputParser } from '@langchain/core/output_parsers'
+import { getInputVariables } from '../../../src/utils'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 
@@ -36,7 +37,7 @@ class Worker_MultiAgents implements INode {
                 label: 'Worker Name',
                 name: 'workerName',
                 type: 'string',
-                placeholder: 'worker'
+                placeholder: 'Worker'
             },
             {
                 label: 'Worker Prompt',
@@ -70,6 +71,13 @@ class Worker_MultiAgents implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Prompt Input Values',
+                name: 'promptValues',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -77,17 +85,37 @@ class Worker_MultiAgents implements INode {
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
-        const workerPrompt = nodeData.inputs?.workerPrompt as string
-        const workerName = nodeData.inputs?.workerName as string
+        let workerPrompt = nodeData.inputs?.workerPrompt as string
+        const workerLabel = nodeData.inputs?.workerName as string
         const supervisor = nodeData.inputs?.supervisor as IMultiAgentNode
         const maxIterations = nodeData.inputs?.maxIterations as string
         const model = nodeData.inputs?.model as BaseChatModel
+        const promptValuesStr = nodeData.inputs?.promptValues
 
-        if (!workerName) throw new Error('Worker name is required!')
+        if (!workerLabel) throw new Error('Worker name is required!')
+        const workerName = workerLabel.toLowerCase().replace(/\s/g, '_').trim()
+
+        let workerInputVariablesValues: ICommonObject = {}
+        if (promptValuesStr) {
+            try {
+                workerInputVariablesValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the Worker's Prompt Input Values: " + exception)
+            }
+        }
 
         const llm = model || (supervisor.llm as BaseChatModel)
 
         const abortControllerSignal = options.signal as AbortController
+        const workerInputVariables = getInputVariables(workerPrompt)
+
+        if (!workerInputVariables.every((element) => Object.keys(workerInputVariablesValues).includes(element))) {
+            throw new Error('Worker input variables values are not provided!')
+        }
+
+        for (const inputVariable of workerInputVariables) {
+            workerPrompt = workerPrompt.replaceAll(`{${inputVariable}}`, workerInputVariablesValues[inputVariable])
+        }
 
         const agent = await createAgent(llm, [...tools], workerPrompt, maxIterations, {
             sessionId: options.sessionId,
@@ -109,8 +137,10 @@ class Worker_MultiAgents implements INode {
         const returnOutput: IMultiAgentNode = {
             node: workerNode,
             name: workerName,
+            label: workerLabel,
             type: 'worker',
             workerPrompt,
+            workerInputVariables,
             parentSupervisorName: supervisor.name ?? 'supervisor'
         }
 

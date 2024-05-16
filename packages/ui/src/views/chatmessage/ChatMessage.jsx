@@ -108,6 +108,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
     const [chatId, setChatId] = useState(uuidv4())
+    const [isMessageStopping, setIsMessageStopping] = useState(false)
 
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
@@ -312,23 +313,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     }
 
     const handleAbort = async () => {
+        setIsMessageStopping(true)
         try {
-            const abortResp = await chatmessageApi.abortMessage(chatflowid, chatId)
-            if (abortResp.data) {
-                enqueueSnackbar({
-                    message: 'Message stopped',
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'success',
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
-            }
+            await chatmessageApi.abortMessage(chatflowid, chatId)
         } catch (error) {
+            setIsMessageStopping(false)
             enqueueSnackbar({
                 message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                 options: {
@@ -438,6 +427,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     }
 
     const abortMessage = () => {
+        setIsMessageStopping(false)
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
             if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
@@ -450,6 +440,18 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         setTimeout(() => {
             inputRef.current?.focus()
         }, 100)
+        enqueueSnackbar({
+            message: 'Message stopped',
+            options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+                action: (key) => (
+                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                        <IconX />
+                    </Button>
+                )
+            }
+        })
     }
 
     const updateLastMessageUsedTools = (usedTools) => {
@@ -1641,11 +1643,18 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 <InputAdornment position='end' sx={{ padding: '15px', mr: 1 }}>
                                                     <IconButton
                                                         edge='end'
-                                                        title='Stop'
-                                                        style={{ border: '2px solid red' }}
+                                                        title={isMessageStopping ? 'Stopping...' : 'Stop'}
+                                                        style={{ border: !isMessageStopping ? '2px solid red' : 'none' }}
                                                         onClick={() => handleAbort()}
+                                                        disabled={isMessageStopping}
                                                     >
-                                                        <IconSquareFilled size={15} color='red' />
+                                                        {isMessageStopping ? (
+                                                            <div>
+                                                                <CircularProgress color='error' size={20} />
+                                                            </div>
+                                                        ) : (
+                                                            <IconSquareFilled size={15} color='red' />
+                                                        )}
                                                     </IconButton>
                                                 </InputAdornment>
                                             )}

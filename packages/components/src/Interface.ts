@@ -156,11 +156,13 @@ export interface IUsedTool {
 export interface IMultiAgentNode {
     node: any
     name: string
+    label: string
     type: 'supervisor' | 'worker'
     llm?: any
     parentSupervisorName?: string
     workers?: string[]
     workerPrompt?: string
+    workerInputVariables?: string[]
     recursionLimit?: number
     moderations?: Moderation[]
 }

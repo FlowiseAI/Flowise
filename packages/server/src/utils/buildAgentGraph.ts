@@ -105,9 +105,19 @@ export const buildAgentGraph = async (
         let finalResult = ''
         let agentReasoning: IAgentReasoning[] = []
 
+        const workerNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'worker')
+        const supervisorNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'supervisor')
+
+        const mapNameToLabel: Record<string, string> = {}
+
+        for (const node of [...workerNodes, ...supervisorNodes]) {
+            mapNameToLabel[node.data.instance.name] = node.data.instance.label
+        }
+
         try {
             streamResults = await compileGraph(
                 chatflow,
+                mapNameToLabel,
                 reactFlowNodes,
                 endingNodeIds,
                 appServer.nodesPool.componentNodes,
@@ -130,7 +140,7 @@ export const buildAgentGraph = async (
                             : []
                         const messages = output[agentName]?.messages ? output[agentName].messages.map((msg: any) => msg.content) : []
                         const reasoning = {
-                            agentName,
+                            agentName: mapNameToLabel[agentName],
                             messages,
                             next: output[agentName]?.next,
                             instructions: output[agentName]?.instructions,
@@ -148,7 +158,9 @@ export const buildAgentGraph = async (
 
                             // Send loading next agent indicator
                             if (reasoning.next && reasoning.next !== 'FINISH' && reasoning.next !== 'END') {
-                                socketIO.to(incomingInput.socketIOClientId).emit('nextAgent', reasoning.next)
+                                socketIO
+                                    .to(incomingInput.socketIOClientId)
+                                    .emit('nextAgent', mapNameToLabel[reasoning.next] || reasoning.next)
                             }
                         }
                     } else {
@@ -188,6 +200,7 @@ export const buildAgentGraph = async (
 /**
  * Compile Graph
  * @param {IChatFlow} chatflow
+ * @param {Record<string, string>} mapNameToLabel
  * @param {IReactFlowNode[]} reactflowNodes
  * @param {string[]} workerNodeIds
  * @param {IComponentNodes} componentNodes
@@ -198,6 +211,7 @@ export const buildAgentGraph = async (
  */
 const compileGraph = async (
     chatflow: IChatFlow,
+    mapNameToLabel: Record<string, string>,
     reactflowNodes: IReactFlowNode[] = [],
     workerNodeIds: string[],
     componentNodes: IComponentNodes,
@@ -254,7 +268,8 @@ const compileGraph = async (
 
     // Init supervisor nodes
     for (const supervisor in supervisorWorkers) {
-        const supervisorNode = reactflowNodes.find((node) => supervisor === node.data.inputs?.supervisorName)
+        const supervisorInputLabel = mapNameToLabel[supervisor]
+        const supervisorNode = reactflowNodes.find((node) => supervisorInputLabel === node.data.inputs?.supervisorName)
         if (!supervisorNode) continue
 
         const nodeInstanceFilePath = componentNodes[supervisorNode.data.name].filePath as string

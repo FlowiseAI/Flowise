@@ -46,8 +46,8 @@ class Supervisor_MultiAgents implements INode {
                 label: 'Supervisor Name',
                 name: 'supervisorName',
                 type: 'string',
-                placeholder: 'supervisor',
-                default: 'supervisor'
+                placeholder: 'Supervisor',
+                default: 'Supervisor'
             },
             {
                 label: 'Supervisor Prompt',
@@ -86,7 +86,7 @@ class Supervisor_MultiAgents implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const llm = nodeData.inputs?.model as BaseChatModel
         const supervisorPrompt = nodeData.inputs?.supervisorPrompt as string
-        const supervisorName = nodeData.inputs?.supervisorName as string
+        const supervisorLabel = nodeData.inputs?.supervisorName as string
         const _recursionLimit = nodeData.inputs?.recursionLimit as string
         const recursionLimit = _recursionLimit ? parseFloat(_recursionLimit) : 100
         const moderations = (nodeData.inputs?.inputModeration as Moderation[]) ?? []
@@ -96,6 +96,10 @@ class Supervisor_MultiAgents implements INode {
         const workersNodes: IMultiAgentNode[] =
             nodeData.inputs?.workerNodes && nodeData.inputs?.workerNodes.length ? flatten(nodeData.inputs?.workerNodes) : []
         const workersNodeNames = workersNodes.map((node: IMultiAgentNode) => node.name)
+
+        if (!supervisorLabel) throw new Error('Supervisor name is required!')
+
+        const supervisorName = supervisorLabel.toLowerCase().replace(/\s/g, '_').trim()
 
         async function createTeamSupervisor(llm: BaseChatModel, systemPrompt: string, members: string[]): Promise<Runnable> {
             const options = ['FINISH', ...members]
@@ -340,6 +344,7 @@ class Supervisor_MultiAgents implements INode {
         const returnOutput: IMultiAgentNode = {
             node: supervisorNode,
             name: supervisorName ?? 'supervisor',
+            label: supervisorLabel ?? 'Supervisor',
             type: 'supervisor',
             workers: workersNodeNames,
             recursionLimit,
