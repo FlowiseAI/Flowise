@@ -11,7 +11,7 @@ import useApi from '@/hooks/useApi'
 // Material-UI
 import { Skeleton, Toolbar, Box, Button, Card, CardContent, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
-import { IconScissors, IconArrowLeft, IconDatabaseImport, IconBook, IconX, IconEye } from '@tabler/icons'
+import { IconScissors, IconArrowLeft, IconDatabaseImport, IconBook, IconX, IconEye } from '@tabler/icons-react'
 
 // Project import
 import MainCard from '@/ui-component/cards/MainCard'

@@ -44,7 +44,7 @@ Flowise has 3 different modules in a single mono repository.
 
 #### Prerequisite
 
--   Install [PNPM](https://pnpm.io/installation)
+-   Install [PNPM](https://pnpm.io/installation). The project is configured to use pnpm v9.
     ```bash
     npm i -g pnpm
     ```

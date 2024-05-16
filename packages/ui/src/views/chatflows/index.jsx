@@ -27,7 +27,7 @@ import useApi from '@/hooks/useApi'
 import { baseURL } from '@/store/constant'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons'
+import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 
 // ==============================|| CHATFLOWS ||============================== //
 
