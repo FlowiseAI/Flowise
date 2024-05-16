@@ -6,6 +6,9 @@ import { INodeData } from '../../../dist/src'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 
+/** https://v01.api.js.langchain.com/classes/langchain_community_llms_togetherai.TogetherAI.html
+ https://js.langchain.com/v0.1/docs/integrations/llms/togetherai/ **/
+
 class TogetherAI_LLMs implements INode {
     label: string
     name: string
