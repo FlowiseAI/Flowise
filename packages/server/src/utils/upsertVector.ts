@@ -1,7 +1,7 @@
 import { Request } from 'express'
 import * as fs from 'fs'
 import { cloneDeep, omit } from 'lodash'
-import { ICommonObject, IMessage } from 'flowise-components'
+import { ICommonObject, IMessage, addArrayFilesToStorage } from 'flowise-components'
 import telemetryService from '../services/telemetry'
 import logger from '../utils/logger'
 import {
@@ -48,20 +48,21 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             }
         }
 
-        const files = (req.files as any[]) || []
+        const files = (req.files as Express.Multer.File[]) || []
 
         if (files.length) {
             const overrideConfig: ICommonObject = { ...req.body }
+            const fileNames: string[] = []
             for (const file of files) {
-                const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
-                const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
+                const fileBuffer = fs.readFileSync(file.path)
+
+                const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
                 const fileInputField = mapMimeTypeToInputField(file.mimetype)
-                if (overrideConfig[fileInputField]) {
-                    overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
-                } else {
-                    overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
-                }
+
+                overrideConfig[fileInputField] = storagePath
+
+                fs.unlinkSync(file.path)
             }
             incomingInput = {
                 question: req.body.question ?? 'hello',

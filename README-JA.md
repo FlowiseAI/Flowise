@@ -10,13 +10,13 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](./README.md) | [中文](./README-ZH.md) | 日本語
+[English](./README.md) | [中文](./README-ZH.md) | 日本語 | [한국어](./README-KR.md)
 
 <h3>ドラッグ＆ドロップでカスタマイズした LLM フローを構築できる UI</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
-## ⚡クイックスタート
+## ⚡ クイックスタート
 
 [NodeJS](https://nodejs.org/en/download) >= 18.15.0 をダウンロードしてインストール
 
@@ -67,7 +67,7 @@
 
 ## 👨‍💻 開発者向け
 
-Flowise には、3つの異なるモジュールが1つの mono リポジトリにあります。
+Flowise には、3 つの異なるモジュールが 1 つの mono リポジトリにあります。
 
 -   `server`: API ロジックを提供する Node バックエンド
 -   `ui`: React フロントエンド

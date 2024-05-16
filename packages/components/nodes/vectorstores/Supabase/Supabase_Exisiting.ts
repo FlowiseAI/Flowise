@@ -119,6 +119,9 @@ class Supabase_Existing_VectorStores implements INode {
             return retriever
         } else if (output === 'vectorStore') {
             ;(vectorStore as any).k = k
+            if (supabaseMetadataFilter) {
+                ;(vectorStore as any).filter = obj.filter
+            }
             return vectorStore
         }
         return vectorStore

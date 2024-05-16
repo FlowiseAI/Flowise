@@ -22,7 +22,7 @@ export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = 
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], internalValue) => {
         let values = []
-        if (internalValue && typeof internalValue === 'string') values = JSON.parse(internalValue)
+        if ('choose an option' !== internalValue && internalValue && typeof internalValue === 'string') values = JSON.parse(internalValue)
         else values = internalValue
         return options.filter((option) => values.includes(option.name))
     }

@@ -1,8 +1,7 @@
 import { Request } from 'express'
-import { IFileUpload, getStoragePath, convertSpeechToText, ICommonObject } from 'flowise-components'
+import { IFileUpload, convertSpeechToText, ICommonObject, addSingleFileToStorage, addArrayFilesToStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { IncomingInput, IMessage, INodeData, IReactFlowObject, IReactFlowNode, IDepthQueue, chatType, IChatMessage } from '../Interface'
-import path from 'path'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { Server } from 'socket.io'
@@ -69,22 +68,18 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
                 if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
                     const filename = upload.name
-                    const dir = path.join(getStoragePath(), chatflowid, chatId)
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir, { recursive: true })
-                    }
-                    const filePath = path.join(dir, filename)
                     const splitDataURI = upload.data.split(',')
                     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                    fs.writeFileSync(filePath, bf)
-
-                    // Omit upload.data since we don't store the content in database
+                    const mime = splitDataURI[0].split(':')[1].split(';')[0]
+                    await addSingleFileToStorage(mime, bf, filename, chatflowid, chatId)
                     upload.type = 'stored-file'
+                    // Omit upload.data since we don't store the content in database
                     fileUploads[i] = omit(upload, ['data'])
                 }
 
                 // Run Speech to Text conversion
-                if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4') {
+                if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg') {
+                    logger.debug(`Attempting a speech to text conversion...`)
                     let speechToTextConfig: ICommonObject = {}
                     if (chatflow.speechToText) {
                         const speechToTextProviders = JSON.parse(chatflow.speechToText)
@@ -105,6 +100,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                             databaseEntities: databaseEntities
                         }
                         const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
+                        logger.debug(`Speech to text result: ${speechToTextResult}`)
                         if (speechToTextResult) {
                             incomingInput.question = speechToTextResult
                         }
@@ -115,20 +111,21 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
         let isStreamValid = false
 
-        const files = (req.files as any[]) || []
+        const files = (req.files as Express.Multer.File[]) || []
 
         if (files.length) {
             const overrideConfig: ICommonObject = { ...req.body }
+            const fileNames: string[] = []
             for (const file of files) {
-                const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
-                const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
+                const fileBuffer = fs.readFileSync(file.path)
+
+                const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
                 const fileInputField = mapMimeTypeToInputField(file.mimetype)
-                if (overrideConfig[fileInputField]) {
-                    overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
-                } else {
-                    overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
-                }
+
+                overrideConfig[fileInputField] = storagePath
+
+                fs.unlinkSync(file.path)
             }
             incomingInput = {
                 question: req.body.question ?? 'hello',
@@ -331,7 +328,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             memoryType,
             sessionId,
             createdDate: userMessageDateTime,
-            fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined
+            fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
+            leadEmail: incomingInput.leadEmail
         }
         await utilAddChatMessage(userMessage)
 

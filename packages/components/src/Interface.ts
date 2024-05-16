@@ -104,6 +104,7 @@ export interface INodeProperties {
     description?: string
     filePath?: string
     badge?: string
+    deprecateMessage?: string
 }
 
 export interface INode extends INodeProperties {
@@ -173,6 +174,11 @@ export type MessageContentImageUrl = {
               url: string
               detail?: ImageDetail
           }
+}
+
+export interface IDocument<Metadata extends Record<string, any> = Record<string, any>> {
+    pageContent: string
+    metadata: Metadata
 }
 
 /**

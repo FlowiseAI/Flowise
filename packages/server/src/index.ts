@@ -5,11 +5,10 @@ import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
-import logger from './utils/logger'
-import { expressRequestLogger } from './utils/logger'
 import { DataSource } from 'typeorm'
 import { IChatFlow } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
+import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
@@ -44,45 +43,44 @@ export class App {
 
     async initDatabase() {
         // Initialize database
-        this.AppDataSource.initialize()
-            .then(async () => {
-                logger.info('📦 [server]: Data Source is initializing...')
+        try {
+            await this.AppDataSource.initialize()
+            logger.info('📦 [server]: Data Source is initializing...')
 
-                // Run Migrations Scripts
-                await this.AppDataSource.runMigrations({ transaction: 'each' })
+            // Run Migrations Scripts
+            await this.AppDataSource.runMigrations({ transaction: 'each' })
 
-                // Initialize nodes pool
-                this.nodesPool = new NodesPool()
-                await this.nodesPool.initialize()
+            // Initialize nodes pool
+            this.nodesPool = new NodesPool()
+            await this.nodesPool.initialize()
 
-                // Initialize chatflow pool
-                this.chatflowPool = new ChatflowPool()
+            // Initialize chatflow pool
+            this.chatflowPool = new ChatflowPool()
 
-                // Initialize API keys
-                await getAPIKeys()
+            // Initialize API keys
+            await getAPIKeys()
 
-                // Initialize encryption key
-                await getEncryptionKey()
+            // Initialize encryption key
+            await getEncryptionKey()
 
-                // Initialize Rate Limit
-                const AllChatFlow: IChatFlow[] = await getAllChatFlow()
-                await initializeRateLimiter(AllChatFlow)
+            // Initialize Rate Limit
+            const AllChatFlow: IChatFlow[] = await getAllChatFlow()
+            await initializeRateLimiter(AllChatFlow)
 
-                // Initialize cache pool
-                this.cachePool = new CachePool()
+            // Initialize cache pool
+            this.cachePool = new CachePool()
 
-                // Initialize telemetry
-                this.telemetry = new Telemetry()
-                logger.info('📦 [server]: Data Source has been initialized!')
-            })
-            .catch((err) => {
-                logger.error('❌ [server]: Error during Data Source initialization:', err)
-            })
+            // Initialize telemetry
+            this.telemetry = new Telemetry()
+            logger.info('📦 [server]: Data Source has been initialized!')
+        } catch (error) {
+            logger.error('❌ [server]: Error during Data Source initialization:', error)
+        }
     }
 
     async config(socketIO?: Server) {
         // Limit is needed to allow sending/receiving base64 encoded string
-        const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT ?? '50mb'
+        const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))
         this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
         if (process.env.NUMBER_OF_PROXIES && parseInt(process.env.NUMBER_OF_PROXIES) > 0)
@@ -135,8 +133,9 @@ export class App {
                 '/api/v1/components-credentials-icon/',
                 '/api/v1/chatflows-streaming',
                 '/api/v1/chatflows-uploads',
-                '/api/v1/openai-assistants-file',
+                '/api/v1/openai-assistants-file/download',
                 '/api/v1/feedback',
+                '/api/v1/leads',
                 '/api/v1/get-upload-file',
                 '/api/v1/ip'
             ]
@@ -148,6 +147,16 @@ export class App {
         }
 
         this.app.use('/api/v1', flowiseApiV1Router)
+
+        // ----------------------------------------
+        // Configure number of proxies in Host Environment
+        // ----------------------------------------
+        this.app.get('/api/v1/ip', (request, response) => {
+            response.send({
+                ip: request.ip,
+                msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
+            })
+        })
 
         // ----------------------------------------
         // Serve UI static

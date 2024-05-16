@@ -32,7 +32,7 @@ import {
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconChevronsUp, IconChevronsDown, IconTrash, IconX } from '@tabler/icons'
+import { IconChevronsUp, IconChevronsDown, IconTrash, IconX } from '@tabler/icons-react'
 
 // Project imports
 import { TableViewOnly } from '@/ui-component/table/Table'

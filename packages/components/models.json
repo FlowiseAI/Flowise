@@ -32,6 +32,14 @@
                     "name": "meta.llama2-70b-chat-v1"
                 },
                 {
+                    "label": "meta.llama3-8b-instruct-v1:0",
+                    "name": "meta.llama3-8b-instruct-v1:0"
+                },
+                {
+                    "label": "meta.llama3-70b-instruct-v1:0",
+                    "name": "meta.llama3-70b-instruct-v1:0"
+                },
+                {
                     "label": "mistral.mistral-7b-instruct-v0:2",
                     "name": "mistral.mistral-7b-instruct-v0:2"
                 },
@@ -302,6 +310,10 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
+                    "label": "gemini-1.5-flash-latest",
+                    "name": "gemini-1.5-flash-latest"
+                },
+                {
                     "label": "gemini-1.5-pro-latest",
                     "name": "gemini-1.5-pro-latest"
                 },
@@ -328,8 +340,12 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
+                    "label": "gemini-1.5-flash",
+                    "name": "gemini-1.5-flash-preview-0514"
+                },
+                {
                     "label": "gemini-1.5-pro",
-                    "name": "gemini-1.5-pro"
+                    "name": "gemini-1.5-pro-preview-0409"
                 },
                 {
                     "label": "gemini-1.0-pro",
@@ -358,6 +374,27 @@
             ]
         },
         {
+            "name": "groqChat",
+            "models": [
+                {
+                    "label": "gemma-7b-it",
+                    "name": "gemma-7b-it"
+                },
+                {
+                    "label": "llama3-70b-8192",
+                    "name": "llama3-70b-8192"
+                },
+                {
+                    "label": "llama3-8b-8192",
+                    "name": "llama3-8b-8192"
+                },
+                {
+                    "label": "mixtral-8x7b-32768",
+                    "name": "mixtral-8x7b-32768"
+                }
+            ]
+        },
+        {
             "name": "chatCohere",
             "models": [
                 {
@@ -373,6 +410,10 @@
         {
             "name": "chatOpenAI",
             "models": [
+                {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o"
+                },
                 {
                     "label": "gpt-4",
                     "name": "gpt-4"
@@ -518,6 +559,10 @@
                 {
                     "label": "open-mixtral-8x7b",
                     "name": "open-mixtral-8x7b"
+                },
+                {
+                    "label": "open-mixtral-8x22b",
+                    "name": "open-mixtral-8x22b"
                 },
                 {
                     "label": "mistral-small-2312",

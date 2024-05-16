@@ -41,6 +41,8 @@ import { Assistant } from '../database/entities/Assistant'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
 import { Variable } from '../database/entities/Variable'
+import { DocumentStore } from '../database/entities/DocumentStore'
+import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 
@@ -54,7 +56,9 @@ export const databaseEntities: IDatabaseEntity = {
     Tool: Tool,
     Credential: Credential,
     Assistant: Assistant,
-    Variable: Variable
+    Variable: Variable,
+    DocumentStore: DocumentStore,
+    DocumentStoreFileChunk: DocumentStoreFileChunk
 }
 
 /**
@@ -371,6 +375,44 @@ export const saveUpsertFlowData = (nodeData: INodeData, upsertHistory: Record<st
 }
 
 /**
+ * Check if doc loader should be bypassed, ONLY if doc loader is connected to a vector store
+ * Reason being we dont want to load the doc loader again whenever we are building the flow, because it was already done during upserting
+ * TODO: Remove this logic when we remove doc loader nodes from the canvas
+ * @param {IReactFlowNode} reactFlowNode
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {IReactFlowEdge[]} reactFlowEdges
+ * @returns {boolean}
+ */
+const checkIfDocLoaderShouldBeIgnored = (
+    reactFlowNode: IReactFlowNode,
+    reactFlowNodes: IReactFlowNode[],
+    reactFlowEdges: IReactFlowEdge[]
+): boolean => {
+    let outputId = ''
+
+    if (reactFlowNode.data.outputAnchors.length) {
+        if (Object.keys(reactFlowNode.data.outputs || {}).length) {
+            const output = reactFlowNode.data.outputs?.output
+            const node = reactFlowNode.data.outputAnchors[0].options?.find((anchor) => anchor.name === output)
+            if (node) outputId = (node as ICommonObject).id
+        } else {
+            outputId = (reactFlowNode.data.outputAnchors[0] as ICommonObject).id
+        }
+    }
+
+    const targetNodeId = reactFlowEdges.find((edge) => edge.sourceHandle === outputId)?.target
+
+    if (targetNodeId) {
+        const targetNodeCategory = reactFlowNodes.find((nd) => nd.id === targetNodeId)?.data.category || ''
+        if (targetNodeCategory === 'Vector Stores') {
+            return true
+        }
+    }
+
+    return false
+}
+
+/**
  * Build langchain from start to end
  * @param {string[]} startingNodeIds
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -442,7 +484,6 @@ export const buildFlow = async (
 
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory)
 
-            // TODO: Avoid processing Text Splitter + Doc Loader once Upsert & Load Existing Vector Nodes are deprecated
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
                 logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 const indexResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
@@ -460,6 +501,12 @@ export const buildFlow = async (
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
+            } else if (
+                !isUpsert &&
+                reactFlowNode.data.category === 'Document Loaders' &&
+                checkIfDocLoaderShouldBeIgnored(reactFlowNode, reactFlowNodes, reactFlowEdges)
+            ) {
+                initializedNodes.add(nodeId)
             } else {
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 let outputResult = await newNodeInstance.init(reactFlowNodeData, question, {
@@ -471,6 +518,7 @@ export const buildFlow = async (
                     appDataSource,
                     databaseEntities,
                     cachePool,
+                    isUpsert,
                     dynamicVariables,
                     uploads
                 })
@@ -930,7 +978,7 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
         case 'text/yaml':
             return 'yamlFile'
         default:
-            return ''
+            return 'txtFile'
     }
 }
 
@@ -1024,7 +1072,8 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'chatMistralAI',
             'groqChat',
             'chatCohere',
-            'chatGoogleGenerativeAI'
+            'chatGoogleGenerativeAI',
+            'chatTogetherAI'
         ],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
@@ -1066,6 +1115,9 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
                 return false
             }
         }
+
+        // If agent is openAIAssistant, streaming is enabled
+        if (endingNodeData.name === 'openAIAssistant') return true
     } else if (endingNodeData.category === 'Engine') {
         // Engines that are available to stream
         const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
@@ -1325,34 +1377,6 @@ export const getAllValuesFromJson = (obj: any): any[] => {
 }
 
 /**
- * Delete file & folder recursively
- * @param {string} directory
- */
-export const deleteFolderRecursive = (directory: string) => {
-    if (fs.existsSync(directory)) {
-        fs.readdir(directory, (error, files) => {
-            if (error) throw new Error('Could not read directory')
-
-            files.forEach((file) => {
-                const file_path = path.join(directory, file)
-
-                fs.stat(file_path, (error, stat) => {
-                    if (error) throw new Error('File do not exist')
-
-                    if (!stat.isDirectory()) {
-                        fs.unlink(file_path, (error) => {
-                            if (error) throw new Error('Could not delete file')
-                        })
-                    } else {
-                        deleteFolderRecursive(file_path)
-                    }
-                })
-            })
-        })
-    }
-}
-
-/**
  * Get only essential flow data items for telemetry
  * @param {IReactFlowNode[]} nodes
  * @param {IReactFlowEdge[]} edges
@@ -1407,4 +1431,11 @@ export const getAppVersion = async () => {
     } catch (error) {
         return ''
     }
+}
+
+export const convertToValidFilename = (word: string) => {
+    return word
+        .replace(/[/|\\:*?"<>]/g, ' ')
+        .replace(' ', '')
+        .toLowerCase()
 }
