@@ -17,6 +17,9 @@ export interface IDocumentStore {
     updatedDate: Date
     createdDate: Date
     status: DocumentStoreStatus
+    vectorStoreConfig: string // JSON string
+    embeddingConfig: string // JSON string
+    recordManagerConfig: string // JSON string
 }
 
 export interface IDocumentStoreFileChunk {
@@ -89,6 +92,8 @@ export class DocumentStoreDTO {
     totalChars: number
     chunkSize: number
     loaders: IDocumentStoreLoader[]
+    vectorStoreConfig: any
+    embeddingConfig: any
 
     constructor() {}
 
@@ -107,6 +112,13 @@ export class DocumentStoreDTO {
             documentStoreDTO.whereUsed = JSON.parse(entity.whereUsed)
         } else {
             documentStoreDTO.whereUsed = []
+        }
+
+        if (entity.vectorStoreConfig) {
+            documentStoreDTO.vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)
+        }
+        if (entity.embeddingConfig) {
+            documentStoreDTO.embeddingConfig = JSON.parse(entity.embeddingConfig)
         }
 
         if (entity.loaders) {

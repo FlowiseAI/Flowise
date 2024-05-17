@@ -18,6 +18,7 @@ import { AddFeedback1707213626553 } from './1707213626553-AddFeedback'
 import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
 import { AddLead1710832127079 } from './1710832127079-AddLead'
 import { AddLeadToChatMessage1711538023578 } from './1711538023578-AddLeadToChatMessage'
+import { AddVectorStoreConfigToDocStore1715861032479 } from './1715861032479-AddVectorStoreConfigToDocStore'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -39,5 +40,6 @@ export const mysqlMigrations = [
     AddFeedback1707213626553,
     AddDocumentStore1711637331047,
     AddLead1710832127079,
-    AddLeadToChatMessage1711538023578
+    AddLeadToChatMessage1711538023578,
+    AddVectorStoreConfigToDocStore1715861032479
 ]
