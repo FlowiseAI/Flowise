@@ -201,9 +201,9 @@ const prepareAgent = (
                 return messages ?? []
             },
             context: async (i: { input: string; chatHistory?: string }) => {
-                const relevantDocs = await vectorStoreRetriever.invoke(i.input);
-                const formattedDocs = formatDocs(relevantDocs);
-                return formattedDocs;
+                const relevantDocs = await vectorStoreRetriever.invoke(i.input)
+                const formattedDocs = formatDocs(relevantDocs)
+                return formattedDocs
             }
         },
         prompt,
