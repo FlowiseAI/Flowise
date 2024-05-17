@@ -30,7 +30,7 @@ const Documents = Loadable(lazy(() => import('@/views/docstore')))
 const DocumentStoreDetail = Loadable(lazy(() => import('@/views/docstore/DocumentStoreDetail')))
 const ShowStoredChunks = Loadable(lazy(() => import('@/views/docstore/ShowStoredChunks')))
 const LoaderConfigPreviewChunks = Loadable(lazy(() => import('@/views/docstore/LoaderConfigPreviewChunks')))
-const DocumentStoreVectorStore = Loadable(lazy(() => import('@/views/docstore/DocumentStoreVectorStore')))
+const DocumentStoreVectorStore = Loadable(lazy(() => import('@/views/docstore/ConfigureVectorStore')))
 
 // ==============================|| MAIN ROUTING ||============================== //
 

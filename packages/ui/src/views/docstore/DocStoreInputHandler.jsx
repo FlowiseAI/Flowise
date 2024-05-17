@@ -207,7 +207,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
                         )}
                         {inputParam.type === 'asyncOptions' && (
                             <>
-                                {data.inputParams.length === 1 && <div style={{ marginTop: 10 }} />}
+                                {data.inputParams?.length === 1 && <div style={{ marginTop: 10 }} />}
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <AsyncDropdown
                                         disabled={disabled}

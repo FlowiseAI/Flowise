@@ -45,7 +45,7 @@ const DividerRoot = styled('div')(({ theme }) => ({
     }
 }))
 
-const DocumentStoreVectorStore = () => {
+const ConfigureVectorStore = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
@@ -67,24 +67,23 @@ const DocumentStoreVectorStore = () => {
     const [dialogProps, setDialogProps] = useState({})
 
     const [showEmbeddingsListDialog, setShowEmbeddingsListDialog] = useState(false)
-    const [selectedEmbeddingsProvider, setSelectedEmbeddingsProvider] = useState(undefined)
-    const [embeddingInstanceData, setEmbeddingInstanceData] = useState({})
-    const [embeddingCredential, setEmbeddingCredential] = useState(false)
+    const [selectedEmbeddingsProvider, setSelectedEmbeddingsProvider] = useState({})
+    //const [embeddingInstanceData, setEmbeddingInstanceData] = useState({})
+    //const [embeddingCredential, setEmbeddingCredential] = useState(false)
 
     const [showVectorStoreListDialog, setShowVectorStoreListDialog] = useState(false)
-    const [selectedVectorStoreProvider, setSelectedVectorStoreProvider] = useState(undefined)
+    const [selectedVectorStoreProvider, setSelectedVectorStoreProvider] = useState({})
     const [vectorStoreInstanceData, setVectorStoreInstanceData] = useState({})
     const [vectorStoreCredential, setVectorStoreCredential] = useState(false)
 
     const [showRecordManagerListDialog, setShowRecordManagerListDialog] = useState(false)
-    const [selectedRecordManagerProvider, setSelectedRecordManagerProvider] = useState(undefined)
+    const [selectedRecordManagerProvider, setSelectedRecordManagerProvider] = useState({})
     const [recordManagerInstanceData, setRecordManagerInstanceData] = useState({})
     const [recordManagerCredential, setRecordManagerCredential] = useState(false)
 
     const onEmbeddingsSelected = (component) => {
-        setSelectedEmbeddingsProvider(component)
         const nodeData = cloneDeep(initNode(component, uuidv4()))
-        setEmbeddingInstanceData(nodeData)
+        setSelectedEmbeddingsProvider(nodeData)
         setShowEmbeddingsListDialog(false)
     }
 
@@ -99,7 +98,8 @@ const DocumentStoreVectorStore = () => {
     const onVectorStoreSelected = (component) => {
         setSelectedVectorStoreProvider(component)
         const nodeData = cloneDeep(initNode(component, uuidv4()))
-        setVectorStoreInstanceData(nodeData)
+        //setVectorStoreInstanceData(nodeData)
+        setSelectedVectorStoreProvider(nodeData)
         setShowVectorStoreListDialog(false)
     }
 
@@ -127,20 +127,32 @@ const DocumentStoreVectorStore = () => {
 
     const checkMandatoryFields = () => {
         let canSubmit = true
-        const inputParams = (embeddingInstanceData.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
+        const inputParams = (selectedVectorStoreProvider?.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
         for (const inputParam of inputParams) {
-            if (!inputParam.optional && !embeddingInstanceData.inputs[inputParam.name]) {
-                canSubmit = false
-                break
+            if (!inputParam.optional && (!selectedVectorStoreProvider.inputs[inputParam.name] || !selectedVectorStoreProvider.credential)) {
+                if (inputParam.type === 'credential' && !selectedVectorStoreProvider.credential) {
+                    canSubmit = false
+                    break
+                } else if (inputParam.type !== 'credential' && !selectedVectorStoreProvider.inputs[inputParam.name]) {
+                    canSubmit = false
+                    break
+                }
             }
         }
-        const inputParams2 = (vectorStoreInstanceData.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
+
+        const inputParams2 = (selectedEmbeddingsProvider?.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
         for (const inputParam of inputParams2) {
-            if (!inputParam.optional && !vectorStoreInstanceData.inputs[inputParam.name]) {
-                canSubmit = false
-                break
+            if (!inputParam.optional && (!selectedEmbeddingsProvider.inputs[inputParam.name] || !selectedEmbeddingsProvider.credential)) {
+                if (inputParam.type === 'credential' && !selectedEmbeddingsProvider.credential) {
+                    canSubmit = false
+                    break
+                } else if (inputParam.type !== 'credential' && !selectedEmbeddingsProvider.inputs[inputParam.name]) {
+                    canSubmit = false
+                    break
+                }
             }
         }
+
         if (!canSubmit) {
             enqueueSnackbar({
                 message: 'Please fill in all mandatory fields.',
@@ -161,25 +173,24 @@ const DocumentStoreVectorStore = () => {
     const tryAndInsertIntoStore = () => {
         if (checkMandatoryFields()) {
             const data = {
-                embeddingConfig: embeddingInstanceData,
+                embeddingConfig: selectedEmbeddingsProvider,
                 vectorStoreConfig: vectorStoreInstanceData,
-                embeddingName: selectedEmbeddingsProvider.name,
                 vectorStoreName: selectedVectorStoreProvider.name,
                 storeId: storeId
             }
+            // Set embedding config
+            if (selectedEmbeddingsProvider.inputs) {
+                data.embeddingConfig = {}
+                data.embeddingName = selectedEmbeddingsProvider.name
+                Object.keys(selectedEmbeddingsProvider.inputs).map((key) => {
+                    data.embeddingConfig[key] = selectedEmbeddingsProvider.inputs[key]
+                })
+            }
+            // if (embeddingCredential) {
+            //     data.embeddingCredential = embeddingCredential
+            // }
             if (vectorStoreCredential) {
                 data.vectorStoreCredential = vectorStoreCredential
-            }
-            if (embeddingCredential) {
-                data.embeddingCredential = embeddingCredential
-            }
-            // Set embedding config
-            if (embeddingInstanceData.inputs) {
-                data.embeddingConfig = {}
-                data.embeddingConfig.inputs = {}
-                Object.keys(embeddingInstanceData.inputs).map((key) => {
-                    data.embeddingConfig.inputs[key] = embeddingInstanceData.inputs[key]
-                })
             }
             insertIntoVectorStoreApi.request(data)
         }
@@ -219,18 +230,18 @@ const DocumentStoreVectorStore = () => {
                             isBackButton={true}
                             search={false}
                             title={getSpecificDocumentStoreApi.data?.name}
-                            description={getSpecificDocumentStoreApi.data?.description}
+                            description='Configure your Vector Store'
                             onBack={() => navigate(-1)}
                         ></ViewHeader>
                     </Stack>
                 )}
             </MainCard>
-            <Typography variant='h3' sx={{ m: 3 }} align='center' style={{ color: 'darkred' }}>
-                Configure your Vector Store
-            </Typography>
+            {/*<Typography variant='h3' sx={{ m: 3 }} align='center' style={{ color: 'darkred' }}>*/}
+            {/*    Configure your Vector Store*/}
+            {/*</Typography>*/}
             <Grid container spacing={1} style={{ textAlign: 'center' }}>
                 <Grid item xs={12} sm={4} md={4}>
-                    {selectedEmbeddingsProvider === undefined ? (
+                    {Object.keys(selectedEmbeddingsProvider).length === 0 ? (
                         <Button
                             color='error'
                             onClick={showEmbeddingsList}
@@ -261,44 +272,42 @@ const DocumentStoreVectorStore = () => {
                                                 </DividerRoot>
                                             </div>
                                         </Box>
-                                        {selectedEmbeddingsProvider && selectedEmbeddingsProvider.credential && (
-                                            <Box sx={{ p: 1 }}>
-                                                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                    <Typography>
-                                                        {selectedEmbeddingsProvider.credential.label}
-                                                        {!selectedEmbeddingsProvider.credential.optional && (
-                                                            <span style={{ color: 'red' }}>&nbsp;*</span>
-                                                        )}
-                                                        {selectedEmbeddingsProvider.credential.description && (
-                                                            <TooltipWithParser
-                                                                style={{ marginLeft: 10 }}
-                                                                title={selectedEmbeddingsProvider.credential.description}
-                                                            />
-                                                        )}
-                                                    </Typography>
-                                                    <div style={{ flexGrow: 1 }}></div>
-                                                </div>
-                                                <CredentialInputHandler
-                                                    key={embeddingCredential}
-                                                    data={embeddingInstanceData}
-                                                    inputParam={selectedEmbeddingsProvider.credential}
-                                                    onSelect={(newValue) => setEmbeddingCredential(newValue)}
-                                                />
-                                            </Box>
-                                        )}
+                                        {/*{selectedEmbeddingsProvider && selectedEmbeddingsProvider.credential && (*/}
+                                        {/*    <Box sx={{ p: 1 }}>*/}
+                                        {/*        <div style={{ display: 'flex', flexDirection: 'row' }}>*/}
+                                        {/*            <Typography>*/}
+                                        {/*                {selectedEmbeddingsProvider.credential.label}*/}
+                                        {/*                {!selectedEmbeddingsProvider.credential.optional && (*/}
+                                        {/*                    <span style={{ color: 'red' }}>&nbsp;*</span>*/}
+                                        {/*                )}*/}
+                                        {/*                {selectedEmbeddingsProvider.credential.description && (*/}
+                                        {/*                    <TooltipWithParser*/}
+                                        {/*                        style={{ marginLeft: 10 }}*/}
+                                        {/*                        title={selectedEmbeddingsProvider.credential.description}*/}
+                                        {/*                    />*/}
+                                        {/*                )}*/}
+                                        {/*            </Typography>*/}
+                                        {/*            <div style={{ flexGrow: 1 }}></div>*/}
+                                        {/*        </div>*/}
+                                        {/*        <CredentialInputHandler*/}
+                                        {/*            key={embeddingCredential}*/}
+                                        {/*            data={embeddingInstanceData}*/}
+                                        {/*            inputParam={selectedEmbeddingsProvider.credential}*/}
+                                        {/*            onSelect={(newValue) => setEmbeddingCredential(newValue)}*/}
+                                        {/*        />*/}
+                                        {/*    </Box>*/}
+                                        {/*)}*/}
                                         {selectedEmbeddingsProvider &&
                                             Object.keys(selectedEmbeddingsProvider).length > 0 &&
                                             (selectedEmbeddingsProvider.inputParams ?? [])
                                                 .filter((inputParam) => !inputParam.hidden)
                                                 .map((inputParam, index) => (
-                                                    <>
-                                                        <DocStoreInputHandler
-                                                            key={index}
-                                                            data={embeddingInstanceData}
-                                                            inputParam={inputParam}
-                                                            isAdditionalParams={inputParam.additionalParams}
-                                                        />
-                                                    </>
+                                                    <DocStoreInputHandler
+                                                        key={index}
+                                                        data={selectedEmbeddingsProvider}
+                                                        inputParam={inputParam}
+                                                        isAdditionalParams={inputParam.additionalParams}
+                                                    />
                                                 ))}
                                     </div>
                                 </Grid>
@@ -307,7 +316,7 @@ const DocumentStoreVectorStore = () => {
                     )}
                 </Grid>
                 <Grid item xs={12} sm={4} md={4}>
-                    {selectedVectorStoreProvider === undefined ? (
+                    {Object.keys(selectedVectorStoreProvider).length === 0 ? (
                         <Button
                             color='error'
                             variant='outlined'
@@ -338,44 +347,17 @@ const DocumentStoreVectorStore = () => {
                                                 </DividerRoot>
                                             </div>
                                         </Box>
-                                        {selectedVectorStoreProvider && selectedVectorStoreProvider.credential && (
-                                            <Box sx={{ p: 1 }}>
-                                                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                    <Typography>
-                                                        {selectedVectorStoreProvider.credential.label}
-                                                        {!selectedVectorStoreProvider.credential.optional && (
-                                                            <span style={{ color: 'red' }}>&nbsp;*</span>
-                                                        )}
-                                                        {selectedVectorStoreProvider.credential.description && (
-                                                            <TooltipWithParser
-                                                                style={{ marginLeft: 10 }}
-                                                                title={selectedVectorStoreProvider.credential.description}
-                                                            />
-                                                        )}
-                                                    </Typography>
-                                                    <div style={{ flexGrow: 1 }}></div>
-                                                </div>
-                                                <CredentialInputHandler
-                                                    key={vectorStoreCredential}
-                                                    data={vectorStoreInstanceData}
-                                                    inputParam={selectedVectorStoreProvider.credential}
-                                                    onSelect={(newValue) => setVectorStoreCredential(newValue)}
-                                                />
-                                            </Box>
-                                        )}
                                         {selectedVectorStoreProvider &&
                                             Object.keys(selectedVectorStoreProvider).length > 0 &&
                                             (selectedVectorStoreProvider.inputParams ?? [])
                                                 .filter((inputParam) => !inputParam.hidden)
                                                 .map((inputParam, index) => (
-                                                    <>
-                                                        <DocStoreInputHandler
-                                                            key={index}
-                                                            data={vectorStoreInstanceData}
-                                                            inputParam={inputParam}
-                                                            isAdditionalParams={inputParam.additionalParams}
-                                                        />
-                                                    </>
+                                                    <DocStoreInputHandler
+                                                        key={index}
+                                                        data={vectorStoreInstanceData}
+                                                        inputParam={inputParam}
+                                                        isAdditionalParams={inputParam.additionalParams}
+                                                    />
                                                 ))}
                                     </div>
                                 </Grid>
@@ -384,7 +366,7 @@ const DocumentStoreVectorStore = () => {
                     )}
                 </Grid>
                 <Grid item xs={12} sm={4} md={4}>
-                    {selectedRecordManagerProvider === undefined ? (
+                    {Object.keys(selectedRecordManagerProvider).length === 0 ? (
                         <Button
                             color='error'
                             variant='outlined'
@@ -464,17 +446,17 @@ const DocumentStoreVectorStore = () => {
                     <Divider />
                 </Grid>
                 <Grid item xs={8} sm={8} md={8} style={{ textAlign: 'left' }}>
-                    {selectedEmbeddingsProvider && (
+                    {Object.keys(selectedEmbeddingsProvider).length > 0 && (
                         <Button color='error' variant='contained' sx={{ mr: 2 }} onClick={showEmbeddingsList}>
                             Change Embeddings
                         </Button>
                     )}
-                    {selectedVectorStoreProvider && (
+                    {Object.keys(selectedVectorStoreProvider).length > 0 && (
                         <Button color='error' variant='contained' sx={{ mr: 2 }} onClick={showVectorStoreList}>
                             Change Vector Store
                         </Button>
                     )}
-                    {selectedRecordManagerProvider && (
+                    {Object.keys(selectedRecordManagerProvider).length > 0 && (
                         <Button color='error' variant='contained' sx={{ mr: 2 }} onClick={showRecordManagerList}>
                             Change Record Manager
                         </Button>
@@ -519,4 +501,4 @@ const DocumentStoreVectorStore = () => {
     )
 }
 
-export default DocumentStoreVectorStore
+export default ConfigureVectorStore
