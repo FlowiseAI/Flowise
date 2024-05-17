@@ -1,47 +1,72 @@
 import { ICommonObject, IFileUpload } from './Interface'
-import { getCredentialData, getStoragePath } from './utils'
+import { getCredentialData } from './utils'
 import { type ClientOptions, OpenAIClient } from '@langchain/openai'
-import fs from 'fs'
-import path from 'path'
 import { AssemblyAI } from 'assemblyai'
+import { getFileFromStorage } from './storageUtils'
+
+const SpeechToTextType = {
+    OPENAI_WHISPER: 'openAIWhisper',
+    ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
+    LOCALAI_STT: 'localAISTT'
+}
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
     if (speechToTextConfig) {
         const credentialId = speechToTextConfig.credentialId as string
         const credentialData = await getCredentialData(credentialId ?? '', options)
-        const filePath = path.join(getStoragePath(), options.chatflowid, options.chatId, upload.name)
+        const audio_file = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
 
-        const audio_file = fs.createReadStream(filePath)
-
-        if (speechToTextConfig.name === 'openAIWhisper') {
-            const openAIClientOptions: ClientOptions = {
-                apiKey: credentialData.openAIApiKey
+        switch (speechToTextConfig.name) {
+            case SpeechToTextType.OPENAI_WHISPER: {
+                const openAIClientOptions: ClientOptions = {
+                    apiKey: credentialData.openAIApiKey
+                }
+                const openAIClient = new OpenAIClient(openAIClientOptions)
+                const openAITranscription = await openAIClient.audio.transcriptions.create({
+                    file: new File([new Blob([audio_file])], upload.name),
+                    model: 'whisper-1',
+                    language: speechToTextConfig?.language,
+                    temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
+                    prompt: speechToTextConfig?.prompt
+                })
+                if (openAITranscription?.text) {
+                    return openAITranscription.text
+                }
+                break
             }
-            const openAIClient = new OpenAIClient(openAIClientOptions)
+            case SpeechToTextType.ASSEMBLYAI_TRANSCRIBE: {
+                const assemblyAIClient = new AssemblyAI({
+                    apiKey: credentialData.assemblyAIApiKey
+                })
 
-            const transcription = await openAIClient.audio.transcriptions.create({
-                file: audio_file,
-                model: 'whisper-1',
-                language: speechToTextConfig?.language,
-                temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
-                prompt: speechToTextConfig?.prompt
-            })
-            if (transcription?.text) {
-                return transcription.text
+                const params = {
+                    audio: audio_file,
+                    speaker_labels: false
+                }
+
+                const assemblyAITranscription = await assemblyAIClient.transcripts.transcribe(params)
+                if (assemblyAITranscription?.text) {
+                    return assemblyAITranscription.text
+                }
+                break
             }
-        } else if (speechToTextConfig.name === 'assemblyAiTranscribe') {
-            const client = new AssemblyAI({
-                apiKey: credentialData.assemblyAIApiKey
-            })
-
-            const params = {
-                audio: audio_file,
-                speaker_labels: false
-            }
-
-            const transcription = await client.transcripts.transcribe(params)
-            if (transcription?.text) {
-                return transcription.text
+            case SpeechToTextType.LOCALAI_STT: {
+                const LocalAIClientOptions: ClientOptions = {
+                    apiKey: credentialData.localAIApiKey,
+                    baseURL: speechToTextConfig?.baseUrl
+                }
+                const localAIClient = new OpenAIClient(LocalAIClientOptions)
+                const localAITranscription = await localAIClient.audio.transcriptions.create({
+                    file: new File([new Blob([audio_file])], upload.name),
+                    model: speechToTextConfig?.model || 'whisper-1',
+                    language: speechToTextConfig?.language,
+                    temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
+                    prompt: speechToTextConfig?.prompt
+                })
+                if (localAITranscription?.text) {
+                    return localAITranscription.text
+                }
+                break
             }
         }
     } else {

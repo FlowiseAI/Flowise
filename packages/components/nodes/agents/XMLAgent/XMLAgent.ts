@@ -57,7 +57,6 @@ class XMLAgent_Agents implements INode {
         this.type = 'XMLAgent'
         this.category = 'Agents'
         this.icon = 'xmlagent.svg'
-        this.badge = 'NEW'
         this.description = `Agent that is designed for LLMs that are good for reasoning/writing XML (e.g: Anthropic Claude)`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [
@@ -93,6 +92,13 @@ class XMLAgent_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -116,7 +122,7 @@ class XMLAgent_Agents implements INode {
                 return formatResponse(e.message)
             }
         }
-        const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+        const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -177,12 +183,9 @@ class XMLAgent_Agents implements INode {
     }
 }
 
-const prepareAgent = async (
-    nodeData: INodeData,
-    flowObj: { sessionId?: string; chatId?: string; input?: string },
-    chatHistory: IMessage[] = []
-) => {
+const prepareAgent = async (nodeData: INodeData, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
     const model = nodeData.inputs?.model as BaseChatModel
+    const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
@@ -207,7 +210,7 @@ const prepareAgent = async (
 
     const llmWithStop = model.bind({ stop: ['</tool_input>', '</final_answer>'] })
 
-    const messages = (await memory.getChatMessages(flowObj.sessionId, false, chatHistory)) as IMessage[]
+    const messages = (await memory.getChatMessages(flowObj.sessionId, false)) as IMessage[]
     let chatHistoryMsgTxt = ''
     for (const message of messages) {
         if (message.type === 'apiMessage') {
@@ -237,7 +240,8 @@ const prepareAgent = async (
         chatId: flowObj?.chatId,
         input: flowObj?.input,
         isXML: true,
-        verbose: process.env.DEBUG === 'true' ? true : false
+        verbose: process.env.DEBUG === 'true' ? true : false,
+        maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
 
     return executor

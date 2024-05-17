@@ -165,7 +165,6 @@ class Pinecone_VectorStores implements INode {
         const index = nodeData.inputs?.pineconeIndex as string
         const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
         const pineconeMetadataFilter = nodeData.inputs?.pineconeMetadataFilter
-        const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -179,14 +178,6 @@ class Pinecone_VectorStores implements INode {
 
         const pineconeIndex = client.Index(index)
 
-        const flattenDocs = docs && docs.length ? flatten(docs) : []
-        const finalDocs = []
-        for (let i = 0; i < flattenDocs.length; i += 1) {
-            if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                finalDocs.push(new Document(flattenDocs[i]))
-            }
-        }
-
         const obj: PineconeStoreParams = {
             pineconeIndex
         }
@@ -199,7 +190,7 @@ class Pinecone_VectorStores implements INode {
 
         const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore, obj.filter)
     }
 }
 

@@ -12,7 +12,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
-import { IconX, IconVariable } from '@tabler/icons'
+import { IconX, IconVariable } from '@tabler/icons-react'
 
 // API
 import variablesApi from '@/api/variables'
@@ -39,7 +39,7 @@ const variableTypes = [
     }
 ]
 
-const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
@@ -111,8 +111,11 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(createResp.data.id)
             }
         } catch (err) {
+            setError(err)
             enqueueSnackbar({
-                message: `Failed to add new Variable: ${error.response.data.message}`,
+                message: `Failed to add new Variable: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -153,8 +156,11 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
+            setError(err)
             enqueueSnackbar({
-                message: `Failed to save Variable: ${error.response.data.message}`,
+                message: `Failed to save Variable: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -181,25 +187,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <div
-                        style={{
-                            width: 50,
-                            height: 50,
-                            marginRight: 10,
-                            borderRadius: '50%',
-                            backgroundColor: 'white'
-                        }}
-                    >
-                        <IconVariable
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                padding: 7,
-                                borderRadius: '50%',
-                                objectFit: 'contain'
-                            }}
-                        />
-                    </div>
+                    <IconVariable style={{ marginRight: '10px' }} />
                     {dialogProps.type === 'ADD' ? 'Add Variable' : 'Edit Variable'}
                 </div>
             </DialogTitle>
@@ -281,7 +269,8 @@ AddEditVariableDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default AddEditVariableDialog

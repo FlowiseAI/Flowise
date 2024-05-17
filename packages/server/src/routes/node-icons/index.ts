@@ -5,7 +5,7 @@ const router = express.Router()
 // CREATE
 
 // READ
-router.get('/:name', nodesController.getSingleNodeIcon)
+router.get(['/', '/:name'], nodesController.getSingleNodeIcon)
 
 // UPDATE
 

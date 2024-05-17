@@ -104,6 +104,7 @@ export interface INodeProperties {
     description?: string
     filePath?: string
     badge?: string
+    deprecateMessage?: string
 }
 
 export interface INode extends INodeProperties {
@@ -175,6 +176,11 @@ export type MessageContentImageUrl = {
           }
 }
 
+export interface IDocument<Metadata extends Record<string, any> = Record<string, any>> {
+    pageContent: string
+    metadata: Metadata
+}
+
 /**
  * Classes
  */
@@ -234,40 +240,34 @@ export class VectorStoreRetriever {
  * Implement abstract classes and interface for memory
  */
 import { BaseMessage } from '@langchain/core/messages'
-import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory } from 'langchain/memory'
+import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
 
 export interface MemoryMethods {
-    getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean, prevHistory?: IMessage[]): Promise<IMessage[] | BaseMessage[]>
+    getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
     addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     clearChatMessages(overrideSessionId?: string): Promise<void>
 }
 
 export abstract class FlowiseMemory extends BufferMemory implements MemoryMethods {
-    abstract getChatMessages(
-        overrideSessionId?: string,
-        returnBaseMessages?: boolean,
-        prevHistory?: IMessage[]
-    ): Promise<IMessage[] | BaseMessage[]>
+    abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
 
 export abstract class FlowiseWindowMemory extends BufferWindowMemory implements MemoryMethods {
-    abstract getChatMessages(
-        overrideSessionId?: string,
-        returnBaseMessages?: boolean,
-        prevHistory?: IMessage[]
-    ): Promise<IMessage[] | BaseMessage[]>
+    abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
 
 export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory implements MemoryMethods {
-    abstract getChatMessages(
-        overrideSessionId?: string,
-        returnBaseMessages?: boolean,
-        prevHistory?: IMessage[]
-    ): Promise<IMessage[] | BaseMessage[]>
+    abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
+    abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
+    abstract clearChatMessages(overrideSessionId?: string): Promise<void>
+}
+
+export abstract class FlowiseSummaryBufferMemory extends ConversationSummaryBufferMemory implements MemoryMethods {
+    abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }

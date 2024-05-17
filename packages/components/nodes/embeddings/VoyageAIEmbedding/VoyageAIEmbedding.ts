@@ -1,4 +1,5 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { VoyageEmbeddings, VoyageEmbeddingsParams } from 'langchain/embeddings/voyage'
 
@@ -17,7 +18,7 @@ class VoyageAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'VoyageAI Embeddings'
         this.name = 'voyageAIEmbeddings'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'VoyageAIEmbeddings'
         this.icon = 'voyageai.png'
         this.category = 'Embeddings'
@@ -33,33 +34,18 @@ class VoyageAIEmbedding_Embeddings implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'voyage-2',
-                        name: 'voyage-2',
-                        description: 'Base generalist embedding model optimized for both latency and quality'
-                    },
-                    {
-                        label: 'voyage-code-2',
-                        name: 'voyage-code-2',
-                        description: 'Optimized for code retrieval'
-                    },
-                    {
-                        label: 'voyage-large-2',
-                        name: 'voyage-large-2',
-                        description: 'Powerful generalist embedding model'
-                    },
-                    {
-                        label: 'voyage-lite-02-instruct',
-                        name: 'voyage-lite-02-instruct',
-                        description: 'Instruction-tuned for classification, clustering, and sentence textual similarity tasks'
-                    }
-                ],
-                default: 'voyage-2',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'voyage-2'
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.EMBEDDING, 'voyageAIEmbeddings')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

@@ -1,6 +1,7 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { OpenAI, ALL_AVAILABLE_OPENAI_MODELS } from 'llamaindex'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatOpenAI_LlamaIndex_LLMs implements INode {
     label: string
@@ -18,7 +19,7 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI_LlamaIndex'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -35,63 +36,9 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'gpt-4',
-                        name: 'gpt-4'
-                    },
-                    {
-                        label: 'gpt-4-turbo-preview',
-                        name: 'gpt-4-turbo-preview'
-                    },
-                    {
-                        label: 'gpt-4-0125-preview',
-                        name: 'gpt-4-0125-preview'
-                    },
-                    {
-                        label: 'gpt-4-1106-preview',
-                        name: 'gpt-4-1106-preview'
-                    },
-                    {
-                        label: 'gpt-4-vision-preview',
-                        name: 'gpt-4-vision-preview'
-                    },
-                    {
-                        label: 'gpt-4-0613',
-                        name: 'gpt-4-0613'
-                    },
-                    {
-                        label: 'gpt-4-32k',
-                        name: 'gpt-4-32k'
-                    },
-                    {
-                        label: 'gpt-4-32k-0613',
-                        name: 'gpt-4-32k-0613'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo',
-                        name: 'gpt-3.5-turbo'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-1106',
-                        name: 'gpt-3.5-turbo-1106'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-0613',
-                        name: 'gpt-3.5-turbo-0613'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-16k',
-                        name: 'gpt-3.5-turbo-16k'
-                    },
-                    {
-                        label: 'gpt-3.5-turbo-16k-0613',
-                        name: 'gpt-3.5-turbo-16k-0613'
-                    }
-                ],
-                default: 'gpt-3.5-turbo',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'gpt-3.5-turbo'
             },
             {
                 label: 'Temperature',
@@ -124,8 +71,22 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'BasePath',
+                name: 'basepath',
+                type: 'string',
+                optional: true,
+                additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatOpenAI_LlamaIndex')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -134,6 +95,7 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
         const timeout = nodeData.inputs?.timeout as string
+        const basePath = nodeData.inputs?.basepath as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -142,6 +104,12 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
             temperature: parseFloat(temperature),
             model: modelName,
             apiKey: openAIApiKey
+        }
+
+        if (basePath) {
+            obj.additionalSessionOptions = {
+                baseURL: basePath
+            }
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)

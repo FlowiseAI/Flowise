@@ -23,7 +23,7 @@ import { CheckboxInput } from '@/ui-component/checkbox/Checkbox'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import { TableViewOnly } from '@/ui-component/table/Table'
 
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import pythonSVG from '@/assets/images/python.svg'
 import javascriptSVG from '@/assets/images/javascript.svg'
@@ -293,7 +293,7 @@ query(formData).then((response) => {
             if (res && res.data && typeof res.data === 'object') onIndexResult(res.data)
         } catch (error) {
             enqueueSnackbar({
-                message: error.response.data.message,
+                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
