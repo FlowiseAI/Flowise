@@ -4,7 +4,6 @@ import { TogetherAI, TogetherAIInputs } from '@langchain/community/llms/together
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { INodeData } from '../../../dist/src'
 import { BaseCache } from '@langchain/core/caches'
-import { BaseLLMParams } from '@langchain/core/language_models/llms'
 
 /** https://v01.api.js.langchain.com/classes/langchain_community_llms_togetherai.TogetherAI.html
  https://js.langchain.com/v0.1/docs/integrations/llms/togetherai/ **/
@@ -125,9 +124,8 @@ class TogetherAI_LLMs implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const togetherAiApiKey = getCredentialParam('togetherAIApiKey', credentialData, nodeData)
 
-        // fixme
-        const obj: Partial<TogetherAIInputs> & BaseLLMParams = {
-            modelName: modelName,
+        const obj: TogetherAIInputs = {
+            modelName,
             apiKey: togetherAiApiKey
         }
 
@@ -139,7 +137,7 @@ class TogetherAI_LLMs implements INode {
         if (repeatPenalty) obj.repetitionPenalty = parseFloat(repeatPenalty)
         if (cache) obj.cache = cache
 
-        const togetherAI = new TogetherAI(obj) //fixme
+        const togetherAI = new TogetherAI(obj)
         return togetherAI
     }
 }
