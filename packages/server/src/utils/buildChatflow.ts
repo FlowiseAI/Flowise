@@ -1,8 +1,8 @@
 import { Request } from 'express'
-import { IFileUpload, getStoragePath, convertSpeechToText, ICommonObject } from 'flowise-components'
+import { IFileUpload, convertSpeechToText, ICommonObject, addSingleFileToStorage, addArrayFilesToStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { IncomingInput, IMessage, INodeData, IReactFlowObject, IReactFlowNode, IDepthQueue, chatType, IChatMessage } from '../Interface'
-import path from 'path'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { Server } from 'socket.io'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
@@ -47,11 +47,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             id: chatflowid
         })
         if (!chatflow) {
-            return {
-                executionError: true,
-                status: StatusCodes.NOT_FOUND,
-                msg: `Chatflow ${chatflowid} not found`
-            }
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
         }
 
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
@@ -60,11 +56,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         if (!isInternal) {
             const isKeyValidated = await utilValidateKey(req, chatflow)
             if (!isKeyValidated) {
-                return {
-                    executionError: true,
-                    status: StatusCodes.UNAUTHORIZED,
-                    msg: `Unauthorized`
-                }
+                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
         }
 
@@ -73,24 +65,21 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             fileUploads = incomingInput.uploads
             for (let i = 0; i < fileUploads.length; i += 1) {
                 const upload = fileUploads[i]
+
                 if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
                     const filename = upload.name
-                    const dir = path.join(getStoragePath(), chatflowid, chatId)
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir, { recursive: true })
-                    }
-                    const filePath = path.join(dir, filename)
                     const splitDataURI = upload.data.split(',')
                     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                    fs.writeFileSync(filePath, bf)
-
-                    // Omit upload.data since we don't store the content in database
+                    const mime = splitDataURI[0].split(':')[1].split(';')[0]
+                    await addSingleFileToStorage(mime, bf, filename, chatflowid, chatId)
                     upload.type = 'stored-file'
+                    // Omit upload.data since we don't store the content in database
                     fileUploads[i] = omit(upload, ['data'])
                 }
 
                 // Run Speech to Text conversion
-                if (upload.mime === 'audio/webm') {
+                if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg') {
+                    logger.debug(`Attempting a speech to text conversion...`)
                     let speechToTextConfig: ICommonObject = {}
                     if (chatflow.speechToText) {
                         const speechToTextProviders = JSON.parse(chatflow.speechToText)
@@ -111,6 +100,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                             databaseEntities: databaseEntities
                         }
                         const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
+                        logger.debug(`Speech to text result: ${speechToTextResult}`)
                         if (speechToTextResult) {
                             incomingInput.question = speechToTextResult
                         }
@@ -121,25 +111,25 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
         let isStreamValid = false
 
-        const files = (req.files as any[]) || []
+        const files = (req.files as Express.Multer.File[]) || []
 
         if (files.length) {
             const overrideConfig: ICommonObject = { ...req.body }
+            const fileNames: string[] = []
             for (const file of files) {
-                const fileData = fs.readFileSync(file.path, { encoding: 'base64' })
-                const dataBase64String = `data:${file.mimetype};base64,${fileData},filename:${file.filename}`
+                const fileBuffer = fs.readFileSync(file.path)
+
+                const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
                 const fileInputField = mapMimeTypeToInputField(file.mimetype)
-                if (overrideConfig[fileInputField]) {
-                    overrideConfig[fileInputField] = JSON.stringify([...JSON.parse(overrideConfig[fileInputField]), dataBase64String])
-                } else {
-                    overrideConfig[fileInputField] = JSON.stringify([dataBase64String])
-                }
+
+                overrideConfig[fileInputField] = storagePath
+
+                fs.unlinkSync(file.path)
             }
             incomingInput = {
                 question: req.body.question ?? 'hello',
                 overrideConfig,
-                history: [],
                 socketIOClientId: req.body.socketIOClientId
             }
         }
@@ -153,8 +143,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         // Get session ID
         const memoryNode = findMemoryNode(nodes, edges)
         const memoryType = memoryNode?.data.label
-        let sessionId = undefined
-        if (memoryNode) sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
+        let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
          * - Node Data already exists in pool
@@ -187,67 +176,39 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             /*** Get Ending Node with Directed Graph  ***/
             const { graph, nodeDependencies } = constructGraphs(nodes, edges)
             const directedGraph = graph
-            const endingNodeIds = getEndingNodes(nodeDependencies, directedGraph)
-            if (!endingNodeIds.length) {
-                return {
-                    executionError: true,
-                    status: 500,
-                    msg: `Ending nodes not found`
-                }
-            }
 
-            const endingNodes = nodes.filter((nd) => endingNodeIds.includes(nd.id))
+            const endingNodes = getEndingNodes(nodeDependencies, directedGraph, nodes)
 
-            let isEndingNodeExists = endingNodes.find((node) => node.data?.outputs?.output === 'EndingNode')
+            let isCustomFunctionEndingNode = endingNodes.some((node) => node.data?.outputs?.output === 'EndingNode')
 
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
-                if (!endingNodeData) {
-                    return {
-                        executionError: true,
-                        status: 500,
-                        msg: `Ending node ${endingNode.id} data not found`
-                    }
-                }
 
                 const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
 
-                if (!isEndingNode) {
-                    if (
-                        endingNodeData &&
-                        endingNodeData.category !== 'Chains' &&
-                        endingNodeData.category !== 'Agents' &&
-                        endingNodeData.category !== 'Engine'
-                    ) {
-                        return {
-                            executionError: true,
-                            status: 500,
-                            msg: `Ending node must be either a Chain or Agent`
-                        }
-                    }
+                // Once custom function ending node exists, no need to do follow-up checks.
+                if (isEndingNode) continue
 
-                    if (
-                        endingNodeData.outputs &&
-                        Object.keys(endingNodeData.outputs).length &&
-                        !Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)
-                    ) {
-                        return {
-                            executionError: true,
-                            status: 500,
-                            msg: `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
-                        }
-                    }
+                if (
+                    endingNodeData.outputs &&
+                    Object.keys(endingNodeData.outputs).length &&
+                    !Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)
+                ) {
+                    throw new InternalFlowiseError(
+                        StatusCodes.INTERNAL_SERVER_ERROR,
+                        `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                    )
                 }
 
                 isStreamValid = isFlowValidForStream(nodes, endingNodeData)
             }
 
             // Once custom function ending node exists, flow is always unavailable to stream
-            isStreamValid = isEndingNodeExists ? false : isStreamValid
+            isStreamValid = isCustomFunctionEndingNode ? false : isStreamValid
 
-            let chatHistory: IMessage[] = incomingInput.history ?? []
+            let chatHistory: IMessage[] = []
 
-            // When {{chat_history}} is used in Prompt Template, fetch the chat conversations from memory node
+            // When {{chat_history}} is used in Format Prompt Value, fetch the chat conversations from memory node
             for (const endingNode of endingNodes) {
                 const endingNodeData = endingNode.data
 
@@ -258,16 +219,15 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
                 if (!memoryNode) continue
 
-                if (!chatHistory.length && (incomingInput.chatId || incomingInput.overrideConfig?.sessionId)) {
-                    chatHistory = await getSessionChatHistory(
-                        memoryNode,
-                        appServer.nodesPool.componentNodes,
-                        incomingInput,
-                        appServer.AppDataSource,
-                        databaseEntities,
-                        logger
-                    )
-                }
+                chatHistory = await getSessionChatHistory(
+                    chatflowid,
+                    getMemorySessionId(memoryNode, incomingInput, chatId, isInternal),
+                    memoryNode,
+                    appServer.nodesPool.componentNodes,
+                    appServer.AppDataSource,
+                    databaseEntities,
+                    logger
+                )
             }
 
             /*** Get Starting Nodes with Reversed Graph ***/
@@ -275,6 +235,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             const nonDirectedGraph = constructedObj.graph
             let startingNodeIds: string[] = []
             let depthQueue: IDepthQueue = {}
+            const endingNodeIds = endingNodes.map((n) => n.id)
             for (const endingNodeId of endingNodeIds) {
                 const resx = getStartingNodes(nonDirectedGraph, endingNodeId)
                 startingNodeIds.push(...resx.startingNodeIds)
@@ -311,11 +272,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                     ? reactFlowNodes.find((node: IReactFlowNode) => endingNodeIds[0] === node.id)
                     : reactFlowNodes[reactFlowNodes.length - 1]
             if (!nodeToExecute) {
-                return {
-                    executionError: true,
-                    status: 404,
-                    msg: `Node not found`
-                }
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node not found`)
             }
 
             if (incomingInput.overrideConfig) {
@@ -338,7 +295,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,
                   chatflowid,
-                  chatHistory: incomingInput.history,
                   logger,
                   appDataSource: appServer.AppDataSource,
                   databaseEntities,
@@ -350,7 +306,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,
                   chatflowid,
-                  chatHistory: incomingInput.history,
                   logger,
                   appDataSource: appServer.AppDataSource,
                   databaseEntities,
@@ -373,7 +328,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             memoryType,
             sessionId,
             createdDate: userMessageDateTime,
-            fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined
+            fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
+            leadEmail: incomingInput.leadEmail
         }
         await utilAddChatMessage(userMessage)
 
@@ -417,10 +373,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         return result
     } catch (e: any) {
         logger.error('[server]: Error:', e)
-        return {
-            executionError: true,
-            status: 500,
-            msg: e.message
-        }
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, e.message)
     }
 }

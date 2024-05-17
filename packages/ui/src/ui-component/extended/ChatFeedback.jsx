@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 // material-ui
 import { Button, Box } from '@mui/material'
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -60,7 +60,9 @@ const ChatFeedback = ({ dialogProps }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save Chat Feedback Settings: ${error.response.data.message}`,
+                message: `Failed to save Chat Feedback Settings: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

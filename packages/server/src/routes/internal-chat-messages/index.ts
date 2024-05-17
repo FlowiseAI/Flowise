@@ -5,7 +5,7 @@ const router = express.Router()
 // CREATE
 
 // READ
-router.get('/:id', chatMessagesController.getAllInternalChatMessages)
+router.get(['/', '/:id'], chatMessagesController.getAllInternalChatMessages)
 
 // UPDATE
 

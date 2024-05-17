@@ -8,6 +8,6 @@ const router = express.Router()
 const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
 
 // CREATE
-router.post('/:id', upload.array('files'), predictionsController.getRateLimiterMiddleware, predictionsController.createPrediction)
+router.post(['/', '/:id'], upload.array('files'), predictionsController.getRateLimiterMiddleware, predictionsController.createPrediction)
 
 export default router
