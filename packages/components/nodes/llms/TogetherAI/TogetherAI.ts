@@ -40,62 +40,59 @@ class TogetherAI_LLMs implements INode {
                 name: 'model',
                 type: 'string',
                 description: 'If using own inference endpoint, leave this blank',
-                placeholder: '', // todo: check
-                optional: false
+                placeholder: '' // todo: check
             },
             {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: ''
+                placeholder: '',
+                description: 'The name of the model to query.'
             },
             {
                 label: 'Top K',
                 name: 'topK',
                 type: 'number',
                 description:
-                    'Reduces the probability of generating nonsense. A higher value (e.g. 100) will give more diverse answers, while a lower value (e.g. 10) will be more conservative.',
-                step: 1, // todo: check
-                optional: false
+                    'The topK parameter is used to limit the number of choices for the next predicted word or token. It specifies the maximum number of tokens to consider at each step, based on their probability of occurrence. This technique helps to speed up the generation process and can improve the quality of the generated text by focusing on the most likely options.',
+                step: 1 // todo: check
             },
             {
                 label: 'Top P',
                 name: 'topP',
                 type: 'number',
                 description:
-                    'Works together with top-k. A higher value (e.g., 0.95) will lead to more diverse text, while a lower value (e.g., 0.5) will generate more focused and conservative text.',
-                step: 0.1,
-                optional: false
+                    'The topP (nucleus) parameter is used to dynamically adjust the number of choices for each predicted token based on the cumulative probabilities. It specifies a probability threshold, below which all less likely tokens are filtered out. This technique helps to maintain diversity and generate more fluent and natural-sounding text.',
+                step: 0.1
             },
             {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
-                description: 'The temperature of the model. Increasing the temperature will make the model answer more creatively',
-                step: 0.1,
-                optional: false
+                description:
+                    'A decimal number that determines the degree of randomness in the response. A value of 1 will always yield the same output. A temperature less than 1 favors more correctness and is appropriate for question answering or summarization. A value greater than 1 introduces more randomness in the output.',
+                step: 0.1
             },
             {
                 label: 'Repeat Penalty',
                 name: 'repeatPenalty',
                 type: 'number',
                 description:
-                    'Sets how strongly to penalize repetitions. A higher value (e.g., 1.5) will penalize repetitions more strongly, while a lower value (e.g., 0.9) will be more lenient.',
-                step: 0.1,
-                optional: false
+                    'A number that controls the diversity of generated text by reducing the likelihood of repeated sequences. Higher values decrease repetition.',
+                step: 0.1
             },
             {
                 label: 'Streaming',
                 name: 'streaming',
                 type: 'boolean',
-                optional: false
+                description: 'Whether or not to stream tokens as they are generated'
             },
             {
                 label: 'Max Tokens',
                 name: 'maxTokens',
                 type: 'number',
                 step: 1,
-                description: 'Max Tokens parameter may not apply to certain model. Please check available model parameters',
+                description: 'Limit the number of tokens generated.',
                 optional: true,
                 additionalParams: true
             },
@@ -105,7 +102,7 @@ class TogetherAI_LLMs implements INode {
                 type: 'string',
                 rows: 4,
                 placeholder: 'AI assistant:',
-                description: 'Sets the stop sequences to use. Use comma to separate different sequences.',
+                description: 'A list of tokens at which the generation should stop.',
                 optional: true,
                 additionalParams: true
             }
