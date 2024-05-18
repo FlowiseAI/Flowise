@@ -1,8 +1,7 @@
-import { ICommonObject, INode, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeOptionsValue, INodeParams, INodeData } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { TogetherAI, TogetherAIInputs } from '@langchain/community/llms/togetherai'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
-import { INodeData } from '../../../dist/src'
 import { BaseCache } from '@langchain/core/caches'
 
 /** https://v01.api.js.langchain.com/classes/langchain_community_llms_togetherai.TogetherAI.html
