@@ -108,6 +108,7 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
 
         if (response.sources.length) {
             for (const sourceTool of response.sources) {
+                /* TODO: Identify the new params from sourceTool */
                 // usedTools.push({
                 //     tool: sourceTool.tool,
                 //     toolInput: sourceTool.input,
