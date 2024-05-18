@@ -30,10 +30,10 @@ const dashboard = {
             breadcrumbs: true
         },
         {
-            id: 'agents',
+            id: 'agentflows',
             title: 'Agentflows',
             type: 'item',
-            url: '/agents',
+            url: '/agentflows',
             icon: icons.IconUsersGroup,
             breadcrumbs: true,
             isBeta: true
@@ -87,7 +87,7 @@ const dashboard = {
             breadcrumbs: true
         },
         {
-            id: 'documents',
+            id: 'document-stores',
             title: 'Document Stores',
             type: 'item',
             url: '/document-stores',

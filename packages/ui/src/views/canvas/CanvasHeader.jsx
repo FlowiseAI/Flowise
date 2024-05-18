@@ -91,13 +91,10 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
         } else if (setting === 'duplicateChatflow') {
             try {
                 let flowData = chatflow.flowData
-                if (isAgentCanvas) {
-                    const parsedFlowData = JSON.parse(flowData)
-                    parsedFlowData.isAgentCanvas = true
-                    flowData = JSON.stringify(parsedFlowData)
-                }
+                const parsedFlowData = JSON.parse(flowData)
+                flowData = JSON.stringify(parsedFlowData)
                 localStorage.setItem('duplicatedFlowData', flowData)
-                window.open(`${uiBaseURL}/canvas`, '_blank')
+                window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
             } catch (e) {
                 console.error(e)
             }

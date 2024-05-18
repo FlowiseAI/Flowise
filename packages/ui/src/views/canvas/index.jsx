@@ -4,7 +4,6 @@ import 'reactflow/dist/style.css'
 
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { usePrompt } from '@/utils/usePrompt'
 import {
     REMOVE_DIRTY,
     SET_DIRTY,
@@ -50,6 +49,7 @@ import {
     updateOutdatedNodeEdge
 } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
+import { usePrompt } from '@/utils/usePrompt'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
@@ -67,17 +67,17 @@ const Canvas = () => {
     const templateFlowData = state ? state.templateFlowData : ''
 
     const URLpath = document.location.pathname.toString().split('/')
-    const chatflowId = URLpath[URLpath.length - 1] === 'canvas' ? '' : URLpath[URLpath.length - 1]
+    const chatflowId =
+        URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
+    const isAgentCanvas = URLpath.includes('agentcanvas') ? true : false
+    const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
 
     const { confirm } = useConfirm()
 
     const dispatch = useDispatch()
     const canvas = useSelector((state) => state.canvas)
     const [canvasDataStore, setCanvasDataStore] = useState(canvas)
-    const [isAgentCanvas, setIsAgentCanvas] = useState(state ? state.isAgentCanvas : false)
-    const [title, setTitle] = useState(state?.isAgentCanvas ? 'Agents' : 'Chatflow')
     const [chatflow, setChatflow] = useState(null)
-
     const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
 
     // ==============================|| Snackbar ||============================== //
@@ -160,9 +160,7 @@ const Canvas = () => {
 
             setNodes(nodes)
             setEdges(flowData.edges || [])
-            setIsAgentCanvas(isAgentCanvas)
-            setTitle(isAgentCanvas ? 'Agents' : 'Chatflow')
-            setDirty()
+            setTimeout(() => setDirty(), 0)
         } catch (e) {
             console.error(e)
         }
@@ -171,7 +169,7 @@ const Canvas = () => {
     const handleDeleteFlow = async () => {
         const confirmPayload = {
             title: `Delete`,
-            description: `Delete ${title} ${chatflow.name}?`,
+            description: `Delete ${canvasTitle} ${chatflow.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }
@@ -181,7 +179,7 @@ const Canvas = () => {
             try {
                 await chatflowsApi.deleteChatflow(chatflow.id)
                 localStorage.removeItem(`${chatflow.id}_INTERNAL`)
-                navigate('/')
+                navigate(isAgentCanvas ? '/agentflows' : '/')
             } catch (error) {
                 enqueueSnackbar({
                     message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
@@ -343,7 +341,7 @@ const Canvas = () => {
     const saveChatflowSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: `${title} saved`,
+            message: `${canvasTitle} saved`,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -408,7 +406,7 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            errorFailed(`Failed to retrieve ${title}: ${getSpecificChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -420,9 +418,9 @@ const Canvas = () => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            window.history.replaceState(state, null, `/canvas/${chatflow.id}`)
+            window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-            errorFailed(`Failed to save ${title}: ${createNewChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -434,7 +432,7 @@ const Canvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-            errorFailed(`Failed to save ${title}: ${updateChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to save ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -468,7 +466,7 @@ const Canvas = () => {
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {
-                    name: `Untitled ${title}`
+                    name: `Untitled ${canvasTitle}`
                 }
             })
         }

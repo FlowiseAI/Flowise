@@ -176,6 +176,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                 }
             }
             setNodes(filteredResult)
+            categorizeVectorStores(filteredResult, accordianCategories, isFilter)
             accordianCategories['Multi Agents'] = true
             setCategoryExpanded(accordianCategories)
         } else {

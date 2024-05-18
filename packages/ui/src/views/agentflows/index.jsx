@@ -31,7 +31,7 @@ import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 
 // ==============================|| AGENTS ||============================== //
 
-const Agents = () => {
+const Agentflows = () => {
     const navigate = useNavigate()
     const theme = useTheme()
 
@@ -69,11 +69,11 @@ const Agents = () => {
     }
 
     const addNew = () => {
-        navigate('/canvas', { state: { isAgentCanvas: true } })
+        navigate('/agentcanvas')
     }
 
-    const goToCanvas = (selectedChatflow) => {
-        navigate(`/canvas/${selectedChatflow.id}`, { state: { isAgentCanvas: true } })
+    const goToCanvas = (selectedAgentflow) => {
+        navigate(`/agentcanvas/${selectedAgentflow.id}`)
     }
 
     useEffect(() => {
@@ -103,17 +103,17 @@ const Agents = () => {
     useEffect(() => {
         if (getAllAgentflows.data) {
             try {
-                const chatflows = getAllAgentflows.data
+                const agentflows = getAllAgentflows.data
                 const images = {}
-                for (let i = 0; i < chatflows.length; i += 1) {
-                    const flowDataStr = chatflows[i].flowData
+                for (let i = 0; i < agentflows.length; i += 1) {
+                    const flowDataStr = agentflows[i].flowData
                     const flowData = JSON.parse(flowDataStr)
                     const nodes = flowData.nodes || []
-                    images[chatflows[i].id] = []
+                    images[agentflows[i].id] = []
                     for (let j = 0; j < nodes.length; j += 1) {
                         const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                        if (!images[chatflows[i].id].includes(imageSrc)) {
-                            images[chatflows[i].id].push(imageSrc)
+                        if (!images[agentflows[i].id].includes(imageSrc)) {
+                            images[agentflows[i].id].push(imageSrc)
                         }
                     }
                 }
@@ -185,6 +185,7 @@ const Agents = () => {
                         </>
                     ) : (
                         <FlowListTable
+                            isAgentCanvas={true}
                             data={getAllAgentflows.data}
                             images={images}
                             isLoading={isLoading}
@@ -214,4 +215,4 @@ const Agents = () => {
     )
 }
 
-export default Agents
+export default Agentflows

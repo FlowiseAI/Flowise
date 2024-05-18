@@ -8,7 +8,7 @@ import Loadable from '@/ui-component/loading/Loadable'
 const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
 
 // agents routing
-const Agents = Loadable(lazy(() => import('@/views/agents')))
+const Agentflows = Loadable(lazy(() => import('@/views/agentflows')))
 
 // marketplaces routing
 const Marketplaces = Loadable(lazy(() => import('@/views/marketplaces')))
@@ -49,8 +49,8 @@ const MainRoutes = {
             element: <Chatflows />
         },
         {
-            path: '/agents',
-            element: <Agents />
+            path: '/agentflows',
+            element: <Agentflows />
         },
         {
             path: '/marketplaces',
