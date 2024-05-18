@@ -31,13 +31,13 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
     badge?: string
 
     constructor(fields?: { sessionId?: string }) {
-        this.label = 'Open AI ConversationalRetrieval Agent'
+        this.label = 'Open AI Conversational Retrieval Agent'
         this.name = 'openAIConversationalRetrievalAgent'
         this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'function.svg'
-        this.description = `Agent that uses OpenAI Function Calling to pick the tools and args to call`
+        this.description = `Agent that calls a vector store retrieval and uses OpenAI Function Calling to pick the tools and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.badge = 'NEW'
         this.inputs = [
