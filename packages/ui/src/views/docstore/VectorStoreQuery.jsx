@@ -71,9 +71,9 @@ const VectorStoreQuery = () => {
     const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
     const queryVectorStoreApi = useApi(documentsApi.queryVectorStore)
 
-    const chunkSelected = (chunkId) => {
+    const chunkSelected = (chunkId, selectedChunkNumber) => {
         const selectedChunk = documentChunks.find((chunk) => chunk.id === chunkId)
-        const selectedChunkNumber = documentChunks.findIndex((chunk) => chunk.id === chunkId)
+        // const selectedChunkNumber = documentChunks.findIndex((chunk) => chunk.id === chunkId)
         const dialogProps = {
             data: {
                 selectedChunk,
@@ -132,7 +132,7 @@ const VectorStoreQuery = () => {
                     <div>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={12} md={12} lg={12}>
-                                <Box sx={{ p: 2 }}>
+                                <Box sx={{ p: 1 }}>
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                                         <Typography>
                                             Enter your Query<span style={{ color: 'red' }}>&nbsp;*</span>
@@ -143,7 +143,7 @@ const VectorStoreQuery = () => {
                                     <OutlinedInput
                                         size='small'
                                         multiline={true}
-                                        rows={3}
+                                        rows={2}
                                         sx={{ mt: 1 }}
                                         type='string'
                                         fullWidth
@@ -168,6 +168,20 @@ const VectorStoreQuery = () => {
                                         documents.
                                     </Typography>
                                 </Box>
+                                <Stack sx={{ position: 'relative' }} direction='column'>
+                                    <Box sx={{ p: 1 }}>
+                                        <Stack sx={{ position: 'relative' }} direction='row'>
+                                            <Typography variant='overline'>TopK</Typography>
+                                        </Stack>
+                                        <OutlinedInput id='vsName' type='string' fullWidth placeholder={'My Vector Store'} />
+                                    </Box>
+                                    {/*<Box sx={{ p: 1 }}>*/}
+                                    {/*    <Stack sx={{ position: 'relative' }} direction='row'>*/}
+                                    {/*        <Typography variant='overline'>TopK</Typography>*/}
+                                    {/*    </Stack>*/}
+                                    {/*    <OutlinedInput id='vsName' type='string' fullWidth placeholder={'My Vector Store'} />*/}
+                                    {/*</Box>*/}
+                                </Stack>
                             </Grid>
                             <Grid item xs={12} sm={12} md={12} lg={12}>
                                 <Box sx={{ p: 1 }}>
@@ -198,7 +212,7 @@ const VectorStoreQuery = () => {
                                     <Grid item lg={4} md={4} sm={6} xs={6} key={index}>
                                         <CardWrapper
                                             content={false}
-                                            onClick={() => chunkSelected(row.id)}
+                                            onClick={() => chunkSelected(row.id, index + 1)}
                                             sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
                                         >
                                             <Card>

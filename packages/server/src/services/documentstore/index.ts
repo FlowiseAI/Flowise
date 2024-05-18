@@ -766,21 +766,6 @@ const insertIntoVectorStore = async (data: any) => {
             }
         }
 
-        // const embeddingNodeInstanceFilePath = appServer.nodesPool.componentNodes[data.embeddingName].filePath as string
-        // const embeddingNodeModule = await import(embeddingNodeInstanceFilePath)
-        // const embeddingNodeData: any = {
-        //     inputs: { ...data.embeddingConfig },
-        //     outputs: { output: 'document' },
-        //     id: 'embeddings_0'
-        // }
-        // if (data.embeddingConfig.credential) {
-        //     embeddingNodeData.credential = data.embeddingConfig.credential
-        // }
-        // const embeddingNodeInstance = new embeddingNodeModule.nodeClass()
-        // let embeddingObj = await embeddingNodeInstance.init(embeddingNodeData, '', options)
-        // if (!embeddingObj) {
-        //     throw new Error(`Failed to create EmbeddingObj`)
-        // }
         let embeddingObj = await _createEmbeddingsObject(appServer, data, options)
 
         const vStoreNodeData = _createVectorStoreNodeData(appServer, data, embeddingObj, recordManagerObj)

@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 
 // material-ui
-import { Stack, Grid, Box, Divider, Chip } from '@mui/material'
+import { Stack, Grid, Box, Divider, Chip, Avatar } from '@mui/material'
 import { styled, useTheme } from '@mui/material/styles'
 import Button from '@mui/material/Button'
 
@@ -35,6 +35,7 @@ import ComponentsListDialog from '@/views/docstore/ComponentsListDialog'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
+import { baseURL } from '@/store/constant'
 
 // const
 
@@ -355,194 +356,249 @@ const VectorStoreConfigure = () => {
                             description='Configure your Vector Store and Upsert your data.'
                             onBack={() => navigate(-1)}
                         ></ViewHeader>
+                        <Grid container spacing={1} style={{ textAlign: 'center' }}>
+                            <Grid item xs={12} sm={4} md={4}>
+                                {Object.keys(selectedEmbeddingsProvider).length === 0 ? (
+                                    <Button
+                                        color='error'
+                                        onClick={showEmbeddingsList}
+                                        variant='outlined'
+                                        fullWidth={true}
+                                        startIcon={<Embeddings style={{ height: 32, width: 32 }} />}
+                                        style={{ minHeight: '200px' }}
+                                    >
+                                        Select Embeddings
+                                    </Button>
+                                ) : (
+                                    <Box>
+                                        <Grid container spacing='2'>
+                                            <Grid item xs={12} md={12} lg={12} sm={12}>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        paddingRight: 15
+                                                    }}
+                                                >
+                                                    <Box sx={{ p: 1 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                            <DividerRoot>
+                                                                <Divider>
+                                                                    <Chip
+                                                                        variant='outlined'
+                                                                        label={selectedEmbeddingsProvider.label}
+                                                                        avatar={
+                                                                            <Avatar
+                                                                                alt='Embedding'
+                                                                                src={`${baseURL}/api/v1/node-icon/${selectedEmbeddingsProvider?.name}`}
+                                                                            />
+                                                                        }
+                                                                    />
+                                                                </Divider>
+                                                            </DividerRoot>
+                                                        </div>
+                                                    </Box>
+                                                    <Box sx={{ p: 1 }}>
+                                                        <div style={{ display: 'flex', alignContent: 'center', flexDirection: 'row' }}>
+                                                            {Object.keys(selectedEmbeddingsProvider).length > 0 && (
+                                                                <Button variant='outlined' sx={{ mr: 2 }} onClick={showEmbeddingsList}>
+                                                                    Change Embeddings
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </Box>
+                                                    {selectedEmbeddingsProvider &&
+                                                        Object.keys(selectedEmbeddingsProvider).length > 0 &&
+                                                        (selectedEmbeddingsProvider.inputParams ?? [])
+                                                            .filter((inputParam) => !inputParam.hidden)
+                                                            .map((inputParam, index) => (
+                                                                <DocStoreInputHandler
+                                                                    key={index}
+                                                                    data={selectedEmbeddingsProvider}
+                                                                    inputParam={inputParam}
+                                                                    isAdditionalParams={inputParam.additionalParams}
+                                                                />
+                                                            ))}
+                                                </div>
+                                            </Grid>
+                                        </Grid>
+                                    </Box>
+                                )}
+                            </Grid>
+                            <Grid item xs={12} sm={4} md={4}>
+                                {Object.keys(selectedVectorStoreProvider).length === 0 ? (
+                                    <Button
+                                        color='error'
+                                        variant='outlined'
+                                        onClick={showVectorStoreList}
+                                        fullWidth={true}
+                                        startIcon={<Storage style={{ height: 32, width: 32 }} />}
+                                        style={{ minHeight: '200px' }}
+                                    >
+                                        Select Vector Store
+                                    </Button>
+                                ) : (
+                                    <Box>
+                                        <Grid container spacing='2'>
+                                            <Grid item xs={12} md={12} lg={12} sm={12}>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        paddingRight: 15
+                                                    }}
+                                                >
+                                                    <Box sx={{ p: 1 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                            <DividerRoot>
+                                                                <Divider>
+                                                                    <Chip
+                                                                        variant='outlined'
+                                                                        label={selectedVectorStoreProvider.label}
+                                                                        avatar={
+                                                                            <Avatar
+                                                                                alt='Embedding'
+                                                                                src={`${baseURL}/api/v1/node-icon/${selectedVectorStoreProvider?.name}`}
+                                                                            />
+                                                                        }
+                                                                    />
+                                                                </Divider>
+                                                            </DividerRoot>
+                                                        </div>
+                                                    </Box>
+                                                    <Box sx={{ p: 1 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                            {Object.keys(selectedVectorStoreProvider).length > 0 && (
+                                                                <Button variant='outlined' sx={{ mr: 2 }} onClick={showVectorStoreList}>
+                                                                    Change Vector Store
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </Box>
+                                                    {selectedVectorStoreProvider &&
+                                                        Object.keys(selectedVectorStoreProvider).length > 0 &&
+                                                        (selectedVectorStoreProvider.inputParams ?? [])
+                                                            .filter((inputParam) => !inputParam.hidden)
+                                                            .map((inputParam, index) => (
+                                                                <DocStoreInputHandler
+                                                                    key={index}
+                                                                    data={selectedVectorStoreProvider}
+                                                                    inputParam={inputParam}
+                                                                    isAdditionalParams={inputParam.additionalParams}
+                                                                />
+                                                            ))}
+                                                </div>
+                                            </Grid>
+                                        </Grid>
+                                    </Box>
+                                )}
+                            </Grid>
+                            <Grid item xs={12} sm={4} md={4}>
+                                {Object.keys(selectedRecordManagerProvider).length === 0 ? (
+                                    <Button
+                                        color='error'
+                                        variant='outlined'
+                                        onClick={showRecordManagerList}
+                                        fullWidth={true}
+                                        startIcon={<DynamicFeed style={{ height: 32, width: 32 }} />}
+                                        style={{ minHeight: '200px' }}
+                                    >
+                                        Select Record Manager
+                                    </Button>
+                                ) : (
+                                    <Box>
+                                        <Grid container spacing='2'>
+                                            <Grid item xs={12} md={12} lg={12} sm={12}>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        paddingRight: 15
+                                                    }}
+                                                >
+                                                    <Box sx={{ p: 1 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                            <DividerRoot>
+                                                                <Divider>
+                                                                    <Chip
+                                                                        variant='outlined'
+                                                                        label={selectedRecordManagerProvider.label}
+                                                                        avatar={
+                                                                            <Avatar
+                                                                                alt='Embedding'
+                                                                                src={`${baseURL}/api/v1/node-icon/${selectedRecordManagerProvider?.name}`}
+                                                                            />
+                                                                        }
+                                                                    />
+                                                                </Divider>
+                                                            </DividerRoot>
+                                                        </div>
+                                                    </Box>
+                                                    <Box sx={{ p: 1 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                            {Object.keys(selectedRecordManagerProvider).length > 0 && (
+                                                                <Button variant='outlined' sx={{ mr: 2 }} onClick={showRecordManagerList}>
+                                                                    Change Record Manager
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </Box>
+
+                                                    {selectedRecordManagerProvider &&
+                                                        Object.keys(selectedRecordManagerProvider).length > 0 &&
+                                                        (selectedRecordManagerProvider.inputParams ?? [])
+                                                            .filter((inputParam) => !inputParam.hidden)
+                                                            .map((inputParam, index) => (
+                                                                <>
+                                                                    <DocStoreInputHandler
+                                                                        key={index}
+                                                                        data={selectedRecordManagerProvider}
+                                                                        inputParam={inputParam}
+                                                                        isAdditionalParams={inputParam.additionalParams}
+                                                                    />
+                                                                </>
+                                                            ))}
+                                                </div>
+                                            </Grid>
+                                        </Grid>
+                                    </Box>
+                                )}
+                            </Grid>
+                            <Grid item xs={12} sm={12} md={12}>
+                                <Divider />
+                            </Grid>
+                            {/*<Grid item xs={8} sm={8} md={8} style={{ textAlign: 'left' }}>*/}
+                            {/*    {Object.keys(selectedEmbeddingsProvider).length > 0 && (*/}
+                            {/*        <Button variant='outlined' sx={{ mr: 2 }} onClick={showEmbeddingsList}>*/}
+                            {/*            Change Embeddings*/}
+                            {/*        </Button>*/}
+                            {/*    )}*/}
+                            {/*    {Object.keys(selectedVectorStoreProvider).length > 0 && (*/}
+                            {/*        <Button variant='outlined' sx={{ mr: 2 }} onClick={showVectorStoreList}>*/}
+                            {/*            Change Vector Store*/}
+                            {/*        </Button>*/}
+                            {/*    )}*/}
+                            {/*    {Object.keys(selectedRecordManagerProvider).length > 0 && (*/}
+                            {/*        <Button variant='outlined' sx={{ mr: 2 }} onClick={showRecordManagerList}>*/}
+                            {/*            Change Record Manager*/}
+                            {/*        </Button>*/}
+                            {/*    )}*/}
+                            {/*</Grid>*/}
+                            <Grid item xs={12} sm={12} md={12} style={{ textAlign: 'right' }}>
+                                {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
+                                    Object.keys(selectedVectorStoreProvider).length > 0) && (
+                                    <Button color='primary' variant='contained' sx={{ mr: 2 }} onClick={() => saveVectorStoreConfig()}>
+                                        Save Configuration
+                                    </Button>
+                                )}
+                                <Button color='primary' variant='contained' onClick={() => tryAndInsertIntoStore()}>
+                                    Save & Upsert
+                                </Button>
+                            </Grid>
+                        </Grid>
                     </Stack>
                 )}
             </MainCard>
-
-            <Grid container spacing={1} style={{ textAlign: 'center' }}>
-                <Grid item xs={12} sm={4} md={4}>
-                    {Object.keys(selectedEmbeddingsProvider).length === 0 ? (
-                        <Button
-                            color='error'
-                            onClick={showEmbeddingsList}
-                            variant='outlined'
-                            fullWidth={true}
-                            startIcon={<Embeddings style={{ height: 32, width: 32 }} />}
-                            style={{ minHeight: '200px' }}
-                        >
-                            Select Embeddings
-                        </Button>
-                    ) : (
-                        <Box>
-                            <Grid container spacing='2'>
-                                <Grid item xs={12} md={12} lg={12} sm={12}>
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            paddingRight: 15
-                                        }}
-                                    >
-                                        <Box sx={{ p: 1 }}>
-                                            <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                <DividerRoot>
-                                                    <Divider>
-                                                        <Chip color='warning' label={selectedEmbeddingsProvider.label} size='small' />
-                                                    </Divider>
-                                                </DividerRoot>
-                                            </div>
-                                        </Box>
-                                        {selectedEmbeddingsProvider &&
-                                            Object.keys(selectedEmbeddingsProvider).length > 0 &&
-                                            (selectedEmbeddingsProvider.inputParams ?? [])
-                                                .filter((inputParam) => !inputParam.hidden)
-                                                .map((inputParam, index) => (
-                                                    <DocStoreInputHandler
-                                                        key={index}
-                                                        data={selectedEmbeddingsProvider}
-                                                        inputParam={inputParam}
-                                                        isAdditionalParams={inputParam.additionalParams}
-                                                    />
-                                                ))}
-                                    </div>
-                                </Grid>
-                            </Grid>
-                        </Box>
-                    )}
-                </Grid>
-                <Grid item xs={12} sm={4} md={4}>
-                    {Object.keys(selectedVectorStoreProvider).length === 0 ? (
-                        <Button
-                            color='error'
-                            variant='outlined'
-                            onClick={showVectorStoreList}
-                            fullWidth={true}
-                            startIcon={<Storage style={{ height: 32, width: 32 }} />}
-                            style={{ minHeight: '200px' }}
-                        >
-                            Select Vector Store
-                        </Button>
-                    ) : (
-                        <Box>
-                            <Grid container spacing='2'>
-                                <Grid item xs={12} md={12} lg={12} sm={12}>
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            paddingRight: 15
-                                        }}
-                                    >
-                                        <Box sx={{ p: 1 }}>
-                                            <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                <DividerRoot>
-                                                    <Divider>
-                                                        <Chip color='warning' label={selectedVectorStoreProvider.label} size='small' />
-                                                    </Divider>
-                                                </DividerRoot>
-                                            </div>
-                                        </Box>
-                                        {selectedVectorStoreProvider &&
-                                            Object.keys(selectedVectorStoreProvider).length > 0 &&
-                                            (selectedVectorStoreProvider.inputParams ?? [])
-                                                .filter((inputParam) => !inputParam.hidden)
-                                                .map((inputParam, index) => (
-                                                    <DocStoreInputHandler
-                                                        key={index}
-                                                        data={selectedVectorStoreProvider}
-                                                        inputParam={inputParam}
-                                                        isAdditionalParams={inputParam.additionalParams}
-                                                    />
-                                                ))}
-                                    </div>
-                                </Grid>
-                            </Grid>
-                        </Box>
-                    )}
-                </Grid>
-                <Grid item xs={12} sm={4} md={4}>
-                    {Object.keys(selectedRecordManagerProvider).length === 0 ? (
-                        <Button
-                            color='error'
-                            variant='outlined'
-                            onClick={showRecordManagerList}
-                            fullWidth={true}
-                            startIcon={<DynamicFeed style={{ height: 32, width: 32 }} />}
-                            style={{ minHeight: '200px' }}
-                        >
-                            Select Record Manager
-                        </Button>
-                    ) : (
-                        <Box>
-                            <Grid container spacing='2'>
-                                <Grid item xs={12} md={12} lg={12} sm={12}>
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            paddingRight: 15
-                                        }}
-                                    >
-                                        <Box sx={{ p: 1 }}>
-                                            <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                <DividerRoot>
-                                                    <Divider>
-                                                        <Chip color='warning' label={selectedRecordManagerProvider.label} size='small' />
-                                                    </Divider>
-                                                </DividerRoot>
-                                            </div>
-                                        </Box>
-                                        {selectedRecordManagerProvider &&
-                                            Object.keys(selectedRecordManagerProvider).length > 0 &&
-                                            (selectedRecordManagerProvider.inputParams ?? [])
-                                                .filter((inputParam) => !inputParam.hidden)
-                                                .map((inputParam, index) => (
-                                                    <>
-                                                        <DocStoreInputHandler
-                                                            key={index}
-                                                            data={selectedRecordManagerProvider}
-                                                            inputParam={inputParam}
-                                                            isAdditionalParams={inputParam.additionalParams}
-                                                        />
-                                                    </>
-                                                ))}
-                                    </div>
-                                </Grid>
-                            </Grid>
-                        </Box>
-                    )}
-                </Grid>
-                <Grid item xs={12} sm={12} md={12}>
-                    <Divider />
-                </Grid>
-                <Grid item xs={8} sm={8} md={8} style={{ textAlign: 'left' }}>
-                    {Object.keys(selectedEmbeddingsProvider).length > 0 && (
-                        <Button color='error' variant='contained' sx={{ mr: 2 }} onClick={showEmbeddingsList}>
-                            Change Embeddings
-                        </Button>
-                    )}
-                    {Object.keys(selectedVectorStoreProvider).length > 0 && (
-                        <Button color='error' variant='contained' sx={{ mr: 2 }} onClick={showVectorStoreList}>
-                            Change Vector Store
-                        </Button>
-                    )}
-                    {Object.keys(selectedRecordManagerProvider).length > 0 && (
-                        <Button color='error' variant='contained' sx={{ mr: 2 }} onClick={showRecordManagerList}>
-                            Change Record Manager
-                        </Button>
-                    )}
-                </Grid>
-                <Grid item xs={4} sm={4} md={4} style={{ textAlign: 'right' }}>
-                    {(Object.keys(selectedEmbeddingsProvider).length > 0 || Object.keys(selectedVectorStoreProvider).length > 0) && (
-                        <Button color='primary' variant='contained' sx={{ mr: 2 }} onClick={() => saveVectorStoreConfig()}>
-                            Save Configuration
-                        </Button>
-                    )}
-                    <Button color='primary' variant='contained' onClick={() => tryAndInsertIntoStore()}>
-                        Save & Upsert
-                    </Button>
-                </Grid>
-            </Grid>
 
             {showEmbeddingsListDialog && (
                 <ComponentsListDialog
