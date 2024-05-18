@@ -22,7 +22,9 @@ class TogetherAI_LLMs implements INode {
     constructor() {
         this.label = 'TogetherAI'
         this.name = 'togetherAI'
+        this.version = 1.0
         this.type = 'TogetherAI'
+        // todo: this.icon = ?
         this.category = 'LLMs'
         this.description = 'Wrapper around TogetherAI large language models'
         this.baseClasses = [this.type, ...getBaseClasses(TogetherAI)]
@@ -116,7 +118,7 @@ class TogetherAI_LLMs implements INode {
         const topK = nodeData.inputs?.topK as string
         const repeatPenalty = nodeData.inputs?.repeatPenalty as string
         const modelName = nodeData.inputs?.modelName as string
-        const streaming = nodeData.inputs?.streaming as string
+        const streaming = nodeData.inputs?.streaming as boolean
 
         const cache = nodeData.inputs?.cache as BaseCache
 
@@ -132,7 +134,7 @@ class TogetherAI_LLMs implements INode {
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
-        //if (streaming) obj.streaming = parseBoolean fixme
+        if (streaming) obj.streaming = streaming
         if (repeatPenalty) obj.repetitionPenalty = parseFloat(repeatPenalty)
         if (cache) obj.cache = cache
 
