@@ -12,6 +12,10 @@ export default defineConfig(async ({ mode }) => {
                 '/api': {
                     target: `http://localhost:${serverPort}`,
                     changeOrigin: true
+                },
+                '/socket.io': {
+                    target: `http://localhost:${serverPort}`,
+                    changeOrigin: true
                 }
             }
         }

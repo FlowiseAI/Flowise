@@ -16,7 +16,7 @@ import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
 // Icons
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 // API
 import assistantsApi from '@/api/assistants'

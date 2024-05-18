@@ -8,7 +8,7 @@ import {
     IconDatabaseExport,
     IconAdjustmentsHorizontal,
     IconUsers
-} from '@tabler/icons'
+} from '@tabler/icons-react'
 
 // constant
 const icons = {

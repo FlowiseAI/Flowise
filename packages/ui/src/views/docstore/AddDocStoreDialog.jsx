@@ -17,7 +17,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
-import { IconX, IconFiles } from '@tabler/icons'
+import { IconX, IconFiles } from '@tabler/icons-react'
 
 // API
 import documentStoreApi from '@/api/documentstore'

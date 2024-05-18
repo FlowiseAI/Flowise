@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 // material-ui
 import { styled } from '@mui/material/styles'
 import { Box, Grid, Typography, useTheme } from '@mui/material'
-import { IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons'
+import { IconVectorBezier2, IconLanguage, IconScissors } from '@tabler/icons-react'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
