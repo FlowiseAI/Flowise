@@ -1,5 +1,5 @@
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src'
 import { TogetherAI, TogetherAIInputs } from '@langchain/community/llms/togetherai'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { BaseCache } from '@langchain/core/caches'
@@ -39,14 +39,12 @@ class TogetherAI_LLMs implements INode {
                 label: 'Model',
                 name: 'model',
                 type: 'string',
-                description: 'If using own inference endpoint, leave this blank',
-                placeholder: '' // todo: check
+                description: 'If using own inference endpoint, leave this blank'
             },
             {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: '',
                 description: 'The name of the model to query.'
             },
             {
@@ -55,7 +53,8 @@ class TogetherAI_LLMs implements INode {
                 type: 'number',
                 description:
                     'The topK parameter is used to limit the number of choices for the next predicted word or token. It specifies the maximum number of tokens to consider at each step, based on their probability of occurrence. This technique helps to speed up the generation process and can improve the quality of the generated text by focusing on the most likely options.',
-                step: 1 // todo: check
+                step: 1,
+                default: 50
             },
             {
                 label: 'Top P',
@@ -63,7 +62,8 @@ class TogetherAI_LLMs implements INode {
                 type: 'number',
                 description:
                     'The topP (nucleus) parameter is used to dynamically adjust the number of choices for each predicted token based on the cumulative probabilities. It specifies a probability threshold, below which all less likely tokens are filtered out. This technique helps to maintain diversity and generate more fluent and natural-sounding text.',
-                step: 0.1
+                step: 0.1,
+                default: 0.7
             },
             {
                 label: 'Temperature',
@@ -71,7 +71,8 @@ class TogetherAI_LLMs implements INode {
                 type: 'number',
                 description:
                     'A decimal number that determines the degree of randomness in the response. A value of 1 will always yield the same output. A temperature less than 1 favors more correctness and is appropriate for question answering or summarization. A value greater than 1 introduces more randomness in the output.',
-                step: 0.1
+                step: 0.1,
+                default: 0.7
             },
             {
                 label: 'Repeat Penalty',
@@ -79,12 +80,14 @@ class TogetherAI_LLMs implements INode {
                 type: 'number',
                 description:
                     'A number that controls the diversity of generated text by reducing the likelihood of repeated sequences. Higher values decrease repetition.',
-                step: 0.1
+                step: 0.1,
+                default: 1
             },
             {
                 label: 'Streaming',
                 name: 'streaming',
                 type: 'boolean',
+                default: false,
                 description: 'Whether or not to stream tokens as they are generated'
             },
             {
@@ -106,7 +109,7 @@ class TogetherAI_LLMs implements INode {
                 optional: true,
                 additionalParams: true
             }
-            // safetyModel?
+            // todo: safetyModel? logprobs
         ]
     }
 
