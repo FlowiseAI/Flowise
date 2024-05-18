@@ -1,4 +1,4 @@
-import { ICommonObject, INode, INodeOptionsValue, INodeParams, INodeData } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { TogetherAI, TogetherAIInputs } from '@langchain/community/llms/togetherai'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
@@ -98,8 +98,18 @@ class TogetherAI_LLMs implements INode {
                 description: 'Max Tokens parameter may not apply to certain model. Please check available model parameters',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Stop Sequence',
+                name: 'stop',
+                type: 'string',
+                rows: 4,
+                placeholder: 'AI assistant:',
+                description: 'Sets the stop sequences to use. Use comma to separate different sequences.',
+                optional: true,
+                additionalParams: true
             }
-            // safetyModel? stop?
+            // safetyModel?
         ]
     }
 
@@ -118,6 +128,7 @@ class TogetherAI_LLMs implements INode {
         const topK = nodeData.inputs?.topK as string
         const repeatPenalty = nodeData.inputs?.repeatPenalty as string
         const modelName = nodeData.inputs?.modelName as string
+        const stop = nodeData.inputs?.stop as string
         const streaming = nodeData.inputs?.streaming as boolean
 
         const cache = nodeData.inputs?.cache as BaseCache
@@ -136,6 +147,9 @@ class TogetherAI_LLMs implements INode {
         if (topK) obj.topK = parseFloat(topK)
         if (streaming) obj.streaming = streaming
         if (repeatPenalty) obj.repetitionPenalty = parseFloat(repeatPenalty)
+        if (stop) {
+            obj.stop = stop.split(',')
+        }
         if (cache) obj.cache = cache
 
         const togetherAI = new TogetherAI(obj)
