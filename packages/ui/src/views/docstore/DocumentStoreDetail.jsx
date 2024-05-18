@@ -144,6 +144,10 @@ const DocumentStoreDetails = () => {
         navigate('/document-stores/chunks/' + storeId + '/' + id)
     }
 
+    const showVectorStoreQuery = (id) => {
+        navigate('/document-stores/query/' + id)
+    }
+
     const onDocLoaderSelected = (docLoaderComponentName) => {
         setShowDocumentLoaderListDialog(false)
         navigate('/document-stores/' + storeId + '/' + docLoaderComponentName)
@@ -322,29 +326,47 @@ const DocumentStoreDetails = () => {
                             <IconButton onClick={onStoreDelete} size='small' color='error' title='Delete Document Store' sx={{ mr: 2 }}>
                                 <IconTrash />
                             </IconButton>
-                            {documentStore?.status === 'STALE' && (
+                            {(documentStore?.status === 'STALE' || documentStore?.status === 'VS_SYNCING') && (
                                 <Button variant='outlined' sx={{ mr: 2 }} startIcon={<IconRefresh />} onClick={onConfirm}>
                                     Refresh
                                 </Button>
                             )}
-                            {documentStore?.totalChunks > 0 && (
-                                <Button
-                                    variant='outlined'
+                            {documentStore?.status === 'VS_SYNCING' && (
+                                <Chip
+                                    variant='raised'
+                                    label='Syncing to Vector Store'
+                                    color='warning'
                                     sx={{ borderRadius: 2, height: '100%' }}
-                                    startIcon={<IconScissors />}
-                                    onClick={() => showStoredChunks('all')}
-                                >
-                                    View Chunks
-                                </Button>
+                                />
                             )}
-                            {documentStore?.totalChunks > 0 && (
+                            {documentStore?.totalChunks > 0 && documentStore?.status !== 'VS_SYNCING' && (
+                                <>
+                                    <Button
+                                        variant='outlined'
+                                        sx={{ borderRadius: 2, height: '100%' }}
+                                        startIcon={<IconScissors />}
+                                        onClick={() => showStoredChunks('all')}
+                                    >
+                                        View Chunks
+                                    </Button>
+                                    <Button
+                                        variant='outlined'
+                                        sx={{ borderRadius: 2, height: '100%' }}
+                                        startIcon={<IconRowInsertTop />}
+                                        onClick={() => showVectorStore(documentStore.id)}
+                                    >
+                                        Vector Store - Upsert
+                                    </Button>
+                                </>
+                            )}
+                            {documentStore?.totalChunks > 0 && documentStore?.status === 'VS_SYNC' && (
                                 <Button
                                     variant='outlined'
                                     sx={{ borderRadius: 2, height: '100%' }}
                                     startIcon={<IconRowInsertTop />}
-                                    onClick={() => showVectorStore(documentStore.id)}
+                                    onClick={() => showVectorStoreQuery(documentStore.id)}
                                 >
-                                    Vector Store - Upsert
+                                    Retrieval Playground
                                 </Button>
                             )}
                             <StyledButton

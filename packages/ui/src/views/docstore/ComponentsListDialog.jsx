@@ -33,9 +33,9 @@ const ComponentsListDialog = ({ show, dialogProps, onCancel, apiCall, onSelected
     }
 
     useEffect(() => {
-        if (dialogProps.embeddingsProvider) {
-            setProvider(dialogProps.provider)
-        }
+        // if (dialogProps.embeddingsProvider) {
+        //     setProvider(dialogProps.provider)
+        // }
     }, [dialogProps])
 
     useEffect(() => {

@@ -17,6 +17,8 @@ const previewChunks = (body) => client.post('/document-store/loader/preview', bo
 const processChunks = (body) => client.post(`/document-store/loader/process`, body)
 
 const insertIntoVectorStore = (body) => client.post(`/document-store/vectorstore/insert`, body)
+const saveVectorStoreConfig = (body) => client.post(`/document-store/vectorstore/save`, body)
+const queryVectorStore = (body) => client.post(`/document-store/vectorstore/query`, body)
 const getVectorStoreProviders = () => client.get('/document-store/components/vectorstore')
 const getEmbeddingProviders = () => client.get('/document-store/components/embeddings')
 const getRecordManagerProviders = () => client.get('/document-store/components/recordmanager')
@@ -37,5 +39,7 @@ export default {
     insertIntoVectorStore,
     getVectorStoreProviders,
     getEmbeddingProviders,
-    getRecordManagerProviders
+    getRecordManagerProviders,
+    saveVectorStoreConfig,
+    queryVectorStore
 }

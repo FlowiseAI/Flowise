@@ -35,6 +35,10 @@ router.get('/chunks/:storeId/:fileId/:pageNo', documentStoreController.getDocume
 
 // add chunks to the selected vector store
 router.post('/vectorstore/insert', documentStoreController.insertIntoVectorStore)
+// save the selected vector store
+router.post('/vectorstore/save', documentStoreController.saveVectorStoreConfig)
+// query the vector store
+router.post('/vectorstore/query', documentStoreController.queryVectorStore)
 // Get all embedding providers
 router.get('/components/embeddings', documentStoreController.getEmbeddingProviders)
 // Get all vector store providers

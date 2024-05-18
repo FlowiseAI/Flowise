@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 
 // material-ui
-import { Stack, Grid, Box, Typography, Divider, Chip } from '@mui/material'
+import { Stack, Grid, Box, Divider, Chip } from '@mui/material'
 import { styled, useTheme } from '@mui/material/styles'
 import Button from '@mui/material/Button'
 
@@ -15,6 +15,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // API
 import documentsApi from '@/api/documentstore'
+import nodesApi from '@/api/nodes'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -29,12 +30,13 @@ import Embeddings from '@mui/icons-material/DynamicFeed'
 import Storage from '@mui/icons-material/Storage'
 import DynamicFeed from '@mui/icons-material/Filter1'
 
-import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { initNode } from '@/utils/genericHelper'
 import ComponentsListDialog from '@/views/docstore/ComponentsListDialog'
-import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
+
+// const
 
 const DividerRoot = styled('div')(({ theme }) => ({
     width: '100%',
@@ -45,7 +47,7 @@ const DividerRoot = styled('div')(({ theme }) => ({
     }
 }))
 
-const ConfigureVectorStore = () => {
+const VectorStoreConfigure = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
@@ -58,9 +60,13 @@ const ConfigureVectorStore = () => {
 
     const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
     const insertIntoVectorStoreApi = useApi(documentsApi.insertIntoVectorStore)
+    const saveVectorStoreConfigApi = useApi(documentsApi.saveVectorStoreConfig)
+    const getEmbeddingNodeDetailsApi = useApi(nodesApi.getSpecificNode)
+    const getVectorStoreNodeDetailsApi = useApi(nodesApi.getSpecificNode)
+    const getRecordManagerNodeDetailsApi = useApi(nodesApi.getSpecificNode)
 
     const [error, setError] = useState(null)
-    const [isLoading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true)
 
     const [showDialog, setShowDialog] = useState(false)
     const [documentStore, setDocumentStore] = useState({})
@@ -68,21 +74,19 @@ const ConfigureVectorStore = () => {
 
     const [showEmbeddingsListDialog, setShowEmbeddingsListDialog] = useState(false)
     const [selectedEmbeddingsProvider, setSelectedEmbeddingsProvider] = useState({})
-    //const [embeddingInstanceData, setEmbeddingInstanceData] = useState({})
-    //const [embeddingCredential, setEmbeddingCredential] = useState(false)
 
     const [showVectorStoreListDialog, setShowVectorStoreListDialog] = useState(false)
     const [selectedVectorStoreProvider, setSelectedVectorStoreProvider] = useState({})
-    const [vectorStoreInstanceData, setVectorStoreInstanceData] = useState({})
-    const [vectorStoreCredential, setVectorStoreCredential] = useState(false)
 
     const [showRecordManagerListDialog, setShowRecordManagerListDialog] = useState(false)
     const [selectedRecordManagerProvider, setSelectedRecordManagerProvider] = useState({})
-    const [recordManagerInstanceData, setRecordManagerInstanceData] = useState({})
-    const [recordManagerCredential, setRecordManagerCredential] = useState(false)
 
     const onEmbeddingsSelected = (component) => {
         const nodeData = cloneDeep(initNode(component, uuidv4()))
+        if (!showEmbeddingsListDialog && documentStore.embeddingConfig) {
+            nodeData.inputs = documentStore.embeddingConfig.config
+            /* TODO set the credential id */
+        }
         setSelectedEmbeddingsProvider(nodeData)
         setShowEmbeddingsListDialog(false)
     }
@@ -96,9 +100,12 @@ const ConfigureVectorStore = () => {
     }
 
     const onVectorStoreSelected = (component) => {
-        setSelectedVectorStoreProvider(component)
         const nodeData = cloneDeep(initNode(component, uuidv4()))
-        //setVectorStoreInstanceData(nodeData)
+        if (!showVectorStoreListDialog && documentStore.vectorStoreConfig) {
+            nodeData.inputs = documentStore.vectorStoreConfig.config
+            /* TODO set the credential id */
+            //nodeData.credentialId = documentStore.vectorStoreConfig.credential
+        }
         setSelectedVectorStoreProvider(nodeData)
         setShowVectorStoreListDialog(false)
     }
@@ -112,11 +119,16 @@ const ConfigureVectorStore = () => {
     }
 
     const onRecordManagerSelected = (component) => {
-        setSelectedRecordManagerProvider(component)
         const nodeData = cloneDeep(initNode(component, uuidv4()))
-        setRecordManagerInstanceData(nodeData)
+        if (!showRecordManagerListDialog && documentStore.recordManagerConfig) {
+            nodeData.inputs = documentStore.recordManagerConfig.config
+            /* TODO set the credential id */
+            //nodeData.credentialId = documentStore.recordManagerConfig.credential
+        }
+        setSelectedRecordManagerProvider(nodeData)
         setShowRecordManagerListDialog(false)
     }
+
     const showRecordManagerList = () => {
         const dialogProp = {
             title: 'Select a Record Manager'
@@ -170,31 +182,103 @@ const ConfigureVectorStore = () => {
         return canSubmit
     }
 
+    const prepareConfigData = () => {
+        const data = {
+            storeId: storeId
+        }
+        // Set embedding config
+        if (selectedEmbeddingsProvider.inputs) {
+            data.embeddingConfig = {}
+            data.embeddingName = selectedEmbeddingsProvider.name
+            Object.keys(selectedEmbeddingsProvider.inputs).map((key) => {
+                if (key === 'FLOWISE_CREDENTIAL_ID') {
+                    data.embeddingConfig['credential'] = selectedEmbeddingsProvider.inputs[key]
+                } else {
+                    data.embeddingConfig[key] = selectedEmbeddingsProvider.inputs[key]
+                }
+            })
+        }
+        if (selectedVectorStoreProvider.inputs) {
+            data.vectorStoreConfig = {}
+            data.vectorStoreName = selectedVectorStoreProvider.name
+            Object.keys(selectedVectorStoreProvider.inputs).map((key) => {
+                if (key === 'FLOWISE_CREDENTIAL_ID') {
+                    data.vectorStoreConfig['credential'] = selectedVectorStoreProvider.inputs[key]
+                } else {
+                    data.vectorStoreConfig[key] = selectedVectorStoreProvider.inputs[key]
+                }
+            })
+        }
+        if (selectedRecordManagerProvider.inputs) {
+            data.recordManagerConfig = {}
+            data.recordManagerName = selectedRecordManagerProvider.name
+            Object.keys(selectedRecordManagerProvider.inputs).map((key) => {
+                if (key === 'FLOWISE_CREDENTIAL_ID') {
+                    data.recordManagerConfig['credential'] = selectedRecordManagerProvider.inputs[key]
+                } else {
+                    data.recordManagerConfig[key] = selectedRecordManagerProvider.inputs[key]
+                }
+            })
+        }
+        return data
+    }
+
     const tryAndInsertIntoStore = () => {
         if (checkMandatoryFields()) {
-            const data = {
-                embeddingConfig: selectedEmbeddingsProvider,
-                vectorStoreConfig: vectorStoreInstanceData,
-                vectorStoreName: selectedVectorStoreProvider.name,
-                storeId: storeId
-            }
-            // Set embedding config
-            if (selectedEmbeddingsProvider.inputs) {
-                data.embeddingConfig = {}
-                data.embeddingName = selectedEmbeddingsProvider.name
-                Object.keys(selectedEmbeddingsProvider.inputs).map((key) => {
-                    data.embeddingConfig[key] = selectedEmbeddingsProvider.inputs[key]
-                })
-            }
-            // if (embeddingCredential) {
-            //     data.embeddingCredential = embeddingCredential
-            // }
-            if (vectorStoreCredential) {
-                data.vectorStoreCredential = vectorStoreCredential
-            }
+            setLoading(true)
+            const data = prepareConfigData()
             insertIntoVectorStoreApi.request(data)
         }
     }
+
+    const saveVectorStoreConfig = () => {
+        setLoading(true)
+        const data = prepareConfigData()
+        saveVectorStoreConfigApi.request(data)
+        setLoading(false)
+    }
+
+    useEffect(() => {
+        if (saveVectorStoreConfigApi.data) {
+            setLoading(false)
+            enqueueSnackbar({
+                message: 'Configuration Saved Successfully.',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [saveVectorStoreConfigApi.data])
+
+    useEffect(() => {
+        if (insertIntoVectorStoreApi.data) {
+            setLoading(false)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [insertIntoVectorStoreApi.data])
+
+    useEffect(() => {
+        if (insertIntoVectorStoreApi.error) {
+            setLoading(false)
+            setError(insertIntoVectorStoreApi.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [insertIntoVectorStoreApi.error])
+
+    useEffect(() => {
+        if (saveVectorStoreConfigApi.error) {
+            setLoading(false)
+            setError(saveVectorStoreConfigApi.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [saveVectorStoreConfigApi.error])
 
     const URLpath = document.location.pathname.toString().split('/')
     const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
@@ -206,11 +290,49 @@ const ConfigureVectorStore = () => {
 
     useEffect(() => {
         if (getSpecificDocumentStoreApi.data) {
-            setDocumentStore(getSpecificDocumentStoreApi.data)
+            const docStore = getSpecificDocumentStoreApi.data
+            setDocumentStore(docStore)
+            if (docStore.embeddingConfig) {
+                getEmbeddingNodeDetailsApi.request(docStore.embeddingConfig.name)
+            }
+            if (docStore.vectorStoreConfig) {
+                getVectorStoreNodeDetailsApi.request(docStore.vectorStoreConfig.name)
+            }
+            if (docStore.recordManagerConfig) {
+                getRecordManagerNodeDetailsApi.request(docStore.recordManagerConfig.name)
+            }
+            setLoading(false)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getSpecificDocumentStoreApi.data])
+
+    useEffect(() => {
+        if (getEmbeddingNodeDetailsApi.data) {
+            const node = getEmbeddingNodeDetailsApi.data
+            onEmbeddingsSelected(node)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getEmbeddingNodeDetailsApi.data])
+
+    useEffect(() => {
+        if (getVectorStoreNodeDetailsApi.data) {
+            const node = getVectorStoreNodeDetailsApi.data
+            onVectorStoreSelected(node)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getVectorStoreNodeDetailsApi.data])
+
+    useEffect(() => {
+        if (getRecordManagerNodeDetailsApi.data) {
+            const node = getRecordManagerNodeDetailsApi.data
+            onRecordManagerSelected(node)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getRecordManagerNodeDetailsApi.data])
 
     useEffect(() => {
         if (getSpecificDocumentStoreApi.error) {
@@ -230,15 +352,13 @@ const ConfigureVectorStore = () => {
                             isBackButton={true}
                             search={false}
                             title={getSpecificDocumentStoreApi.data?.name}
-                            description='Configure your Vector Store'
+                            description='Configure your Vector Store and Upsert your data.'
                             onBack={() => navigate(-1)}
                         ></ViewHeader>
                     </Stack>
                 )}
             </MainCard>
-            {/*<Typography variant='h3' sx={{ m: 3 }} align='center' style={{ color: 'darkred' }}>*/}
-            {/*    Configure your Vector Store*/}
-            {/*</Typography>*/}
+
             <Grid container spacing={1} style={{ textAlign: 'center' }}>
                 <Grid item xs={12} sm={4} md={4}>
                     {Object.keys(selectedEmbeddingsProvider).length === 0 ? (
@@ -272,31 +392,6 @@ const ConfigureVectorStore = () => {
                                                 </DividerRoot>
                                             </div>
                                         </Box>
-                                        {/*{selectedEmbeddingsProvider && selectedEmbeddingsProvider.credential && (*/}
-                                        {/*    <Box sx={{ p: 1 }}>*/}
-                                        {/*        <div style={{ display: 'flex', flexDirection: 'row' }}>*/}
-                                        {/*            <Typography>*/}
-                                        {/*                {selectedEmbeddingsProvider.credential.label}*/}
-                                        {/*                {!selectedEmbeddingsProvider.credential.optional && (*/}
-                                        {/*                    <span style={{ color: 'red' }}>&nbsp;*</span>*/}
-                                        {/*                )}*/}
-                                        {/*                {selectedEmbeddingsProvider.credential.description && (*/}
-                                        {/*                    <TooltipWithParser*/}
-                                        {/*                        style={{ marginLeft: 10 }}*/}
-                                        {/*                        title={selectedEmbeddingsProvider.credential.description}*/}
-                                        {/*                    />*/}
-                                        {/*                )}*/}
-                                        {/*            </Typography>*/}
-                                        {/*            <div style={{ flexGrow: 1 }}></div>*/}
-                                        {/*        </div>*/}
-                                        {/*        <CredentialInputHandler*/}
-                                        {/*            key={embeddingCredential}*/}
-                                        {/*            data={embeddingInstanceData}*/}
-                                        {/*            inputParam={selectedEmbeddingsProvider.credential}*/}
-                                        {/*            onSelect={(newValue) => setEmbeddingCredential(newValue)}*/}
-                                        {/*        />*/}
-                                        {/*    </Box>*/}
-                                        {/*)}*/}
                                         {selectedEmbeddingsProvider &&
                                             Object.keys(selectedEmbeddingsProvider).length > 0 &&
                                             (selectedEmbeddingsProvider.inputParams ?? [])
@@ -354,7 +449,7 @@ const ConfigureVectorStore = () => {
                                                 .map((inputParam, index) => (
                                                     <DocStoreInputHandler
                                                         key={index}
-                                                        data={vectorStoreInstanceData}
+                                                        data={selectedVectorStoreProvider}
                                                         inputParam={inputParam}
                                                         isAdditionalParams={inputParam.additionalParams}
                                                     />
@@ -397,31 +492,6 @@ const ConfigureVectorStore = () => {
                                                 </DividerRoot>
                                             </div>
                                         </Box>
-                                        {selectedRecordManagerProvider && selectedRecordManagerProvider.credential && (
-                                            <Box sx={{ p: 1 }}>
-                                                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                    <Typography>
-                                                        {selectedRecordManagerProvider.credential.label}
-                                                        {!selectedRecordManagerProvider.credential.optional && (
-                                                            <span style={{ color: 'red' }}>&nbsp;*</span>
-                                                        )}
-                                                        {selectedRecordManagerProvider.credential.description && (
-                                                            <TooltipWithParser
-                                                                style={{ marginLeft: 10 }}
-                                                                title={selectedRecordManagerProvider.credential.description}
-                                                            />
-                                                        )}
-                                                    </Typography>
-                                                    <div style={{ flexGrow: 1 }}></div>
-                                                </div>
-                                                <CredentialInputHandler
-                                                    key={recordManagerCredential}
-                                                    data={recordManagerInstanceData}
-                                                    inputParam={selectedRecordManagerProvider.credential}
-                                                    onSelect={(newValue) => setRecordManagerCredential(newValue)}
-                                                />
-                                            </Box>
-                                        )}
                                         {selectedRecordManagerProvider &&
                                             Object.keys(selectedRecordManagerProvider).length > 0 &&
                                             (selectedRecordManagerProvider.inputParams ?? [])
@@ -430,7 +500,7 @@ const ConfigureVectorStore = () => {
                                                     <>
                                                         <DocStoreInputHandler
                                                             key={index}
-                                                            data={recordManagerInstanceData}
+                                                            data={selectedRecordManagerProvider}
                                                             inputParam={inputParam}
                                                             isAdditionalParams={inputParam.additionalParams}
                                                         />
@@ -463,8 +533,13 @@ const ConfigureVectorStore = () => {
                     )}
                 </Grid>
                 <Grid item xs={4} sm={4} md={4} style={{ textAlign: 'right' }}>
+                    {(Object.keys(selectedEmbeddingsProvider).length > 0 || Object.keys(selectedVectorStoreProvider).length > 0) && (
+                        <Button color='primary' variant='contained' sx={{ mr: 2 }} onClick={() => saveVectorStoreConfig()}>
+                            Save Configuration
+                        </Button>
+                    )}
                     <Button color='primary' variant='contained' onClick={() => tryAndInsertIntoStore()}>
-                        Save & Proceed
+                        Save & Upsert
                     </Button>
                 </Grid>
             </Grid>
@@ -497,8 +572,9 @@ const ConfigureVectorStore = () => {
                 />
             )}
             <ConfirmDialog />
+            {loading && <BackdropLoader open={loading} />}
         </>
     )
 }
 
-export default ConfigureVectorStore
+export default VectorStoreConfigure

@@ -5,7 +5,10 @@ export enum DocumentStoreStatus {
     SYNC = 'SYNC',
     SYNCING = 'SYNCING',
     STALE = 'STALE',
-    NEW = 'NEW'
+    NEW = 'NEW',
+    VECTOR_STORE_CONFIGURED = 'VS_CONFIGURED',
+    VECTOR_STORE_SYNCING = 'VS_SYNCING',
+    VECTOR_STORE_SYNC = 'VS_SYNC'
 }
 
 export interface IDocumentStore {
@@ -94,6 +97,7 @@ export class DocumentStoreDTO {
     loaders: IDocumentStoreLoader[]
     vectorStoreConfig: any
     embeddingConfig: any
+    recordManagerConfig: any
 
     constructor() {}
 
@@ -119,6 +123,9 @@ export class DocumentStoreDTO {
         }
         if (entity.embeddingConfig) {
             documentStoreDTO.embeddingConfig = JSON.parse(entity.embeddingConfig)
+        }
+        if (entity.recordManagerConfig) {
+            documentStoreDTO.recordManagerConfig = JSON.parse(entity.recordManagerConfig)
         }
 
         if (entity.loaders) {

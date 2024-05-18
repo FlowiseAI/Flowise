@@ -251,15 +251,42 @@ const getDocumentLoaders = async (req: Request, res: Response, next: NextFunctio
 const insertIntoVectorStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined') {
-            throw new Error('Error: documentStoreController.previewFileChunks - body not provided!')
+            throw new Error('Error: documentStoreController.insertIntoVectorStore - body not provided!')
         }
         const body = req.body
         const apiResponse = await documentStoreService.insertIntoVectorStore(body)
+        return res.json(DocumentStoreDTO.fromEntity(apiResponse))
+    } catch (error) {
+        next(error)
+    }
+}
+
+const queryVectorStore = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.queryVectorStore - body not provided!')
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.queryVectorStore(body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
     }
 }
+
+const saveVectorStoreConfig = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.saveVectorStoreConfig - body not provided!')
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.saveVectorStoreConfig(body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const getEmbeddingProviders = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await documentStoreService.getEmbeddingProviders()
@@ -303,5 +330,7 @@ export default {
     insertIntoVectorStore,
     getEmbeddingProviders,
     getVectorStoreProviders,
-    getRecordManagerProviders
+    getRecordManagerProviders,
+    saveVectorStoreConfig,
+    queryVectorStore
 }

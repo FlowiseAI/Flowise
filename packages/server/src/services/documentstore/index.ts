@@ -26,6 +26,8 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { getErrorMessage } from '../../errors/utils'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { Document } from '@langchain/core/documents'
+import { App } from '../../index'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
@@ -693,7 +695,7 @@ const updateDocumentStoreUsage = async (chatId: string, storeId: string | undefi
     }
 }
 
-const insertIntoVectorStore = async (data: any) => {
+const saveVectorStoreConfig = async (data: any) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -701,27 +703,110 @@ const insertIntoVectorStore = async (data: any) => {
         })
         if (!entity) throw new Error(`Document store ${data.storeId} not found`)
 
-        const nodeInstanceFilePath = appServer.nodesPool.componentNodes[data.embeddingName].filePath as string
-        const nodeModule = await import(nodeInstanceFilePath)
-        const nodeData = {
-            inputs: { ...data.embeddingConfig.inputs },
-            outputs: { output: 'document' }
+        if (data.embeddingName) {
+            entity.embeddingConfig = JSON.stringify({
+                config: data.embeddingConfig,
+                name: data.embeddingName
+            })
         }
-        if (data.embeddingCredential) {
-            nodeData.inputs.credentialId = data.embeddingCredential
+        if (data.vectorStoreName) {
+            entity.vectorStoreConfig = JSON.stringify({
+                config: data.vectorStoreConfig,
+                name: data.vectorStoreName
+            })
         }
+        if (data.recordManagerName) {
+            entity.recordManagerConfig = JSON.stringify({
+                config: data.recordManagerConfig,
+                name: data.recordManagerName
+            })
+        }
+        if (
+            entity.status !== DocumentStoreStatus.VECTOR_STORE_SYNC &&
+            (data.vectorStoreName || data.recordManagerName || data.embeddingName)
+        ) {
+            // if the store is not already in sync, mark it as configured
+            // this also means that the store is not yet sync'ed to vector store
+            entity.status = DocumentStoreStatus.VECTOR_STORE_CONFIGURED
+        }
+        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+        return entity
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.saveVectorStoreConfig - ${error}`)
+    }
+}
+
+const insertIntoVectorStore = async (data: any) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const entity = await saveVectorStoreConfig(data)
+
         const options: ICommonObject = {
             chatflowid: uuidv4(),
             appDataSource: appServer.AppDataSource,
             databaseEntities,
             logger
         }
-        const embeddingNodeInstance = new nodeModule.nodeClass()
-        let embeddingObj = await embeddingNodeInstance.init(nodeData, '', options)
-        if (!embeddingObj) {
-            throw new Error(`failed to create EmbeddingObj`)
+
+        let recordManagerObj = undefined
+        if (data.recordManagerName && data.recordManagerConfig) {
+            const rmNodeInstanceFilePath = appServer.nodesPool.componentNodes[data.recordManagerName].filePath as string
+            const rmNodeModule = await import(rmNodeInstanceFilePath)
+            const rmNodeData: any = {
+                inputs: { ...data.recordManagerConfig },
+                id: 'recordManager_0'
+            }
+            if (data.recordManagerConfig.credential) {
+                rmNodeData.credential = data.recordManagerConfig.credential
+            }
+            const rmNodeInstance = new rmNodeModule.nodeClass()
+            recordManagerObj = await rmNodeInstance.init(rmNodeData, '', options)
+            if (!recordManagerObj) {
+                throw new Error(`Failed to create RecordManager obj`)
+            }
         }
-        // return docs
+
+        // const embeddingNodeInstanceFilePath = appServer.nodesPool.componentNodes[data.embeddingName].filePath as string
+        // const embeddingNodeModule = await import(embeddingNodeInstanceFilePath)
+        // const embeddingNodeData: any = {
+        //     inputs: { ...data.embeddingConfig },
+        //     outputs: { output: 'document' },
+        //     id: 'embeddings_0'
+        // }
+        // if (data.embeddingConfig.credential) {
+        //     embeddingNodeData.credential = data.embeddingConfig.credential
+        // }
+        // const embeddingNodeInstance = new embeddingNodeModule.nodeClass()
+        // let embeddingObj = await embeddingNodeInstance.init(embeddingNodeData, '', options)
+        // if (!embeddingObj) {
+        //     throw new Error(`Failed to create EmbeddingObj`)
+        // }
+        let embeddingObj = await _createEmbeddingsObject(appServer, data, options)
+
+        const vStoreNodeData = _createVectorStoreNodeData(appServer, data, embeddingObj, recordManagerObj)
+
+        const chunks = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find({
+            where: {
+                storeId: data.storeId
+            }
+        })
+        const docs: Document[] = chunks.map((chunk: DocumentStoreFileChunk) => {
+            return new Document({
+                pageContent: chunk.pageContent,
+                metadata: JSON.parse(chunk.metadata)
+            })
+        })
+        vStoreNodeData.inputs.document = docs
+
+        const vStoreNodeInstanceFilePath = appServer.nodesPool.componentNodes[data.vectorStoreName].filePath as string
+        const vStoreNodeModule = await import(vStoreNodeInstanceFilePath)
+        const vStoreNodeInstance = new vStoreNodeModule.nodeClass()
+        await vStoreNodeInstance.vectorStoreMethods.upsert(vStoreNodeData, options)
+
+        entity.status = DocumentStoreStatus.VECTOR_STORE_SYNCING
+        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+
+        return entity
     } catch (error) {
         throw new Error(`Error: documentStoreServices.insertIntoVectorStore - ${error}`)
     }
@@ -762,6 +847,87 @@ const getRecordManagerProviders = async () => {
     }
 }
 
+const queryVectorStore = async (data: any) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+            id: data.storeId
+        })
+        if (!entity) throw new Error(`Document store ${data.storeId} not found`)
+        const options: ICommonObject = {
+            chatflowid: uuidv4(),
+            appDataSource: appServer.AppDataSource,
+            databaseEntities,
+            logger
+        }
+        const embeddingConfig = JSON.parse(entity.embeddingConfig)
+        data.embeddingName = embeddingConfig.name
+        data.embeddingConfig = embeddingConfig.config
+        let embeddingObj = await _createEmbeddingsObject(appServer, data, options)
+
+        const vsConfig = JSON.parse(entity.vectorStoreConfig)
+        data.vectorStoreName = vsConfig.name
+        data.vectorStoreConfig = vsConfig.config
+
+        const vStoreNodeData = _createVectorStoreNodeData(appServer, data, embeddingObj, undefined)
+        const vStoreNodeInstanceFilePath = appServer.nodesPool.componentNodes[data.vectorStoreName].filePath as string
+        const vStoreNodeModule = await import(vStoreNodeInstanceFilePath)
+        const vStoreNodeInstance = new vStoreNodeModule.nodeClass()
+        const retriever = await vStoreNodeInstance.init(vStoreNodeData, '', options)
+        if (!retriever) {
+            throw new Error(`Failed to create retriever`)
+        }
+        const results = await retriever.invoke(data.query, undefined)
+        if (!results) {
+            throw new Error(`Failed to retrieve results`)
+        }
+        const docs: any[] = results.map((result: any) => {
+            return {
+                pageContent: result.pageContent,
+                metadata: result.metadata,
+                id: uuidv4()
+            }
+        })
+        return docs
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.queryVectorStore - ${error}`)
+    }
+}
+
+const _createEmbeddingsObject = async (appServer: App, data: any, options: ICommonObject): Promise<any> => {
+    const embeddingNodeInstanceFilePath = appServer.nodesPool.componentNodes[data.embeddingName].filePath as string
+    const embeddingNodeModule = await import(embeddingNodeInstanceFilePath)
+    const embeddingNodeData: any = {
+        inputs: { ...data.embeddingConfig },
+        outputs: { output: 'document' },
+        id: 'embeddings_0'
+    }
+    if (data.embeddingConfig.credential) {
+        embeddingNodeData.credential = data.embeddingConfig.credential
+    }
+    const embeddingNodeInstance = new embeddingNodeModule.nodeClass()
+    let embeddingObj = await embeddingNodeInstance.init(embeddingNodeData, '', options)
+    if (!embeddingObj) {
+        throw new Error(`Failed to create EmbeddingObj`)
+    }
+    return embeddingObj
+}
+
+const _createVectorStoreNodeData = (appServer: App, data: any, embeddingObj: any, recordManagerObj?: any): any => {
+    const vStoreNodeData: any = {
+        inputs: { ...data.vectorStoreConfig },
+        outputs: { output: 'retriever' }
+    }
+    vStoreNodeData.inputs.embeddings = embeddingObj
+    if (recordManagerObj) {
+        vStoreNodeData.inputs.recordManager = recordManagerObj
+    }
+    if (data.vectorStoreConfig.credential) {
+        vStoreNodeData.credential = data.vectorStoreConfig.credential
+    }
+    return vStoreNodeData
+}
+
 export default {
     updateDocumentStoreUsage,
     deleteDocumentStore,
@@ -780,5 +946,7 @@ export default {
     insertIntoVectorStore,
     getEmbeddingProviders,
     getVectorStoreProviders,
-    getRecordManagerProviders
+    getRecordManagerProviders,
+    saveVectorStoreConfig,
+    queryVectorStore
 }
