@@ -2,22 +2,22 @@ import { flatten } from 'lodash'
 import { BaseMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import { RunnableSequence } from '@langchain/core/runnables'
-import { ChatOpenAI } from '@langchain/openai'
-import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { convertToOpenAITool } from '@langchain/core/utils/function_calling'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
-import { OpenAIToolsAgentOutputParser, type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { getBaseClasses } from '../../../src/utils'
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
+import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
+import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool, IVisionChatModal } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { AgentExecutor } from '../../../src/agents'
-import { Moderation, checkInputs } from '../../moderation/Moderation'
+import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
+import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import type { Document } from '@langchain/core/documents'
 import { BaseRetriever } from '@langchain/core/retrievers'
 import { RESPONSE_TEMPLATE } from '../../chains/ConversationalRetrievalQAChain/prompts'
+import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 
-class OpenAIConversationalRetrievalAgent_Agents implements INode {
+class ConversationalRetrievalToolAgent_Agents implements INode {
     label: string
     name: string
     version: number
@@ -31,13 +31,13 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
     badge?: string
 
     constructor(fields?: { sessionId?: string }) {
-        this.label = 'Open AI Conversational Retrieval Agent'
-        this.name = 'openAIConversationalRetrievalAgent'
+        this.label = 'Conversational Retrieval Tool Agent'
+        this.name = 'conversationalRetrievalToolAgent'
         this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
-        this.icon = 'function.svg'
-        this.description = `Agent that calls a vector store retrieval and uses OpenAI Function Calling to pick the tools and args to call`
+        this.icon = 'toolAgent.png'
+        this.description = `Agent that calls a vector store retrieval and uses Function Calling to pick the tools and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.badge = 'NEW'
         this.inputs = [
@@ -53,9 +53,11 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
                 type: 'BaseChatMemory'
             },
             {
-                label: 'OpenAI/Azure Chat Model',
+                label: 'Tool Calling Chat Model',
                 name: 'model',
-                type: 'BaseChatModel'
+                type: 'BaseChatModel',
+                description:
+                    'Only compatible with models that are capable of function calling. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI'
             },
             {
                 label: 'System Message',
@@ -77,6 +79,13 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
                 list: true
             },
             {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Vector Store Retriever',
                 name: 'vectorStoreRetriever',
                 type: 'BaseRetriever'
@@ -86,12 +95,14 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
+        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        const isStreamable = options.socketIO && options.socketIOClientId
 
         if (moderations && moderations.length > 0) {
             try {
@@ -99,12 +110,13 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (isStreamable)
+                    streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
                 return formatResponse(e.message)
             }
         }
 
-        const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
+        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -113,7 +125,7 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
 
-        if (options.socketIO && options.socketIOClientId) {
+        if (isStreamable) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
@@ -134,6 +146,17 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
             }
         }
 
+        let output = res?.output as string
+
+        // Claude 3 Opus tends to spit out <thinking>..</thinking> as well, discard that in final output
+        const regexPattern: RegExp = /<thinking>[\s\S]*?<\/thinking>/
+        const matches: RegExpMatchArray | null = output.match(regexPattern)
+        if (matches) {
+            for (const match of matches) {
+                output = output.replace(match, '')
+            }
+        }
+
         await memory.addChatMessages(
             [
                 {
@@ -141,7 +164,7 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
                     type: 'userMessage'
                 },
                 {
-                    text: res?.output,
+                    text: output,
                     type: 'apiMessage'
                 }
             ],
@@ -151,7 +174,7 @@ class OpenAIConversationalRetrievalAgent_Agents implements INode {
         let finalRes = res?.output
 
         if (sourceDocuments.length || usedTools.length) {
-            finalRes = { text: res?.output }
+            const finalRes: ICommonObject = { text: output }
             if (sourceDocuments.length) {
                 finalRes.sourceDocuments = flatten(sourceDocuments)
             }
@@ -169,8 +192,13 @@ const formatDocs = (docs: Document[]) => {
     return docs.map((doc, i) => `<doc id='${i}'>${doc.pageContent}</doc>`).join('\n')
 }
 
-const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
-    const model = nodeData.inputs?.model as ChatOpenAI
+const prepareAgent = async (
+    nodeData: INodeData,
+    options: ICommonObject,
+    flowObj: { sessionId?: string; chatId?: string; input?: string }
+) => {
+    const model = nodeData.inputs?.model as BaseChatModel
+    const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
@@ -186,7 +214,40 @@ const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId
         new MessagesPlaceholder('agent_scratchpad')
     ])
 
-    const modelWithTools = model.bind({ tools: tools.map(convertToOpenAITool) })
+    if (llmSupportsVision(model)) {
+        const visionChatModel = model as IVisionChatModal
+        const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
+
+        if (messageContent?.length) {
+            visionChatModel.setVisionModel()
+
+            // Pop the `agent_scratchpad` MessagePlaceHolder
+            let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
+            if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
+                const lastMessage = prompt.promptMessages.pop() as HumanMessagePromptTemplate
+                const template = (lastMessage.prompt as PromptTemplate).template as string
+                const msg = HumanMessagePromptTemplate.fromTemplate([
+                    ...messageContent,
+                    {
+                        text: template
+                    }
+                ])
+                msg.inputVariables = lastMessage.inputVariables
+                prompt.promptMessages.push(msg)
+            }
+
+            // Add the `agent_scratchpad` MessagePlaceHolder back
+            prompt.promptMessages.push(messagePlaceholder)
+        } else {
+            visionChatModel.revertToOriginalModel()
+        }
+    }
+
+    if (model.bindTools === undefined) {
+        throw new Error(`This agent requires that the "bindTools()" method be implemented on the input model.`)
+    }
+
+    const modelWithTools = model.bindTools(tools)
 
     const runnableAgent = RunnableSequence.from([
         {
@@ -204,7 +265,7 @@ const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId
         },
         prompt,
         modelWithTools,
-        new OpenAIToolsAgentOutputParser()
+        new ToolCallingAgentOutputParser()
     ])
 
     const executor = AgentExecutor.fromAgentAndTools({
@@ -213,10 +274,11 @@ const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
-        verbose: process.env.DEBUG === 'true' ? true : false
+        verbose: process.env.DEBUG === 'true' ? true : false,
+        maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
 
     return executor
 }
 
-module.exports = { nodeClass: OpenAIConversationalRetrievalAgent_Agents }
+module.exports = { nodeClass: ConversationalRetrievalToolAgent_Agents }

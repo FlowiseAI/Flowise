@@ -1102,8 +1102,8 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'airtableAgent',
             'conversationalRetrievalAgent',
             'openAIToolAgent',
-            'openAIConversationalRetrievalAgent',
-            'toolAgent'
+            'toolAgent',
+            'conversationalRetrievalToolAgent'
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
 
