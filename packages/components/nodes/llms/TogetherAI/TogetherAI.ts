@@ -28,6 +28,12 @@ class TogetherAI_LLMs implements INode {
         this.category = 'LLMs'
         this.description = 'Wrapper around TogetherAI large language models'
         this.baseClasses = [this.type, ...getBaseClasses(TogetherAI)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['togetherAIApi']
+        }
         this.inputs = [
             {
                 label: 'Cache',
