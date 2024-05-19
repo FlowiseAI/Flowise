@@ -24,7 +24,7 @@ class TogetherAI_LLMs implements INode {
         this.name = 'togetherAI'
         this.version = 1.0
         this.type = 'TogetherAI'
-        this.icon = 'togetherAI.svg'
+        this.icon = 'togetherai.png'
         this.category = 'LLMs'
         this.description = 'Wrapper around TogetherAI large language models'
         this.baseClasses = [this.type, ...getBaseClasses(TogetherAI)]
