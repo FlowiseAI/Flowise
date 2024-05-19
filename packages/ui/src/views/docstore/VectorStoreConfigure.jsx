@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 
 // material-ui
-import { Stack, Grid, Box, Divider, Chip, Avatar } from '@mui/material'
+import { Stack, Grid, Box, Divider, Typography, IconButton } from '@mui/material'
 import { styled, useTheme } from '@mui/material/styles'
 import Button from '@mui/material/Button'
 
@@ -25,7 +25,7 @@ import useNotifier from '@/utils/useNotifier'
 
 // icons
 import ErrorBoundary from '@/ErrorBoundary'
-import { IconX } from '@tabler/icons-react'
+import { IconX, IconEdit } from '@tabler/icons-react'
 import Embeddings from '@mui/icons-material/DynamicFeed'
 import Storage from '@mui/icons-material/Storage'
 import DynamicFeed from '@mui/icons-material/Filter1'
@@ -380,30 +380,56 @@ const VectorStoreConfigure = () => {
                                                         paddingRight: 15
                                                     }}
                                                 >
-                                                    <Box sx={{ p: 1 }}>
-                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                            <DividerRoot>
-                                                                <Divider>
-                                                                    <Chip
-                                                                        variant='outlined'
-                                                                        label={selectedEmbeddingsProvider.label}
-                                                                        avatar={
-                                                                            <Avatar
-                                                                                alt='Embedding'
-                                                                                src={`${baseURL}/api/v1/node-icon/${selectedEmbeddingsProvider?.name}`}
-                                                                            />
-                                                                        }
-                                                                    />
-                                                                </Divider>
-                                                            </DividerRoot>
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            flexDirection: 'row',
+                                                            p: 1
+                                                        }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                width: 40,
+                                                                height: 40,
+                                                                borderRadius: '50%',
+                                                                backgroundColor: 'white',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
+                                                            }}
+                                                        >
+                                                            {selectedEmbeddingsProvider.label ? (
+                                                                <img
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        height: '100%',
+                                                                        padding: 7,
+                                                                        borderRadius: '50%',
+                                                                        objectFit: 'contain'
+                                                                    }}
+                                                                    alt={selectedEmbeddingsProvider.label ?? 'embeddings'}
+                                                                    src={`${baseURL}/api/v1/node-icon/${selectedEmbeddingsProvider?.name}`}
+                                                                />
+                                                            ) : (
+                                                                <Embeddings color='black' />
+                                                            )}
                                                         </div>
-                                                    </Box>
-                                                    <Box sx={{ p: 1 }}>
-                                                        <div style={{ display: 'flex', alignContent: 'center', flexDirection: 'row' }}>
+                                                        <Typography sx={{ ml: 2 }} variant='h3'>
+                                                            {selectedEmbeddingsProvider.label}
+                                                        </Typography>
+                                                        <div
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignContent: 'center',
+                                                                flexDirection: 'row'
+                                                            }}
+                                                        >
                                                             {Object.keys(selectedEmbeddingsProvider).length > 0 && (
-                                                                <Button variant='outlined' sx={{ mr: 2 }} onClick={showEmbeddingsList}>
-                                                                    Change Embeddings
-                                                                </Button>
+                                                                <IconButton variant='outlined' sx={{ ml: 4 }} onClick={showEmbeddingsList}>
+                                                                    <IconEdit />
+                                                                </IconButton>
                                                             )}
                                                         </div>
                                                     </Box>
@@ -448,30 +474,56 @@ const VectorStoreConfigure = () => {
                                                         paddingRight: 15
                                                     }}
                                                 >
-                                                    <Box sx={{ p: 1 }}>
-                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                            <DividerRoot>
-                                                                <Divider>
-                                                                    <Chip
-                                                                        variant='outlined'
-                                                                        label={selectedVectorStoreProvider.label}
-                                                                        avatar={
-                                                                            <Avatar
-                                                                                alt='Embedding'
-                                                                                src={`${baseURL}/api/v1/node-icon/${selectedVectorStoreProvider?.name}`}
-                                                                            />
-                                                                        }
-                                                                    />
-                                                                </Divider>
-                                                            </DividerRoot>
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            flexDirection: 'row',
+                                                            p: 1
+                                                        }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                width: 40,
+                                                                height: 40,
+                                                                borderRadius: '50%',
+                                                                backgroundColor: 'white',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
+                                                            }}
+                                                        >
+                                                            {selectedVectorStoreProvider.label ? (
+                                                                <img
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        height: '100%',
+                                                                        padding: 7,
+                                                                        borderRadius: '50%',
+                                                                        objectFit: 'contain'
+                                                                    }}
+                                                                    alt={selectedVectorStoreProvider.label ?? 'embeddings'}
+                                                                    src={`${baseURL}/api/v1/node-icon/${selectedVectorStoreProvider?.name}`}
+                                                                />
+                                                            ) : (
+                                                                <Embeddings color='black' />
+                                                            )}
                                                         </div>
-                                                    </Box>
-                                                    <Box sx={{ p: 1 }}>
-                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                        <Typography sx={{ ml: 2 }} variant='h3'>
+                                                            {selectedVectorStoreProvider.label}
+                                                        </Typography>
+                                                        <div
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignContent: 'center',
+                                                                flexDirection: 'row'
+                                                            }}
+                                                        >
                                                             {Object.keys(selectedVectorStoreProvider).length > 0 && (
-                                                                <Button variant='outlined' sx={{ mr: 2 }} onClick={showVectorStoreList}>
-                                                                    Change Vector Store
-                                                                </Button>
+                                                                <IconButton variant='outlined' sx={{ ml: 4 }} onClick={showVectorStoreList}>
+                                                                    <IconEdit />
+                                                                </IconButton>
                                                             )}
                                                         </div>
                                                     </Box>
@@ -516,34 +568,63 @@ const VectorStoreConfigure = () => {
                                                         paddingRight: 15
                                                     }}
                                                 >
-                                                    <Box sx={{ p: 1 }}>
-                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                            <DividerRoot>
-                                                                <Divider>
-                                                                    <Chip
-                                                                        variant='outlined'
-                                                                        label={selectedRecordManagerProvider.label}
-                                                                        avatar={
-                                                                            <Avatar
-                                                                                alt='Embedding'
-                                                                                src={`${baseURL}/api/v1/node-icon/${selectedRecordManagerProvider?.name}`}
-                                                                            />
-                                                                        }
-                                                                    />
-                                                                </Divider>
-                                                            </DividerRoot>
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            flexDirection: 'row',
+                                                            p: 1
+                                                        }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                width: 40,
+                                                                height: 40,
+                                                                borderRadius: '50%',
+                                                                backgroundColor: 'white',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
+                                                            }}
+                                                        >
+                                                            {selectedRecordManagerProvider.label ? (
+                                                                <img
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        height: '100%',
+                                                                        padding: 7,
+                                                                        borderRadius: '50%',
+                                                                        objectFit: 'contain'
+                                                                    }}
+                                                                    alt={selectedRecordManagerProvider.label ?? 'embeddings'}
+                                                                    src={`${baseURL}/api/v1/node-icon/${selectedRecordManagerProvider?.name}`}
+                                                                />
+                                                            ) : (
+                                                                <Embeddings color='black' />
+                                                            )}
                                                         </div>
-                                                    </Box>
-                                                    <Box sx={{ p: 1 }}>
-                                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                        <Typography sx={{ ml: 2 }} variant='h3'>
+                                                            {selectedRecordManagerProvider.label}
+                                                        </Typography>
+                                                        <div
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignContent: 'center',
+                                                                flexDirection: 'row'
+                                                            }}
+                                                        >
                                                             {Object.keys(selectedRecordManagerProvider).length > 0 && (
-                                                                <Button variant='outlined' sx={{ mr: 2 }} onClick={showRecordManagerList}>
-                                                                    Change Record Manager
-                                                                </Button>
+                                                                <IconButton
+                                                                    variant='outlined'
+                                                                    sx={{ ml: 4 }}
+                                                                    onClick={showRecordManagerList}
+                                                                >
+                                                                    <IconEdit />
+                                                                </IconButton>
                                                             )}
                                                         </div>
                                                     </Box>
-
                                                     {selectedRecordManagerProvider &&
                                                         Object.keys(selectedRecordManagerProvider).length > 0 &&
                                                         (selectedRecordManagerProvider.inputParams ?? [])

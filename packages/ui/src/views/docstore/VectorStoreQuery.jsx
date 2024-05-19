@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import ReactJson from 'flowise-react-json-view'
 
 // material-ui
-import { Box, Card, Grid, Stack, Typography, OutlinedInput, IconButton } from '@mui/material'
+import { Box, Card, Grid, Stack, Typography, OutlinedInput, IconButton, Button } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
 import chunks_emptySVG from '@/assets/images/chunks_empty.svg'
@@ -27,6 +27,19 @@ import useNotifier from '@/utils/useNotifier'
 
 // store
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import { Dropdown } from '@/ui-component/dropdown/Dropdown'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+
+const searchOptions = [
+    {
+        label: 'Similarity',
+        name: 'similarity'
+    },
+    {
+        label: 'Max Marginal Relevance',
+        name: 'mmr'
+    }
+]
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -68,12 +81,18 @@ const VectorStoreQuery = () => {
     const [documentStore, setDocumentStore] = useState({})
     const [query, setQuery] = useState('')
 
+    const [topK, setTopK] = useState(0)
+    const [allowSearchType, setAllowSearchType] = useState(true)
+    const [searchType, setSearchType] = useState('')
+    const [lambda, setLambda] = useState(0)
+    const [fetchK, setFetchK] = useState(0)
+    const [timeTaken, setTimeTaken] = useState(-1)
+
     const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
     const queryVectorStoreApi = useApi(documentsApi.queryVectorStore)
 
     const chunkSelected = (chunkId, selectedChunkNumber) => {
         const selectedChunk = documentChunks.find((chunk) => chunk.id === chunkId)
-        // const selectedChunkNumber = documentChunks.findIndex((chunk) => chunk.id === chunkId)
         const dialogProps = {
             data: {
                 selectedChunk,
@@ -88,14 +107,19 @@ const VectorStoreQuery = () => {
         setLoading(true)
         const data = {
             query: query,
-            storeId: storeId
+            storeId: storeId,
+            topK: topK,
+            searchType: searchType,
+            lambda: lambda,
+            fetchK: fetchK
         }
         queryVectorStoreApi.request(data)
     }
 
     useEffect(() => {
         if (queryVectorStoreApi.data) {
-            setDocumentChunks(queryVectorStoreApi.data)
+            setDocumentChunks(queryVectorStoreApi.data.docs)
+            setTimeTaken(queryVectorStoreApi.data.timeTaken)
             setLoading(false)
         }
 
@@ -111,6 +135,20 @@ const VectorStoreQuery = () => {
     useEffect(() => {
         if (getSpecificDocumentStoreApi.data) {
             setDocumentStore(getSpecificDocumentStoreApi.data)
+            const vectorStoreConfig = getSpecificDocumentStoreApi.data.vectorStoreConfig
+
+            const topKValue = parseInt(vectorStoreConfig?.config?.topK)
+            setTopK(isNaN(topKValue) ? 4 : topKValue)
+
+            setAllowSearchType(vectorStoreConfig?.config?.searchType !== undefined)
+            if (vectorStoreConfig?.config?.searchType !== undefined) {
+                setSearchType(vectorStoreConfig.config.searchType)
+                const lambdaValue = parseFloat(vectorStoreConfig.config.lambda)
+                setLambda(isNaN(lambdaValue) ? 0.5 : lambdaValue)
+                const fetchKValue = parseInt(vectorStoreConfig.config.fetchK)
+                setFetchK(isNaN(fetchKValue) ? 20 : fetchKValue)
+            }
+
             setLoading(false)
         }
 
@@ -132,9 +170,9 @@ const VectorStoreQuery = () => {
                     <div>
                         <Grid container spacing={2}>
                             <Grid item xs={12} sm={12} md={12} lg={12}>
-                                <Box sx={{ p: 1 }}>
+                                <Box>
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                        <Typography>
+                                        <Typography variant='overline'>
                                             Enter your Query<span style={{ color: 'red' }}>&nbsp;*</span>
                                         </Typography>
 
@@ -159,33 +197,89 @@ const VectorStoreQuery = () => {
                                 </Box>
                             </Grid>
                             <Grid item xs={12} sm={12} md={12} lg={12}>
-                                <Box sx={{ p: 1 }}>
-                                    <Typography variant='h3' sx={{ pb: 1 }}>
-                                        Settings
-                                    </Typography>
-                                    <Typography variant='secondary'>
-                                        These values are not saved till you click on Save. Feel free to change and test your retrieved
-                                        documents.
-                                    </Typography>
-                                </Box>
-                                <Stack sx={{ position: 'relative' }} direction='column'>
-                                    <Box sx={{ p: 1 }}>
-                                        <Stack sx={{ position: 'relative' }} direction='row'>
-                                            <Typography variant='overline'>TopK</Typography>
-                                        </Stack>
-                                        <OutlinedInput id='vsName' type='string' fullWidth placeholder={'My Vector Store'} />
+                                {/*<Box sx={{ p: 1 }}>*/}
+                                {/*    <Typography variant='h3' sx={{ pb: 1 }}>*/}
+                                {/*        Settings*/}
+                                {/*        <TooltipWithParser*/}
+                                {/*            title='These values are not persisted till you click on Save. Feel free to change and test your retrieved*/}
+                                {/*        documents.'*/}
+                                {/*        />*/}
+                                {/*    </Typography>*/}
+                                {/*</Box>*/}
+                                <Stack direction='row' spacing={1}>
+                                    <Box style={{ width: '25%' }}>
+                                        <Typography variant='overline'>
+                                            Top K<TooltipWithParser title='Number of top results to fetch' />
+                                        </Typography>
+                                        <OutlinedInput
+                                            sx={{ mt: 1 }}
+                                            id='topk'
+                                            size='small'
+                                            type='number'
+                                            fullWidth
+                                            value={topK}
+                                            onChange={(e) => setTopK(e.target.value)}
+                                        />
                                     </Box>
-                                    {/*<Box sx={{ p: 1 }}>*/}
-                                    {/*    <Stack sx={{ position: 'relative' }} direction='row'>*/}
-                                    {/*        <Typography variant='overline'>TopK</Typography>*/}
-                                    {/*    </Stack>*/}
-                                    {/*    <OutlinedInput id='vsName' type='string' fullWidth placeholder={'My Vector Store'} />*/}
-                                    {/*</Box>*/}
+                                    {allowSearchType && (
+                                        <>
+                                            <Box style={{ width: '25%' }}>
+                                                <Typography variant='overline'>Search Type</Typography>
+                                                <Dropdown
+                                                    key={searchType}
+                                                    name='searchType'
+                                                    options={searchOptions}
+                                                    onSelect={(newValue) => setSearchType(newValue)}
+                                                    value={searchType ?? 'choose an option'}
+                                                />
+                                            </Box>
+                                            <Box style={{ width: '20%' }}>
+                                                <Typography variant='overline'>
+                                                    Lambda (for MMR Search)
+                                                    <TooltipWithParser title='Number between 0 and 1 that determines the degree of diversity among the results, where 0 corresponds to maximum diversity and 1 to minimum diversity. Used only when the search type is MMR' />
+                                                </Typography>
+                                                <OutlinedInput
+                                                    sx={{ mt: 1 }}
+                                                    id='lambdaId'
+                                                    size='small'
+                                                    type='number'
+                                                    disabled={searchType === 'similarity'}
+                                                    value={lambda}
+                                                    onChange={(e) => setLambda(e.target.value)}
+                                                />
+                                            </Box>
+                                            <Box style={{ width: '20%' }}>
+                                                <Typography variant='overline'>
+                                                    Fetch K (for MMR Search)
+                                                    <TooltipWithParser title='Number of initial documents to fetch for MMR reranking. Default to 20. Used only when the search type is MMR' />
+                                                </Typography>
+                                                <OutlinedInput
+                                                    disabled={searchType === 'similarity'}
+                                                    sx={{ mt: 1 }}
+                                                    value={fetchK}
+                                                    onChange={(e) => setFetchK(e.target.value)}
+                                                    id='fetchId'
+                                                    size='small'
+                                                    type='number'
+                                                />
+                                            </Box>
+                                        </>
+                                    )}
+                                    <Box style={{ verticalAlign: 'middle', width: '10%' }}>
+                                        <Button sx={{ mt: 5 }} variant='outlined'>
+                                            Save
+                                        </Button>
+                                    </Box>
                                 </Stack>
                             </Grid>
                             <Grid item xs={12} sm={12} md={12} lg={12}>
                                 <Box sx={{ p: 1 }}>
                                     <Typography variant='h3'>Retrieved Documents</Typography>
+                                    {timeTaken > -1 && (
+                                        <Typography variant='body2' sx={{ color: 'gray' }}>
+                                            Time taken: {timeTaken} millis.
+                                        </Typography>
+                                    )}
                                 </Box>
                                 {!documentChunks.length && (
                                     <div

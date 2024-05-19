@@ -855,6 +855,15 @@ const queryVectorStore = async (data: any) => {
         data.vectorStoreConfig = vsConfig.config
 
         const vStoreNodeData = _createVectorStoreNodeData(appServer, data, embeddingObj, undefined)
+        if (data.topK && data.topK > 0) {
+            vStoreNodeData.inputs.topK = data.topK
+        }
+        if (data.searchType && vStoreNodeData.inputs.searchType) {
+            // check if vStoreNodeData.inputs.searchType key is present, then set it to data.searchType
+            // if not, ignore the searchType
+            vStoreNodeData.inputs.searchType = data.searchType
+        }
+
         const vStoreNodeInstanceFilePath = appServer.nodesPool.componentNodes[data.vectorStoreName].filePath as string
         const vStoreNodeModule = await import(vStoreNodeInstanceFilePath)
         const vStoreNodeInstance = new vStoreNodeModule.nodeClass()
@@ -862,10 +871,13 @@ const queryVectorStore = async (data: any) => {
         if (!retriever) {
             throw new Error(`Failed to create retriever`)
         }
+        const startMillis = Date.now()
         const results = await retriever.invoke(data.query, undefined)
         if (!results) {
             throw new Error(`Failed to retrieve results`)
         }
+        const endMillis = Date.now()
+        const timeTaken = endMillis - startMillis
         const docs: any[] = results.map((result: any) => {
             return {
                 pageContent: result.pageContent,
@@ -873,7 +885,10 @@ const queryVectorStore = async (data: any) => {
                 id: uuidv4()
             }
         })
-        return docs
+        return {
+            timeTaken: timeTaken,
+            docs: docs
+        }
     } catch (error) {
         throw new Error(`Error: documentStoreServices.queryVectorStore - ${error}`)
     }
