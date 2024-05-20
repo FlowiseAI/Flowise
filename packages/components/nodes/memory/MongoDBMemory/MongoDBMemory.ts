@@ -2,7 +2,13 @@ import { MongoClient, Collection, Document } from 'mongodb'
 import { MongoDBChatMessageHistory } from '@langchain/mongodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
-import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import {
+    convertBaseMessagetoIMessage,
+    getBaseClasses,
+    getCredentialData,
+    getCredentialParam,
+    mapChatMessageToBaseMessage
+} from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
 let mongoClientSingleton: MongoClient
@@ -151,13 +157,20 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         this.collection = fields.collection
     }
 
-    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+    async getChatMessages(
+        overrideSessionId = '',
+        returnBaseMessages = false,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]> {
         if (!this.collection) return []
 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         const document = await this.collection.findOne({ sessionId: id })
         const messages = document?.messages || []
         const baseMessages = messages.map(mapStoredMessageToChatMessage)
+        if (prependMessages?.length) {
+            baseMessages.unshift(...mapChatMessageToBaseMessage(prependMessages))
+        }
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
