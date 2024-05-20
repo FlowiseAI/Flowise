@@ -1,14 +1,14 @@
 import { flatten } from 'lodash'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
-import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
+import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { HumanMessage } from '@langchain/core/messages'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
-import { INode, INodeData, INodeParams, IMultiAgentNode, ITeamState, ICommonObject } from '../../../src/Interface'
+import { INode, INodeData, INodeParams, IMultiAgentNode, ITeamState, ICommonObject, MessageContentImageUrl } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
 import { StringOutputParser } from '@langchain/core/output_parsers'
-import { getInputVariables } from '../../../src/utils'
+import { getInputVariables, handleEscapeCharacters } from '../../../src/utils'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 
@@ -66,18 +66,18 @@ class Worker_MultiAgents implements INode {
                 description: `Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat. If not specified, supervisor's model will be used`
             },
             {
-                label: 'Max Iterations',
-                name: 'maxIterations',
-                type: 'number',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Prompt Input Values',
+                label: 'Format Prompt Values',
                 name: 'promptValues',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                acceptVariable: true,
+                list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true
             }
         ]
     }
@@ -95,6 +95,8 @@ class Worker_MultiAgents implements INode {
         if (!workerLabel) throw new Error('Worker name is required!')
         const workerName = workerLabel.toLowerCase().replace(/\s/g, '_').trim()
 
+        if (!workerPrompt) throw new Error('Worker prompt is required!')
+
         let workerInputVariablesValues: ICommonObject = {}
         if (promptValuesStr) {
             try {
@@ -103,8 +105,10 @@ class Worker_MultiAgents implements INode {
                 throw new Error("Invalid JSON in the Worker's Prompt Input Values: " + exception)
             }
         }
+        workerInputVariablesValues = handleEscapeCharacters(workerInputVariablesValues, true)
 
         const llm = model || (supervisor.llm as BaseChatModel)
+        const multiModalMessageContent = supervisor?.multiModalMessageContent || []
 
         const abortControllerSignal = options.signal as AbortController
         const workerInputVariables = getInputVariables(workerPrompt)
@@ -113,15 +117,19 @@ class Worker_MultiAgents implements INode {
             throw new Error('Worker input variables values are not provided!')
         }
 
-        for (const inputVariable of workerInputVariables) {
-            workerPrompt = workerPrompt.replaceAll(`{${inputVariable}}`, workerInputVariablesValues[inputVariable])
-        }
-
-        const agent = await createAgent(llm, [...tools], workerPrompt, maxIterations, {
-            sessionId: options.sessionId,
-            chatId: options.chatId,
-            input
-        })
+        const agent = await createAgent(
+            llm,
+            [...tools],
+            workerPrompt,
+            multiModalMessageContent,
+            workerInputVariablesValues,
+            maxIterations,
+            {
+                sessionId: options.sessionId,
+                chatId: options.chatId,
+                input
+            }
+        )
 
         const workerNode = async (state: ITeamState, config: RunnableConfig) =>
             await agentNode(
@@ -152,6 +160,8 @@ async function createAgent(
     llm: BaseChatModel,
     tools: any[],
     systemPrompt: string,
+    multiModalMessageContent: MessageContentImageUrl[],
+    workerInputVariablesValues: ICommonObject,
     maxIterations?: string,
     flowObj?: { sessionId?: string; chatId?: string; input?: string }
 ): Promise<AgentExecutor | RunnableSequence> {
@@ -178,6 +188,12 @@ async function createAgent(
                 ].join('\n')
             ]*/
         ])
+
+        if (multiModalMessageContent.length) {
+            const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
+            prompt.promptMessages.splice(1, 0, msg)
+        }
+
         if (llm.bindTools === undefined) {
             throw new Error(`This agent only compatible with function calling models.`)
         }
@@ -188,6 +204,7 @@ async function createAgent(
                 //@ts-ignore
                 agent_scratchpad: (input: { steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(input.steps)
             }),
+            RunnablePassthrough.assign(transformObjectPropertyToFunction(workerInputVariablesValues)),
             prompt,
             modelWithTools,
             new ToolCallingAgentOutputParser()
@@ -212,7 +229,16 @@ async function createAgent(
             ' You are chosen for a reason! You are one of the following team members: {team_members}.'
 
         const prompt = ChatPromptTemplate.fromMessages([['system', combinedPrompt], new MessagesPlaceholder('messages')])
-        const conversationChain = RunnableSequence.from([prompt, llm, new StringOutputParser()])
+        if (multiModalMessageContent.length) {
+            const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
+            prompt.promptMessages.splice(1, 0, msg)
+        }
+        const conversationChain = RunnableSequence.from([
+            RunnablePassthrough.assign(transformObjectPropertyToFunction(workerInputVariablesValues)),
+            prompt,
+            llm,
+            new StringOutputParser()
+        ])
         return conversationChain
     }
 }
@@ -250,6 +276,16 @@ async function agentNode(
     } catch (error) {
         throw new Error('Aborted!')
     }
+}
+
+const transformObjectPropertyToFunction = (obj: ICommonObject) => {
+    const transformedObject: ICommonObject = {}
+
+    for (const key in obj) {
+        transformedObject[key] = () => obj[key]
+    }
+
+    return transformedObject
 }
 
 module.exports = { nodeClass: Worker_MultiAgents }

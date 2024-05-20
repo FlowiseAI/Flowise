@@ -1,8 +1,17 @@
 import { flatten } from 'lodash'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { Runnable, RunnableConfig } from '@langchain/core/runnables'
-import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { ICommonObject, IMultiAgentNode, INode, INodeData, INodeParams, ITeamState } from '../../../src/Interface'
+import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate } from '@langchain/core/prompts'
+import {
+    ICommonObject,
+    IMultiAgentNode,
+    INode,
+    INodeData,
+    INodeParams,
+    ITeamState,
+    IVisionChatModal,
+    MessageContentImageUrl
+} from '../../../src/Interface'
 import { Moderation } from '../../moderation/Moderation'
 import { z } from 'zod'
 import { StructuredTool } from '@langchain/core/tools'
@@ -11,6 +20,7 @@ import { ChatMistralAI } from '@langchain/mistralai'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import { ChatAnthropic } from '../../chatmodels/ChatAnthropic/FlowiseChatAnthropic'
 import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
+import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 
 const sysPrompt = `You are a supervisor tasked with managing a conversation between the following workers: {team_members}.
 Given the following user request, respond with the worker to act next.
@@ -62,7 +72,7 @@ class Supervisor_MultiAgents implements INode {
                 label: 'Tool Calling Chat Model',
                 name: 'model',
                 type: 'BaseChatModel',
-                description: `Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, GroqChat. If not specified, supervisor's model will be used`
+                description: `Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, GroqChat. Best result with GPT-4 model`
             },
             {
                 label: 'Recursion Limit',
@@ -101,12 +111,16 @@ class Supervisor_MultiAgents implements INode {
 
         const supervisorName = supervisorLabel.toLowerCase().replace(/\s/g, '_').trim()
 
+        let multiModalMessageContent: MessageContentImageUrl[] = []
+
         async function createTeamSupervisor(llm: BaseChatModel, systemPrompt: string, members: string[]): Promise<Runnable> {
-            const options = ['FINISH', ...members]
+            const memberOptions = ['FINISH', ...members]
 
             systemPrompt = systemPrompt.replaceAll('{team_members}', members.join(', '))
 
-            let userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${options.join(', ')}`
+            let userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${memberOptions.join(
+                ', '
+            )}`
 
             const tool = new RouteTool({
                 schema: z.object({
@@ -119,11 +133,15 @@ class Supervisor_MultiAgents implements INode {
             let supervisor
 
             if (llm instanceof ChatMistralAI) {
-                const prompt = ChatPromptTemplate.fromMessages([
+                let prompt = ChatPromptTemplate.fromMessages([
                     ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
                     ['human', userPrompt]
                 ])
+
+                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
 
                 // Force Mistral to use tool
                 const modelWithTool = llm.bind({
@@ -157,14 +175,19 @@ class Supervisor_MultiAgents implements INode {
                     })
             } else if (llm instanceof ChatAnthropic) {
                 // Force Anthropic to use tool : https://docs.anthropic.com/claude/docs/tool-use#forcing-tool-use
-                userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${options.join(
+                userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${memberOptions.join(
                     ', '
                 )}. Use the ${routerToolName} tool in your response.`
-                const prompt = ChatPromptTemplate.fromMessages([
+
+                let prompt = ChatPromptTemplate.fromMessages([
                     ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
                     ['human', userPrompt]
                 ])
+
+                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
 
                 if (llm.bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
@@ -200,11 +223,15 @@ class Supervisor_MultiAgents implements INode {
                         }
                     })
             } else if (llm instanceof ChatOpenAI) {
-                const prompt = ChatPromptTemplate.fromMessages([
+                let prompt = ChatPromptTemplate.fromMessages([
                     ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
                     ['human', userPrompt]
                 ])
+
+                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
 
                 // Force OpenAI to use tool
                 const modelWithTool = llm.bind({
@@ -245,13 +272,17 @@ class Supervisor_MultiAgents implements INode {
                  * Gemini doesn't have system message and messages have to be alternate between model and user
                  * So we have to place the system + human prompt at last
                  */
-                const prompt = ChatPromptTemplate.fromMessages([
+                let prompt = ChatPromptTemplate.fromMessages([
                     ['human', systemPrompt],
                     ['ai', ''],
                     new MessagesPlaceholder('messages'),
                     ['ai', ''],
                     ['human', userPrompt]
                 ])
+
+                const messages = await processImageMessage(2, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
 
                 if (llm.bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
@@ -286,11 +317,15 @@ class Supervisor_MultiAgents implements INode {
                         }
                     })
             } else {
-                const prompt = ChatPromptTemplate.fromMessages([
+                let prompt = ChatPromptTemplate.fromMessages([
                     ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
                     ['human', userPrompt]
                 ])
+
+                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
 
                 if (llm.bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
@@ -349,7 +384,8 @@ class Supervisor_MultiAgents implements INode {
             workers: workersNodeNames,
             recursionLimit,
             llm,
-            moderations
+            moderations,
+            multiModalMessageContent
         }
 
         return returnOutput
@@ -369,6 +405,33 @@ async function agentNode(
     } catch (error) {
         throw new Error('Aborted!')
     }
+}
+
+const processImageMessage = async (
+    index: number,
+    llm: BaseChatModel,
+    prompt: ChatPromptTemplate,
+    nodeData: INodeData,
+    options: ICommonObject
+) => {
+    let multiModalMessageContent: MessageContentImageUrl[] = []
+
+    if (llmSupportsVision(llm)) {
+        const visionChatModel = llm as IVisionChatModal
+        multiModalMessageContent = await addImagesToMessages(nodeData, options, llm.multiModalOption)
+
+        if (multiModalMessageContent?.length) {
+            visionChatModel.setVisionModel()
+
+            const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
+
+            prompt.promptMessages.splice(index, 0, msg)
+        } else {
+            visionChatModel.revertToOriginalModel()
+        }
+    }
+
+    return { prompt, multiModalMessageContent }
 }
 
 class RouteTool extends StructuredTool {

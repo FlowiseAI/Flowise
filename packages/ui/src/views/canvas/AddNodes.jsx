@@ -53,7 +53,7 @@ function a11yProps(index) {
     }
 }
 
-const blacklistCategoriesForAgentCanvas = ['Agents', 'Document Loaders', 'Memory', 'Record Manager', 'Text Splitters']
+const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager']
 const allowedAgentModel = {}
 
 const AddNodes = ({ nodesData, node, isAgentCanvas }) => {

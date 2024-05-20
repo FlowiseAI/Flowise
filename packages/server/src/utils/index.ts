@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import logger from './logger'
+import { Server } from 'socket.io'
 import {
     IComponentCredentials,
     IComponentNodes,
@@ -407,7 +408,9 @@ export const buildFlow = async (
     isUpsert?: boolean,
     stopNodeId?: string,
     uploads?: IFileUpload[],
-    baseURL?: string
+    baseURL?: string,
+    socketIO?: Server,
+    socketIOClientId?: string
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -462,7 +465,9 @@ export const buildFlow = async (
                     cachePool,
                     dynamicVariables,
                     uploads,
-                    baseURL
+                    baseURL,
+                    socketIO,
+                    socketIOClientId
                 })
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
@@ -481,7 +486,9 @@ export const buildFlow = async (
                     isUpsert,
                     dynamicVariables,
                     uploads,
-                    baseURL
+                    baseURL,
+                    socketIO,
+                    socketIOClientId
                 })
 
                 // Save dynamic variables

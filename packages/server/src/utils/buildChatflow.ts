@@ -295,7 +295,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 false,
                 undefined,
                 incomingInput.uploads,
-                baseURL
+                baseURL,
+                socketIO,
+                incomingInput.socketIOClientId
             )
 
             const nodeToExecute =

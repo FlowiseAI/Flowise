@@ -165,6 +165,7 @@ export interface IMultiAgentNode {
     workerInputVariables?: string[]
     recursionLimit?: number
     moderations?: Moderation[]
+    multiModalMessageContent?: MessageContentImageUrl[]
 }
 
 export interface ITeamState {

@@ -17,7 +17,7 @@ async function LoadPyodide(): Promise<PyodideInterface> {
     return pyodideInstance
 }
 
-class PythonSandbox_Tools implements INode {
+class PythonInterpreter_Tools implements INode {
     label: string
     name: string
     version: number
@@ -30,14 +30,14 @@ class PythonSandbox_Tools implements INode {
     badge: string
 
     constructor() {
-        this.label = 'Python Sandbox'
-        this.name = 'pythonSandbox'
+        this.label = 'Python Interpreter'
+        this.name = 'pythonInterpreter'
         this.version = 1.0
-        this.type = 'PythonSandbox'
+        this.type = 'PythonInterpreter'
         this.icon = 'python.svg'
         this.category = 'Tools'
         this.badge = 'NEW'
-        this.description = 'Execute python code in a Pyodide sandbox environment'
+        this.description = 'Execute python code in Pyodide sandbox environment'
         this.baseClasses = [this.type, 'Tool', ...getBaseClasses(PythonInterpreterTool)]
         this.inputs = [
             {
@@ -91,14 +91,14 @@ export class PythonInterpreterTool extends Tool {
 
     constructor(options: PythonInterpreterToolParams & { name: string; description: string }) {
         super(options)
+        this.description = options.description
+        this.name = options.name
         this.pyodideInstance = options.instance
         this.pyodideInstance.setStderr({
             batched: (text: string) => {
                 this.stderr += text
             }
         })
-        this.description = options.description
-        this.name = options.name
         this.pyodideInstance.setStdout({
             batched: (text: string) => {
                 this.stdout += text
@@ -125,4 +125,4 @@ export class PythonInterpreterTool extends Tool {
     }
 }
 
-module.exports = { nodeClass: PythonSandbox_Tools }
+module.exports = { nodeClass: PythonInterpreter_Tools }

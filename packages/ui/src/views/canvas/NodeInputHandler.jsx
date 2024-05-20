@@ -110,6 +110,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     }
 
     const getJSONValue = (templateValue) => {
+        if (!templateValue) return ''
         const obj = {}
         const inputVariables = getInputVariables(templateValue)
         for (const inputVariable of inputVariables) {
