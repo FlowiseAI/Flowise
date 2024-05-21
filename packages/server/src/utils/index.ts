@@ -377,6 +377,44 @@ export const saveUpsertFlowData = (nodeData: INodeData, upsertHistory: Record<st
 }
 
 /**
+ * Check if doc loader should be bypassed, ONLY if doc loader is connected to a vector store
+ * Reason being we dont want to load the doc loader again whenever we are building the flow, because it was already done during upserting
+ * TODO: Remove this logic when we remove doc loader nodes from the canvas
+ * @param {IReactFlowNode} reactFlowNode
+ * @param {IReactFlowNode[]} reactFlowNodes
+ * @param {IReactFlowEdge[]} reactFlowEdges
+ * @returns {boolean}
+ */
+const checkIfDocLoaderShouldBeIgnored = (
+    reactFlowNode: IReactFlowNode,
+    reactFlowNodes: IReactFlowNode[],
+    reactFlowEdges: IReactFlowEdge[]
+): boolean => {
+    let outputId = ''
+
+    if (reactFlowNode.data.outputAnchors.length) {
+        if (Object.keys(reactFlowNode.data.outputs || {}).length) {
+            const output = reactFlowNode.data.outputs?.output
+            const node = reactFlowNode.data.outputAnchors[0].options?.find((anchor) => anchor.name === output)
+            if (node) outputId = (node as ICommonObject).id
+        } else {
+            outputId = (reactFlowNode.data.outputAnchors[0] as ICommonObject).id
+        }
+    }
+
+    const targetNodeId = reactFlowEdges.find((edge) => edge.sourceHandle === outputId)?.target
+
+    if (targetNodeId) {
+        const targetNodeCategory = reactFlowNodes.find((nd) => nd.id === targetNodeId)?.data.category || ''
+        if (targetNodeCategory === 'Vector Stores') {
+            return true
+        }
+    }
+
+    return false
+}
+
+/**
  * Build langchain from start to end
  * @param {string[]} startingNodeIds
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -451,7 +489,6 @@ export const buildFlow = async (
 
             const reactFlowNodeData: INodeData = resolveVariables(flowNodeData, flowNodes, question, chatHistory)
 
-            // TODO: Avoid processing Text Splitter + Doc Loader once Upsert & Load Existing Vector Nodes are deprecated
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
                 logger.debug(`[server]: Upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 const indexResult = await newNodeInstance.vectorStoreMethods!['upsert']!.call(newNodeInstance, reactFlowNodeData, {
@@ -472,6 +509,12 @@ export const buildFlow = async (
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 break
+            } else if (
+                !isUpsert &&
+                reactFlowNode.data.category === 'Document Loaders' &&
+                checkIfDocLoaderShouldBeIgnored(reactFlowNode, reactFlowNodes, reactFlowEdges)
+            ) {
+                initializedNodes.add(nodeId)
             } else {
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
                 let outputResult = await newNodeInstance.init(reactFlowNodeData, question, {
@@ -946,7 +989,7 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
         case 'text/yaml':
             return 'yamlFile'
         default:
-            return ''
+            return 'txtFile'
     }
 }
 
@@ -1273,7 +1316,8 @@ export const getSessionChatHistory = async (
     componentNodes: IComponentNodes,
     appDataSource: DataSource,
     databaseEntities: IDatabaseEntity,
-    logger: any
+    logger: any,
+    prependMessages?: IMessage[]
 ): Promise<IMessage[]> => {
     const nodeInstanceFilePath = componentNodes[memoryNode.data.name].filePath as string
     const nodeModule = await import(nodeInstanceFilePath)
@@ -1291,7 +1335,7 @@ export const getSessionChatHistory = async (
         logger
     })
 
-    return (await initializedInstance.getChatMessages(sessionId)) as IMessage[]
+    return (await initializedInstance.getChatMessages(sessionId, undefined, prependMessages)) as IMessage[]
 }
 
 /**
