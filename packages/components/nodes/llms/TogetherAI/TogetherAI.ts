@@ -4,9 +4,6 @@ import { TogetherAI, TogetherAIInputs } from '@langchain/community/llms/together
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { BaseCache } from '@langchain/core/caches'
 
-/** https://v01.api.js.langchain.com/classes/langchain_community_llms_togetherai.TogetherAI.html
- https://js.langchain.com/v0.1/docs/integrations/llms/togetherai/ **/
-
 class TogetherAI_LLMs implements INode {
     label: string
     name: string
@@ -109,7 +106,7 @@ class TogetherAI_LLMs implements INode {
                 optional: true,
                 additionalParams: true
             }
-            // todo: safetyModel? logprobs
+            // todo: safetyModel? logprobs?
         ]
     }
 
