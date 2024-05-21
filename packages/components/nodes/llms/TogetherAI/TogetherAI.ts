@@ -42,12 +42,6 @@ class TogetherAI_LLMs implements INode {
                 optional: true
             },
             {
-                label: 'Model',
-                name: 'model',
-                type: 'string',
-                description: 'If using own inference endpoint, leave this blank'
-            },
-            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
@@ -127,7 +121,6 @@ class TogetherAI_LLMs implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const model = nodeData.inputs?.model as string
         const temperature = nodeData.inputs?.temperature as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
