@@ -54,7 +54,7 @@ class ToolAgent_Agents implements INode {
                 name: 'model',
                 type: 'BaseChatModel',
                 description:
-                    'Only compatible with models that are capable of function calling. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI'
+                    'Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat'
             },
             {
                 label: 'System Message',

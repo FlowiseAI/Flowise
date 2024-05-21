@@ -150,9 +150,25 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
     }
 }
 
+const abortChatMessage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params === 'undefined' || !req.params.chatflowid || !req.params.chatid) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatMessagesController.abortChatMessage - chatflowid or chatid not provided!`
+            )
+        }
+        await chatMessagesService.abortChatMessage(req.params.chatid, req.params.chatflowid)
+        return res.json({ status: 200, message: 'Chat message aborted' })
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     createChatMessage,
     getAllChatMessages,
     getAllInternalChatMessages,
-    removeAllChatMessages
+    removeAllChatMessages,
+    abortChatMessage
 }

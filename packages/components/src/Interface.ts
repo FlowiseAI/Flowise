@@ -1,3 +1,7 @@
+import { BaseMessage } from '@langchain/core/messages'
+import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
+import { Moderation } from '../nodes/moderation/Moderation'
+
 /**
  * Types
  */
@@ -149,6 +153,38 @@ export interface IUsedTool {
     toolOutput: string | object
 }
 
+export interface IMultiAgentNode {
+    node: any
+    name: string
+    label: string
+    type: 'supervisor' | 'worker'
+    llm?: any
+    parentSupervisorName?: string
+    workers?: string[]
+    workerPrompt?: string
+    workerInputVariables?: string[]
+    recursionLimit?: number
+    moderations?: Moderation[]
+    multiModalMessageContent?: MessageContentImageUrl[]
+}
+
+export interface ITeamState {
+    messages: {
+        value: (x: BaseMessage[], y: BaseMessage[]) => BaseMessage[]
+        default: () => BaseMessage[]
+    }
+    team_members: string[]
+    next: string
+    instructions: string
+}
+
+export interface IAgentReasoning {
+    agentName: string
+    messages: string[]
+    next: string
+    instructions: string
+}
+
 export interface IFileUpload {
     data?: string
     type: string
@@ -239,8 +275,6 @@ export class VectorStoreRetriever {
 /**
  * Implement abstract classes and interface for memory
  */
-import { BaseMessage } from '@langchain/core/messages'
-import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
 
 export interface MemoryMethods {
     getChatMessages(
