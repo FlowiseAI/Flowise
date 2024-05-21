@@ -740,6 +740,21 @@ const insertIntoVectorStore = async (data: any) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await saveVectorStoreConfig(data)
+        entity.status = DocumentStoreStatus.VECTOR_STORE_SYNCING
+        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+
+        // to be moved into a worker thread...
+        _insertIntoVectorStoreWorkerThread(data).then(() => {})
+        return entity
+    } catch (error) {
+        throw new Error(`Error: documentStoreServices.insertIntoVectorStore - ${error}`)
+    }
+}
+
+const _insertIntoVectorStoreWorkerThread = async (data: any) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const entity = await saveVectorStoreConfig(data)
 
         const options: ICommonObject = {
             chatflowid: uuidv4(),
@@ -788,12 +803,12 @@ const insertIntoVectorStore = async (data: any) => {
         const vStoreNodeInstance = new vStoreNodeModule.nodeClass()
         await vStoreNodeInstance.vectorStoreMethods.upsert(vStoreNodeData, options)
 
-        entity.status = DocumentStoreStatus.VECTOR_STORE_SYNCING
+        entity.status = DocumentStoreStatus.VECTOR_STORE_SYNC
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
 
         return entity
     } catch (error) {
-        throw new Error(`Error: documentStoreServices.insertIntoVectorStore - ${error}`)
+        throw new Error(`Error: documentStoreServices._insertIntoVectorStoreWorkerThread - ${error}`)
     }
 }
 

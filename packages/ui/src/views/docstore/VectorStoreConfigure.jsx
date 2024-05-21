@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid'
 
 // material-ui
 import { Stack, Grid, Box, Divider, Typography, IconButton } from '@mui/material'
-import { styled, useTheme } from '@mui/material/styles'
 import Button from '@mui/material/Button'
 
 // project imports
@@ -20,7 +19,6 @@ import nodesApi from '@/api/nodes'
 // Hooks
 import useApi from '@/hooks/useApi'
 import { useNavigate } from 'react-router-dom'
-import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // icons
@@ -39,25 +37,13 @@ import { baseURL } from '@/store/constant'
 
 // const
 
-const DividerRoot = styled('div')(({ theme }) => ({
-    width: '100%',
-    ...theme.typography.body2,
-    color: theme.palette.text.secondary,
-    '& > :not(style) ~ :not(style)': {
-        marginTop: theme.spacing(2)
-    }
-}))
-
 const VectorStoreConfigure = () => {
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
     const dispatch = useDispatch()
     useNotifier()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-    const { confirm } = useConfirm()
 
     const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
     const insertIntoVectorStoreApi = useApi(documentsApi.insertIntoVectorStore)
@@ -69,7 +55,6 @@ const VectorStoreConfigure = () => {
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    const [showDialog, setShowDialog] = useState(false)
     const [documentStore, setDocumentStore] = useState({})
     const [dialogProps, setDialogProps] = useState({})
 
@@ -229,6 +214,20 @@ const VectorStoreConfigure = () => {
             setLoading(true)
             const data = prepareConfigData()
             insertIntoVectorStoreApi.request(data)
+            setLoading(false)
+            enqueueSnackbar({
+                message: 'Docs submitted for Upsert. Redirecting to Document Store..',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            navigate('/document-stores/' + storeId)
         }
     }
 
