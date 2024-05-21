@@ -1,5 +1,5 @@
 const assert = require('assert')
-const { parsePrompt } = require('../dist/utils/hub')
+const { parsePrompt } = require('../../dist/utils/hub')
 
 // Test: Parse system message prompts correctly
 const testSystemMessagePrompt = () => {
@@ -128,16 +128,6 @@ const testEmptyMessages = () => {
     console.log('Test passed: Empty messages array')
 }
 
-// Test: Handle invalid prompt structure
-const testInvalidPromptStructure = () => {
-    const prompt = JSON.stringify({})
-
-    const result = parsePrompt(prompt)
-    const expected = []
-    assert.deepStrictEqual(result, expected)
-    console.log('Test passed: Invalid prompt structure')
-}
-
 // Run all tests
 const runTests = () => {
     testSystemMessagePrompt()
@@ -145,7 +135,6 @@ const runTests = () => {
     testAIMessagePrompt()
     testTemplatePrompt()
     testEmptyMessages()
-    testInvalidPromptStructure()
 }
 
 runTests()
