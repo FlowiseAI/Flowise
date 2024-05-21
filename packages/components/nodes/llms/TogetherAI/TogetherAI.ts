@@ -145,7 +145,7 @@ class TogetherAI_LLMs implements INode {
         const obj: TogetherAIInputs = {
             modelName,
             apiKey: togetherAiApiKey,
-            streaming: streaming ?? true
+            streaming: streaming ?? false
         }
 
         if (temperature) obj.temperature = parseFloat(temperature)
@@ -153,6 +153,7 @@ class TogetherAI_LLMs implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
         if (repeatPenalty) obj.repetitionPenalty = parseFloat(repeatPenalty)
+        if (streaming) obj.streaming = streaming
         if (stop) {
             obj.stop = stop.split(',')
         }
