@@ -4,8 +4,7 @@ import { Document } from '@langchain/core/documents'
 import { OpenSearchVectorStore } from '@langchain/community/vectorstores/opensearch'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses,getCredentialData,getCredentialParam } from '../../../src/utils'
-
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class OpenSearch_VectorStores implements INode {
     label: string
@@ -50,7 +49,6 @@ class OpenSearch_VectorStores implements INode {
                 name: 'embeddings',
                 type: 'Embeddings'
             },
-            
             {
                 label: 'Index Name',
                 name: 'indexName',
@@ -112,11 +110,11 @@ class OpenSearch_VectorStores implements INode {
         }
     }
 
-    async init(nodeData: INodeData,_:string,  options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)        
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const opensearchURL =  getCredentialParam("url", credentialData, nodeData)
-        
+        const opensearchURL = getCredentialParam('url', credentialData, nodeData)
+
         const indexName = nodeData.inputs?.indexName as string
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string

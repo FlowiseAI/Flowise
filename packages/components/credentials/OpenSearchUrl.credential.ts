@@ -17,7 +17,6 @@ class OpenSearchUrl implements INodeCredential {
                 name: 'url',
                 type: 'string'
             }
-
         ]
     }
 }
