@@ -21,7 +21,7 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
         this.name = 'chatGroq_LlamaIndex'
         this.version = 1.0
         this.type = 'ChatGroq'
-        this.icon = 'groq-round.png'
+        this.icon = 'groq.png'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Groq LLM specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(Groq)]
