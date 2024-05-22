@@ -1,5 +1,7 @@
 {
     "description": "Return response as a JSON structure as specified by a Zod schema",
+    "categories": "AdvancedStructuredOutputParser,ChatOpenAI,LLM Chain,Langchain",
+    "framework": "Langchain",
     "badge": "NEW",
     "nodes": [
         {
