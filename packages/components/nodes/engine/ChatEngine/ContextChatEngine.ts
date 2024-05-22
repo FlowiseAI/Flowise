@@ -71,6 +71,7 @@ class ContextChatEngine_LlamaIndex implements INode {
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
+        const prependMessages = options?.prependMessages
 
         const chatHistory = [] as ChatMessage[]
 
@@ -83,7 +84,7 @@ class ContextChatEngine_LlamaIndex implements INode {
 
         const chatEngine = new ContextChatEngine({ chatModel: model, retriever: vectorStoreRetriever })
 
-        const msgs = (await memory.getChatMessages(this.sessionId, false)) as IMessage[]
+        const msgs = (await memory.getChatMessages(this.sessionId, false, prependMessages)) as IMessage[]
         for (const message of msgs) {
             if (message.type === 'apiMessage') {
                 chatHistory.push({

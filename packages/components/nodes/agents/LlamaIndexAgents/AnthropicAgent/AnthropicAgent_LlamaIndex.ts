@@ -60,10 +60,12 @@ class AnthropicAgent_LlamaIndex_Agents implements INode {
         return null
     }
 
-    async run(nodeData: INodeData, input: string): Promise<string | ICommonObject> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const model = nodeData.inputs?.model as Anthropic
         const systemMessage = nodeData.inputs?.systemMessage as string
+        const prependMessages = options?.prependMessages
+
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
 
@@ -76,7 +78,7 @@ class AnthropicAgent_LlamaIndex_Agents implements INode {
             })
         }
 
-        const msgs = (await memory.getChatMessages(this.sessionId, false)) as IMessage[]
+        const msgs = (await memory.getChatMessages(this.sessionId, false, prependMessages)) as IMessage[]
         for (const message of msgs) {
             if (message.type === 'apiMessage') {
                 chatHistory.push({

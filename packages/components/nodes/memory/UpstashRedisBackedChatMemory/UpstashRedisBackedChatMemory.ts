@@ -4,7 +4,13 @@ import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { UpstashRedisChatMessageHistory } from '@langchain/community/stores/message/upstash_redis'
 import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, StoredMessage, BaseMessage } from '@langchain/core/messages'
 import { FlowiseMemory, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
-import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import {
+    convertBaseMessagetoIMessage,
+    getBaseClasses,
+    getCredentialData,
+    getCredentialParam,
+    mapChatMessageToBaseMessage
+} from '../../../src/utils'
 import { ICommonObject } from '../../../src/Interface'
 
 let redisClientSingleton: Redis
@@ -143,7 +149,11 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         this.sessionTTL = fields.sessionTTL
     }
 
-    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+    async getChatMessages(
+        overrideSessionId = '',
+        returnBaseMessages = false,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]> {
         if (!this.redisClient) return []
 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
@@ -151,6 +161,9 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const orderedMessages = rawStoredMessages.reverse()
         const previousMessages = orderedMessages.filter((x): x is StoredMessage => x.type !== undefined && x.data.content !== undefined)
         const baseMessages = previousMessages.map(mapStoredMessageToChatMessage)
+        if (prependMessages?.length) {
+            baseMessages.unshift(...mapChatMessageToBaseMessage(prependMessages))
+        }
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 

@@ -1,0 +1,768 @@
+{
+    "description": "Text to SQL query process using team of 3 agents: SQL Expert, SQL Reviewer, and SQL Executor",
+    "nodes": [
+        {
+            "id": "supervisor_0",
+            "position": {
+                "x": -275.4818449163403,
+                "y": 462.4424369159454
+            },
+            "type": "customNode",
+            "data": {
+                "id": "supervisor_0",
+                "label": "Supervisor",
+                "version": 1,
+                "name": "supervisor",
+                "type": "Supervisor",
+                "baseClasses": ["Supervisor"],
+                "category": "Multi Agents",
+                "inputParams": [
+                    {
+                        "label": "Supervisor Name",
+                        "name": "supervisorName",
+                        "type": "string",
+                        "placeholder": "Supervisor",
+                        "default": "Supervisor",
+                        "id": "supervisor_0-input-supervisorName-string"
+                    },
+                    {
+                        "label": "Supervisor Prompt",
+                        "name": "supervisorPrompt",
+                        "type": "string",
+                        "description": "Prompt must contains {team_members}",
+                        "rows": 4,
+                        "default": "You are a supervisor tasked with managing a conversation between the following workers: {team_members}.\nGiven the following user request, respond with the worker to act next.\nEach worker will perform a task and respond with their results and status.\nWhen finished, respond with FINISH.\nSelect strategically to minimize the number of steps taken.",
+                        "additionalParams": true,
+                        "id": "supervisor_0-input-supervisorPrompt-string"
+                    },
+                    {
+                        "label": "Recursion Limit",
+                        "name": "recursionLimit",
+                        "type": "number",
+                        "description": "Maximum number of times a call can recurse. If not provided, defaults to 100.",
+                        "default": 100,
+                        "additionalParams": true,
+                        "id": "supervisor_0-input-recursionLimit-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, GroqChat. Best result with GPT-4 model",
+                        "id": "supervisor_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "supervisor_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "supervisorName": "Supervisor",
+                    "supervisorPrompt": "You are a supervisor tasked with managing a conversation between the following workers: {team_members}.\nGiven the following user request, respond with the worker to act next.\nEach worker will perform a task and respond with their results and status.\nWhen finished, respond with FINISH.\nSelect strategically to minimize the number of steps taken.",
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "recursionLimit": 100,
+                    "inputModeration": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "supervisor_0-output-supervisor-Supervisor",
+                        "name": "supervisor",
+                        "label": "Supervisor",
+                        "description": "",
+                        "type": "Supervisor"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 431,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -275.4818449163403,
+                "y": 462.4424369159454
+            },
+            "dragging": false
+        },
+        {
+            "id": "worker_0",
+            "position": {
+                "x": 483.6310212673076,
+                "y": 304.6138109554939
+            },
+            "type": "customNode",
+            "data": {
+                "id": "worker_0",
+                "label": "Worker",
+                "version": 1,
+                "name": "worker",
+                "type": "Worker",
+                "baseClasses": ["Worker"],
+                "category": "Multi Agents",
+                "inputParams": [
+                    {
+                        "label": "Worker Name",
+                        "name": "workerName",
+                        "type": "string",
+                        "placeholder": "Worker",
+                        "id": "worker_0-input-workerName-string"
+                    },
+                    {
+                        "label": "Worker Prompt",
+                        "name": "workerPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "You are a research assistant who can search for up-to-date info using search engine.",
+                        "id": "worker_0-input-workerPrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "worker_0-input-promptValues-json"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "id": "worker_0-input-maxIterations-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "optional": true,
+                        "id": "worker_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Supervisor",
+                        "name": "supervisor",
+                        "type": "Supervisor",
+                        "id": "worker_0-input-supervisor-Supervisor"
+                    },
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "optional": true,
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat. If not specified, supervisor's model will be used",
+                        "id": "worker_0-input-model-BaseChatModel"
+                    }
+                ],
+                "inputs": {
+                    "workerName": "SQL Expert",
+                    "workerPrompt": "As an SQL Expert at {company}, you are a critical member of our data team, responsible for designing, optimizing, and maintaining our database systems. Your expertise in SQL and database management ensures that our data is accurate, accessible, and efficiently processed.\n\nYour goal is to develop and optimize complex SQL queries to answer the question.\n\nYou are given the following schema:\n{schema}\n\nYour task is to use the provided schema, and produce the SQL query needed to answer user question. Collaborate with SQL Reviewer and SQL Executor for feedback and review, ensuring that your SQL solutions is correct and follow best practices in database design and query optimization to enhance performance and reliability.\n\nThe output should be a an optimized SQL query. Ensure that your output only contains SQL query, nothing else. Remember, only output SQL query.",
+                    "tools": [],
+                    "supervisor": "{{supervisor_0.data.instance}}",
+                    "model": "",
+                    "promptValues": "{\"company\":\"Flowise Inc\",\"schema\":\"{{customFunction_0.data.instance}}\"}",
+                    "maxIterations": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "worker_0-output-worker-Worker",
+                        "name": "worker",
+                        "label": "Worker",
+                        "description": "",
+                        "type": "Worker"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 808,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 483.6310212673076,
+                "y": 304.6138109554939
+            },
+            "dragging": false
+        },
+        {
+            "id": "worker_1",
+            "position": {
+                "x": 1214.157684503848,
+                "y": 248.8294849061827
+            },
+            "type": "customNode",
+            "data": {
+                "id": "worker_1",
+                "label": "Worker",
+                "version": 1,
+                "name": "worker",
+                "type": "Worker",
+                "baseClasses": ["Worker"],
+                "category": "Multi Agents",
+                "inputParams": [
+                    {
+                        "label": "Worker Name",
+                        "name": "workerName",
+                        "type": "string",
+                        "placeholder": "Worker",
+                        "id": "worker_1-input-workerName-string"
+                    },
+                    {
+                        "label": "Worker Prompt",
+                        "name": "workerPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "You are a research assistant who can search for up-to-date info using search engine.",
+                        "id": "worker_1-input-workerPrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "worker_1-input-promptValues-json"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "id": "worker_1-input-maxIterations-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "optional": true,
+                        "id": "worker_1-input-tools-Tool"
+                    },
+                    {
+                        "label": "Supervisor",
+                        "name": "supervisor",
+                        "type": "Supervisor",
+                        "id": "worker_1-input-supervisor-Supervisor"
+                    },
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "optional": true,
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat. If not specified, supervisor's model will be used",
+                        "id": "worker_1-input-model-BaseChatModel"
+                    }
+                ],
+                "inputs": {
+                    "workerName": "SQL Executor",
+                    "workerPrompt": "As an SQL Executor at {company}, you must ensure the SQL query can be executed with no error.\n\nYou must use the execute_sql tool to execute the SQL query provided by SQL Expert and get the result. Verify the result is indeed correct and error-free. Collaborate with the SQL Expert and SQL Reviewer to make sure the SQL query is valid and successfully fetches back the right information.\n\nREMEMBER, always use the execute_sql tool!",
+                    "tools": ["{{customTool_0.data.instance}}"],
+                    "supervisor": "{{supervisor_0.data.instance}}",
+                    "model": "",
+                    "promptValues": "{\"company\":\"Flowise Inc\"}",
+                    "maxIterations": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "worker_1-output-worker-Worker",
+                        "name": "worker",
+                        "label": "Worker",
+                        "description": "",
+                        "type": "Worker"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 808,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1214.157684503848,
+                "y": 248.8294849061827
+            },
+            "dragging": false
+        },
+        {
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": -636.2452233568264,
+                "y": 233.06616199339652
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "version": 6,
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_0-input-modelName-asyncOptions"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-4o",
+                    "temperature": "0",
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "baseOptions": "",
+                    "allowImageUploads": "",
+                    "imageResolution": "low"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 669,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -636.2452233568264,
+                "y": 233.06616199339652
+            },
+            "dragging": false
+        },
+        {
+            "id": "customFunction_0",
+            "position": {
+                "x": 90.45254468977657,
+                "y": 626.487889256008
+            },
+            "type": "customNode",
+            "data": {
+                "id": "customFunction_0",
+                "label": "Custom JS Function",
+                "version": 1,
+                "name": "customFunction",
+                "type": "CustomFunction",
+                "baseClasses": ["CustomFunction", "Utilities"],
+                "category": "Utilities",
+                "description": "Execute custom javascript function",
+                "inputParams": [
+                    {
+                        "label": "Input Variables",
+                        "name": "functionInputVariables",
+                        "description": "Input variables can be used in the function with prefix $. For example: $var",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "customFunction_0-input-functionInputVariables-json"
+                    },
+                    {
+                        "label": "Function Name",
+                        "name": "functionName",
+                        "type": "string",
+                        "optional": true,
+                        "placeholder": "My Function",
+                        "id": "customFunction_0-input-functionName-string"
+                    },
+                    {
+                        "label": "Javascript Function",
+                        "name": "javascriptFunction",
+                        "type": "code",
+                        "id": "customFunction_0-input-javascriptFunction-code"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "functionInputVariables": "",
+                    "functionName": "",
+                    "javascriptFunction": "// Fetch schema info\nconst sqlSchema = `CREATE TABLE customers (\n  customerNumber int NOT NULL,\n  customerName varchar(50) NOT NULL,\n  contactLastName varchar(50) NOT NULL,\n  contactFirstName varchar(50) NOT NULL,\n  phone varchar(50) NOT NULL,\n  addressLine1 varchar(50) NOT NULL,\n  addressLine2 varchar(50) DEFAULT NULL,\n  city varchar(50) NOT NULL,\n  state varchar(50) DEFAULT NULL,\n  postalCode varchar(15) DEFAULT NULL,\n  country varchar(50) NOT NULL,\n  salesRepEmployeeNumber int DEFAULT NULL,\n  creditLimit decimal(10,2) DEFAULT NULL,\n)`\n\nreturn sqlSchema;"
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "description": "",
+                        "options": [
+                            {
+                                "id": "customFunction_0-output-output-string|number|boolean|json|array",
+                                "name": "output",
+                                "label": "Output",
+                                "description": "",
+                                "type": "string | number | boolean | json | array"
+                            },
+                            {
+                                "id": "customFunction_0-output-EndingNode-CustomFunction",
+                                "name": "EndingNode",
+                                "label": "Ending Node",
+                                "description": "",
+                                "type": "CustomFunction"
+                            }
+                        ],
+                        "default": "output"
+                    }
+                ],
+                "outputs": {
+                    "output": "output"
+                },
+                "selected": false
+            },
+            "width": 300,
+            "height": 669,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 90.45254468977657,
+                "y": 626.487889256008
+            },
+            "dragging": false
+        },
+        {
+            "id": "customTool_0",
+            "position": {
+                "x": 823.759726626879,
+                "y": 87.97240806811993
+            },
+            "type": "customNode",
+            "data": {
+                "id": "customTool_0",
+                "label": "Custom Tool",
+                "version": 1,
+                "name": "customTool",
+                "type": "CustomTool",
+                "baseClasses": ["CustomTool", "Tool", "StructuredTool", "Runnable"],
+                "category": "Tools",
+                "description": "Use custom tool you've created in Flowise within chatflow",
+                "inputParams": [
+                    {
+                        "label": "Select Tool",
+                        "name": "selectedTool",
+                        "type": "asyncOptions",
+                        "loadMethod": "listTools",
+                        "id": "customTool_0-input-selectedTool-asyncOptions"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "selectedTool": "4d723d69-e854-4351-90c0-6385ce908213"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+                        "name": "customTool",
+                        "label": "CustomTool",
+                        "description": "Use custom tool you've created in Flowise within chatflow",
+                        "type": "CustomTool | Tool | StructuredTool | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 285,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 823.759726626879,
+                "y": 87.97240806811993
+            },
+            "dragging": false
+        },
+        {
+            "id": "worker_2",
+            "position": {
+                "x": 1643.1366621404572,
+                "y": 253.12633995235484
+            },
+            "type": "customNode",
+            "data": {
+                "id": "worker_2",
+                "label": "Worker",
+                "version": 1,
+                "name": "worker",
+                "type": "Worker",
+                "baseClasses": ["Worker"],
+                "category": "Multi Agents",
+                "inputParams": [
+                    {
+                        "label": "Worker Name",
+                        "name": "workerName",
+                        "type": "string",
+                        "placeholder": "Worker",
+                        "id": "worker_2-input-workerName-string"
+                    },
+                    {
+                        "label": "Worker Prompt",
+                        "name": "workerPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "You are a research assistant who can search for up-to-date info using search engine.",
+                        "id": "worker_2-input-workerPrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "worker_2-input-promptValues-json"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "id": "worker_2-input-maxIterations-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "optional": true,
+                        "id": "worker_2-input-tools-Tool"
+                    },
+                    {
+                        "label": "Supervisor",
+                        "name": "supervisor",
+                        "type": "Supervisor",
+                        "id": "worker_2-input-supervisor-Supervisor"
+                    },
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "optional": true,
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat. If not specified, supervisor's model will be used",
+                        "id": "worker_2-input-model-BaseChatModel"
+                    }
+                ],
+                "inputs": {
+                    "workerName": "SQL Reviewer",
+                    "workerPrompt": "As an SQL Code Reviewer at {company}, you play a crucial role in ensuring the accuracy, efficiency, and reliability of our SQL queries and database systems. Your expertise in SQL and best practices in database management is essential for maintaining high standards in our data operations.\n\nYour goal is to thoroughly review and validate the SQL queries developed by the SQL Expert to ensure they meet our performance and accuracy standards. Check for potential issues such as syntax errors, performance bottlenecks, and logical inaccuracies. Collaborate with the SQL Expert and SQL Executor to provide constructive feedback and suggest improvements where necessary.\n\nThe output should be a detailed code review report that includes an assessment of each SQL query's accuracy, performance, and correctness. Provide actionable feedback and suggestions to enhance the quality of the SQL code, ensuring it supports our data-driven initiatives effectively.",
+                    "tools": [],
+                    "supervisor": "{{supervisor_0.data.instance}}",
+                    "model": "",
+                    "promptValues": "{\"company\":\"Flowise Inc\"}",
+                    "maxIterations": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "worker_2-output-worker-Worker",
+                        "name": "worker",
+                        "label": "Worker",
+                        "description": "",
+                        "type": "Worker"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 808,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1643.1366621404572,
+                "y": 253.12633995235484
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "supervisor_0",
+            "targetHandle": "supervisor_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-supervisor_0-supervisor_0-input-model-BaseChatModel"
+        },
+        {
+            "source": "customFunction_0",
+            "sourceHandle": "customFunction_0-output-output-string|number|boolean|json|array",
+            "target": "worker_0",
+            "targetHandle": "worker_0-input-promptValues-json",
+            "type": "buttonedge",
+            "id": "customFunction_0-customFunction_0-output-output-string|number|boolean|json|array-worker_0-worker_0-input-promptValues-json"
+        },
+        {
+            "source": "supervisor_0",
+            "sourceHandle": "supervisor_0-output-supervisor-Supervisor",
+            "target": "worker_0",
+            "targetHandle": "worker_0-input-supervisor-Supervisor",
+            "type": "buttonedge",
+            "id": "supervisor_0-supervisor_0-output-supervisor-Supervisor-worker_0-worker_0-input-supervisor-Supervisor"
+        },
+        {
+            "source": "supervisor_0",
+            "sourceHandle": "supervisor_0-output-supervisor-Supervisor",
+            "target": "worker_1",
+            "targetHandle": "worker_1-input-supervisor-Supervisor",
+            "type": "buttonedge",
+            "id": "supervisor_0-supervisor_0-output-supervisor-Supervisor-worker_1-worker_1-input-supervisor-Supervisor"
+        },
+        {
+            "source": "customTool_0",
+            "sourceHandle": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+            "target": "worker_1",
+            "targetHandle": "worker_1-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "customTool_0-customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable-worker_1-worker_1-input-tools-Tool"
+        },
+        {
+            "source": "supervisor_0",
+            "sourceHandle": "supervisor_0-output-supervisor-Supervisor",
+            "target": "worker_2",
+            "targetHandle": "worker_2-input-supervisor-Supervisor",
+            "type": "buttonedge",
+            "id": "supervisor_0-supervisor_0-output-supervisor-Supervisor-worker_2-worker_2-input-supervisor-Supervisor"
+        }
+    ]
+}

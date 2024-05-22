@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import logger from './logger'
+import { Server } from 'socket.io'
 import {
     IComponentCredentials,
     IComponentNodes,
@@ -267,9 +268,10 @@ export const getEndingNodes = (
                 endingNodeData &&
                 endingNodeData.category !== 'Chains' &&
                 endingNodeData.category !== 'Agents' &&
-                endingNodeData.category !== 'Engine'
+                endingNodeData.category !== 'Engine' &&
+                endingNodeData.category !== 'Multi Agents'
             ) {
-                error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent`)
+                error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent or Engine`)
                 continue
             }
         }
@@ -443,7 +445,10 @@ export const buildFlow = async (
     cachePool?: CachePool,
     isUpsert?: boolean,
     stopNodeId?: string,
-    uploads?: IFileUpload[]
+    uploads?: IFileUpload[],
+    baseURL?: string,
+    socketIO?: Server,
+    socketIOClientId?: string
 ) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -496,7 +501,10 @@ export const buildFlow = async (
                     databaseEntities,
                     cachePool,
                     dynamicVariables,
-                    uploads
+                    uploads,
+                    baseURL,
+                    socketIO,
+                    socketIOClientId
                 })
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
@@ -520,7 +528,10 @@ export const buildFlow = async (
                     cachePool,
                     isUpsert,
                     dynamicVariables,
-                    uploads
+                    uploads,
+                    baseURL,
+                    socketIO,
+                    socketIOClientId
                 })
 
                 // Save dynamic variables
@@ -1048,7 +1059,6 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
             }
         }
     }
-
     return configs
 }
 
@@ -1311,7 +1321,8 @@ export const getSessionChatHistory = async (
     componentNodes: IComponentNodes,
     appDataSource: DataSource,
     databaseEntities: IDatabaseEntity,
-    logger: any
+    logger: any,
+    prependMessages?: IMessage[]
 ): Promise<IMessage[]> => {
     const nodeInstanceFilePath = componentNodes[memoryNode.data.name].filePath as string
     const nodeModule = await import(nodeInstanceFilePath)
@@ -1329,7 +1340,7 @@ export const getSessionChatHistory = async (
         logger
     })
 
-    return (await initializedInstance.getChatMessages(sessionId)) as IMessage[]
+    return (await initializedInstance.getChatMessages(sessionId, undefined, prependMessages)) as IMessage[]
 }
 
 /**

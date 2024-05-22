@@ -1,6 +1,7 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { DataSource } from 'typeorm'
 import { Document } from '@langchain/core/documents'
+import { handleEscapeCharacters } from '../../../src'
 
 class DocStore_DocumentLoaders implements INode {
     label: string
@@ -83,12 +84,22 @@ class DocStore_DocumentLoaders implements INode {
         const chunks = await appDataSource
             .getRepository(databaseEntities['DocumentStoreFileChunk'])
             .find({ where: { storeId: selectedStore } })
+        const output = nodeData.outputs?.output as string
 
         const finalDocs = []
         for (const chunk of chunks) {
             finalDocs.push(new Document({ pageContent: chunk.pageContent, metadata: JSON.parse(chunk.metadata) }))
         }
-        return finalDocs
+
+        if (output === 'document') {
+            return finalDocs
+        } else {
+            let finaltext = ''
+            for (const doc of finalDocs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 

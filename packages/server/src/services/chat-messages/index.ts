@@ -1,4 +1,4 @@
-import { FindOptionsWhere } from 'typeorm'
+import { DeleteResult, FindOptionsWhere } from 'typeorm'
 import { StatusCodes } from 'http-status-codes'
 import { chatType, IChatMessage } from '../../Interface'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
@@ -36,7 +36,7 @@ const getAllChatMessages = async (
     endDate?: string,
     messageId?: string,
     feedback?: boolean
-): Promise<any> => {
+): Promise<ChatMessage[]> => {
     try {
         const dbResponse = await utilGetChatMessage(
             chatflowId,
@@ -71,7 +71,7 @@ const getAllInternalChatMessages = async (
     endDate?: string,
     messageId?: string,
     feedback?: boolean
-): Promise<any> => {
+): Promise<ChatMessage[]> => {
     try {
         const dbResponse = await utilGetChatMessage(
             chatflowId,
@@ -94,7 +94,11 @@ const getAllInternalChatMessages = async (
     }
 }
 
-const removeAllChatMessages = async (chatId: string, chatflowid: string, deleteOptions: FindOptionsWhere<ChatMessage>): Promise<any> => {
+const removeAllChatMessages = async (
+    chatId: string,
+    chatflowid: string,
+    deleteOptions: FindOptionsWhere<ChatMessage>
+): Promise<DeleteResult> => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -120,9 +124,32 @@ const removeAllChatMessages = async (chatId: string, chatflowid: string, deleteO
     }
 }
 
+const abortChatMessage = async (chatId: string, chatflowid: string) => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        const endingNodeData = appServer.chatflowPool.activeChatflows[`${chatflowid}_${chatId}`]?.endingNodeData as any
+
+        if (endingNodeData && endingNodeData.signal) {
+            try {
+                endingNodeData.signal.abort()
+                await appServer.chatflowPool.remove(`${chatflowid}_${chatId}`)
+            } catch (e) {
+                logger.error(`[server]: Error aborting chat message for ${chatflowid}, chatId ${chatId}: ${e}`)
+            }
+        }
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatMessagesService.abortChatMessage - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     createChatMessage,
     getAllChatMessages,
     getAllInternalChatMessages,
-    removeAllChatMessages
+    removeAllChatMessages,
+    abortChatMessage
 }
