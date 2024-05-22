@@ -1,9 +1,9 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Anthropic } from 'llamaindex'
+import { ALL_AVAILABLE_MISTRAL_MODELS, MistralAI } from 'llamaindex'
 
-class ChatAnthropic_LlamaIndex_ChatModels implements INode {
+class ChatMistral_LlamaIndex_ChatModels implements INode {
     label: string
     name: string
     version: number
@@ -17,20 +17,20 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatAnthropic'
-        this.name = 'chatAnthropic_LlamaIndex'
-        this.version = 3.0
-        this.type = 'ChatAnthropic'
-        this.icon = 'Anthropic.svg'
+        this.label = 'ChatMistral'
+        this.name = 'chatMistral_LlamaIndex'
+        this.version = 1.0
+        this.type = 'ChatMistral'
+        this.icon = 'MistralAI.svg'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around ChatAnthropic LLM specific for LlamaIndex'
-        this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(Anthropic)]
+        this.description = 'Wrapper around ChatMistral LLM specific for LlamaIndex'
+        this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(MistralAI)]
         this.tags = ['LlamaIndex']
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['anthropicApi']
+            credentialNames: ['mistralAIApi']
         }
         this.inputs = [
             {
@@ -38,7 +38,7 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'claude-3-haiku'
+                default: 'mistral-tiny'
             },
             {
                 label: 'Temperature',
@@ -70,31 +70,31 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
     //@ts-ignore
     loadMethods = {
         async listModels(): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.CHAT, 'chatAnthropic_LlamaIndex')
+            return await getModels(MODEL_TYPE.CHAT, 'chatMistral_LlamaIndex')
         }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as 'claude-3-opus' | 'claude-3-sonnet' | 'claude-2.1' | 'claude-instant-1.2'
+        const modelName = nodeData.inputs?.modelName as keyof typeof ALL_AVAILABLE_MISTRAL_MODELS
         const maxTokensToSample = nodeData.inputs?.maxTokensToSample as string
         const topP = nodeData.inputs?.topP as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const anthropicApiKey = getCredentialParam('anthropicApiKey', credentialData, nodeData)
+        const apiKey = getCredentialParam('mistralAIAPIKey', credentialData, nodeData)
 
-        const obj: Partial<Anthropic> = {
+        const obj: Partial<MistralAI> = {
             temperature: parseFloat(temperature),
             model: modelName,
-            apiKey: anthropicApiKey
+            apiKey: apiKey
         }
 
         if (maxTokensToSample) obj.maxTokens = parseInt(maxTokensToSample, 10)
         if (topP) obj.topP = parseFloat(topP)
 
-        const model = new Anthropic(obj)
+        const model = new MistralAI(obj)
         return model
     }
 }
 
-module.exports = { nodeClass: ChatAnthropic_LlamaIndex_ChatModels }
+module.exports = { nodeClass: ChatMistral_LlamaIndex_ChatModels }

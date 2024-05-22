@@ -1068,12 +1068,16 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'chatAnthropic',
             'chatAnthropic_LlamaIndex',
             'chatOllama',
+            'chatOllama_LlamaIndex',
             'awsChatBedrock',
             'chatMistralAI',
+            'chatMistral_LlamaIndex',
             'groqChat',
+            'chatGroq_LlamaIndex',
             'chatCohere',
             'chatGoogleGenerativeAI',
-            'chatTogetherAI'
+            'chatTogetherAI',
+            'chatTogetherAI_LlamaIndex'
         ],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
@@ -1102,7 +1106,8 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'airtableAgent',
             'conversationalRetrievalAgent',
             'openAIToolAgent',
-            'toolAgent'
+            'toolAgent',
+            'openAIToolAgentLlamaIndex'
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
 

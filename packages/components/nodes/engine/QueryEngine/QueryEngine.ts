@@ -6,9 +6,9 @@ import {
     TreeSummarize,
     Refine,
     SimpleResponseBuilder,
-    BaseNode,
-    Metadata, NodeWithScore
-} from "llamaindex";
+    Metadata,
+    NodeWithScore
+} from 'llamaindex'
 import { reformatSourceDocuments } from '../EngineUtils'
 
 class QueryEngine_LlamaIndex implements INode {

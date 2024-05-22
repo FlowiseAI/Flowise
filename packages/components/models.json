@@ -505,6 +505,10 @@
             "name": "chatOpenAI_LlamaIndex",
             "models": [
                 {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o"
+                },
+                {
                     "label": "gpt-4",
                     "name": "gpt-4"
                 },
@@ -620,6 +624,23 @@
                 {
                     "label": "mistral-large-2402",
                     "name": "mistral-large-2402"
+                }
+            ]
+        },
+        {
+            "name": "chatMistral_LlamaIndex",
+            "models": [
+                {
+                    "label": "mistral-tiny",
+                    "name": "mistral-tiny"
+                },
+                {
+                    "label": "mistral-small",
+                    "name": "mistral-small"
+                },
+                {
+                    "label": "mistral-medium",
+                    "name": "mistral-medium"
                 }
             ]
         }

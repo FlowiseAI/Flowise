@@ -1,5 +1,5 @@
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { BaseNode, Metadata, BaseRetriever, LLM, ContextChatEngine, ChatMessage, NodeWithScore } from "llamaindex";
+import { Metadata, BaseRetriever, LLM, ContextChatEngine, ChatMessage, NodeWithScore } from 'llamaindex'
 import { reformatSourceDocuments } from '../EngineUtils'
 
 class ContextChatEngine_LlamaIndex implements INode {
