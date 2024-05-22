@@ -245,20 +245,28 @@
                     "name": "gpt-4"
                 },
                 {
+                    "label": "gpt-4-turbo",
+                    "name": "gpt-4-turbo"
+                },
+                {
                     "label": "gpt-4-32k",
                     "name": "gpt-4-32k"
                 },
                 {
-                    "label": "gpt-35-turbo",
-                    "name": "gpt-35-turbo"
+                    "label": "gpt-3.5-turbo",
+                    "name": "gpt-3.5-turbo"
                 },
                 {
-                    "label": "gpt-35-turbo-16k",
-                    "name": "gpt-35-turbo-16k"
+                    "label": "gpt-3.5-turbo-16k",
+                    "name": "gpt-3.5-turbo-16k"
                 },
                 {
                     "label": "gpt-4-vision-preview",
                     "name": "gpt-4-vision-preview"
+                },
+                {
+                    "label": "gpt-4-1106-preview",
+                    "name": "gpt-4-1106-preview"
                 }
             ]
         },
@@ -505,6 +513,10 @@
             "name": "chatOpenAI_LlamaIndex",
             "models": [
                 {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o"
+                },
+                {
                     "label": "gpt-4",
                     "name": "gpt-4"
                 },
@@ -620,6 +632,23 @@
                 {
                     "label": "mistral-large-2402",
                     "name": "mistral-large-2402"
+                }
+            ]
+        },
+        {
+            "name": "chatMistral_LlamaIndex",
+            "models": [
+                {
+                    "label": "mistral-tiny",
+                    "name": "mistral-tiny"
+                },
+                {
+                    "label": "mistral-small",
+                    "name": "mistral-small"
+                },
+                {
+                    "label": "mistral-medium",
+                    "name": "mistral-medium"
                 }
             ]
         }

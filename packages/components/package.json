@@ -83,7 +83,7 @@
         "langfuse-langchain": "^3.3.4",
         "langsmith": "0.1.6",
         "linkifyjs": "^4.1.1",
-        "llamaindex": "^0.2.1",
+        "llamaindex": "^0.3.13",
         "lodash": "^4.17.21",
         "lunary": "^0.6.16",
         "mammoth": "^1.5.1",
