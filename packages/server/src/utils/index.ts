@@ -1075,7 +1075,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'chatGoogleGenerativeAI',
             'chatTogetherAI'
         ],
-        LLMs: ['azureOpenAI', 'openAI', 'ollama']
+        LLMs: ['azureOpenAI', 'openAI', 'ollama', 'togetherAI']
     }
 
     let isChatOrLLMsExist = false
