@@ -135,6 +135,18 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                     avatar={item.chip.avatar && <Avatar>{item.chip.avatar}</Avatar>}
                 />
             )}
+            {item.isBeta && (
+                <Chip
+                    sx={{
+                        width: 'max-content',
+                        fontWeight: 700,
+                        fontSize: '0.65rem',
+                        background: theme.palette.teal.main,
+                        color: 'white'
+                    }}
+                    label={'BETA'}
+                />
+            )}
         </ListItemButton>
     )
 }

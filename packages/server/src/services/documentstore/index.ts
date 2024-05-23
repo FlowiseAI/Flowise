@@ -2,7 +2,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { DocumentStore } from '../../database/entities/DocumentStore'
 // @ts-ignore
 import {
-    addFileToStorage,
+    addSingleFileToStorage,
     getFileFromStorage,
     ICommonObject,
     IDocument,
@@ -343,7 +343,7 @@ const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore) => 
     if (mimePrefix) {
         mime = mimePrefix.split(';')[0].split(':')[1]
     }
-    await addFileToStorage(mime, bf, filename, DOCUMENT_STORE_BASE_FOLDER, entity.id)
+    await addSingleFileToStorage(mime, bf, filename, DOCUMENT_STORE_BASE_FOLDER, entity.id)
     return {
         id: uuidv4(),
         name: filename,
