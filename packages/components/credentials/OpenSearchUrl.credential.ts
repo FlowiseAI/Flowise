@@ -14,7 +14,7 @@ class OpenSearchUrl implements INodeCredential {
         this.inputs = [
             {
                 label: 'OpenSearch Url',
-                name: 'url',
+                name: 'openSearchUrl',
                 type: 'string'
             }
         ]
