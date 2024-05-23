@@ -140,8 +140,8 @@ export class App {
                 '/api/v1/ip'
             ]
             this.app.use((req, res, next) => {
-                if (req.url.includes('/api/v1/')) {
-                    whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
+                if (/\/api\/v1\//i.test(req.url)) {
+                    whitelistURLs.some((url) => new RegExp(url, 'i').test(req.url)) ? next() : basicAuthMiddleware(req, res, next)
                 } else next()
             })
         }
