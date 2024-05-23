@@ -23,7 +23,7 @@ class OpenSearch_VectorStores implements INode {
     constructor() {
         this.label = 'OpenSearch'
         this.name = 'openSearch'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'OpenSearch'
         this.icon = 'opensearch.svg'
         this.category = 'Vector Stores'
@@ -80,11 +80,13 @@ class OpenSearch_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData): Promise<Partial<IndexingResult>> {
+        async upsert(nodeData: INodeData, _: string, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
-            const opensearchURL = nodeData.inputs?.opensearchURL as string
             const indexName = nodeData.inputs?.indexName as string
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const opensearchURL = getCredentialParam('openSearchUrl', credentialData, nodeData)
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
             const finalDocs = []
@@ -111,14 +113,14 @@ class OpenSearch_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const opensearchURL = getCredentialParam('url', credentialData, nodeData)
-
         const indexName = nodeData.inputs?.indexName as string
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const opensearchURL = getCredentialParam('openSearchUrl', credentialData, nodeData)
 
         const client = new Client({
             nodes: [opensearchURL]
