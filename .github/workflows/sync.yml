@@ -1,0 +1,33 @@
+name: Sync with upstream repository
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 毎日0時に実行されます。
+  workflow_dispatch: # 手動でトリガーするためのオプション
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+        with:
+          repository: raisex-llc/Flowise
+          ref: main
+
+      - name: Set up Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+      
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/FlowiseAI/Flowise.git
+          git fetch upstream
+
+      - name: Sync with upstream main branch
+        run: |
+          git checkout main
+          git merge upstream/main
+          git push origin main
