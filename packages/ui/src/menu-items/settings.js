@@ -35,7 +35,7 @@ const settings = {
         },
         {
             id: 'viewUpsertHistory',
-            title: 'Upsert History',
+            title: 'Вложенная история',
             type: 'item',
             url: '',
             icon: icons.IconDatabaseExport

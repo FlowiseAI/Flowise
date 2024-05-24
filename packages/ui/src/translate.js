@@ -636,6 +636,8 @@ export const translationObject = {
         'Агент, использующий логику ReAct для принятия решения о действиях, оптимизированный для использования с LLMs',
     'An agent that uses OpenAI Assistant API to pick the tool and args to call':
         'Агент, который использует API OpenAI Assistant для выбора инструмента и аргументов для вызова',
+    'Agent that uses OpenAI Function Calling to pick the tools and args to call using LlamaIndex':
+        'Агент, который использует вызов функций OpenAI для выбора инструментов и аргументов для вызова с помощью LlamaIndex.',
     'An agent that uses Function Calling to pick the tool and args to call':
         'Агент, который использует вызов функций для выбора инструмента и аргументов для вызова',
     'Cache generated Embeddings in memory to avoid needing to recompute them.':

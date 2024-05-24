@@ -67,7 +67,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             setViewMessagesDialogOpen(true)
         } else if (setting === 'viewUpsertHistory') {
             setUpsertHistoryDialogProps({
-                title: 'View Upsert History',
+                title: 'Просмотр вложенная история',
                 chatflow: chatflow
             })
             setUpsertHistoryDialogOpen(true)

@@ -197,7 +197,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                                 fontWeight: 200
                                                             }}
                                                         >
-                                                            + {images[row.id].length - 5} More
+                                                            + {images[row.id].length - 5} Больше
                                                         </Typography>
                                                     )}
                                                 </Box>
