@@ -32,7 +32,7 @@ import DeleteConfirmDialog from './DeleteConfirmDialog'
 import AssistantVectorStoreDialog from './AssistantVectorStoreDialog'
 
 // Icons
-import { IconX, IconPlus } from '@tabler/icons'
+import { IconX, IconPlus } from '@tabler/icons-react'
 
 // API
 import assistantsApi from '@/api/assistants'
@@ -46,6 +46,10 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { maxScroll } from '@/store/constant'
 
 const assistantAvailableModels = [
+    {
+        label: 'gpt-4o',
+        name: 'gpt-4o'
+    },
     {
         label: 'gpt-4-turbo',
         name: 'gpt-4-turbo'
@@ -69,6 +73,10 @@ const assistantAvailableModels = [
     {
         label: 'gpt-3.5-turbo',
         name: 'gpt-3.5-turbo'
+    },
+    {
+        label: 'gpt-3.5-turbo-0125',
+        name: 'gpt-3.5-turbo-0125'
     },
     {
         label: 'gpt-3.5-turbo-1106',

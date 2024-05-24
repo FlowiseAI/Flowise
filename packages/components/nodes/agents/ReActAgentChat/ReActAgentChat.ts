@@ -80,6 +80,7 @@ class ReActAgentChat_Agents implements INode {
         const model = nodeData.inputs?.model as BaseChatModel
         let tools = nodeData.inputs?.tools as Tool[]
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const prependMessages = options?.prependMessages
 
         if (moderations && moderations.length > 0) {
             try {
@@ -134,7 +135,7 @@ class ReActAgentChat_Agents implements INode {
 
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        const chatHistory = ((await memory.getChatMessages(this.sessionId, false)) as IMessage[]) ?? []
+        const chatHistory = ((await memory.getChatMessages(this.sessionId, false, prependMessages)) as IMessage[]) ?? []
         const chatHistoryString = chatHistory.map((hist) => hist.message).join('\\n')
 
         const result = await executor.invoke({ input, chat_history: chatHistoryString }, { callbacks })

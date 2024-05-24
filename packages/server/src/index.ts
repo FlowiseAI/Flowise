@@ -5,11 +5,10 @@ import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
-import logger from './utils/logger'
-import { expressRequestLogger } from './utils/logger'
 import { DataSource } from 'typeorm'
 import { IChatFlow } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
+import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
@@ -44,45 +43,44 @@ export class App {
 
     async initDatabase() {
         // Initialize database
-        this.AppDataSource.initialize()
-            .then(async () => {
-                logger.info('📦 [server]: Data Source is initializing...')
+        try {
+            await this.AppDataSource.initialize()
+            logger.info('📦 [server]: Data Source is initializing...')
 
-                // Run Migrations Scripts
-                await this.AppDataSource.runMigrations({ transaction: 'each' })
+            // Run Migrations Scripts
+            await this.AppDataSource.runMigrations({ transaction: 'each' })
 
-                // Initialize nodes pool
-                this.nodesPool = new NodesPool()
-                await this.nodesPool.initialize()
+            // Initialize nodes pool
+            this.nodesPool = new NodesPool()
+            await this.nodesPool.initialize()
 
-                // Initialize chatflow pool
-                this.chatflowPool = new ChatflowPool()
+            // Initialize chatflow pool
+            this.chatflowPool = new ChatflowPool()
 
-                // Initialize API keys
-                await getAPIKeys()
+            // Initialize API keys
+            await getAPIKeys()
 
-                // Initialize encryption key
-                await getEncryptionKey()
+            // Initialize encryption key
+            await getEncryptionKey()
 
-                // Initialize Rate Limit
-                const AllChatFlow: IChatFlow[] = await getAllChatFlow()
-                await initializeRateLimiter(AllChatFlow)
+            // Initialize Rate Limit
+            const AllChatFlow: IChatFlow[] = await getAllChatFlow()
+            await initializeRateLimiter(AllChatFlow)
 
-                // Initialize cache pool
-                this.cachePool = new CachePool()
+            // Initialize cache pool
+            this.cachePool = new CachePool()
 
-                // Initialize telemetry
-                this.telemetry = new Telemetry()
-                logger.info('📦 [server]: Data Source has been initialized!')
-            })
-            .catch((err) => {
-                logger.error('❌ [server]: Error during Data Source initialization:', err)
-            })
+            // Initialize telemetry
+            this.telemetry = new Telemetry()
+            logger.info('📦 [server]: Data Source has been initialized!')
+        } catch (error) {
+            logger.error('❌ [server]: Error during Data Source initialization:', error)
+        }
     }
 
     async config(socketIO?: Server) {
         // Limit is needed to allow sending/receiving base64 encoded string
-        const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT ?? '50mb'
+        const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))
         this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
         if (process.env.NUMBER_OF_PROXIES && parseInt(process.env.NUMBER_OF_PROXIES) > 0)
@@ -142,8 +140,8 @@ export class App {
                 '/api/v1/ip'
             ]
             this.app.use((req, res, next) => {
-                if (req.url.includes('/api/v1/')) {
-                    whitelistURLs.some((url) => req.url.includes(url)) ? next() : basicAuthMiddleware(req, res, next)
+                if (/\/api\/v1\//i.test(req.url)) {
+                    whitelistURLs.some((url) => new RegExp(url, 'i').test(req.url)) ? next() : basicAuthMiddleware(req, res, next)
                 } else next()
             })
         }

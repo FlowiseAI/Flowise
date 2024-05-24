@@ -8,7 +8,7 @@ import { useTheme, styled } from '@mui/material/styles'
 import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material'
 import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons'
+import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons-react'
 
 // project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
@@ -109,18 +109,27 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
         data.inputs.selectedLinks = links
     }
 
+    const getJSONValue = (templateValue) => {
+        if (!templateValue) return ''
+        const obj = {}
+        const inputVariables = getInputVariables(templateValue)
+        for (const inputVariable of inputVariables) {
+            obj[inputVariable] = ''
+        }
+        if (Object.keys(obj).length) return JSON.stringify(obj)
+        return ''
+    }
+
     const onEditJSONClicked = (value, inputParam) => {
         // Preset values if the field is format prompt values
         let inputValue = value
         if (inputParam.name === 'promptValues' && !value) {
-            const obj = {}
             const templateValue =
-                (data.inputs['template'] ?? '') + (data.inputs['systemMessagePrompt'] ?? '') + (data.inputs['humanMessagePrompt'] ?? '')
-            const inputVariables = getInputVariables(templateValue)
-            for (const inputVariable of inputVariables) {
-                obj[inputVariable] = ''
-            }
-            if (Object.keys(obj).length) inputValue = JSON.stringify(obj)
+                (data.inputs['template'] ?? '') +
+                (data.inputs['systemMessagePrompt'] ?? '') +
+                (data.inputs['humanMessagePrompt'] ?? '') +
+                (data.inputs['workerPrompt'] ?? '')
+            inputValue = getJSONValue(templateValue)
         }
         const dialogProp = {
             value: inputValue,
@@ -386,7 +395,12 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                     <JsonEditorInput
                                         disabled={disabled}
                                         onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                        value={
+                                            data.inputs[inputParam.name] ||
+                                            inputParam.default ||
+                                            getJSONValue(data.inputs['workerPrompt']) ||
+                                            ''
+                                        }
                                         isDarkMode={customization.isDarkMode}
                                     />
                                 )}

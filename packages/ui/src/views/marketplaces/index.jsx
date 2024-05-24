@@ -18,7 +18,7 @@ import {
     Skeleton
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconLayoutGrid, IconList } from '@tabler/icons'
+import { IconLayoutGrid, IconList } from '@tabler/icons-react'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -63,7 +63,7 @@ TabPanel.propTypes = {
 }
 
 const badges = ['POPULAR', 'NEW']
-const types = ['Chatflow', 'Tool']
+const types = ['Chatflow', 'Agentflow', 'Tool']
 const framework = ['Langchain', 'LlamaIndex']
 const MenuProps = {
     PaperProps: {
@@ -413,7 +413,7 @@ const Marketplace = () => {
                                                             badgeContent={data.badge}
                                                             color={data.badge === 'POPULAR' ? 'primary' : 'error'}
                                                         >
-                                                            {data.type === 'Chatflow' && (
+                                                            {(data.type === 'Chatflow' || data.type === 'Agentflow') && (
                                                                 <ItemCard
                                                                     onClick={() => goToCanvas(data)}
                                                                     data={data}
@@ -425,7 +425,7 @@ const Marketplace = () => {
                                                             )}
                                                         </Badge>
                                                     )}
-                                                    {!data.badge && data.type === 'Chatflow' && (
+                                                    {!data.badge && (data.type === 'Chatflow' || data.type === 'Agentflow') && (
                                                         <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                                                     )}
                                                     {!data.badge && data.type === 'Tool' && (

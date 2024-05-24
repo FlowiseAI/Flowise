@@ -23,7 +23,7 @@ import {
     OutlinedInput
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconFileExport, IconSearch } from '@tabler/icons'
+import { IconFileExport, IconSearch } from '@tabler/icons-react'
 import leadsEmptySVG from '@/assets/images/leads_empty.svg'
 
 // store

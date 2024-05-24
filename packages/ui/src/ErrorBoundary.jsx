@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 
 import { Box, Card, IconButton, Stack, Typography, useTheme } from '@mui/material'
-import { IconCopy } from '@tabler/icons'
+import { IconCopy } from '@tabler/icons-react'
 
 const ErrorBoundary = ({ error }) => {
     const theme = useTheme()

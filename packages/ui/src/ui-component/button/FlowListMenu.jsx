@@ -17,7 +17,7 @@ import VpnLockOutlinedIcon from '@mui/icons-material/VpnLockOutlined'
 import MicNoneOutlinedIcon from '@mui/icons-material/MicNoneOutlined'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 import chatflowsApi from '@/api/chatflows'
 
@@ -72,7 +72,7 @@ const StyledMenu = styled((props) => (
     }
 }))
 
-export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
+export default function FlowListMenu({ chatflow, isAgentCanvas, setError, updateFlowsApi }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -94,6 +94,8 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
     const [allowedDomainsDialogProps, setAllowedDomainsDialogProps] = useState({})
     const [speechToTextDialogOpen, setSpeechToTextDialogOpen] = useState(false)
     const [speechToTextDialogProps, setSpeechToTextDialogProps] = useState({})
+
+    const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget)
@@ -213,7 +215,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
         setAnchorEl(null)
         const confirmPayload = {
             title: `Delete`,
-            description: `Delete chatflow ${chatflow.name}?`,
+            description: `Delete ${title} ${chatflow.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }
@@ -246,7 +248,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
         setAnchorEl(null)
         try {
             localStorage.setItem('duplicatedFlowData', chatflow.flowData)
-            window.open(`${uiBaseURL}/canvas`, '_blank')
+            window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
         } catch (e) {
             console.error(e)
         }
@@ -259,7 +261,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
             let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
             let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
-            let exportFileDefaultName = `${chatflow.name} Chatflow.json`
+            let exportFileDefaultName = `${chatflow.name} ${title}.json`
 
             let linkElement = document.createElement('a')
             linkElement.setAttribute('href', dataUri)
@@ -334,7 +336,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
-                    title: `Rename Chatflow`,
+                    title: `Rename ${title}`,
                     confirmButtonName: 'Rename',
                     cancelButtonName: 'Cancel'
                 }}
@@ -373,6 +375,7 @@ export default function FlowListMenu({ chatflow, setError, updateFlowsApi }) {
 
 FlowListMenu.propTypes = {
     chatflow: PropTypes.object,
+    isAgentCanvas: PropTypes.bool,
     setError: PropTypes.func,
     updateFlowsApi: PropTypes.object
 }

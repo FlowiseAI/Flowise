@@ -195,7 +195,7 @@ export class CustomChainHandler extends BaseCallbackHandler {
             Callback Order is "Chain Start -> Chain End" for cached responses.
          */
         if (this.cachedResponse && parentRunId === undefined) {
-            const cachedValue = outputs.text ?? outputs.response ?? outputs.output ?? outputs.output_text
+            const cachedValue = outputs.text || outputs.response || outputs.output || outputs.output_text
             //split at whitespace, and keep the whitespace. This is to preserve the original formatting.
             const result = cachedValue.split(/(\s+)/)
             result.forEach((token: string, index: number) => {
