@@ -14,16 +14,25 @@ import { ChainValues } from '@langchain/core/utils/types'
 import { AgentAction } from '@langchain/core/agents'
 import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 
-import { getCredentialData, getCredentialParam } from './utils'
+import { getCredentialData, getCredentialParam, getEnvironmentVariable } from './utils'
 import { ICommonObject, INodeData } from './Interface'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
 }
 
+function tryGetJsonSpaces() {
+    try {
+        return parseInt(getEnvironmentVariable('LOG_JSON_SPACES') ?? '2')
+    } catch (err) {
+        return 2
+    }
+}
+
 function tryJsonStringify(obj: unknown, fallback: string) {
     try {
-        return JSON.stringify(obj, null, 2)
+        var spaces = tryGetJsonSpaces()
+        return JSON.stringify(obj, null, spaces)
     } catch (err) {
         return fallback
     }
@@ -49,6 +58,7 @@ export class ConsoleCallbackHandler extends BaseTracer {
     constructor(logger: Logger) {
         super()
         this.logger = logger
+        logger.level = getEnvironmentVariable('LOG_LEVEL') ?? 'info'
     }
 
     // utility methods
