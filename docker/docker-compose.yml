@@ -33,8 +33,8 @@ services:
         ports:
             - '${PORT}:${PORT}'
         volumes:
-            - ~/.flowise:/root/.flowises
-        command: /bin/sh -c "sleep 3; mkdir -p /root/.flowise/logs; flowise start"
+            - ~/.flowise:/root/.flowise
+        command: /bin/sh -c "sleep 3; flowise start"
         networks:
             - flowise_net
 
