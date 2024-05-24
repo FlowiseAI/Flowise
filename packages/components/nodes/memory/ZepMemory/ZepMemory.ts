@@ -1,5 +1,5 @@
 import { ZepMemory, ZepMemoryInput } from '@langchain/community/memory/zep'
-import { BaseMessage } from '@langchain/core/messages'
+import { AIMessage, BaseMessage, HumanMessage, SystemMessage, getBufferString } from '@langchain/core/messages'
 import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
 import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType, ICommonObject } from '../../../src/Interface'
 import {
@@ -9,6 +9,7 @@ import {
     getCredentialParam,
     mapChatMessageToBaseMessage
 } from '../../../src/utils'
+import { Memory, NotFoundError } from '@getzep/zep-js'
 
 class ZepMemory_Memory implements INode {
     label: string
@@ -25,7 +26,7 @@ class ZepMemory_Memory implements INode {
     constructor() {
         this.label = 'Zep Memory - Open Source'
         this.name = 'ZepMemory'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'ZepMemory'
         this.icon = 'zep.svg'
         this.category = 'Memory'
@@ -69,6 +70,7 @@ class ZepMemory_Memory implements INode {
                 name: 'aiPrefix',
                 type: 'string',
                 default: 'ai',
+                description: 'This will be the "role" / "name" of the AI in the memory.',
                 additionalParams: true
             },
             {
@@ -76,6 +78,7 @@ class ZepMemory_Memory implements INode {
                 name: 'humanPrefix',
                 type: 'string',
                 default: 'human',
+                description: 'This will be the "role" / "name" of the human user in the memory.',
                 additionalParams: true
             },
             {
@@ -150,7 +153,50 @@ class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
         if (overrideSessionId) {
             this.sessionId = overrideSessionId
         }
-        return super.loadMemoryVariables({ ...values, lastN: this.lastN })
+        // (raffareis) Pulled this straight from Base class, just changed the if (role === this.aiPrefix) check because it threw an exception when there were multiple names in the same session. https://github.com/langchain-ai/langchainjs/blob/main/libs/langchain-community/src/memory/zep.ts
+        const zepClient = await this.zepClientPromise
+        if (!zepClient) {
+            throw new Error('ZepClient not initialized')
+        }
+
+        const lastN = values.lastN ?? undefined
+
+        let memory: Memory | null = null
+        try {
+            memory = await zepClient.memory.getMemory(this.sessionId, lastN)
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                const result = this.returnMessages ? { [this.memoryKey]: [] } : { [this.memoryKey]: '' }
+                return result
+            } else {
+                throw error
+            }
+        }
+
+        let messages: BaseMessage[] = memory && memory.summary?.content ? [new SystemMessage(memory.summary.content)] : []
+
+        if (memory) {
+            messages = messages.concat(
+                memory.messages.map((message) => {
+                    const { content, role } = message
+
+                    if (role === this.aiPrefix) {
+                        return new AIMessage({ content, name: role })
+                    } else {
+                        return new HumanMessage({ content, name: role })
+                    }
+                })
+            )
+        }
+
+        if (this.returnMessages) {
+            return {
+                [this.memoryKey]: messages
+            }
+        }
+        return {
+            [this.memoryKey]: getBufferString(messages, this.humanPrefix, this.aiPrefix)
+        }
     }
 
     async saveContext(inputValues: InputValues, outputValues: OutputValues, overrideSessionId = ''): Promise<void> {
@@ -181,11 +227,11 @@ class ZepMemoryExtended extends ZepMemory implements MemoryMethods {
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
-    async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
+    async addChatMessages(msgArray: { text: string; type: MessageType; name: string }[], overrideSessionId = ''): Promise<void> {
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
-        const inputValues = { [this.inputKey ?? 'input']: input?.text }
+        const inputValues = { [this.inputKey ?? 'input']: input?.text, name: input?.name ?? this.humanPrefix }
         const outputValues = { output: output?.text }
 
         await this.saveContext(inputValues, outputValues, id)

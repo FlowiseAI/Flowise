@@ -585,9 +585,9 @@ export const mapChatMessageToBaseMessage = (chatmessages: any[] = []): BaseMessa
 
     for (const message of chatmessages) {
         if (message.role === 'apiMessage') {
-            chatHistory.push(new AIMessage(message.content))
+            chatHistory.push(new AIMessage(message.content, message.name))
         } else if (message.role === 'userMessage') {
-            chatHistory.push(new HumanMessage(message.content))
+            chatHistory.push(new HumanMessage(message.content, message.name))
         }
     }
     return chatHistory
@@ -686,17 +686,20 @@ export const convertBaseMessagetoIMessage = (messages: BaseMessage[]): IMessage[
         if (m._getType() === 'human') {
             formatmessages.push({
                 message: m.content as string,
-                type: 'userMessage'
+                type: 'userMessage',
+                name: m.name
             })
         } else if (m._getType() === 'ai') {
             formatmessages.push({
                 message: m.content as string,
-                type: 'apiMessage'
+                type: 'apiMessage',
+                name: m.name
             })
         } else if (m._getType() === 'system') {
             formatmessages.push({
                 message: m.content as string,
-                type: 'apiMessage'
+                type: 'apiMessage',
+                name: m.name
             })
         }
     }
