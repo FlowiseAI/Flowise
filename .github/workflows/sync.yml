@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: raisex-llc/Flowise
           ref: main
