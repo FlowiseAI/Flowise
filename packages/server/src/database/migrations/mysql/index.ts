@@ -18,6 +18,8 @@ import { AddFeedback1707213626553 } from './1707213626553-AddFeedback'
 import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
 import { AddLead1710832127079 } from './1710832127079-AddLead'
 import { AddLeadToChatMessage1711538023578 } from './1711538023578-AddLeadToChatMessage'
+import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
+import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -32,12 +34,14 @@ export const mysqlMigrations = [
     AddUsedToolsToChatMessage1699481607341,
     AddCategoryToChatFlow1699900910291,
     AddFileAnnotationsToChatMessage1700271021237,
-    AddFileUploadsToChatMessage1701788586491,
     AddVariableEntity1699325775451,
+    AddFileUploadsToChatMessage1701788586491,
     AddSpeechToText1706364937060,
     AddUpsertHistoryEntity1709814301358,
     AddFeedback1707213626553,
     AddDocumentStore1711637331047,
     AddLead1710832127079,
-    AddLeadToChatMessage1711538023578
+    AddLeadToChatMessage1711538023578,
+    AddAgentReasoningToChatMessage1714679514451,
+    AddTypeToChatFlow1766759476232
 ]

@@ -26,7 +26,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 // Utils
 import { getLocalStorageChatflow, removeLocalStorageChatHistory } from '@/utils/genericHelper'
 
-export const ChatPopUp = ({ chatflowid }) => {
+export const ChatPopUp = ({ chatflowid, isAgentCanvas }) => {
     const theme = useTheme()
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
@@ -201,7 +201,13 @@ export const ChatPopUp = ({ chatflowid }) => {
                                     boxShadow
                                     shadow={theme.shadows[16]}
                                 >
-                                    <ChatMessage chatflowid={chatflowid} open={open} previews={previews} setPreviews={setPreviews} />
+                                    <ChatMessage
+                                        isAgentCanvas={isAgentCanvas}
+                                        chatflowid={chatflowid}
+                                        open={open}
+                                        previews={previews}
+                                        setPreviews={setPreviews}
+                                    />
                                 </MainCard>
                             </ClickAwayListener>
                         </Paper>
@@ -211,6 +217,7 @@ export const ChatPopUp = ({ chatflowid }) => {
             <ChatExpandDialog
                 show={showExpandDialog}
                 dialogProps={expandDialogProps}
+                isAgentCanvas={isAgentCanvas}
                 onClear={clearChat}
                 onCancel={() => setShowExpandDialog(false)}
                 previews={previews}
@@ -220,4 +227,4 @@ export const ChatPopUp = ({ chatflowid }) => {
     )
 }
 
-ChatPopUp.propTypes = { chatflowid: PropTypes.string }
+ChatPopUp.propTypes = { chatflowid: PropTypes.string, isAgentCanvas: PropTypes.bool }

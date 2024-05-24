@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { OpenAI, ALL_AVAILABLE_OPENAI_MODELS } from 'llamaindex'
+import { OpenAI } from 'llamaindex'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 interface AzureOpenAIConfig {
@@ -8,6 +8,28 @@ interface AzureOpenAIConfig {
     endpoint?: string
     apiVersion?: string
     deploymentName?: string
+}
+
+const ALL_AZURE_OPENAI_CHAT_MODELS = {
+    'gpt-35-turbo': { contextWindow: 4096, openAIModel: 'gpt-3.5-turbo' },
+    'gpt-35-turbo-16k': {
+        contextWindow: 16384,
+        openAIModel: 'gpt-3.5-turbo-16k'
+    },
+    'gpt-4': { contextWindow: 8192, openAIModel: 'gpt-4' },
+    'gpt-4-32k': { contextWindow: 32768, openAIModel: 'gpt-4-32k' },
+    'gpt-4-turbo': {
+        contextWindow: 128000,
+        openAIModel: 'gpt-4-turbo'
+    },
+    'gpt-4-vision-preview': {
+        contextWindow: 128000,
+        openAIModel: 'gpt-4-vision-preview'
+    },
+    'gpt-4-1106-preview': {
+        contextWindow: 128000,
+        openAIModel: 'gpt-4-1106-preview'
+    }
 }
 
 class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
@@ -90,7 +112,7 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const modelName = nodeData.inputs?.modelName as keyof typeof ALL_AVAILABLE_OPENAI_MODELS
+        const modelName = nodeData.inputs?.modelName as keyof typeof ALL_AZURE_OPENAI_CHAT_MODELS
         const temperature = nodeData.inputs?.temperature as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
