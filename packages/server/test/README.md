@@ -23,7 +23,7 @@ tsc
 
 Navigate to the directory containing your test file and run:
 ```sh
-node test/parsePrompt.test.js
+node test/hub.test.js
    ```
 Ensure the import path in the parsePrompt.test.js file is correct and points to the compiled JavaScript file.
 
