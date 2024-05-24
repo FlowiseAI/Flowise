@@ -3,8 +3,11 @@ import { createPortal } from 'react-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState, forwardRef } from 'react'
 import DatePicker from 'react-datepicker'
+import ru from 'date-fns/locale/ru'
+// import { registerLocale } from 'react-datepicker'
+// import * as ru from 'date-fns/locale/ru'
 import moment from 'moment/moment'
-
+// registerLocale('ru', ru)
 // MUI
 import {
     Stack,
@@ -322,7 +325,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
                 <>
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 10 }}>
                         <div style={{ marginRight: 10 }}>
-                            <b style={{ marginRight: 10 }}>From Date</b>
+                            <b style={{ marginRight: 10 }}>Дата от:</b>
                             <DatePicker
                                 selected={startDate}
                                 onChange={(date) => onStartDateSelected(date)}
@@ -330,10 +333,11 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
                                 startDate={startDate}
                                 endDate={endDate}
                                 customInput={<DatePickerCustomInput />}
+                                locale={ru}
                             />
                         </div>
                         <div style={{ marginRight: 10 }}>
-                            <b style={{ marginRight: 10 }}>To Date</b>
+                            <b style={{ marginRight: 10 }}>Дата до:</b>
                             <DatePicker
                                 selected={endDate}
                                 onChange={(date) => onEndDateSelected(date)}
@@ -343,6 +347,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
                                 minDate={startDate}
                                 maxDate={new Date()}
                                 customInput={<DatePickerCustomInput />}
+                                locale={ru}
                             />
                         </div>
                     </div>
@@ -366,7 +371,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
                                     alt='HistoryEmptySVG'
                                 />
                             </Box>
-                            <div>No Upsert History Yet</div>
+                            <div>Пока нет вложенной истории</div>
                         </Stack>
                     )}
                     {chatflowUpsertHistory.length > 0 && (
@@ -440,7 +445,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
                 </>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>Close</Button>
+                <Button onClick={onCancel}>Закрыть</Button>
             </DialogActions>
         </Dialog>
     ) : null
