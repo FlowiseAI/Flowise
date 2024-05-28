@@ -1,6 +1,13 @@
 import path from 'path'
 import fs from 'fs'
-import { DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client, S3ClientConfig } from '@aws-sdk/client-s3'
+import {
+    DeleteObjectsCommand,
+    GetObjectCommand,
+    ListObjectsV2Command,
+    PutObjectCommand,
+    S3Client,
+    S3ClientConfig
+} from '@aws-sdk/client-s3'
 import { Readable } from 'node:stream'
 import { getUserHome } from './utils'
 
@@ -322,7 +329,7 @@ export const getS3Config = () => {
             secretAccessKey
         }
     }
-    
+
     const s3Client = new S3Client({
         credentials,
         region

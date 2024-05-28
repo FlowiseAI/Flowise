@@ -103,18 +103,18 @@ const initializeDynamoDB = async (nodeData: INodeData, options: ICommonObject): 
     const accessKeyId = getCredentialParam('accessKey', credentialData, nodeData)
     const secretAccessKey = getCredentialParam('secretAccessKey', credentialData, nodeData)
 
-    let credentials: DynamoDBClientConfig['credentials'] | undefined;
+    let credentials: DynamoDBClientConfig['credentials'] | undefined
     if (accessKeyId && secretAccessKey) {
         credentials = {
             accessKeyId,
             secretAccessKey
-        };
+        }
     }
-    
+
     const config: DynamoDBClientConfig = {
         region,
         credentials
-    };
+    }
 
     const client = new DynamoDBClient(config ?? {})
 
