@@ -31,8 +31,7 @@ function tryGetJsonSpaces() {
 
 function tryJsonStringify(obj: unknown, fallback: string) {
     try {
-        var spaces = tryGetJsonSpaces()
-        return JSON.stringify(obj, null, spaces)
+        return JSON.stringify(obj, null, tryGetJsonSpaces())
     } catch (err) {
         return fallback
     }
@@ -61,8 +60,6 @@ export class ConsoleCallbackHandler extends BaseTracer {
         logger.level = getEnvironmentVariable('LOG_LEVEL') ?? 'info'
     }
 
-    // utility methods
-
     getParents(run: Run) {
         const parents: Run[] = []
         let currentRun = run
@@ -88,8 +85,6 @@ export class ConsoleCallbackHandler extends BaseTracer {
             .join(' > ')
         return string
     }
-
-    // logging methods
 
     onChainStart(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
