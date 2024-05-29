@@ -56,6 +56,7 @@ class SimpleChatEngine_LlamaIndex implements INode {
         const model = nodeData.inputs?.model as LLM
         const systemMessagePrompt = nodeData.inputs?.systemMessagePrompt as string
         const memory = nodeData.inputs?.memory as FlowiseMemory
+        const prependMessages = options?.prependMessages
 
         const chatHistory = [] as ChatMessage[]
 
@@ -68,7 +69,7 @@ class SimpleChatEngine_LlamaIndex implements INode {
 
         const chatEngine = new SimpleChatEngine({ llm: model })
 
-        const msgs = (await memory.getChatMessages(this.sessionId, false)) as IMessage[]
+        const msgs = (await memory.getChatMessages(this.sessionId, false, prependMessages)) as IMessage[]
         for (const message of msgs) {
             if (message.type === 'apiMessage') {
                 chatHistory.push({

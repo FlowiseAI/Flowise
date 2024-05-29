@@ -206,7 +206,8 @@ class LangchainChatGoogleGenerativeAI extends BaseChatModel implements GoogleGen
         options: this['ParsedCallOptions'],
         runManager?: CallbackManagerForLLMRun
     ): Promise<ChatResult> {
-        const prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
+        let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
+        prompt = checkIfEmptyContentAndSameRole(prompt)
 
         // Handle streaming
         if (this.streaming) {
@@ -235,7 +236,9 @@ class LangchainChatGoogleGenerativeAI extends BaseChatModel implements GoogleGen
         options: this['ParsedCallOptions'],
         runManager?: CallbackManagerForLLMRun
     ): AsyncGenerator<ChatGenerationChunk> {
-        const prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
+        let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
+        prompt = checkIfEmptyContentAndSameRole(prompt)
+
         //@ts-ignore
         if (options.tools !== undefined && options.tools.length > 0) {
             const result = await this._generateNonStreaming(prompt, options, runManager)
@@ -333,7 +336,9 @@ function convertAuthorToRole(author: string) {
         case 'tool':
             return 'function'
         default:
-            throw new Error(`Unknown / unsupported author: ${author}`)
+            // Instead of throwing, we return model
+            // throw new Error(`Unknown / unsupported author: ${author}`)
+            return 'model'
     }
 }
 
@@ -394,6 +399,25 @@ function convertMessageContentToParts(content: MessageContent, isMultimodalModel
         }
         throw new Error(`Unknown content type ${(c as { type: string }).type}`)
     })
+}
+
+/*
+ * This is a dedicated logic for Multi Agent Supervisor to handle the case where the content is empty, and the role is the same
+ */
+
+function checkIfEmptyContentAndSameRole(contents: Content[]) {
+    let prevRole = ''
+    const removedContents: Content[] = []
+    for (const content of contents) {
+        const role = content.role
+        if (content.parts.length && content.parts[0].text === '' && role === prevRole) {
+            removedContents.push(content)
+        }
+
+        prevRole = role
+    }
+
+    return contents.filter((content) => !removedContents.includes(content))
 }
 
 function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel: boolean) {
