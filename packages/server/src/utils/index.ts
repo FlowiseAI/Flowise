@@ -780,7 +780,7 @@ export const getVariableValue = (
             const variableValue = variableDict[path]
             // Replace all occurrence
             if (typeof variableValue === 'object') {
-                returnVal = returnVal.split(path).join(JSON.stringify(variableValue).replaceAll('"', '\\"').replaceAll('\\n', '\\\\n'))
+                returnVal = returnVal.split(path).join(JSON.stringify(JSON.stringify(variableValue)))
             } else {
                 returnVal = returnVal.split(path).join(variableValue)
             }
