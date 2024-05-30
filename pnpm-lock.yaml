@@ -135,6 +135,9 @@ importers:
             '@langchain/core':
                 specifier: ^0.1.63
                 version: 0.1.63
+            '@langchain/exa':
+                specifier: ^0.0.5
+                version: 0.0.5(encoding@0.1.13)
             '@langchain/google-genai':
                 specifier: ^0.0.10
                 version: 0.0.10
@@ -225,6 +228,9 @@ importers:
             dotenv:
                 specifier: ^16.0.0
                 version: 16.4.5
+            exa-js:
+                specifier: ^1.0.12
+                version: 1.0.12(encoding@0.1.13)
             express:
                 specifier: ^4.17.3
                 version: 4.18.3
@@ -3584,6 +3590,10 @@ packages:
 
     '@langchain/core@0.1.63':
         resolution: { integrity: sha512-+fjyYi8wy6x1P+Ee1RWfIIEyxd9Ee9jksEwvrggPwwI/p45kIDTdYTblXsM13y4mNWTiACyLSdbwnPaxxdoz+w== }
+        engines: { node: '>=18' }
+
+    '@langchain/exa@0.0.5':
+        resolution: { integrity: sha512-KXNCYLxKs6rDGw+jcrFqE4CrIooUgzU0ip0k76YFptvMPrqLpNurYyqr5mAys0qn2vFavFfC3eJV/wrZ602EfA== }
         engines: { node: '>=18' }
 
     '@langchain/google-common@0.0.9':
@@ -8130,6 +8140,9 @@ packages:
     events@3.3.0:
         resolution: { integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q== }
         engines: { node: '>=0.8.x' }
+
+    exa-js@1.0.12:
+        resolution: { integrity: sha512-4oDvjl1966qy1BwjuGm/q/k2gZomS8WhpcuiXyn672cTmEfaRIwQnAbXBznuqzT1WaWeHfJXGTeeboaW41OCiw== }
 
     execa@0.2.2:
         resolution: { integrity: sha512-zmBGzLd3nhA/NB9P7VLoceAO6vyYPftvl809Vjwe5U2fYI9tYWbeKqP3wZlAw9WS+znnkogf/bhSU+Gcn2NbkQ== }
@@ -19827,6 +19840,13 @@ snapshots:
             zod: 3.22.4
             zod-to-json-schema: 3.22.5(zod@3.22.4)
 
+    '@langchain/exa@0.0.5(encoding@0.1.13)':
+        dependencies:
+            '@langchain/core': 0.1.63
+            exa-js: 1.0.12(encoding@0.1.13)
+        transitivePeerDependencies:
+            - encoding
+
     '@langchain/google-common@0.0.9(zod@3.22.4)':
         dependencies:
             '@langchain/core': 0.1.63
@@ -25922,6 +25942,12 @@ snapshots:
     events@1.1.1: {}
 
     events@3.3.0: {}
+
+    exa-js@1.0.12(encoding@0.1.13):
+        dependencies:
+            cross-fetch: 4.0.0(encoding@0.1.13)
+        transitivePeerDependencies:
+            - encoding
 
     execa@0.2.2:
         dependencies:
