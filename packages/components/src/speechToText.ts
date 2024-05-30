@@ -57,8 +57,9 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     baseURL: speechToTextConfig?.baseUrl
                 }
                 const localAIClient = new OpenAIClient(LocalAIClientOptions)
+                const file = await toFile(audio_file, upload.name)
                 const localAITranscription = await localAIClient.audio.transcriptions.create({
-                    file: new File([new Blob([audio_file])], upload.name),
+                    file: file,
                     model: speechToTextConfig?.model || 'whisper-1',
                     language: speechToTextConfig?.language,
                     temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
