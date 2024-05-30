@@ -1,6 +1,8 @@
 {
-    "description": "Возвращает ответ в виде структуры JSON, указанной в схеме Zod",
     "title": "Расширенный парсер структурированных данных",
+    "description": "Возвращает ответ в виде структуры JSON, указанной в схеме Zod",
+    "categories": "AdvancedStructuredOutputParser,ChatOpenAI,LLM Chain,Langchain",
+    "framework": "Langchain",
     "badge": "NEW",
     "nodes": [
         {

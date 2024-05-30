@@ -10,7 +10,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // Icons
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 // API
 import chatflowsApi from '@/api/chatflows'

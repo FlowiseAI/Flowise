@@ -5,7 +5,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 
 // material-ui
 import { Button, IconButton, OutlinedInput, Box, List, InputAdornment } from '@mui/material'
-import { IconX, IconTrash, IconPlus, IconBulb } from '@tabler/icons'
+import { IconX, IconTrash, IconPlus, IconBulb } from '@tabler/icons-react'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'

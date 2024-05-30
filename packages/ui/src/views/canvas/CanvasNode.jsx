@@ -18,7 +18,7 @@ import { translationObject } from '@/translate'
 
 // const
 import { baseURL } from '@/store/constant'
-import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons'
+import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 
@@ -72,6 +72,8 @@ const CanvasNode = ({ data }) => {
                     translationObject['This node will be deprecated in the next release. Change to a new node tagged with NEW'] ||
                         'This node will be deprecated in the next release. Change to a new node tagged with NEW'
                 )
+            } else {
+                setWarningMessage('')
             }
         }
     }, [canvas.componentNodes, data.name, data.version])
@@ -242,8 +244,8 @@ const CanvasNode = ({ data }) => {
                             </Typography>
                         </Box>
                         <Divider />
-                        {data.outputAnchors.map((outputAnchor, index) => (
-                            <NodeOutputHandler key={index} outputAnchor={outputAnchor} data={data} />
+                        {data.outputAnchors.map((outputAnchor) => (
+                            <NodeOutputHandler key={JSON.stringify(data)} outputAnchor={outputAnchor} data={data} />
                         ))}
                     </Box>
                 </NodeTooltip>

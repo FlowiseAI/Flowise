@@ -1,3 +1,5 @@
+import * as PropTypes from 'prop-types'
+import moment from 'moment/moment'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
@@ -28,6 +30,8 @@ import MainCard from '@/ui-component/cards/MainCard'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import APIKeyDialog from './APIKeyDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // API
 import apiKeyApi from '@/api/apikey'
@@ -40,14 +44,11 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconCopy, IconChevronsUp, IconChevronsDown, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons'
+import { IconTrash, IconEdit, IconCopy, IconChevronsUp, IconChevronsDown, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons-react'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
-import * as PropTypes from 'prop-types'
-import moment from 'moment/moment'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
 
 // ==============================|| APIKey ||============================== //
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
     padding: '6px 16px',
@@ -354,7 +355,7 @@ const APIKey = () => {
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
                                     <img
-                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
                                         src={APIEmptySVG}
                                         alt='APIEmptySVG'
                                     />

@@ -23,7 +23,8 @@ import {
     ListItemText,
     Chip,
     Card,
-    CardMedia
+    CardMedia,
+    CardContent
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import DatePicker from 'react-datepicker'
@@ -31,7 +32,9 @@ import DatePicker from 'react-datepicker'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
 import msgEmptySVG from '@/assets/images/message_empty.svg'
-import { IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons'
+import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
+import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
+import { IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons-react'
 
 // Project import
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
@@ -102,6 +105,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [chatTypeFilter, setChatTypeFilter] = useState([])
     const [startDate, setStartDate] = useState(new Date().setMonth(new Date().getMonth() - 1))
     const [endDate, setEndDate] = useState(new Date())
+    const [leadEmail, setLeadEmail] = useState('')
 
     const getChatmessageApi = useApi(chatmessageApi.getAllChatmessageFromChatflow)
     const getChatmessageFromPKApi = useApi(chatmessageApi.getChatmessageFromPK)
@@ -184,6 +188,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.usedTools) msg.usedTools = JSON.parse(chatmsg.usedTools)
             if (chatmsg.fileAnnotations) msg.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
             if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
+            if (chatmsg.agentReasoning) msg.agentReasoning = JSON.parse(chatmsg.agentReasoning)
 
             if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
                 obj[chatPK] = {
@@ -191,6 +196,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     source: chatmsg.chatType === 'INTERNAL' ? 'UI' : 'API/Embed',
                     sessionId: chatmsg.sessionId ?? null,
                     memoryType: chatmsg.memoryType ?? null,
+                    email: leadEmail ?? null,
                     messages: [msg]
                 }
             } else if (Object.prototype.hasOwnProperty.call(obj, chatPK)) {
@@ -317,6 +323,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.sourceDocuments) obj.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
             if (chatmsg.usedTools) obj.usedTools = JSON.parse(chatmsg.usedTools)
             if (chatmsg.fileAnnotations) obj.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
+            if (chatmsg.agentReasoning) obj.agentReasoning = JSON.parse(chatmsg.agentReasoning)
 
             loadedMessages.push(obj)
         }
@@ -410,6 +417,13 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     useEffect(() => {
+        const leadEmailFromChatMessages = chatMessages.filter((message) => message.type === 'userMessage' && message.leadEmail)
+        if (leadEmailFromChatMessages.length) {
+            setLeadEmail(leadEmailFromChatMessages[0].leadEmail)
+        }
+    }, [chatMessages, selectedMessageIndex])
+
+    useEffect(() => {
         if (getChatmessageFromPKApi.data) {
             getChatMessages(getChatmessageFromPKApi.data)
         }
@@ -452,6 +466,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setStartDate(new Date().setMonth(new Date().getMonth() - 1))
             setEndDate(new Date())
             setStats([])
+            setLeadEmail('')
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -641,6 +656,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                     Память:&nbsp;<b>{chatMessages[1].memoryType}</b>
                                                 </div>
                                             )}
+                                            {leadEmail && (
+                                                <div>
+                                                    Email:&nbsp;<b>{leadEmail}</b>
+                                                </div>
+                                            )}
                                         </div>
                                         <div
                                             style={{
@@ -677,6 +697,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 )}
                                 <div
                                     style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
                                         marginLeft: '20px',
                                         border: '1px solid #e0e0e0',
                                         borderRadius: `${customization.borderRadius}px`
@@ -784,6 +806,97 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                         </audio>
                                                                                     )}
                                                                                 </>
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
+                                                                {message.agentReasoning && (
+                                                                    <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                                        {message.agentReasoning.map((agent, index) => {
+                                                                            return (
+                                                                                <Card
+                                                                                    key={index}
+                                                                                    sx={{
+                                                                                        border: '1px solid #e0e0e0',
+                                                                                        borderRadius: `${customization.borderRadius}px`,
+                                                                                        mb: 1
+                                                                                    }}
+                                                                                >
+                                                                                    <CardContent>
+                                                                                        <Stack
+                                                                                            sx={{
+                                                                                                alignItems: 'center',
+                                                                                                justifyContent: 'flex-start',
+                                                                                                width: '100%'
+                                                                                            }}
+                                                                                            flexDirection='row'
+                                                                                        >
+                                                                                            <Box sx={{ height: 'auto', pr: 1 }}>
+                                                                                                <img
+                                                                                                    style={{
+                                                                                                        objectFit: 'cover',
+                                                                                                        height: '25px',
+                                                                                                        width: 'auto'
+                                                                                                    }}
+                                                                                                    src={
+                                                                                                        agent.instructions
+                                                                                                            ? multiagent_supervisorPNG
+                                                                                                            : multiagent_workerPNG
+                                                                                                    }
+                                                                                                    alt='agentPNG'
+                                                                                                />
+                                                                                            </Box>
+                                                                                            <div>{agent.agentName}</div>
+                                                                                        </Stack>
+                                                                                        {agent.messages.length > 0 && (
+                                                                                            <MemoizedReactMarkdown
+                                                                                                remarkPlugins={[remarkGfm, remarkMath]}
+                                                                                                rehypePlugins={[rehypeMathjax, rehypeRaw]}
+                                                                                                components={{
+                                                                                                    code({
+                                                                                                        inline,
+                                                                                                        className,
+                                                                                                        children,
+                                                                                                        ...props
+                                                                                                    }) {
+                                                                                                        const match = /language-(\w+)/.exec(
+                                                                                                            className || ''
+                                                                                                        )
+                                                                                                        return !inline ? (
+                                                                                                            <CodeBlock
+                                                                                                                key={Math.random()}
+                                                                                                                chatflowid={chatflowid}
+                                                                                                                isDialog={isDialog}
+                                                                                                                language={
+                                                                                                                    (match && match[1]) ||
+                                                                                                                    ''
+                                                                                                                }
+                                                                                                                value={String(
+                                                                                                                    children
+                                                                                                                ).replace(/\n$/, '')}
+                                                                                                                {...props}
+                                                                                                            />
+                                                                                                        ) : (
+                                                                                                            <code
+                                                                                                                className={className}
+                                                                                                                {...props}
+                                                                                                            >
+                                                                                                                {children}
+                                                                                                            </code>
+                                                                                                        )
+                                                                                                    }
+                                                                                                }}
+                                                                                            >
+                                                                                                {agent.messages.length > 1
+                                                                                                    ? agent.messages.join('\\n')
+                                                                                                    : agent.messages[0]}
+                                                                                            </MemoizedReactMarkdown>
+                                                                                        )}
+                                                                                        {agent.instructions && <p>{agent.instructions}</p>}
+                                                                                        {agent.messages.length === 0 &&
+                                                                                            !agent.instructions && <p>Finished</p>}
+                                                                                    </CardContent>
+                                                                                </Card>
                                                                             )
                                                                         })}
                                                                     </div>

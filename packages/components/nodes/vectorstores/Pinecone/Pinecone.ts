@@ -190,7 +190,7 @@ class Pinecone_VectorStores implements INode {
 
         const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore, obj.filter)
     }
 }
 

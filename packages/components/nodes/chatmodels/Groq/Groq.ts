@@ -1,6 +1,7 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ChatGroq, ChatGroqInput } from '@langchain/groq'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class Groq_ChatModels implements INode {
@@ -18,7 +19,7 @@ class Groq_ChatModels implements INode {
     constructor() {
         this.label = 'GroqChat'
         this.name = 'groqChat'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'GroqChat'
         this.icon = 'groq.png'
         this.category = 'Chat Models'
@@ -41,8 +42,9 @@ class Groq_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'string',
-                placeholder: 'mixtral-8x7b-32768'
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                placeholder: 'llama3-70b-8192'
             },
             {
                 label: 'Temperature',
@@ -53,6 +55,13 @@ class Groq_ChatModels implements INode {
                 optional: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'groqChat')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

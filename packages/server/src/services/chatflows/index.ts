@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { IChatFlow } from '../../Interface'
+import { ChatflowType, IChatFlow } from '../../Interface'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { getAppVersion, getTelemetryFlowObj, isFlowValidForStream, constructGraphs, getEndingNodes } from '../../utils'
 import logger from '../../utils/logger'
@@ -13,6 +13,7 @@ import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
 import { getErrorMessage } from '../../errors/utils'
+import documentStoreService from '../../services/documentstore'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -46,6 +47,11 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
             isStreaming = isFlowValidForStream(nodes, endingNodeData)
         }
 
+        // If it is a Multi Agents, always enable streaming
+        if (endingNodes.filter((node) => node.data.category === 'Multi Agents').length > 0) {
+            return { isStreaming: true }
+        }
+
         const dbResponse = { isStreaming: isStreaming }
         return dbResponse
     } catch (error) {
@@ -76,6 +82,7 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
         try {
             // Delete all uploads corresponding to this chatflow
             await removeFolderFromStorage(chatflowId)
+            await documentStoreService.updateDocumentStoreUsage(chatflowId, undefined)
 
             // Delete all chat messages
             await appServer.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: chatflowId })
@@ -97,11 +104,14 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
     }
 }
 
-const getAllChatflows = async (): Promise<IChatFlow[]> => {
+const getAllChatflows = async (type?: ChatflowType): Promise<IChatFlow[]> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
-        return dbResponse
+        if (type === 'MULTIAGENT') {
+            return dbResponse.filter((chatflow) => chatflow.type === type)
+        }
+        return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -112,6 +122,7 @@ const getAllChatflows = async (): Promise<IChatFlow[]> => {
 
 const getChatflowByApiKey = async (apiKeyId: string): Promise<any> => {
     try {
+        // Here we only get chatflows that are bounded by the apikeyid and chatflows that are not bounded by any apikey
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('cf')
@@ -166,6 +177,7 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
 
             // step 2 - convert base64 to file paths and update the chatflow
             step1Results.flowData = await updateFlowDataWithFilePaths(step1Results.id, incomingFlowData)
+            await _checkAndUpdateDocumentStoreUsage(step1Results)
             dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
         } else {
             const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
@@ -192,6 +204,7 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
             updateChatFlow.flowData = await updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
         }
         const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
+        await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
 
         // chatFlowPool is initialized only when a flow is opened
@@ -258,6 +271,18 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getSinglePublicChatbotConfig - ${getErrorMessage(error)}`
         )
+    }
+}
+
+const _checkAndUpdateDocumentStoreUsage = async (chatflow: ChatFlow) => {
+    const parsedFlowData: IReactFlowObject = JSON.parse(chatflow.flowData)
+    const nodes = parsedFlowData.nodes
+    // from the nodes array find if there is a node with name == documentStore)
+    const node = nodes.length > 0 && nodes.find((node) => node.data.name === 'documentStore')
+    if (!node || !node.data || !node.data.inputs || node.data.inputs['selectedStore'] === undefined) {
+        await documentStoreService.updateDocumentStoreUsage(chatflow.id, undefined)
+    } else {
+        await documentStoreService.updateDocumentStoreUsage(chatflow.id, node.data.inputs['selectedStore'])
     }
 }
 

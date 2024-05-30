@@ -10,7 +10,7 @@ import LogoSection from '../LogoSection'
 import ProfileSection from './ProfileSection'
 
 // assets
-import { IconMenu2 } from '@tabler/icons'
+import { IconMenu2 } from '@tabler/icons-react'
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 

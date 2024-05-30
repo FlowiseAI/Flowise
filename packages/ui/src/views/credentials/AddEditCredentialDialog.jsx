@@ -14,7 +14,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import CredentialInputHandler from './CredentialInputHandler'
 
 // Icons
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 // API
 import credentialsApi from '@/api/credentials'

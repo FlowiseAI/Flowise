@@ -113,7 +113,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                     lang={languageType}
                                     placeholder={translationObject[inputParam.placeholder] || inputParam.placeholder}
                                     basicSetup={
-                                        languageType === 'json'
+                                        languageType !== 'js'
                                             ? { lineNumbers: false, foldGutter: false, autocompletion: false, highlightActiveLine: false }
                                             : {}
                                     }

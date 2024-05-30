@@ -15,6 +15,11 @@ import { AddVariableEntity1699325775451 } from './1702200925471-AddVariableEntit
 import { AddSpeechToText1706364937060 } from './1706364937060-AddSpeechToText'
 import { AddUpsertHistoryEntity1709814301358 } from './1709814301358-AddUpsertHistoryEntity'
 import { AddFeedback1707213619308 } from './1707213619308-AddFeedback'
+import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
+import { AddLead1710832117612 } from './1710832117612-AddLead'
+import { AddLeadToChatMessage1711537986113 } from './1711537986113-AddLeadToChatMessage'
+import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
+import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -29,9 +34,14 @@ export const sqliteMigrations = [
     AddUsedToolsToChatMessage1699481607341,
     AddCategoryToChatFlow1699900910291,
     AddFileAnnotationsToChatMessage1700271021237,
-    AddFileUploadsToChatMessage1701788586491,
     AddVariableEntity1699325775451,
+    AddFileUploadsToChatMessage1701788586491,
     AddSpeechToText1706364937060,
     AddUpsertHistoryEntity1709814301358,
-    AddFeedback1707213619308
+    AddFeedback1707213619308,
+    AddDocumentStore1711637331047,
+    AddLead1710832117612,
+    AddLeadToChatMessage1711537986113,
+    AddAgentReasoningToChatMessage1714679514451,
+    AddTypeToChatFlow1766759476232
 ]

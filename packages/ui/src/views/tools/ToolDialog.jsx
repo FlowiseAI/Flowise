@@ -16,7 +16,7 @@ import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import HowToUseFunctionDialog from './HowToUseFunctionDialog'
 
 // Icons
-import { IconX, IconFileDownload, IconPlus } from '@tabler/icons'
+import { IconX, IconFileDownload, IconPlus } from '@tabler/icons-react'
 
 // API
 import toolsApi from '@/api/tools'

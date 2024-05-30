@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { useState, useCallback } from 'react'
 import { DataGrid as MUIDataGrid, GridActionsCellItem } from '@mui/x-data-grid'
-import { IconPlus } from '@tabler/icons'
+import { IconPlus } from '@tabler/icons-react'
 import { Button } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { cloneDeep } from 'lodash'

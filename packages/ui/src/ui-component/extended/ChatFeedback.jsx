@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 // material-ui
 import { Button, Box } from '@mui/material'
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'

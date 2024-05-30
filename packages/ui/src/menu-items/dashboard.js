@@ -1,20 +1,28 @@
-// assets
-import { IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconTable, IconVariable } from '@tabler/icons'
-// import IconKeys from '@/assets/images/IconKey.svg'
-// import IconSmile from '@/assets/images/smile.svg'
-// import IconCollection from '@/assets/images/collection.svg'
-// import IconLocks from '@/assets/images/lock.svg'
-
-// constant
-const icons = {
+import {
+    IconUsersGroup,
     IconHierarchy,
     IconBuildingStore,
     IconKey,
     IconTool,
     IconLock,
     IconRobot,
+    IconVariable,
+    IconFiles,
+    IconTable
+} from '@tabler/icons-react'
+
+// constant
+const icons = {
+    IconUsersGroup,
     IconTable,
-    IconVariable
+    IconHierarchy,
+    IconBuildingStore,
+    IconKey,
+    IconTool,
+    IconLock,
+    IconRobot,
+    IconVariable,
+    IconFiles
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -31,6 +39,15 @@ const dashboard = {
             url: '/chatflows',
             icon: icons.IconHierarchy,
             breadcrumbs: true
+        },
+        {
+            id: 'agentflows',
+            title: 'Agentflows',
+            type: 'item',
+            url: '/agentflows',
+            icon: icons.IconUsersGroup,
+            breadcrumbs: true,
+            isBeta: true
         },
         {
             id: 'marketplaces',
@@ -78,6 +95,14 @@ const dashboard = {
             type: 'item',
             url: '/apikey',
             icon: icons.IconHierarchy,
+            breadcrumbs: true
+        },
+        {
+            id: 'document-stores',
+            title: 'Document Stores',
+            type: 'item',
+            url: '/document-stores',
+            icon: icons.IconFiles,
             breadcrumbs: true
         }
     ]

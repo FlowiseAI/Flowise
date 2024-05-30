@@ -41,7 +41,7 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-export const FlowListTable = ({ data, images, isLoading, filterFunction, updateFlowsApi, setError }) => {
+export const FlowListTable = ({ data, images, isLoading, filterFunction, updateFlowsApi, setError, isAgentCanvas }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -128,7 +128,10 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                         overflow: 'hidden'
                                                     }}
                                                 >
-                                                    <Link to={`/canvas/${row.id}`} style={{ color: '#2196f3', textDecoration: 'none' }}>
+                                                    <Link
+                                                        to={`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${row.id}`}
+                                                        style={{ color: '#2196f3', textDecoration: 'none' }}
+                                                    >
                                                         {row.templateName || row.name}
                                                     </Link>
                                                 </Typography>
@@ -211,7 +214,12 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                 justifyContent='center'
                                                 alignItems='center'
                                             >
-                                                <FlowListMenu chatflow={row} setError={setError} updateFlowsApi={updateFlowsApi} />
+                                                <FlowListMenu
+                                                    isAgentCanvas={isAgentCanvas}
+                                                    chatflow={row}
+                                                    setError={setError}
+                                                    updateFlowsApi={updateFlowsApi}
+                                                />
                                             </Stack>
                                         </StyledTableCell>
                                     </StyledTableRow>
@@ -231,5 +239,6 @@ FlowListTable.propTypes = {
     isLoading: PropTypes.bool,
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object,
-    setError: PropTypes.func
+    setError: PropTypes.func,
+    isAgentCanvas: PropTypes.bool
 }
