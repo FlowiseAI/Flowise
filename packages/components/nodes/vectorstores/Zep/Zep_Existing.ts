@@ -20,7 +20,7 @@ class Zep_Existing_VectorStores implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Zep Load Existing Index'
+        this.label = 'Zep Load Existing Index - Open Source'
         this.name = 'zepExistingIndex'
         this.version = 1.0
         this.type = 'Zep'
@@ -125,6 +125,9 @@ class Zep_Existing_VectorStores implements INode {
             return retriever
         } else if (output === 'vectorStore') {
             ;(vectorStore as any).k = k
+            if (zepMetadataFilter) {
+                ;(vectorStore as any).filter = zepConfig.filter
+            }
             return vectorStore
         }
         return vectorStore

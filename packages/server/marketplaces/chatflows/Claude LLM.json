@@ -15,32 +15,36 @@
             "data": {
                 "id": "bufferMemory_0",
                 "label": "Buffer Memory",
-                "version": 1,
+                "version": 2,
                 "name": "bufferMemory",
                 "type": "BufferMemory",
                 "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
-                "description": "Remembers previous conversational back and forths directly",
+                "description": "Retrieve chat messages stored in database",
                 "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_0-input-sessionId-string"
+                    },
                     {
                         "label": "Memory Key",
                         "name": "memoryKey",
                         "type": "string",
                         "default": "chat_history",
+                        "additionalParams": true,
                         "id": "bufferMemory_0-input-memoryKey-string"
-                    },
-                    {
-                        "label": "Input Key",
-                        "name": "inputKey",
-                        "type": "string",
-                        "default": "input",
-                        "id": "bufferMemory_0-input-inputKey-string"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "memoryKey": "chat_history",
-                    "inputKey": "input"
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
                 },
                 "outputAnchors": [
                     {
@@ -160,7 +164,7 @@
             "data": {
                 "id": "chatAnthropic_0",
                 "label": "ChatAnthropic",
-                "version": 3,
+                "version": 6.0,
                 "name": "chatAnthropic",
                 "type": "ChatAnthropic",
                 "baseClasses": ["ChatAnthropic", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -177,70 +181,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "claude-2",
-                                "name": "claude-2",
-                                "description": "Claude 2 latest major version, automatically get updates to the model as they are released"
-                            },
-                            {
-                                "label": "claude-2.1",
-                                "name": "claude-2.1",
-                                "description": "Claude 2 latest full version"
-                            },
-                            {
-                                "label": "claude-instant-1",
-                                "name": "claude-instant-1",
-                                "description": "Claude Instant latest major version, automatically get updates to the model as they are released"
-                            },
-                            {
-                                "label": "claude-v1",
-                                "name": "claude-v1"
-                            },
-                            {
-                                "label": "claude-v1-100k",
-                                "name": "claude-v1-100k"
-                            },
-                            {
-                                "label": "claude-v1.0",
-                                "name": "claude-v1.0"
-                            },
-                            {
-                                "label": "claude-v1.2",
-                                "name": "claude-v1.2"
-                            },
-                            {
-                                "label": "claude-v1.3",
-                                "name": "claude-v1.3"
-                            },
-                            {
-                                "label": "claude-v1.3-100k",
-                                "name": "claude-v1.3-100k"
-                            },
-                            {
-                                "label": "claude-instant-v1",
-                                "name": "claude-instant-v1"
-                            },
-                            {
-                                "label": "claude-instant-v1-100k",
-                                "name": "claude-instant-v1-100k"
-                            },
-                            {
-                                "label": "claude-instant-v1.0",
-                                "name": "claude-instant-v1.0"
-                            },
-                            {
-                                "label": "claude-instant-v1.1",
-                                "name": "claude-instant-v1.1"
-                            },
-                            {
-                                "label": "claude-instant-v1.1-100k",
-                                "name": "claude-instant-v1.1-100k"
-                            }
-                        ],
-                        "default": "claude-2",
-                        "optional": true,
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "claude-3-haiku",
                         "id": "chatAnthropic_0-input-modelName-options"
                     },
                     {
@@ -278,6 +221,15 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatAnthropic_0-input-topK-number"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses claude-3-* models when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-allowImageUploads-boolean"
                     }
                 ],
                 "inputAnchors": [
@@ -291,11 +243,12 @@
                 ],
                 "inputs": {
                     "cache": "",
-                    "modelName": "claude-2.1",
+                    "modelName": "claude-3-haiku",
                     "temperature": 0.9,
                     "maxTokensToSample": "",
                     "topP": "",
-                    "topK": ""
+                    "topK": "",
+                    "allowImageUploads": true
                 },
                 "outputAnchors": [
                     {

@@ -1,10 +1,17 @@
-import { ICommonObject, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
 
 export type MessageType = 'apiMessage' | 'userMessage'
+
+export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT'
 
 export enum chatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL'
+}
+
+export enum ChatMessageRatingType {
+    THUMBS_UP = 'THUMBS_UP',
+    THUMBS_DOWN = 'THUMBS_DOWN'
 }
 /**
  * Databases
@@ -20,7 +27,9 @@ export interface IChatFlow {
     apikeyid?: string
     analytic?: string
     chatbotConfig?: string
-    apiConfig?: any
+    apiConfig?: string
+    category?: string
+    type?: ChatflowType
 }
 
 export interface IChatMessage {
@@ -31,10 +40,23 @@ export interface IChatMessage {
     sourceDocuments?: string
     usedTools?: string
     fileAnnotations?: string
+    agentReasoning?: string
+    fileUploads?: string
     chatType: string
     chatId: string
     memoryType?: string
     sessionId?: string
+    createdDate: Date
+    leadEmail?: string
+}
+
+export interface IChatMessageFeedback {
+    id: string
+    content?: string
+    chatflowid: string
+    chatId: string
+    messageId: string
+    rating: ChatMessageRatingType
     createdDate: Date
 }
 
@@ -75,6 +97,24 @@ export interface IVariable {
     type: string
     updatedDate: Date
     createdDate: Date
+}
+
+export interface ILead {
+    id: string
+    name?: string
+    email?: string
+    phone?: string
+    chatflowid: string
+    chatId: string
+    createdDate: Date
+}
+
+export interface IUpsertHistory {
+    id: string
+    chatflowid: string
+    result: string
+    flowData: string
+    date: Date
 }
 
 export interface IComponentNodes {
@@ -171,11 +211,13 @@ export interface IMessage {
 
 export interface IncomingInput {
     question: string
-    history: IMessage[]
     overrideConfig?: ICommonObject
     socketIOClientId?: string
     chatId?: string
     stopNodeId?: string
+    uploads?: IFileUpload[]
+    leadEmail?: string
+    history?: IMessage[]
 }
 
 export interface IActiveChatflows {
@@ -212,3 +254,11 @@ export interface ICredentialReqBody {
 export interface ICredentialReturnResponse extends ICredential {
     plainDataObj: ICredentialDataDecrypted
 }
+
+export interface IUploadFileSizeAndTypes {
+    fileTypes: string[]
+    maxUploadSize: number
+}
+
+// DocumentStore related
+export * from './Interface.DocumentStore'

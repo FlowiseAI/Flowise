@@ -12,7 +12,13 @@ import {
 import { DynamoDBChatMessageHistory } from '@langchain/community/stores/message/dynamodb'
 import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, StoredMessage, BaseMessage } from '@langchain/core/messages'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
-import { convertBaseMessagetoIMessage, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import {
+    convertBaseMessagetoIMessage,
+    getBaseClasses,
+    getCredentialData,
+    getCredentialParam,
+    mapChatMessageToBaseMessage
+} from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
 class DynamoDb_Memory implements INode {
@@ -40,7 +46,8 @@ class DynamoDb_Memory implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['dynamodbMemoryApi']
+            credentialNames: ['dynamodbMemoryApi'],
+            optional: true
         }
         this.inputs = [
             {
@@ -81,11 +88,11 @@ class DynamoDb_Memory implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        return initalizeDynamoDB(nodeData, options)
+        return initializeDynamoDB(nodeData, options)
     }
 }
 
-const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
+const initializeDynamoDB = async (nodeData: INodeData, options: ICommonObject): Promise<BufferMemory> => {
     const tableName = nodeData.inputs?.tableName as string
     const partitionKey = nodeData.inputs?.partitionKey as string
     const region = nodeData.inputs?.region as string
@@ -96,12 +103,17 @@ const initalizeDynamoDB = async (nodeData: INodeData, options: ICommonObject): P
     const accessKeyId = getCredentialParam('accessKey', credentialData, nodeData)
     const secretAccessKey = getCredentialParam('secretAccessKey', credentialData, nodeData)
 
-    const config: DynamoDBClientConfig = {
-        region,
-        credentials: {
+    let credentials: DynamoDBClientConfig['credentials'] | undefined
+    if (accessKeyId && secretAccessKey) {
+        credentials = {
             accessKeyId,
             secretAccessKey
         }
+    }
+
+    const config: DynamoDBClientConfig = {
+        region,
+        credentials
     }
 
     const client = new DynamoDBClient(config ?? {})
@@ -219,13 +231,17 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         await client.send(new UpdateItemCommand(params))
     }
 
-    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+    async getChatMessages(
+        overrideSessionId = '',
+        returnBaseMessages = false,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]> {
         if (!this.dynamodbClient) return []
 
         const dynamoKey = overrideSessionId ? this.overrideDynamoKey(overrideSessionId) : this.dynamoKey
         const tableName = this.tableName
-        const messageAttributeName = this.messageAttributeName
 
+        const messageAttributeName = this.messageAttributeName ? this.messageAttributeName : 'messages'
         const params: GetItemCommandInput = {
             TableName: tableName,
             Key: dynamoKey
@@ -243,6 +259,9 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
             }))
             .filter((x): x is StoredMessage => x.type !== undefined && x.data.content !== undefined)
         const baseMessages = messages.map(mapStoredMessageToChatMessage)
+        if (prependMessages?.length) {
+            baseMessages.unshift(...mapChatMessageToBaseMessage(prependMessages))
+        }
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 

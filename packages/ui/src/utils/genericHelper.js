@@ -185,6 +185,72 @@ export const initNode = (nodeData, newNodeId) => {
     return nodeData
 }
 
+export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNodeData) => {
+    const initNewComponentNodeData = initNode(newComponentNodeData, existingComponentNodeData.id)
+
+    // Update credentials with existing credentials
+    if (existingComponentNodeData.credential) {
+        initNewComponentNodeData.credential = existingComponentNodeData.credential
+    }
+
+    // Update inputs with existing inputs
+    if (existingComponentNodeData.inputs) {
+        for (const key in existingComponentNodeData.inputs) {
+            if (key in initNewComponentNodeData.inputs) {
+                initNewComponentNodeData.inputs[key] = existingComponentNodeData.inputs[key]
+            }
+        }
+    }
+
+    // Update outputs with existing outputs
+    if (existingComponentNodeData.outputs) {
+        for (const key in existingComponentNodeData.outputs) {
+            if (key in initNewComponentNodeData.outputs) {
+                initNewComponentNodeData.outputs[key] = existingComponentNodeData.outputs[key]
+            }
+        }
+    }
+
+    return initNewComponentNodeData
+}
+
+export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
+    const removedEdges = []
+    for (const edge of edges) {
+        const targetNodeId = edge.targetHandle.split('-')[0]
+        const sourceNodeId = edge.sourceHandle.split('-')[0]
+
+        if (targetNodeId === newComponentNodeData.id) {
+            // Check if targetHandle is in inputParams or inputAnchors
+            const inputParam = newComponentNodeData.inputParams.find((param) => param.id === edge.targetHandle)
+            const inputAnchor = newComponentNodeData.inputAnchors.find((param) => param.id === edge.targetHandle)
+
+            if (!inputParam && !inputAnchor) {
+                removedEdges.push(edge)
+            }
+        }
+
+        if (sourceNodeId === newComponentNodeData.id) {
+            if (newComponentNodeData.outputAnchors?.length) {
+                for (const outputAnchor of newComponentNodeData.outputAnchors) {
+                    const outputAnchorType = outputAnchor.type
+                    if (outputAnchorType === 'options') {
+                        if (!outputAnchor.options.find((outputOption) => outputOption.id === edge.sourceHandle)) {
+                            removedEdges.push(edge)
+                        }
+                    } else {
+                        if (outputAnchor.id !== edge.sourceHandle) {
+                            removedEdges.push(edge)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return removedEdges
+}
+
 export const isValidConnection = (connection, reactFlowInstance) => {
     const sourceHandle = connection.sourceHandle
     const targetHandle = connection.targetHandle
@@ -234,6 +300,15 @@ export const convertDateStringToDateObject = (dateString) => {
 
 export const getFileName = (fileBase64) => {
     let fileNames = []
+    if (fileBase64.startsWith('FILE-STORAGE::')) {
+        const names = fileBase64.substring(14)
+        if (names.includes('[') && names.includes(']')) {
+            const files = JSON.parse(names)
+            return files.join(', ')
+        } else {
+            return fileBase64.substring(14)
+        }
+    }
     if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
         const files = JSON.parse(fileBase64)
         for (const file of files) {
@@ -355,6 +430,11 @@ export const getUpsertDetails = (nodes, edges) => {
                     innerNodes.push(nodes.find((node) => node.data.id === embeddingsId))
                 }
 
+                if (vsNode.data.inputs.recordManager) {
+                    const recordManagerId = vsNode.data.inputs.recordManager.replace(/{{|}}/g, '').split('.')[0]
+                    innerNodes.push(nodes.find((node) => node.data.id === recordManagerId))
+                }
+
                 for (const doc of connectedDocs) {
                     const docId = doc.replace(/{{|}}/g, '').split('.')[0]
                     const docNode = nodes.find((node) => node.data.id === docId)
@@ -469,14 +549,14 @@ export const removeDuplicateURL = (message) => {
     if (!message.sourceDocuments) return newSourceDocuments
 
     message.sourceDocuments.forEach((source) => {
-        if (source.metadata && source.metadata.source) {
+        if (source && source.metadata && source.metadata.source) {
             if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
                 visitedURLs.push(source.metadata.source)
                 newSourceDocuments.push(source)
             } else if (!isValidURL(source.metadata.source)) {
                 newSourceDocuments.push(source)
             }
-        } else {
+        } else if (source) {
             newSourceDocuments.push(source)
         }
     })
@@ -505,11 +585,10 @@ export const formatDataGridRows = (rows) => {
     }
 }
 
-export const setLocalStorageChatflow = (chatflowid, chatId, chatHistory) => {
+export const setLocalStorageChatflow = (chatflowid, chatId, saveObj = {}) => {
     const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
-    const obj = {}
+    const obj = { ...saveObj }
     if (chatId) obj.chatId = chatId
-    if (chatHistory) obj.chatHistory = chatHistory
 
     if (!chatDetails) {
         localStorage.setItem(`${chatflowid}_INTERNAL`, JSON.stringify(obj))
@@ -522,6 +601,34 @@ export const setLocalStorageChatflow = (chatflowid, chatId, chatHistory) => {
             obj.chatId = chatId
             localStorage.setItem(`${chatflowid}_INTERNAL`, JSON.stringify(obj))
         }
+    }
+}
+
+export const getLocalStorageChatflow = (chatflowid) => {
+    const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
+    if (!chatDetails) return {}
+    try {
+        return JSON.parse(chatDetails)
+    } catch (e) {
+        return {}
+    }
+}
+
+export const removeLocalStorageChatHistory = (chatflowid) => {
+    const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
+    if (!chatDetails) return
+    try {
+        const parsedChatDetails = JSON.parse(chatDetails)
+        if (parsedChatDetails.lead) {
+            // Dont remove lead when chat is cleared
+            const obj = { lead: parsedChatDetails.lead }
+            localStorage.removeItem(`${chatflowid}_INTERNAL`)
+            localStorage.setItem(`${chatflowid}_INTERNAL`, JSON.stringify(obj))
+        } else {
+            localStorage.removeItem(`${chatflowid}_INTERNAL`)
+        }
+    } catch (e) {
+        return
     }
 }
 
@@ -606,4 +713,61 @@ export const getConfigExamplesForCurl = (configData, bodyType, isMultiple, stopN
         else finalStr += bodyType === 'json' ? `, ` : ` \\`
     }
     return finalStr
+}
+
+export const getOS = () => {
+    let userAgent = window.navigator.userAgent.toLowerCase(),
+        macosPlatforms = /(macintosh|macintel|macppc|mac68k|macos)/i,
+        windowsPlatforms = /(win32|win64|windows|wince)/i,
+        iosPlatforms = /(iphone|ipad|ipod)/i,
+        os = null
+
+    if (macosPlatforms.test(userAgent)) {
+        os = 'macos'
+    } else if (iosPlatforms.test(userAgent)) {
+        os = 'ios'
+    } else if (windowsPlatforms.test(userAgent)) {
+        os = 'windows'
+    } else if (/android/.test(userAgent)) {
+        os = 'android'
+    } else if (!os && /linux/.test(userAgent)) {
+        os = 'linux'
+    }
+
+    return os
+}
+
+export const formatBytes = (number) => {
+    if (number == null || number === undefined || number <= 0) {
+        return '0 Bytes'
+    }
+    var scaleCounter = 0
+    var scaleInitials = [' Bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB']
+    while (number >= 1024 && scaleCounter < scaleInitials.length - 1) {
+        number /= 1024
+        scaleCounter++
+    }
+    if (scaleCounter >= scaleInitials.length) scaleCounter = scaleInitials.length - 1
+    let compactNumber = number
+        .toFixed(2)
+        .replace(/\.?0+$/, '')
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    compactNumber += scaleInitials[scaleCounter]
+    return compactNumber.trim()
+}
+
+// Formatter from: https://stackoverflow.com/a/9462382
+export const kFormatter = (num) => {
+    const lookup = [
+        { value: 1, symbol: '' },
+        { value: 1e3, symbol: 'k' },
+        { value: 1e6, symbol: 'M' },
+        { value: 1e9, symbol: 'G' },
+        { value: 1e12, symbol: 'T' },
+        { value: 1e15, symbol: 'P' },
+        { value: 1e18, symbol: 'E' }
+    ]
+    const regexp = /\.0+$|(?<=\.[0-9]*[1-9])0+$/
+    const item = lookup.findLast((item) => num >= item.value)
+    return item ? (num / item.value).toFixed(1).replace(regexp, '').concat(item.symbol) : '0'
 }

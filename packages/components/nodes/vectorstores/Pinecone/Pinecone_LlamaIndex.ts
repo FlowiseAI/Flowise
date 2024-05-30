@@ -2,7 +2,9 @@ import {
     BaseNode,
     Document,
     Metadata,
-    VectorStore,
+    IEmbedModel,
+    VectorStoreBase,
+    VectorStoreNoEmbedModel,
     VectorStoreQuery,
     VectorStoreQueryResult,
     serviceContextFromDefaults,
@@ -13,7 +15,7 @@ import {
 import { FetchResponse, Index, Pinecone, ScoredPineconeRecord } from '@pinecone-database/pinecone'
 import { flatten } from 'lodash'
 import { Document as LCDocument } from 'langchain/document'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { flattenObject, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class PineconeLlamaIndex_VectorStores implements INode {
@@ -110,7 +112,7 @@ class PineconeLlamaIndex_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const indexName = nodeData.inputs?.pineconeIndex as string
             const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
             const docs = nodeData.inputs?.document as LCDocument[]
@@ -123,7 +125,8 @@ class PineconeLlamaIndex_VectorStores implements INode {
             const pcvs = new PineconeVectorStore({
                 indexName,
                 apiKey: pineconeApiKey,
-                namespace: pineconeNamespace
+                namespace: pineconeNamespace,
+                embedModel: embeddings
             })
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
@@ -144,6 +147,7 @@ class PineconeLlamaIndex_VectorStores implements INode {
 
             try {
                 await VectorStoreIndex.fromDocuments(llamadocs, { serviceContext, storageContext })
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }
@@ -164,7 +168,8 @@ class PineconeLlamaIndex_VectorStores implements INode {
 
         const obj: PineconeParams = {
             indexName,
-            apiKey: pineconeApiKey
+            apiKey: pineconeApiKey,
+            embedModel: embeddings
         }
 
         if (pineconeNamespace) obj.namespace = pineconeNamespace
@@ -210,9 +215,9 @@ type PineconeParams = {
     namespace?: string
     chunkSize?: number
     queryFilter?: object
-}
+} & IEmbedModel
 
-class PineconeVectorStore implements VectorStore {
+class PineconeVectorStore extends VectorStoreBase implements VectorStoreNoEmbedModel {
     storesText: boolean = true
     db?: Pinecone
     indexName: string
@@ -222,6 +227,7 @@ class PineconeVectorStore implements VectorStore {
     queryFilter?: object
 
     constructor(params: PineconeParams) {
+        super(params?.embedModel)
         this.indexName = params?.indexName
         this.apiKey = params?.apiKey
         this.namespace = params?.namespace ?? ''

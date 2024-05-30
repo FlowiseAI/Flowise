@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
-import { IChatFlow } from '../../Interface'
+import { ChatflowType, IChatFlow } from '../../Interface'
 
 @Entity()
 export class ChatFlow implements IChatFlow {
@@ -31,12 +31,20 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     analytic?: string
 
-    @CreateDateColumn()
-    createdDate: Date
-
-    @UpdateDateColumn()
-    updatedDate: Date
+    @Column({ nullable: true, type: 'text' })
+    speechToText?: string
 
     @Column({ nullable: true, type: 'text' })
     category?: string
+
+    @Column({ nullable: true, type: 'text' })
+    type?: ChatflowType
+
+    @Column({ type: 'timestamp' })
+    @CreateDateColumn()
+    createdDate: Date
+
+    @Column({ type: 'timestamp' })
+    @UpdateDateColumn()
+    updatedDate: Date
 }

@@ -10,7 +10,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-English | [中文](./README-ZH.md)
+English | [中文](./README-ZH.md) | [日本語](./README-JA.md) | [한국어](./README-KR.md)
 
 <h3>Drag & drop UI to build your customized LLM flow</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
@@ -75,9 +75,9 @@ Flowise has 3 different modules in a single mono repository.
 
 ### Prerequisite
 
--   Install [Yarn v1](https://classic.yarnpkg.com/en/docs/install)
+-   Install [PNPM](https://pnpm.io/installation)
     ```bash
-    npm i -g yarn
+    npm i -g pnpm
     ```
 
 ### Setup
@@ -97,31 +97,31 @@ Flowise has 3 different modules in a single mono repository.
 3. Install all dependencies of all modules:
 
     ```bash
-    yarn install
+    pnpm install
     ```
 
 4. Build all the code:
 
     ```bash
-    yarn build
+    pnpm build
     ```
 
 5. Start the app:
 
     ```bash
-    yarn start
+    pnpm start
     ```
 
     You can now access the app on [http://localhost:3000](http://localhost:3000)
 
 6. For development build:
 
-    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/ui`
+    - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
     - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
     - Run
 
         ```bash
-        yarn dev
+        pnpm dev
         ```
 
     Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)

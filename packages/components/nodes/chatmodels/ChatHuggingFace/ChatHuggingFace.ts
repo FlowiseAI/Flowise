@@ -42,8 +42,7 @@ class ChatHuggingFace_ChatModels implements INode {
                 name: 'model',
                 type: 'string',
                 description: 'If using own inference endpoint, leave this blank',
-                placeholder: 'gpt2',
-                optional: true
+                placeholder: 'gpt2'
             },
             {
                 label: 'Endpoint',
