@@ -223,10 +223,17 @@ class SupabaseUpsertVectorStore extends SupabaseVectorStore {
             metadata: documents[idx].metadata
         }))
 
+        let idx = 0
+        const { count } = await this.client.from(this.tableName).select('*', { count: 'exact', head: true })
+        if (count) {
+            idx = count
+        }
+
         let returnedIds: string[] = []
         for (let i = 0; i < rows.length; i += this.upsertBatchSize) {
-            const chunk = rows.slice(i, i + this.upsertBatchSize).map((row, index) => {
-                return { id: index, ...row }
+            const chunk = rows.slice(i, i + this.upsertBatchSize).map((row) => {
+                idx = idx += 1
+                return { id: idx, ...row }
             })
 
             const res = await this.client.from(this.tableName).upsert(chunk).select()
@@ -237,6 +244,7 @@ class SupabaseUpsertVectorStore extends SupabaseVectorStore {
                 returnedIds = returnedIds.concat(res.data.map((row) => row.id))
             }
         }
+
         return returnedIds
     }
 }
