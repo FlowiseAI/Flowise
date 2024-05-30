@@ -168,17 +168,10 @@ const Canvas = () => {
 
     const handleDeleteFlow = async () => {
         const confirmPayload = {
-<<<<<<< HEAD
             title: `Удалить`,
             description: `Удалить Проект ${chatflow.name}?`,
             confirmButtonName: 'Удалить',
             cancelButtonName: 'Отмена'
-=======
-            title: `Delete`,
-            description: `Delete ${canvasTitle} ${chatflow.name}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
->>>>>>> upstream/main
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -348,11 +341,7 @@ const Canvas = () => {
     const saveChatflowSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-<<<<<<< HEAD
             message: 'Проект сохранен',
-=======
-            message: `${canvasTitle} saved`,
->>>>>>> upstream/main
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -417,11 +406,7 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-<<<<<<< HEAD
             errorFailed(`Не удалось получить поток проекта: ${getSpecificChatflowApi.error.response.data.message}`)
-=======
-            errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
->>>>>>> upstream/main
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -435,11 +420,7 @@ const Canvas = () => {
             saveChatflowSuccess()
             window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-<<<<<<< HEAD
             errorFailed(`Ошибка сохранения проекта: ${createNewChatflowApi.error.response.data.message}`)
-=======
-            errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
->>>>>>> upstream/main
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -451,40 +432,12 @@ const Canvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-<<<<<<< HEAD
             errorFailed(`Ошибка сохранения проекта: ${updateChatflowApi.error.response.data.message}`)
-=======
-            errorFailed(`Failed to save ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
->>>>>>> upstream/main
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateChatflowApi.data, updateChatflowApi.error])
 
-<<<<<<< HEAD
-    // Test chatflow failed
-    useEffect(() => {
-        if (testChatflowApi.error) {
-            enqueueSnackbar({
-                message: 'Тест проекта провален',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'error',
-                    persist: true,
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [testChatflowApi.error])
-
-=======
->>>>>>> upstream/main
     useEffect(() => {
         setChatflow(canvasDataStore.chatflow)
         if (canvasDataStore.chatflow) {
