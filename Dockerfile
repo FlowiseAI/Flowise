@@ -4,7 +4,7 @@
 # Run image
 # docker run -d -p 3000:3000 flowise
 
-FROM node:18-alpine
+FROM node:20-alpine
 RUN apk add --update libc6-compat python3 make g++
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev
@@ -13,7 +13,7 @@ RUN apk add --no-cache build-base cairo-dev pango-dev
 RUN apk add --no-cache chromium
 
 #install PNPM globaly
-RUN npm install -g pnpm@8.14.0
+RUN npm install -g pnpm
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser

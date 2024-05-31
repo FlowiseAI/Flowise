@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import { ClickAwayListener, Paper, Popper, Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconMessage, IconX, IconEraser, IconArrowsMaximize } from '@tabler/icons'
+import { IconMessage, IconX, IconEraser, IconArrowsMaximize } from '@tabler/icons-react'
 
 // project import
 import { StyledFab } from '@/ui-component/button/StyledFab'
@@ -23,7 +23,10 @@ import useNotifier from '@/utils/useNotifier'
 // Const
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
-export const ChatPopUp = ({ chatflowid }) => {
+// Utils
+import { getLocalStorageChatflow, removeLocalStorageChatHistory } from '@/utils/genericHelper'
+
+export const ChatPopUp = ({ chatflowid, isAgentCanvas }) => {
     const theme = useTheme()
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
@@ -86,11 +89,10 @@ export const ChatPopUp = ({ chatflowid }) => {
 
         if (isConfirmed) {
             try {
-                const chatDetails = localStorage.getItem(`${chatflowid}_INTERNAL`)
-                if (!chatDetails) return
-                const objChatDetails = JSON.parse(chatDetails)
+                const objChatDetails = getLocalStorageChatflow(chatflowid)
+                if (!objChatDetails.chatId) return
                 await chatmessageApi.deleteChatmessage(chatflowid, { chatId: objChatDetails.chatId, chatType: 'INTERNAL' })
-                localStorage.removeItem(`${chatflowid}_INTERNAL`)
+                removeLocalStorageChatHistory(chatflowid)
                 resetChatDialog()
                 enqueueSnackbar({
                     message: 'Succesfully cleared all chat history',
@@ -199,7 +201,13 @@ export const ChatPopUp = ({ chatflowid }) => {
                                     boxShadow
                                     shadow={theme.shadows[16]}
                                 >
-                                    <ChatMessage chatflowid={chatflowid} open={open} previews={previews} setPreviews={setPreviews} />
+                                    <ChatMessage
+                                        isAgentCanvas={isAgentCanvas}
+                                        chatflowid={chatflowid}
+                                        open={open}
+                                        previews={previews}
+                                        setPreviews={setPreviews}
+                                    />
                                 </MainCard>
                             </ClickAwayListener>
                         </Paper>
@@ -209,6 +217,7 @@ export const ChatPopUp = ({ chatflowid }) => {
             <ChatExpandDialog
                 show={showExpandDialog}
                 dialogProps={expandDialogProps}
+                isAgentCanvas={isAgentCanvas}
                 onClear={clearChat}
                 onCancel={() => setShowExpandDialog(false)}
                 previews={previews}
@@ -218,4 +227,4 @@ export const ChatPopUp = ({ chatflowid }) => {
     )
 }
 
-ChatPopUp.propTypes = { chatflowid: PropTypes.string }
+ChatPopUp.propTypes = { chatflowid: PropTypes.string, isAgentCanvas: PropTypes.bool }

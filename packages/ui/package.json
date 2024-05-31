@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "1.6.5",
+    "version": "1.8.0",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -18,7 +18,7 @@
         "@mui/lab": "5.0.0-alpha.156",
         "@mui/material": "5.15.0",
         "@mui/x-data-grid": "6.8.0",
-        "@tabler/icons": "^1.39.1",
+        "@tabler/icons-react": "^3.3.0",
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",

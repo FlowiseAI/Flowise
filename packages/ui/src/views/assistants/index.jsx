@@ -7,7 +7,7 @@ import { Box, Stack, Button, Skeleton } from '@mui/material'
 import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
-import ToolEmptySVG from '@/assets/images/tools_empty.svg'
+import AssistantEmptySVG from '@/assets/images/assistant_empty.svg'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import AssistantDialog from './AssistantDialog'
 import LoadAssistantDialog from './LoadAssistantDialog'
@@ -19,7 +19,7 @@ import assistantsApi from '@/api/assistants'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconFileUpload } from '@tabler/icons'
+import { IconPlus, IconFileUpload } from '@tabler/icons-react'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 
@@ -145,9 +145,9 @@ const Assistants = () => {
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
                                     <img
-                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
-                                        src={ToolEmptySVG}
-                                        alt='ToolEmptySVG'
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                        src={AssistantEmptySVG}
+                                        alt='AssistantEmptySVG'
                                     />
                                 </Box>
                                 <div>No Assistants Added Yet</div>

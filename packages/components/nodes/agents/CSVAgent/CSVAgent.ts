@@ -7,9 +7,7 @@ import { getBaseClasses } from '../../../src/utils'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
-import path from 'path'
-import { getStoragePath } from '../../../src'
-import fs from 'fs'
+import { getFileFromStorage } from '../../../src'
 
 class CSV_Agents implements INode {
     label: string
@@ -114,8 +112,7 @@ class CSV_Agents implements INode {
             const chatflowid = options.chatflowid
 
             for (const file of files) {
-                const fileInStorage = path.join(getStoragePath(), chatflowid, file)
-                const fileData = fs.readFileSync(fileInStorage)
+                const fileData = await getFileFromStorage(file, chatflowid)
                 base64String += fileData.toString('base64')
             }
         } else {

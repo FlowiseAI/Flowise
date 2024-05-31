@@ -32,7 +32,7 @@ class Qdrant_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant'
         this.name = 'qdrant'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'
@@ -85,6 +85,15 @@ class Qdrant_VectorStores implements INode {
                 type: 'number',
                 default: 1536,
                 additionalParams: true
+            },
+            {
+                label: 'Upsert Batch Size',
+                name: 'batchSize',
+                type: 'number',
+                step: 1,
+                description: 'Upsert in batches of size N',
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Similarity',
@@ -159,6 +168,7 @@ class Qdrant_VectorStores implements INode {
             const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
             const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
             const recordManager = nodeData.inputs?.recordManager
+            const _batchSize = nodeData.inputs?.batchSize
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
@@ -218,10 +228,21 @@ class Qdrant_VectorStores implements INode {
                         }))
 
                         try {
-                            await client.upsert(collectionName, {
-                                wait: true,
-                                points
-                            })
+                            if (_batchSize) {
+                                const batchSize = parseInt(_batchSize, 10)
+                                for (let i = 0; i < points.length; i += batchSize) {
+                                    const batchPoints = points.slice(i, i + batchSize)
+                                    await client.upsert(collectionName, {
+                                        wait: true,
+                                        points: batchPoints
+                                    })
+                                }
+                            } else {
+                                await client.upsert(collectionName, {
+                                    wait: true,
+                                    points
+                                })
+                            }
                         } catch (e: any) {
                             const error = new Error(`${e?.status ?? 'Undefined error code'} ${e?.message}: ${e?.data?.status?.error}`)
                             throw error
@@ -257,7 +278,15 @@ class Qdrant_VectorStores implements INode {
 
                     return res
                 } else {
-                    await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+                    if (_batchSize) {
+                        const batchSize = parseInt(_batchSize, 10)
+                        for (let i = 0; i < finalDocs.length; i += batchSize) {
+                            const batch = finalDocs.slice(i, i + batchSize)
+                            await QdrantVectorStore.fromDocuments(batch, embeddings, dbConfig)
+                        }
+                    } else {
+                        await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
+                    }
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
@@ -325,6 +354,9 @@ class Qdrant_VectorStores implements INode {
             return retriever
         } else if (output === 'vectorStore') {
             ;(vectorStore as any).k = k
+            if (queryFilter) {
+                ;(vectorStore as any).filter = retrieverConfig.filter
+            }
             return vectorStore
         }
         return vectorStore

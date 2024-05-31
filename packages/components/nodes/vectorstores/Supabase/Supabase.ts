@@ -2,7 +2,7 @@ import { flatten } from 'lodash'
 import { createClient } from '@supabase/supabase-js'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
-import { SupabaseVectorStore, SupabaseLibArgs } from '@langchain/community/vectorstores/supabase'
+import { SupabaseVectorStore, SupabaseLibArgs, SupabaseFilterRPCCall } from '@langchain/community/vectorstores/supabase'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
@@ -25,7 +25,7 @@ class Supabase_VectorStores implements INode {
     constructor() {
         this.label = 'Supabase'
         this.name = 'supabase'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Supabase'
         this.icon = 'supabase.svg'
         this.category = 'Vector Stores'
@@ -81,6 +81,19 @@ class Supabase_VectorStores implements INode {
                 additionalParams: true
             },
             {
+                label: 'Supabase RPC Filter',
+                name: 'supabaseRPCFilter',
+                type: 'string',
+                rows: 4,
+                placeholder: `filter("metadata->a::int", "gt", 5)
+.filter("metadata->c::int", "gt", 7)
+.filter("metadata->>stuff", "eq", "right");`,
+                description:
+                    'Query builder-style filtering. If this is set, will override the metadata filter. Refer <a href="https://js.langchain.com/v0.1/docs/integrations/vectorstores/supabase/#metadata-query-builder-filtering" target="_blank">here</a> for more information',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -130,7 +143,7 @@ class Supabase_VectorStores implements INode {
 
             try {
                 if (recordManager) {
-                    const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, {
+                    const vectorStore = await SupabaseUpsertVectorStore.fromExistingIndex(embeddings, {
                         client,
                         tableName: tableName,
                         queryName: queryName
@@ -148,7 +161,7 @@ class Supabase_VectorStores implements INode {
                     })
                     return res
                 } else {
-                    await SupabaseVectorStore.fromDocuments(finalDocs, embeddings, {
+                    await SupabaseUpsertVectorStore.fromDocuments(finalDocs, embeddings, {
                         client,
                         tableName: tableName,
                         queryName: queryName
@@ -167,6 +180,7 @@ class Supabase_VectorStores implements INode {
         const queryName = nodeData.inputs?.queryName as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const supabaseMetadataFilter = nodeData.inputs?.supabaseMetadataFilter
+        const supabaseRPCFilter = nodeData.inputs?.supabaseRPCFilter
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const supabaseApiKey = getCredentialParam('supabaseApiKey', credentialData, nodeData)
@@ -184,9 +198,54 @@ class Supabase_VectorStores implements INode {
             obj.filter = metadatafilter
         }
 
+        if (supabaseRPCFilter) {
+            const funcString = `return rpc.${supabaseRPCFilter};`
+            const funcFilter = new Function('rpc', funcString)
+            obj.filter = (rpc: SupabaseFilterRPCCall) => {
+                return funcFilter(rpc)
+            }
+        }
+
         const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, obj)
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+        return resolveVectorStoreOrRetriever(nodeData, vectorStore, obj.filter)
+    }
+}
+
+class SupabaseUpsertVectorStore extends SupabaseVectorStore {
+    async addVectors(vectors: number[][], documents: Document[]): Promise<string[]> {
+        if (vectors.length === 0) {
+            return []
+        }
+        const rows = vectors.map((embedding, idx) => ({
+            content: documents[idx].pageContent,
+            embedding,
+            metadata: documents[idx].metadata
+        }))
+
+        let idx = 0
+        const { count } = await this.client.from(this.tableName).select('*', { count: 'exact', head: true })
+        if (count) {
+            idx = count
+        }
+
+        let returnedIds: string[] = []
+        for (let i = 0; i < rows.length; i += this.upsertBatchSize) {
+            const chunk = rows.slice(i, i + this.upsertBatchSize).map((row) => {
+                idx = idx += 1
+                return { id: idx, ...row }
+            })
+
+            const res = await this.client.from(this.tableName).upsert(chunk).select()
+            if (res.error) {
+                throw new Error(`Error inserting: ${res.error.message} ${res.status} ${res.statusText}`)
+            }
+            if (res.data) {
+                returnedIds = returnedIds.concat(res.data.map((row) => row.id))
+            }
+        }
+
+        return returnedIds
     }
 }
 

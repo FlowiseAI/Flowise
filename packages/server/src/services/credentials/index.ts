@@ -111,6 +111,8 @@ const updateCredential = async (credentialId: string, requestBody: any): Promise
         if (!credential) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
         }
+        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+        requestBody.plainDataObj = { ...decryptedCredentialData, ...requestBody.plainDataObj }
         const updateCredential = await transformToCredentialEntity(requestBody)
         await appServer.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
         const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)

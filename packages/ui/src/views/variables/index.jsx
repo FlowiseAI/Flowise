@@ -39,7 +39,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus, IconVariable } from '@tabler/icons'
+import { IconTrash, IconEdit, IconX, IconPlus, IconVariable } from '@tabler/icons-react'
 import VariablesEmptySVG from '@/assets/images/variables_empty.svg'
 
 // const
@@ -218,7 +218,7 @@ const Variables = () => {
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
                                     <img
-                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
                                         src={VariablesEmptySVG}
                                         alt='VariablesEmptySVG'
                                     />

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import _ from 'lodash'
 import nodesService from '../../services/nodes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
@@ -18,6 +19,22 @@ const getNodeByName = async (req: Request, res: Response, next: NextFunction) =>
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: nodesController.getNodeByName - name not provided!`)
         }
         const apiResponse = await nodesService.getNodeByName(req.params.name)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getNodesByCategory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.name === 'undefined' || req.params.name === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: nodesController.getNodesByCategory - name not provided!`
+            )
+        }
+        const name = _.unescape(req.params.name)
+        const apiResponse = await nodesService.getAllNodesForCategory(name)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -77,5 +94,6 @@ export default {
     getNodeByName,
     getSingleNodeIcon,
     getSingleNodeAsyncOptions,
-    executeCustomFunction
+    executeCustomFunction,
+    getNodesByCategory
 }

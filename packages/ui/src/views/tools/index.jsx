@@ -18,7 +18,7 @@ import toolsApi from '@/api/tools'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconFileUpload } from '@tabler/icons'
+import { IconPlus, IconFileUpload } from '@tabler/icons-react'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 
@@ -165,7 +165,7 @@ const Tools = () => {
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
                                     <img
-                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
                                         src={ToolEmptySVG}
                                         alt='ToolEmptySVG'
                                     />

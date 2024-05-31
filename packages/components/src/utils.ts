@@ -24,6 +24,7 @@ export const availableDependencies = [
     '@gomomento/sdk',
     '@gomomento/sdk-core',
     '@google-ai/generativelanguage',
+    '@google/generative-ai',
     '@huggingface/inference',
     '@notionhq/client',
     '@opensearch-project/opensearch',
@@ -307,7 +308,7 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
  */
 function normalizeURL(urlString: string): string {
     const urlObj = new URL(urlString)
-    const hostPath = urlObj.hostname + urlObj.pathname
+    const hostPath = urlObj.hostname + urlObj.pathname + urlObj.search
     if (hostPath.length > 0 && hostPath.slice(-1) == '/') {
         // handling trailing slash
         return hostPath.slice(0, -1)
@@ -659,6 +660,8 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
 export const flattenObject = (obj: ICommonObject, parentKey?: string) => {
     let result: any = {}
 
+    if (!obj) return result
+
     Object.keys(obj).forEach((key) => {
         const value = obj[key]
         const _key = parentKey ? parentKey + '.' + key : key
@@ -767,11 +770,4 @@ export const prepareSandboxVars = (variables: IVariable[]) => {
         }
     }
     return vars
-}
-
-/**
- * Prepare storage path
- */
-export const getStoragePath = (): string => {
-    return process.env.BLOB_STORAGE_PATH ? path.join(process.env.BLOB_STORAGE_PATH) : path.join(getUserHome(), '.flowise', 'storage')
 }
