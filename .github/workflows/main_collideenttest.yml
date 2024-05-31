@@ -1,0 +1,71 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy Node.js app to Azure Web App - collideEntTest
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+          npm run test --if-present
+
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v3
+        with:
+          name: node-app
+          path: release.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: node-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+      
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D2D5DB6FB79443DBBA47827F6E2C32FD }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D4BCCC7E4CCF4DA9B7040286150DD8E7 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2572480406E343E3A0B28CAD087196A0 }}
+
+      - name: 'Deploy to Azure Web App'
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'collideEntTest'
+          slot-name: 'Production'
+          package: .
+          
