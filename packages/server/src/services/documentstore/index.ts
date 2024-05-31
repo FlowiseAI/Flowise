@@ -180,7 +180,7 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
         })
         if (found) {
             found.totalChars = totalChars
-            found.id = entity.id
+            found.id = fileId
             found.status = entity.status
         }
         const PAGE_SIZE = 50
