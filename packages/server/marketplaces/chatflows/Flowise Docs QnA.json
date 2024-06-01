@@ -1,5 +1,5 @@
 {
-    "description": "Flowise Docs Github QnA using Retrieval Augmented Generation (RAG)",
+    "description": "Docs Github QnA using Retrieval Augmented Generation (RAG)",
     "badge": "POPULAR",
     "usecases": ["Documents QnA"],
     "framework": ["Langchain"],
@@ -286,7 +286,7 @@
                         "label": "Repo Link",
                         "name": "repoLink",
                         "type": "string",
-                        "placeholder": "https://github.com/FlowiseAI/Flowise",
+                        "placeholder": "https://github.com/Answers-AI/daisy",
                         "id": "github_0-input-repoLink-string"
                     },
                     {
@@ -351,7 +351,7 @@
                     }
                 ],
                 "inputs": {
-                    "repoLink": "https://github.com/FlowiseAI/FlowiseDocs",
+                    "repoLink": "https://github.com/Answers-AI/daisy",
                     "branch": "main",
                     "recursive": true,
                     "textSplitter": "{{markdownTextSplitter_0.data.instance}}",

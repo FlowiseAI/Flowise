@@ -24,6 +24,8 @@ import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlo
 import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
+import { AddAnswersConfig1714692854264 } from './1714692854264-AddAnswersConfig'
+import { AddUser1716422641414 } from './1716422641414-AddUser'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -43,6 +45,8 @@ export const mysqlMigrations = [
     AddSpeechToText1706364937060,
     AddUpsertHistoryEntity1709814301358,
     AddFeedback1707213626553,
+    AddAnswersConfig1714692854264,
+    AddUser1716422641414,
     AddDocumentStore1711637331047,
     AddLead1710832127079,
     AddLeadToChatMessage1711538023578,

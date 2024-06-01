@@ -1,2 +1,6 @@
 packages:
-    - 'packages/*'
+    - 'packages/components'
+    - 'packages/server'
+    - 'packages/ui'
+    - 'packages/embed'
+    - 'packages/embed-react'

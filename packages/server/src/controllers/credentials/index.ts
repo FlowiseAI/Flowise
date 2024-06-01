@@ -11,7 +11,7 @@ const createCredential = async (req: Request, res: Response, next: NextFunction)
                 `Error: credentialsController.createCredential - body not provided!`
             )
         }
-        const apiResponse = await credentialsService.createCredential(req.body)
+        const apiResponse = await credentialsService.createCredential(req.body, req.user?.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -26,7 +26,7 @@ const deleteCredentials = async (req: Request, res: Response, next: NextFunction
                 `Error: credentialsController.deleteCredentials - id not provided!`
             )
         }
-        const apiResponse = await credentialsService.deleteCredentials(req.params.id)
+        const apiResponse = await credentialsService.deleteCredentials(req.params.id, req.user?.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -50,7 +50,7 @@ const getCredentialById = async (req: Request, res: Response, next: NextFunction
                 `Error: credentialsController.getCredentialById - id not provided!`
             )
         }
-        const apiResponse = await credentialsService.getCredentialById(req.params.id)
+        const apiResponse = await credentialsService.getCredentialById(req.params.id, req.user?.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -71,7 +71,7 @@ const updateCredential = async (req: Request, res: Response, next: NextFunction)
                 `Error: credentialsController.updateCredential - body not provided!`
             )
         }
-        const apiResponse = await credentialsService.updateCredential(req.params.id, req.body)
+        const apiResponse = await credentialsService.updateCredential(req.params.id, req.body, req.user?.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

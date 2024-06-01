@@ -358,7 +358,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                   uploads: incomingInput.uploads,
                   socketIO,
                   socketIOClientId: incomingInput.socketIOClientId,
-                  prependMessages
+                  prependMessages,
+                  user: req.user,
+                  sessionId
               })
             : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,
@@ -368,7 +370,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                   databaseEntities,
                   analytic: chatflow.analytic,
                   uploads: incomingInput.uploads,
-                  prependMessages
+                  prependMessages,
+                  user: req.user,
+                  sessionId
               })
         result = typeof result === 'string' ? { text: result } : result
 

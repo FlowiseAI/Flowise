@@ -21,13 +21,7 @@ import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
 
-declare global {
-    namespace Express {
-        interface Request {
-            io?: Server
-        }
-    }
-}
+import authenticationHandlerMiddleware from './middlewares/authentication'
 
 export class App {
     app: express.Application
@@ -64,7 +58,7 @@ export class App {
             await getEncryptionKey()
 
             // Initialize Rate Limit
-            const AllChatFlow: IChatFlow[] = await getAllChatFlow()
+            const AllChatFlow: IChatFlow[] = await getAllChatFlow({})
             await initializeRateLimiter(AllChatFlow)
 
             // Initialize cache pool
@@ -115,37 +109,38 @@ export class App {
             req.io = socketIO
             next()
         })
-
+        const whitelistURLs = [
+            '/api/v1/verify/apikey/',
+            '/api/v1/chatflows/apikey/',
+            '/api/v1/public-chatflows',
+            '/api/v1/public-chatbotConfig',
+            '/api/v1/prediction/',
+            '/api/v1/vector/upsert/',
+            '/api/v1/node-icon/',
+            '/api/v1/components-credentials-icon/',
+            '/api/v1/chatflows-streaming',
+            '/api/v1/chatflows-uploads',
+            '/api/v1/openai-assistants-file/download',
+            '/api/v1/feedback',
+            '/api/v1/leads',
+            '/api/v1/get-upload-file',
+            '/api/v1/ip',
+            '/api/v1/ping'
+        ]
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
             const password = process.env.FLOWISE_PASSWORD
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
-            const whitelistURLs = [
-                '/api/v1/verify/apikey/',
-                '/api/v1/chatflows/apikey/',
-                '/api/v1/public-chatflows',
-                '/api/v1/public-chatbotConfig',
-                '/api/v1/prediction/',
-                '/api/v1/vector/upsert/',
-                '/api/v1/node-icon/',
-                '/api/v1/components-credentials-icon/',
-                '/api/v1/chatflows-streaming',
-                '/api/v1/chatflows-uploads',
-                '/api/v1/openai-assistants-file/download',
-                '/api/v1/feedback',
-                '/api/v1/leads',
-                '/api/v1/get-upload-file',
-                '/api/v1/ip',
-                '/api/v1/ping'
-            ]
             this.app.use((req, res, next) => {
                 if (/\/api\/v1\//i.test(req.url)) {
                     whitelistURLs.some((url) => new RegExp(url, 'i').test(req.url)) ? next() : basicAuthMiddleware(req, res, next)
                 } else next()
             })
         }
+
+        this.app.use(authenticationHandlerMiddleware({ whitelistURLs, AppDataSource: this.AppDataSource }))
 
         this.app.use('/api/v1', flowiseApiV1Router)
 
@@ -191,9 +186,12 @@ export class App {
 
 let serverApp: App | undefined
 
-export async function getAllChatFlow(): Promise<IChatFlow[]> {
-    return await getDataSource().getRepository(ChatFlow).find()
-}
+export const getAllChatFlow = async ({ userId }: { userId?: string }): Promise<IChatFlow[]> =>
+    getDataSource()
+        .getRepository(ChatFlow)
+        .createQueryBuilder('chatFlow')
+        .where(userId ? 'chatFlow.userId = :userId OR chatFlow.userId IS NULL' : 'chatFlow.userId IS NULL', { userId })
+        .getMany()
 
 export async function start(): Promise<void> {
     serverApp = new App()

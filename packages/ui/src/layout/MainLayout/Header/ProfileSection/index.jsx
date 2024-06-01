@@ -33,6 +33,7 @@ import Transitions from '@/ui-component/extended/Transitions'
 // assets
 import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconX } from '@tabler/icons-react'
 import './index.css'
+import { useAuth0 } from '@auth0/auth0-react'
 
 //API
 import chatFlowsApi from '@/api/chatflows'
@@ -45,6 +46,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 const ProfileSection = ({ username, handleLogout }) => {
     const theme = useTheme()
+    const { user } = useAuth0()
 
     const customization = useSelector((state) => state.customization)
 
@@ -288,9 +290,9 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     <ListItemIcon>
                                                         <IconInfoCircle stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
+                                                    {/* <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} /> */}
                                                 </ListItemButton>
-                                                {localStorage.getItem('username') && localStorage.getItem('password') && (
+                                                {user && (
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                         onClick={handleLogout}

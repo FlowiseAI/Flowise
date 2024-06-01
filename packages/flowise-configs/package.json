@@ -1,0 +1,24 @@
+{
+  "name": "flowise-configs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "toolbox.js",
+  "scripts": {
+    "start": "node ./tools/toolbox.js",
+    "journey": "ts-node ./journeys/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cd": "^0.3.3",
+    "contentful-management": "^11.7.3",
+    "dotenv": "^16.0.0",
+    "flowise-configs": "link:/Users/bradtaylor/Documents/GitHub/Flowise/packages/flowise-configs"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.4",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.8.4"
+  }
+}

@@ -23,6 +23,8 @@ import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-Add
 import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlow'
 import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
+import { AddAnswersConfig1714692854264 } from './1714692854264-AddAnswersConfig'
+import { AddUser1716422641414 } from './1716422641414-AddUser'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -42,6 +44,8 @@ export const sqliteMigrations = [
     AddSpeechToText1706364937060,
     AddUpsertHistoryEntity1709814301358,
     AddFeedback1707213619308,
+    AddAnswersConfig1714692854264,
+    AddUser1716422641414,
     AddDocumentStore1711637331047,
     AddLead1710832117612,
     AddLeadToChatMessage1711537986113,

@@ -15,13 +15,13 @@ import { drawerWidth, headerHeight } from '@/store/constant'
 
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
-const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
+const Sidebar = ({ drawerOpen, drawerToggle, window, isInIframe }) => {
     const theme = useTheme()
     const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
 
     const drawer = (
         <>
-            <Box
+            {/* <Box
                 sx={{
                     display: { xs: 'block', md: 'none' },
                     height: '80px'
@@ -30,7 +30,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                 <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
                     <LogoSection />
                 </Box>
-            </Box>
+            </Box> */}
             <BrowserView>
                 <PerfectScrollbar
                     component='div'
@@ -58,13 +58,14 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
             component='nav'
             sx={{
                 flexShrink: { md: 0 },
-                width: matchUpMd ? drawerWidth : 'auto'
+                // width: matchUpMd ? drawerWidth : 'auto'
+                width: drawerWidth
             }}
             aria-label='mailbox folders'
         >
             <Drawer
                 container={container}
-                variant={matchUpMd ? 'persistent' : 'temporary'}
+                variant={'persistent'}
                 anchor='left'
                 open={drawerOpen}
                 onClose={drawerToggle}
@@ -73,9 +74,13 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
                         width: drawerWidth,
                         background: theme.palette.background.default,
                         color: theme.palette.text.primary,
-                        [theme.breakpoints.up('md')]: {
-                            top: `${headerHeight}px`
-                        },
+                        ...(!isInIframe
+                            ? {
+                                  [theme.breakpoints.up('md')]: {
+                                      top: `${headerHeight}px`
+                                  }
+                              }
+                            : null),
                         borderRight: drawerOpen ? '1px solid' : 'none',
                         borderColor: drawerOpen ? theme.palette.primary[200] + 75 : 'transparent'
                     }
@@ -90,6 +95,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
 }
 
 Sidebar.propTypes = {
+    isInIframe: PropTypes.bool,
     drawerOpen: PropTypes.bool,
     drawerToggle: PropTypes.func,
     window: PropTypes.object

@@ -1,34 +1,70 @@
-# Build local monorepo image
-# docker build --no-cache -t  flowise .
+# syntax=docker/dockerfile:1
 
-# Run image
-# docker run -d -p 3000:3000 flowise
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Dockerfile reference guide at
+# https://docs.docker.com/go/dockerfile-reference/
 
-FROM node:20-alpine
+FROM node:20-alpine as base
+
+WORKDIR /app
+
 RUN apk add --update libc6-compat python3 make g++
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev
-
 # Install Chromium
 RUN apk add --no-cache chromium
 
 #install PNPM globaly
-RUN npm install -g pnpm
+RUN npm install -g pnpm turbo
+RUN pnpm config set store-dir ~/.pnpm-store
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
 ENV NODE_OPTIONS=--max-old-space-size=8192
+################################################################################
 
-WORKDIR /usr/src
+# Prune projects 
+FROM base AS pruner
 
-# Copy app source
 COPY . .
 
-RUN pnpm install
+RUN turbo prune --scope=flowise --docker
 
-RUN pnpm build
+################################################################################
 
-EXPOSE 3000
+# Create a stage for building the application.
+FROM base as build
 
-CMD [ "pnpm", "start" ]
+COPY --from=pruner /app/out/json/ .
+
+# First install the dependencies (as they change less often)
+RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm install 
+
+# Copy the rest of the source files into the image.
+COPY --from=pruner /app/out/full/ .
+
+# Run the build script.
+RUN --mount=type=cache,target=/app/node_modules/.cache pnpm run build --filter flowise
+
+# Prune the dev dependencies
+#RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm prune --prod --no-optional
+
+################################################################################
+
+FROM base AS runner
+
+ENV NODE_ENV production
+
+COPY --from=build /app .
+
+WORKDIR /app/packages/server
+
+# Expose the port that the application listens on.
+EXPOSE 4000
+
+COPY update_ui_env.sh /docker-entrypoint.d/update_ui_env.sh
+RUN chmod +x /docker-entrypoint.d/update_ui_env.sh
+
+# Run the application.
+ENTRYPOINT ["/docker-entrypoint.d/update_ui_env.sh"]
+CMD ["pnpm", "start"]

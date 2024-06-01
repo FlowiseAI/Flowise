@@ -23,6 +23,7 @@
         "@aws-sdk/client-bedrock-runtime": "3.422.0",
         "@aws-sdk/client-dynamodb": "^3.360.0",
         "@aws-sdk/client-s3": "^3.427.0",
+        "@contentful/rich-text-plain-text-renderer": "^16.0.7",
         "@datastax/astra-db-ts": "^0.1.2",
         "@dqbd/tiktoken": "^1.0.7",
         "@e2b/code-interpreter": "^0.0.5",
@@ -36,6 +37,7 @@
         "@huggingface/inference": "^2.6.1",
         "@langchain/anthropic": "^0.2.1",
         "@langchain/aws": "^0.0.9",
+        "@contentful/rich-text-types": "^16.5.2",
         "@langchain/cohere": "^0.0.7",
         "@langchain/community": "^0.2.17",
         "@langchain/core": "0.2.18",
@@ -71,6 +73,8 @@
         "cohere-ai": "^7.7.5",
         "crypto-js": "^4.1.1",
         "css-what": "^6.1.0",
+        "contentful": "^10.6.14",
+        "contentful-management": "^11.7.3",
         "d3-dsv": "2",
         "dotenv": "^16.0.0",
         "exa-js": "^1.0.12",
@@ -118,6 +122,7 @@
         "winston": "^3.9.0",
         "ws": "^8.9.0",
         "zod": "^3.22.4",
+        "youtube-transcript": "^1.1.0",
         "zod-to-json-schema": "^3.21.4"
     },
     "devDependencies": {
