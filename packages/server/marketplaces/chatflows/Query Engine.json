@@ -1,8 +1,7 @@
 {
     "description": "Stateless query engine designed to answer question over your data using LlamaIndex",
-    "categories": "ChatAnthropic,Compact and Refine,Pinecone,LlamaIndex",
-    "badge": "NEW",
-    "framework": "LlamaIndex",
+    "usecases": ["Documents QnA"],
+    "framework": ["LlamaIndex"],
     "nodes": [
         {
             "width": 300,
