@@ -19,6 +19,8 @@ import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
 import { AddLead1710832117612 } from './1710832117612-AddLead'
 import { AddLeadToChatMessage1711537986113 } from './1711537986113-AddLeadToChatMessage'
 import { AddVectorStoreConfigToDocStore1715861032479 } from './1715861032479-AddVectorStoreConfigToDocStore'
+import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
+import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -33,13 +35,15 @@ export const sqliteMigrations = [
     AddUsedToolsToChatMessage1699481607341,
     AddCategoryToChatFlow1699900910291,
     AddFileAnnotationsToChatMessage1700271021237,
-    AddFileUploadsToChatMessage1701788586491,
     AddVariableEntity1699325775451,
+    AddFileUploadsToChatMessage1701788586491,
     AddSpeechToText1706364937060,
     AddUpsertHistoryEntity1709814301358,
     AddFeedback1707213619308,
     AddDocumentStore1711637331047,
     AddLead1710832117612,
     AddLeadToChatMessage1711537986113,
+    AddAgentReasoningToChatMessage1714679514451,
+    AddTypeToChatFlow1766759476232,
     AddVectorStoreConfigToDocStore1715861032479
 ]

@@ -1,11 +1,11 @@
-import { BaseNode, Metadata } from 'llamaindex'
+import { Metadata, NodeWithScore } from 'llamaindex'
 
-export const reformatSourceDocuments = (sourceNodes: BaseNode<Metadata>[]) => {
+export const reformatSourceDocuments = (sourceNodes: NodeWithScore<Metadata>[]) => {
     const sourceDocuments = []
     for (const node of sourceNodes) {
         sourceDocuments.push({
-            pageContent: (node as any).text,
-            metadata: node.metadata
+            pageContent: (node.node as any).text,
+            metadata: node.node.metadata
         })
     }
     return sourceDocuments
