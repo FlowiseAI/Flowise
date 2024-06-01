@@ -1,0 +1,61 @@
+# The manifest for the "flowise" service.
+# Read the full specification for the "Load Balanced Web Service" type at:
+#  https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/
+
+# Your service name will be used in naming your resources like log groups, ECS services, etc.
+name: flowise
+type: Load Balanced Web Service
+
+# Distribute traffic to your service.
+http:
+    # Requests to this path will be forwarded to your service.
+    # To match all requests you can use the "/" path.
+    path: '/'
+    # You can specify a custom health check path. The default is "/".
+    # healthcheck: '/'
+    alias: ${COPILOT_ENVIRONMENT_NAME}.flowise.theanswer.ai
+
+# Configuration for your containers and service.
+image:
+    # Docker build arguments. For additional overrides: https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/#image-build
+    build: Dockerfile
+    cache_from:
+        - theanswerai/flowise:latest
+
+    # Port exposed through your container to route traffic to it.
+    port: 4000
+
+cpu: 512 # Number of CPU units for the task.
+memory: 1024 # Amount of memory in MiB used by the task.
+count: 1 # Number of tasks that should be running in your service.
+exec: true # Enable running commands in your container.
+network:
+    connect: true # Enable Service Connect for intra-environment traffic between services.
+    vpc:
+        security_groups:
+            - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterSecurityGroup
+
+storage:
+    volumes:
+        myManagedEFSVolume:
+            efs: true
+            path: /var/efs
+            read_only: false
+# readonly_fs: true       # Limit to read-only access to mounted root filesystems.
+
+# Optional fields for more advanced use-cases.
+#
+#variables:                    # Pass environment variables as key value pairs.
+#  LOG_LEVEL: info
+
+env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
+secrets:
+    DATABASE_SECRET:
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterAuroraSecret
+# You can override any of the values defined above by environment.
+environments:
+    ${COPILOT_ENVIRONMENT_NAME}:
+        env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
+#    count: 2               # Number of tasks to run for the "test" environment.
+#    deployment:            # The deployment strategy for the "test" environment.
+#       rolling: 'recreate' # Stops existing tasks before new ones are started for faster deployments.

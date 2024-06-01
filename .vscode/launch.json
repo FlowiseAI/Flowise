@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flowise: dev",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "pnpm",
+            "runtimeVersion": "21",
+            "runtimeArgs": ["dev"],
+            "timeout": 30000,
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "restart": true,
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": ["<node_internals>/**"],
+            "smartStep": true
+        }
+    ]
+}

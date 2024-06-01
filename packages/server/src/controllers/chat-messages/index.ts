@@ -17,7 +17,7 @@ const createChatMessage = async (req: Request, res: Response, next: NextFunction
                 'Error: chatMessagesController.createChatMessage - request body not provided!'
             )
         }
-        const apiResponse = await chatMessagesService.createChatMessage(req.body)
+        const apiResponse = await chatMessagesService.createChatMessage(req.body, req.user?.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -42,6 +42,8 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             }
         }
         const sortOrder = req.query?.order as string | undefined
+        const chatflowId = (req.query?.chatflowId ?? req.query?.id ?? req.params.id) as string
+
         const chatId = req.query?.chatId as string | undefined
         const memoryType = req.query?.memoryType as string | undefined
         const sessionId = req.query?.sessionId as string | undefined
@@ -56,7 +58,7 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             )
         }
         const apiResponse = await chatMessagesService.getAllChatMessages(
-            req.params.id,
+            chatflowId,
             chatTypeFilter,
             sortOrder,
             chatId,
@@ -65,7 +67,8 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             startDate,
             endDate,
             messageId,
-            feedback
+            feedback,
+            req.user?.id
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -79,6 +82,7 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
         const chatId = req.query?.chatId as string | undefined
         const memoryType = req.query?.memoryType as string | undefined
         const sessionId = req.query?.sessionId as string | undefined
+        const userId = req.query?.userId as string | undefined
         const messageId = req.query?.messageId as string | undefined
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
@@ -93,7 +97,8 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             startDate,
             endDate,
             messageId,
-            feedback
+            feedback,
+            userId
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -112,7 +117,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
             )
         }
         const chatflowid = req.params.id
-        const chatflow = await chatflowsService.getChatflowById(req.params.id)
+        const chatflow = await chatflowsService.getChatflowById(req.params.id, req.user?.id)
         if (!chatflow) {
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         }
@@ -143,7 +148,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         if (memoryType) deleteOptions.memoryType = memoryType
         if (sessionId) deleteOptions.sessionId = sessionId
         if (chatType) deleteOptions.chatType = chatType
-        const apiResponse = await chatMessagesService.removeAllChatMessages(chatId, chatflowid, deleteOptions)
+        const apiResponse = await chatMessagesService.removeAllChatMessages(chatId, chatflowid, deleteOptions, req.user?.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

@@ -18,7 +18,13 @@
                 "version": 1,
                 "name": "calculator",
                 "type": "Calculator",
-                "baseClasses": ["Calculator", "Tool", "StructuredTool", "BaseLangChain", "Serializable"],
+                "baseClasses": [
+                    "Calculator",
+                    "Tool",
+                    "StructuredTool",
+                    "BaseLangChain",
+                    "Serializable"
+                ],
                 "category": "Tools",
                 "description": "Perform calculations on response",
                 "inputParams": [],
@@ -57,7 +63,11 @@
                 "version": 2,
                 "name": "bufferMemory",
                 "type": "BufferMemory",
-                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "baseClasses": [
+                    "BufferMemory",
+                    "BaseChatMemory",
+                    "BaseMemory"
+                ],
                 "category": "Memory",
                 "description": "Retrieve chat messages stored in database",
                 "inputParams": [
@@ -118,9 +128,13 @@
                 "version": 1,
                 "name": "customTool",
                 "type": "CustomTool",
-                "baseClasses": ["CustomTool", "Tool", "StructuredTool"],
+                "baseClasses": [
+                    "CustomTool",
+                    "Tool",
+                    "StructuredTool"
+                ],
                 "category": "Tools",
-                "description": "Use custom tool you've created in Flowise within chatflow",
+                "description": "Use custom tool you've created in AnswerAI within chatflow",
                 "inputParams": [
                     {
                         "label": "Select Tool",
@@ -167,7 +181,11 @@
                 "version": 1,
                 "name": "serper",
                 "type": "Serper",
-                "baseClasses": ["Serper", "Tool", "StructuredTool"],
+                "baseClasses": [
+                    "Serper",
+                    "Tool",
+                    "StructuredTool"
+                ],
                 "category": "Tools",
                 "description": "Wrapper around Serper.dev - Google Search API",
                 "inputParams": [
@@ -175,7 +193,9 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": ["serperApi"],
+                        "credentialNames": [
+                            "serperApi"
+                        ],
                         "id": "serper_0-input-credential-credential"
                     }
                 ],
@@ -214,7 +234,11 @@
                 "version": 6.0,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
-                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
+                "baseClasses": [
+                    "ChatOpenAI",
+                    "BaseChatModel",
+                    "BaseLanguageModel"
+                ],
                 "category": "Chat Models",
                 "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                 "inputParams": [
@@ -222,7 +246,9 @@
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": ["openAIApi"],
+                        "credentialNames": [
+                            "openAIApi"
+                        ],
                         "id": "chatOpenAI_0-input-credential-credential"
                     },
                     {

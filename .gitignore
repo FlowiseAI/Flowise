@@ -1,11 +1,9 @@
 # editor
 .idea
-.vscode
-
 # dependencies
 **/node_modules
 **/package-lock.json
-**/yarn.lock
+# **/yarn.lock
 
 ## logs
 **/logs
@@ -26,6 +24,7 @@
 .DS_Store
 
 ## env
+*.env
 .env.local
 .env.development.local
 .env.test.local
@@ -38,6 +37,8 @@
 ## secrets
 **/*.key
 **/api.json
+**/*.pem
+.env.*
 
 ## uploads
 **/uploads
@@ -78,7 +79,7 @@
 *.csr
 
 ## Certificate
-*.der 
+*.der
 
 ## Key database file
 *.kdb
@@ -101,3 +102,11 @@
 ## S/MIME message
 *.smime
 *.vsix
+daisy
+
+# sst
+.sst
+
+#copilot/environments
+!copilot/environments/addons/**
+copilot/environments

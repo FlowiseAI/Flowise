@@ -1,0 +1,4 @@
+Parameters:
+    VPCID: !Ref VPC
+    PublicSubnets: !Join [",", [!Ref PublicSubnet1, !Ref PublicSubnet2]]
+    PrivateSubnets: !Join [",", [!Ref PrivateSubnet1, !Ref PrivateSubnet2]]

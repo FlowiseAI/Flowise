@@ -1,8 +1,7 @@
 import { useState, useEffect, Fragment } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
-import axios from 'axios'
-
+import client from '../../api/client'
 // Material
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 import { Popper, CircularProgress, TextField, Box, Typography } from '@mui/material'
@@ -28,15 +27,9 @@ const StyledPopper = styled(Popper)({
 
 const fetchList = async ({ name, nodeData }) => {
     const loadMethod = nodeData.inputParams.find((param) => param.name === name)?.loadMethod
-    const username = localStorage.getItem('username')
-    const password = localStorage.getItem('password')
 
-    let lists = await axios
-        .post(
-            `${baseURL}/api/v1/node-load-method/${nodeData.name}`,
-            { ...nodeData, loadMethod },
-            { auth: username && password ? { username, password } : undefined }
-        )
+    let lists = await client
+        .post(`/node-load-method/${nodeData.name}`, { ...nodeData, loadMethod })
         .then(async function (response) {
             return response.data
         })

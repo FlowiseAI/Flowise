@@ -291,6 +291,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         for (let i = 0; i < chatmessages.length; i += 1) {
             const chatmsg = chatmessages[i]
             setSelectedChatId(chatmsg.chatId)
+            // TODO: Remove if issue not happening
+            // if (!chatmsg.createdDate) continue
             if (!prevDate) {
                 prevDate = chatmsg.createdDate.split('T')[0]
                 loadedMessages.push({

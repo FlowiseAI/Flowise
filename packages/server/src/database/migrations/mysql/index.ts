@@ -20,6 +20,8 @@ import { AddLead1710832127079 } from './1710832127079-AddLead'
 import { AddLeadToChatMessage1711538023578 } from './1711538023578-AddLeadToChatMessage'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
 import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
+import { AddAnswersConfig1714692854264 } from './1714692854264-AddAnswersConfig'
+import { AddUser1716422641414 } from './1716422641414-AddUser'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -39,6 +41,8 @@ export const mysqlMigrations = [
     AddSpeechToText1706364937060,
     AddUpsertHistoryEntity1709814301358,
     AddFeedback1707213626553,
+    AddAnswersConfig1714692854264,
+    AddUser1716422641414,
     AddDocumentStore1711637331047,
     AddLead1710832127079,
     AddLeadToChatMessage1711538023578,

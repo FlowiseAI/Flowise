@@ -25,7 +25,8 @@ export const utilGetChatMessage = async (
     startDate?: string,
     endDate?: string,
     messageId?: string,
-    feedback?: boolean
+    feedback?: boolean,
+    userId?: string
 ): Promise<ChatMessage[]> => {
     const appServer = getRunningExpressApp()
     const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
@@ -70,6 +71,9 @@ export const utilGetChatMessage = async (
         if (sessionId) {
             query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
         }
+        if (userId) {
+            query.andWhere('chat_message.userId = :userId', { userId })
+        }
 
         // set date range
         query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
@@ -90,6 +94,7 @@ export const utilGetChatMessage = async (
             chatId,
             memoryType: memoryType ?? undefined,
             sessionId: sessionId ?? undefined,
+            userId: userId ?? undefined,
             ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
             ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
             id: messageId ?? undefined

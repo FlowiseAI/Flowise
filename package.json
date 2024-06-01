@@ -12,7 +12,7 @@
     "scripts": {
         "build": "turbo run build",
         "build-force": "pnpm clean && turbo run build --force",
-        "dev": "turbo run dev --parallel",
+        "dev": "turbo run dev",
         "start": "run-script-os",
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
@@ -23,7 +23,9 @@
         "lint-fix": "pnpm lint --fix",
         "quick": "pretty-quick --staged",
         "postinstall": "husky install",
-        "migration:create": "pnpm typeorm migration:create"
+        "migration:generate": "turbo typeorm:migration-generate",
+        "migration:run": "npx dotenv -- turbo typeorm:migration-run",
+        "migration:show": "npx dotenv -- turbo typeorm:migration-show"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"

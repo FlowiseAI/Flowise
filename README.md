@@ -147,6 +147,7 @@ Flowise support different environment variables to configure your instance. You 
 
 Deploy Flowise self-hosted in your existing infrastructure, we support various [deployments](https://docs.flowiseai.com/configuration/deployment)
 
+-   [Copilot](./DEPLOYMENT_COPILOT.md)
 -   [AWS](https://docs.flowiseai.com/deployment/aws)
 -   [Azure](https://docs.flowiseai.com/deployment/azure)
 -   [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)

@@ -223,9 +223,20 @@ export class CustomChainHandler extends BaseCallbackHandler {
 
 export const additionalCallbacks = async (nodeData: INodeData, options: ICommonObject) => {
     try {
-        if (!options.analytic) return []
+        if (!options.analytic && !process.env.LANGFUSE_SECRET_KEY) return []
 
-        const analytic = JSON.parse(options.analytic)
+        const analytic = options.analytic ? JSON.parse(options.analytic) : {}
+        if (process.env.LANGFUSE_SECRET_KEY) {
+            console.log('Langfuse override enabled')
+            analytic.langFuse = {
+                status: true,
+                release: process.env.LANGFUSE_RELEASE ?? process.env.GIT_COMMIT_HASH,
+                secretKey: process.env.LANGFUSE_SECRET_KEY,
+                publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+                baseUrl: process.env.LANGFUSE_HOST ?? 'https://cloud.langfuse.com',
+                sdkIntegration: 'Flowise'
+            }
+        }
         const callbacks: any = []
 
         for (const provider in analytic) {
@@ -259,24 +270,52 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                 } else if (provider === 'langFuse') {
                     const release = analytic[provider].release as string
 
-                    const langFuseSecretKey = getCredentialParam('langFuseSecretKey', credentialData, nodeData)
-                    const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, nodeData)
-                    const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, nodeData)
+                    const langFuseSecretKey =
+                        analytic[provider]?.secretKey ?? getCredentialParam('langFuseSecretKey', credentialData, nodeData)
+                    const langFusePublicKey =
+                        analytic[provider]?.publicKey ?? getCredentialParam('langFusePublicKey', credentialData, nodeData)
+                    const langFuseEndpoint =
+                        analytic[provider]?.endpoint ?? getCredentialParam('langFuseEndpoint', credentialData, nodeData)
+                    const langfuse = new Langfuse()
+                    const chatflow = await options.appDataSource
+                        .getRepository(options.databaseEntities['ChatFlow'])
+                        .findOneBy({ id: options.chatflowid })
 
-                    let langFuseOptions: any = {
+                    let langFuseOptions = {
                         secretKey: langFuseSecretKey,
                         publicKey: langFusePublicKey,
-                        baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com',
-                        sdkIntegration: 'Flowise'
+                        baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
                     }
-                    if (release) langFuseOptions.release = release
-                    if (options.chatId) langFuseOptions.sessionId = options.chatId
+
+                    // if (release) langFuseOptions.release = release
+                    // if (options.chatId) langFuseOptions.sessionId = options.chatId
 
                     if (nodeData?.inputs?.analytics?.langFuse) {
                         langFuseOptions = { ...langFuseOptions, ...nodeData?.inputs?.analytics?.langFuse }
                     }
-
-                    const handler = new CallbackHandler(langFuseOptions)
+                    const trace = langfuse.trace({
+                        tags: [`Name:${chatflow.name}`],
+                        name: `${chatflow.id}`,
+                        version: chatflow.updatedDate,
+                        userId: options?.user?.id,
+                        sessionId: options.sessionId,
+                        metadata: { chatId: options.chatId, chatflowid: options.chatflowid, userId: options?.user?.id }
+                    })
+                    const handler = new CallbackHandler({
+                        ...langFuseOptions,
+                        root: trace
+                        // // @ts-ignore
+                        // traceId: trace.id,
+                        // tags: [`Chatflow:${chatflow.id}`],
+                        // // name: `[${chatflow.name}]:${chatflow.id}`,
+                        // version: chatflow.updatedDate,
+                        // userId: options?.user?.id,
+                        // sessionId: options.sessionId,
+                        // metadata: { chatId: options.chatId, chatflowid: options.chatflowid, userId: options?.user?.id }
+                        // // input: {
+                        //     text: options.input
+                        // }
+                    })
                     callbacks.push(handler)
                 } else if (provider === 'lunary') {
                     const lunaryAppId = getCredentialParam('lunaryAppId', credentialData, nodeData)

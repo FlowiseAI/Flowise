@@ -12,9 +12,9 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 
 // Add chatmessages for chatflowid
-const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
+const createChatMessage = async (chatMessage: Partial<IChatMessage>, userId?: string) => {
     try {
-        const dbResponse = await utilAddChatMessage(chatMessage)
+        const dbResponse = await utilAddChatMessage(chatMessage, userId)
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -35,7 +35,8 @@ const getAllChatMessages = async (
     startDate?: string,
     endDate?: string,
     messageId?: string,
-    feedback?: boolean
+    feedback?: boolean,
+    userId?: string
 ): Promise<ChatMessage[]> => {
     try {
         const dbResponse = await utilGetChatMessage(
@@ -48,7 +49,8 @@ const getAllChatMessages = async (
             startDate,
             endDate,
             messageId,
-            feedback
+            feedback,
+            userId
         )
         return dbResponse
     } catch (error) {
@@ -70,7 +72,8 @@ const getAllInternalChatMessages = async (
     startDate?: string,
     endDate?: string,
     messageId?: string,
-    feedback?: boolean
+    feedback?: boolean,
+    userId?: string
 ): Promise<ChatMessage[]> => {
     try {
         const dbResponse = await utilGetChatMessage(
@@ -83,7 +86,8 @@ const getAllInternalChatMessages = async (
             startDate,
             endDate,
             messageId,
-            feedback
+            feedback,
+            userId
         )
         return dbResponse
     } catch (error) {
@@ -97,13 +101,14 @@ const getAllInternalChatMessages = async (
 const removeAllChatMessages = async (
     chatId: string,
     chatflowid: string,
-    deleteOptions: FindOptionsWhere<ChatMessage>
+    deleteOptions: FindOptionsWhere<ChatMessage>,
+    userId?: string
 ): Promise<DeleteResult> => {
     try {
         const appServer = getRunningExpressApp()
 
         // Remove all related feedback records
-        const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId }
+        const feedbackDeleteOptions: FindOptionsWhere<ChatMessageFeedback> = { chatId, userId }
         await appServer.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
 
         // Delete all uploads corresponding to this chatflow/chatId

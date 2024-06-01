@@ -17,7 +17,9 @@
                 "version": 3,
                 "name": "openAIAssistant",
                 "type": "OpenAIAssistant",
-                "baseClasses": ["OpenAIAssistant"],
+                "baseClasses": [
+                    "OpenAIAssistant"
+                ],
                 "category": "Agents",
                 "description": "An agent that uses OpenAI Assistant API to pick the tool and args to call",
                 "inputParams": [
@@ -96,7 +98,12 @@
                 "version": 1,
                 "name": "calculator",
                 "type": "Calculator",
-                "baseClasses": ["Calculator", "Tool", "StructuredTool", "Runnable"],
+                "baseClasses": [
+                    "Calculator",
+                    "Tool",
+                    "StructuredTool",
+                    "Runnable"
+                ],
                 "category": "Tools",
                 "description": "Perform calculations on response",
                 "inputParams": [],
@@ -184,9 +191,14 @@
                 "version": 1,
                 "name": "customTool",
                 "type": "CustomTool",
-                "baseClasses": ["CustomTool", "Tool", "StructuredTool", "Runnable"],
+                "baseClasses": [
+                    "CustomTool",
+                    "Tool",
+                    "StructuredTool",
+                    "Runnable"
+                ],
                 "category": "Tools",
-                "description": "Use custom tool you've created in Flowise within chatflow",
+                "description": "Use custom tool you've created in AnswerAI within chatflow",
                 "inputParams": [
                     {
                         "label": "Select Tool",

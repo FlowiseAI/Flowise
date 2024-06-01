@@ -10,8 +10,13 @@ import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 import Leads from '@/ui-component/extended/Leads'
+import AnswersSettings from '@/ui-component/extended/AnswersSettings'
 
 const CHATFLOW_CONFIGURATION_TABS = [
+    {
+        label: 'Settings',
+        id: 'answerSettings'
+    },
     {
         label: 'Rate Limiting',
         id: 'rateLimiting'
@@ -121,6 +126,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                         {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
                         {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
+                        {item.id === 'answerSettings' ? <AnswersSettings dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>

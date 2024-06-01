@@ -17,6 +17,7 @@ import { IconMenu2 } from '@tabler/icons-react'
 
 // store
 import { SET_DARKMODE } from '@/store/actions'
+import { useAuth0 } from '@auth0/auth0-react'
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
@@ -69,7 +70,8 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 
 const Header = ({ handleLeftDrawerToggle }) => {
     const theme = useTheme()
-    const navigate = useNavigate()
+
+    const { user, logout } = useAuth0()
 
     const customization = useSelector((state) => state.customization)
 
@@ -83,10 +85,10 @@ const Header = ({ handleLeftDrawerToggle }) => {
     }
 
     const signOutClicked = () => {
-        localStorage.removeItem('username')
-        localStorage.removeItem('password')
-        navigate('/', { replace: true })
-        navigate(0)
+        sessionStorage.removeItem('access_token')
+        logout({
+            logoutParams: { returnTo: user.answersDomain }
+        })
     }
 
     return (
@@ -101,9 +103,6 @@ const Header = ({ handleLeftDrawerToggle }) => {
                     }
                 }}
             >
-                <Box component='span' sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
-                    <LogoSection />
-                </Box>
                 <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
                     <Avatar
                         variant='rounded'
