@@ -80,7 +80,7 @@ class OpenSearch_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, _: string, options: ICommonObject): Promise<Partial<IndexingResult>> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const indexName = nodeData.inputs?.indexName as string
