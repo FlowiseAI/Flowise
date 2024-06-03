@@ -138,10 +138,14 @@ class OpenAIAssistant_Agents implements INode {
         const openai = new OpenAI({ apiKey: openAIApiKey })
         options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
         try {
-            if (sessionId) await openai.beta.threads.del(sessionId)
-            options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
+            if (sessionId && sessionId.startsWith('thread_')) {
+                await openai.beta.threads.del(sessionId)
+                options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
+            } else {
+                options.logger.error(`Error clearing OpenAI Thread ${sessionId}`)
+            }
         } catch (e) {
-            throw new Error(e)
+            options.logger.error(`Error clearing OpenAI Thread ${sessionId}`)
         }
     }
 
