@@ -135,6 +135,9 @@ importers:
             '@langchain/core':
                 specifier: ^0.1.63
                 version: 0.1.63
+            '@langchain/exa':
+                specifier: ^0.0.5
+                version: 0.0.5(encoding@0.1.13)
             '@langchain/google-genai':
                 specifier: ^0.0.10
                 version: 0.0.10
@@ -225,6 +228,9 @@ importers:
             dotenv:
                 specifier: ^16.0.0
                 version: 16.4.5
+            exa-js:
+                specifier: ^1.0.12
+                version: 1.0.12(encoding@0.1.13)
             express:
                 specifier: ^4.17.3
                 version: 4.18.3
@@ -610,10 +616,10 @@ importers:
                 version: 16.4.5
             flowise-embed:
                 specifier: latest
-                version: 1.2.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+                version: 1.3.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
             flowise-embed-react:
                 specifier: latest
-                version: 1.0.2(@types/node@20.12.12)(flowise-embed@1.2.6(bufferutil@4.0.8)(utf-8-validate@6.0.4))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5)
+                version: 1.0.2(@types/node@20.12.12)(flowise-embed@1.3.0(bufferutil@4.0.8)(utf-8-validate@6.0.4))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5)
             flowise-react-json-view:
                 specifier: '*'
                 version: 1.21.7(@types/react@18.2.65)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -3584,6 +3590,10 @@ packages:
 
     '@langchain/core@0.1.63':
         resolution: { integrity: sha512-+fjyYi8wy6x1P+Ee1RWfIIEyxd9Ee9jksEwvrggPwwI/p45kIDTdYTblXsM13y4mNWTiACyLSdbwnPaxxdoz+w== }
+        engines: { node: '>=18' }
+
+    '@langchain/exa@0.0.5':
+        resolution: { integrity: sha512-KXNCYLxKs6rDGw+jcrFqE4CrIooUgzU0ip0k76YFptvMPrqLpNurYyqr5mAys0qn2vFavFfC3eJV/wrZ602EfA== }
         engines: { node: '>=18' }
 
     '@langchain/google-common@0.0.9':
@@ -8131,6 +8141,9 @@ packages:
         resolution: { integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q== }
         engines: { node: '>=0.8.x' }
 
+    exa-js@1.0.12:
+        resolution: { integrity: sha512-4oDvjl1966qy1BwjuGm/q/k2gZomS8WhpcuiXyn672cTmEfaRIwQnAbXBznuqzT1WaWeHfJXGTeeboaW41OCiw== }
+
     execa@0.2.2:
         resolution: { integrity: sha512-zmBGzLd3nhA/NB9P7VLoceAO6vyYPftvl809Vjwe5U2fYI9tYWbeKqP3wZlAw9WS+znnkogf/bhSU+Gcn2NbkQ== }
         engines: { node: '>=0.12' }
@@ -8510,8 +8523,8 @@ packages:
             flowise-embed: '*'
             react: 18.x
 
-    flowise-embed@1.2.6:
-        resolution: { integrity: sha512-rBl4QhcxY91V2fOm/L1kuwQSyQjimdTLT4uss7Lw9XBbOFQTVflJnzDxttp5an/pQcxQ+Y1TWCM/twMH05BV/g== }
+    flowise-embed@1.3.0:
+        resolution: { integrity: sha512-PuSkuelh71QMie9ZAssWjQ5g54coBLqAw8sUx1eIhlxFeDiN7TuaDNoPc7J8W76Ri5x4eXtFbZOaD6HEu03lHA== }
 
     flowise-react-json-view@1.21.7:
         resolution: { integrity: sha512-oFjwtSLJkUWk6waLh8heCQ4o9b60FJRA2X8LefaZp5WaJvj/Rr2HILjk+ocf1JkfTcq8jc6t2jfIybg4leWsaQ== }
@@ -19827,6 +19840,13 @@ snapshots:
             zod: 3.22.4
             zod-to-json-schema: 3.22.5(zod@3.22.4)
 
+    '@langchain/exa@0.0.5(encoding@0.1.13)':
+        dependencies:
+            '@langchain/core': 0.1.63
+            exa-js: 1.0.12(encoding@0.1.13)
+        transitivePeerDependencies:
+            - encoding
+
     '@langchain/google-common@0.0.9(zod@3.22.4)':
         dependencies:
             '@langchain/core': 0.1.63
@@ -25923,6 +25943,12 @@ snapshots:
 
     events@3.3.0: {}
 
+    exa-js@1.0.12(encoding@0.1.13):
+        dependencies:
+            cross-fetch: 4.0.0(encoding@0.1.13)
+        transitivePeerDependencies:
+            - encoding
+
     execa@0.2.2:
         dependencies:
             cross-spawn-async: 2.2.5
@@ -26468,10 +26494,10 @@ snapshots:
 
     flatted@3.3.1: {}
 
-    flowise-embed-react@1.0.2(@types/node@20.12.12)(flowise-embed@1.2.6(bufferutil@4.0.8)(utf-8-validate@6.0.4))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5):
+    flowise-embed-react@1.0.2(@types/node@20.12.12)(flowise-embed@1.3.0(bufferutil@4.0.8)(utf-8-validate@6.0.4))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5):
         dependencies:
             '@ladle/react': 2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@4.9.5)
-            flowise-embed: 1.2.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+            flowise-embed: 1.3.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
             react: 18.2.0
         transitivePeerDependencies:
             - '@types/node'
@@ -26485,7 +26511,7 @@ snapshots:
             - terser
             - typescript
 
-    flowise-embed@1.2.6(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    flowise-embed@1.3.0(bufferutil@4.0.8)(utf-8-validate@6.0.4):
         dependencies:
             '@babel/core': 7.24.0
             '@ts-stack/markdown': 1.5.0
