@@ -187,6 +187,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const prependMessages = incomingInput.history
 
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
+         * - Reuse of flows is not disabled
          * - Node Data already exists in pool
          * - Still in sync (i.e the flow has not been modified since)
          * - Existing overrideConfig and new overrideConfig are the same
@@ -194,6 +195,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
          ***/
         const isFlowReusable = () => {
             return (
+                process.env.DISABLE_CHATFLOW_REUSE !== 'true' &&
                 Object.prototype.hasOwnProperty.call(appServer.chatflowPool.activeChatflows, chatflowid) &&
                 appServer.chatflowPool.activeChatflows[chatflowid].inSync &&
                 appServer.chatflowPool.activeChatflows[chatflowid].endingNodeData &&
