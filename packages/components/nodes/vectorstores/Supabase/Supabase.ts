@@ -143,7 +143,7 @@ class Supabase_VectorStores implements INode {
 
             try {
                 if (recordManager) {
-                    const vectorStore = await SupabaseUpsertVectorStore.fromExistingIndex(embeddings, {
+                    const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, {
                         client,
                         tableName: tableName,
                         queryName: queryName
@@ -161,7 +161,7 @@ class Supabase_VectorStores implements INode {
                     })
                     return res
                 } else {
-                    await SupabaseUpsertVectorStore.fromDocuments(finalDocs, embeddings, {
+                    await SupabaseVectorStore.fromDocuments(finalDocs, embeddings, {
                         client,
                         tableName: tableName,
                         queryName: queryName
@@ -209,43 +209,6 @@ class Supabase_VectorStores implements INode {
         const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, obj)
 
         return resolveVectorStoreOrRetriever(nodeData, vectorStore, obj.filter)
-    }
-}
-
-class SupabaseUpsertVectorStore extends SupabaseVectorStore {
-    async addVectors(vectors: number[][], documents: Document[]): Promise<string[]> {
-        if (vectors.length === 0) {
-            return []
-        }
-        const rows = vectors.map((embedding, idx) => ({
-            content: documents[idx].pageContent,
-            embedding,
-            metadata: documents[idx].metadata
-        }))
-
-        let idx = 0
-        const { count } = await this.client.from(this.tableName).select('*', { count: 'exact', head: true })
-        if (count) {
-            idx = count
-        }
-
-        let returnedIds: string[] = []
-        for (let i = 0; i < rows.length; i += this.upsertBatchSize) {
-            const chunk = rows.slice(i, i + this.upsertBatchSize).map((row) => {
-                idx = idx += 1
-                return { id: idx, ...row }
-            })
-
-            const res = await this.client.from(this.tableName).upsert(chunk).select()
-            if (res.error) {
-                throw new Error(`Error inserting: ${res.error.message} ${res.status} ${res.statusText}`)
-            }
-            if (res.data) {
-                returnedIds = returnedIds.concat(res.data.map((row) => row.id))
-            }
-        }
-
-        return returnedIds
     }
 }
 
