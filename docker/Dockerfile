@@ -18,4 +18,4 @@ RUN npm install -g flowise
 
 WORKDIR /data
 
-ENTRYPOINT ["npx", "flowise", "start"]
+ENTRYPOINT ["flowise", "start"]
