@@ -137,7 +137,8 @@ export class App {
                 '/api/v1/feedback',
                 '/api/v1/leads',
                 '/api/v1/get-upload-file',
-                '/api/v1/ip'
+                '/api/v1/ip',
+                '/api/v1/ping'
             ]
             this.app.use((req, res, next) => {
                 if (/\/api\/v1\//i.test(req.url)) {
