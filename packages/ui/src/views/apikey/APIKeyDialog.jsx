@@ -21,7 +21,7 @@ import { useTheme } from '@mui/material/styles'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // Icons
-import { IconX, IconCopy } from '@tabler/icons'
+import { IconX, IconCopy } from '@tabler/icons-react'
 
 // API
 import apikeyApi from '@/api/apikey'
@@ -29,7 +29,7 @@ import apikeyApi from '@/api/apikey'
 // utils
 import useNotifier from '@/utils/useNotifier'
 
-const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const theme = useTheme()
@@ -77,9 +77,11 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm()
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            setError(error)
             enqueueSnackbar({
-                message: `Failed to add new API key: ${errorData}`,
+                message: `Failed to add new API key: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -114,9 +116,11 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm()
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+            setError(error)
             enqueueSnackbar({
-                message: `Failed to save API key: ${errorData}`,
+                message: `Failed to save API key: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -211,7 +215,11 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <StyledButton variant='contained' onClick={() => (dialogProps.type === 'ADD' ? addNewKey() : saveKey())}>
+                <StyledButton
+                    variant='contained'
+                    onClick={() => (dialogProps.type === 'ADD' ? addNewKey() : saveKey())}
+                    id={dialogProps.customBtnId}
+                >
                     {dialogProps.confirmButtonName}
                 </StyledButton>
             </DialogActions>
@@ -225,7 +233,8 @@ APIKeyDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default APIKeyDialog

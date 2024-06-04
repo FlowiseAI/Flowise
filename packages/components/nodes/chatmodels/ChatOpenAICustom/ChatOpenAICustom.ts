@@ -19,7 +19,7 @@ class ChatOpenAICustom_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI Custom'
         this.name = 'chatOpenAICustom'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatOpenAI-Custom'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'

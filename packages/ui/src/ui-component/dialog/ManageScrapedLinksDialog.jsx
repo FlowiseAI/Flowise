@@ -16,7 +16,7 @@ import {
     Stack,
     Typography
 } from '@mui/material'
-import { IconEraser, IconTrash, IconX } from '@tabler/icons'
+import { IconEraser, IconTrash, IconX } from '@tabler/icons-react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
@@ -82,9 +82,8 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                 })
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: errorData,
+                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -162,7 +161,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                     <Typography sx={{ fontWeight: 500 }}>Scraped Links</Typography>
                     {selectedLinks.length > 0 ? (
-                        <StyledButton
+                        <Button
                             sx={{ height: 'max-content', width: 'max-content' }}
                             variant='outlined'
                             color='error'
@@ -171,7 +170,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                             startIcon={<IconEraser />}
                         >
                             Clear All
-                        </StyledButton>
+                        </Button>
                     ) : null}
                 </Box>
                 <>

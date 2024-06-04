@@ -1,19 +1,48 @@
 import client from './client'
 
+// OpenAI Assistant
+const getAssistantObj = (id, credentialId) => client.get(`/openai-assistants/${id}?credential=${credentialId}`)
+
+const getAllAvailableAssistants = (credentialId) => client.get(`/openai-assistants?credential=${credentialId}`)
+
+// Assistant
+const createNewAssistant = (body) => client.post(`/assistants`, body)
+
 const getAllAssistants = () => client.get('/assistants')
 
 const getSpecificAssistant = (id) => client.get(`/assistants/${id}`)
-
-const getAssistantObj = (id, credential) => client.get(`/openai-assistants/${id}?credential=${credential}`)
-
-const getAllAvailableAssistants = (credential) => client.get(`/openai-assistants?credential=${credential}`)
-
-const createNewAssistant = (body) => client.post(`/assistants`, body)
 
 const updateAssistant = (id, body) => client.put(`/assistants/${id}`, body)
 
 const deleteAssistant = (id, isDeleteBoth) =>
     isDeleteBoth ? client.delete(`/assistants/${id}?isDeleteBoth=true`) : client.delete(`/assistants/${id}`)
+
+// Vector Store
+const getAssistantVectorStore = (id, credentialId) => client.get(`/openai-assistants-vector-store/${id}?credential=${credentialId}`)
+
+const listAssistantVectorStore = (credentialId) => client.get(`/openai-assistants-vector-store?credential=${credentialId}`)
+
+const createAssistantVectorStore = (credentialId, body) => client.post(`/openai-assistants-vector-store?credential=${credentialId}`, body)
+
+const updateAssistantVectorStore = (id, credentialId, body) =>
+    client.put(`/openai-assistants-vector-store/${id}?credential=${credentialId}`, body)
+
+const deleteAssistantVectorStore = (id, credentialId) => client.delete(`/openai-assistants-vector-store/${id}?credential=${credentialId}`)
+
+// Vector Store Files
+const uploadFilesToAssistantVectorStore = (id, credentialId, formData) =>
+    client.post(`/openai-assistants-vector-store/${id}?credential=${credentialId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    })
+
+const deleteFilesFromAssistantVectorStore = (id, credentialId, body) =>
+    client.patch(`/openai-assistants-vector-store/${id}?credential=${credentialId}`, body)
+
+// Files
+const uploadFilesToAssistant = (credentialId, formData) =>
+    client.post(`/openai-assistants-file/upload?credential=${credentialId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    })
 
 export default {
     getAllAssistants,
@@ -22,5 +51,13 @@ export default {
     getAllAvailableAssistants,
     createNewAssistant,
     updateAssistant,
-    deleteAssistant
+    deleteAssistant,
+    getAssistantVectorStore,
+    listAssistantVectorStore,
+    updateAssistantVectorStore,
+    createAssistantVectorStore,
+    uploadFilesToAssistant,
+    uploadFilesToAssistantVectorStore,
+    deleteFilesFromAssistantVectorStore,
+    deleteAssistantVectorStore
 }

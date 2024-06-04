@@ -14,7 +14,8 @@ import {
     Accordion,
     AccordionSummary,
     AccordionDetails,
-    Typography
+    Typography,
+    Stack
 } from '@mui/material'
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -35,7 +36,7 @@ import cURLSVG from '@/assets/images/cURL.svg'
 import EmbedSVG from '@/assets/images/embed.svg'
 import ShareChatbotSVG from '@/assets/images/sharing.png'
 import settingsSVG from '@/assets/images/settings.svg'
-import { IconBulb } from '@tabler/icons'
+import { IconBulb } from '@tabler/icons-react'
 
 // API
 import apiKeyApi from '@/api/apikey'
@@ -118,16 +119,34 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
         updateChatflowApi.request(dialogProps.chatflowid, updateBody)
     }
 
-    const groupByNodeLabel = (nodes, isFilter = false) => {
-        const accordianNodes = {}
-        const result = nodes.reduce(function (r, a) {
-            r[a.node] = r[a.node] || []
-            r[a.node].push(a)
-            accordianNodes[a.node] = isFilter ? true : false
-            return r
-        }, Object.create(null))
+    const groupByNodeLabel = (nodes) => {
+        const result = {}
+
+        nodes.forEach((item) => {
+            const { node, nodeId, label, name, type } = item
+
+            if (!result[node]) {
+                result[node] = {
+                    nodeIds: [],
+                    params: []
+                }
+            }
+
+            if (!result[node].nodeIds.includes(nodeId)) result[node].nodeIds.push(nodeId)
+
+            const param = { label, name, type }
+
+            if (!result[node].params.some((existingParam) => JSON.stringify(existingParam) === JSON.stringify(param))) {
+                result[node].params.push(param)
+            }
+        })
+
+        // Sort the nodeIds array
+        for (const node in result) {
+            result[node].nodeIds.sort()
+        }
+
         setNodeConfig(result)
-        setNodeConfigExpanded(accordianNodes)
     }
 
     const handleAccordionChange = (nodeLabel) => (event, isExpanded) => {
@@ -481,12 +500,16 @@ query({
 
     const getMultiConfigCodeWithFormData = (codeLang) => {
         if (codeLang === 'Python') {
-            return `body_data = {
-    "openAIApiKey[chatOpenAI_0]": "sk-my-openai-1st-key",
-    "openAIApiKey[openAIEmbeddings_0]": "sk-my-openai-2nd-key"
+            return `# Specify multiple values for a config parameter by specifying the node id
+body_data = {
+    "openAIApiKey": {
+        "chatOpenAI_0": "sk-my-openai-1st-key",
+        "openAIEmbeddings_0": "sk-my-openai-2nd-key"
+    }
 }`
         } else if (codeLang === 'JavaScript') {
-            return `formData.append("openAIApiKey[chatOpenAI_0]", "sk-my-openai-1st-key")
+            return `// Specify multiple values for a config parameter by specifying the node id
+formData.append("openAIApiKey[chatOpenAI_0]", "sk-my-openai-1st-key")
 formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
         } else if (codeLang === 'cURL') {
             return `-F "openAIApiKey[chatOpenAI_0]=sk-my-openai-1st-key" \\
@@ -619,35 +642,34 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                         aria-controls={`nodes-accordian-${nodeLabel}`}
                                                         id={`nodes-accordian-header-${nodeLabel}`}
                                                     >
-                                                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                                        <Stack flexDirection='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                                                             <Typography variant='h5'>{nodeLabel}</Typography>
-                                                            <div
-                                                                style={{
-                                                                    display: 'flex',
-                                                                    flexDirection: 'row',
-                                                                    width: 'max-content',
-                                                                    borderRadius: 15,
-                                                                    background: 'rgb(254,252,191)',
-                                                                    padding: 5,
-                                                                    paddingLeft: 10,
-                                                                    paddingRight: 10,
-                                                                    marginLeft: 10
-                                                                }}
-                                                            >
-                                                                <span style={{ color: 'rgb(116,66,16)', fontSize: '0.825rem' }}>
-                                                                    {nodeConfig[nodeLabel][0].nodeId}
-                                                                </span>
-                                                            </div>
-                                                        </div>
+                                                            {nodeConfig[nodeLabel].nodeIds.length > 0 &&
+                                                                nodeConfig[nodeLabel].nodeIds.map((nodeId, index) => (
+                                                                    <div
+                                                                        key={index}
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            flexDirection: 'row',
+                                                                            width: 'max-content',
+                                                                            borderRadius: 15,
+                                                                            background: 'rgb(254,252,191)',
+                                                                            padding: 5,
+                                                                            paddingLeft: 10,
+                                                                            paddingRight: 10
+                                                                        }}
+                                                                    >
+                                                                        <span style={{ color: 'rgb(116,66,16)', fontSize: '0.825rem' }}>
+                                                                            {nodeId}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                        </Stack>
                                                     </AccordionSummary>
                                                     <AccordionDetails>
                                                         <TableViewOnly
-                                                            rows={nodeConfig[nodeLabel].map((obj) => {
-                                                                // eslint-disable-next-line
-                                                                const { node, nodeId, ...rest } = obj
-                                                                return rest
-                                                            })}
-                                                            columns={Object.keys(nodeConfig[nodeLabel][0]).slice(-3)}
+                                                            rows={nodeConfig[nodeLabel].params}
+                                                            columns={Object.keys(nodeConfig[nodeLabel].params[0]).slice(-3)}
                                                         />
                                                     </AccordionDetails>
                                                 </Accordion>

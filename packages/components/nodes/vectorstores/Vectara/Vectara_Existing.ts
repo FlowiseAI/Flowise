@@ -127,6 +127,9 @@ class VectaraExisting_VectorStores implements INode {
             return retriever
         } else if (output === 'vectorStore') {
             ;(vectorStore as any).k = k
+            if (vectaraMetadataFilter) {
+                ;(vectorStore as any).filter = vectaraFilter.filter
+            }
             return vectorStore
         }
         return vectorStore

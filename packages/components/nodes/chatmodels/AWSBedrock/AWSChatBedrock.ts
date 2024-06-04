@@ -1,9 +1,10 @@
 import { BaseCache } from '@langchain/core/caches'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 import { BaseBedrockInput } from '@langchain/community/dist/utils/bedrock'
-import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { BedrockChat } from './FlowiseAWSChatBedrock'
+import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 
 /**
  * @author Michael Connor <mlconnor@yahoo.com>
@@ -23,7 +24,7 @@ class AWSChatBedrock_ChatModels implements INode {
     constructor() {
         this.label = 'AWS ChatBedrock'
         this.name = 'awsChatBedrock'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'AWSChatBedrock'
         this.icon = 'aws.svg'
         this.category = 'Chat Models'
@@ -46,61 +47,15 @@ class AWSChatBedrock_ChatModels implements INode {
             {
                 label: 'Region',
                 name: 'region',
-                type: 'options',
-                options: [
-                    { label: 'af-south-1', name: 'af-south-1' },
-                    { label: 'ap-east-1', name: 'ap-east-1' },
-                    { label: 'ap-northeast-1', name: 'ap-northeast-1' },
-                    { label: 'ap-northeast-2', name: 'ap-northeast-2' },
-                    { label: 'ap-northeast-3', name: 'ap-northeast-3' },
-                    { label: 'ap-south-1', name: 'ap-south-1' },
-                    { label: 'ap-south-2', name: 'ap-south-2' },
-                    { label: 'ap-southeast-1', name: 'ap-southeast-1' },
-                    { label: 'ap-southeast-2', name: 'ap-southeast-2' },
-                    { label: 'ap-southeast-3', name: 'ap-southeast-3' },
-                    { label: 'ap-southeast-4', name: 'ap-southeast-4' },
-                    { label: 'ap-southeast-5', name: 'ap-southeast-5' },
-                    { label: 'ap-southeast-6', name: 'ap-southeast-6' },
-                    { label: 'ca-central-1', name: 'ca-central-1' },
-                    { label: 'ca-west-1', name: 'ca-west-1' },
-                    { label: 'cn-north-1', name: 'cn-north-1' },
-                    { label: 'cn-northwest-1', name: 'cn-northwest-1' },
-                    { label: 'eu-central-1', name: 'eu-central-1' },
-                    { label: 'eu-central-2', name: 'eu-central-2' },
-                    { label: 'eu-north-1', name: 'eu-north-1' },
-                    { label: 'eu-south-1', name: 'eu-south-1' },
-                    { label: 'eu-south-2', name: 'eu-south-2' },
-                    { label: 'eu-west-1', name: 'eu-west-1' },
-                    { label: 'eu-west-2', name: 'eu-west-2' },
-                    { label: 'eu-west-3', name: 'eu-west-3' },
-                    { label: 'il-central-1', name: 'il-central-1' },
-                    { label: 'me-central-1', name: 'me-central-1' },
-                    { label: 'me-south-1', name: 'me-south-1' },
-                    { label: 'sa-east-1', name: 'sa-east-1' },
-                    { label: 'us-east-1', name: 'us-east-1' },
-                    { label: 'us-east-2', name: 'us-east-2' },
-                    { label: 'us-gov-east-1', name: 'us-gov-east-1' },
-                    { label: 'us-gov-west-1', name: 'us-gov-west-1' },
-                    { label: 'us-west-1', name: 'us-west-1' },
-                    { label: 'us-west-2', name: 'us-west-2' }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listRegions',
                 default: 'us-east-1'
             },
             {
                 label: 'Model Name',
                 name: 'model',
-                type: 'options',
-                options: [
-                    { label: 'anthropic.claude-3-haiku', name: 'anthropic.claude-3-haiku-20240307-v1:0' },
-                    { label: 'anthropic.claude-3-sonnet', name: 'anthropic.claude-3-sonnet-20240229-v1:0' },
-                    { label: 'anthropic.claude-instant-v1', name: 'anthropic.claude-instant-v1' },
-                    { label: 'anthropic.claude-v2:1', name: 'anthropic.claude-v2:1' },
-                    { label: 'anthropic.claude-v2', name: 'anthropic.claude-v2' },
-                    { label: 'meta.llama2-13b-chat-v1', name: 'meta.llama2-13b-chat-v1' },
-                    { label: 'meta.llama2-70b-chat-v1', name: 'meta.llama2-70b-chat-v1' },
-                    { label: 'mistral.mistral-7b-instruct-v0:2', name: 'mistral.mistral-7b-instruct-v0:2' },
-                    { label: 'mistral.mixtral-8x7b-instruct-v0:1', name: 'mistral.mixtral-8x7b-instruct-v0:1' }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'anthropic.claude-3-haiku'
             },
             {
@@ -140,6 +95,16 @@ class AWSChatBedrock_ChatModels implements INode {
                 optional: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'awsChatBedrock')
+        },
+        async listRegions(): Promise<INodeOptionsValue[]> {
+            return await getRegions(MODEL_TYPE.CHAT, 'awsChatBedrock')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

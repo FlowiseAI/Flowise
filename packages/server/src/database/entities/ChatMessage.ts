@@ -27,6 +27,9 @@ export class ChatMessage implements IChatMessage {
     fileAnnotations?: string
 
     @Column({ nullable: true, type: 'text' })
+    agentReasoning?: string
+
+    @Column({ nullable: true, type: 'text' })
     fileUploads?: string
 
     @Column()
@@ -41,7 +44,10 @@ export class ChatMessage implements IChatMessage {
     @Column({ type: 'varchar', nullable: true })
     sessionId?: string
 
-    @Column({type:'timestamp'})
+    @Column({ type: 'timestamp' })
     @CreateDateColumn()
     createdDate: Date
+
+    @Column({ nullable: true, type: 'text' })
+    leadEmail?: string
 }

@@ -12,7 +12,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
-import { IconX, IconVariable } from '@tabler/icons'
+import { IconX, IconVariable } from '@tabler/icons-react'
 
 // API
 import variablesApi from '@/api/variables'
@@ -39,7 +39,7 @@ const variableTypes = [
     }
 ]
 
-const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
@@ -111,9 +111,11 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(createResp.data.id)
             }
         } catch (err) {
-            const errorData = typeof err === 'string' ? err : err.response?.data || `${err.response?.status}: ${err.response?.statusText}`
+            setError(err)
             enqueueSnackbar({
-                message: `Failed to add new Variable: ${errorData}`,
+                message: `Failed to add new Variable: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -154,9 +156,11 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
-            const errorData = error.response?.data || `${error.response?.status}: ${error.response?.statusText}`
+            setError(err)
             enqueueSnackbar({
-                message: `Failed to save Variable: ${errorData}`,
+                message: `Failed to save Variable: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -183,25 +187,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <div
-                        style={{
-                            width: 50,
-                            height: 50,
-                            marginRight: 10,
-                            borderRadius: '50%',
-                            backgroundColor: 'white'
-                        }}
-                    >
-                        <IconVariable
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                padding: 7,
-                                borderRadius: '50%',
-                                objectFit: 'contain'
-                            }}
-                        />
-                    </div>
+                    <IconVariable style={{ marginRight: '10px' }} />
                     {dialogProps.type === 'ADD' ? 'Add Variable' : 'Edit Variable'}
                 </div>
             </DialogTitle>
@@ -222,6 +208,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         key='variableName'
                         onChange={(e) => setVariableName(e.target.value)}
                         value={variableName ?? ''}
+                        id='txtInput_variableName'
                     />
                 </Box>
                 <Box sx={{ p: 2 }}>
@@ -237,6 +224,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         options={variableTypes}
                         onSelect={(newValue) => setVariableType(newValue)}
                         value={variableType ?? 'choose an option'}
+                        id='dropdown_variableType'
                     />
                 </Box>
                 {variableType === 'static' && (
@@ -255,6 +243,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             key='variableValue'
                             onChange={(e) => setVariableValue(e.target.value)}
                             value={variableValue ?? ''}
+                            id='txtInput_variableValue'
                         />
                     </Box>
                 )}
@@ -264,6 +253,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     disabled={!variableName || !variableType || (variableType === 'static' && !variableValue)}
                     variant='contained'
                     onClick={() => (dialogType === 'ADD' ? addNewVariable() : saveVariable())}
+                    id='btn_confirmAddingNewVariable'
                 >
                     {dialogProps.confirmButtonName}
                 </StyledButton>
@@ -279,7 +269,8 @@ AddEditVariableDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    setError: PropTypes.func
 }
 
 export default AddEditVariableDialog

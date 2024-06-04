@@ -1,7 +1,8 @@
 import { GoogleAuthOptions } from 'google-auth-library'
 import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams } from '@langchain/community/embeddings/googlevertexai'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string
@@ -18,7 +19,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'GoogleVertexAI Embeddings'
         this.name = 'googlevertexaiEmbeddings'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'GoogleVertexAIEmbeddings'
         this.icon = 'GoogleVertex.svg'
         this.category = 'Embeddings'
@@ -37,25 +38,18 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'textembedding-gecko@001',
-                        name: 'textembedding-gecko@001'
-                    },
-                    {
-                        label: 'textembedding-gecko@latest',
-                        name: 'textembedding-gecko@latest'
-                    },
-                    {
-                        label: 'textembedding-gecko-multilingual@latest',
-                        name: 'textembedding-gecko-multilingual@latest'
-                    }
-                ],
-                default: 'textembedding-gecko@001',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'textembedding-gecko@001'
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.EMBEDDING, 'googlevertexaiEmbeddings')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
