@@ -38,9 +38,11 @@ import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
 import upsertHistoryRouter from './upsert-history'
+import pingRouter from './ping'
 
 const router = express.Router()
 
+router.use('/ping', pingRouter)
 router.use('/apikey', apikeyRouter)
 router.use('/assistants', assistantsRouter)
 router.use('/chatflows', chatflowsRouter)
