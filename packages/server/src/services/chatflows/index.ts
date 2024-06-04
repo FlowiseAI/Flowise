@@ -150,7 +150,7 @@ const getChatflowById = async (chatflowId: string, userId?: string): Promise<any
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('chatFlow')
             .where('chatFlow.id = :id', { id: chatflowId })
-            .andWhere('chatFlow.userId = :userId OR chatFlow.userId IS NULL OR chatFlow.isPublic = true', { userId })
+            // .andWhere('chatFlow.userId = :userId OR chatFlow.userId IS NULL OR chatFlow.isPublic = true', { userId })
             .getOne()
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
