@@ -124,6 +124,12 @@ export class DocumentStoreDTO {
                     case 'cheerioWebScraper':
                         loader.source = loader.loaderConfig.url
                         break
+                    case 'playwrightWebScraper':
+                        loader.source = loader.loaderConfig.url
+                        break
+                    case 'puppeteerWebScraper':
+                        loader.source = loader.loaderConfig.url
+                        break
                     case 'jsonFile':
                         loader.source = loader.loaderConfig.jsonFile.replace('FILE-STORAGE::', '')
                         break
