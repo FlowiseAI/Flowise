@@ -2,6 +2,7 @@
 import {
     IconHierarchy,
     IconBuildingStore,
+    IconUsersGroup,
     IconKey,
     IconTool,
     IconLock,
@@ -11,12 +12,13 @@ import {
     IconMenu2,
     IconHome,
     IconSettings
-} from '@tabler/icons'
+} from '@tabler/icons-react'
 
 // constant
 const icons = {
     IconHierarchy,
     IconBuildingStore,
+    IconUsersGroup,
     IconKey,
     IconTool,
     IconLock,

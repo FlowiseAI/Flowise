@@ -10,7 +10,7 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
 import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
-import LoginDialog from '@/ui-component/dialog/LoginDialog'
+import NoAccessDialog from '@/ui-component/dialog/NoAccessDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -39,8 +39,7 @@ const Agentflows = () => {
     const [error, setError] = useState(null)
     const [images, setImages] = useState({})
     const [search, setSearch] = useState('')
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false)
-    const [loginDialogProps, setLoginDialogProps] = useState({})
+    const [noAccessDialogOpen, setNoAccessDialogOpenOpen] = useState(false)
 
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
@@ -62,12 +61,6 @@ const Agentflows = () => {
         )
     }
 
-    const onLoginClick = (username, password) => {
-        localStorage.setItem('username', username)
-        localStorage.setItem('password', password)
-        navigate(0)
-    }
-
     const addNew = () => {
         navigate('/agentcanvas')
     }
@@ -85,11 +78,7 @@ const Agentflows = () => {
     useEffect(() => {
         if (getAllAgentflows.error) {
             if (getAllAgentflows.error?.response?.status === 401) {
-                setLoginDialogProps({
-                    title: 'Login',
-                    confirmButtonName: 'Login'
-                })
-                setLoginDialogOpen(true)
+                setNoAccessDialogOpenOpen(true)
             } else {
                 setError(getAllAgentflows.error)
             }
@@ -209,7 +198,7 @@ const Agentflows = () => {
                 </Stack>
             )}
 
-            <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
+            <NoAccessDialog show={noAccessDialogOpen} />
             <ConfirmDialog />
         </MainCard>
     )
