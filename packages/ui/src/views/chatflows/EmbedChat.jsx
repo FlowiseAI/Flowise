@@ -88,7 +88,8 @@ const buttonConfig = (isReact = false) => {
                     backgroundColor: "#3B81F6",
                     right: 20,
                     bottom: 20,
-                    size: "medium",
+                    size: 100,
+                    dragAndDrop: true,
                     iconColor: "white",
                     customIconSrc: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg",
                 }`
@@ -96,7 +97,8 @@ const buttonConfig = (isReact = false) => {
                 backgroundColor: "#3B81F6",
                 right: 20,
                 bottom: 20,
-                size: "medium",
+                size: 100,
+                dragAndDrop: true,
                 iconColor: "white",
                 customIconSrc: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg",
             }`
@@ -104,57 +106,81 @@ const buttonConfig = (isReact = false) => {
 
 const chatwindowConfig = (isReact = false) => {
     return isReact
-        ? `chatWindow: {
-                    welcomeMessage: "Hello! This is custom welcome message",
-                    backgroundColor: "#ffffff",
-                    height: 700,
-                    width: 400,
-                    fontSize: 16,
-                    poweredByTextColor: "#303235",
-                    botMessage: {
-                        backgroundColor: "#f7f8ff",
-                        textColor: "#303235",
-                        showAvatar: true,
-                        avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png",
-                    },
-                    userMessage: {
-                        backgroundColor: "#3B81F6",
-                        textColor: "#ffffff",
-                        showAvatar: true,
-                        avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
-                    },
-                    textInput: {
-                        placeholder: "Type your question",
-                        backgroundColor: "#ffffff",
-                        textColor: "#303235",
-                        sendButtonColor: "#3B81F6",
-                    }
-                }`
-        : `chatWindow: {
-                welcomeMessage: "Hello! This is custom welcome message",
-                backgroundColor: "#ffffff",
+        ? ` chatWindow: {
+                showTitle: true, // show/hide the title bar
+                title: 'Flowise Bot',
+                titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                welcomeMessage: 'Hello! This is custom welcome message',
+                errorMessage: 'This is a custom error message',
+                backgroundColor: '#ffffff',
                 height: 700,
                 width: 400,
                 fontSize: 16,
-                poweredByTextColor: "#303235",
                 botMessage: {
-                    backgroundColor: "#f7f8ff",
-                    textColor: "#303235",
+                    backgroundColor: '#f7f8ff',
+                    textColor: '#303235',
                     showAvatar: true,
-                    avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png",
+                    avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png',
                 },
                 userMessage: {
-                    backgroundColor: "#3B81F6",
-                    textColor: "#ffffff",
+                    backgroundColor: '#3B81F6',
+                    textColor: '#ffffff',
                     showAvatar: true,
-                    avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
+                    avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png',
                 },
                 textInput: {
-                    placeholder: "Type your question",
-                    backgroundColor: "#ffffff",
-                    textColor: "#303235",
-                    sendButtonColor: "#3B81F6",
-                }
+                    placeholder: 'Type your question',
+                    backgroundColor: '#ffffff',
+                    textColor: '#303235',
+                    sendButtonColor: '#3B81F6',
+                },
+                feedback: {
+                    color: '#303235',
+                },
+                footer: {
+                    textColor: '#303235',
+                    text: 'Powered by',
+                    company: 'Flowise',
+                    companyLink: 'https://flowiseai.com',
+                },
+            }`
+            : ` chatWindow: {
+                showTitle: true, // show/hide the title bar
+                title: 'Flowise Bot',
+                titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                welcomeMessage: 'Hello! This is custom welcome message',
+                errorMessage: 'This is a custom error message',
+                backgroundColor: '#ffffff',
+                height: 700,
+                width: 400,
+                fontSize: 16,
+                botMessage: {
+                    backgroundColor: '#f7f8ff',
+                    textColor: '#303235',
+                    showAvatar: true,
+                    avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png',
+                },
+                userMessage: {
+                    backgroundColor: '#3B81F6',
+                    textColor: '#ffffff',
+                    showAvatar: true,
+                    avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png',
+                },
+                textInput: {
+                    placeholder: 'Type your question',
+                    backgroundColor: '#ffffff',
+                    textColor: '#303235',
+                    sendButtonColor: '#3B81F6',
+                },
+                feedback: {
+                    color: '#303235',
+                },
+                footer: {
+                    textColor: '#303235',
+                    text: 'Powered by',
+                    company: 'Flowise',
+                    companyLink: 'https://flowiseai.com',
+                },
             }`
 }
 
