@@ -147,7 +147,7 @@ const chatwindowConfig = (isReact = false) => {
                         companyLink: 'https://flowiseai.com',
                       }
                 }`
-                : `chatWindow: {
+        : `chatWindow: {
                     showTitle: true,
                     title: 'Flowise Bot',
                     titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
