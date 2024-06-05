@@ -23,4 +23,4 @@ RUN npm install -g flowise
 
 WORKDIR /data
 
-CMD "flowise"
+ENTRYPOINT ["flowise", "start"]

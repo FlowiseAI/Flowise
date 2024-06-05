@@ -23,7 +23,7 @@ class OpenSearch_VectorStores implements INode {
     constructor() {
         this.label = 'OpenSearch'
         this.name = 'openSearch'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'OpenSearch'
         this.icon = 'opensearch.svg'
         this.category = 'Vector Stores'
@@ -87,6 +87,10 @@ class OpenSearch_VectorStores implements INode {
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const opensearchURL = getCredentialParam('openSearchUrl', credentialData, nodeData)
+            const user = getCredentialParam('user', credentialData, nodeData)
+            const password = getCredentialParam('password', credentialData, nodeData)
+
+            const client = getOpenSearchClient(opensearchURL, user, password)
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
             const finalDocs = []
@@ -95,10 +99,6 @@ class OpenSearch_VectorStores implements INode {
                     finalDocs.push(new Document(flattenDocs[i]))
                 }
             }
-
-            const client = new Client({
-                nodes: [opensearchURL]
-            })
 
             try {
                 await OpenSearchVectorStore.fromDocuments(finalDocs, embeddings, {
@@ -121,10 +121,10 @@ class OpenSearch_VectorStores implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const opensearchURL = getCredentialParam('openSearchUrl', credentialData, nodeData)
+        const user = getCredentialParam('user', credentialData, nodeData)
+        const password = getCredentialParam('password', credentialData, nodeData)
 
-        const client = new Client({
-            nodes: [opensearchURL]
-        })
+        const client = getOpenSearchClient(opensearchURL, user, password)
 
         const vectorStore = new OpenSearchVectorStore(embeddings, {
             client,
@@ -140,6 +140,19 @@ class OpenSearch_VectorStores implements INode {
         }
         return vectorStore
     }
+}
+
+const getOpenSearchClient = (url: string, user?: string, password?: string): Client => {
+    if (user && password) {
+        const urlObj = new URL(url)
+        urlObj.username = user
+        urlObj.password = password
+        url = urlObj.toString()
+    }
+
+    return new Client({
+        nodes: [url]
+    })
 }
 
 module.exports = { nodeClass: OpenSearch_VectorStores }
