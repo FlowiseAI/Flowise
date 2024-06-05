@@ -7,7 +7,6 @@ import AboutDialog from '@/ui-component/dialog/AboutDialog'
 // material-ui
 import { useTheme } from '@mui/material/styles'
 import {
-    Avatar,
     Chip,
     ListItemButton,
     ListItemIcon,
@@ -22,7 +21,7 @@ import {
 } from '@mui/material'
 
 // third-party
-import { IconInfoCircle } from '@tabler/icons'
+import { IconInfoCircle } from '@tabler/icons-react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // project imports
