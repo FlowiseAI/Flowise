@@ -25,8 +25,8 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     chatbotConfig?: string
 
-    @Column({ nullable: true, type: 'text', array: true })
-    visibility?: string
+    @Column({ nullable: true, type: 'text', array: true, default: ['Private'] })
+    visibility?: string[]
 
     @Column({ nullable: true, type: 'text' })
     answersConfig?: string

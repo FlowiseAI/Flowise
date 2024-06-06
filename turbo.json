@@ -1,28 +1,24 @@
 {
-  "$schema": "https://turbo.build/schema.json",
-  "tasks": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**",
-        "build/**"
-      ],
-      "outputLogs": "new-only"
-    },
-    "test": {},
-    "dev": {
-      "cache": false
-    },
-    "typeorm:migration-run": {
-      "cache": false
-    },
-    "typeorm:migration-generate": {
-      "cache": false
-    },
-    "typeorm:migration-show": {
-      "cache": false
+    "$schema": "https://turbo.build/schema.json",
+    "ui": "stream",
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**", "build/**"],
+            "outputLogs": "new-only"
+        },
+        "test": {},
+        "dev": {
+            "cache": false
+        },
+        "typeorm:migration-run": {
+            "cache": false
+        },
+        "typeorm:migration-generate": {
+            "cache": false
+        },
+        "typeorm:migration-show": {
+            "cache": false
+        }
     }
-  }
 }

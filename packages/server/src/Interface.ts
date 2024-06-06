@@ -20,6 +20,7 @@ export interface IUser {
     id: string
     name: string
     email: string
+    organizationId?: string
     updatedDate: Date
     createdDate: Date
 }
@@ -43,6 +44,7 @@ export interface IChatFlow {
     chatbotConfig?: string
     apiConfig?: string
     category?: string
+    visibility?: string[]
     type?: ChatflowType
 }
 

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
@@ -15,7 +15,8 @@ import {
     OutlinedInput,
     Checkbox,
     ListItemText,
-    Skeleton
+    Skeleton,
+    Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconLayoutGrid, IconList } from '@tabler/icons-react'
@@ -99,6 +100,32 @@ const Marketplace = () => {
     const [badgeFilter, setBadgeFilter] = useState([])
     const [typeFilter, setTypeFilter] = useState([])
     const [frameworkFilter, setFrameworkFilter] = useState([])
+    const marketplaceCategories = useMemo(
+        () =>
+            Object.entries(
+                getAllTemplatesMarketplacesApi.data
+                    ?.filter(filterByBadge)
+                    .filter(filterByType)
+                    .filter(filterFlows)
+                    .filter(filterByFramework)
+                    .reduce(
+                        (accum, data) => ({
+                            ...accum,
+                            [data.badge?.toUpperCase() ?? 'OTHER']: [...(accum[data.badge?.toUpperCase() ?? 'OTHER'] || []), data]
+                        }),
+                        {}
+                    ) ?? {}
+            ).sort(([a], [b]) => {
+                const order = ['SHARED BY ME', 'SHARED BY OTHERS', 'NEW', 'POPULAR', 'OTHER']
+                const indexA = order.indexOf(a)
+                const indexB = order.indexOf(b)
+                if (indexA !== -1 && indexB !== -1) return indexA - indexB
+                if (indexA !== -1) return -1
+                if (indexB !== -1) return 1
+                return a.localeCompare(b)
+            }),
+        [filterByBadge, filterByFramework, filterByType, filterFlows, getAllTemplatesMarketplacesApi.data]
+    )
     const handleBadgeFilterChange = (event) => {
         const {
             target: { value }
@@ -180,7 +207,7 @@ const Marketplace = () => {
     }
 
     const goToCanvas = (selectedChatflow) => {
-        navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
+        navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow, name: selectedChatflow.name })
     }
 
     useEffect(() => {
@@ -260,7 +287,7 @@ const Marketplace = () => {
                                             MenuProps={MenuProps}
                                             sx={SelectStyles}
                                         >
-                                            {badges.map((name) => (
+                                            {marketplaceCategories.map(([name]) => (
                                                 <MenuItem
                                                     key={name}
                                                     value={name}
@@ -393,47 +420,51 @@ const Marketplace = () => {
                                         <Skeleton variant='rounded' height={160} />
                                     </Box>
                                 ) : (
-                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                        {getAllTemplatesMarketplacesApi.data
-                                            ?.filter(filterByBadge)
-                                            .filter(filterByType)
-                                            .filter(filterFlows)
-                                            .filter(filterByFramework)
-                                            .map((data, index) => (
-                                                <Box key={index}>
-                                                    {data.badge && (
-                                                        <Badge
-                                                            sx={{
-                                                                width: '100%',
-                                                                height: '100%',
-                                                                '& .MuiBadge-badge': {
-                                                                    right: 20
-                                                                }
-                                                            }}
-                                                            badgeContent={data.badge}
-                                                            color={data.badge === 'POPULAR' ? 'primary' : 'error'}
-                                                        >
-                                                            {(data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                                <ItemCard
-                                                                    onClick={() => goToCanvas(data)}
-                                                                    data={data}
-                                                                    images={images[data.id]}
-                                                                />
-                                                            )}
-                                                            {data.type === 'Tool' && (
-                                                                <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                            )}
-                                                        </Badge>
-                                                    )}
-                                                    {!data.badge && (data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                        <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                                    )}
-                                                    {!data.badge && data.type === 'Tool' && (
-                                                        <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                    )}
-                                                </Box>
-                                            ))}
-                                    </Box>
+                                    marketplaceCategories.map(([category, templates]) => (
+                                        <>
+                                            <Typography variant='h6'>{category}</Typography>
+                                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                {templates?.map((data, index) => (
+                                                    <Box key={index}>
+                                                        {data.badge && (
+                                                            <Badge
+                                                                sx={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    '& .MuiBadge-badge': {
+                                                                        right: 20
+                                                                    }
+                                                                }}
+                                                                // badgeContent={data.badge}
+                                                                color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                            >
+                                                                {(data.type === 'Chatflow' || data.type === 'Agentflow' || !!data.type) && (
+                                                                    <ItemCard
+                                                                        onClick={() => goToCanvas(data)}
+                                                                        data={data}
+                                                                        images={images[data.id]}
+                                                                    />
+                                                                )}
+                                                                {data.type === 'Tool' && (
+                                                                    <ItemCard data={data} onClick={() => goToTool(data)} />
+                                                                )}
+                                                            </Badge>
+                                                        )}
+                                                        {!data.badge && (data.type === 'Chatflow' || data.type === 'Agentflow') && (
+                                                            <ItemCard
+                                                                onClick={() => goToCanvas(data)}
+                                                                data={data}
+                                                                images={images[data.id]}
+                                                            />
+                                                        )}
+                                                        {!data.badge && data.type === 'Tool' && (
+                                                            <ItemCard data={data} onClick={() => goToTool(data)} />
+                                                        )}
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </>
+                                    ))
                                 )}
                             </>
                         ) : (

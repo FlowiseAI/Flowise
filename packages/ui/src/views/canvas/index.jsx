@@ -65,7 +65,7 @@ const Canvas = () => {
 
     const { state } = useLocation()
     const templateFlowData = state ? state.templateFlowData : ''
-
+    const templateName = state ? state.templateName : ''
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId =
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
@@ -157,7 +157,10 @@ const Canvas = () => {
         try {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
-
+            console.log({ state, flowData, templateName })
+            setChatflow({
+                name: templateName
+            })
             setNodes(nodes)
             setEdges(flowData.edges || [])
             setTimeout(() => setDirty(), 0)
@@ -466,7 +469,7 @@ const Canvas = () => {
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {
-                    name: `Untitled ${canvasTitle}`
+                    name: templateName ? `Copy of ${templateName}` : `Untitled ${canvasTitle}`
                 }
             })
         }
