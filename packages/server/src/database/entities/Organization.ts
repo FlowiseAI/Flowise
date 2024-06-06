@@ -1,16 +1,14 @@
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
-import { IUser } from '../../Interface'
+import { IOrganization } from '../../Interface'
 
 @Entity()
-export class User implements IUser {
+export class Organization implements IOrganization {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
-    @Column()
+    @Index()
+    @Column({})
     auth0Id: string
-
-    @Column()
-    email: string
 
     @Column({ nullable: true })
     name: string
@@ -22,8 +20,4 @@ export class User implements IUser {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
-
-    @Index()
-    @Column({ type: 'uuid', nullable: true })
-    organizationId?: string
 }

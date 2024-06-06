@@ -27,4 +27,8 @@ export class Credential implements ICredential {
     @Index()
     @Column({ type: 'uuid', nullable: true })
     userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
 }

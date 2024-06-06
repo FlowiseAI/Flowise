@@ -22,4 +22,12 @@ export class DocumentStoreFileChunk implements IDocumentStoreFileChunk {
 
     @Column({ nullable: true, type: 'text' })
     metadata: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
 }

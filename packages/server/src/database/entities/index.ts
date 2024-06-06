@@ -10,6 +10,7 @@ import { DocumentStoreFileChunk } from './DocumentStoreFileChunk'
 import { Lead } from './Lead'
 import { UpsertHistory } from './UpsertHistory'
 import { User } from './User'
+import { Organization } from './Organization'
 
 export const entities = {
     ChatFlow,
@@ -23,5 +24,6 @@ export const entities = {
     DocumentStoreFileChunk,
     Lead,
     UpsertHistory,
-    User
+    User,
+    Organization
 }

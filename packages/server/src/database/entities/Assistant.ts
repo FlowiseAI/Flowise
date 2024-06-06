@@ -27,4 +27,8 @@ export class Assistant implements IAssistant {
     @Index()
     @Column({ type: 'uuid', nullable: true })
     userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
 }

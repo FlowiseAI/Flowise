@@ -23,6 +23,12 @@ export interface IUser {
     updatedDate: Date
     createdDate: Date
 }
+export interface IOrganization {
+    id: string
+    name: string
+    updatedDate: Date
+    createdDate: Date
+}
 
 export interface IChatFlow {
     id: string

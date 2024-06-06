@@ -25,6 +25,9 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     chatbotConfig?: string
 
+    @Column({ nullable: true, type: 'text', array: true })
+    visibility?: string
+
     @Column({ nullable: true, type: 'text' })
     answersConfig?: string
 
@@ -46,6 +49,10 @@ export class ChatFlow implements IChatFlow {
     @Index()
     @Column({ type: 'uuid', nullable: true })
     userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
 
     @Column({ type: 'timestamp' })
     @CreateDateColumn()

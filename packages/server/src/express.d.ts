@@ -10,6 +10,7 @@ declare global {
                     chatflowDomain: string
                     answersDomain: string
                     org_id: string
+                    org_name: string
                     sub: string
                     email: string
                     name: string
