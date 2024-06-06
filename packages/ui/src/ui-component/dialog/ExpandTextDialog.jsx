@@ -152,7 +152,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     <div style={{ marginTop: '15px' }}>
                         <CodeEditor
                             disabled={true}
-                            value={codeExecutedResult}
+                            value={codeExecutedResult.toString()}
                             height='max-content'
                             theme={customization.isDarkMode ? 'dark' : 'light'}
                             lang={'js'}
