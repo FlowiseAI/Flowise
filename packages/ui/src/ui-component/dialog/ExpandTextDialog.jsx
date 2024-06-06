@@ -100,7 +100,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                     borderColor: theme.palette.grey['500'],
                                     borderRadius: '12px',
                                     height: '100%',
-                                    maxHeight: languageType === 'js' ? 'calc(100vh - 430px)' : 'calc(100vh - 400px)',
+                                    maxHeight: languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)',
                                     overflowX: 'hidden',
                                     backgroundColor: 'white'
                                 }}
@@ -108,7 +108,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                 <CodeEditor
                                     disabled={dialogProps.disabled}
                                     value={inputValue}
-                                    height={languageType === 'js' ? 'calc(100vh - 430px)' : 'calc(100vh - 400px)'}
+                                    height={languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)'}
                                     theme={customization.isDarkMode ? 'dark' : 'light'}
                                     lang={languageType}
                                     placeholder={inputParam.placeholder}
