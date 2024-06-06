@@ -78,7 +78,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     useEffect(() => {
         if (executeCustomFunctionNodeApi.error) {
             if (typeof executeCustomFunctionNodeApi.error === 'object' && executeCustomFunctionNodeApi.error?.response?.data) {
-                setCodeExecutedResult(executeCustomFunctionNodeApi.error?.response?.data)
+                setCodeExecutedResult(JSON.stringify(executeCustomFunctionNodeApi.error?.response?.data, null, 2))
             } else if (typeof executeCustomFunctionNodeApi.error === 'string') {
                 setCodeExecutedResult(executeCustomFunctionNodeApi.error)
             }
@@ -100,7 +100,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                     borderColor: theme.palette.grey['500'],
                                     borderRadius: '12px',
                                     height: '100%',
-                                    maxHeight: languageType === 'js' ? 'calc(100vh - 250px)' : 'calc(100vh - 220px)',
+                                    maxHeight: languageType === 'js' ? 'calc(100vh - 430px)' : 'calc(100vh - 400px)',
                                     overflowX: 'hidden',
                                     backgroundColor: 'white'
                                 }}
@@ -108,7 +108,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                 <CodeEditor
                                     disabled={dialogProps.disabled}
                                     value={inputValue}
-                                    height={languageType === 'js' ? 'calc(100vh - 250px)' : 'calc(100vh - 220px)'}
+                                    height={languageType === 'js' ? 'calc(100vh - 430px)' : 'calc(100vh - 400px)'}
                                     theme={customization.isDarkMode ? 'dark' : 'light'}
                                     lang={languageType}
                                     placeholder={inputParam.placeholder}
