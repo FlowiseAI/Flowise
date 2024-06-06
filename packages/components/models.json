@@ -4,6 +4,16 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-3.5-sonnet",
+                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    "description": "Image to text, conversation, chat optimized"
+                },
+                {
+                    "label": "anthropic.claude-3-haiku",
+                    "name": "anthropic.claude-3-haiku-20240307-v1:0",
+                    "description": "Image to text, conversation, chat optimized"
+                },
+                {
                     "label": "anthropic.claude-3-haiku",
                     "name": "anthropic.claude-3-haiku-20240307-v1:0",
                     "description": "Image to text, conversation, chat optimized"
@@ -286,6 +296,11 @@
         {
             "name": "chatAnthropic",
             "models": [
+                {
+                    "label": "claude-3.5-sonnet",
+                    "name": "claude-3-5-sonnet-20240620",
+                    "description": "Lastest and most capable model"
+                },
                 {
                     "label": "claude-3-haiku",
                     "name": "claude-3-haiku-20240307",

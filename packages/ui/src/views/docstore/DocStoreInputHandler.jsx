@@ -17,6 +17,7 @@ import { SwitchInput } from '@/ui-component/switch/Switch'
 import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
+import { ContentfulConfig } from '@/ui-component/contentful/ContentfulConfig'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import ManageScrapedLinksDialog from '@/ui-component/dialog/ManageScrapedLinksDialog'
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
@@ -128,7 +129,15 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
                                 }}
                             />
                         )}
-
+                        {inputParam.type === 'contentfulConfig' && (
+                            <ContentfulConfig
+                                disabled={disabled}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                nodeData={data}
+                                isDarkMode={customization.isDarkMode}
+                            />
+                        )}
                         {inputParam.type === 'file' && (
                             <File
                                 disabled={disabled}

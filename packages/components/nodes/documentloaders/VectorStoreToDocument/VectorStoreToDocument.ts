@@ -1,5 +1,5 @@
 import { VectorStore } from '@langchain/core/vectorstores'
-import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { handleEscapeCharacters } from '../../../src/utils'
 
 class VectorStoreToDocument_DocumentLoaders implements INode {
@@ -17,7 +17,7 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
     constructor() {
         this.label = 'VectorStore To Document'
         this.name = 'vectorStoreToDocument'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'Document'
         this.icon = 'vectorretriever.svg'
         this.category = 'Document Loaders'
@@ -59,11 +59,19 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
                 name: 'text',
                 description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
+            },
+            {
+                label: 'Ending Node',
+                name: 'EndingNode',
+                baseClasses: [this.type]
             }
         ]
     }
 
-    async init(nodeData: INodeData, input: string): Promise<any> {
+    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
+        const isEndingNode = nodeData?.outputs?.output === 'EndingNode'
+        if (isEndingNode && !options.isRun) return // prevent running both init and run twice
+
         const vectorStore = nodeData.inputs?.vectorStore as VectorStore
         const minScore = nodeData.inputs?.minScore as number
         const query = nodeData.inputs?.query as string
@@ -84,7 +92,7 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
         // eslint-disable-next-line no-console
         console.log(JSON.stringify(docs, null, 2))
 
-        if (output === 'document') {
+        if (output === 'document' || isEndingNode) {
             let finaldocs = []
             for (const doc of docs) {
                 if (minScore && doc[1] < minScore / 100) continue
@@ -99,6 +107,10 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
             }
             return handleEscapeCharacters(finaltext, false)
         }
+    }
+
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+        return await this.init(nodeData, input, { ...options, isRun: true })
     }
 }
 

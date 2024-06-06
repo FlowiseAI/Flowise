@@ -24,7 +24,7 @@ const MarketplaceCanvas = () => {
     const navigate = useNavigate()
 
     const { state } = useLocation()
-    const { flowData, name } = state
+    const { flowData, templateName, id } = state ?? {}
 
     // ==============================|| ReactFlow ||============================== //
 
@@ -50,7 +50,7 @@ const MarketplaceCanvas = () => {
             (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
         )
         const templateFlowData = JSON.stringify(flowData)
-        navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, { state: { templateFlowData } })
+        navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, { state: { templateFlowData, templateName, parentChatflowId: id } })
     }
 
     return (

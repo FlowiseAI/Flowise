@@ -65,7 +65,8 @@ const Canvas = () => {
 
     const { state } = useLocation()
     const templateFlowData = state ? state.templateFlowData : ''
-
+    const templateName = state ? state.templateName : ''
+    const parentChatflowId = state && isNaN(state.parentChatflowId) ? state.parentChatflowId : undefined
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId =
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
@@ -157,7 +158,10 @@ const Canvas = () => {
         try {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
-
+            setChatflow({
+                parentChatflowId,
+                name: templateName
+            })
             setNodes(nodes)
             setEdges(flowData.edges || [])
             setTimeout(() => setDirty(), 0)
@@ -220,6 +224,7 @@ const Canvas = () => {
             if (!chatflow.id) {
                 const newChatflowBody = {
                     name: chatflowName,
+                    parentChatflowId,
                     deployed: false,
                     isPublic: false,
                     flowData,
@@ -439,7 +444,7 @@ const Canvas = () => {
     }, [updateChatflowApi.data, updateChatflowApi.error])
 
     useEffect(() => {
-        setChatflow(canvasDataStore.chatflow)
+        setChatflow({ ...canvasDataStore.chatflow, parentChatflowId })
         if (canvasDataStore.chatflow) {
             const flowData = canvasDataStore.chatflow.flowData ? JSON.parse(canvasDataStore.chatflow.flowData) : []
             checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || [])
@@ -466,7 +471,7 @@ const Canvas = () => {
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {
-                    name: `Untitled ${canvasTitle}`
+                    name: templateName ? `Copy of ${templateName}` : `Untitled ${canvasTitle}`
                 }
             })
         }

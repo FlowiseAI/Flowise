@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, Index } from 'typeorm'
 import { DocumentStoreStatus, IDocumentStore } from '../../Interface'
 
 @Entity()
@@ -37,4 +37,11 @@ export class DocumentStore implements IDocumentStore {
 
     @Column({ nullable: true, type: 'text' })
     recordManagerConfig: string | null
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
 }

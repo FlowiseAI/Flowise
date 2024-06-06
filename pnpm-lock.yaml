@@ -840,6 +840,9 @@ importers:
       dotenv:
         specifier: ^16.0.0
         version: 16.4.5
+      flagsmith:
+        specifier: ^4.0.3
+        version: 4.0.3
       flowise-react-json-view:
         specifier: '*'
         version: 1.21.7(@types/react@18.3.3)(encoding@0.1.13)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)
@@ -9070,6 +9073,9 @@ packages:
   flagged-respawn@1.0.1:
     resolution: {integrity: sha512-lNaHNVymajmk0OJMBn8fVUAU1BtDeKIqKoVhk4xAALB57aALg6b4W0MfJ/cUE0g9YBXy5XhSlPIpYIJ7HaY/3Q==}
     engines: {node: '>= 0.10'}
+
+  flagsmith@4.0.3:
+    resolution: {integrity: sha512-F2lI84yCwxP9RZMcqDgpj9cjWfgQ6YQLS1/bXNp4iltZz6K8lr4zECjBbqqZSUBpxpKBOxfPFX6XGdDurAKOuA==}
 
   flat-cache@3.2.0:
     resolution: {integrity: sha512-CYcENa+FtcUKLmhhqyctpclsq7QF38pKjZHsGNiSQF5r4FtoKDWabFDl3hzaEQMvT1LHEysw5twgLvpYYb4vbw==}
@@ -27557,7 +27563,7 @@ snapshots:
     dependencies:
       '@contentful/rich-text-types': 16.5.2
       '@types/json-patch': 0.0.30
-      axios: 1.6.2(debug@4.3.4)
+      axios: 1.7.2
       contentful-sdk-core: 8.1.3
       fast-copy: 3.0.2
       lodash.isplainobject: 4.0.6
@@ -29848,6 +29854,8 @@ snapshots:
       readable-stream: 2.3.8
 
   flagged-respawn@1.0.1: {}
+
+  flagsmith@4.0.3: {}
 
   flat-cache@3.2.0:
     dependencies:

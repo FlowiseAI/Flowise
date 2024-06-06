@@ -1,7 +1,7 @@
 import { removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { ChatflowType, IChatFlow, IReactFlowObject } from '../../Interface'
-import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatFlow, ChatflowVisibility } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
@@ -13,6 +13,8 @@ import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fil
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
+import checkOwnership from '../../utils/checkOwnership'
+import { Organization } from '../../database/entities/Organization'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -22,6 +24,7 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowId
         })
+
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
@@ -74,10 +77,10 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
     }
 }
 
-const deleteChatflow = async (chatflowId: string, userId?: string): Promise<any> => {
+const deleteChatflow = async (chatflowId: string, userId?: string, organizationId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId, userId })
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId, userId, organizationId })
         try {
             // Delete all uploads corresponding to this chatflow
             await removeFolderFromStorage(chatflowId)
@@ -102,11 +105,66 @@ const deleteChatflow = async (chatflowId: string, userId?: string): Promise<any>
         )
     }
 }
-
-const getAllChatflows = async (type?: ChatflowType, userId?: string): Promise<IChatFlow[]> => {
+type ChatflowsFilter = {
+    visibility?: string
+    auth0_org_id?: string
+}
+const getAllChatflows = async (
+    type?: ChatflowType,
+    filter?: ChatflowsFilter,
+    userId?: string,
+    organizationId?: string
+): Promise<IChatFlow[]> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find({ where: { userId } })
+
+        const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
+        const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
+
+        let org
+        if (filter?.auth0_org_id) {
+            org = await appServer.AppDataSource.getRepository(Organization).findOne({
+                where: {
+                    auth0Id: filter.auth0_org_id
+                }
+            })
+        }
+
+        if (filter?.visibility) {
+            const visibilityConditions = filter.visibility
+                .split(',')
+                .map((v: string) => (v === 'Organization' ? 'Private' : v))
+                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
+                .join(' AND ')
+
+            queryBuilder.where(`(chatFlow.userId = :userId AND (${visibilityConditions}))`, {
+                userId
+            })
+
+            const visibility = filter.visibility
+                .split(',')
+                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
+                .join(' AND ')
+            if (filter.visibility.includes('Organization')) {
+                const orgCondition = `chatFlow.organizationId = :organizationId AND (${visibility})`
+                queryBuilder.orWhere(`(${orgCondition})`, { organizationId: org?.id ?? organizationId })
+            }
+        } else {
+            queryBuilder.where(`chatFlow.userId = :userId`, { userId })
+        }
+        const response = await queryBuilder.getMany()
+        const dbResponse = response.map((chatflow) => ({
+            ...chatflow,
+            badge: chatflow?.visibility?.includes(ChatflowVisibility.MARKETPLACE)
+                ? 'SHARED'
+                : chatflow?.visibility?.includes(ChatflowVisibility.ORGANIZATION)
+                ? 'ORGANIZATION'
+                : ''
+        }))
+
+        if (!(await checkOwnership(dbResponse, userId, organizationId))) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+        }
         if (type === 'MULTIAGENT') {
             return dbResponse.filter((chatflow) => chatflow.type === type)
         }
@@ -143,13 +201,14 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
     }
 }
 
-const getChatflowById = async (chatflowId: string, userId?: string): Promise<any> => {
+const getChatflowById = async (chatflowId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('chatFlow')
-            .where('chatFlow.id = :id', { id: chatflowId })
-            // .andWhere('chatFlow.userId = :userId OR chatFlow.userId IS NULL OR chatFlow.isPublic = true', { userId })
+            .where('chatFlow.id = :id', {
+                id: chatflowId
+            })
             .getOne()
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
@@ -259,6 +318,7 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
         if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
             updateChatFlow.flowData = await updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
         }
+
         const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
@@ -280,13 +340,13 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
 }
 
 // Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
-const getSinglePublicChatflow = async (chatflowId: string, userId?: string): Promise<any> => {
+const getSinglePublicChatflow = async (chatflowId: string, userId?: string, organizationId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowId
         })
-        if (dbResponse && (dbResponse.isPublic || (userId && dbResponse.userId === userId))) {
+        if (dbResponse && (dbResponse.isPublic || (await checkOwnership(dbResponse, userId, organizationId)))) {
             return dbResponse
         } else if (dbResponse && !dbResponse.isPublic) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
@@ -306,7 +366,7 @@ const getSinglePublicChatflow = async (chatflowId: string, userId?: string): Pro
 
 // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
 // Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
-const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> => {
+const getSinglePublicChatbotConfig = async (chatflowId: string, userId?: string, organizationId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
@@ -315,18 +375,23 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
-        const uploadsConfig = await utilGetUploadsConfig(chatflowId)
-        // even if chatbotConfig is not set but uploads are enabled
-        // send uploadsConfig to the chatbot
-        if (dbResponse.chatbotConfig || uploadsConfig) {
-            try {
-                const parsedConfig = dbResponse.chatbotConfig ? JSON.parse(dbResponse.chatbotConfig) : {}
-                return { ...parsedConfig, uploads: uploadsConfig }
-            } catch (e) {
-                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
+        if (dbResponse.isPublic || (await checkOwnership(dbResponse, userId, organizationId))) {
+            const uploadsConfig = await utilGetUploadsConfig(chatflowId)
+            // even if chatbotConfig is not set but uploads are enabled
+            // send uploadsConfig to the chatbot
+            if (dbResponse.chatbotConfig || uploadsConfig) {
+                try {
+                    const parsedConfig = dbResponse.chatbotConfig ? JSON.parse(dbResponse.chatbotConfig) : {}
+                    return { ...parsedConfig, uploads: uploadsConfig }
+                } catch (e) {
+                    throw new InternalFlowiseError(
+                        StatusCodes.INTERNAL_SERVER_ERROR,
+                        `Error parsing Chatbot Config for Chatflow ${chatflowId}`
+                    )
+                }
             }
+            return 'OK'
         }
-        return 'OK'
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

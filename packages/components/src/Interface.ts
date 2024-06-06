@@ -21,6 +21,7 @@ export type NodeParamsType =
     | 'file'
     | 'folder'
     | 'tabs'
+    | 'contentfulConfig'
 
 export type CommonType = string | number | boolean | undefined | null
 

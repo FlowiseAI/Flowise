@@ -45,6 +45,7 @@ import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
+import checkOwnership from './checkOwnership'
 
 /**
  * Build Chatflow
@@ -69,6 +70,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
         }
 
+        if (!chatflow?.isPublic && !(await checkOwnership(chatflow, req.user?.id, req.user?.organizationId))) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+        }
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
         const userMessageDateTime = new Date()
 
@@ -183,6 +187,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 chatId,
                 memoryType ?? '',
                 sessionId,
+                req.user?.id!,
                 userMessageDateTime,
                 fileUploads,
                 incomingInput,
@@ -390,6 +395,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             memoryType,
             sessionId,
             createdDate: userMessageDateTime,
+            userId: req.user?.id!,
             fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
             leadEmail: incomingInput.leadEmail
         }
@@ -407,6 +413,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
             chatId,
             memoryType,
+            userId: req.user?.id!,
             sessionId
         }
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
@@ -449,6 +456,7 @@ const utilBuildAgentResponse = async (
     chatId: string,
     memoryType: string,
     sessionId: string,
+    userId: string,
     userMessageDateTime: Date,
     fileUploads: IFileUpload[],
     incomingInput: IncomingInput,
@@ -472,7 +480,8 @@ const utilBuildAgentResponse = async (
                 sessionId,
                 createdDate: userMessageDateTime,
                 fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
-                leadEmail: incomingInput.leadEmail
+                leadEmail: incomingInput.leadEmail,
+                userId
             }
             await utilAddChatMessage(userMessage)
 
@@ -483,7 +492,8 @@ const utilBuildAgentResponse = async (
                 chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 chatId,
                 memoryType,
-                sessionId
+                sessionId,
+                userId
             }
             if (sourceDocuments.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
             if (usedTools.length) apiMessage.usedTools = JSON.stringify(usedTools)

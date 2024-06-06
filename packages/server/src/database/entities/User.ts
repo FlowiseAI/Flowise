@@ -1,4 +1,4 @@
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
 import { IUser } from '../../Interface'
 
 @Entity()
@@ -22,4 +22,8 @@ export class User implements IUser {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true, array: true })
+    organizationId?: string
 }

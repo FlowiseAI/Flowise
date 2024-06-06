@@ -5,7 +5,8 @@ Before you start, make sure you have the following prerequisites:
 -   AWS account
 -   AWS CLI installed and configured with the new customer's AWS account
 -   Docker installed
--   AWS Copilot CLI installed or ran via `npx`
+-   AWS Copilot CLI installed: https://aws.github.io/copilot-cli/docs/getting-started/install/
+-   Route53 Hosted zone configured with `ias-prod.flowise.theanswer.ai` (make sure the NS records are shared with the AnswerAI team)
 -   Environment variables for the application saved into a `${env}.env` file
 
 Here are the environment variables required:
@@ -44,6 +45,12 @@ cd Flowise
 ```
 
 2. **Create a new environment**. This will create a new environment, which is a standalone instance of your application.
+
+```bash
+copilot app init --domain ${env}.flowise.theanswer.ai
+```
+
+3. **Create a new environment**. This will create a new environment, which is a standalone instance of your application.
 
 ```bash
 copilot env init --name <env-name> --profile default

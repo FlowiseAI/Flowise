@@ -14,19 +14,35 @@ import themes from '@/themes'
 import NavigationScroll from '@/layout/NavigationScroll'
 import { useAuth0 } from '@auth0/auth0-react'
 import useNotifyParentOfNavigation from './utils/useNotifyParentOfNavigation'
+import { useFlagsmith } from 'flagsmith/react'
 
 // ==============================|| APP ||============================== //
 
 const App = () => {
     const customization = useSelector((state) => state.customization)
-    const { getAccessTokenSilently, error } = useAuth0()
+    const { user, getAccessTokenSilently, error } = useAuth0()
+    const flagsmith = useFlagsmith()
     useNotifyParentOfNavigation()
+    React.useEffect(() => {
+        if (user) {
+            flagsmith.identify(
+                `user_${user.org_id}_${
+                    user.email
+                        ? user.email.split('').reduce((a, b) => {
+                              a = (a << 5) - a + b.charCodeAt(0)
+                              return a & a
+                          }, 0)
+                        : ''
+                }`
+            )
+        }
+    }, [user, flagsmith])
     React.useEffect(() => {
         ;(async () => {
             try {
                 const newToken = await getAccessTokenSilently({
                     authorizationParams: {
-                        scope: 'write:admin'
+                        // scope: 'write:admin'
                     }
                 })
                 sessionStorage.setItem('access_token', newToken)

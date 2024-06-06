@@ -2,6 +2,11 @@
 import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm'
 import { ICredential } from '../../Interface'
 
+export enum CredentialVisibility {
+    PRIVATE = 'Private',
+    ORGANIZATION = 'Organization'
+}
+
 @Entity()
 export class Credential implements ICredential {
     @PrimaryGeneratedColumn('uuid')
@@ -27,4 +32,15 @@ export class Credential implements ICredential {
     @Index()
     @Column({ type: 'uuid', nullable: true })
     userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
+
+    @Column({
+        type: 'simple-array',
+        enum: CredentialVisibility,
+        default: 'Private'
+    })
+    visibility?: CredentialVisibility[]
 }

@@ -52,7 +52,7 @@ env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
 secrets:
     DATABASE_SECRET:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterAuroraSecret
-# You can override any of the values defined above by environment.
+# You can override any of the values defined above by environment.flowiseSecurityGroup
 environments:
     ${COPILOT_ENVIRONMENT_NAME}:
         env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env

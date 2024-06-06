@@ -55,7 +55,8 @@ export const initNode = (nodeData, newNodeId) => {
         'file',
         'folder',
         'tabs',
-        'conditionFunction' // This is a special type for condition functions
+        'conditionFunction', // This is a special type for condition functions
+        'contentfulConfig'
     ]
 
     // Inputs

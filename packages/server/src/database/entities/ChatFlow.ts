@@ -2,6 +2,14 @@
 import { Entity, Column, Index, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
 import { ChatflowType, IChatFlow } from '../../Interface'
 
+export enum ChatflowVisibility {
+    PRIVATE = 'Private',
+    PUBLIC = 'Public',
+    ORGANIZATION = 'Organization',
+    ANSWERAI = 'AnswerAI',
+    MARKETPLACE = 'Marketplace'
+}
+
 @Entity()
 export class ChatFlow implements IChatFlow {
     @PrimaryGeneratedColumn('uuid')
@@ -25,6 +33,13 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     chatbotConfig?: string
 
+    @Column({
+        type: 'simple-array',
+        enum: ChatflowVisibility,
+        default: 'Private'
+    })
+    visibility?: ChatflowVisibility[]
+
     @Column({ nullable: true, type: 'text' })
     answersConfig?: string
 
@@ -44,8 +59,16 @@ export class ChatFlow implements IChatFlow {
     type?: ChatflowType
 
     @Index()
+    @Column({ type: 'text', nullable: true })
+    parentChatflowId?: string
+
+    @Index()
     @Column({ type: 'uuid', nullable: true })
     userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
 
     @Column({ type: 'timestamp' })
     @CreateDateColumn()

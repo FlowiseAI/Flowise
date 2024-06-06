@@ -26,6 +26,13 @@ import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 import { AddAnswersConfig1714692854264 } from './1714692854264-AddAnswersConfig'
 import { AddUser1716422641414 } from './1716422641414-AddUser'
+import { AddOrganizationId1717629010538 } from './1717629010538-AddOrganizationId'
+import { AddOrganization1717632419096 } from './1717632419096-AddOrganization'
+import { UpdateDefaultVisibility1717684633931 } from './1717684633931-UpdateDefaultVisibility'
+import { AddUserId1717773329048 } from './1717773329048-AddUserId'
+import { UpdateChatflowToHaveParentId1717796909629 } from './1717796909629-UpdateChatflowToHaveParentId'
+import { UpdateVisibilityType1719248473069 } from './1719248473069-UpdateVisibilityType'
+import { CredentialsVisibility1721247848452 } from './1721247848452-CredentialsVisibility'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -55,5 +62,12 @@ export const postgresMigrations = [
     AddTypeToChatFlow1716300000000,
     AddVectorStoreConfigToDocStore1715861032479,
     AddApiKey1720230151480,
-    AddActionToChatMessage1721078251523
+    AddActionToChatMessage1721078251523,
+    AddOrganizationId1717629010538,
+    AddOrganization1717632419096,
+    UpdateDefaultVisibility1717684633931,
+    AddUserId1717773329048,
+    UpdateChatflowToHaveParentId1717796909629,
+    UpdateVisibilityType1719248473069,
+    CredentialsVisibility1721247848452
 ]

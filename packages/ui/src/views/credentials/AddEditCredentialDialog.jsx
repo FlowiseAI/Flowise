@@ -1,12 +1,27 @@
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import parser from 'html-react-parser'
 
 // Material
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Stack, OutlinedInput, Typography } from '@mui/material'
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Box,
+    Stack,
+    OutlinedInput,
+    Typography,
+    FormControl,
+    FormGroup,
+    FormControlLabel,
+    Checkbox,
+    Tooltip
+} from '@mui/material'
 
 // Project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -28,12 +43,14 @@ import useNotifier from '@/utils/useNotifier'
 // const
 import { baseURL, REDACTED_CREDENTIAL_VALUE } from '@/store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+import { useFlags } from 'flagsmith/react'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
-
+    const flags = useFlags(['org:manage', 'chatflow:share:internal'])
     // ==============================|| Snackbar ||============================== //
 
     useNotifier()
@@ -48,10 +65,19 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
     const [name, setName] = useState('')
     const [credentialData, setCredentialData] = useState({})
     const [componentCredential, setComponentCredential] = useState({})
+    const [visibility, setVisibility] = useState(credentialData.visibility || ['Private'])
+    const handleChangeVisibility = useCallback(
+        (event, option) => {
+            const updatedVisibility = visibility.includes(option) ? visibility.filter((v) => v !== option) : [...visibility, option]
+            setVisibility(updatedVisibility)
+        },
+        [visibility]
+    )
 
     useEffect(() => {
         if (getSpecificCredentialApi.data) {
             setCredential(getSpecificCredentialApi.data)
+            setVisibility(getSpecificCredentialApi.data.visibility)
             if (getSpecificCredentialApi.data.name) {
                 setName(getSpecificCredentialApi.data.name)
             }
@@ -113,7 +139,8 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             const obj = {
                 name,
                 credentialName: componentCredential.name,
-                plainDataObj: credentialData
+                plainDataObj: credentialData,
+                visibility
             }
             const createResp = await credentialsApi.createCredential(obj)
             if (createResp.data) {
@@ -156,7 +183,8 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         try {
             const saveObj = {
                 name,
-                credentialName: componentCredential.name
+                credentialName: componentCredential.name,
+                visibility
             }
 
             let plainDataObj = {}
@@ -283,6 +311,39 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                     componentCredential.inputs.map((inputParam, index) => (
                         <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />
                     ))}
+                <Box sx={{ p: 2 }}>
+                    <Typography variant='h4' sx={{ mb: 1 }}>
+                        Credential visibility
+                        <TooltipWithParser
+                            style={{ mb: 1, mt: 2, marginLeft: 10 }}
+                            title={
+                                'Control visibility and organization permissions. Contact your organization admin to enable more options.'
+                            }
+                        />
+                    </Typography>
+                    <FormControl component='fieldset' sx={{ width: '100%', mb: 2 }}>
+                        <FormGroup>
+                            {['Private', 'Organization'].map((type) => {
+                                const isDisabled = type === 'Private' || (type === 'Organization' && !flags['org:manage']?.enabled)
+                                return (
+                                    <FormControlLabel
+                                        key={type}
+                                        control={
+                                            <Tooltip title={isDisabled ? 'Contact your org admin to enable this option' : ''}>
+                                                <Checkbox
+                                                    checked={visibility.includes(type)}
+                                                    onChange={(event) => handleChangeVisibility(event, type)}
+                                                />
+                                            </Tooltip>
+                                        }
+                                        label={type}
+                                        disabled={isDisabled}
+                                    />
+                                )
+                            })}
+                        </FormGroup>
+                    </FormControl>
+                </Box>
             </DialogContent>
             <DialogActions>
                 <StyledButton

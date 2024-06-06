@@ -71,7 +71,7 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
                 return res.status(500).send(e)
             }
         }
-        if (typeof req.params === 'undefined' || !req.params.id) {
+        if (!chatflowId && !chatId) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatMessageController.getAllChatMessages - id not provided!`
@@ -138,7 +138,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
             )
         }
         const chatflowid = req.params.id
-        const chatflow = await chatflowsService.getChatflowById(req.params.id, req.user?.id)
+        const chatflow = await chatflowsService.getChatflowById(req.params.id)
         if (!chatflow) {
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         }

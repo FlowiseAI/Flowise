@@ -4,32 +4,47 @@ import { BaseDocumentLoader } from 'langchain/document_loaders/base'
 import { Block, Inline, Node, helpers } from '@contentful/rich-text-types'
 import { Document } from 'langchain/document'
 import * as contentful from 'contentful'
-// import { documentToPlainTextString } from '@contentful/rich-text-plain-text-renderer'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
+
+interface ContentTypeConfig {
+    contentType: string
+    fieldsToParse: string[]
+}
+
+interface FieldsForCitation {
+    titleField: string
+    slugField: string
+    urlPrefix: string
+}
+
+interface RichTextParsingRules {
+    'embedded-asset-block': boolean
+    'embedded-entry-block': boolean
+    'embedded-entry-inline': boolean
+}
+
+interface ContentfulConfig {
+    mainContentType: ContentTypeConfig
+    embeddedContentTypes: ContentTypeConfig[]
+    richTextParsingRules: RichTextParsingRules
+    fieldsForCitation: FieldsForCitation
+}
 
 export function documentToPlainTextString(
     rootNode: Block | Inline,
     blockDivisor: string = ' ',
     parsingRules: any = {},
-    processContentObjectMethod: Function
+    processContentObjectMethod: (contentObject: IContentObject, contentTypeConfig: ContentTypeConfig) => string
 ): string {
     if (!rootNode || !rootNode.content || !Array.isArray(rootNode.content)) {
-        /**
-         * Handles edge cases, such as when the value is not set in the CMA or the
-         * field has not been properly validated, e.g. because of a user extension.
-         * Note that we are nevertheless strictly type-casting `rootNode` as
-         * Block | Inline. Valid rich text documents (and their branch block nodes)
-         * should never lack a Node[] `content` property.
-         */
+        console.warn('Invalid rootNode:', rootNode)
         return ''
     }
 
     return (rootNode as Block).content.reduce((acc: string, node: Node, i: number): string => {
         let nodeTextValue: string = ''
 
-        // Check against parsing rules before processing the node
         if (node.nodeType in parsingRules && parsingRules[node.nodeType] === false) {
-            // Skip processing this node as per the parsing rules
             return acc
         }
 
@@ -39,20 +54,36 @@ export function documentToPlainTextString(
             if (node.nodeType === 'embedded-asset-block') {
                 nodeTextValue = `![${node.data.target.fields.title}](https:${node.data.target.fields.file.url})`
             } else if (node.nodeType === 'embedded-entry-block' || node.nodeType === 'embedded-entry-inline') {
-                // Assuming node.data.target contains the content object for the embedded entry
                 const embeddedContentObject = node.data.target
-                // Call processContentObject on the embedded content object
-                // You might need to adjust how you access the configuration for specific content types
-                if (parsingRules?.embeddedContentTypes[embeddedContentObject.sys.contentType.sys.id]) {
-                    nodeTextValue = processContentObjectMethod(
-                        embeddedContentObject,
-                        parsingRules.embeddedContentTypes[embeddedContentObject.sys.contentType.sys.id]
-                    )
+                if (!embeddedContentObject || !embeddedContentObject.sys) {
+                    console.warn('Invalid embeddedContentObject or sys property missing:', node)
+                    return acc
+                }
+
+                const embeddedContentType = embeddedContentObject?.sys?.contentType?.sys?.id
+                const embeddedConfig = parsingRules.embeddedContentTypes?.find(
+                    (config: ContentfulConfig) => config.mainContentType.contentType === embeddedContentType
+                )
+
+                if (embeddedConfig) {
+                    try {
+                        nodeTextValue = processContentObjectMethod(embeddedContentObject, embeddedConfig)
+                    } catch (error) {
+                        console.error('Error processing embedded content object:', error, embeddedContentObject)
+                    }
                 } else {
-                    nodeTextValue = documentToPlainTextString(node, blockDivisor, parsingRules, processContentObjectMethod)
+                    try {
+                        nodeTextValue = documentToPlainTextString(node, blockDivisor, parsingRules, processContentObjectMethod)
+                    } catch (error) {
+                        console.error('Error processing node:', error, node)
+                    }
                 }
             } else {
-                nodeTextValue = documentToPlainTextString(node, blockDivisor, parsingRules, processContentObjectMethod)
+                try {
+                    nodeTextValue = documentToPlainTextString(node, blockDivisor, parsingRules, processContentObjectMethod)
+                } catch (error) {
+                    console.error('Error processing node:', error, node)
+                }
             }
             if (!nodeTextValue.length) {
                 return acc
@@ -82,7 +113,7 @@ class Contentful_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Contentful'
         this.name = 'contentful'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Document'
         this.icon = 'contentful.png'
         this.category = 'Document Loaders'
@@ -102,18 +133,51 @@ class Contentful_DocumentLoaders implements INode {
                 optional: true
             },
             {
+                label: 'API Type',
+                name: 'apiType',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Delivery API',
+                        name: 'delivery'
+                    },
+                    {
+                        label: 'Preview API',
+                        name: 'preview'
+                    }
+                ],
+                default: 'delivery'
+            },
+            {
                 label: 'Config Utility',
                 name: 'configUtility',
-                type: 'json',
+                type: 'contentfulConfig',
+                default: JSON.stringify({
+                    mainContentType: {
+                        contentType: '',
+                        fieldsToParse: []
+                    },
+                    embeddedContentTypes: [],
+                    richTextParsingRules: {
+                        'embedded-asset-block': true,
+                        'embedded-entry-block': true,
+                        'embedded-entry-inline': true
+                    },
+                    fieldsForCitation: {
+                        titleField: 'fields.title',
+                        slugField: 'fields.slug',
+                        urlPrefix: 'https://mywebsite.com/'
+                    }
+                }),
                 acceptVariable: true
             },
             {
-                label: ' Content Type',
-                name: 'contentType',
-                type: 'string',
-                placeholder: 'pageBlog',
-                default: 'pageBlog',
-                description: 'The content type to query'
+                label: 'Include Field Names',
+                name: 'includeFieldNames',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                description: 'Include field names in the output'
             },
             {
                 label: 'Environment Id',
@@ -130,6 +194,7 @@ class Contentful_DocumentLoaders implements INode {
                 name: 'include',
                 type: 'number',
                 optional: true,
+                default: 1,
                 additionalParams: true,
                 description: 'The number of levels to include in the response'
             },
@@ -170,21 +235,26 @@ class Contentful_DocumentLoaders implements INode {
             }
         ]
     }
+
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
 
+        const apiType = nodeData.inputs?.apiType as string
         const environmentId = nodeData.inputs?.environmentId as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
-        const configUtility = (nodeData.inputs?.configUtility as ICommonObject) ?? {}
+        const configUtility = (nodeData.inputs?.configUtility as string) ?? {}
         const metadata = nodeData.inputs?.metadata
         const include = nodeData.inputs?.include as number
         const limit = nodeData.inputs?.limit as number
-        const contentType = nodeData.inputs?.contentType as string
         const includeAll = nodeData.inputs?.includeAll as boolean
+        const includeFieldNames = nodeData.inputs?.includeFieldNames as boolean
 
-        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+        const deliveryToken = getCredentialParam('deliveryToken', credentialData, nodeData)
+        const previewToken = getCredentialParam('previewToken', credentialData, nodeData)
         const spaceId = getCredentialParam('spaceId', credentialData, nodeData)
-        const cdn = getCredentialParam('cdn', credentialData, nodeData)
+
+        const accessToken = apiType === 'preview' ? previewToken : deliveryToken
+        const host = apiType === 'preview' ? 'preview.contentful.com' : 'cdn.contentful.com'
 
         const contentfulOptions: ContentfulLoaderParams = {
             spaceId,
@@ -194,9 +264,9 @@ class Contentful_DocumentLoaders implements INode {
             includeAll,
             limit,
             metadata,
-            contentType,
             configUtility,
-            cdn
+            host,
+            includeFieldNames
         }
 
         const loader = new ContentfulLoader(contentfulOptions)
@@ -227,19 +297,13 @@ class Contentful_DocumentLoaders implements INode {
             finaldocs.push(...docs)
         }
 
-        // Helper method to convert a Document object to plain text representation
         const documentToPlainText = (doc: Document): string => {
-            // Assuming Document has a pageContent property containing the content
-            // You may need to adjust this to fit your needs
             return doc.pageContent
         }
 
-        // Process documents based on the determined output type
         if (nodeData?.outputs?.output === 'stringOutput') {
-            // Convert loaded documents to plain text
             return finaldocs.map((doc) => documentToPlainText(doc))
         } else {
-            // Return Document objects
             return finaldocs
         }
     }
@@ -251,11 +315,11 @@ interface ContentfulLoaderParams {
     accessToken: string
     include?: number
     limit?: number
-    contentType: string
     includeAll?: boolean
     metadata?: any
-    configUtility: ICommonObject
-    cdn?: string
+    configUtility: ContentTypeConfig | string
+    host?: string
+    includeFieldNames: boolean
 }
 
 interface ContentfulLoaderResponse {
@@ -266,8 +330,8 @@ interface ContentfulLoaderResponse {
 }
 
 interface ContentfulEntry {
-    sys: ICommonObject
-    fields: ICommonObject
+    fields: any
+    sys: any
 }
 
 interface IField {
@@ -276,57 +340,43 @@ interface IField {
 
 interface IContentObject {
     fields: IField
-    sys: any // Adjust this type according to your sys object structure
+    sys: any
 }
 
 class ContentfulLoader extends BaseDocumentLoader {
     public readonly spaceId: string
-
     public readonly environmentId: string
-
     public readonly accessToken: string
-
-    public readonly textField?: string
-
     public readonly include?: number
-
     public readonly limit?: number
-
-    public readonly contentType?: string
-
     public readonly includeAll?: boolean
-
     public readonly metadata?: ICommonObject
-
-    public readonly configUtility: ICommonObject
-    queryOveride: any
-
-    public readonly cdn?: string
+    public readonly configUtility: ContentfulConfig
+    public readonly host?: string
+    public readonly includeFieldNames: boolean
 
     constructor({
         spaceId,
         environmentId,
         accessToken,
-        cdn,
+        host,
         metadata = {},
         include,
         limit,
-        contentType,
         includeAll,
-        configUtility
+        configUtility,
+        includeFieldNames = true
     }: ContentfulLoaderParams) {
         super()
         this.spaceId = spaceId
-        this.cdn = cdn
+        this.host = host
         this.environmentId = environmentId
         this.accessToken = accessToken
-        this.contentType = contentType
         this.includeAll = includeAll
         this.include = include
         this.limit = limit
+        this.includeFieldNames = includeFieldNames
 
-        // Check if metadata is a non-empty string, then try to parse it.
-        // If parsing fails or if metadata is not a string, use the default empty object.
         if (typeof metadata === 'string' && metadata.trim() !== '') {
             try {
                 this.metadata = JSON.parse(metadata)
@@ -342,23 +392,32 @@ class ContentfulLoader extends BaseDocumentLoader {
 
         if (typeof configUtility === 'string') {
             try {
-                this.configUtility = JSON.parse(configUtility)?.config
-                if (typeof JSON.parse(configUtility)?.queryOveride !== 'undefined') {
-                    this.queryOveride = JSON.parse(configUtility)?.queryOveride
-                }
+                this.configUtility = JSON.parse(configUtility) as ContentfulConfig
             } catch (error) {
                 console.warn('Failed to parse config:', error)
-                this.configUtility = {
-                    fieldsToParse: [],
-                    fieldsForCitation: {
-                        titleField: 'title',
-                        slugField: 'slug',
-                        urlPrefix: 'https://www.example.com/'
-                    },
-                    richTextParsingRules: {
-                        embeddedContentTypes: {}
-                    }
-                }
+                this.configUtility = this.getDefaultConfig()
+            }
+        } else {
+            this.configUtility = this.getDefaultConfig()
+        }
+    }
+
+    private getDefaultConfig(): ContentfulConfig {
+        return {
+            mainContentType: {
+                contentType: '',
+                fieldsToParse: []
+            },
+            embeddedContentTypes: [],
+            richTextParsingRules: {
+                'embedded-asset-block': true,
+                'embedded-entry-block': true,
+                'embedded-entry-inline': true
+            },
+            fieldsForCitation: {
+                titleField: 'fields.title',
+                slugField: 'fields.slug',
+                urlPrefix: 'https://www.example.com/'
             }
         }
     }
@@ -367,66 +426,139 @@ class ContentfulLoader extends BaseDocumentLoader {
         return this.runQuery()
     }
 
-    private processContentObject(contentObject: IContentObject, fieldsConfig?: string[]): string {
-        const { fields } = contentObject
-        const fieldsToProcess = fieldsConfig || this.configUtility.fieldsToParse // Fallback to default fields if none specified
+    private processContentObject(contentObject: IContentObject, contentTypeConfig: ContentTypeConfig): string {
+        const fieldsToProcess = contentTypeConfig.fieldsToParse
 
-        return Object.entries(fields)
-            .filter(([fieldName]) => fieldsToProcess.includes(fieldName))
-            .map(([fieldName, fieldValue]) => {
-                // Check if the field is a rich text field
-                if (typeof fieldValue === 'object' && fieldValue.nodeType === 'document') {
+        return fieldsToProcess
+            .map((fieldPath: string) => {
+                const fieldValue = this.getNestedProperty(contentObject, fieldPath)
+
+                if (fieldValue === undefined) {
+                    console.warn(`Field value for path ${fieldPath} is undefined in content object:`, contentObject)
+                    return ''
+                }
+
+                const fieldName = fieldPath.split('.').pop() || fieldPath
+                let processedValue = ''
+
+                if (typeof fieldValue === 'object' && fieldValue.sys && fieldValue.sys.type === 'Asset') {
+                    // Handle Asset type
+                    const assetTitle = fieldValue.fields.title || 'Asset'
+                    const assetUrl = fieldValue.fields.file.url
+                    processedValue = `![${assetTitle}](https:${assetUrl})`
+                } else if (typeof fieldValue === 'object' && fieldValue.nodeType === 'document') {
+                    // Handle rich text
                     let plainText = documentToPlainTextString(
                         fieldValue,
                         '\n',
                         this.configUtility.richTextParsingRules,
-                        this.processContentObject
+                        this.processContentObject.bind(this)
                     )
-
-                    const safePlainText = plainText.replaceAll('"', '')
-                    return `${fieldName}: ${safePlainText}\n\n`
+                    processedValue = plainText.replaceAll('"', '')
+                } else if (typeof fieldValue === 'string') {
+                    processedValue = fieldValue.replaceAll('"', '')
+                } else if (Array.isArray(fieldValue)) {
+                    processedValue = fieldValue
+                        .map((item) => {
+                            if (typeof item === 'object' && item !== null && item.sys?.contentType?.sys?.id) {
+                                const contentType = item.sys.contentType.sys.id
+                                const embeddedConfig = this.configUtility.embeddedContentTypes.find(
+                                    (config) => config.contentType === contentType
+                                )
+                                if (embeddedConfig) {
+                                    try {
+                                        return this.processContentObject(item, embeddedConfig)
+                                    } catch (error) {
+                                        console.error('Error processing nested content object:', error, item)
+                                        return ''
+                                    }
+                                }
+                            }
+                            return this.processSimpleValue(item)
+                        })
+                        .filter((item) => item !== '')
+                        .join(', ')
+                } else if (typeof fieldValue === 'object' && fieldValue !== null) {
+                    if (fieldValue.sys?.contentType?.sys?.id) {
+                        const contentType = fieldValue.sys.contentType.sys.id
+                        const embeddedConfig = this.configUtility.embeddedContentTypes.find((config) => config.contentType === contentType)
+                        if (embeddedConfig) {
+                            try {
+                                processedValue = this.processContentObject(fieldValue, embeddedConfig)
+                            } catch (error) {
+                                console.error('Error processing embedded object:', error, fieldValue)
+                                processedValue = ''
+                            }
+                        } else {
+                            processedValue = this.processSimpleValue(fieldValue)
+                        }
+                    } else {
+                        processedValue = this.processSimpleValue(fieldValue)
+                    }
+                } else {
+                    processedValue = String(fieldValue)
                 }
-                // For string fields
-                else if (typeof fieldValue === 'string') {
-                    const cleanedValue = fieldValue.replaceAll('"', '')
-                    return `${fieldName}: ${cleanedValue}\n\n`
-                }
 
-                // TODO: Handle references to other entries and assets
-
-                // TODO: Return empty for now, handle other types as needed
-                return ``
+                return this.includeFieldNames ? `${fieldName}: ${processedValue}\n\n` : `${processedValue}\n\n`
             })
             .join('')
     }
 
+    private processSimpleValue(value: any): string {
+        if (typeof value === 'object' && value !== null) {
+            if (value.sys && value.sys.type === 'Asset') {
+                const assetTitle = value.fields.title || 'Asset'
+                const assetUrl = value.fields.file.url
+                return `![${assetTitle}](https:${assetUrl})`
+            } else if (value.sys && value.sys.type === 'Entry') {
+                return `Referenced Entry: ${value.sys.id}`
+            } else {
+                return JSON.stringify(value)
+            }
+        }
+        return String(value)
+    }
+
+    private getNestedProperty(obj: any, path: string): any {
+        return path.split('.').reduce((current, key) => {
+            if (current === undefined) return undefined
+
+            if (key.includes('[') && key.includes(']')) {
+                const [arrayName, indexStr] = key.split('[')
+                const index = parseInt(indexStr.replace(']', ''), 10)
+                return current[arrayName] ? current[arrayName][index] : undefined
+            }
+
+            return current[key]
+        }, obj)
+    }
+
     private createDocumentFromEntry(entry: ContentfulEntry): Document {
-        const textContent = this.processContentObject(entry)
+        const textContent = this.processContentObject(entry, this.configUtility.mainContentType)
         const entryUrl = `https://app.contentful.com/spaces/${this.spaceId}/environments/${this.environmentId}/entries/${entry.sys.id}`
-        // console.log('Entry', entry)
-        const title = entry.fields[this.configUtility.fieldsForCitation.titleField] || entry.sys.id
-        const slug = entry.fields[this.configUtility.fieldsForCitation.slugField] || entry.sys.id
+
+        const titlePath = this.configUtility.fieldsForCitation.titleField as string
+        const slugPath = this.configUtility.fieldsForCitation.slugField as string
+
+        const title = this.getNestedProperty(entry, titlePath) || entry.sys.id
+        const slug = this.getNestedProperty(entry, slugPath) || entry.sys.id
         const url = `${this.configUtility.fieldsForCitation.urlPrefix}${slug}`
 
-        // Return a langchain document
         return new Document({
             pageContent: textContent,
             metadata: {
-                contentType: this.contentType,
-                source: entryUrl,
+                contentType: this.configUtility.mainContentType.contentType,
+                source: url,
                 entryId: entry.sys.id,
                 doctype: 'contentfulEntry',
                 title,
-                url
+                contentfulUrl: entryUrl
             }
         })
     }
 
     private async runQuery(): Promise<Document[]> {
-        const params: ICommonObject = { pageSize: 100, skip: 0 }
-        let data: ContentfulLoaderResponse
-        let returnPages: ContentfulEntry[] = []
-        let query = this.metadata || {}
+        let query: any = this.metadata || {}
 
         if (this.limit && !this.includeAll) {
             query.limit = this.limit
@@ -435,37 +567,35 @@ class ContentfulLoader extends BaseDocumentLoader {
             query.include = this.include
         }
 
-        if (this.contentType) {
-            query.content_type = this.contentType
-        }
-
-        if (this.queryOveride) {
-            try {
-                const parsedQuery = JSON.parse(this.queryOveride) // Parse the JSON string
-                for (const key in parsedQuery) {
-                    // Construct the query object for each key-value pair
-                    if (parsedQuery[key] !== '') {
-                        query[`fields.${key}[in]`] = parsedQuery[key]
-                    }
-                }
-            } catch (e) {
-                console.log('Error parsing query overide', e)
-            }
+        if (this.configUtility.mainContentType.contentType) {
+            query.content_type = this.configUtility.mainContentType.contentType
         }
 
         const client = contentful.createClient({
             space: this.spaceId,
             environment: this.environmentId,
             accessToken: this.accessToken,
-            host: this.cdn
+            host: this.host
         })
 
-        do {
-            data = await client.getEntries(query)
-            returnPages.push.apply(returnPages, data.items)
-            query.skip = (data?.skip || 0) + (data?.limit || 1)
-        } while (this.includeAll && data.total !== 0)
-        return returnPages.map((page) => this.createDocumentFromEntry(page))
+        let allEntries: ContentfulEntry[] = []
+        let total: number
+        let skip = 0
+
+        try {
+            do {
+                query.skip = skip
+                const response: ContentfulLoaderResponse = await client.getEntries(query)
+                allEntries = allEntries.concat(response.items)
+                total = response.total || 0
+                skip += response.items.length
+            } while (this.includeAll && allEntries.length < total)
+
+            return allEntries.map((entry) => this.createDocumentFromEntry(entry))
+        } catch (error) {
+            console.error('Error fetching entries from Contentful:', error)
+            throw new Error(`Failed to fetch entries from Contentful: ${error.message}`)
+        }
     }
 }
 

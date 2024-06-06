@@ -4,7 +4,7 @@
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/go/dockerfile-reference/
 
-FROM node:20-alpine as base
+FROM --platform=linux/amd64 node:20-alpine as base
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN apk add --no-cache build-base cairo-dev pango-dev
 RUN apk add --no-cache chromium
 
 #install PNPM globaly
-RUN npm install -g pnpm turbo
+RUN npm install -g pnpm turbo@1
 RUN pnpm config set store-dir ~/.pnpm-store
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true

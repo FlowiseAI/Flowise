@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
 import { ITool } from '../../Interface'
 
 @Entity()
@@ -32,4 +32,12 @@ export class Tool implements ITool {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
 }

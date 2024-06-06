@@ -11,7 +11,7 @@ const createCredential = async (req: Request, res: Response, next: NextFunction)
                 `Error: credentialsController.createCredential - body not provided!`
             )
         }
-        const apiResponse = await credentialsService.createCredential(req.body, req.user?.id)
+        const apiResponse = await credentialsService.createCredential(req.body, req.user?.id, req.user?.organizationId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -35,7 +35,7 @@ const deleteCredentials = async (req: Request, res: Response, next: NextFunction
 
 const getAllCredentials = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await credentialsService.getAllCredentials(req.query.credentialName)
+        const apiResponse = await credentialsService.getAllCredentials(req.query.credentialName, req.user?.id, req.user?.organizationId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -71,7 +71,7 @@ const updateCredential = async (req: Request, res: Response, next: NextFunction)
                 `Error: credentialsController.updateCredential - body not provided!`
             )
         }
-        const apiResponse = await credentialsService.updateCredential(req.params.id, req.body, req.user?.id)
+        const apiResponse = await credentialsService.updateCredential(req.params.id, req.body, req.user?.id, req.user?.organizationId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

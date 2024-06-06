@@ -3,6 +3,7 @@ import { auth } from 'express-oauth2-jwt-bearer'
 
 import { DataSource } from 'typeorm'
 import { User } from '../../database/entities/User'
+import { Organization } from '../../database/entities/Organization'
 
 const jwtCheck = auth({
     authRequired: false,
@@ -43,15 +44,16 @@ export const authenticationHandlerMiddleware =
             res.cookie('Authorization', req.headers.authorization, { maxAge: 900000, httpOnly: true, secure: true })
 
             // Check for organization match if required
+            const userOrgId = req?.auth?.payload?.org_id
             if (requireAuth) {
-                const isInvalidOrg =
-                    (!!process.env.AUTH0_ORGANIZATION_ID || !!req?.auth?.payload?.org_id) &&
-                    process.env.AUTH0_ORGANIZATION_ID !== req?.auth?.payload?.org_id
+                const validOrgs = process.env.AUTH0_ORGANIZATION_ID?.split(',') || []
+                const isInvalidOrg = validOrgs?.length > 0 && !validOrgs.includes(userOrgId)
                 if (isInvalidOrg) {
                     return res.status(401).send("Unauthorized: Organization doesn't match")
                 }
             }
             const authUser = req.auth.payload
+            const userOrgName = authUser.org_name
             const auth0Id = authUser.sub
             const email = authUser.email as string
             const name = authUser.name as string
@@ -59,20 +61,27 @@ export const authenticationHandlerMiddleware =
             if (!auth0Id || !email) {
                 return next()
             }
-
-            let user = await AppDataSource.getRepository(User).findOneBy({ auth0Id })
-            if (!user) {
-                user = new User()
-                user.auth0Id = auth0Id
-                user.email = email
-                user.name = name
-                await AppDataSource.getRepository(User).save(user)
+            const orgRepo = AppDataSource.getRepository(Organization)
+            let organization = await orgRepo.findOneBy({ name: userOrgName })
+            if (!organization) {
+                organization = orgRepo.create({ auth0Id: userOrgId, name: userOrgName })
             } else {
-                // Update existing user if needed
+                organization.name = userOrgName
+                organization.auth0Id = userOrgId
+            }
+            await orgRepo.save(organization)
+
+            const userRepo = AppDataSource.getRepository(User)
+            let user = await userRepo.findOneBy({ auth0Id })
+            if (!user) {
+                user = userRepo.create({ auth0Id, email, name, organizationId: organization.id })
+            } else {
                 user.email = email
                 user.name = name
-                await AppDataSource.getRepository(User).save(user)
+                user.organizationId = organization.id
             }
+
+            await userRepo.save(user)
 
             req.user = user // Attach user entity to request for downstream use
             return next()

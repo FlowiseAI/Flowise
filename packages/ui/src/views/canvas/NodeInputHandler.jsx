@@ -28,6 +28,7 @@ import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import { TabPanel } from '@/ui-component/tabs/TabPanel'
 import { TabsList } from '@/ui-component/tabs/TabsList'
 import { Tab } from '@/ui-component/tabs/Tab'
+import { ContentfulConfig } from '@/ui-component/contentful/ContentfulConfig'
 import ToolDialog from '@/views/tools/ToolDialog'
 import AssistantDialog from '@/views/assistants/AssistantDialog'
 import FormatPromptValuesDialog from '@/ui-component/dialog/FormatPromptValuesDialog'
@@ -604,6 +605,17 @@ const NodeInputHandler = ({
                                 ))}
                             </>
                         )}
+
+                        {inputParam.type === 'contentfulConfig' && (
+                            <ContentfulConfig
+                                disabled={disabled}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                nodeData={data}
+                                isDarkMode={customization.isDarkMode}
+                            />
+                        )}
+
                         {inputParam.type === 'file' && (
                             <File
                                 disabled={disabled}

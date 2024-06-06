@@ -23,6 +23,7 @@ import chatflowsApi from '@/api/chatflows'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useFlags } from 'flagsmith/react'
 
 // utils
 import { generateExportFlowData } from '@/utils/genericHelper'
@@ -34,6 +35,7 @@ import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 
 const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
+    const flags = useFlags(['chatflow:share:external'])
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const flowNameRef = useRef()
@@ -330,7 +332,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                     </Box>
                 </Stack>
                 <Box>
-                    {chatflow?.id && (
+                    {chatflow?.id && flags?.['chatflow:share:external']?.enabled && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
                             <Avatar
                                 variant='rounded'

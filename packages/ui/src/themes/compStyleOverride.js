@@ -143,6 +143,15 @@ export default function componentStyleOverrides(theme) {
                 }
             }
         },
+        MuiFormControlLabel: {
+            styleOverrides: {
+                root: {
+                    '&.Mui-disabled *': {
+                        color: '#858585!important'
+                    }
+                }
+            }
+        },
         MuiOutlinedInput: {
             styleOverrides: {
                 root: {
@@ -182,7 +191,7 @@ export default function componentStyleOverrides(theme) {
             styleOverrides: {
                 root: {
                     '&.Mui-disabled': {
-                        color: theme.colors?.grey300
+                        // color: theme.colors?.grey300
                     }
                 },
                 mark: {

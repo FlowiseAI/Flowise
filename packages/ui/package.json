@@ -27,6 +27,7 @@
         "axios": "1.6.2",
         "clsx": "^1.1.1",
         "dotenv": "^16.0.0",
+        "flagsmith": "^4.0.3",
         "aai-embed": "workspace:*",
         "aai-embed-react": "workspace:*",
         "flowise-react-json-view": "*",

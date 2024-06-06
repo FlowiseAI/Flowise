@@ -358,18 +358,22 @@ const Credentials = () => {
                                                             {moment(credential.createdDate).format('MMMM Do, YYYY')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
-                                                                <IconEdit />
-                                                            </IconButton>
+                                                            {credential.editable ? (
+                                                                <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
+                                                                    <IconEdit />
+                                                                </IconButton>
+                                                            ) : null}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            <IconButton
-                                                                title='Delete'
-                                                                color='error'
-                                                                onClick={() => deleteCredential(credential)}
-                                                            >
-                                                                <IconTrash />
-                                                            </IconButton>
+                                                            {credential.editable ? (
+                                                                <IconButton
+                                                                    title='Delete'
+                                                                    color='error'
+                                                                    onClick={() => deleteCredential(credential)}
+                                                                >
+                                                                    <IconTrash />
+                                                                </IconButton>
+                                                            ) : null}
                                                         </StyledTableCell>
                                                     </StyledTableRow>
                                                 ))}
