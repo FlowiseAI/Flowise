@@ -45,6 +45,14 @@ class Fireworks_LLMs implements INode {
                 name: 'cache',
                 type: 'BaseCache',
                 optional: true
+            },
+            {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'string',
+                default: 'accounts/fireworks/models/llama-v3-70b-instruct-hf',
+                description: 'For more details see https://fireworks.ai/models',
+                optional: true
             }
         ]
     }
@@ -57,12 +65,14 @@ class Fireworks_LLMs implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const cache = nodeData.inputs?.cache as BaseCache
+        const modelName = nodeData.inputs?.modelName as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const fireworksKey = getCredentialParam('fireworksApiKey', credentialData, nodeData)
 
         const obj: any = {
-            fireworksApiKey: fireworksKey
+            fireworksApiKey: fireworksKey,
+            modelName: modelName
         }
         if (cache) obj.cache = cache
 
