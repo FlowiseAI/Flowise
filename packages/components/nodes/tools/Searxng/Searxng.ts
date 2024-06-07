@@ -1,6 +1,6 @@
-import { SearxngSearch } from "@langchain/community/tools/searxng_search";
+import { SearxngSearch } from '@langchain/community/tools/searxng_search';
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 
 class Searxng_Tools implements INode {
     label: string
@@ -31,7 +31,8 @@ class Searxng_Tools implements INode {
             {
                 label: 'Categories',
                 name: 'categories',
-                description: 'Comma separated list, specifies the active search categories. (see <a target="_blank" href="https://docs.searxng.org/user/configured_engines.html#configured-engines">Configured Engines</a>)',
+                description:
+                    'Comma separated list, specifies the active search categories. (see <a target="_blank" href="https://docs.searxng.org/user/configured_engines.html#configured-engines">Configured Engines</a>)',
                 optional: true,
                 additionalParams: true,
                 type: 'string'
@@ -39,7 +40,8 @@ class Searxng_Tools implements INode {
             {
                 label: 'Engines',
                 name: 'engines',
-                description: 'Comma separated list, specifies the active search engines. (see <a target="_blank" href="https://docs.searxng.org/user/configured_engines.html#configured-engines">Configured Engines</a>)',
+                description:
+                    'Comma separated list, specifies the active search engines. (see <a target="_blank" href="https://docs.searxng.org/user/configured_engines.html#configured-engines">Configured Engines</a>)',
                 optional: true,
                 additionalParams: true,
                 type: 'string'
@@ -63,7 +65,8 @@ class Searxng_Tools implements INode {
             {
                 label: 'Time Range',
                 name: 'time_range',
-                description: 'Time range of search for engines which support it. See if an engine supports time range search in the preferences page of an instance.',
+                description:
+                    'Time range of search for engines which support it. See if an engine supports time range search in the preferences page of an instance.',
                 optional: true,
                 additionalParams: true,
                 type: 'string'
@@ -71,7 +74,8 @@ class Searxng_Tools implements INode {
             {
                 label: 'Safe Search',
                 name: 'safesearch',
-                description: 'Filter search results of engines which support safe search. See if an engine supports safe search in the preferences page of an instance.',
+                description:
+                    'Filter search results of engines which support safe search. See if an engine supports safe search in the preferences page of an instance.',
                 optional: true,
                 additionalParams: true,
                 type: 'number'
@@ -80,7 +84,7 @@ class Searxng_Tools implements INode {
         this.baseClasses = [this.type, ...getBaseClasses(SearxngSearch)]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string): Promise<any> {
         const apiBase = nodeData.inputs?.apiBase as string
         const categories = nodeData.inputs?.categories as string
         const engines = nodeData.inputs?.engines as string
@@ -88,7 +92,7 @@ class Searxng_Tools implements INode {
         const pageno = nodeData.inputs?.pageno as number
         const time_range = nodeData.inputs?.time_range as string
         const safesearch = nodeData.inputs?.safesearch as 0 | 1 | 2 | undefined
-        const format = 'json' as "json"
+        const format = 'json' as 'json'
 
         const params = {
             format,
