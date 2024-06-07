@@ -54,7 +54,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
     try {
         const appServer = getRunningExpressApp()
         const chatflowid = req.params.id
-        const baseURL = `${req.protocol}://${req.get('host')}`
+
+        const httpProtocol = req.get('x-forwarded-proto') || req.protocol
+        const baseURL = `${httpProtocol}://${req.get('host')}`
 
         let incomingInput: IncomingInput = req.body
         let nodeToExecuteData: INodeData
