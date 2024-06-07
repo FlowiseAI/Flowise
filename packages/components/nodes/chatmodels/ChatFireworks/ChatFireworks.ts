@@ -39,6 +39,11 @@ class ChatFireworks_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Model',
+                name: 'model',
+                type: 'string'
+            },
+            {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
