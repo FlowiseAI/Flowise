@@ -48,6 +48,10 @@ export class ChatFlow implements IChatFlow {
 
     @Index()
     @Column({ type: 'uuid', nullable: true })
+    parentChatflowId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
     userId?: string
 
     @Index()

@@ -24,7 +24,7 @@ const MarketplaceCanvas = () => {
     const navigate = useNavigate()
 
     const { state } = useLocation()
-    const { flowData, templateName } = state ?? {}
+    const { flowData, templateName, id } = state ?? {}
 
     // ==============================|| ReactFlow ||============================== //
 
@@ -48,8 +48,7 @@ const MarketplaceCanvas = () => {
     const onChatflowCopy = (flowData) => {
         const isAgentCanvas = (flowData?.nodes || []).some((node) => node.data.category === 'Multi Agents')
         const templateFlowData = JSON.stringify(flowData)
-        console.log('NAme', {templateName, flowData,state})
-        navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, { state: { templateFlowData, templateName } })
+        navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, { state: { templateFlowData, templateName, parentChatflowId: id } })
     }
 
     return (

@@ -207,7 +207,11 @@ const Marketplace = () => {
     }
 
     const goToCanvas = (selectedChatflow) => {
-        navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow, name: selectedChatflow.name })
+        navigate(`/marketplace/${selectedChatflow.id}`, {
+            state: selectedChatflow,
+            parentChatflowId: selectedChatflow.id,
+            name: selectedChatflow.name
+        })
     }
 
     useEffect(() => {
