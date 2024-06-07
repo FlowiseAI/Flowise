@@ -1,5 +1,5 @@
-import { SearxngSearch } from '@langchain/community/tools/searxng_search';
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { SearxngSearch } from '@langchain/community/tools/searxng_search'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 
 class Searxng_Tools implements INode {
@@ -101,7 +101,7 @@ class Searxng_Tools implements INode {
             language,
             pageno,
             time_range,
-            safesearch,
+            safesearch
         }
 
         const headers = {}
@@ -109,7 +109,7 @@ class Searxng_Tools implements INode {
         const tool = new SearxngSearch({
             apiBase,
             params,
-            headers,
+            headers
         })
 
         return tool
