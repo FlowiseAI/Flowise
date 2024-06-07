@@ -26,6 +26,7 @@ import { AddUser1716422641414 } from './1716422641414-AddUser'
 import { AddOrganizationId1717629010538 } from './1717629010538-AddOrganizationId'
 import { AddOrganization1717632419096 } from './1717632419096-AddOrganization'
 import { UpdateDefaultVisibility1717684633931 } from './1717684633931-UpdateDefaultVisibility'
+import { AddUserId1717773329048 } from './1717773329048-AddUserId'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -55,5 +56,6 @@ export const postgresMigrations = [
     AddTypeToChatFlow1766759476232,
     AddOrganizationId1717629010538,
     AddOrganization1717632419096,
-    UpdateDefaultVisibility1717684633931
+    UpdateDefaultVisibility1717684633931,
+    AddUserId1717773329048
 ]

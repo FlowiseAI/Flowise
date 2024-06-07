@@ -450,13 +450,14 @@ const Marketplace = () => {
                                                                 )}
                                                             </Badge>
                                                         )}
-                                                        {!data.badge && (data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                            <ItemCard
-                                                                onClick={() => goToCanvas(data)}
-                                                                data={data}
-                                                                images={images[data.id]}
-                                                            />
-                                                        )}
+                                                        {!data.badge &&
+                                                            (data.type === 'Chatflow' || data.type === 'Agentflow' || !!data.type) && (
+                                                                <ItemCard
+                                                                    onClick={() => goToCanvas(data)}
+                                                                    data={data}
+                                                                    images={images[data.id]}
+                                                                />
+                                                            )}
                                                         {!data.badge && data.type === 'Tool' && (
                                                             <ItemCard data={data} onClick={() => goToTool(data)} />
                                                         )}

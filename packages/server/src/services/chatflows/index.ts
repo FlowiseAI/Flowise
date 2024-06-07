@@ -109,18 +109,22 @@ const deleteChatflow = async (chatflowId: string, userId?: string, organizationI
 const getAllChatflows = async (type?: ChatflowType, userId?: string, organizationId?: string): Promise<IChatFlow[]> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find({ where: { userId, organizationId } })
+        const dbResponse = (await appServer.AppDataSource.getRepository(ChatFlow).find({ where: { userId, organizationId } })).map(
+            (chatflow) => ({
+                ...chatflow,
+                badge: chatflow.visibility?.includes('Marketplace')
+                    ? 'SHARED'
+                    : chatflow.visibility?.includes('Organization')
+                    ? 'ORGANIZATION'
+                    : ''
+            })
+        )
         await checkOwnership(dbResponse, userId, organizationId)
 
         if (type === 'MULTIAGENT') {
             return dbResponse.filter((chatflow) => chatflow.type === type)
         }
-        return dbResponse
-            .filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
-            .map((chatflow) => ({
-                ...chatflow,
-                badge: chatflow.visibility?.includes('Marketplace') ? 'SHARED' : ''
-            }))
+        return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

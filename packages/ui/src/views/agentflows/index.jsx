@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Badge, Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -177,9 +177,26 @@ const Agentflows = () => {
                                 </Box>
                             ) : (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.filter(filterFlows).map((data, index) => (
-                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                    ))}
+                                    {getAllAgentflows.data?.filter(filterFlows).map((data, index) =>
+                                        data.badge ? (
+                                            <Badge
+                                                key={index}
+                                                sx={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    '& .MuiBadge-badge': {
+                                                        right: 20
+                                                    }
+                                                }}
+                                                badgeContent={data.badge}
+                                                color={data.badge === 'SHARED' ? 'error' : 'primary'}
+                                            >
+                                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                            </Badge>
+                                        ) : (
+                                            <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                        )
+                                    )}
                                 </Box>
                             )}
                         </>
