@@ -284,28 +284,27 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
-            const reactFlowNodes = await buildFlow(
+            const reactFlowNodes = await buildFlow({
                 startingNodeIds,
-                nodes,
-                edges,
+                reactFlowNodes: nodes,
+                reactFlowEdges: edges,
                 graph,
                 depthQueue,
-                appServer.nodesPool.componentNodes,
-                incomingInput.question,
+                componentNodes: appServer.nodesPool.componentNodes,
+                question: incomingInput.question,
                 chatHistory,
                 chatId,
-                sessionId ?? '',
+                sessionId: sessionId ?? '',
                 chatflowid,
-                appServer.AppDataSource,
-                incomingInput?.overrideConfig,
-                appServer.cachePool,
-                false,
-                undefined,
-                incomingInput.uploads,
+                appDataSource: appServer.AppDataSource,
+                overrideConfig: incomingInput?.overrideConfig,
+                cachePool: appServer.cachePool,
+                isUpsert: false,
+                uploads: incomingInput.uploads,
                 baseURL,
                 socketIO,
-                incomingInput.socketIOClientId
-            )
+                socketIOClientId: incomingInput.socketIOClientId
+            })
 
             const nodeToExecute =
                 endingNodeIds.length === 1

@@ -66,26 +66,25 @@ export const buildAgentGraph = async (
         startingNodeIds = [...new Set(startingNodeIds)]
 
         // Initialize nodes like ChatModels, Tools, etc.
-        const reactFlowNodes = await buildFlow(
+        const reactFlowNodes = await buildFlow({
             startingNodeIds,
-            nodes,
-            edges,
+            reactFlowNodes: nodes,
+            reactFlowEdges: edges,
             graph,
             depthQueue,
-            appServer.nodesPool.componentNodes,
-            incomingInput.question,
-            [],
+            componentNodes: appServer.nodesPool.componentNodes,
+            question: incomingInput.question,
+            chatHistory: [],
             chatId,
             sessionId,
             chatflowid,
-            appServer.AppDataSource,
-            incomingInput?.overrideConfig,
-            appServer.cachePool,
-            false,
-            undefined,
-            incomingInput.uploads,
+            appDataSource: appServer.AppDataSource,
+            overrideConfig: incomingInput?.overrideConfig,
+            cachePool: appServer.cachePool,
+            isUpsert: false,
+            uploads: incomingInput.uploads,
             baseURL
-        )
+        })
 
         const options = {
             chatId,
