@@ -1,21 +1,25 @@
-FROM node:20-alpine
+# Stage 1: Build stage
+FROM node:20-alpine as build
 
 USER root
 
-RUN apk add --no-cache git
-RUN apk add --no-cache python3 py3-pip make g++
-# needed for pdfjs-dist
-RUN apk add --no-cache build-base cairo-dev pango-dev
-
-# Install Chromium
-RUN apk add --no-cache chromium
-
+# Skip downloading Chrome for Puppeteer (saves build time)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-# You can install a specific version like: flowise@1.0.0
+# Install latest Flowise globally (specific version can be set: flowise@1.0.0)
 RUN npm install -g flowise
 
-WORKDIR /data
+# Stage 2: Runtime stage
+FROM node:20-alpine
+
+# Install runtime dependencies
+RUN apk add --no-cache chromium git python3 py3-pip make g++ build-base cairo-dev pango-dev
+
+# Set the environment variable for Puppeteer to find Chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Copy Flowise from the build stage
+COPY --from=build /usr/local/lib/node_modules /usr/local/lib/node_modules
+COPY --from=build /usr/local/bin /usr/local/bin
 
 ENTRYPOINT ["flowise", "start"]
