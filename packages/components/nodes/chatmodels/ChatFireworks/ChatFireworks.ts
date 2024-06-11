@@ -1,8 +1,7 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ChatFireworks } from '@langchain/community/chat_models/fireworks'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
 class ChatFireworks_ChatModels implements INode {
     label: string
@@ -40,8 +39,9 @@ class ChatFireworks_ChatModels implements INode {
             },
             {
                 label: 'Model',
-                name: 'model',
+                name: 'modelName',
                 type: 'string',
+                default: 'accounts/fireworks/models/llama-v2-13b-chat',
                 placeholder: 'accounts/fireworks/models/llama-v2-13b-chat'
             },
             {
@@ -58,15 +58,16 @@ class ChatFireworks_ChatModels implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const cache = nodeData.inputs?.cache as BaseCache
         const temperature = nodeData.inputs?.temperature as string
-        const model = nodeData.inputs?.model as string
+        const modelName = nodeData.inputs?.modelName as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const fireworksApiKey = getCredentialParam('fireworksApiKey', credentialData, nodeData)
 
         const obj: Partial<ChatFireworks> = {
             fireworksApiKey,
-            model,
-            temperature: temperature ? parseFloat(temperature) : undefined,
+            model: modelName,
+            modelName,
+            temperature: temperature ? parseFloat(temperature) : undefined
         }
         if (cache) obj.cache = cache
 
