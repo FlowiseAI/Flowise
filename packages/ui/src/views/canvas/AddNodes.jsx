@@ -115,7 +115,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             })
             return passed
         }
-        const nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents')
+        const nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents' && nd.category !== 'Sequential Agents')
         const passed = nodes.filter((nd) => {
             const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
             const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
@@ -178,6 +178,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             setNodes(filteredResult)
             categorizeVectorStores(filteredResult, accordianCategories, isFilter)
             accordianCategories['Multi Agents'] = true
+            accordianCategories['Sequential Agents'] = true
             setCategoryExpanded(accordianCategories)
         } else {
             const taggedNodes = groupByTags(nodes, newTabValue)
@@ -191,7 +192,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
             const filteredResult = {}
             for (const category in result) {
-                if (category === 'Multi Agents') {
+                if (category === 'Multi Agents' || category === 'Sequential Agents') {
                     continue
                 }
                 filteredResult[category] = result[category]

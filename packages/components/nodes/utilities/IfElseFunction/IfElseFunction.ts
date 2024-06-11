@@ -64,12 +64,14 @@ class IfElseFunction_Utilities implements INode {
             {
                 label: 'True',
                 name: 'returnTrue',
-                baseClasses: ['string', 'number', 'boolean', 'json', 'array']
+                baseClasses: ['string', 'number', 'boolean', 'json', 'array'],
+                isAnchor: true
             },
             {
                 label: 'False',
                 name: 'returnFalse',
-                baseClasses: ['string', 'number', 'boolean', 'json', 'array']
+                baseClasses: ['string', 'number', 'boolean', 'json', 'array'],
+                isAnchor: true
             }
         ]
     }

@@ -166,7 +166,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const endingNodes = getEndingNodes(nodeDependencies, directedGraph, nodes)
 
         /*** If the graph is an agent graph, build the agent response ***/
-        if (endingNodes.filter((node) => node.data.category === 'Multi Agents').length) {
+        if (endingNodes.filter((node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents').length) {
             return await utilBuildAgentResponse(
                 chatflow,
                 isInternal,

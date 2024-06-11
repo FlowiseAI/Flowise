@@ -269,7 +269,8 @@ export const getEndingNodes = (
                 endingNodeData.category !== 'Chains' &&
                 endingNodeData.category !== 'Agents' &&
                 endingNodeData.category !== 'Engine' &&
-                endingNodeData.category !== 'Multi Agents'
+                endingNodeData.category !== 'Multi Agents' &&
+                endingNodeData.category !== 'Sequential Agents'
             ) {
                 error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent or Engine`)
                 continue

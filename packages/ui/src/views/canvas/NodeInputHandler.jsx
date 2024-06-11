@@ -32,7 +32,7 @@ import ManageScrapedLinksDialog from '@/ui-component/dialog/ManageScrapedLinksDi
 import CredentialInputHandler from './CredentialInputHandler'
 
 // utils
-import { getInputVariables } from '@/utils/genericHelper'
+import { getInputVariables, getCustomConditionOutputs } from '@/utils/genericHelper'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
@@ -51,7 +51,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const ref = useRef(null)
-    const { reactFlowInstance } = useContext(flowContext)
+    const { reactFlowInstance, deleteEdge } = useContext(flowContext)
     const updateNodeInternals = useUpdateNodeInternals()
     const [position, setPosition] = useState(0)
     const [showExpandDialog, setShowExpandDialog] = useState(false)
@@ -65,11 +65,12 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const [showManageScrapedLinksDialog, setShowManageScrapedLinksDialog] = useState(false)
     const [manageScrapedLinksDialogProps, setManageScrapedLinksDialogProps] = useState({})
 
-    const onExpandDialogClicked = (value, inputParam) => {
+    const onExpandDialogClicked = (value, inputParam, languageType) => {
         const dialogProps = {
             value,
             inputParam,
             disabled,
+            languageType,
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
         }
@@ -143,8 +144,19 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     }
 
     const onExpandDialogSave = (newValue, inputParamName) => {
+        if (inputParamName === 'conditionFunction') {
+            const existingEdges = reactFlowInstance.getEdges().filter((edge) => edge.source === data.id)
+            const { outputAnchors, toBeRemovedEdgeIds } = getCustomConditionOutputs(newValue, data.id, existingEdges)
+            if (!outputAnchors) return
+            data.inputs[inputParamName] = newValue
+            data.outputAnchors = outputAnchors
+            for (const edgeId of toBeRemovedEdgeIds) {
+                deleteEdge(edgeId)
+            }
+        } else {
+            data.inputs[inputParamName] = newValue
+        }
         setShowExpandDialog(false)
-        data.inputs[inputParamName] = newValue
     }
 
     const editAsyncOption = (inputParamName, inputValue) => {
@@ -471,6 +483,25 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                         </IconButton>
                                     )}
                                 </div>
+                            </>
+                        )}
+                        {data.name === 'seqCondition' && inputParam.name === 'conditionFunction' && (
+                            <>
+                                <Button
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        width: '100%'
+                                    }}
+                                    disabled={disabled}
+                                    sx={{ borderRadius: '12px', width: '100%', mt: 1 }}
+                                    variant='outlined'
+                                    onClick={() =>
+                                        onExpandDialogClicked(data.inputs[inputParam.name] ?? inputParam.default ?? '', inputParam, 'js')
+                                    }
+                                >
+                                    {inputParam.label}
+                                </Button>
                             </>
                         )}
                         {(data.name === 'cheerioWebScraper' ||

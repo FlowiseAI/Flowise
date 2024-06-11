@@ -63,6 +63,8 @@ export interface INodeOutputsValue {
     name: string
     baseClasses: string[]
     description?: string
+    hidden?: boolean
+    isAnchor?: boolean
 }
 
 export interface INodeParams {
@@ -109,6 +111,7 @@ export interface INodeProperties {
     filePath?: string
     badge?: string
     deprecateMessage?: string
+    hideOutput?: boolean
 }
 
 export interface INode extends INodeProperties {
@@ -168,6 +171,21 @@ export interface IMultiAgentNode {
     multiModalMessageContent?: MessageContentImageUrl[]
 }
 
+export interface ISeqAgentNode {
+    node: any
+    name: string
+    label: string
+    type: 'agent' | 'condition' | 'end' | 'start'
+    output: string
+    llm?: any
+    predecessorAgent?: ISeqAgentNode
+    workerPrompt?: string
+    workerInputVariables?: string[]
+    recursionLimit?: number
+    moderations?: Moderation[]
+    multiModalMessageContent?: MessageContentImageUrl[]
+}
+
 export interface ITeamState {
     messages: {
         value: (x: BaseMessage[], y: BaseMessage[]) => BaseMessage[]
@@ -176,6 +194,13 @@ export interface ITeamState {
     team_members: string[]
     next: string
     instructions: string
+}
+
+export interface ISeqAgentsState {
+    messages: {
+        value: (x: BaseMessage[], y: BaseMessage[]) => BaseMessage[]
+        default: () => BaseMessage[]
+    }
 }
 
 export interface IAgentReasoning {

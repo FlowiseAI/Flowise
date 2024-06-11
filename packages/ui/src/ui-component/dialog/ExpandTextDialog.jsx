@@ -38,12 +38,17 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const executeCustomFunctionNodeApi = useApi(nodesApi.executeCustomFunctionNode)
 
     useEffect(() => {
-        if (dialogProps.value) setInputValue(dialogProps.value)
+        if (dialogProps.value) {
+            setInputValue(dialogProps.value)
+        }
         if (dialogProps.inputParam) {
             setInputParam(dialogProps.inputParam)
             if (dialogProps.inputParam.type === 'code') {
                 setLanguageType('js')
             }
+        }
+        if (dialogProps.languageType) {
+            setLanguageType(dialogProps.languageType)
         }
 
         return () => {
@@ -89,41 +94,47 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         <Dialog open={show} fullWidth maxWidth='md' aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
             <DialogContent>
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    {inputParam && (inputParam.type === 'string' || inputParam.type === 'code') && (
-                        <div style={{ flex: 70 }}>
-                            <Typography sx={{ mb: 2, ml: 1 }} variant='h4'>
-                                {inputParam.label}
-                            </Typography>
-                            <PerfectScrollbar
-                                style={{
-                                    border: '1px solid',
-                                    borderColor: theme.palette.grey['500'],
-                                    borderRadius: '12px',
-                                    height: '100%',
-                                    maxHeight: languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)',
-                                    overflowX: 'hidden',
-                                    backgroundColor: 'white'
-                                }}
-                            >
-                                <CodeEditor
-                                    disabled={dialogProps.disabled}
-                                    value={inputValue}
-                                    height={languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)'}
-                                    theme={customization.isDarkMode ? 'dark' : 'light'}
-                                    lang={languageType}
-                                    placeholder={inputParam.placeholder}
-                                    basicSetup={
-                                        languageType !== 'js'
-                                            ? { lineNumbers: false, foldGutter: false, autocompletion: false, highlightActiveLine: false }
-                                            : {}
-                                    }
-                                    onValueChange={(code) => setInputValue(code)}
-                                />
-                            </PerfectScrollbar>
-                        </div>
-                    )}
+                    {inputParam &&
+                        (inputParam.type === 'string' || inputParam.type === 'code' || inputParam.type === 'conditionFunction') && (
+                            <div style={{ flex: 70 }}>
+                                <Typography sx={{ mb: 2, ml: 1 }} variant='h4'>
+                                    {inputParam.label}
+                                </Typography>
+                                <PerfectScrollbar
+                                    style={{
+                                        border: '1px solid',
+                                        borderColor: theme.palette.grey['500'],
+                                        borderRadius: '12px',
+                                        height: '100%',
+                                        maxHeight: languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)',
+                                        overflowX: 'hidden',
+                                        backgroundColor: 'white'
+                                    }}
+                                >
+                                    <CodeEditor
+                                        disabled={dialogProps.disabled}
+                                        value={inputValue}
+                                        height={languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)'}
+                                        theme={customization.isDarkMode ? 'dark' : 'light'}
+                                        lang={languageType}
+                                        placeholder={inputParam.placeholder}
+                                        basicSetup={
+                                            languageType !== 'js'
+                                                ? {
+                                                      lineNumbers: false,
+                                                      foldGutter: false,
+                                                      autocompletion: false,
+                                                      highlightActiveLine: false
+                                                  }
+                                                : {}
+                                        }
+                                        onValueChange={(code) => setInputValue(code)}
+                                    />
+                                </PerfectScrollbar>
+                            </div>
+                        )}
                 </div>
-                {languageType === 'js' && (
+                {languageType === 'js' && inputParam.type !== 'conditionFunction' && (
                     <LoadingButton
                         sx={{
                             mt: 2,

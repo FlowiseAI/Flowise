@@ -52,7 +52,8 @@ export const initNode = (nodeData, newNodeId) => {
         'code',
         'date',
         'file',
-        'folder'
+        'folder',
+        'conditionFunction' // This is a special type for condition functions
     ]
 
     // Inputs
@@ -80,6 +81,7 @@ export const initNode = (nodeData, newNodeId) => {
     // Outputs
     const outputAnchors = []
     for (let i = 0; i < outgoing; i += 1) {
+        if (nodeData.hideOutput) continue
         if (nodeData.outputs && nodeData.outputs.length) {
             const options = []
             for (let j = 0; j < nodeData.outputs.length; j += 1) {
@@ -100,7 +102,9 @@ export const initNode = (nodeData, newNodeId) => {
                     name: nodeData.outputs[j].name,
                     label: nodeData.outputs[j].label,
                     description: nodeData.outputs[j].description ?? '',
-                    type
+                    type,
+                    isAnchor: nodeData.outputs[j]?.isAnchor,
+                    hidden: nodeData.outputs[j]?.hidden
                 }
                 options.push(newOutputOption)
             }
@@ -770,4 +774,86 @@ export const kFormatter = (num) => {
     const regexp = /\.0+$|(?<=\.[0-9]*[1-9])0+$/
     const item = lookup.findLast((item) => num >= item.value)
     return item ? (num / item.value).toFixed(1).replace(regexp, '').concat(item.symbol) : '0'
+}
+
+const toCamelCase = (str) => {
+    return str
+        .split(' ') // Split by space to process each word
+        .map((word, index) => (index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()))
+        .join('') // Join the words back into a single string
+}
+
+const createJsonArray = (labels) => {
+    return labels.map((label) => {
+        return {
+            label: label,
+            name: toCamelCase(label),
+            baseClasses: label.toLowerCase() === 'end' ? ['END'] : ['Agent'],
+            isAnchor: true
+        }
+    })
+}
+
+export const getCustomConditionOutputs = (value, nodeId, existingEdges) => {
+    // Regex to find return statements and capture returned values
+    const regex = /return\s+(['"`])(.*?)\1;/g
+    let match
+    const numberOfReturns = []
+
+    // Loop over the matches of the regex
+    while ((match = regex.exec(value)) !== null) {
+        // Push the captured group, which is the actual return value, into results
+        numberOfReturns.push(match[2])
+    }
+
+    if (numberOfReturns.length === 0) {
+        alert('Please add a return statement in the code block to define the output')
+        return undefined
+    }
+
+    const outputs = createJsonArray(numberOfReturns)
+
+    const outputAnchors = []
+
+    const options = []
+    for (let j = 0; j < outputs.length; j += 1) {
+        let baseClasses = ''
+        let type = ''
+
+        const outputBaseClasses = outputs[j].baseClasses ?? []
+        if (outputBaseClasses.length > 1) {
+            baseClasses = outputBaseClasses.join('|')
+            type = outputBaseClasses.join(' | ')
+        } else if (outputBaseClasses.length === 1) {
+            baseClasses = outputBaseClasses[0]
+            type = outputBaseClasses[0]
+        }
+
+        const newOutputOption = {
+            id: `${nodeId}-output-${outputs[j].name}-${baseClasses}`,
+            name: outputs[j].name,
+            label: outputs[j].label,
+            type,
+            isAnchor: outputs[j]?.isAnchor
+        }
+        options.push(newOutputOption)
+    }
+    const newOutput = {
+        name: 'output',
+        label: 'Output',
+        type: 'options',
+        options
+    }
+    outputAnchors.push(newOutput)
+
+    // Remove edges
+    let newEdgeSourceHandles = []
+    for (const anchor of options) {
+        const anchorId = anchor.id
+        newEdgeSourceHandles.push(anchorId)
+    }
+
+    const toBeRemovedEdgeIds = existingEdges.filter((edge) => !newEdgeSourceHandles.includes(edge.sourceHandle)).map((edge) => edge.id)
+
+    return { outputAnchors, toBeRemovedEdgeIds }
 }

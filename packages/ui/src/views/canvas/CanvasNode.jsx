@@ -231,21 +231,24 @@ const CanvasNode = ({ data }) => {
                                 </Button>
                             </div>
                         )}
-                        <Divider />
-                        <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
-                            <Typography
-                                sx={{
-                                    fontWeight: 500,
-                                    textAlign: 'center'
-                                }}
-                            >
-                                Output
-                            </Typography>
-                        </Box>
-                        <Divider />
-                        {data.outputAnchors.map((outputAnchor) => (
-                            <NodeOutputHandler key={JSON.stringify(data)} outputAnchor={outputAnchor} data={data} />
-                        ))}
+                        {data.outputAnchors.length > 0 && <Divider />}
+                        {data.outputAnchors.length > 0 && (
+                            <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
+                                <Typography
+                                    sx={{
+                                        fontWeight: 500,
+                                        textAlign: 'center'
+                                    }}
+                                >
+                                    Output
+                                </Typography>
+                            </Box>
+                        )}
+                        {data.outputAnchors.length > 0 && <Divider />}
+                        {data.outputAnchors.length > 0 &&
+                            data.outputAnchors.map((outputAnchor) => (
+                                <NodeOutputHandler key={JSON.stringify(data)} outputAnchor={outputAnchor} data={data} />
+                            ))}
                     </Box>
                 </NodeTooltip>
             </NodeCardWrapper>
