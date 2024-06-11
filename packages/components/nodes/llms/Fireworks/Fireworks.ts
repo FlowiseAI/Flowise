@@ -5,11 +5,9 @@ import {
     ICommonObject,
     INode,
     INodeData,
-    INodeOptionsValue,
     INodeParams
 } from '../../../src'
 import { Fireworks } from '@langchain/community/llms/fireworks'
-import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { BaseCache } from '@langchain/core/caches'
 
 class Fireworks_LLMs implements INode {
@@ -55,12 +53,6 @@ class Fireworks_LLMs implements INode {
                 optional: true
             }
         ]
-    }
-
-    loadMethods = {
-        async listModels(): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.LLM, 'fireworks')
-        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
