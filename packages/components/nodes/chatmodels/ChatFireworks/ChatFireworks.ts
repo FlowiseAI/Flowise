@@ -41,7 +41,8 @@ class ChatFireworks_ChatModels implements INode {
             {
                 label: 'Model',
                 name: 'model',
-                type: 'string'
+                type: 'string',
+                placeholder: 'accounts/fireworks/models/llama-v2-13b-chat'
             },
             {
                 label: 'Temperature',
@@ -54,22 +55,17 @@ class ChatFireworks_ChatModels implements INode {
         ]
     }
 
-    //@ts-ignore
-    loadMethods = {
-        async listModels(): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.CHAT, 'chatFireworks')
-        }
-    }
-
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const cache = nodeData.inputs?.cache as BaseCache
         const temperature = nodeData.inputs?.temperature as string
+        const model = nodeData.inputs?.model as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const fireworksApiKey = getCredentialParam('fireworksApiKey', credentialData, nodeData)
 
         const obj: Partial<ChatFireworks> = {
             fireworksApiKey,
+            model,
             temperature: temperature ? parseFloat(temperature) : undefined,
         }
         if (cache) obj.cache = cache
