@@ -55,7 +55,14 @@ const verifyApiKey = async (paramApiKey: string): Promise<string> => {
         const dbResponse = 'OK'
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.verifyApiKey - ${getErrorMessage(error)}`)
+        if (error instanceof InternalFlowiseError && error.statusCode === StatusCodes.UNAUTHORIZED) {
+            throw error
+        } else {
+            throw new InternalFlowiseError(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                `Error: apikeyService.verifyApiKey - ${getErrorMessage(error)}`
+            )
+        }
     }
 }
 
