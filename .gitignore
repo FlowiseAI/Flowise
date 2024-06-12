@@ -108,5 +108,6 @@ daisy
 .sst
 
 #copilot/environments
-!copilot/environments/addons/**
 copilot/environments
+!copilot/environments/addons/addons.parameters.yml
+!copilot/environments/addons/flowise.yml
