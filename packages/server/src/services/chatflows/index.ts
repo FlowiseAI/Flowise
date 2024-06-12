@@ -236,10 +236,14 @@ const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
         }
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: chatflowsService.getSinglePublicChatflow - ${getErrorMessage(error)}`
-        )
+        if (error instanceof InternalFlowiseError && error.statusCode === StatusCodes.UNAUTHORIZED) {
+            throw error
+        } else {
+            throw new InternalFlowiseError(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                `Error: chatflowsService.getSinglePublicChatflow - ${getErrorMessage(error)}`
+            )
+        }
     }
 }
 
