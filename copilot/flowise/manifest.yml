@@ -33,7 +33,7 @@ network:
     connect: true # Enable Service Connect for intra-environment traffic between services.
     vpc:
         security_groups:
-            - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterSecurityGroup
+            - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseSecurityGroup
 
 storage:
     volumes:
