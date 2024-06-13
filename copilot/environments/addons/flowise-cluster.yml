@@ -6,7 +6,7 @@ Parameters:
         Type: String
         Description: The name of the environment being deployed.
     # Customize your Aurora Serverless cluster by setting the default value of the following parameters.
-    flowiseDBName:
+    flowiseclusterDBName:
         Type: String
         Description: The name of the initial database to be created in the Aurora Serverless v2 cluster.
         Default: flowise
@@ -26,7 +26,7 @@ Parameters:
         Default: ''
 
 Mappings:
-    flowiseEnvScalingConfigurationMap:
+    flowiseclusterEnvScalingConfigurationMap:
         ias:
             'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
             'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
@@ -60,26 +60,26 @@ Mappings:
             'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
 
 Resources:
-    flowiseDBSubnetGroup:
+    flowiseclusterDBSubnetGroup:
         Type: 'AWS::RDS::DBSubnetGroup'
         Properties:
             DBSubnetGroupDescription: Group of private subnets for Aurora Serverless v2 cluster.
             SubnetIds: !Split [',', !Ref PrivateSubnets]
 
-    flowiseWorkloadSecurityGroup:
+    flowiseclusterWorkloadSecurityGroup:
         Metadata:
-            'aws:copilot:description': 'A security group for one or more workloads to access the Aurora Serverless v2 cluster flowise'
+            'aws:copilot:description': 'A security group for one or more workloads to access the Aurora Serverless v2 cluster flowisecluster'
         Type: 'AWS::EC2::SecurityGroup'
         Properties:
-            GroupDescription: 'The Security Group to access Aurora Serverless v2 cluster flowise.'
+            GroupDescription: 'The Security Group to access Aurora Serverless v2 cluster flowisecluster.'
             VpcId: !Ref VPCID
             Tags:
                 - Key: Name
                   Value: !Sub 'copilot-${App}-${Env}-Aurora'
 
-    flowiseDBClusterSecurityGroup:
+    flowiseclusterDBClusterSecurityGroup:
         Metadata:
-            'aws:copilot:description': 'A security group for your Aurora Serverless v2 cluster flowise'
+            'aws:copilot:description': 'A security group for your Aurora Serverless v2 cluster flowisecluster'
         Type: AWS::EC2::SecurityGroup
         Properties:
             GroupDescription: The Security Group for the Aurora Serverless v2 cluster.
@@ -88,17 +88,17 @@ Resources:
                 - Key: Name
                   Value: !Sub 'copilot-${App}-${Env}-Aurora'
 
-    flowiseDBClusterSecurityGroupIngressFromWorkload:
+    flowiseclusterDBClusterSecurityGroupIngressFromWorkload:
         Type: AWS::EC2::SecurityGroupIngress
         Properties:
             Description: Ingress from one or more workloads in the environment.
-            GroupId: !Ref flowiseDBClusterSecurityGroup
+            GroupId: !Ref flowiseclusterDBClusterSecurityGroup
             IpProtocol: tcp
             ToPort: 5432
             FromPort: 5432
-            SourceSecurityGroupId: !Ref flowiseWorkloadSecurityGroup
+            SourceSecurityGroupId: !Ref flowiseclusterWorkloadSecurityGroup
 
-    flowiseAuroraSecret:
+    flowiseclusterAuroraSecret:
         Metadata:
             'aws:copilot:description': 'A Secrets Manager secret to store your DB credentials'
         Type: AWS::SecretsManager::Secret
@@ -110,7 +110,7 @@ Resources:
                 ExcludePunctuation: true
                 IncludeSpace: false
                 PasswordLength: 16
-    flowiseDBClusterParameterGroup:
+    flowiseclusterDBClusterParameterGroup:
         Metadata:
             'aws:copilot:description': 'A DB parameter group for engine configuration values'
         Type: 'AWS::RDS::DBClusterParameterGroup'
@@ -120,32 +120,32 @@ Resources:
             Parameters:
                 client_encoding: 'UTF8'
 
-    flowiseDBCluster:
+    flowiseclusterDBCluster:
         Metadata:
-            'aws:copilot:description': 'The flowise Aurora Serverless v2 database cluster'
+            'aws:copilot:description': 'The flowisecluster Aurora Serverless v2 database cluster'
         Type: 'AWS::RDS::DBCluster'
         Properties:
-            MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref flowiseAuroraSecret, ':SecretString:username}}']]
-            MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref flowiseAuroraSecret, ':SecretString:password}}']]
-            DatabaseName: !Ref flowiseDBName
+            MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref flowiseclusterAuroraSecret, ':SecretString:username}}']]
+            MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref flowiseclusterAuroraSecret, ':SecretString:password}}']]
+            DatabaseName: !Ref flowiseclusterDBName
             Engine: 'aurora-postgresql'
             EngineVersion: '14.4'
-            DBClusterParameterGroupName: !Ref flowiseDBClusterParameterGroup
-            DBSubnetGroupName: !Ref flowiseDBSubnetGroup
+            DBClusterParameterGroupName: !Ref flowiseclusterDBClusterParameterGroup
+            DBSubnetGroupName: !Ref flowiseclusterDBSubnetGroup
             Port: 5432
             VpcSecurityGroupIds:
-                - !Ref flowiseDBClusterSecurityGroup
+                - !Ref flowiseclusterDBClusterSecurityGroup
             ServerlessV2ScalingConfiguration:
                 # Replace "All" below with "!Ref Env" to set different autoscaling limits per environment.
-                MinCapacity: !FindInMap [flowiseEnvScalingConfigurationMap, All, DBMinCapacity]
-                MaxCapacity: !FindInMap [flowiseEnvScalingConfigurationMap, All, DBMaxCapacity]
+                MinCapacity: !FindInMap [flowiseclusterEnvScalingConfigurationMap, All, DBMinCapacity]
+                MaxCapacity: !FindInMap [flowiseclusterEnvScalingConfigurationMap, All, DBMaxCapacity]
 
-    flowiseDBWriterInstance:
+    flowiseclusterDBWriterInstance:
         Metadata:
-            'aws:copilot:description': 'The flowise Aurora Serverless v2 writer instance'
+            'aws:copilot:description': 'The flowisecluster Aurora Serverless v2 writer instance'
         Type: 'AWS::RDS::DBInstance'
         Properties:
-            DBClusterIdentifier: !Ref flowiseDBCluster
+            DBClusterIdentifier: !Ref flowiseclusterDBCluster
             DBInstanceClass: db.serverless
             Engine: 'aurora-postgresql'
             PromotionTier: 1
@@ -154,21 +154,21 @@ Resources:
                 - !GetAZs
                   Ref: AWS::Region
 
-    flowiseSecretAuroraClusterAttachment:
+    flowiseclusterSecretAuroraClusterAttachment:
         Type: AWS::SecretsManager::SecretTargetAttachment
         Properties:
-            SecretId: !Ref flowiseAuroraSecret
-            TargetId: !Ref flowiseDBCluster
+            SecretId: !Ref flowiseclusterAuroraSecret
+            TargetId: !Ref flowiseclusterDBCluster
             TargetType: AWS::RDS::DBCluster
 
 Outputs:
-    flowiseSecret:
+    flowiseclusterSecret:
         Description: "The JSON secret that holds the database username and password. Fields are 'host', 'port', 'dbname', 'username', 'password', 'dbClusterIdentifier' and 'engine'"
-        Value: !Ref flowiseAuroraSecret
+        Value: !Ref flowiseclusterAuroraSecret
         Export:
-            Name: !Sub ${App}-${Env}-flowiseAuroraSecret
-    flowiseSecurityGroup:
+            Name: !Sub ${App}-${Env}-flowiseclusterAuroraSecret
+    flowiseclusterSecurityGroup:
         Description: 'The security group to attach to the workload.'
-        Value: !Ref flowiseWorkloadSecurityGroup
+        Value: !Ref flowiseclusterWorkloadSecurityGroup
         Export:
-            Name: !Sub ${App}-${Env}-flowiseSecurityGroup
+            Name: !Sub ${App}-${Env}-flowiseclusterSecurityGroup

@@ -33,7 +33,7 @@ network:
     connect: true # Enable Service Connect for intra-environment traffic between services.
     vpc:
         security_groups:
-            - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseSecurityGroup
+            - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterSecurityGroup
 
 storage:
     volumes:
@@ -51,7 +51,7 @@ storage:
 env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
 secrets:
     DATABASE_SECRET:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseAuroraSecret
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterAuroraSecret
 # You can override any of the values defined above by environment.flowiseSecurityGroup
 environments:
     ${COPILOT_ENVIRONMENT_NAME}:
