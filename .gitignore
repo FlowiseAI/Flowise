@@ -111,3 +111,4 @@ daisy
 copilot/environments
 !copilot/environments/addons/addons.parameters.yml
 !copilot/environments/addons/flowise.yml
+!copilot/environments/addons/** */
