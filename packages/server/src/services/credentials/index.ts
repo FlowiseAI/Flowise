@@ -6,6 +6,7 @@ import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
 import { ICredentialReturnResponse } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { IsNull } from 'typeorm'
 
 const createCredential = async (requestBody: any, userId?: string) => {
     try {
@@ -40,7 +41,7 @@ const deleteCredentials = async (credentialId: string, userId?: string): Promise
     }
 }
 
-const getAllCredentials = async (paramCredentialName: any) => {
+const getAllCredentials = async (paramCredentialName: any, userId?: string) => {
     try {
         const appServer = getRunningExpressApp()
         let dbResponse = []
@@ -48,19 +49,46 @@ const getAllCredentials = async (paramCredentialName: any) => {
             if (Array.isArray(paramCredentialName)) {
                 for (let i = 0; i < paramCredentialName.length; i += 1) {
                     const name = paramCredentialName[i] as string
-                    const credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
-                        credentialName: name
+                    const credentials = await appServer.AppDataSource.getRepository(Credential).find({
+                        where: [
+                            {
+                                credentialName: name,
+                                userId: userId
+                            },
+                            {
+                                credentialName: name,
+                                userId: IsNull()
+                            }
+                        ]
                     })
                     dbResponse.push(...credentials)
                 }
             } else {
-                const credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
-                    credentialName: paramCredentialName as string
+                const credentials = await appServer.AppDataSource.getRepository(Credential).find({
+                    where: [
+                        {
+                            credentialName: paramCredentialName as string,
+                            userId: userId
+                        },
+                        {
+                            credentialName: paramCredentialName as string,
+                            userId: IsNull()
+                        }
+                    ]
                 })
                 dbResponse = [...credentials]
             }
         } else {
-            const credentials = await appServer.AppDataSource.getRepository(Credential).find()
+            const credentials = await appServer.AppDataSource.getRepository(Credential).find({
+                where: [
+                    {
+                        userId
+                    },
+                    {
+                        userId: IsNull()
+                    }
+                ]
+            })
             for (const credential of credentials) {
                 dbResponse.push(omit(credential, ['encryptedData']))
             }
