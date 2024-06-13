@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { OpenAI, ALL_AVAILABLE_OPENAI_MODELS } from 'llamaindex'
+import { OpenAI, OpenAISession, ALL_AVAILABLE_OPENAI_MODELS } from 'llamaindex'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatOpenAI_LlamaIndex_LLMs implements INode {
@@ -115,8 +115,9 @@ class ChatOpenAI_LlamaIndex_LLMs implements INode {
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
+        const openai = new OpenAISession(obj)
 
-        const model = new OpenAI(obj)
+        const model = new OpenAI({ ...obj, session: openai })
         return model
     }
 }

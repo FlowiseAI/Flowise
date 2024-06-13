@@ -54,7 +54,7 @@ class ToolAgent_Agents implements INode {
                 name: 'model',
                 type: 'BaseChatModel',
                 description:
-                    'Only compatible with models that are capable of function calling. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI'
+                    'Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat'
             },
             {
                 label: 'System Message',
@@ -191,6 +191,7 @@ const prepareAgent = async (
     tools = flatten(tools)
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
+    const prependMessages = options?.prependMessages
 
     const prompt = ChatPromptTemplate.fromMessages([
         ['system', systemMessage],
@@ -239,7 +240,7 @@ const prepareAgent = async (
             [inputKey]: (i: { input: string; steps: ToolsAgentStep[] }) => i.input,
             agent_scratchpad: (i: { input: string; steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(i.steps),
             [memoryKey]: async (_: { input: string; steps: ToolsAgentStep[] }) => {
-                const messages = (await memory.getChatMessages(flowObj?.sessionId, true)) as BaseMessage[]
+                const messages = (await memory.getChatMessages(flowObj?.sessionId, true, prependMessages)) as BaseMessage[]
                 return messages ?? []
             }
         },

@@ -2,7 +2,7 @@
 
 # Contributing to Flowise
 
-English | [中文](./CONTRIBUTING-ZH.md)
+English | [中文](./i18n/CONTRIBUTING-ZH.md)
 
 We appreciate any form of contributions.
 
@@ -44,7 +44,7 @@ Flowise has 3 different modules in a single mono repository.
 
 #### Prerequisite
 
--   Install [PNPM](https://pnpm.io/installation)
+-   Install [PNPM](https://pnpm.io/installation). The project is configured to use pnpm v9.
     ```bash
     npm i -g pnpm
     ```
@@ -128,9 +128,11 @@ Flowise support different environment variables to configure your instance. You 
 | FLOWISE_USERNAME             | Username to login                                                                | String                                           |                                     |
 | FLOWISE_PASSWORD             | Password to login                                                                | String                                           |                                     |
 | FLOWISE_FILE_SIZE_LIMIT      | Upload File Size Limit                                                           | String                                           | 50mb                                |
+| DISABLE_CHATFLOW_REUSE       | Forces the creation of a new ChatFlow for each call instead of reusing existing ones from cache  | Boolean                  |                                |
 | DEBUG                        | Print logs from components                                                       | Boolean                                          |                                     |
 | LOG_PATH                     | Location where log files are stored                                              | String                                           | `your-path/Flowise/logs`            |
 | LOG_LEVEL                    | Different levels of logs                                                         | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
+| LOG_JSON_SPACES              | Spaces to beautify JSON logs                                                     |                                                  | 2                                   |
 | APIKEY_PATH                  | Location where api keys are saved                                                | String                                           | `your-path/Flowise/packages/server` |
 | TOOL_FUNCTION_BUILTIN_DEP    | NodeJS built-in modules to be used for Tool Function                             | String                                           |                                     |
 | TOOL_FUNCTION_EXTERNAL_DEP   | External modules to be used for Tool Function                                    | String                                           |                                     |

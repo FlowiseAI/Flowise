@@ -4,7 +4,6 @@ import 'reactflow/dist/style.css'
 
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { usePrompt } from '@/utils/usePrompt'
 import {
     REMOVE_DIRTY,
     SET_DIRTY,
@@ -50,6 +49,7 @@ import {
     updateOutdatedNodeEdge
 } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
+import { usePrompt } from '@/utils/usePrompt'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
@@ -67,7 +67,10 @@ const Canvas = () => {
     const templateFlowData = state ? state.templateFlowData : ''
 
     const URLpath = document.location.pathname.toString().split('/')
-    const chatflowId = URLpath[URLpath.length - 1] === 'canvas' ? '' : URLpath[URLpath.length - 1]
+    const chatflowId =
+        URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
+    const isAgentCanvas = URLpath.includes('agentcanvas') ? true : false
+    const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
 
     const { confirm } = useConfirm()
 
@@ -75,7 +78,6 @@ const Canvas = () => {
     const canvas = useSelector((state) => state.canvas)
     const [canvasDataStore, setCanvasDataStore] = useState(canvas)
     const [chatflow, setChatflow] = useState(null)
-
     const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
 
     // ==============================|| Snackbar ||============================== //
@@ -99,7 +101,6 @@ const Canvas = () => {
 
     const getNodesApi = useApi(nodesApi.getAllNodes)
     const createNewChatflowApi = useApi(chatflowsApi.createNewChatflow)
-    const testChatflowApi = useApi(chatflowsApi.testChatflow)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
 
@@ -159,7 +160,7 @@ const Canvas = () => {
 
             setNodes(nodes)
             setEdges(flowData.edges || [])
-            setDirty()
+            setTimeout(() => setDirty(), 0)
         } catch (e) {
             console.error(e)
         }
@@ -168,7 +169,7 @@ const Canvas = () => {
     const handleDeleteFlow = async () => {
         const confirmPayload = {
             title: `Delete`,
-            description: `Delete chatflow ${chatflow.name}?`,
+            description: `Delete ${canvasTitle} ${chatflow.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }
@@ -178,7 +179,7 @@ const Canvas = () => {
             try {
                 await chatflowsApi.deleteChatflow(chatflow.id)
                 localStorage.removeItem(`${chatflow.id}_INTERNAL`)
-                navigate('/')
+                navigate(isAgentCanvas ? '/agentflows' : '/')
             } catch (error) {
                 enqueueSnackbar({
                     message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
@@ -221,7 +222,8 @@ const Canvas = () => {
                     name: chatflowName,
                     deployed: false,
                     isPublic: false,
-                    flowData
+                    flowData,
+                    type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW'
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
@@ -339,7 +341,7 @@ const Canvas = () => {
     const saveChatflowSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: 'Chatflow saved',
+            message: `${canvasTitle} saved`,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -404,7 +406,7 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            errorFailed(`Failed to retrieve chatflow: ${getSpecificChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -416,9 +418,9 @@ const Canvas = () => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            window.history.replaceState(null, null, `/canvas/${chatflow.id}`)
+            window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-            errorFailed(`Failed to save chatflow: ${createNewChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -430,32 +432,11 @@ const Canvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-            errorFailed(`Failed to save chatflow: ${updateChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to save ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateChatflowApi.data, updateChatflowApi.error])
-
-    // Test chatflow failed
-    useEffect(() => {
-        if (testChatflowApi.error) {
-            enqueueSnackbar({
-                message: 'Test chatflow failed',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'error',
-                    persist: true,
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [testChatflowApi.error])
 
     useEffect(() => {
         setChatflow(canvasDataStore.chatflow)
@@ -485,7 +466,7 @@ const Canvas = () => {
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {
-                    name: 'Untitled chatflow'
+                    name: `Untitled ${canvasTitle}`
                 }
             })
         }
@@ -550,6 +531,7 @@ const Canvas = () => {
                             handleSaveFlow={handleSaveFlow}
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
+                            isAgentCanvas={isAgentCanvas}
                         />
                     </Toolbar>
                 </AppBar>
@@ -582,7 +564,7 @@ const Canvas = () => {
                                     }}
                                 />
                                 <Background color='#aaa' gap={16} />
-                                <AddNodes nodesData={getNodesApi.data} node={selectedNode} />
+                                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
                                 {isSyncNodesButtonEnabled && (
                                     <Fab
                                         sx={{
@@ -604,7 +586,7 @@ const Canvas = () => {
                                     </Fab>
                                 )}
                                 {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
-                                <ChatPopUp chatflowid={chatflowId} />
+                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
                             </ReactFlow>
                         </div>
                     </div>
