@@ -101,7 +101,7 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
 const saveChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsRouter.getChatflowById - Unauthorized!`)
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsRouter.saveChatflow - Unauthorized!`)
         }
         if (!req.body) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.saveChatflow - body not provided!`)
