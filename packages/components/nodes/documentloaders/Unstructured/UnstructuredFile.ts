@@ -448,7 +448,16 @@ class UnstructuredFile_DocumentLoaders implements INode {
         if (_omitMetadataKeys) {
             omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
         }
-        const fileBase64 = nodeData.inputs?.fileObject as string
+        // give priority to upload with upsert then to fileObject (upload from UI component)
+        const fileBase64 =
+            nodeData.inputs?.pdfFile ||
+            nodeData.inputs?.txtFile ||
+            nodeData.inputs?.yamlFile ||
+            nodeData.inputs?.docxFile ||
+            nodeData.inputs?.jsonlinesFile ||
+            nodeData.inputs?.csvFile ||
+            nodeData.inputs?.jsonFile ||
+            (nodeData.inputs?.fileObject as string)
 
         const obj: UnstructuredLoaderOptions = {
             apiUrl: unstructuredAPIUrl,
