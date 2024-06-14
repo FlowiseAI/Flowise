@@ -107,5 +107,6 @@ daisy
 # sst
 .sst
 
-#copilot/environments
-#copilot/environments
+!copilot/environments/addons/flowise-cluster.yml
+!copilot/environments/staging/manifest.yml
+copilot/environments/**/manifest.yml

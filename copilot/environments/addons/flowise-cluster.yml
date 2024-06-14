@@ -27,31 +27,7 @@ Parameters:
 
 Mappings:
     flowiseclusterEnvScalingConfigurationMap:
-        ias:
-            'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
-            'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
-
-        lastrev:
-            'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
-            'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
-
-        prod:
-            'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
-            'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
-
-        public:
-            'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
-            'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
-
-        realcomm:
-            'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
-            'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
-
         staging:
-            'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
-            'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
-
-        wow:
             'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
             'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
 
