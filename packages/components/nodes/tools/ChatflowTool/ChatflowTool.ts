@@ -258,7 +258,7 @@ class ChatflowTool extends StructuredTool {
 
         const body = {
             question: inputQuestion,
-            chatId: flowConfig?.chatId,
+            chatId: this.startNewSession ? uuidv4() : flowConfig?.chatId,
             overrideConfig: {
                 sessionId: this.startNewSession ? uuidv4() : flowConfig?.sessionId
             }
