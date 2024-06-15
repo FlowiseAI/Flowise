@@ -54,7 +54,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
     try {
         const appServer = getRunningExpressApp()
         const chatflowid = req.params.id
-        const baseURL = `${req.protocol}://${req.get('host')}`
+
+        const httpProtocol = req.get('x-forwarded-proto') || req.protocol
+        const baseURL = `${httpProtocol}://${req.get('host')}`
 
         let incomingInput: IncomingInput = req.body
         let nodeToExecuteData: INodeData
@@ -187,6 +189,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const prependMessages = incomingInput.history
 
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
+         * - Reuse of flows is not disabled
          * - Node Data already exists in pool
          * - Still in sync (i.e the flow has not been modified since)
          * - Existing overrideConfig and new overrideConfig are the same
@@ -194,6 +197,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
          ***/
         const isFlowReusable = () => {
             return (
+                process.env.DISABLE_CHATFLOW_REUSE !== 'true' &&
                 Object.prototype.hasOwnProperty.call(appServer.chatflowPool.activeChatflows, chatflowid) &&
                 appServer.chatflowPool.activeChatflows[chatflowid].inSync &&
                 appServer.chatflowPool.activeChatflows[chatflowid].endingNodeData &&
@@ -413,7 +417,11 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         return result
     } catch (e) {
         logger.error('[server]: Error:', e)
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
+        if (e instanceof InternalFlowiseError && e.statusCode === StatusCodes.UNAUTHORIZED) {
+            throw e
+        } else {
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
+        }
     }
 }
 

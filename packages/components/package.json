@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "1.8.0",
+    "version": "1.8.3",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -38,6 +38,7 @@
         "@langchain/cohere": "^0.0.7",
         "@langchain/community": "^0.0.43",
         "@langchain/core": "^0.1.63",
+        "@langchain/exa": "^0.0.5",
         "@langchain/google-genai": "^0.0.10",
         "@langchain/google-vertexai": "^0.0.5",
         "@langchain/groq": "^0.0.8",
@@ -68,6 +69,7 @@
         "css-what": "^6.1.0",
         "d3-dsv": "2",
         "dotenv": "^16.0.0",
+        "exa-js": "^1.0.12",
         "express": "^4.17.3",
         "faiss-node": "^0.5.1",
         "fast-json-patch": "^3.1.1",

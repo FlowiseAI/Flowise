@@ -22,7 +22,7 @@ class ChatflowTool_Tools implements INode {
     constructor() {
         this.label = 'Chatflow Tool'
         this.name = 'ChatflowTool'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatflowTool'
         this.icon = 'chatflowTool.svg'
         this.category = 'Tools'
@@ -55,6 +55,16 @@ class ChatflowTool_Tools implements INode {
                 rows: 3,
                 placeholder:
                     'State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.'
+            },
+            {
+                label: 'Base URL',
+                name: 'baseURL',
+                type: 'string',
+                description:
+                    'Base URL to Flowise. By default, it is the URL of the incoming request. Useful when you need to execute the Chatflow through an alternative route.',
+                placeholder: 'http://localhost:3000',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Use Question from Chat',
@@ -107,7 +117,7 @@ class ChatflowTool_Tools implements INode {
         const useQuestionFromChat = nodeData.inputs?.useQuestionFromChat as boolean
         const customInput = nodeData.inputs?.customInput as string
 
-        const baseURL = options.baseURL as string
+        const baseURL = (nodeData.inputs?.baseURL as string) || (options.baseURL as string)
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const chatflowApiKey = getCredentialParam('chatflowApiKey', credentialData, nodeData)
