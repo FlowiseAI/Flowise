@@ -377,10 +377,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         }
         await utilAddChatMessage(userMessage)
 
-        let resultText = ''
-        if (result.text) resultText = result.text
-        else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
-        else resultText = JSON.stringify(result, null, 2)
+        const resultText = getResultTextFromResult(result)
 
         const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
             role: 'apiMessage',
@@ -502,4 +499,12 @@ const utilBuildAgentResponse = async (
         logger.error('[server]: Error:', e)
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
     }
+}
+function getResultTextFromResult(result: any) {
+    let resultText = ''
+    if (result.text) resultText = result.text
+    if (result.text == '' && !result?.usedTools) throw new Error(`Empty response returned by tool`)
+    else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
+    else resultText = JSON.stringify(result, null, 2)
+    return resultText
 }
