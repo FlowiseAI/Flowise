@@ -93,6 +93,7 @@ const getAllCredentials = async (paramCredentialName: any, userId?: string) => {
                 dbResponse.push(omit(credential, ['encryptedData']))
             }
         }
+        dbResponse = dbResponse.map((credential) => ({ ...credential, editable: credential.userId === userId }))
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
