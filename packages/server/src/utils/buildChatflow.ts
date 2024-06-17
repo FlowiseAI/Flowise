@@ -503,8 +503,7 @@ const utilBuildAgentResponse = async (
 function getResultTextFromResult(result: any) {
     let resultText = ''
     if (result.text) resultText = result.text
-    if (result.text == '' && !result?.usedTools) throw new Error(`Empty response returned by agent`)
-    else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
-    else resultText = JSON.stringify(result, null, 2)
+    if (resultText == '' && !result?.usedTools) throw new Error(`Empty response returned by agent`)
+    else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2) + '```'
     return resultText
 }
