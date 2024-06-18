@@ -1,0 +1,19 @@
+agents:
+  - name: GiftMatchAgent
+    type: openapi_chain
+    config:
+      openapi_url: "https://api.etsy.com/v3/openapi.json"
+      authentication:
+        type: apiKey
+        name: api_key
+        in: header
+        value: ${ETSY_API_KEY}
+      endpoints:
+        search_listings_active:
+          path: /v2/listings/active
+          method: GET
+          parameters:
+            api_key: ${ETSY_API_KEY}
+            keywords: "{{hobbies}} {{favorite_color}}"
+            limit: 3
+            includes: "Images:1"
