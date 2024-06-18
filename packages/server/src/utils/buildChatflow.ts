@@ -1,5 +1,13 @@
 import { Request } from 'express'
-import { IFileUpload, convertSpeechToText, ICommonObject, addSingleFileToStorage, addArrayFilesToStorage } from 'flowise-components'
+import {
+    IFileUpload,
+    convertSpeechToText,
+    ICommonObject,
+    addSingleFileToStorage,
+    addArrayFilesToStorage,
+    getCredentialParam,
+    getCredentialData
+} from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
     IncomingInput,
@@ -32,7 +40,8 @@ import {
     getMemorySessionId,
     isSameOverrideConfig,
     getEndingNodes,
-    constructGraphs
+    constructGraphs,
+    parseResultText
 } from '../utils'
 import { utilValidateKey } from './validateKey'
 import { databaseEntities } from '.'
@@ -43,6 +52,7 @@ import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
 import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
+import lunary from 'lunary'
 
 /**
  * Build Chatflow
@@ -333,29 +343,80 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const nodeModule = await import(nodeInstanceFilePath)
         const nodeInstance = new nodeModule.nodeClass({ sessionId })
 
-        let result = isStreamValid
-            ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                  chatId,
-                  chatflowid,
-                  logger,
-                  appDataSource: appServer.AppDataSource,
-                  databaseEntities,
-                  analytic: chatflow.analytic,
-                  uploads: incomingInput.uploads,
-                  socketIO,
-                  socketIOClientId: incomingInput.socketIOClientId,
-                  prependMessages
-              })
-            : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                  chatId,
-                  chatflowid,
-                  logger,
-                  appDataSource: appServer.AppDataSource,
-                  databaseEntities,
-                  analytic: chatflow.analytic,
-                  uploads: incomingInput.uploads,
-                  prependMessages
-              })
+        const runParams = {
+            chatId,
+            chatflowid,
+            logger,
+            appDataSource: appServer.AppDataSource,
+            databaseEntities,
+            analytic: chatflow.analytic,
+            uploads: incomingInput.uploads,
+            prependMessages,
+            socketIOClientId: incomingInput.socketIOClientId,
+            socketIO
+        }
+
+        if (!isStreamValid) {
+            delete runParams.socketIO
+            delete runParams.socketIOClientId
+        }
+
+        let lunaryConfig = undefined
+        let result
+
+        try {
+            lunaryConfig = runParams.analytic ? JSON.parse(runParams.analytic).lunary : undefined
+        } catch (e) {
+            logger.error(`[server]: Error parsing chatflow analytic: ${e}`)
+        }
+
+        if (lunaryConfig?.status) {
+            const credentialData = await getCredentialData(lunaryConfig.credentialId ?? '', runParams)
+            const lunaryPublicKey = getCredentialParam('lunaryAppId', credentialData, nodeInstance)
+            const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, nodeInstance)
+
+            lunary.init({
+                publicKey: lunaryPublicKey,
+                apiUrl: lunaryEndpoint,
+                runtime: 'flowise'
+            })
+
+            // This enables viewing high-level conversations with Lunary.ai (open-source), and also tracking the current user
+            const thread = lunary.openThread({
+                id: chatId,
+                userId: incomingInput.leadEmail ?? sessionId ?? undefined,
+                userProps: {
+                    email: incomingInput.leadEmail
+                }
+            })
+
+            const messageId = thread.trackMessage({
+                role: 'user',
+                content: incomingInput.question
+            })
+
+            // This enable Tracing of the chatflow with Lunary
+            // We wrap the node executation so that we can reconciliate what happens after with this user message
+            const traceWrapper = lunary.wrapAgent(
+                async (question: string) => {
+                    let result = await nodeInstance.run(nodeToExecuteData, question, runParams)
+                    return result
+                },
+                {
+                    name: 'FlowiseChatflow'
+                }
+            )
+
+            result = await traceWrapper(incomingInput.question).setParent(messageId)
+
+            thread.trackMessage({
+                role: 'assistant',
+                content: parseResultText(result).replace(/^"|"$/g, '') // remove trailing and leading quotes
+            })
+        } else {
+            result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, runParams)
+        }
+
         result = typeof result === 'string' ? { text: result } : result
 
         // Retrieve threadId from assistant if exists
@@ -377,10 +438,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         }
         await utilAddChatMessage(userMessage)
 
-        let resultText = ''
-        if (result.text) resultText = result.text
-        else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
-        else resultText = JSON.stringify(result, null, 2)
+        const resultText = parseResultText(result)
 
         const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
             role: 'apiMessage',

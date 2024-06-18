@@ -87,7 +87,7 @@
         "linkifyjs": "^4.1.1",
         "llamaindex": "^0.3.13",
         "lodash": "^4.17.21",
-        "lunary": "^0.6.16",
+        "lunary": "^0.7.9",
         "mammoth": "^1.5.1",
         "moment": "^2.29.3",
         "mongodb": "6.3.0",

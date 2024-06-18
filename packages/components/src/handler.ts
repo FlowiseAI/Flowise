@@ -351,12 +351,13 @@ export class AnalyticHandler {
                         })
                         this.handlers['langFuse'] = { client: langfuse }
                     } else if (provider === 'lunary') {
-                        const lunaryAppId = getCredentialParam('lunaryAppId', credentialData, this.nodeData)
+                        const lunaryPublicKey = getCredentialParam('lunaryAppId', credentialData, this.nodeData)
                         const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, this.nodeData)
 
                         lunary.init({
-                            appId: lunaryAppId,
-                            apiUrl: lunaryEndpoint
+                            publicKey: lunaryPublicKey,
+                            apiUrl: lunaryEndpoint,
+                            runtime: 'flowise'
                         })
 
                         this.handlers['lunary'] = { client: lunary }
@@ -451,7 +452,6 @@ export class AnalyticHandler {
                 await monitor.trackEvent('chain', 'start', {
                     runId,
                     name,
-                    userId: this.options.chatId,
                     input,
                     ...this.nodeData?.inputs?.analytics?.lunary
                 })
@@ -604,7 +604,6 @@ export class AnalyticHandler {
                     runId,
                     parentRunId: chainEventId,
                     name,
-                    userId: this.options.chatId,
                     input
                 })
                 this.handlers['lunary'].llmEvent = { [runId]: runId }
@@ -730,7 +729,6 @@ export class AnalyticHandler {
                     runId,
                     parentRunId: chainEventId,
                     name,
-                    userId: this.options.chatId,
                     input
                 })
                 this.handlers['lunary'].toolEvent = { [runId]: runId }
