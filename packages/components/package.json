@@ -84,6 +84,7 @@
         "langfuse": "3.3.4",
         "langfuse-langchain": "^3.3.4",
         "langsmith": "0.1.6",
+        "langwatch": "^0.1.1",
         "linkifyjs": "^4.1.1",
         "llamaindex": "^0.3.13",
         "lodash": "^4.17.21",
