@@ -1,22 +1,25 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 const checkOwnership = async (entryOrArray: any | Array<any>, userId?: string, organizationId?: string) => {
+    console.log('checkEntry', { userId, organizationId })
     const checkEntry = (entry?: any) => {
         if (entry?.userId === userId) {
             return true
         }
-        if (organizationId && entry?.organizationId === organizationId) {
-            return true
+        if (entry?.visibility && entry?.visibility?.includes('Organization')) {
+            if (organizationId && entry?.organizationId === organizationId) {
+                return true
+            }
         }
         return false
         // throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
     }
-
+    let result = false
     if (Array.isArray(entryOrArray)) {
-        entryOrArray.forEach(checkEntry)
+        result = entryOrArray.every(checkEntry)
     } else {
-        checkEntry(entryOrArray)
+        result = checkEntry(entryOrArray)
     }
-    return true
+    return result
 }
 export default checkOwnership

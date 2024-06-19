@@ -77,6 +77,7 @@ export const authenticationHandlerMiddleware =
             } else {
                 user.email = email
                 user.name = name
+                user.organizationId = organization.id
             }
 
             await userRepo.save(user)

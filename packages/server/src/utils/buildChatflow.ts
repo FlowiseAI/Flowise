@@ -43,6 +43,7 @@ import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
 import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
+import checkOwnership from './checkOwnership'
 
 /**
  * Build Chatflow
@@ -61,6 +62,9 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowid
         })
+        if (!(await checkOwnership(chatflow, req.user?.id, req.user?.organizationId))) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+        }
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
         }
