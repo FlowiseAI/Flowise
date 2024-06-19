@@ -15,6 +15,7 @@ import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fil
 import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
 import checkOwnership from '../../utils/checkOwnership'
+import { Organization } from '../../database/entities/Organization'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -112,19 +113,47 @@ const getAllChatflows = async (type?: ChatflowType, filter?: any, userId?: strin
 
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
-
-        queryBuilder.where('chatFlow.userId = :userId', { userId })
-
-        if (filter?.visibility === 'Organization') {
-            queryBuilder.orWhere('chatFlow.organizationId = :organizationId AND :visibility = ANY(chatFlow.visibility)', {
-                organizationId,
-                visibility: 'Organization'
+        console.log('GetAllChatflows', { filter, userId, organizationId })
+        // Preprocess the visibility filter to convert it into an array
+        const visibility = filter?.visibility?.split(',')
+        let org
+        if (filter?.auth0_org_id) {
+            org = await appServer.AppDataSource.getRepository(Organization).findOne({
+                where: {
+                    auth0Id: filter.auth0_org_id
+                }
             })
         }
 
+        const visibilityArray = `${visibility?.map((v: string) => `'${v}'`).join(',')}`
         if (filter?.visibility) {
-            queryBuilder.orWhere(':visibility = ANY(chatFlow.visibility)', { visibility: filter.visibility })
+            // Assumes we always want to match personal visibility and organization at the same time if any other filters are provided
+            const personalArray = `${visibility
+                ?.filter((v: string) => v !== 'Organization')
+                ?.map((v: string) => `'${v}'`)
+                .join(',')}`
+            queryBuilder.where(`(chatFlow.userId = :userId AND ARRAY[${personalArray}] <@ chatFlow.visibility)`, {
+                userId,
+                visibilityArray
+            })
+
+            if (filter?.visibility?.includes('Organization')) {
+                queryBuilder.orWhere(`(chatFlow.organizationId = :organizationId AND ARRAY[${visibilityArray}] <@ chatFlow.visibility)`, {
+                    organizationId: org?.id ?? organizationId
+                    // orgVisibility: visibilityArray
+                })
+            }
+        } else {
+            queryBuilder.where(`chatFlow.userId = :userId `, {
+                userId
+            })
         }
+
+        // } else if (filter?.visibility) {
+
+        //     // Use the ANY function with the processed array
+        //     queryBuilder.andWhere(':visibility = ANY(chatFlow.visibility)', { visibility: visibilityArray })
+        // }
 
         const response = await queryBuilder.getMany()
         const dbResponse = response.map((chatflow) => ({
