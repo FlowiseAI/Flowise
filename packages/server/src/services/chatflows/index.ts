@@ -165,8 +165,9 @@ const getAllChatflows = async (type?: ChatflowType, filter?: any, userId?: strin
                 : ''
         }))
 
-        await checkOwnership(dbResponse, userId, organizationId)
-
+        if (!(await checkOwnership(dbResponse, userId, organizationId))) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+        }
         if (type === 'MULTIAGENT') {
             return dbResponse.filter((chatflow) => chatflow.type === type)
         }

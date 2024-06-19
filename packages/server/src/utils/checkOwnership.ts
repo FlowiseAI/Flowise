@@ -1,7 +1,4 @@
-import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../errors/internalFlowiseError'
 const checkOwnership = async (entryOrArray: any | Array<any>, userId?: string, organizationId?: string) => {
-    console.log('checkEntry', { userId, organizationId })
     const checkEntry = (entry?: any) => {
         if (entry?.userId === userId) {
             return true
