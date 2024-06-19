@@ -7,7 +7,16 @@ import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, Pr
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { getBaseClasses } from '../../../src/utils'
-import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool, IVisionChatModal } from '../../../src/Interface'
+import {
+    FlowiseMemory,
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeOutputsValue,
+    INodeParams,
+    IUsedTool,
+    IVisionChatModal
+} from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
@@ -26,6 +35,7 @@ class ToolAgent_Agents implements INode {
     inputs: INodeParams[]
     sessionId?: string
     badge?: string
+    outputs: INodeOutputsValue[]
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Tool Agent'
@@ -80,11 +90,28 @@ class ToolAgent_Agents implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Agent Executor',
+                name: 'agentExecutor',
+                baseClasses: [this.type, ...getBaseClasses(AgentExecutor)]
+            },
+            {
+                label: 'Output Prediction',
+                name: 'outputPrediction',
+                baseClasses: ['string', 'json']
+            }
+        ]
         this.sessionId = fields?.sessionId
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
+        const agent = prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
+        const output = nodeData.outputs?.output as string
+        if (output === 'outputPrediction') {
+            return this.run(nodeData, input, options)
+        }
+        return agent
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
