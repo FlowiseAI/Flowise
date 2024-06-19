@@ -22,6 +22,11 @@ import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-Add
 import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
 import { AddAnswersConfig1714692854264 } from './1714692854264-AddAnswersConfig'
 import { AddUser1716422641414 } from './1716422641414-AddUser'
+import { AddOrganizationId1717629010538 } from './1717629010538-AddOrganizationId'
+import { AddOrganization1717632419096 } from './1717632419096-AddOrganization'
+import { UpdateDefaultVisibility1717684633931 } from './1717684633931-UpdateDefaultVisibility'
+import { AddUserId1717773329048 } from './1717773329048-AddUserId'
+import { UpdateChatflowToHaveParentId1717796909629 } from './1717796909629-UpdateChatflowToHaveParentId'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -47,5 +52,10 @@ export const sqliteMigrations = [
     AddLead1710832117612,
     AddLeadToChatMessage1711537986113,
     AddAgentReasoningToChatMessage1714679514451,
-    AddTypeToChatFlow1766759476232
+    AddTypeToChatFlow1766759476232,
+    AddOrganizationId1717629010538,
+    AddOrganization1717632419096,
+    UpdateDefaultVisibility1717684633931,
+    AddUserId1717773329048,
+    UpdateChatflowToHaveParentId1717796909629
 ]
