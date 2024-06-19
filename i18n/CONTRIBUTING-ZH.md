@@ -2,7 +2,7 @@
 
 # 贡献给 Flowise
 
-[English](./CONTRIBUTING.md) | 中文
+[English](../CONTRIBUTING.md) | 中文
 
 我们欢迎任何形式的贡献。
 

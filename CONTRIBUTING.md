@@ -2,7 +2,7 @@
 
 # Contributing to Flowise
 
-English | [中文](./CONTRIBUTING-ZH.md)
+English | [中文](./i18n/CONTRIBUTING-ZH.md)
 
 We appreciate any form of contributions.
 

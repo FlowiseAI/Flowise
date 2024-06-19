@@ -600,7 +600,12 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
             await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: newLoaderId })
             if (response.chunks) {
                 //step 8: now save the new chunks
-                const totalChars = response.chunks.reduce((acc: number, chunk) => acc + chunk.pageContent.length, 0)
+                const totalChars = response.chunks.reduce((acc, chunk) => {
+                    if (chunk.pageContent) {
+                        return acc + chunk.pageContent.length
+                    }
+                    return acc
+                }, 0)
                 response.chunks.map(async (chunk: IDocument, index: number) => {
                     const docChunk: DocumentStoreFileChunk = {
                         docId: newLoaderId,

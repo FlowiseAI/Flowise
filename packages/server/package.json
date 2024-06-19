@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.8.1",
+    "version": "1.8.2",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -75,7 +75,7 @@
         "moment-timezone": "^0.5.34",
         "multer": "^1.4.5-lts.1",
         "mysql2": "^3.9.2",
-        "openai": "^4.20.0",
+        "openai": "^4.51.0",
         "pg": "^8.11.1",
         "posthog-node": "^3.5.0",
         "reflect-metadata": "^0.1.13",
