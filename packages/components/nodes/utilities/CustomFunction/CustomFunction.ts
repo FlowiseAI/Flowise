@@ -1,7 +1,26 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { NodeVM } from 'vm2'
 import { DataSource } from 'typeorm'
-import { availableDependencies, defaultAllowBuiltInDep, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import {
+    availableDependencies,
+    defaultAllowBuiltInDep,
+    getUserHome,
+    getVars,
+    handleEscapeCharacters,
+    prepareSandboxVars
+} from '../../../src/utils'
+import path from 'path'
+import fs from 'fs'
+
+export const getConfigFile = async (fileName: string): Promise<string> => {
+    // read home .flowise filename
+    const filePath = path.join(getUserHome(), '.flowise', fileName)
+    try {
+        return await fs.promises.readFile(filePath, 'utf8')
+    } catch (error) {
+        return ''
+    }
+}
 
 class CustomFunction_Utilities implements INode {
     label: string
@@ -82,6 +101,7 @@ class CustomFunction_Utilities implements INode {
 
         let inputVars: ICommonObject = {}
         if (functionInputVariablesRaw) {
+            console.log('>> functionInputVariablesRaw', functionInputVariablesRaw)
             try {
                 inputVars =
                     typeof functionInputVariablesRaw === 'object' ? functionInputVariablesRaw : JSON.parse(functionInputVariablesRaw)
@@ -132,15 +152,20 @@ class CustomFunction_Utilities implements INode {
         } as any
 
         const vm = new NodeVM(nodeVMOptions)
+        const customFunctions = await getConfigFile('custom_functions.js')
         try {
-            const response = await vm.run(`module.exports = async function() {${javascriptFunction}}()`, __dirname)
+            const response = await vm.run(
+                `${customFunctions}
+            module.exports = async function() {${javascriptFunction}}()`,
+                __dirname
+            )
 
             if (typeof response === 'string' && !isEndingNode) {
                 return handleEscapeCharacters(response, false)
             }
             return response
         } catch (e) {
-            throw new Error(e)
+            throw new Error(e.message ?? e)
         }
     }
 

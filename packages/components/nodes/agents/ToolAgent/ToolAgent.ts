@@ -62,7 +62,7 @@ class ToolAgent_Agents implements INode {
                 default: `You are a helpful AI assistant.`,
                 rows: 4,
                 optional: true,
-                additionalParams: true
+                acceptVariable: true
             },
             {
                 label: 'Input Moderation',
