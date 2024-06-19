@@ -122,7 +122,7 @@ class XMLAgent_Agents implements INode {
                 return formatResponse(e.message)
             }
         }
-        const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
+        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -183,7 +183,11 @@ class XMLAgent_Agents implements INode {
     }
 }
 
-const prepareAgent = async (nodeData: INodeData, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
+const prepareAgent = async (
+    nodeData: INodeData,
+    options: ICommonObject,
+    flowObj: { sessionId?: string; chatId?: string; input?: string }
+) => {
     const model = nodeData.inputs?.model as BaseChatModel
     const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
@@ -192,6 +196,7 @@ const prepareAgent = async (nodeData: INodeData, flowObj: { sessionId?: string; 
     tools = flatten(tools)
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
+    const prependMessages = options?.prependMessages
 
     let promptMessage = systemMessage ? systemMessage : defaultSystemMessage
     if (memory.memoryKey) promptMessage = promptMessage.replaceAll('{chat_history}', `{${memory.memoryKey}}`)
@@ -210,7 +215,7 @@ const prepareAgent = async (nodeData: INodeData, flowObj: { sessionId?: string; 
 
     const llmWithStop = model.bind({ stop: ['</tool_input>', '</final_answer>'] })
 
-    const messages = (await memory.getChatMessages(flowObj.sessionId, false)) as IMessage[]
+    const messages = (await memory.getChatMessages(flowObj.sessionId, false, prependMessages)) as IMessage[]
     let chatHistoryMsgTxt = ''
     for (const message of messages) {
         if (message.type === 'apiMessage') {

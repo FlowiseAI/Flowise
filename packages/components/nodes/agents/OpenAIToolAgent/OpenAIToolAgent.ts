@@ -82,7 +82,7 @@ class OpenAIToolAgent_Agents implements INode {
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
+        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
@@ -100,7 +100,7 @@ class OpenAIToolAgent_Agents implements INode {
             }
         }
 
-        const executor = prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input })
+        const executor = prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -161,7 +161,7 @@ class OpenAIToolAgent_Agents implements INode {
     }
 }
 
-const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
+const prepareAgent = (nodeData: INodeData, options: ICommonObject, flowObj: { sessionId?: string; chatId?: string; input?: string }) => {
     const model = nodeData.inputs?.model as ChatOpenAI
     const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
@@ -170,6 +170,7 @@ const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId
     tools = flatten(tools)
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
+    const prependMessages = options?.prependMessages
 
     const prompt = ChatPromptTemplate.fromMessages([
         ['system', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
@@ -185,7 +186,7 @@ const prepareAgent = (nodeData: INodeData, flowObj: { sessionId?: string; chatId
             [inputKey]: (i: { input: string; steps: ToolsAgentStep[] }) => i.input,
             agent_scratchpad: (i: { input: string; steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(i.steps),
             [memoryKey]: async (_: { input: string; steps: ToolsAgentStep[] }) => {
-                const messages = (await memory.getChatMessages(flowObj?.sessionId, true)) as BaseMessage[]
+                const messages = (await memory.getChatMessages(flowObj?.sessionId, true, prependMessages)) as BaseMessage[]
                 return messages ?? []
             }
         },

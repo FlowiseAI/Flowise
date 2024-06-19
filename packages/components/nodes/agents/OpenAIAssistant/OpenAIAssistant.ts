@@ -8,7 +8,7 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
 import { AnalyticHandler } from '../../../src/handler'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
-import { addFileToStorage } from '../../../src/storageUtils'
+import { addSingleFileToStorage } from '../../../src/storageUtils'
 
 const lenticularBracketRegex = /【[^】]*】/g
 const imageRegex = /<img[^>]*\/>/g
@@ -138,10 +138,14 @@ class OpenAIAssistant_Agents implements INode {
         const openai = new OpenAI({ apiKey: openAIApiKey })
         options.logger.info(`Clearing OpenAI Thread ${sessionId}`)
         try {
-            if (sessionId) await openai.beta.threads.del(sessionId)
-            options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
+            if (sessionId && sessionId.startsWith('thread_')) {
+                await openai.beta.threads.del(sessionId)
+                options.logger.info(`Successfully cleared OpenAI Thread ${sessionId}`)
+            } else {
+                options.logger.error(`Error clearing OpenAI Thread ${sessionId}`)
+            }
         } catch (e) {
-            throw new Error(e)
+            options.logger.error(`Error clearing OpenAI Thread ${sessionId}`)
         }
     }
 
@@ -731,7 +735,7 @@ const downloadImg = async (openai: OpenAI, fileId: string, fileName: string, ...
     const image_data_buffer = Buffer.from(image_data)
     const mime = 'image/png'
 
-    await addFileToStorage(mime, image_data_buffer, fileName, ...paths)
+    await addSingleFileToStorage(mime, image_data_buffer, fileName, ...paths)
 
     return image_data_buffer
 }
@@ -754,7 +758,7 @@ const downloadFile = async (openAIApiKey: string, fileObj: any, fileName: string
         const data_buffer = Buffer.from(data)
         const mime = 'application/octet-stream'
 
-        return await addFileToStorage(mime, data_buffer, fileName, ...paths)
+        return await addSingleFileToStorage(mime, data_buffer, fileName, ...paths)
     } catch (error) {
         console.error('Error downloading or writing the file:', error)
         return ''

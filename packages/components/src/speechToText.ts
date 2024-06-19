@@ -1,6 +1,6 @@
 import { ICommonObject, IFileUpload } from './Interface'
 import { getCredentialData } from './utils'
-import { type ClientOptions, OpenAIClient } from '@langchain/openai'
+import { type ClientOptions, OpenAIClient, toFile } from '@langchain/openai'
 import { AssemblyAI } from 'assemblyai'
 import { getFileFromStorage } from './storageUtils'
 
@@ -22,8 +22,9 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     apiKey: credentialData.openAIApiKey
                 }
                 const openAIClient = new OpenAIClient(openAIClientOptions)
+                const file = await toFile(audio_file, upload.name)
                 const openAITranscription = await openAIClient.audio.transcriptions.create({
-                    file: new File([new Blob([audio_file])], upload.name),
+                    file: file,
                     model: 'whisper-1',
                     language: speechToTextConfig?.language,
                     temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
@@ -56,8 +57,9 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     baseURL: speechToTextConfig?.baseUrl
                 }
                 const localAIClient = new OpenAIClient(LocalAIClientOptions)
+                const file = await toFile(audio_file, upload.name)
                 const localAITranscription = await localAIClient.audio.transcriptions.create({
-                    file: new File([new Blob([audio_file])], upload.name),
+                    file: file,
                     model: speechToTextConfig?.model || 'whisper-1',
                     language: speechToTextConfig?.language,
                     temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
