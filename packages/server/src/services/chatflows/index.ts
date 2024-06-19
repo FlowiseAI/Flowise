@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatflowType, IChatFlow } from '../../Interface'
-import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatFlow, ChatflowVisibility } from '../../database/entities/ChatFlow'
 import { getAppVersion, getTelemetryFlowObj, isFlowValidForStream, constructGraphs, getEndingNodes } from '../../utils'
 import logger from '../../utils/logger'
 import { removeFolderFromStorage } from 'flowise-components'
@@ -158,9 +158,9 @@ const getAllChatflows = async (type?: ChatflowType, filter?: any, userId?: strin
         const response = await queryBuilder.getMany()
         const dbResponse = response.map((chatflow) => ({
             ...chatflow,
-            badge: chatflow?.visibility?.includes('Marketplace')
+            badge: chatflow?.visibility?.includes(ChatflowVisibility.MARKETPLACE)
                 ? 'SHARED'
-                : chatflow?.visibility?.includes('Organization')
+                : chatflow?.visibility?.includes(ChatflowVisibility.ORGANIZATION)
                 ? 'ORGANIZATION'
                 : ''
         }))

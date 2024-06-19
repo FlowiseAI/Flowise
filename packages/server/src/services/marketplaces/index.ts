@@ -4,9 +4,9 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatFlow, ChatflowVisibility } from '../../database/entities/ChatFlow'
 import checkOwnership from '../../utils/checkOwnership'
-import { In, Any} from 'typeorm'
+import { In, Any } from 'typeorm'
 
 // Get all templates for marketplaces
 const getAllTemplates = async (userId?: string, organizationId?: string) => {
@@ -20,11 +20,11 @@ const getAllTemplates = async (userId?: string, organizationId?: string) => {
         const appServer = getRunningExpressApp()
         //**
         let chatflows = await appServer.AppDataSource.getRepository(ChatFlow).find({
-// TODO: Figure out why this wher condition doesn't work
+            // TODO: Figure out why this wher condition doesn't work
             // where: { visibility: Any(['Marketplace']) }
         })
 
-        chatflows = chatflows.filter((chatflow) => chatflow.visibility?.includes('Marketplace'))
+        chatflows = chatflows.filter((chatflow) => chatflow.visibility?.includes(ChatflowVisibility.MARKETPLACE))
         chatflows = chatflows.filter((chatflow) => checkOwnership(chatflow, userId, organizationId))
 
         if (!chatflows) {
@@ -61,42 +61,42 @@ const getAllTemplates = async (userId?: string, organizationId?: string) => {
             templates.push(template)
         })
 
-        // marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools')
-        // jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-        // jsonsInDir.forEach((file, index) => {
-        //     const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools', file)
-        //     const fileData = fs.readFileSync(filePath)
-        //     const fileDataObj = JSON.parse(fileData.toString())
-        //     const template = {
-        //         ...fileDataObj,
-        //         id: index,
-        //         type: 'Tool',
-        //         framework: fileDataObj?.framework,
-        //         badge: fileDataObj?.badge,
-        //         categories: '',
-        //         templateName: file.split('.json')[0]
-        //     }
-        //     templates.push(template)
-        // })
+        marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools')
+        jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+        jsonsInDir.forEach((file, index) => {
+            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools', file)
+            const fileData = fs.readFileSync(filePath)
+            const fileDataObj = JSON.parse(fileData.toString())
+            const template = {
+                ...fileDataObj,
+                id: index,
+                type: 'Tool',
+                framework: fileDataObj?.framework,
+                badge: fileDataObj?.badge,
+                categories: '',
+                templateName: file.split('.json')[0]
+            }
+            templates.push(template)
+        })
 
-        // marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows')
-        // jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-        // jsonsInDir.forEach((file, index) => {
-        //     const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows', file)
-        //     const fileData = fs.readFileSync(filePath)
-        //     const fileDataObj = JSON.parse(fileData.toString())
-        //     const template = {
-        //         id: index,
-        //         templateName: file.split('.json')[0],
-        //         flowData: fileData.toString(),
-        //         badge: fileDataObj?.badge,
-        //         framework: fileDataObj?.framework,
-        //         categories: fileDataObj?.categories,
-        //         type: 'Agentflow',
-        //         description: fileDataObj?.description || ''
-        //     }
-        //     templates.push(template)
-        // })
+        marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows')
+        jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+        jsonsInDir.forEach((file, index) => {
+            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows', file)
+            const fileData = fs.readFileSync(filePath)
+            const fileDataObj = JSON.parse(fileData.toString())
+            const template = {
+                id: index,
+                templateName: file.split('.json')[0],
+                flowData: fileData.toString(),
+                badge: fileDataObj?.badge,
+                framework: fileDataObj?.framework,
+                categories: fileDataObj?.categories,
+                type: 'Agentflow',
+                description: fileDataObj?.description || ''
+            }
+            templates.push(template)
+        })
         const sortedTemplates = templates.sort((a, b) => a.templateName.localeCompare(b.templateName))
         const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')
         if (FlowiseDocsQnAIndex > 0) {
