@@ -106,19 +106,36 @@ const deleteChatflow = async (chatflowId: string, userId?: string, organizationI
     }
 }
 
-const getAllChatflows = async (type?: ChatflowType, userId?: string, organizationId?: string): Promise<IChatFlow[]> => {
+const getAllChatflows = async (type?: ChatflowType, filter?: any, userId?: string, organizationId?: string): Promise<IChatFlow[]> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = (await appServer.AppDataSource.getRepository(ChatFlow).find({ where: { userId, organizationId } })).map(
-            (chatflow) => ({
-                ...chatflow,
-                badge: chatflow.visibility?.includes('Marketplace')
-                    ? 'SHARED'
-                    : chatflow.visibility?.includes('Organization')
-                    ? 'ORGANIZATION'
-                    : ''
+
+        const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
+        const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
+
+        queryBuilder.where('chatFlow.userId = :userId', { userId })
+
+        if (filter?.visibility === 'Organization') {
+            queryBuilder.orWhere('chatFlow.organizationId = :organizationId AND :visibility = ANY(chatFlow.visibility)', {
+                organizationId,
+                visibility: 'Organization'
             })
-        )
+        }
+
+        if (filter?.visibility) {
+            queryBuilder.orWhere(':visibility = ANY(chatFlow.visibility)', { visibility: filter.visibility })
+        }
+
+        const response = await queryBuilder.getMany()
+        const dbResponse = response.map((chatflow) => ({
+            ...chatflow,
+            badge: chatflow?.visibility?.includes('Marketplace')
+                ? 'SHARED'
+                : chatflow?.visibility?.includes('Organization')
+                ? 'ORGANIZATION'
+                : ''
+        }))
+
         await checkOwnership(dbResponse, userId, organizationId)
 
         if (type === 'MULTIAGENT') {

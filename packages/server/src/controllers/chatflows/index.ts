@@ -56,7 +56,13 @@ const getAllChatflows = async (req: Request, res: Response, next: NextFunction) 
         if (!userId) {
             return res.status(401).send('Unauthorized')
         }
-        const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType, userId, req.user?.organizationId)
+        const filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter as string)) : undefined
+        const apiResponse = await chatflowsService.getAllChatflows(
+            req.query?.type as ChatflowType,
+            filter,
+            userId,
+            req.user?.organizationId
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -108,6 +114,7 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         }
         const body = req.body
         const newChatFlow = new ChatFlow()
+
         Object.assign(newChatFlow, { ...body, userId: req.user?.id, organizationId: req.user?.organizationId })
         const apiResponse = await chatflowsService.saveChatflow(newChatFlow)
 

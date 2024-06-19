@@ -25,7 +25,7 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     chatbotConfig?: string
 
-    @Column({ nullable: true, type: 'text', array: true, default: ['Private'] })
+    @Column({ nullable: true, type: 'text', array: true, default: () => "'{Private}'" })
     visibility?: string[]
 
     @Column({ nullable: true, type: 'text' })
@@ -47,7 +47,7 @@ export class ChatFlow implements IChatFlow {
     type?: ChatflowType
 
     @Index()
-    @Column({ type: 'uuid', nullable: true })
+    @Column({ type: 'text', nullable: true })
     parentChatflowId?: string
 
     @Index()

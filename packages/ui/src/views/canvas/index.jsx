@@ -66,7 +66,7 @@ const Canvas = () => {
     const { state } = useLocation()
     const templateFlowData = state ? state.templateFlowData : ''
     const templateName = state ? state.templateName : ''
-    const parentChatflowId = state ? state.parentChatflowId : undefined
+    const parentChatflowId = state && isNaN(state.parentChatflowId) ? state.parentChatflowId : undefined
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId =
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]

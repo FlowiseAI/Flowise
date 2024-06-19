@@ -46,6 +46,8 @@ export interface IChatFlow {
     category?: string
     visibility?: string[]
     type?: ChatflowType
+    userId?: string
+    organizationId?: string
 }
 
 export interface IChatMessage {
