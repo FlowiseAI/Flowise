@@ -27,6 +27,14 @@ export const addImagesToMessages = async (
                             detail: multiModalOption.image.imageResolution ?? 'low'
                         }
                     })
+                } else if (upload.type == 'url' && bf) {
+                    imageContent.push({
+                        type: 'image_url',
+                        image_url: {
+                            url: bf,
+                            detail: multiModalOption.image.imageResolution ?? 'low'
+                        }
+                    })
                 }
             }
         }

@@ -94,6 +94,12 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                     fileUploads[i] = omit(upload, ['data'])
                 }
 
+                if (upload.type === 'url' && upload.data) {
+                    const filename = upload.name
+                    const urlData = upload.data
+                    fileUploads[i] = { data: urlData, name: filename, type: 'url', mime: upload.mime ?? 'image/png' }
+                }
+
                 // Run Speech to Text conversion
                 if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg') {
                     logger.debug(`Attempting a speech to text conversion...`)
