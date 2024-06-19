@@ -218,7 +218,7 @@ class Postgres_VectorStores implements INode {
         const k = topK ? parseFloat(topK) : 4
         const _pgMetadataFilter = nodeData.inputs?.pgMetadataFilter
 
-        let pgMetadataFilter = undefined
+        let pgMetadataFilter: any
         if (_pgMetadataFilter) {
             pgMetadataFilter = typeof _pgMetadataFilter === 'object' ? _pgMetadataFilter : JSON.parse(_pgMetadataFilter)
         }
