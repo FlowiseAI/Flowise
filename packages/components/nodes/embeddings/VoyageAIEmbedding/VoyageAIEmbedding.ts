@@ -36,7 +36,7 @@ class VoyageAIEmbedding_Embeddings implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'voyage-2'
+                default: 'voyage-finance-2'
             }
         ]
     }
