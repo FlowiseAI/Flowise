@@ -45,11 +45,15 @@ class ChatYandexGPT_ChatModels implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'yandexgpt-lite',
-                        name: 'yandexgpt-lite'
+                        label: 'yandexgpt-lite/rc',
+                        name: 'yandexgpt-lite/rc'
+                    },
+                    {
+                        label: 'yandexgpt/latest',
+                        name: 'yandexgpt/latest'
                     }
                 ],
-                default: 'yandexgpt-lite'
+                default: 'yandexgpt-lite/rc'
             },
             {
                 label: 'Temperature',
@@ -89,13 +93,12 @@ class ChatYandexGPT_ChatModels implements INode {
             modelName: modelName,
             maxOutputTokens: 2048,
             folderID: folderID,
-            // 'b1gr8alptap9b0hrj3fv',
+            // b1ge56thls78bimqn81e
             modelURI: modelURI,
-            // 'gpt://b1gr8alptap9b0hrj3fv/yandexgpt-lite',
+            // gpt://b1ge56thls78bimqn81e/yandexgpt/latest
             modelVersion: modelVersion,
             streaming: true,
             iamToken: iamToken
-            // 't1.9euelZrMm86QxsmPi5CbmJeVlJqRlO3rnpWansqbjY_OzJzGi53PyZiLm5bl8_cRewBT-e9BWCpr_t3z91EpflL570FYKmv-zef1656VmsaRnZiMyc2Ziseays6XlpnL7_zF656VmsaRnZiMyc2Ziseays6XlpnL.WQsYHfIlEl1gSwVfOvUv7ypz17RsCszDQbQEdsfJwllhmNsZCWsobgNS8ENnbUiuVQ4RVbBvy79-iiPQPzbwBg'
         }
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
