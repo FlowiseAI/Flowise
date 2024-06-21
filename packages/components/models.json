@@ -1049,6 +1049,16 @@
                     "name": "voyage-large-2",
                     "description": "Powerful generalist embedding model"
                 },
+                  {
+                    "label": "voyage-finance-2",
+                    "name": "voyage-finance-2",
+                    "description": "Optimized for finance retrieval and RAG"
+                },
+                   {
+                    "label": "voyage-law-2",
+                    "name": "voyage-law-2",
+                    "description": "Optimized for legal and long-context retrieval and RAG"
+                },
                 {
                     "label": "voyage-lite-02-instruct",
                     "name": "voyage-lite-02-instruct",
