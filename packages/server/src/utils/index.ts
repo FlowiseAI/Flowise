@@ -790,7 +790,21 @@ export const getVariableValue = (
                     returnVal = returnVal.split(path).join(JSON.stringify(variableValue).replace(/"/g, '\\"'))
                 }
             } else {
-                returnVal = returnVal.split(path).join(variableValue)
+                try {
+                    const parsedReturnValue = JSON.parse(returnVal)
+
+                    // map each value to replace the path with the variableValue
+                    const mappedValues = Object.entries(parsedReturnValue).map(([key, value]) => {
+                        if (typeof value === 'string' && value.includes(path)) {
+                            return [key, value.split(path).join(variableValue)]
+                        }
+                        return [key, value]
+                    })
+                    // reset returnVal to the mappedValues
+                    returnVal = JSON.stringify(Object.fromEntries(mappedValues))
+                } catch (e) {
+                    returnVal = returnVal.split(path).join(variableValue)
+                }
             }
         })
         return returnVal

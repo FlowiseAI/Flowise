@@ -93,7 +93,7 @@ class ToolAgent_Agents implements INode {
         this.outputs = [
             {
                 label: 'Agent Executor',
-                name: 'agentExecutor',
+                name: 'toolAgent',
                 baseClasses: [this.type, ...getBaseClasses(AgentExecutor)]
             },
             {
@@ -141,6 +141,7 @@ class ToolAgent_Agents implements INode {
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
 
+        console.log('>> isStreamable', isStreamable)
         if (isStreamable) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
@@ -154,6 +155,7 @@ class ToolAgent_Agents implements INode {
             }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+            console.log('>> RES 1', res)
             if (res.sourceDocuments) {
                 sourceDocuments = res.sourceDocuments
             }
@@ -190,6 +192,7 @@ class ToolAgent_Agents implements INode {
         let finalRes = output
 
         if (sourceDocuments.length || usedTools.length) {
+            console.log('>> HERE')
             const finalRes: ICommonObject = { text: output }
             if (sourceDocuments.length) {
                 finalRes.sourceDocuments = flatten(sourceDocuments)
@@ -199,6 +202,7 @@ class ToolAgent_Agents implements INode {
             }
             return finalRes
         }
+        console.log('>> FINAL', finalRes)
 
         return finalRes
     }

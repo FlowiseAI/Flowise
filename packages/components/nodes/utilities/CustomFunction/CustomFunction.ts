@@ -105,6 +105,8 @@ class CustomFunction_Utilities implements INode {
                 inputVars =
                     typeof functionInputVariablesRaw === 'object' ? functionInputVariablesRaw : JSON.parse(functionInputVariablesRaw)
             } catch (exception) {
+                console.error('Invalid JSON in the Custom Function Input Variables: ', exception, functionInputVariablesRaw)
+                fs.writeFileSync('error.json', functionInputVariablesRaw)
                 throw new Error('Invalid JSON in the Custom Function Input Variables: ' + exception)
             }
         }
