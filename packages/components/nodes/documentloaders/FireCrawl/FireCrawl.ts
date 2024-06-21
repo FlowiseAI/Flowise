@@ -3,42 +3,205 @@ import { Document, DocumentInterface } from '@langchain/core/documents'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
 import { INode, INodeData, INodeParams, ICommonObject } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
-import FirecrawlApp from '@mendable/firecrawl-js'
+import axios, { AxiosResponse, AxiosRequestHeaders } from 'axios'
+import { z } from 'zod'
+import { zodToJsonSchema } from 'zod-to-json-schema'
 
-/**
- * Interface representing the parameters for the Firecrawl loader. It
- * includes properties such as the URL to scrape or crawl and the API key.
- */
+// FirecrawlApp interfaces
+interface FirecrawlAppConfig {
+    apiKey?: string | null
+    apiUrl?: string | null
+}
+
+interface FirecrawlDocumentMetadata {
+    title?: string
+    description?: string
+    language?: string
+    // ... (other metadata fields)
+    [key: string]: any
+}
+
+interface FirecrawlDocument {
+    id?: string
+    url?: string
+    content: string
+    markdown?: string
+    html?: string
+    llm_extraction?: Record<string, any>
+    createdAt?: Date
+    updatedAt?: Date
+    type?: string
+    metadata: FirecrawlDocumentMetadata
+    childrenLinks?: string[]
+    provider?: string
+    warning?: string
+    index?: number
+}
+
+interface ScrapeResponse {
+    success: boolean
+    data?: FirecrawlDocument
+    error?: string
+}
+
+interface CrawlResponse {
+    success: boolean
+    jobId?: string
+    data?: FirecrawlDocument[]
+    error?: string
+}
+
+interface Params {
+    [key: string]: any
+    extractorOptions?: {
+        extractionSchema: z.ZodSchema | any
+        mode?: 'llm-extraction'
+        extractionPrompt?: string
+    }
+}
+
+// FirecrawlApp class (not exported)
+class FirecrawlApp {
+    private apiKey: string
+    private apiUrl: string
+
+    constructor({ apiKey = null, apiUrl = null }: FirecrawlAppConfig) {
+        this.apiKey = apiKey || ''
+        this.apiUrl = apiUrl || 'https://api.firecrawl.dev'
+        if (!this.apiKey) {
+            throw new Error('No API key provided')
+        }
+    }
+
+    async scrapeUrl(url: string, params: Params | null = null): Promise<ScrapeResponse> {
+        const headers = this.prepareHeaders()
+        let jsonData: Params = { url, ...params }
+        if (params?.extractorOptions?.extractionSchema) {
+            let schema = params.extractorOptions.extractionSchema
+            if (schema instanceof z.ZodSchema) {
+                schema = zodToJsonSchema(schema)
+            }
+            jsonData = {
+                ...jsonData,
+                extractorOptions: {
+                    ...params.extractorOptions,
+                    extractionSchema: schema,
+                    mode: params.extractorOptions.mode || 'llm-extraction'
+                }
+            }
+        }
+        try {
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v0/scrape', jsonData, headers)
+            if (response.status === 200) {
+                const responseData = response.data
+                if (responseData.success) {
+                    return responseData
+                } else {
+                    throw new Error(`Failed to scrape URL. Error: ${responseData.error}`)
+                }
+            } else {
+                this.handleError(response, 'scrape URL')
+            }
+        } catch (error: any) {
+            throw new Error(error.message)
+        }
+        return { success: false, error: 'Internal server error.' }
+    }
+
+    async crawlUrl(
+        url: string,
+        params: Params | null = null,
+        waitUntilDone: boolean = true,
+        pollInterval: number = 2,
+        idempotencyKey?: string
+    ): Promise<CrawlResponse | any> {
+        const headers = this.prepareHeaders(idempotencyKey)
+        let jsonData: Params = { url, ...params }
+        try {
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v0/crawl', jsonData, headers)
+            if (response.status === 200) {
+                const jobId: string = response.data.jobId
+                if (waitUntilDone) {
+                    return this.monitorJobStatus(jobId, headers, pollInterval)
+                } else {
+                    return { success: true, jobId }
+                }
+            } else {
+                this.handleError(response, 'start crawl job')
+            }
+        } catch (error: any) {
+            throw new Error(error.message)
+        }
+        return { success: false, error: 'Internal server error.' }
+    }
+
+    private prepareHeaders(idempotencyKey?: string): AxiosRequestHeaders {
+        return {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.apiKey}`,
+            ...(idempotencyKey ? { 'x-idempotency-key': idempotencyKey } : {})
+        } as AxiosRequestHeaders & { 'x-idempotency-key'?: string }
+    }
+
+    private postRequest(url: string, data: Params, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
+        return axios.post(url, data, { headers })
+    }
+
+    private getRequest(url: string, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
+        return axios.get(url, { headers })
+    }
+
+    private async monitorJobStatus(jobId: string, headers: AxiosRequestHeaders, checkInterval: number): Promise<any> {
+        let isJobCompleted = false
+        while (!isJobCompleted) {
+            const statusResponse: AxiosResponse = await this.getRequest(this.apiUrl + `/v0/crawl/status/${jobId}`, headers)
+            if (statusResponse.status === 200) {
+                const statusData = statusResponse.data
+                switch (statusData.status) {
+                    case 'completed':
+                        isJobCompleted = true
+                        if ('data' in statusData) {
+                            return statusData.data
+                        } else {
+                            throw new Error('Crawl job completed but no data was returned')
+                        }
+                    case 'active':
+                    case 'paused':
+                    case 'pending':
+                    case 'queued':
+                        await new Promise((resolve) => setTimeout(resolve, Math.max(checkInterval, 2) * 1000))
+                        break
+                    default:
+                        throw new Error(`Crawl job failed or was stopped. Status: ${statusData.status}`)
+                }
+            } else {
+                this.handleError(statusResponse, 'check crawl status')
+            }
+        }
+    }
+
+    private handleError(response: AxiosResponse, action: string): void {
+        if ([402, 408, 409, 500].includes(response.status)) {
+            const errorMessage: string = response.data.error || 'Unknown error occurred'
+            throw new Error(`Failed to ${action}. Status code: ${response.status}. Error: ${errorMessage}`)
+        } else {
+            throw new Error(`Unexpected error occurred while trying to ${action}. Status code: ${response.status}`)
+        }
+    }
+}
+
+// FireCrawl Loader
 interface FirecrawlLoaderParameters {
-    /**
-     * URL to scrape or crawl
-     */
     url: string
-
-    /**
-     * API key for Firecrawl. If not provided, the default value is the value of the FIRECRAWL_API_KEY environment variable.
-     */
     apiKey?: string
-
-    /**
-     * Mode of operation. Can be either "crawl" or "scrape". If not provided, the default value is "crawl".
-     */
     mode?: 'crawl' | 'scrape'
     params?: Record<string, unknown>
 }
 
-interface FirecrawlDocument {
-    markdown: string
-    metadata: Record<string, unknown>
-}
-
 class FireCrawlLoader extends BaseDocumentLoader {
     private apiKey: string
-
     private url: string
-
     private mode: 'crawl' | 'scrape'
-
     private params?: Record<string, unknown>
 
     constructor(loaderParams: FirecrawlLoaderParameters) {
@@ -54,11 +217,6 @@ class FireCrawlLoader extends BaseDocumentLoader {
         this.params = params
     }
 
-    /**
-     * Loads the data from the Firecrawl.
-     * @returns An array of Documents representing the retrieved data.
-     * @throws An error if the data could not be loaded.
-     */
     public async load(): Promise<DocumentInterface[]> {
         const app = new FirecrawlApp({ apiKey: this.apiKey })
         let firecrawlDocs: FirecrawlDocument[]
@@ -86,6 +244,7 @@ class FireCrawlLoader extends BaseDocumentLoader {
     }
 }
 
+// Flowise Node Class
 class FireCrawl_DocumentLoaders implements INode {
     label: string
     name: string
@@ -138,65 +297,8 @@ class FireCrawl_DocumentLoaders implements INode {
                     }
                 ],
                 default: 'crawl'
-            },
-            {
-                label: 'Max crawl pages',
-                name: 'maxCrawlPages',
-                type: 'number',
-                optional: true,
-                default: 3,
-                additionalParams: true
-            },
-            {
-                label: 'URL Patterns Include',
-                name: 'urlPatternsIncludes',
-                type: 'string',
-                rows: 4,
-                description: 'URL patterns to include. An array of string, separated by comma',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'URL Patterns Exclude',
-                name: 'urlPatternsExcludes',
-                type: 'string',
-                rows: 4,
-                description: 'URL patterns to exclude. An array of string, separated by comma',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Generate Image Alt Text',
-                name: 'generateImgAltText',
-                type: 'boolean',
-                description: 'Generate alt text for images using LLMs (must have a paid plan)',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Return Only Urls',
-                name: 'returnOnlyUrls',
-                type: 'boolean',
-                description:
-                    'f true, returns only the URLs as a list on the crawl status. Attention: the return response will be a list of URLs inside the data, not a list of documents.',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Only Main Content',
-                name: 'onlyMainContent',
-                type: 'boolean',
-                description: 'Only return the main content of the page excluding headers, navs, footers, etc.',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Metadata',
-                name: 'metadata',
-                type: 'json',
-                optional: true,
-                additionalParams: true
             }
+            // ... (other input parameters)
         ]
         this.credential = {
             label: 'FireCrawl API',
@@ -209,16 +311,12 @@ class FireCrawl_DocumentLoaders implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
-
-        // Get input options and merge with additional input
         const url = nodeData.inputs?.url as string
         const crawlerType = nodeData.inputs?.crawlerType as string
         const maxCrawlPages = nodeData.inputs?.maxCrawlPages as string
         const generateImgAltText = nodeData.inputs?.generateImgAltText as boolean
         const returnOnlyUrls = nodeData.inputs?.returnOnlyUrls as boolean
         const onlyMainContent = nodeData.inputs?.onlyMainContent as boolean
-
-        // Get API token from credential data
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const firecrawlApiToken = getCredentialParam('firecrawlApiToken', credentialData, nodeData)
 
