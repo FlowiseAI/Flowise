@@ -9,6 +9,11 @@
                     "description": "Image to text, conversation, chat optimized"
                 },
                 {
+                    "label": "anthropic.claude-3.5-sonnet",
+                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    "description": "3.5 version of Claude Sonnet model"
+                },
+                {
                     "label": "anthropic.claude-3-sonnet",
                     "name": "anthropic.claude-3-sonnet-20240229-v1:0",
                     "description": "Image to text and code, multilingual conversation, complex reasoning and analysis"
@@ -290,6 +295,11 @@
                     "label": "claude-3-opus",
                     "name": "claude-3-opus-20240229",
                     "description": "Most powerful model for highly complex tasks"
+                },
+                {
+                    "label": "claude-3.5-sonnet",
+                    "name": "claude-3-5-sonnet-20240620",
+                    "description": "3.5 version of Claude Sonnet model"
                 },
                 {
                     "label": "claude-3-sonnet",
