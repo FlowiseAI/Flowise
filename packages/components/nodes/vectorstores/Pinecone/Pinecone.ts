@@ -1,5 +1,5 @@
-import { flatten } from 'lodash'
-import { Pinecone } from '@pinecone-database/pinecone'
+import { flatten, isEqual } from 'lodash'
+import { Pinecone, PineconeConfiguration } from '@pinecone-database/pinecone'
 import { PineconeStoreParams, PineconeStore } from '@langchain/pinecone'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
@@ -7,6 +7,23 @@ import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, Indexi
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
+
+let pineconeClientSingleton: Pinecone
+let pineconeClientOption: PineconeConfiguration
+
+const getPineconeClient = (option: PineconeConfiguration) => {
+    if (!pineconeClientSingleton) {
+        // if client doesn't exists
+        pineconeClientSingleton = new Pinecone(option)
+        pineconeClientOption = option
+        return pineconeClientSingleton
+    } else if (pineconeClientSingleton && !isEqual(option, pineconeClientOption)) {
+        // if client exists but option changed
+        pineconeClientSingleton = new Pinecone(option)
+        return pineconeClientSingleton
+    }
+    return pineconeClientSingleton
+}
 
 class Pinecone_VectorStores implements INode {
     label: string
@@ -25,7 +42,7 @@ class Pinecone_VectorStores implements INode {
     constructor() {
         this.label = 'Pinecone'
         this.name = 'pinecone'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Pinecone'
         this.icon = 'pinecone.svg'
         this.category = 'Vector Stores'
@@ -72,6 +89,15 @@ class Pinecone_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Pinecone Text Key',
+                name: 'pineconeTextKey',
+                description: 'The key in the metadata for storing text. Default to `text`',
+                type: 'string',
+                placeholder: 'text',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Pinecone Metadata Filter',
                 name: 'pineconeMetadataFilter',
                 type: 'json',
@@ -111,13 +137,12 @@ class Pinecone_VectorStores implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const recordManager = nodeData.inputs?.recordManager
+            const pineconeTextKey = nodeData.inputs?.pineconeTextKey as string
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
 
-            const client = new Pinecone({
-                apiKey: pineconeApiKey
-            })
+            const client = getPineconeClient({ apiKey: pineconeApiKey })
 
             const pineconeIndex = client.Index(_index)
 
@@ -130,7 +155,8 @@ class Pinecone_VectorStores implements INode {
             }
 
             const obj: PineconeStoreParams = {
-                pineconeIndex
+                pineconeIndex,
+                textKey: pineconeTextKey ?? 'text'
             }
 
             if (pineconeNamespace) obj.namespace = pineconeNamespace
@@ -166,20 +192,18 @@ class Pinecone_VectorStores implements INode {
         const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
         const pineconeMetadataFilter = nodeData.inputs?.pineconeMetadataFilter
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const pineconeTextKey = nodeData.inputs?.pineconeTextKey as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
 
-        const client = new Pinecone({
-            apiKey: pineconeApiKey
-        })
-
-        await client.describeIndex(index)
+        const client = getPineconeClient({ apiKey: pineconeApiKey })
 
         const pineconeIndex = client.Index(index)
 
         const obj: PineconeStoreParams = {
-            pineconeIndex
+            pineconeIndex,
+            textKey: pineconeTextKey ?? 'text'
         }
 
         if (pineconeNamespace) obj.namespace = pineconeNamespace
