@@ -27,7 +27,7 @@ class OpenAIAssistant_Agents implements INode {
     constructor() {
         this.label = 'OpenAI Assistant'
         this.name = 'openAIAssistant'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'OpenAIAssistant'
         this.category = 'Agents'
         this.icon = 'assistant.svg'
@@ -53,6 +53,25 @@ class OpenAIAssistant_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Tool Choice',
+                name: 'toolChoice',
+                type: 'string',
+                description:
+                    'Controls which (if any) tool is called by the model. Can be "none", "auto", "required", or the name of a tool. Refer <a href="https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-tool_choice" target="_blank">here</a> for more information',
+                placeholder: 'file_search',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Parallel Tool Calls',
+                name: 'parallelToolCalls',
+                type: 'boolean',
+                description: 'Whether to enable parallel function calling during tool use. Defaults to true',
+                default: true,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Disable File Download',
@@ -155,6 +174,8 @@ class OpenAIAssistant_Agents implements INode {
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const disableFileDownload = nodeData.inputs?.disableFileDownload as boolean
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const _toolChoice = nodeData.inputs?.toolChoice as string
+        const parallelToolCalls = nodeData.inputs?.parallelToolCalls as boolean
         const isStreaming = options.socketIO && options.socketIOClientId
         const socketIO = isStreaming ? options.socketIO : undefined
         const socketIOClientId = isStreaming ? options.socketIOClientId : ''
@@ -273,10 +294,25 @@ class OpenAIAssistant_Agents implements INode {
             let runThreadId = ''
             let isStreamingStarted = false
 
+            let toolChoice: any
+            if (_toolChoice) {
+                if (_toolChoice === 'file_search') {
+                    toolChoice = { type: 'file_search' }
+                } else if (_toolChoice === 'code_interpreter') {
+                    toolChoice = { type: 'code_interpreter' }
+                } else if (_toolChoice === 'none' || _toolChoice === 'auto' || _toolChoice === 'required') {
+                    toolChoice = _toolChoice
+                } else {
+                    toolChoice = { type: 'function', function: { name: _toolChoice } }
+                }
+            }
+
             if (isStreaming) {
                 const streamThread = await openai.beta.threads.runs.create(threadId, {
                     assistant_id: retrievedAssistant.id,
-                    stream: true
+                    stream: true,
+                    tool_choice: toolChoice,
+                    parallel_tool_calls: parallelToolCalls
                 })
 
                 for await (const event of streamThread) {
@@ -599,7 +635,9 @@ class OpenAIAssistant_Agents implements INode {
 
             // Polling run status
             const runThread = await openai.beta.threads.runs.create(threadId, {
-                assistant_id: retrievedAssistant.id
+                assistant_id: retrievedAssistant.id,
+                tool_choice: toolChoice,
+                parallel_tool_calls: parallelToolCalls
             })
             runThreadId = runThread.id
             let state = await promise(threadId, runThread.id)
@@ -612,7 +650,9 @@ class OpenAIAssistant_Agents implements INode {
                 if (retries > 0) {
                     retries -= 1
                     const newRunThread = await openai.beta.threads.runs.create(threadId, {
-                        assistant_id: retrievedAssistant.id
+                        assistant_id: retrievedAssistant.id,
+                        tool_choice: toolChoice,
+                        parallel_tool_calls: parallelToolCalls
                     })
                     runThreadId = newRunThread.id
                     state = await promise(threadId, newRunThread.id)
