@@ -6,6 +6,7 @@ import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
+import { VectorStore } from '@langchain/core/vectorstores'
 
 class MongoDBAtlas_VectorStores implements INode {
     label: string
@@ -179,7 +180,7 @@ class MongoDBAtlas_VectorStores implements INode {
                 indexName,
                 textKey,
                 embeddingKey
-            })
+            }) as unknown as VectorStore
 
             return resolveVectorStoreOrRetriever(nodeData, vectorStore)
         } catch (e) {

@@ -102,9 +102,10 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                 {availableNodesForVariable &&
                                     availableNodesForVariable.length > 0 &&
                                     availableNodesForVariable.map((node, index) => {
-                                        const selectedOutputAnchor = node.data.outputAnchors[0].options.find(
-                                            (ancr) => ancr.name === node.data.outputs['output']
-                                        )
+                                        const selectedOutputAnchor =
+                                            node.data.outputAnchors.length &&
+                                            node.data.outputAnchors[0].options &&
+                                            node.data.outputAnchors[0].options.find((ancr) => ancr.name === node.data.outputs['output'])
                                         return (
                                             <ListItemButton
                                                 key={index}

@@ -22,7 +22,7 @@ import useApi from '@/hooks/useApi'
 
 import './ExpandTextDialog.css'
 
-const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicked, onConfirm }) => {
     const portalElement = document.getElementById('portal')
 
     const theme = useTheme()
@@ -97,9 +97,22 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     {inputParam &&
                         (inputParam.type === 'string' || inputParam.type === 'code' || inputParam.type === 'conditionFunction') && (
                             <div style={{ flex: 70 }}>
-                                <Typography sx={{ mb: 2, ml: 1 }} variant='h4'>
-                                    {inputParam.label}
-                                </Typography>
+                                <div style={{ marginBottom: '10px', display: 'flex', flexDirection: 'row' }}>
+                                    <Typography variant='h4'>{inputParam.label}</Typography>
+                                    <div style={{ flex: 1 }} />
+                                    {inputParam.hint && (
+                                        <Button
+                                            sx={{ p: 0, px: 2 }}
+                                            color='secondary'
+                                            variant='text'
+                                            onClick={() => {
+                                                onInputHintDialogClicked(inputParam.hint)
+                                            }}
+                                        >
+                                            {inputParam.hint.label}
+                                        </Button>
+                                    )}
+                                </div>
                                 <PerfectScrollbar
                                     style={{
                                         border: '1px solid',
@@ -134,7 +147,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </div>
                         )}
                 </div>
-                {languageType === 'js' && inputParam.type !== 'conditionFunction' && (
+                {languageType === 'js' && !inputParam.hideCodeExecute && (
                     <LoadingButton
                         sx={{
                             mt: 2,
@@ -188,7 +201,8 @@ ExpandTextDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    onInputHintDialogClicked: PropTypes.func
 }
 
 export default ExpandTextDialog

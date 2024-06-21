@@ -30,6 +30,7 @@ import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import PromptLangsmithHubDialog from '@/ui-component/dialog/PromptLangsmithHubDialog'
 import ManageScrapedLinksDialog from '@/ui-component/dialog/ManageScrapedLinksDialog'
 import CredentialInputHandler from './CredentialInputHandler'
+import InputHintDialog from '@/ui-component/dialog/InputHintDialog'
 
 // utils
 import { getInputVariables, getCustomConditionOutputs } from '@/utils/genericHelper'
@@ -64,6 +65,16 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
     const [showPromptHubDialog, setShowPromptHubDialog] = useState(false)
     const [showManageScrapedLinksDialog, setShowManageScrapedLinksDialog] = useState(false)
     const [manageScrapedLinksDialogProps, setManageScrapedLinksDialogProps] = useState({})
+    const [showInputHintDialog, setShowInputHintDialog] = useState(false)
+    const [inputHintDialogProps, setInputHintDialogProps] = useState({})
+
+    const onInputHintDialogClicked = (hint) => {
+        const dialogProps = {
+            ...hint
+        }
+        setInputHintDialogProps(dialogProps)
+        setShowInputHintDialog(true)
+    }
 
     const onExpandDialogClicked = (value, inputParam, languageType) => {
         const dialogProps = {
@@ -129,7 +140,8 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 (data.inputs['template'] ?? '') +
                 (data.inputs['systemMessagePrompt'] ?? '') +
                 (data.inputs['humanMessagePrompt'] ?? '') +
-                (data.inputs['workerPrompt'] ?? '')
+                (data.inputs['workerPrompt'] ?? '') +
+                (data.inputs['agentPrompt'] ?? '')
             inputValue = getJSONValue(templateValue)
         }
         const dialogProp = {
@@ -302,6 +314,18 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 {inputParam.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />}
                             </Typography>
                             <div style={{ flexGrow: 1 }}></div>
+                            {inputParam.hint && (
+                                <Button
+                                    sx={{ p: 0, px: 2 }}
+                                    color='secondary'
+                                    variant='text'
+                                    onClick={() => {
+                                        onInputHintDialogClicked(inputParam.hint)
+                                    }}
+                                >
+                                    {inputParam.hint.label}
+                                </Button>
+                            )}
                             {((inputParam.type === 'string' && inputParam.rows) || inputParam.type === 'code') && (
                                 <IconButton
                                     size='small'
@@ -374,7 +398,18 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                         )}
                         {inputParam.type === 'code' && (
                             <>
-                                <div style={{ height: '5px' }}></div>
+                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start' }}>
+                                    {inputParam.codeExample && (
+                                        <Button
+                                            variant='outlined'
+                                            onClick={() => {
+                                                data.inputs[inputParam.name] = inputParam.codeExample
+                                            }}
+                                        >
+                                            See Example
+                                        </Button>
+                                    )}
+                                </div>
                                 <div style={{ height: inputParam.rows ? '100px' : '200px' }}>
                                     <CodeEditor
                                         disabled={disabled}
@@ -485,7 +520,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 </div>
                             </>
                         )}
-                        {data.name === 'seqCondition' && inputParam.name === 'conditionFunction' && (
+                        {(data.name === 'seqCondition' || data.name === 'seqConditionAgent') && inputParam.name === 'conditionFunction' && (
                             <>
                                 <Button
                                     style={{
@@ -557,7 +592,13 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                 dialogProps={expandDialogProps}
                 onCancel={() => setShowExpandDialog(false)}
                 onConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
+                onInputHintDialogClicked={onInputHintDialogClicked}
             ></ExpandTextDialog>
+            <InputHintDialog
+                show={showInputHintDialog}
+                dialogProps={inputHintDialogProps}
+                onCancel={() => setShowInputHintDialog(false)}
+            ></InputHintDialog>
         </div>
     )
 }

@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { GithubRepoLoader, GithubRepoLoaderParams } from 'langchain/document_loaders/web/github'
+import { GithubRepoLoader, GithubRepoLoaderParams } from '@langchain/community/document_loaders/web/github'
 import { getCredentialData, getCredentialParam } from '../../../src'
 
 class Github_DocumentLoaders implements INode {

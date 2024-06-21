@@ -20,12 +20,13 @@ class LoopAgent_SeqAgents implements INode {
         this.type = 'LoopAgent'
         this.icon = 'loop.svg'
         this.category = 'Sequential Agents'
-        this.description = 'Loop back to a specified agent'
+        this.description = 'Loop back to the specified agent'
         this.inputs = [
             {
                 label: 'Agent',
                 name: 'agent',
-                type: 'Agent'
+                type: 'Agent',
+                list: true
             },
             {
                 label: 'Loop to Agent',
@@ -40,18 +41,19 @@ class LoopAgent_SeqAgents implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const agent = nodeData.inputs?.agent as ISeqAgentNode
+        const agents = nodeData.inputs?.agent as ISeqAgentNode[]
         const loopToAgentName = nodeData.inputs?.loopToAgentName as string
 
-        if (!agent) throw new Error('Agent is required')
+        if (!agents) throw new Error('Agent is required')
         if (!loopToAgentName) throw new Error('Loop to Agent is required')
 
         const returnOutput: ISeqAgentNode = {
+            id: nodeData.id,
             node: loopToAgentName,
             name: loopToAgentName,
             label: loopToAgentName,
             type: 'agent',
-            predecessorAgent: agent,
+            predecessorAgents: agents,
             output: loopToAgentName
         }
 

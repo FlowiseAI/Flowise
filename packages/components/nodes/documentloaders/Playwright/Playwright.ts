@@ -1,7 +1,12 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { Browser, Page, PlaywrightWebBaseLoader, PlaywrightWebBaseLoaderOptions } from 'langchain/document_loaders/web/playwright'
+import {
+    Browser,
+    Page,
+    PlaywrightWebBaseLoader,
+    PlaywrightWebBaseLoaderOptions
+} from '@langchain/community/document_loaders/web/playwright'
 import { test } from 'linkifyjs'
 import { webCrawl, xmlScrape } from '../../../src'
 

@@ -102,6 +102,6 @@
         "start-server-and-test": "^2.0.3",
         "ts-node": "^10.7.0",
         "tsc-watch": "^6.0.4",
-        "typescript": "^4.8.4"
+        "typescript": "^5.4.5"
     }
 }

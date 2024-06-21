@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { getCredentialData, getCredentialParam } from '../../../src'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { FigmaFileLoader, FigmaLoaderParams } from 'langchain/document_loaders/web/figma'
+import { FigmaFileLoader, FigmaLoaderParams } from '@langchain/community/document_loaders/web/figma'
 import { TextSplitter } from 'langchain/text_splitter'
 
 class Figma_DocumentLoaders implements INode {

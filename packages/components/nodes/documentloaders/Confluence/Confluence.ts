@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from 'langchain/document_loaders/web/confluence'
+import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from '@langchain/community/document_loaders/web/confluence'
 import { getCredentialData, getCredentialParam } from '../../../src'
 
 class Confluence_DocumentLoaders implements INode {

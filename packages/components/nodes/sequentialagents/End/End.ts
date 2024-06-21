@@ -35,14 +35,16 @@ class End_SeqAgents implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const agentOrEnd = nodeData.inputs?.agentOrEnd as ISeqAgentNode
+        if (!agentOrEnd) throw new Error('End must have a predecessor!')
 
         const returnOutput: ISeqAgentNode = {
+            id: nodeData.id,
             node: END,
             name: END,
             label: END,
             type: 'end',
             output: END,
-            predecessorAgent: agentOrEnd
+            predecessorAgents: [agentOrEnd]
         }
 
         return returnOutput

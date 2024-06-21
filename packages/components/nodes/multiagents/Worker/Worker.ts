@@ -21,6 +21,7 @@ class Worker_MultiAgents implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    hideOutput: boolean
     inputs?: INodeParams[]
     badge?: string
 
@@ -32,6 +33,7 @@ class Worker_MultiAgents implements INode {
         this.icon = 'worker.svg'
         this.category = 'Multi Agents'
         this.baseClasses = [this.type]
+        this.hideOutput = true
         this.inputs = [
             {
                 label: 'Worker Name',

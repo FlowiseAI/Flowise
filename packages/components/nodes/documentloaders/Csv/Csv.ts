@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { CSVLoader } from 'langchain/document_loaders/fs/csv'
+import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
 import { getFileFromStorage, handleEscapeCharacters } from '../../../src'
 
 class Csv_DocumentLoaders implements INode {

@@ -34,7 +34,7 @@ import userPNG from '@/assets/images/account.png'
 import msgEmptySVG from '@/assets/images/message_empty.svg'
 import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
 import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
-import { IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons-react'
+import { IconTool, IconDeviceSdCard, IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons-react'
 
 // Project import
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
@@ -846,6 +846,64 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                             </Box>
                                                                                             <div>{agent.agentName}</div>
                                                                                         </Stack>
+                                                                                        {agent.usedTools && agent.usedTools.length > 0 && (
+                                                                                            <div
+                                                                                                style={{
+                                                                                                    display: 'block',
+                                                                                                    flexDirection: 'row',
+                                                                                                    width: '100%'
+                                                                                                }}
+                                                                                            >
+                                                                                                {agent.usedTools.map((tool, index) => {
+                                                                                                    return tool !== null ? (
+                                                                                                        <Chip
+                                                                                                            size='small'
+                                                                                                            key={index}
+                                                                                                            label={tool.tool}
+                                                                                                            component='a'
+                                                                                                            sx={{ mr: 1, mt: 1 }}
+                                                                                                            variant='outlined'
+                                                                                                            clickable
+                                                                                                            icon={<IconTool size={15} />}
+                                                                                                            onClick={() =>
+                                                                                                                onSourceDialogClick(
+                                                                                                                    tool,
+                                                                                                                    'Used Tools'
+                                                                                                                )
+                                                                                                            }
+                                                                                                        />
+                                                                                                    ) : null
+                                                                                                })}
+                                                                                            </div>
+                                                                                        )}
+                                                                                        {agent.state &&
+                                                                                            Object.keys(agent.state).length > 0 && (
+                                                                                                <div
+                                                                                                    style={{
+                                                                                                        display: 'block',
+                                                                                                        flexDirection: 'row',
+                                                                                                        width: '100%'
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <Chip
+                                                                                                        size='small'
+                                                                                                        label={'State'}
+                                                                                                        component='a'
+                                                                                                        sx={{ mr: 1, mt: 1 }}
+                                                                                                        variant='outlined'
+                                                                                                        clickable
+                                                                                                        icon={
+                                                                                                            <IconDeviceSdCard size={15} />
+                                                                                                        }
+                                                                                                        onClick={() =>
+                                                                                                            onSourceDialogClick(
+                                                                                                                agent.state,
+                                                                                                                'State'
+                                                                                                            )
+                                                                                                        }
+                                                                                                    />
+                                                                                                </div>
+                                                                                            )}
                                                                                         {agent.messages.length > 0 && (
                                                                                             <MemoizedReactMarkdown
                                                                                                 remarkPlugins={[remarkGfm, remarkMath]}
@@ -893,6 +951,67 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                         {agent.instructions && <p>{agent.instructions}</p>}
                                                                                         {agent.messages.length === 0 &&
                                                                                             !agent.instructions && <p>Finished</p>}
+                                                                                        {agent.sourceDocuments &&
+                                                                                            agent.sourceDocuments.length > 0 && (
+                                                                                                <div
+                                                                                                    style={{
+                                                                                                        display: 'block',
+                                                                                                        flexDirection: 'row',
+                                                                                                        width: '100%'
+                                                                                                    }}
+                                                                                                >
+                                                                                                    {removeDuplicateURL(agent).map(
+                                                                                                        (source, index) => {
+                                                                                                            const URL =
+                                                                                                                source &&
+                                                                                                                source.metadata &&
+                                                                                                                source.metadata.source
+                                                                                                                    ? isValidURL(
+                                                                                                                          source.metadata
+                                                                                                                              .source
+                                                                                                                      )
+                                                                                                                    : undefined
+                                                                                                            return (
+                                                                                                                <Chip
+                                                                                                                    size='small'
+                                                                                                                    key={index}
+                                                                                                                    label={
+                                                                                                                        URL
+                                                                                                                            ? URL.pathname.substring(
+                                                                                                                                  0,
+                                                                                                                                  15
+                                                                                                                              ) === '/'
+                                                                                                                                ? URL.host
+                                                                                                                                : `${URL.pathname.substring(
+                                                                                                                                      0,
+                                                                                                                                      15
+                                                                                                                                  )}...`
+                                                                                                                            : `${source.pageContent.substring(
+                                                                                                                                  0,
+                                                                                                                                  15
+                                                                                                                              )}...`
+                                                                                                                    }
+                                                                                                                    component='a'
+                                                                                                                    sx={{ mr: 1, mb: 1 }}
+                                                                                                                    variant='outlined'
+                                                                                                                    clickable
+                                                                                                                    onClick={() =>
+                                                                                                                        URL
+                                                                                                                            ? onURLClick(
+                                                                                                                                  source
+                                                                                                                                      .metadata
+                                                                                                                                      .source
+                                                                                                                              )
+                                                                                                                            : onSourceDialogClick(
+                                                                                                                                  source
+                                                                                                                              )
+                                                                                                                    }
+                                                                                                                />
+                                                                                                            )
+                                                                                                        }
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            )}
                                                                                     </CardContent>
                                                                                 </Card>
                                                                             )

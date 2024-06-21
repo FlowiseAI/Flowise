@@ -396,7 +396,11 @@ export const getAvailableNodesForVariable = (nodes, edges, target, targetHandle)
     // example edge id = "llmChain_0-llmChain_0-output-outputPrediction-string|json-llmChain_1-llmChain_1-input-promptValues-string"
     //                    {source}  -{sourceHandle}                           -{target}  -{targetHandle}
     const parentNodes = []
-    const inputEdges = edges.filter((edg) => edg.target === target && edg.targetHandle === targetHandle)
+    const igNoreTargetHandle = target.split('_')[0] === 'seqAgent'
+
+    const inputEdges = !igNoreTargetHandle
+        ? edges.filter((edg) => edg.target === target && edg.targetHandle === targetHandle)
+        : edges.filter((edg) => edg.target === target)
     if (inputEdges && inputEdges.length) {
         for (let j = 0; j < inputEdges.length; j += 1) {
             const node = nodes.find((nd) => nd.id === inputEdges[j].source)
@@ -811,7 +815,7 @@ export const getCustomConditionOutputs = (value, nodeId, existingEdges) => {
         return undefined
     }
 
-    const outputs = createJsonArray(numberOfReturns)
+    const outputs = createJsonArray(numberOfReturns.sort())
 
     const outputAnchors = []
 

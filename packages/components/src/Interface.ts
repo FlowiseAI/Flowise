@@ -88,6 +88,9 @@ export interface INodeParams {
     loadMethod?: string
     hidden?: boolean
     variables?: ICommonObject[]
+    hideCodeExecute?: boolean
+    codeExample?: string
+    hint?: Record<string, string>
 }
 
 export interface INodeExecutionData {
@@ -169,21 +172,24 @@ export interface IMultiAgentNode {
     recursionLimit?: number
     moderations?: Moderation[]
     multiModalMessageContent?: MessageContentImageUrl[]
+    checkpointMemory?: any
 }
 
 export interface ISeqAgentNode {
+    id: string
     node: any
     name: string
     label: string
-    type: 'agent' | 'condition' | 'end' | 'start'
+    type: 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state'
     output: string
     llm?: any
-    predecessorAgent?: ISeqAgentNode
+    predecessorAgents?: ISeqAgentNode[]
     workerPrompt?: string
     workerInputVariables?: string[]
     recursionLimit?: number
     moderations?: Moderation[]
     multiModalMessageContent?: MessageContentImageUrl[]
+    checkpointMemory?: any
 }
 
 export interface ITeamState {
@@ -194,6 +200,7 @@ export interface ITeamState {
     team_members: string[]
     next: string
     instructions: string
+    summarization: string
 }
 
 export interface ISeqAgentsState {

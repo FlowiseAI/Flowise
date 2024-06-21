@@ -1,6 +1,6 @@
 import { TextSplitter } from 'langchain/text_splitter'
 import { omit } from 'lodash'
-import { CheerioWebBaseLoader, WebBaseLoaderParams } from 'langchain/document_loaders/web/cheerio'
+import { CheerioWebBaseLoader, WebBaseLoaderParams } from '@langchain/community/document_loaders/web/cheerio'
 import { test } from 'linkifyjs'
 import { parse } from 'css-what'
 import { webCrawl, xmlScrape } from '../../../src'

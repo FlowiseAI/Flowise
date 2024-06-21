@@ -31,6 +31,21 @@ class Start_SeqAgents implements INode {
                 description: `Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat`
             },
             {
+                label: 'Agent Memory',
+                name: 'agentMemory',
+                type: 'BaseCheckpointSaver',
+                description: 'Save the state of the agent',
+                optional: true
+            },
+            {
+                label: 'State',
+                name: 'state',
+                type: 'State',
+                description:
+                    'State is an object that is updated by nodes in the graph, passing from one node to another. Agent Memory must be connected when using State. By default, state contains "messages" that got updated with each message sent and received.',
+                optional: true
+            },
+            {
                 label: 'Input Moderation',
                 description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
                 name: 'inputModeration',
@@ -47,13 +62,15 @@ class Start_SeqAgents implements INode {
         const model = nodeData.inputs?.model as BaseChatModel
 
         const returnOutput: ISeqAgentNode = {
+            id: nodeData.id,
             node: START,
             name: START,
             label: START,
             type: 'start',
             output: START,
             llm: model,
-            moderations
+            moderations,
+            checkpointMemory: nodeData.inputs?.agentMemory
         }
 
         return returnOutput

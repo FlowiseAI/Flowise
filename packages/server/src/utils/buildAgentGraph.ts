@@ -8,6 +8,7 @@ import {
     ISeqAgentsState,
     ISeqAgentNode
 } from 'flowise-components'
+import { omit } from 'lodash'
 import { IChatFlow, IComponentNodes, IDepthQueue, IReactFlowNode, IReactFlowObject, IReactFlowEdge } from '../Interface'
 import { Server } from 'socket.io'
 import { buildFlow, getStartingNodes, getEndingNodes, constructGraphs, databaseEntities } from '../utils'
@@ -104,7 +105,9 @@ export const buildAgentGraph = async (
 
         let streamResults
         let finalResult = ''
+        let finalSummarization = ''
         let agentReasoning: IAgentReasoning[] = []
+        let isSequential = false
 
         const workerNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'worker')
         const supervisorNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'supervisor')
@@ -127,75 +130,108 @@ export const buildAgentGraph = async (
                     options,
                     startingNodeIds,
                     incomingInput.question,
-                    incomingInput?.overrideConfig
+                    incomingInput?.overrideConfig,
+                    sessionId || chatId
                 )
             } else {
+                isSequential = true
                 streamResults = await compileSeqAgentsGraph(
+                    depthQueue,
                     chatflow,
-                    mapNameToLabel,
                     reactFlowNodes,
                     edges,
                     appServer.nodesPool.componentNodes,
                     options,
                     incomingInput.question,
-                    incomingInput?.overrideConfig
+                    incomingInput?.overrideConfig,
+                    sessionId || chatId
                 )
             }
 
             if (streamResults) {
                 let isStreamingStarted = false
                 for await (const output of await streamResults) {
-                    console.log('OUTPUTTTT ', output)
                     if (!output?.__end__) {
-                        const agentName = Object.keys(output)[0]
-                        const usedTools = output[agentName]?.messages
-                            ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.usedTools)
-                            : []
-                        const sourceDocuments = output[agentName]?.messages
-                            ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.sourceDocuments)
-                            : []
-                        const messages = output[agentName]?.messages ? output[agentName].messages.map((msg: any) => msg.content) : []
-                        const reasoning = {
-                            agentName: mapNameToLabel[agentName],
-                            messages,
-                            next: output[agentName]?.next,
-                            instructions: output[agentName]?.instructions,
-                            usedTools: flatten(usedTools),
-                            sourceDocuments: flatten(sourceDocuments)
-                        }
-                        agentReasoning.push(reasoning)
-                        if (socketIO && incomingInput.socketIOClientId) {
-                            if (!isStreamingStarted) {
-                                isStreamingStarted = true
-                                socketIO.to(incomingInput.socketIOClientId).emit('start', JSON.stringify(agentReasoning))
+                        for (const agentName of Object.keys(output)) {
+                            const usedTools = output[agentName]?.messages
+                                ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.usedTools)
+                                : []
+                            const sourceDocuments = output[agentName]?.messages
+                                ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.sourceDocuments)
+                                : []
+                            const messages = output[agentName]?.messages
+                                ? output[agentName].messages.map((msg: any) => (typeof msg === 'string' ? msg : msg.content))
+                                : []
+
+                            const state = omit(output[agentName], ['messages'])
+
+                            const reasoning = {
+                                agentName: mapNameToLabel[agentName],
+                                messages,
+                                next: output[agentName]?.next,
+                                instructions: output[agentName]?.instructions,
+                                usedTools: flatten(usedTools),
+                                sourceDocuments: flatten(sourceDocuments),
+                                state
                             }
+                            agentReasoning.push(reasoning)
 
-                            socketIO.to(incomingInput.socketIOClientId).emit('agentReasoning', JSON.stringify(agentReasoning))
+                            finalSummarization = output[agentName]?.summarization ?? ''
 
-                            // Send loading next agent indicator
-                            if (reasoning.next && reasoning.next !== 'FINISH' && reasoning.next !== 'END') {
-                                socketIO
-                                    .to(incomingInput.socketIOClientId)
-                                    .emit('nextAgent', mapNameToLabel[reasoning.next] || reasoning.next)
+                            if (socketIO && incomingInput.socketIOClientId) {
+                                if (!isStreamingStarted) {
+                                    isStreamingStarted = true
+                                    socketIO.to(incomingInput.socketIOClientId).emit('start', JSON.stringify(agentReasoning))
+                                }
+
+                                socketIO.to(incomingInput.socketIOClientId).emit('agentReasoning', JSON.stringify(agentReasoning))
+
+                                // Send loading next agent indicator
+                                if (reasoning.next && reasoning.next !== 'FINISH' && reasoning.next !== 'END') {
+                                    socketIO
+                                        .to(incomingInput.socketIOClientId)
+                                        .emit('nextAgent', mapNameToLabel[reasoning.next] || reasoning.next)
+                                }
                             }
                         }
                     } else {
                         finalResult = output.__end__.messages.length ? output.__end__.messages.pop()?.content : ''
                         if (Array.isArray(finalResult)) finalResult = output.__end__.instructions
 
-                        if (finalResult === incomingInput.question) {
-                            const supervisorNode = reactFlowNodes.find((node: IReactFlowNode) => node.data.name === 'supervisor')
-                            const llm = supervisorNode?.data?.instance?.llm
-                            if (llm) {
-                                const res = await llm.invoke(incomingInput.question)
-                                finalResult = res?.content
-                            }
-                        }
-
                         if (socketIO && incomingInput.socketIOClientId) {
                             socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
                         }
                     }
+                }
+
+                /*
+                 * For multi agents mode, sometimes finalResult is empty
+                 * Provide summary as final result
+                 */
+                if (!isSequential && !finalResult && finalSummarization) {
+                    finalResult = finalSummarization
+                    if (socketIO && incomingInput.socketIOClientId) {
+                        socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
+                    }
+                }
+
+                /*
+                 * For sequential mode, sometimes finalResult is empty
+                 * Use last agent message as final result
+                 */
+                if (isSequential && !finalResult && agentReasoning.length) {
+                    const lastMessages = agentReasoning[agentReasoning.length - 1].messages
+
+                    if (lastMessages[lastMessages.length - 1]) {
+                        finalResult = lastMessages[lastMessages.length - 1]
+                        if (socketIO && incomingInput.socketIOClientId) {
+                            socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
+                        }
+                    }
+                }
+
+                if (socketIO && incomingInput.socketIOClientId) {
+                    socketIO.to(incomingInput.socketIOClientId).emit('end')
                 }
 
                 return { finalResult, agentReasoning }
@@ -237,7 +273,8 @@ const compileMultiAgentsGraph = async (
     options: ICommonObject,
     startingNodeIds: string[],
     question: string,
-    overrideConfig?: ICommonObject
+    overrideConfig?: ICommonObject,
+    threadId?: string
 ) => {
     const appServer = getRunningExpressApp()
     const channels: ITeamState = {
@@ -247,7 +284,8 @@ const compileMultiAgentsGraph = async (
         },
         next: 'initialState',
         instructions: "Solve the user's request.",
-        team_members: []
+        team_members: [],
+        summarization: 'summarize'
     }
 
     const workflowGraph = new StateGraph<ITeamState>({
@@ -319,6 +357,7 @@ const compileMultiAgentsGraph = async (
             workflowGraph.addNode(supervisorResult.name, supervisorResult.node)
 
             for (const worker of supervisorResult.workers) {
+                //@ts-ignore
                 workflowGraph.addEdge(worker, supervisorResult.name)
             }
 
@@ -327,12 +366,14 @@ const compileMultiAgentsGraph = async (
                 conditionalEdges[supervisorResult.workers[i]] = supervisorResult.workers[i]
             }
 
+            //@ts-ignore
             workflowGraph.addConditionalEdges(supervisorResult.name, (x: ITeamState) => x.next, {
                 ...conditionalEdges,
                 FINISH: END
             })
 
-            workflowGraph.setEntryPoint(supervisorResult.name)
+            //@ts-ignore
+            workflowGraph.addEdge(START, supervisorResult.name)
 
             // Add agentflow to pool
             ;(workflowGraph as any).signal = options.signal
@@ -343,19 +384,21 @@ const compileMultiAgentsGraph = async (
                 overrideConfig
             )
 
-            // TODO: add persistence
-            // const memory = new MemorySaver()
-            const graph = workflowGraph.compile()
+            // Get memory
+            let memory = supervisorResult?.checkpointMemory
+
+            const graph = workflowGraph.compile({ checkpointer: memory })
 
             const loggerHandler = new ConsoleCallbackHandler(logger)
             const callbacks = await additionalCallbacks(flowNodeData, options)
+            const config = { configurable: { thread_id: threadId } }
 
             // Return stream result as we should only have 1 supervisor
             return await graph.stream(
                 {
                     messages: [new HumanMessage({ content: question })]
                 },
-                { recursionLimit: supervisorResult?.recursionLimit ?? 100, callbacks: [loggerHandler, ...callbacks] }
+                { recursionLimit: supervisorResult?.recursionLimit ?? 100, callbacks: [loggerHandler, ...callbacks], configurable: config }
             )
         } catch (e) {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize supervisor nodes - ${getErrorMessage(e)}`)
@@ -364,24 +407,35 @@ const compileMultiAgentsGraph = async (
 }
 
 const compileSeqAgentsGraph = async (
+    depthQueue: IDepthQueue,
     chatflow: IChatFlow,
-    mapNameToLabel: Record<string, string>,
     reactflowNodes: IReactFlowNode[] = [],
     reactflowEdges: IReactFlowEdge[] = [],
     componentNodes: IComponentNodes,
     options: ICommonObject,
     question: string,
-    overrideConfig?: ICommonObject
+    overrideConfig?: ICommonObject,
+    threadId?: string
 ) => {
     const appServer = getRunningExpressApp()
-    const channels: ISeqAgentsState = {
+
+    let channels: ISeqAgentsState = {
         messages: {
             value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
             default: () => []
         }
     }
 
-    const seqGraph = new StateGraph<ISeqAgentsState>({
+    // Get state
+    const seqStateNode = reactflowNodes.find((node: IReactFlowNode) => node.data.name === 'seqState')
+    if (seqStateNode) {
+        channels = {
+            ...seqStateNode.data.instance.node,
+            ...channels
+        }
+    }
+
+    const seqGraph = new StateGraph<any>({
         //@ts-ignore
         channels
     })
@@ -394,6 +448,7 @@ const compileSeqAgentsGraph = async (
 
     const endAgentNodes: IReactFlowNode[] = reactflowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqEnd')
     if (!endAgentNodes.length) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have at least one end node')
+    /*** End of Validation ***/
 
     let flowNodeData
     let conditionalEdges: Record<string, { nodes: Record<string, string>; func: any }> = {}
@@ -449,58 +504,60 @@ const compileSeqAgentsGraph = async (
         }
     }
 
-    /*** Start processing every Agent nodes ***/
-    const seqAgentNodes: IReactFlowNode[] = reactflowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqAgent')
-    for (const agentNode of seqAgentNodes) {
-        try {
-            const agentInstance: ISeqAgentNode = await initiateNode(agentNode)
-            // Add node to graph
-            seqGraph.addNode(agentInstance.name, agentInstance.node)
+    for (const agentNodeId of getSortedDepthNodes(depthQueue)) {
+        const agentNode = reactflowNodes.find((node) => node.id === agentNodeId)
+        if (!agentNode) continue
 
-            if (agentInstance.predecessorAgent) {
-                const predecessorAgent = agentInstance.predecessorAgent
+        /*** Start processing every Agent nodes ***/
+        if (agentNode.data.name === 'seqAgent' || agentNode.data.name === 'seqEnd' || agentNode.data.name === 'seqLoopAgent') {
+            try {
+                const agentInstance: ISeqAgentNode = await initiateNode(agentNode)
 
-                // Add start edge and set entry point
-                if (predecessorAgent.name === START) {
-                    if (agentInstance.moderations && agentInstance.moderations.length > 0) {
-                        try {
-                            for (const moderation of agentInstance.moderations) {
-                                question = await moderation.checkForViolations(question)
+                // Add node to graph
+                if (agentNode.data.name === 'seqAgent') {
+                    seqGraph.addNode(agentInstance.name, agentInstance.node)
+                }
+
+                if (agentInstance.predecessorAgents) {
+                    const predecessorAgents: ISeqAgentNode[] = agentInstance.predecessorAgents
+
+                    const edges = []
+                    for (const predecessorAgent of predecessorAgents) {
+                        // Add start edge and set entry point
+                        if (predecessorAgent.name === START) {
+                            if (agentInstance.moderations && agentInstance.moderations.length > 0) {
+                                try {
+                                    for (const moderation of agentInstance.moderations) {
+                                        question = await moderation.checkForViolations(question)
+                                    }
+                                } catch (e) {
+                                    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
+                                }
                             }
-                        } catch (e) {
-                            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
+                            //@ts-ignore
+                            seqGraph.addEdge(START, agentInstance.name)
+                        } else if (predecessorAgent.type === 'condition') {
+                            prepareConditionalEdges(agentNode.data.id, agentInstance)
+                        } else if (predecessorAgent.name) {
+                            edges.push(predecessorAgent.name)
                         }
                     }
-                    seqGraph.setEntryPoint(agentInstance.name)
-                } else if (predecessorAgent.type === 'condition') {
-                    prepareConditionalEdges(agentNode.data.id, agentInstance)
-                } else if (predecessorAgent.name) {
-                    seqGraph.addEdge(predecessorAgent.name, agentInstance.name)
+
+                    if (edges.length > 1) {
+                        //@ts-ignore
+                        seqGraph.addEdge(edges, agentInstance.name)
+                    }
+                    if (edges.length === 1) {
+                        //@ts-ignore
+                        seqGraph.addEdge(...edges, agentInstance.name)
+                    }
                 }
+            } catch (e) {
+                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize agent nodes - ${getErrorMessage(e)}`)
             }
-        } catch (e) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize agent nodes - ${getErrorMessage(e)}`)
         }
     }
 
-    /*** Start processing every END nodes ***/
-    for (const endNode of endAgentNodes) {
-        try {
-            const endInstance: ISeqAgentNode = await initiateNode(endNode)
-            if (endInstance.predecessorAgent) {
-                const predecessorAgent = endInstance.predecessorAgent
-                if (predecessorAgent.type === 'condition') {
-                    prepareConditionalEdges(endNode.data.id, endInstance)
-                } else if (predecessorAgent.name) {
-                    seqGraph.addEdge(predecessorAgent.name, endInstance.name)
-                }
-            }
-        } catch (e) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize end nodes - ${getErrorMessage(e)}`)
-        }
-    }
-
-    console.log('seqGraph conditionalEdges =', conditionalEdges)
     /*** Add conditional edges to graph ***/
     for (const conditionNodeId in conditionalEdges) {
         const startConditionEdges = reactflowEdges.filter((edge) => edge.target === conditionNodeId)
@@ -512,22 +569,9 @@ const compileSeqAgentsGraph = async (
             seqGraph.addConditionalEdges(
                 startConditionNode.data.instance.name,
                 conditionalEdges[conditionNodeId].func,
+                //@ts-ignore
                 conditionalEdges[conditionNodeId].nodes
             )
-        }
-    }
-
-    /*** Since we can't draw a backward loop, this is a dedicated agent to loop back to certain agent by adding an edge***/
-    const seqLoopAgentNodes: IReactFlowNode[] = reactflowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqLoopAgent')
-    for (const agentNode of seqLoopAgentNodes) {
-        try {
-            const loopInstance: ISeqAgentNode = await initiateNode(agentNode)
-            if (loopInstance.predecessorAgent) {
-                const predecessorAgent = loopInstance.predecessorAgent
-                seqGraph.addEdge(predecessorAgent.name, loopInstance.name)
-            }
-        } catch (e) {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize loop agent nodes - ${getErrorMessage(e)}`)
         }
     }
 
@@ -540,24 +584,51 @@ const compileSeqAgentsGraph = async (
         overrideConfig
     )
 
-    // TODO: add persistence
-    // const memory = new MemorySaver()
+    // Get memory
+    const startNode = reactflowNodes.find((node: IReactFlowNode) => node.data.name === 'seqStart')
+    let memory = startNode?.data.instance?.checkpointMemory
 
     try {
-        const graph = seqGraph.compile()
+        const graph = seqGraph.compile({ checkpointer: memory })
 
         const loggerHandler = new ConsoleCallbackHandler(logger)
         const callbacks = await additionalCallbacks(flowNodeData as any, options)
+        const config = { configurable: { thread_id: threadId } }
 
         // Return stream result
         return await graph.stream(
             {
                 messages: [new HumanMessage({ content: question })]
             },
-            { callbacks: [loggerHandler, ...callbacks] }
+            { callbacks: [loggerHandler, ...callbacks], configurable: config }
         )
     } catch (e) {
         logger.error('Error compile graph', e)
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error compile graph - ${getErrorMessage(e)}`)
     }
+}
+
+const getSortedDepthNodes = (depthQueue: IDepthQueue) => {
+    // Step 1: Convert the object into an array of [key, value] pairs and sort them by the value
+    const sortedEntries = Object.entries(depthQueue).sort((a, b) => a[1] - b[1])
+
+    // Step 2: Group keys by their depth values
+    const groupedByDepth: Record<number, string[]> = {}
+    sortedEntries.forEach(([key, value]) => {
+        if (!groupedByDepth[value]) {
+            groupedByDepth[value] = []
+        }
+        groupedByDepth[value].push(key)
+    })
+
+    // Step 3: Create the final sorted array with grouped keys
+    const sortedArray: (string | string[])[] = []
+    Object.keys(groupedByDepth)
+        .sort((a, b) => parseInt(a) - parseInt(b))
+        .forEach((depth) => {
+            const items = groupedByDepth[parseInt(depth)]
+            sortedArray.push(...items)
+        })
+
+    return sortedArray.flat()
 }

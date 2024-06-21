@@ -55,6 +55,9 @@ function a11yProps(index) {
 
 const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager']
 const allowedAgentModel = {}
+const exceptions = {
+    Memory: ['agentMemory']
+}
 
 const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const theme = useTheme()
@@ -105,9 +108,19 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         filterSearch(searchValue, newValue)
     }
 
+    const addException = () => {
+        let nodes = []
+        for (const category in exceptions) {
+            const nodeNames = exceptions[category]
+            nodes.push(...nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name)))
+        }
+        return nodes
+    }
+
     const getSearchedNodes = (value) => {
         if (isAgentCanvas) {
             const nodes = nodesData.filter((nd) => !blacklistCategoriesForAgentCanvas.includes(nd.category))
+            nodes.push(...addException())
             const passed = nodes.filter((nd) => {
                 const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
                 const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
@@ -173,6 +186,11 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                     } else {
                         filteredResult[category] = nodes
                     }
+                }
+
+                // Allow exceptions
+                if (Object.keys(exceptions).includes(category)) {
+                    filteredResult[category] = addException()
                 }
             }
             setNodes(filteredResult)

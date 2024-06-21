@@ -296,8 +296,8 @@ export class ChatGoogleGenerativeAI extends LangchainChatGoogleGenerativeAI impl
     }
 
     revertToOriginalModel(): void {
-        super.modelName = this.configuredModel
-        super.maxOutputTokens = this.configuredMaxToken
+        this.modelName = this.configuredModel
+        this.maxOutputTokens = this.configuredMaxToken
     }
 
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
@@ -306,8 +306,8 @@ export class ChatGoogleGenerativeAI extends LangchainChatGoogleGenerativeAI impl
 
     setVisionModel(): void {
         if (this.modelName !== 'gemini-pro-vision' && this.modelName !== 'gemini-1.5-pro-latest') {
-            super.modelName = 'gemini-1.5-pro-latest'
-            super.maxOutputTokens = this.configuredMaxToken ? this.configuredMaxToken : 8192
+            this.modelName = 'gemini-1.5-pro-latest'
+            this.maxOutputTokens = this.configuredMaxToken ? this.configuredMaxToken : 8192
         }
     }
 }

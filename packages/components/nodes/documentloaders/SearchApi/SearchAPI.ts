@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { SearchApiLoader } from 'langchain/document_loaders/web/searchapi'
+import { SearchApiLoader } from '@langchain/community/document_loaders/web/searchapi'
 import { getCredentialData, getCredentialParam } from '../../../src'
 
 // Provides access to multiple search engines using the SearchApi.

@@ -35,7 +35,8 @@ import {
     IconTrash,
     IconX,
     IconTool,
-    IconSquareFilled
+    IconSquareFilled,
+    IconDeviceSdCard
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -1130,6 +1131,26 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                                 />
                                                                             ) : null
                                                                         })}
+                                                                    </div>
+                                                                )}
+                                                                {agent.state && Object.keys(agent.state).length > 0 && (
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'block',
+                                                                            flexDirection: 'row',
+                                                                            width: '100%'
+                                                                        }}
+                                                                    >
+                                                                        <Chip
+                                                                            size='small'
+                                                                            label={'State'}
+                                                                            component='a'
+                                                                            sx={{ mr: 1, mt: 1 }}
+                                                                            variant='outlined'
+                                                                            clickable
+                                                                            icon={<IconDeviceSdCard size={15} />}
+                                                                            onClick={() => onSourceDialogClick(agent.state, 'State')}
+                                                                        />
                                                                     </div>
                                                                 )}
                                                                 {agent.messages.length > 0 && (

@@ -17,8 +17,8 @@ export class BedrockChat extends LCBedrockChat implements IVisionChatModal {
     }
 
     revertToOriginalModel(): void {
-        super.model = this.configuredModel
-        super.maxTokens = this.configuredMaxToken
+        this.model = this.configuredModel
+        this.maxTokens = this.configuredMaxToken
     }
 
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
@@ -27,8 +27,8 @@ export class BedrockChat extends LCBedrockChat implements IVisionChatModal {
 
     setVisionModel(): void {
         if (!this.model.startsWith('claude-3')) {
-            super.model = 'anthropic.claude-3-haiku-20240307-v1:0'
-            super.maxTokens = this.configuredMaxToken ? this.configuredMaxToken : 1024
+            this.model = 'anthropic.claude-3-haiku-20240307-v1:0'
+            this.maxTokens = this.configuredMaxToken ? this.configuredMaxToken : 1024
         }
     }
 }
