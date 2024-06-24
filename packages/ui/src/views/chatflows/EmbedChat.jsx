@@ -126,7 +126,7 @@ const chatwindowConfig = (isReact = false) => {
     return isReact
         ? `chatWindow: {
                     showTitle: true,
-                    title: 'Flowise Bot',
+                    title: 'Tailwinds AIFlow Bot',
                     titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
                     welcomeMessage: 'Hello! This is custom welcome message',
                     errorMessage: 'This is a custom error message',
@@ -162,13 +162,13 @@ const chatwindowConfig = (isReact = false) => {
                     footer: {
                         textColor: '#303235',
                         text: 'Powered by',
-                        company: 'Flowise',
+                        company: 'Tailwinds AIFlow',
                         companyLink: 'https://flowiseai.com',
                     }
                 }`
         : `chatWindow: {
                 showTitle: true,
-                title: 'Flowise Bot',
+                title: 'Tailwinds AIFlow Bot',
                 titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
                 welcomeMessage: 'Hello! This is custom welcome message',
                 errorMessage: 'This is a custom error message',
