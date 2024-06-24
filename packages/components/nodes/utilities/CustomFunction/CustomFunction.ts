@@ -90,6 +90,7 @@ class CustomFunction_Utilities implements INode {
         const functionInputVariablesRaw = nodeData.inputs?.functionInputVariables
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const functionName = nodeData.inputs?.functionName as string
 
         const variables = await getVars(appDataSource, databaseEntities, nodeData)
         const flow = {
@@ -166,7 +167,7 @@ class CustomFunction_Utilities implements INode {
             }
             return response
         } catch (e) {
-            throw new Error(e.message ?? e)
+            throw new Error(`[CustomJavascript] Error in function ${functionName} - ${e.message ?? e}`)
         }
     }
 
