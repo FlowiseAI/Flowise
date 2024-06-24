@@ -106,16 +106,22 @@ const deleteChatflow = async (chatflowId: string, userId?: string, organizationI
         )
     }
 }
-
-const getAllChatflows = async (type?: ChatflowType, filter?: any, userId?: string, organizationId?: string): Promise<IChatFlow[]> => {
+type ChatflowsFilter = {
+    visibility?: string
+    auth0_org_id?: string
+}
+const getAllChatflows = async (
+    type?: ChatflowType,
+    filter?: ChatflowsFilter,
+    userId?: string,
+    organizationId?: string
+): Promise<IChatFlow[]> => {
     try {
         const appServer = getRunningExpressApp()
 
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
-        console.log('GetAllChatflows', { filter, userId, organizationId })
-        // Preprocess the visibility filter to convert it into an array
-        const visibility = filter?.visibility?.split(',')
+
         let org
         if (filter?.auth0_org_id) {
             org = await appServer.AppDataSource.getRepository(Organization).findOne({
@@ -125,36 +131,28 @@ const getAllChatflows = async (type?: ChatflowType, filter?: any, userId?: strin
             })
         }
 
-        const visibilityArray = `${visibility?.map((v: string) => `'${v}'`).join(',')}`
         if (filter?.visibility) {
-            // Assumes we always want to match personal visibility and organization at the same time if any other filters are provided
-            const personalArray = `${visibility
-                ?.filter((v: string) => v !== 'Organization')
-                ?.map((v: string) => `'${v}'`)
-                .join(',')}`
-            queryBuilder.where(`(chatFlow.userId = :userId AND ARRAY[${personalArray}] <@ chatFlow.visibility)`, {
-                userId,
-                visibilityArray
-            })
+            const visibilityConditions = filter.visibility
+                .split(',')
+                .map((v: string) => (v === 'Organization' ? 'Private' : v))
+                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
+                .join(' AND ')
 
-            if (filter?.visibility?.includes('Organization')) {
-                queryBuilder.orWhere(`(chatFlow.organizationId = :organizationId AND ARRAY[${visibilityArray}] <@ chatFlow.visibility)`, {
-                    organizationId: org?.id ?? organizationId
-                    // orgVisibility: visibilityArray
-                })
-            }
-        } else {
-            queryBuilder.where(`chatFlow.userId = :userId `, {
+            queryBuilder.where(`(chatFlow.userId = :userId AND (${visibilityConditions}))`, {
                 userId
             })
+
+            const visibility = filter.visibility
+                .split(',')
+                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
+                .join(' AND ')
+            if (filter.visibility.includes('Organization')) {
+                const orgCondition = `chatFlow.organizationId = :organizationId AND (${visibility})`
+                queryBuilder.orWhere(`(${orgCondition})`, { organizationId: org?.id ?? organizationId })
+            }
+        } else {
+            queryBuilder.where(`chatFlow.userId = :userId`, { userId })
         }
-
-        // } else if (filter?.visibility) {
-
-        //     // Use the ANY function with the processed array
-        //     queryBuilder.andWhere(':visibility = ANY(chatFlow.visibility)', { visibility: visibilityArray })
-        // }
-
         const response = await queryBuilder.getMany()
         const dbResponse = response.map((chatflow) => ({
             ...chatflow,

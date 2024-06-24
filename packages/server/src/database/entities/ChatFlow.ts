@@ -34,10 +34,9 @@ export class ChatFlow implements IChatFlow {
     chatbotConfig?: string
 
     @Column({
-        type: 'enum',
+        type: 'simple-array',
         enum: ChatflowVisibility,
-        array: true,
-        default: [ChatflowVisibility.PRIVATE]
+        default: 'Private'
     })
     visibility?: ChatflowVisibility[]
 

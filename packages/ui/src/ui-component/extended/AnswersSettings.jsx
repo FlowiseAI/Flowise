@@ -92,6 +92,7 @@ const AnswersSettings = ({ dialogProps }) => {
                     {['Private', 'Organization', 'AnswerAI', 'Marketplace', 'Browser Extension'].map((type) => (
                         <FormControlLabel
                             key={type}
+                            disabled={type === 'Private'}
                             control={<Checkbox checked={visibility.includes(type)} onChange={(event) => handleChange(event, type)} />}
                             label={type}
                         />
