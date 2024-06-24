@@ -1,9 +1,10 @@
 import { AnthropicInput, ChatAnthropic as LangchainChatAnthropic } from '@langchain/anthropic'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
-import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatAnthropic } from './FlowiseChatAnthropic'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatAnthropic_ChatModels implements INode {
     label: string
@@ -20,7 +21,7 @@ class ChatAnthropic_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic'
-        this.version = 5.0
+        this.version = 6.0
         this.type = 'ChatAnthropic'
         this.icon = 'Anthropic.svg'
         this.category = 'Chat Models'
@@ -42,41 +43,9 @@ class ChatAnthropic_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'claude-3-haiku',
-                        name: 'claude-3-haiku-20240307',
-                        description: 'Fastest and most compact model, designed for near-instant responsiveness'
-                    },
-                    {
-                        label: 'claude-3-opus',
-                        name: 'claude-3-opus-20240229',
-                        description: 'Most powerful model for highly complex tasks'
-                    },
-                    {
-                        label: 'claude-3-sonnet',
-                        name: 'claude-3-sonnet-20240229',
-                        description: 'Ideal balance of intelligence and speed for enterprise workloads'
-                    },
-                    {
-                        label: 'claude-2.0 (legacy)',
-                        name: 'claude-2.0',
-                        description: 'Claude 2 latest major version, automatically get updates to the model as they are released'
-                    },
-                    {
-                        label: 'claude-2.1 (legacy)',
-                        name: 'claude-2.1',
-                        description: 'Claude 2 latest full version'
-                    },
-                    {
-                        label: 'claude-instant-1.2 (legacy)',
-                        name: 'claude-instant-1.2',
-                        description: 'Claude Instant latest major version, automatically get updates to the model as they are released'
-                    }
-                ],
-                default: 'claude-3-haiku',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'claude-3-haiku'
             },
             {
                 label: 'Temperature',
@@ -122,10 +91,17 @@ class ChatAnthropic_ChatModels implements INode {
         ]
     }
 
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatAnthropic')
+        }
+    }
+
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
-        const maxTokensToSample = nodeData.inputs?.maxTokensToSample as string
+        const maxTokens = nodeData.inputs?.maxTokensToSample as string
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
         const streaming = nodeData.inputs?.streaming as boolean
@@ -143,7 +119,7 @@ class ChatAnthropic_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (maxTokensToSample) obj.maxTokensToSample = parseInt(maxTokensToSample, 10)
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
         if (cache) obj.cache = cache

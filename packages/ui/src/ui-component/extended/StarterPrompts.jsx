@@ -5,7 +5,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 
 // material-ui
 import { Button, IconButton, OutlinedInput, Box, List, InputAdornment } from '@mui/material'
-import { IconX, IconTrash, IconPlus, IconBulb } from '@tabler/icons'
+import { IconX, IconTrash, IconPlus, IconBulb } from '@tabler/icons-react'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -80,9 +80,10 @@ const StarterPrompts = ({ dialogProps }) => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Conversation Starter Prompts: ${errorData}`,
+                message: `Failed to save Conversation Starter Prompts: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

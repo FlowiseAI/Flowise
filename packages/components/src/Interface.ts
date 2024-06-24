@@ -1,3 +1,7 @@
+import { BaseMessage } from '@langchain/core/messages'
+import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
+import { Moderation } from '../nodes/moderation/Moderation'
+
 /**
  * Types
  */
@@ -104,6 +108,7 @@ export interface INodeProperties {
     description?: string
     filePath?: string
     badge?: string
+    deprecateMessage?: string
 }
 
 export interface INode extends INodeProperties {
@@ -113,7 +118,7 @@ export interface INode extends INodeProperties {
         [key: string]: (nodeData: INodeData, options?: ICommonObject) => Promise<INodeOptionsValue[]>
     }
     vectorStoreMethods?: {
-        upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
+        upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<IndexingResult | void>
         search: (nodeData: INodeData, options?: ICommonObject) => Promise<any>
         delete: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
     }
@@ -148,6 +153,38 @@ export interface IUsedTool {
     toolOutput: string | object
 }
 
+export interface IMultiAgentNode {
+    node: any
+    name: string
+    label: string
+    type: 'supervisor' | 'worker'
+    llm?: any
+    parentSupervisorName?: string
+    workers?: string[]
+    workerPrompt?: string
+    workerInputVariables?: string[]
+    recursionLimit?: number
+    moderations?: Moderation[]
+    multiModalMessageContent?: MessageContentImageUrl[]
+}
+
+export interface ITeamState {
+    messages: {
+        value: (x: BaseMessage[], y: BaseMessage[]) => BaseMessage[]
+        default: () => BaseMessage[]
+    }
+    team_members: string[]
+    next: string
+    instructions: string
+}
+
+export interface IAgentReasoning {
+    agentName: string
+    messages: string[]
+    next: string
+    instructions: string
+}
+
 export interface IFileUpload {
     data?: string
     type: string
@@ -175,12 +212,18 @@ export type MessageContentImageUrl = {
           }
 }
 
+export interface IDocument<Metadata extends Record<string, any> = Record<string, any>> {
+    pageContent: string
+    metadata: Metadata
+}
+
 /**
  * Classes
  */
 
 import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
 import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
 
 export class PromptTemplate extends LangchainPromptTemplate {
     promptValues: ICommonObject
@@ -232,11 +275,13 @@ export class VectorStoreRetriever {
 /**
  * Implement abstract classes and interface for memory
  */
-import { BaseMessage } from '@langchain/core/messages'
-import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory } from 'langchain/memory'
 
 export interface MemoryMethods {
-    getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean, prevHistory?: IMessage[]): Promise<IMessage[] | BaseMessage[]>
+    getChatMessages(
+        overrideSessionId?: string,
+        returnBaseMessages?: boolean,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]>
     addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     clearChatMessages(overrideSessionId?: string): Promise<void>
 }
@@ -245,7 +290,7 @@ export abstract class FlowiseMemory extends BufferMemory implements MemoryMethod
     abstract getChatMessages(
         overrideSessionId?: string,
         returnBaseMessages?: boolean,
-        prevHistory?: IMessage[]
+        prependMessages?: IMessage[]
     ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
@@ -255,7 +300,7 @@ export abstract class FlowiseWindowMemory extends BufferWindowMemory implements 
     abstract getChatMessages(
         overrideSessionId?: string,
         returnBaseMessages?: boolean,
-        prevHistory?: IMessage[]
+        prependMessages?: IMessage[]
     ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
@@ -265,18 +310,36 @@ export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory imp
     abstract getChatMessages(
         overrideSessionId?: string,
         returnBaseMessages?: boolean,
-        prevHistory?: IMessage[]
+        prependMessages?: IMessage[]
     ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
 
+export abstract class FlowiseSummaryBufferMemory extends ConversationSummaryBufferMemory implements MemoryMethods {
+    abstract getChatMessages(
+        overrideSessionId?: string,
+        returnBaseMessages?: boolean,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]>
+    abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
+    abstract clearChatMessages(overrideSessionId?: string): Promise<void>
+}
+
+export type IndexingResult = {
+    numAdded: number
+    numDeleted: number
+    numUpdated: number
+    numSkipped: number
+    totalKeys: number
+    addedDocs: Document[]
+}
+
 export interface IVisionChatModal {
     id: string
     configuredModel: string
-    configuredMaxToken: number
     multiModalOption: IMultiModalOption
-
+    configuredMaxToken?: number
     setVisionModel(): void
     revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void

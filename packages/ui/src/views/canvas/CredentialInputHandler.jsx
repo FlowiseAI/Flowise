@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { IconButton } from '@mui/material'
-import { IconEdit } from '@tabler/icons'
+import { IconEdit } from '@tabler/icons-react'
 
 // project import
 import { AsyncDropdown } from '@/ui-component/dropdown/AsyncDropdown'
@@ -97,29 +97,26 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
             {inputParam && (
                 <>
                     {inputParam.type === 'credential' && (
-                        <>
-                            <div style={{ marginTop: 10 }} />
-                            <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
-                                <AsyncDropdown
-                                    disabled={disabled}
-                                    name={inputParam.name}
-                                    nodeData={data}
-                                    value={credentialId ?? 'choose an option'}
-                                    isCreateNewOption={true}
-                                    credentialNames={inputParam.credentialNames}
-                                    onSelect={(newValue) => {
-                                        setCredentialId(newValue)
-                                        onSelect(newValue)
-                                    }}
-                                    onCreateNew={() => addAsyncOption(inputParam.name)}
-                                />
-                                {credentialId && (
-                                    <IconButton title='Edit' color='primary' size='small' onClick={() => editCredential(credentialId)}>
-                                        <IconEdit />
-                                    </IconButton>
-                                )}
-                            </div>
-                        </>
+                        <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
+                            <AsyncDropdown
+                                disabled={disabled}
+                                name={inputParam.name}
+                                nodeData={data}
+                                value={credentialId ?? 'choose an option'}
+                                isCreateNewOption={true}
+                                credentialNames={inputParam.credentialNames}
+                                onSelect={(newValue) => {
+                                    setCredentialId(newValue)
+                                    onSelect(newValue)
+                                }}
+                                onCreateNew={() => addAsyncOption(inputParam.name)}
+                            />
+                            {credentialId && (
+                                <IconButton title='Edit' color='primary' size='small' onClick={() => editCredential(credentialId)}>
+                                    <IconEdit />
+                                </IconButton>
+                            )}
+                        </div>
                     )}
                 </>
             )}

@@ -7,16 +7,16 @@ import { Box, Typography, Button, OutlinedInput } from '@mui/material'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // Icons
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 // API
 import chatflowsApi from '@/api/chatflows'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
-import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 const RateLimit = () => {
     const dispatch = useDispatch()
@@ -73,12 +73,10 @@ const RateLimit = () => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
-            console.error(error)
-            const errorData = error.response
-                ? error.response.data || `${error.response.status}: ${error.response.statusText}`
-                : error.message
             enqueueSnackbar({
-                message: `Failed to save Rate Limit Configuration: ${errorData}`,
+                message: `Failed to save Rate Limit Configuration: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -119,6 +117,7 @@ const RateLimit = () => {
                         value={message}
                         placeholder={placeholder}
                         name={fieldName}
+                        size='small'
                         onChange={(e) => {
                             onTextChanged(e.target.value, fieldName)
                         }}
@@ -140,9 +139,9 @@ const RateLimit = () => {
                     }
                 />
             </Typography>
-            {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number')}
-            {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number')}
-            {textField(limitMsg, 'limitMsg', 'Limit Message', 'string')}
+            {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number', '5')}
+            {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number', '60')}
+            {textField(limitMsg, 'limitMsg', 'Limit Message', 'string', 'You have reached the quota')}
 
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={() => onSave()}>
                 Save Changes

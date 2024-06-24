@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { IconButton } from '@mui/material'
-import { IconThumbDown } from '@tabler/icons'
+import { IconThumbDown } from '@tabler/icons-react'
 
 const ThumbsDownButton = (props) => {
     const customization = useSelector((state) => state.customization)

@@ -8,7 +8,7 @@ import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons'
+import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
@@ -16,6 +16,7 @@ import SaveChatflowDialog from '@/ui-component/dialog/SaveChatflowDialog'
 import APICodeDialog from '@/views/chatflows/APICodeDialog'
 import ViewMessagesDialog from '@/ui-component/dialog/ViewMessagesDialog'
 import ChatflowConfigurationDialog from '@/ui-component/dialog/ChatflowConfigurationDialog'
+import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -27,10 +28,11 @@ import useApi from '@/hooks/useApi'
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
 import { SET_CHATFLOW } from '@/store/actions'
+import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -45,8 +47,14 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
     const [apiDialogProps, setAPIDialogProps] = useState({})
     const [viewMessagesDialogOpen, setViewMessagesDialogOpen] = useState(false)
     const [viewMessagesDialogProps, setViewMessagesDialogProps] = useState({})
+    const [viewLeadsDialogOpen, setViewLeadsDialogOpen] = useState(false)
+    const [viewLeadsDialogProps, setViewLeadsDialogProps] = useState({})
+    const [upsertHistoryDialogOpen, setUpsertHistoryDialogOpen] = useState(false)
+    const [upsertHistoryDialogProps, setUpsertHistoryDialogProps] = useState({})
     const [chatflowConfigurationDialogOpen, setChatflowConfigurationDialogOpen] = useState(false)
     const [chatflowConfigurationDialogProps, setChatflowConfigurationDialogProps] = useState({})
+
+    const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -62,16 +70,31 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 chatflow: chatflow
             })
             setViewMessagesDialogOpen(true)
+        } else if (setting === 'viewLeads') {
+            setViewLeadsDialogProps({
+                title: 'View Leads',
+                chatflow: chatflow
+            })
+            setViewLeadsDialogOpen(true)
+        } else if (setting === 'viewUpsertHistory') {
+            setUpsertHistoryDialogProps({
+                title: 'View Upsert History',
+                chatflow: chatflow
+            })
+            setUpsertHistoryDialogOpen(true)
         } else if (setting === 'chatflowConfiguration') {
             setChatflowConfigurationDialogProps({
-                title: 'Chatflow Configuration',
+                title: `${title} Configuration`,
                 chatflow: chatflow
             })
             setChatflowConfigurationDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
             try {
-                localStorage.setItem('duplicatedFlowData', chatflow.flowData)
-                window.open(`${uiBaseURL}/canvas`, '_blank')
+                let flowData = chatflow.flowData
+                const parsedFlowData = JSON.parse(flowData)
+                flowData = JSON.stringify(parsedFlowData)
+                localStorage.setItem('duplicatedFlowData', flowData)
+                window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
             } catch (e) {
                 console.error(e)
             }
@@ -81,7 +104,7 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
                 let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
-                let exportFileDefaultName = `${chatflow.name} Chatflow.json`
+                let exportFileDefaultName = `${chatflow.name} ${title}.json`
 
                 let linkElement = document.createElement('a')
                 linkElement.setAttribute('href', dataUri)
@@ -174,195 +197,201 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
             // if configuration dialog is open, update its data
             if (chatflowConfigurationDialogOpen) {
                 setChatflowConfigurationDialogProps({
-                    title: 'Chatflow Configuration',
+                    title: `${title} Configuration`,
                     chatflow
                 })
             }
         }
-    }, [chatflow, chatflowConfigurationDialogOpen])
+    }, [chatflow, title, chatflowConfigurationDialogOpen])
 
     return (
         <>
-            <Box>
-                <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
-                    <Avatar
-                        variant='rounded'
-                        sx={{
-                            ...theme.typography.commonAvatar,
-                            ...theme.typography.mediumAvatar,
-                            transition: 'all .2s ease-in-out',
-                            background: theme.palette.secondary.light,
-                            color: theme.palette.secondary.dark,
-                            '&:hover': {
-                                background: theme.palette.secondary.dark,
-                                color: theme.palette.secondary.light
-                            }
-                        }}
-                        color='inherit'
-                        onClick={() =>
-                            window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
-                        }
-                    >
-                        <IconChevronLeft stroke={1.5} size='1.3rem' />
-                    </Avatar>
-                </ButtonBase>
-            </Box>
-            <Box sx={{ flexGrow: 1 }}>
-                {!isEditingFlowName && (
-                    <Stack flexDirection='row'>
-                        <Typography
-                            sx={{
-                                fontSize: '1.5rem',
-                                fontWeight: 600,
-                                ml: 2
-                            }}
-                        >
-                            {canvas.isDirty && <strong style={{ color: theme.palette.orange.main }}>*</strong>} {flowName}
-                        </Typography>
-                        {chatflow?.id && (
-                            <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
-                                <Avatar
-                                    variant='rounded'
+            <Stack flexDirection='row' justifyContent='space-between' sx={{ width: '100%' }}>
+                <Stack flexDirection='row' sx={{ width: '100%', maxWidth: '50%' }}>
+                    <Box>
+                        <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
+                            <Avatar
+                                variant='rounded'
+                                sx={{
+                                    ...theme.typography.commonAvatar,
+                                    ...theme.typography.mediumAvatar,
+                                    transition: 'all .2s ease-in-out',
+                                    background: theme.palette.secondary.light,
+                                    color: theme.palette.secondary.dark,
+                                    '&:hover': {
+                                        background: theme.palette.secondary.dark,
+                                        color: theme.palette.secondary.light
+                                    }
+                                }}
+                                color='inherit'
+                                onClick={() =>
+                                    window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
+                                }
+                            >
+                                <IconChevronLeft stroke={1.5} size='1.3rem' />
+                            </Avatar>
+                        </ButtonBase>
+                    </Box>
+                    <Box sx={{ width: '100%' }}>
+                        {!isEditingFlowName ? (
+                            <Stack flexDirection='row'>
+                                <Typography
                                     sx={{
-                                        ...theme.typography.commonAvatar,
-                                        ...theme.typography.mediumAvatar,
-                                        transition: 'all .2s ease-in-out',
-                                        ml: 1,
-                                        background: theme.palette.secondary.light,
-                                        color: theme.palette.secondary.dark,
-                                        '&:hover': {
-                                            background: theme.palette.secondary.dark,
-                                            color: theme.palette.secondary.light
-                                        }
+                                        fontSize: '1.5rem',
+                                        fontWeight: 600,
+                                        ml: 2,
+                                        textOverflow: 'ellipsis',
+                                        overflow: 'hidden',
+                                        whiteSpace: 'nowrap'
                                     }}
-                                    color='inherit'
-                                    onClick={() => setEditingFlowName(true)}
                                 >
-                                    <IconPencil stroke={1.5} size='1.3rem' />
-                                </Avatar>
-                            </ButtonBase>
+                                    {canvas.isDirty && <strong style={{ color: theme.palette.orange.main }}>*</strong>} {flowName}
+                                </Typography>
+                                {chatflow?.id && (
+                                    <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
+                                        <Avatar
+                                            variant='rounded'
+                                            sx={{
+                                                ...theme.typography.commonAvatar,
+                                                ...theme.typography.mediumAvatar,
+                                                transition: 'all .2s ease-in-out',
+                                                ml: 1,
+                                                background: theme.palette.secondary.light,
+                                                color: theme.palette.secondary.dark,
+                                                '&:hover': {
+                                                    background: theme.palette.secondary.dark,
+                                                    color: theme.palette.secondary.light
+                                                }
+                                            }}
+                                            color='inherit'
+                                            onClick={() => setEditingFlowName(true)}
+                                        >
+                                            <IconPencil stroke={1.5} size='1.3rem' />
+                                        </Avatar>
+                                    </ButtonBase>
+                                )}
+                            </Stack>
+                        ) : (
+                            <Stack flexDirection='row' sx={{ width: '100%' }}>
+                                <TextField
+                                    size='small'
+                                    inputRef={flowNameRef}
+                                    sx={{
+                                        width: '100%',
+                                        ml: 2
+                                    }}
+                                    defaultValue={flowName}
+                                />
+                                <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
+                                    <Avatar
+                                        variant='rounded'
+                                        sx={{
+                                            ...theme.typography.commonAvatar,
+                                            ...theme.typography.mediumAvatar,
+                                            transition: 'all .2s ease-in-out',
+                                            background: theme.palette.success.light,
+                                            color: theme.palette.success.dark,
+                                            ml: 1,
+                                            '&:hover': {
+                                                background: theme.palette.success.dark,
+                                                color: theme.palette.success.light
+                                            }
+                                        }}
+                                        color='inherit'
+                                        onClick={submitFlowName}
+                                    >
+                                        <IconCheck stroke={1.5} size='1.3rem' />
+                                    </Avatar>
+                                </ButtonBase>
+                                <ButtonBase title='Cancel' sx={{ borderRadius: '50%' }}>
+                                    <Avatar
+                                        variant='rounded'
+                                        sx={{
+                                            ...theme.typography.commonAvatar,
+                                            ...theme.typography.mediumAvatar,
+                                            transition: 'all .2s ease-in-out',
+                                            background: theme.palette.error.light,
+                                            color: theme.palette.error.dark,
+                                            ml: 1,
+                                            '&:hover': {
+                                                background: theme.palette.error.dark,
+                                                color: theme.palette.error.light
+                                            }
+                                        }}
+                                        color='inherit'
+                                        onClick={() => setEditingFlowName(false)}
+                                    >
+                                        <IconX stroke={1.5} size='1.3rem' />
+                                    </Avatar>
+                                </ButtonBase>
+                            </Stack>
                         )}
-                    </Stack>
-                )}
-                {isEditingFlowName && (
-                    <Stack flexDirection='row'>
-                        <TextField
-                            size='small'
-                            inputRef={flowNameRef}
-                            sx={{
-                                width: '50%',
-                                ml: 2
-                            }}
-                            defaultValue={flowName}
-                        />
-                        <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
+                    </Box>
+                </Stack>
+                <Box>
+                    {chatflow?.id && (
+                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
                                     ...theme.typography.commonAvatar,
                                     ...theme.typography.mediumAvatar,
                                     transition: 'all .2s ease-in-out',
-                                    background: theme.palette.success.light,
-                                    color: theme.palette.success.dark,
-                                    ml: 1,
+                                    background: theme.palette.canvasHeader.deployLight,
+                                    color: theme.palette.canvasHeader.deployDark,
                                     '&:hover': {
-                                        background: theme.palette.success.dark,
-                                        color: theme.palette.success.light
+                                        background: theme.palette.canvasHeader.deployDark,
+                                        color: theme.palette.canvasHeader.deployLight
                                     }
                                 }}
                                 color='inherit'
-                                onClick={submitFlowName}
+                                onClick={onAPIDialogClick}
                             >
-                                <IconCheck stroke={1.5} size='1.3rem' />
+                                <IconCode stroke={1.5} size='1.3rem' />
                             </Avatar>
                         </ButtonBase>
-                        <ButtonBase title='Cancel' sx={{ borderRadius: '50%' }}>
-                            <Avatar
-                                variant='rounded'
-                                sx={{
-                                    ...theme.typography.commonAvatar,
-                                    ...theme.typography.mediumAvatar,
-                                    transition: 'all .2s ease-in-out',
-                                    background: theme.palette.error.light,
-                                    color: theme.palette.error.dark,
-                                    ml: 1,
-                                    '&:hover': {
-                                        background: theme.palette.error.dark,
-                                        color: theme.palette.error.light
-                                    }
-                                }}
-                                color='inherit'
-                                onClick={() => setEditingFlowName(false)}
-                            >
-                                <IconX stroke={1.5} size='1.3rem' />
-                            </Avatar>
-                        </ButtonBase>
-                    </Stack>
-                )}
-            </Box>
-            <Box>
-                {chatflow?.id && (
-                    <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                    )}
+                    <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
                         <Avatar
                             variant='rounded'
                             sx={{
                                 ...theme.typography.commonAvatar,
                                 ...theme.typography.mediumAvatar,
                                 transition: 'all .2s ease-in-out',
-                                background: theme.palette.canvasHeader.deployLight,
-                                color: theme.palette.canvasHeader.deployDark,
+                                background: theme.palette.canvasHeader.saveLight,
+                                color: theme.palette.canvasHeader.saveDark,
                                 '&:hover': {
-                                    background: theme.palette.canvasHeader.deployDark,
-                                    color: theme.palette.canvasHeader.deployLight
+                                    background: theme.palette.canvasHeader.saveDark,
+                                    color: theme.palette.canvasHeader.saveLight
                                 }
                             }}
                             color='inherit'
-                            onClick={onAPIDialogClick}
+                            onClick={onSaveChatflowClick}
                         >
-                            <IconCode stroke={1.5} size='1.3rem' />
+                            <IconDeviceFloppy stroke={1.5} size='1.3rem' />
                         </Avatar>
                     </ButtonBase>
-                )}
-                <ButtonBase title='Save Chatflow' sx={{ borderRadius: '50%', mr: 2 }}>
-                    <Avatar
-                        variant='rounded'
-                        sx={{
-                            ...theme.typography.commonAvatar,
-                            ...theme.typography.mediumAvatar,
-                            transition: 'all .2s ease-in-out',
-                            background: theme.palette.canvasHeader.saveLight,
-                            color: theme.palette.canvasHeader.saveDark,
-                            '&:hover': {
-                                background: theme.palette.canvasHeader.saveDark,
-                                color: theme.palette.canvasHeader.saveLight
-                            }
-                        }}
-                        color='inherit'
-                        onClick={onSaveChatflowClick}
-                    >
-                        <IconDeviceFloppy stroke={1.5} size='1.3rem' />
-                    </Avatar>
-                </ButtonBase>
-                <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
-                    <Avatar
-                        variant='rounded'
-                        sx={{
-                            ...theme.typography.commonAvatar,
-                            ...theme.typography.mediumAvatar,
-                            transition: 'all .2s ease-in-out',
-                            background: theme.palette.canvasHeader.settingsLight,
-                            color: theme.palette.canvasHeader.settingsDark,
-                            '&:hover': {
-                                background: theme.palette.canvasHeader.settingsDark,
-                                color: theme.palette.canvasHeader.settingsLight
-                            }
-                        }}
-                        onClick={() => setSettingsOpen(!isSettingsOpen)}
-                    >
-                        <IconSettings stroke={1.5} size='1.3rem' />
-                    </Avatar>
-                </ButtonBase>
-            </Box>
+                    <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.canvasHeader.settingsLight,
+                                color: theme.palette.canvasHeader.settingsDark,
+                                '&:hover': {
+                                    background: theme.palette.canvasHeader.settingsDark,
+                                    color: theme.palette.canvasHeader.settingsLight
+                                }
+                            }}
+                            onClick={() => setSettingsOpen(!isSettingsOpen)}
+                        >
+                            <IconSettings stroke={1.5} size='1.3rem' />
+                        </Avatar>
+                    </ButtonBase>
+                </Box>
+            </Stack>
             <Settings
                 chatflow={chatflow}
                 isSettingsOpen={isSettingsOpen}
@@ -370,11 +399,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 onClose={() => setSettingsOpen(false)}
                 onSettingsItemClick={onSettingsItemClick}
                 onUploadFile={onUploadFile}
+                isAgentCanvas={isAgentCanvas}
             />
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
-                    title: `Save New Chatflow`,
+                    title: `Save New ${title}`,
                     confirmButtonName: 'Save',
                     cancelButtonName: 'Cancel'
                 }}
@@ -386,6 +416,12 @@ const CanvasHeader = ({ chatflow, handleSaveFlow, handleDeleteFlow, handleLoadFl
                 show={viewMessagesDialogOpen}
                 dialogProps={viewMessagesDialogProps}
                 onCancel={() => setViewMessagesDialogOpen(false)}
+            />
+            <ViewLeadsDialog show={viewLeadsDialogOpen} dialogProps={viewLeadsDialogProps} onCancel={() => setViewLeadsDialogOpen(false)} />
+            <UpsertHistoryDialog
+                show={upsertHistoryDialogOpen}
+                dialogProps={upsertHistoryDialogProps}
+                onCancel={() => setUpsertHistoryDialogOpen(false)}
             />
             <ChatflowConfigurationDialog
                 key='chatflowConfiguration'
@@ -401,7 +437,8 @@ CanvasHeader.propTypes = {
     chatflow: PropTypes.object,
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
-    handleLoadFlow: PropTypes.func
+    handleLoadFlow: PropTypes.func,
+    isAgentCanvas: PropTypes.bool
 }
 
 export default CanvasHeader

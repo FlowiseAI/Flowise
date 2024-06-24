@@ -16,7 +16,7 @@ import {
     ListItemText
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconX } from '@tabler/icons'
+import { IconX } from '@tabler/icons-react'
 
 // Project import
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
@@ -27,6 +27,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import langsmithPNG from '@/assets/images/langchain.png'
 import langfuseSVG from '@/assets/images/langfuse.svg'
 import lunarySVG from '@/assets/images/lunary.svg'
+import langwatchSVG from '@/assets/images/langwatch.svg'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -109,6 +110,26 @@ const analyticProviders = [
                 optional: true
             }
         ]
+    },
+    {
+        label: 'LangWatch',
+        name: 'langWatch',
+        icon: langwatchSVG,
+        url: 'https://langwatch.com',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['langwatchApi']
+            },
+            {
+                label: 'On/Off',
+                name: 'status',
+                type: 'boolean',
+                optional: true
+            }
+        ]
     }
 ]
 
@@ -144,9 +165,10 @@ const AnalyseFlow = ({ dialogProps }) => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Analytic Configuration: ${errorData}`,
+                message: `Failed to save Analytic Configuration: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

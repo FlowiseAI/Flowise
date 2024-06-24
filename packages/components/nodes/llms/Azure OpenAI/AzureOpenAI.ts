@@ -1,8 +1,9 @@
 import { AzureOpenAIInput, OpenAI, OpenAIInput } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class AzureOpenAI_LLMs implements INode {
     label: string
@@ -19,7 +20,7 @@ class AzureOpenAI_LLMs implements INode {
     constructor() {
         this.label = 'Azure OpenAI'
         this.name = 'azureOpenAI'
-        this.version = 2.1
+        this.version = 3.0
         this.type = 'AzureOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'LLMs'
@@ -41,67 +42,9 @@ class AzureOpenAI_LLMs implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'text-davinci-003',
-                        name: 'text-davinci-003'
-                    },
-                    {
-                        label: 'ada',
-                        name: 'ada'
-                    },
-                    {
-                        label: 'text-ada-001',
-                        name: 'text-ada-001'
-                    },
-                    {
-                        label: 'babbage',
-                        name: 'babbage'
-                    },
-                    {
-                        label: 'text-babbage-001',
-                        name: 'text-babbage-001'
-                    },
-                    {
-                        label: 'curie',
-                        name: 'curie'
-                    },
-                    {
-                        label: 'text-curie-001',
-                        name: 'text-curie-001'
-                    },
-                    {
-                        label: 'davinci',
-                        name: 'davinci'
-                    },
-                    {
-                        label: 'text-davinci-001',
-                        name: 'text-davinci-001'
-                    },
-                    {
-                        label: 'text-davinci-002',
-                        name: 'text-davinci-002'
-                    },
-                    {
-                        label: 'text-davinci-fine-tune-002',
-                        name: 'text-davinci-fine-tune-002'
-                    },
-                    {
-                        label: 'gpt-35-turbo',
-                        name: 'gpt-35-turbo'
-                    },
-                    {
-                        label: 'gpt-4',
-                        name: 'gpt-4'
-                    },
-                    {
-                        label: 'gpt-4-32k',
-                        name: 'gpt-4-32k'
-                    }
-                ],
-                default: 'text-davinci-003',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'text-davinci-003'
             },
             {
                 label: 'Temperature',
@@ -160,6 +103,13 @@ class AzureOpenAI_LLMs implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.LLM, 'azureOpenAI')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

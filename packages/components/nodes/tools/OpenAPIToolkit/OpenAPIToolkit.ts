@@ -3,7 +3,7 @@ import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { OpenApiToolkit } from 'langchain/agents'
 import { JsonSpec, JsonObject } from './core'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src'
+import { getCredentialData, getCredentialParam, getFileFromStorage } from '../../../src'
 
 class OpenAPIToolkit_Tools implements INode {
     label: string
@@ -56,11 +56,21 @@ class OpenAPIToolkit_Tools implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAPIToken = getCredentialParam('openAPIToken', credentialData, nodeData)
 
-        const splitDataURI = yamlFileBase64.split(',')
-        splitDataURI.pop()
-        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-        const utf8String = bf.toString('utf-8')
-        const data = load(utf8String) as JsonObject
+        let data: JsonObject
+        if (yamlFileBase64.startsWith('FILE-STORAGE::')) {
+            const file = yamlFileBase64.replace('FILE-STORAGE::', '')
+            const chatflowid = options.chatflowid
+            const fileData = await getFileFromStorage(file, chatflowid)
+            const utf8String = fileData.toString('utf-8')
+
+            data = load(utf8String) as JsonObject
+        } else {
+            const splitDataURI = yamlFileBase64.split(',')
+            splitDataURI.pop()
+            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+            const utf8String = bf.toString('utf-8')
+            data = load(utf8String) as JsonObject
+        }
         if (!data) {
             throw new Error('Failed to load OpenAPI spec')
         }

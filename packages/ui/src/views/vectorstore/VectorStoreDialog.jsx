@@ -23,7 +23,7 @@ import { CheckboxInput } from '@/ui-component/checkbox/Checkbox'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import { TableViewOnly } from '@/ui-component/table/Table'
 
-import { IconX } from '@tabler/icons'
+import { IconX, IconBulb } from '@tabler/icons-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import pythonSVG from '@/assets/images/python.svg'
 import javascriptSVG from '@/assets/images/javascript.svg'
@@ -78,7 +78,7 @@ function a11yProps(index) {
     }
 }
 
-const VectorStoreDialog = ({ show, dialogProps, onCancel }) => {
+const VectorStoreDialog = ({ show, dialogProps, onCancel, onIndexResult }) => {
     const portalElement = document.getElementById('portal')
     const { reactFlowInstance } = useContext(flowContext)
     const dispatch = useDispatch()
@@ -216,6 +216,36 @@ query(formData).then((response) => {
         return ''
     }
 
+    const getMultiConfigCodeWithFormData = (codeLang) => {
+        if (codeLang === 'Python') {
+            return `# Specify multiple values for a config parameter by specifying the node id
+body_data = {
+    "openAIApiKey": {
+        "chatOpenAI_0": "sk-my-openai-1st-key",
+        "openAIEmbeddings_0": "sk-my-openai-2nd-key"
+    }
+}`
+        } else if (codeLang === 'JavaScript') {
+            return `// Specify multiple values for a config parameter by specifying the node id
+formData.append("openAIApiKey[chatOpenAI_0]", "sk-my-openai-1st-key")
+formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
+        } else if (codeLang === 'cURL') {
+            return `-F "openAIApiKey[chatOpenAI_0]=sk-my-openai-1st-key" \\
+-F "openAIApiKey[openAIEmbeddings_0]=sk-my-openai-2nd-key" \\`
+        }
+    }
+
+    const getMultiConfigCode = () => {
+        return `{
+    "overrideConfig": {
+        "openAIApiKey": {
+            "chatOpenAI_0": "sk-my-openai-1st-key",
+            "openAIEmbeddings_0": "sk-my-openai-2nd-key"
+        }
+    }
+}`
+    }
+
     const getLang = (codeLang) => {
         if (codeLang === 'Python') {
             return 'python'
@@ -276,7 +306,7 @@ query(formData).then((response) => {
     const onUpsertClicked = async (vectorStoreNode) => {
         setLoading(true)
         try {
-            await vectorstoreApi.upsertVectorStore(dialogProps.chatflowid, { stopNodeId: vectorStoreNode.data.id })
+            const res = await vectorstoreApi.upsertVectorStore(dialogProps.chatflowid, { stopNodeId: vectorStoreNode.data.id })
             enqueueSnackbar({
                 message: 'Succesfully upserted vector store. You can start chatting now!',
                 options: {
@@ -290,10 +320,10 @@ query(formData).then((response) => {
                 }
             })
             setLoading(false)
+            if (res && res.data && typeof res.data === 'object') onIndexResult(res.data)
         } catch (error) {
-            const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: errorData,
+                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -515,6 +545,44 @@ query(formData).then((response) => {
                                                                     showLineNumbers={false}
                                                                     wrapLines
                                                                 />
+                                                                <div
+                                                                    style={{
+                                                                        display: 'flex',
+                                                                        flexDirection: 'column',
+                                                                        borderRadius: 10,
+                                                                        background: '#d8f3dc',
+                                                                        padding: 10,
+                                                                        marginTop: 10,
+                                                                        marginBottom: 10
+                                                                    }}
+                                                                >
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            flexDirection: 'row',
+                                                                            alignItems: 'center'
+                                                                        }}
+                                                                    >
+                                                                        <IconBulb size={30} color='#2d6a4f' />
+                                                                        <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
+                                                                            You can also specify multiple values for a config parameter by
+                                                                            specifying the node id
+                                                                        </span>
+                                                                    </div>
+                                                                    <div style={{ padding: 10 }}>
+                                                                        <CopyBlock
+                                                                            theme={atomOneDark}
+                                                                            text={
+                                                                                isFormDataRequired
+                                                                                    ? getMultiConfigCodeWithFormData(codeLang)
+                                                                                    : getMultiConfigCode()
+                                                                            }
+                                                                            language={getLang(codeLang)}
+                                                                            showLineNumbers={false}
+                                                                            wrapLines
+                                                                        />
+                                                                    </div>
+                                                                </div>
                                                             </TabPanel>
                                                         ))}
                                                     </div>
@@ -550,7 +618,8 @@ query(formData).then((response) => {
 VectorStoreDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
-    onCancel: PropTypes.func
+    onCancel: PropTypes.func,
+    onIndexResult: PropTypes.func
 }
 
 export default VectorStoreDialog
