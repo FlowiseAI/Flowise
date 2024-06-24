@@ -156,7 +156,7 @@ class Pinecone_VectorStores implements INode {
 
             const obj: PineconeStoreParams = {
                 pineconeIndex,
-                textKey: pineconeTextKey ?? 'text'
+                textKey: pineconeTextKey || 'text'
             }
 
             if (pineconeNamespace) obj.namespace = pineconeNamespace
@@ -203,7 +203,7 @@ class Pinecone_VectorStores implements INode {
 
         const obj: PineconeStoreParams = {
             pineconeIndex,
-            textKey: pineconeTextKey ?? 'text'
+            textKey: pineconeTextKey || 'text'
         }
 
         if (pineconeNamespace) obj.namespace = pineconeNamespace
