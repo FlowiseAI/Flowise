@@ -396,11 +396,11 @@ export const getAvailableNodesForVariable = (nodes, edges, target, targetHandle)
     // example edge id = "llmChain_0-llmChain_0-output-outputPrediction-string|json-llmChain_1-llmChain_1-input-promptValues-string"
     //                    {source}  -{sourceHandle}                           -{target}  -{targetHandle}
     const parentNodes = []
-    const igNoreTargetHandle = target.split('_')[0] === 'seqAgent'
+    const isSeqAgent = target.split('_')[0] === 'seqAgent'
 
-    const inputEdges = !igNoreTargetHandle
+    const inputEdges = !isSeqAgent
         ? edges.filter((edg) => edg.target === target && edg.targetHandle === targetHandle)
-        : edges.filter((edg) => edg.target === target)
+        : edges.filter((edg) => edg.target === target && edg.targetHandle.includes(`${target}-input-agentOrStart`))
     if (inputEdges && inputEdges.length) {
         for (let j = 0; j < inputEdges.length; j += 1) {
             const node = nodes.find((nd) => nd.id === inputEdges[j].source)

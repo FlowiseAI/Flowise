@@ -2,7 +2,7 @@ import { flatten, get } from 'lodash'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessage, BaseMessage } from '@langchain/core/messages'
+import { BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import {
@@ -172,6 +172,7 @@ class Agent_SeqAgents implements INode {
             {
                 label: 'Format Prompt Values',
                 name: 'promptValues',
+                description: 'Assign values to the prompt variables. You can also use $flow.state.<variable-name> to get the state value',
                 type: 'json',
                 optional: true,
                 acceptVariable: true,
@@ -432,7 +433,7 @@ async function agentNode(
         } else {
             return {
                 messages: [
-                    new AIMessage({
+                    new HumanMessage({
                         content: typeof result === 'string' ? result : result.output,
                         name,
                         additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
@@ -512,7 +513,7 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
 
 const convertCustomMessagesToAIMessages = (messages: string[], name: string, additional_kwargs: ICommonObject) => {
     return messages.map((message) => {
-        return new AIMessage({
+        return new HumanMessage({
             content: message,
             name: name,
             additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
@@ -525,6 +526,7 @@ const transformObjectPropertyToFunction = (obj: ICommonObject, state: ISeqAgents
 
     for (const key in obj) {
         let value = obj[key]
+        // get message from agent
         try {
             const parsedValue = JSON.parse(value)
             if (typeof parsedValue === 'object' && parsedValue.id) {
@@ -535,6 +537,10 @@ const transformObjectPropertyToFunction = (obj: ICommonObject, state: ISeqAgents
             }
         } catch (e) {
             // do nothing
+        }
+        // get state value
+        if (value.startsWith('$flow.state')) {
+            value = get(state, value.replace('$flow.state.', ''))
         }
         transformedObject[key] = () => value
     }

@@ -14,8 +14,8 @@ import { NodeVM } from 'vm2'
 
 const howToUseCode = `
 1. Must return a string value at the end of function:
-    - Any string value will be considered as the next Agent
-    - If you want to end the flow, return "End"
+    - Any string value will be considered as the connection point to next Agent. Only 1 agent can be connected at a time.
+    - If you want to end the flow, return "End", and conenct the "End" node.
 
 2. You can get default flow config:
     - \`$flow.sessionId\`
@@ -28,13 +28,13 @@ const howToUseCode = `
     \`\`\`json
     [
         {
-            content: 'Hello! How can I assist you today?',
-            name: '',
-            additional_kwargs: {},
-            response_metadata: {},
-            tool_calls: [],
-            invalid_tool_calls: [],
-            usage_metadata: {}
+            "content": "Hello! How can I assist you today?",
+            "name": "",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {}
         }
     ]
     \`\`\`
@@ -43,8 +43,7 @@ const howToUseCode = `
 
 `
 
-const defaultFunc = `
-const state = $flow.state;
+const defaultFunc = `const state = $flow.state;
                 
 const messages = state.messages;
 

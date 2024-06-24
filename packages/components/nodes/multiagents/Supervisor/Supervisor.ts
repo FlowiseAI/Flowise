@@ -49,7 +49,7 @@ class Supervisor_MultiAgents implements INode {
     constructor() {
         this.label = 'Supervisor'
         this.name = 'supervisor'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Supervisor'
         this.icon = 'supervisor.svg'
         this.category = 'Multi Agents'

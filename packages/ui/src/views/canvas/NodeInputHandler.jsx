@@ -8,7 +8,7 @@ import { useTheme, styled } from '@mui/material/styles'
 import { Box, Typography, Tooltip, IconButton, Button } from '@mui/material'
 import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconEdit, IconAlertTriangle } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconEdit, IconAlertTriangle, IconBulb } from '@tabler/icons-react'
 
 // project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
@@ -314,7 +314,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                 {inputParam.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />}
                             </Typography>
                             <div style={{ flexGrow: 1 }}></div>
-                            {inputParam.hint && (
+                            {inputParam.hint && isAdditionalParams && (
                                 <Button
                                     sx={{ p: 0, px: 2 }}
                                     color='secondary'
@@ -322,6 +322,7 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                     onClick={() => {
                                         onInputHintDialogClicked(inputParam.hint)
                                     }}
+                                    startIcon={<IconBulb size={17} />}
                                 >
                                     {inputParam.hint.label}
                                 </Button>
@@ -410,7 +411,15 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                         </Button>
                                     )}
                                 </div>
-                                <div style={{ height: inputParam.rows ? '100px' : '200px' }}>
+                                <div
+                                    style={{
+                                        marginTop: '10px',
+                                        border: '1px solid',
+                                        borderColor: theme.palette.grey['300'],
+                                        borderRadius: '6px',
+                                        height: inputParam.rows ? '100px' : '200px'
+                                    }}
+                                >
                                     <CodeEditor
                                         disabled={disabled}
                                         value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}

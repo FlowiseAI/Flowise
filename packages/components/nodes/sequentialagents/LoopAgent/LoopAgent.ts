@@ -42,16 +42,18 @@ class LoopAgent_SeqAgents implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const agents = nodeData.inputs?.agent as ISeqAgentNode[]
-        const loopToAgentName = nodeData.inputs?.loopToAgentName as string
+        const loopToAgentLabel = nodeData.inputs?.loopToAgentName as string
 
         if (!agents) throw new Error('Agent is required')
-        if (!loopToAgentName) throw new Error('Loop to Agent is required')
+        if (!loopToAgentLabel) throw new Error('Loop to Agent is required')
+
+        const loopToAgentName = loopToAgentLabel.toLowerCase().replace(/\s/g, '_').trim()
 
         const returnOutput: ISeqAgentNode = {
             id: nodeData.id,
             node: loopToAgentName,
             name: loopToAgentName,
-            label: loopToAgentName,
+            label: loopToAgentLabel,
             type: 'agent',
             predecessorAgents: agents,
             output: loopToAgentName
