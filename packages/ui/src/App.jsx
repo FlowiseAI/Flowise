@@ -15,6 +15,7 @@ import NavigationScroll from '@/layout/NavigationScroll'
 // ==============================|| APP ||============================== //
 
 const App = () => {
+    localStorage.setItem('isDarkMode', 'true')
     const customization = useSelector((state) => state.customization)
 
     return (
