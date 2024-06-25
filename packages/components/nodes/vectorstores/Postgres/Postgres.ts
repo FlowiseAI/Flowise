@@ -25,7 +25,7 @@ class Postgres_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres'
         this.name = 'postgres'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
@@ -96,6 +96,13 @@ class Postgres_VectorStores implements INode {
                 description: 'Number of top results to fetch. Default to 4',
                 placeholder: '4',
                 type: 'number',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Postgres Metadata Filter',
+                name: 'pgMetadataFilter',
+                type: 'json',
                 additionalParams: true,
                 optional: true
             }
@@ -209,6 +216,12 @@ class Postgres_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
+        const _pgMetadataFilter = nodeData.inputs?.pgMetadataFilter
+
+        let pgMetadataFilter: any
+        if (_pgMetadataFilter) {
+            pgMetadataFilter = typeof _pgMetadataFilter === 'object' ? _pgMetadataFilter : JSON.parse(_pgMetadataFilter)
+        }
 
         let additionalConfiguration = {}
         if (additionalConfig) {
@@ -244,7 +257,7 @@ class Postgres_VectorStores implements INode {
             [ERROR]: uncaughtException:  Illegal invocation TypeError: Illegal invocation at Socket.ref (node:net:1524:18) at Connection.ref (.../node_modules/pg/lib/connection.js:183:17) at Client.ref (.../node_modules/pg/lib/client.js:591:21) at BoundPool._pulseQueue (/node_modules/pg-pool/index.js:148:28) at .../node_modules/pg-pool/index.js:184:37 at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
         */
         vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
-            return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter)
+            return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter ?? pgMetadataFilter)
         }
 
         if (output === 'retriever') {
@@ -252,6 +265,9 @@ class Postgres_VectorStores implements INode {
             return retriever
         } else if (output === 'vectorStore') {
             ;(vectorStore as any).k = k
+            if (pgMetadataFilter) {
+                ;(vectorStore as any).filter = pgMetadataFilter
+            }
             return vectorStore
         }
         return vectorStore
@@ -266,7 +282,8 @@ const similaritySearchVectorWithScore = async (
     filter?: any
 ) => {
     const embeddingString = `[${query.join(',')}]`
-    const _filter = filter ?? '{}'
+    let _filter = '{}'
+    if (filter && typeof filter === 'object') _filter = JSON.stringify(filter)
 
     const queryString = `
         SELECT *, embedding <=> $1 as "_distance"
