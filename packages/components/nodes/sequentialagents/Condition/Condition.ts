@@ -15,16 +15,18 @@ import { NodeVM } from 'vm2'
 const howToUseCode = `
 1. Must return a string value at the end of function:
     - Any string value will be considered as the connection point to next Agent. Only 1 agent can be connected at a time.
-    - If you want to end the flow, return "End", and conenct the "End" node.
+    - If you want to end the flow, return "End", and connect the "End" node.
 
-2. You can get default flow config:
-    - \`$flow.sessionId\`
-    - \`$flow.chatId\`
-    - \`$flow.chatflowId\`
-    - \`$flow.input\`
-    - \`$flow.state\`
+    For example:
+    \`\`\`js
+    if ("X" === "X") {
+        return "Agent"; // connect to next agent node
+    } else {
+        return "End"; // connect to end node
+    }
+    \`\`\`
 
-3. You can get messages from the state: \`$flow.state.messages\`:
+2. In most cases, you would probably get the last message to do some comparison. You can get all current messages from the state: \`$flow.state.messages\`:
     \`\`\`json
     [
         {
@@ -38,6 +40,21 @@ const howToUseCode = `
         }
     ]
     \`\`\`
+
+    For example, to get the last message content:
+    \`\`\`js
+    const messages = $flow.state.messages;
+    const lastMessage = messages[messages.length - 1];
+
+    // Proceed to do something with the last message content
+    \`\`\`
+
+3. You can get default flow config, including the current "state":
+    - \`$flow.sessionId\`
+    - \`$flow.chatId\`
+    - \`$flow.chatflowId\`
+    - \`$flow.input\`
+    - \`$flow.state\`
 
 4. You can get custom variables: \`$vars.<variable-name>\`
 

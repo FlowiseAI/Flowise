@@ -31,16 +31,16 @@ const howToUseCode = `
     - Any string value will be considered as the connection point to next Agent. Only 1 agent can be connected at a time.
     - If you want to end the flow, return "End", and conenct the "End" node.
 
-2. You can get output from the agent: \`$flow.output\` (string)
+    For example:
+    \`\`\`js
+    if ("X" === "X") {
+        return "Agent"; // connect to next agent node
+    } else {
+        return "End"; // connect to end node
+    }
+    \`\`\`
 
-3. You can get default flow config:
-    - \`$flow.sessionId\`
-    - \`$flow.chatId\`
-    - \`$flow.chatflowId\`
-    - \`$flow.input\`
-    - \`$flow.state\`
-
-4. You can get messages from the state: \`$flow.state.messages\`:
+2. In most cases, you would probably get the last message to do some comparison. You can get all current messages from the state: \`$flow.state.messages\`:
     \`\`\`json
     [
         {
@@ -55,6 +55,34 @@ const howToUseCode = `
     ]
     \`\`\`
 
+    For example, to get the last message content:
+    \`\`\`js
+    const messages = $flow.state.messages;
+    const lastMessage = messages[messages.length - 1];
+
+    // Proceed to do something with the last message content
+    \`\`\`
+
+3. You can also use output from the agent: \`$flow.output\` (string)
+
+    For example, we can check if the agent's output contains specific keyword:
+    \`\`\`js
+    const output = $flow.output;
+    
+    if (output.includes("some-keyword)) {
+        return "Agent"; // connect to next agent node
+    } else {
+        return "End"; // connect to end node
+    }
+    \`\`\`
+
+4. You can get default flow config, including the current "state":
+    - \`$flow.sessionId\`
+    - \`$flow.chatId\`
+    - \`$flow.chatflowId\`
+    - \`$flow.input\`
+    - \`$flow.state\`
+
 5. You can get custom variables: \`$vars.<variable-name>\`
 
 `
@@ -62,8 +90,7 @@ const howToUseCode = `
 const defaultFunc = `const result = $flow.output;
 
 /* 
-* In the Human Prompt, we ask LLM to respond either "TECHNICAL" or "CONVERSATION"
-* Here, we check if the agent's output contains lower case "TECHNICAL" 
+* Check if the agent's output contains keyword "technical" 
 */
 if (result.toLowerCase().includes("technical")) {
     return "Agent";

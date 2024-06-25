@@ -34,9 +34,21 @@ import { NodeVM } from 'vm2'
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`
 const howToUseCode = `
-1. Must return an object. Object must contains at least one key that matches State's schema
+1. Return the key value JSON object. For example: if you have the following State:
+    \`\`\`json
+    {
+        "user": null
+    }
+    \`\`\`
 
-2. Agent's output is available as \`$flow.output\` with the following structure:
+    You can update the "user" value by returning the following:
+    \`\`\`js
+    return {
+        "user": "john doe"
+    }
+    \`\`\`
+
+2. If you want to use the agent's output as the value to update state, it is available as \`$flow.output\` with the following structure:
     \`\`\`json
     {
         "output": "Hello! How can I assist you today?",
@@ -56,7 +68,14 @@ const howToUseCode = `
     }
     \`\`\`
 
-3. You can get default flow config:
+    For example, if the \`toolOutput\` is the value you want to update the state with, you can return the following:
+    \`\`\`js
+    return {
+        "user": $flow.output.usedTools[0].toolOutput
+    }
+    \`\`\`
+
+3. You can also get default flow config, including the current "state":
     - \`$flow.sessionId\`
     - \`$flow.chatId\`
     - \`$flow.chatflowId\`
@@ -67,9 +86,17 @@ const howToUseCode = `
 
 `
 const howToUse = `
-1. Fill in the key and value pair to be updated. Key must exists in the State schema
+1. Key and value pair to be updated. For example: if you have the following State:
+    | Key       | Operation     | Default Value     |
+    |-----------|---------------|-------------------|
+    | user      | Replace       |                   |
 
-2. Agent's output is available as \`$flow.output\` with the following structure:
+    You can update the "user" value with the following:
+    | Key       | Value     |
+    |-----------|-----------|
+    | user      | john doe  |
+
+2. If you want to use the agent's output as the value to update state, it is available as available as \`$flow.output\` with the following structure:
     \`\`\`json
     {
         "output": "Hello! How can I assist you today?",
@@ -89,7 +116,12 @@ const howToUse = `
     }
     \`\`\`
 
-3. You can get default flow config:
+    For example, if the \`toolOutput\` is the value you want to update the state with, you can do the following:
+    | Key       | Value                                 |
+    |-----------|---------------------------------------|
+    | user      | $flow.output.usedTools[0].toolOutput  |
+
+3. You can get default flow config, including the current "state":
     - \`$flow.sessionId\`
     - \`$flow.chatId\`
     - \`$flow.chatflowId\`
