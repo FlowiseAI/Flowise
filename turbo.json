@@ -4,8 +4,7 @@
     "pipeline": {
         "build": {
             "dependsOn": ["^build"],
-            "outputs": ["dist/**", "build/**"],
-            "outputLogs": "new-only"
+            "outputs": ["dist/**", "build/**"]
         },
         "test": {},
         "dev": {
