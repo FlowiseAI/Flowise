@@ -155,7 +155,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
             await updateChatflowApi.request(chatflow.id, updateBody)
             await updateFlowsApi.request()
         } catch (error) {
-            setError(error)
+            if (setError) setError(error)
             enqueueSnackbar({
                 message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                 options: {
@@ -194,7 +194,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
             await updateChatflowApi.request(chatflow.id, updateBody)
             await updateFlowsApi.request()
         } catch (error) {
-            setError(error)
+            if (setError) setError(error)
             enqueueSnackbar({
                 message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                 options: {
@@ -226,7 +226,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                 await chatflowsApi.deleteChatflow(chatflow.id)
                 await updateFlowsApi.request()
             } catch (error) {
-                setError(error)
+                if (setError) setError(error)
                 enqueueSnackbar({
                     message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
                     options: {
