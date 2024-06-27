@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "1.8.3",
+    "version": "1.8.5",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -48,6 +48,7 @@
         "@langchain/openai": "^0.0.30",
         "@langchain/pinecone": "^0.0.3",
         "@langchain/weaviate": "^0.0.1",
+        "@mendable/firecrawl-js": "^0.0.28",
         "@mistralai/mistralai": "0.1.3",
         "@notionhq/client": "^2.2.8",
         "@opensearch-project/opensearch": "^1.2.0",
