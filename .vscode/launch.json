@@ -16,6 +16,114 @@
             "internalConsoleOptions": "neverOpen",
             "skipFiles": ["<node_internals>/**"],
             "smartStep": true
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Toolbox",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "start"
+            ],
+            "cwd": "${workspaceFolder}/packages/flowise-configs",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Journey",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "journey"
+            ],
+            "cwd": "${workspaceFolder}/packages/flowise-configs",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug bulkProcessRunner Flowise Configs",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "bulkProcessRunner"
+            ],
+            "cwd": "${workspaceFolder}/packages/flowise-configs",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug localFileImporter",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "localFileImporter"
+            ],
+            "cwd": "${workspaceFolder}/packages/flowise-configs",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug migrationRunner",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "migration"
+            ],
+            "cwd": "${workspaceFolder}/packages/flowise-configs",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Toolbox",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "start"
+            ],
+            "cwd": "${workspaceFolder}/packages/flowise-configs",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Journey",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "journey"
+            ],
+            "cwd": "${workspaceFolder}/packages/flowise-configs",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Question Extraction",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "questionExtraction"
+            ],
+            "cwd": "${workspaceFolder}/packages/flowise-configs",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug localFileImporter",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "localFileImporter"
+            ],
+            "cwd": "${workspaceFolder}/packages/flowise-configs",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
         }
     ]
 }

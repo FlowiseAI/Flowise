@@ -5,7 +5,9 @@
   "main": "toolbox.js",
   "scripts": {
     "start": "node ./tools/toolbox.js",
-    "journey": "ts-node ./journeys/index.ts"
+    "journey": "ts-node ./journeys/index.ts",
+    "bulkProcessRunner": "npx ts-node -r dotenv/config ./bulkjobs/index.ts",
+    "migration": "node -r dotenv/config ./bulkjobs/contentModels/fineTuneMigration.js"
   },
   "keywords": [],
   "author": "",
