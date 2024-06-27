@@ -59,7 +59,7 @@ const ItemCard = ({ data, images, onClick }) => {
                                         backgroundImage: `url(${data.iconSrc})`,
                                         backgroundSize: 'contain',
                                         backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center center',
+                                        backgroundPosition: 'center center'
                                     }}
                                 ></div>
                             )}
