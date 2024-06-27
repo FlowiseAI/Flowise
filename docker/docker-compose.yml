@@ -13,9 +13,9 @@ services:
             - FLOWISE_FILE_SIZE_LIMIT=${FLOWISE_FILE_SIZE_LIMIT}
             - DEBUG=${DEBUG}
             - DATABASE_PATH=${DATABASE_PATH}
-            - DATABASE_TYPE=${DATABASE_TYPE}
-            - DATABASE_PORT=${DATABASE_PORT}
-            - DATABASE_HOST=${DATABASE_HOST}
+            - DATABASE_TYPE=postgres
+            - DATABASE_PORT=5432
+            - DATABASE_HOST=postgres
             - DATABASE_NAME=${DATABASE_NAME}
             - DATABASE_USER=${DATABASE_USER}
             - DATABASE_PASSWORD=${DATABASE_PASSWORD}
@@ -29,8 +29,35 @@ services:
             - BLOB_STORAGE_PATH=${BLOB_STORAGE_PATH}
             - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
             - MODEL_LIST_CONFIG_JSON=${MODEL_LIST_CONFIG_JSON}
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - REDIS_URL=redis://redis:6379
         ports:
             - '${PORT}:${PORT}'
         volumes:
             - ~/.flowise:/root/.flowise
         entrypoint: /bin/sh -c "sleep 3; flowise start"
+
+    postgres:
+        image: postgres:latest
+        restart: always
+        environment:
+            - POSTGRES_DB=${DATABASE_NAME}
+            - POSTGRES_USER=${DATABASE_USER}
+            - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+
+    redis:
+        image: redis:latest
+        restart: always
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis-data:/data
+
+volumes:
+    postgres-data:
+    redis-data:
