@@ -9,9 +9,26 @@ import {
     ISeqAgentNode
 } from 'flowise-components'
 import { omit } from 'lodash'
-import { IChatFlow, IComponentNodes, IDepthQueue, IReactFlowNode, IReactFlowObject, IReactFlowEdge } from '../Interface'
+import {
+    IChatFlow,
+    IComponentNodes,
+    IDepthQueue,
+    IReactFlowNode,
+    IReactFlowObject,
+    IReactFlowEdge,
+    IMessage,
+    IncomingInput
+} from '../Interface'
 import { Server } from 'socket.io'
-import { buildFlow, getStartingNodes, getEndingNodes, constructGraphs, databaseEntities } from '../utils'
+import {
+    buildFlow,
+    getStartingNodes,
+    getEndingNodes,
+    constructGraphs,
+    databaseEntities,
+    getSessionChatHistory,
+    getMemorySessionId
+} from '../utils'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import logger from './logger'
 import { StateGraph, END, START } from '@langchain/langgraph'
@@ -28,6 +45,7 @@ import { getErrorMessage } from '../errors/utils'
  * @param {string} chatId
  * @param {string} sessionId
  * @param {ICommonObject} incomingInput
+ * @param {boolean} isInternal
  * @param {string} baseURL
  * @param {Server} socketIO
  */
@@ -35,7 +53,8 @@ export const buildAgentGraph = async (
     chatflow: IChatFlow,
     chatId: string,
     sessionId: string,
-    incomingInput: ICommonObject,
+    incomingInput: IncomingInput,
+    isInternal: boolean,
     baseURL?: string,
     socketIO?: Server
 ): Promise<any> => {
@@ -68,6 +87,22 @@ export const buildAgentGraph = async (
         }
         startingNodeIds = [...new Set(startingNodeIds)]
 
+        /*** Get Memory Node for Chat History ***/
+        let chatHistory: IMessage[] = []
+        const memoryNode = nodes.find((node) => node.data.name === 'agentMemory')
+        if (memoryNode) {
+            chatHistory = await getSessionChatHistory(
+                chatflowid,
+                getMemorySessionId(memoryNode, incomingInput, chatId, isInternal),
+                memoryNode,
+                appServer.nodesPool.componentNodes,
+                appServer.AppDataSource,
+                databaseEntities,
+                logger,
+                incomingInput.history
+            )
+        }
+
         // Initialize nodes like ChatModels, Tools, etc.
         const reactFlowNodes = await buildFlow({
             startingNodeIds,
@@ -77,7 +112,7 @@ export const buildAgentGraph = async (
             depthQueue,
             componentNodes: appServer.nodesPool.componentNodes,
             question: incomingInput.question,
-            chatHistory: [],
+            chatHistory,
             chatId,
             sessionId,
             chatflowid,

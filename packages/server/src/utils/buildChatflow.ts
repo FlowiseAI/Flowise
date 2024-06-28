@@ -438,7 +438,7 @@ const utilBuildAgentResponse = async (
     sessionId: string,
     userMessageDateTime: Date,
     fileUploads: IFileUpload[],
-    incomingInput: ICommonObject,
+    incomingInput: IncomingInput,
     nodes: IReactFlowNode[],
     edges: IReactFlowEdge[],
     socketIO?: Server,
@@ -446,7 +446,7 @@ const utilBuildAgentResponse = async (
 ) => {
     try {
         const appServer = getRunningExpressApp()
-        const streamResults = await buildAgentGraph(chatflow, chatId, sessionId, incomingInput, baseURL, socketIO)
+        const streamResults = await buildAgentGraph(chatflow, chatId, sessionId, incomingInput, isInternal, baseURL, socketIO)
         if (streamResults) {
             const { finalResult, agentReasoning } = streamResults
             const userMessage: Omit<IChatMessage, 'id'> = {
