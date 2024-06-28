@@ -11,8 +11,7 @@ class SpiderApiCredential implements INodeCredential {
         this.label = 'Spider API'
         this.name = 'spiderApi'
         this.version = 1.0
-        this.description =
-            'Get your API key from the <a target="_blank" href="https://spider.cloud">Spider</a> dashboard.'
+        this.description = 'Get your API key from the <a target="_blank" href="https://spider.cloud">Spider</a> dashboard.'
         this.inputs = [
             {
                 label: 'Spider API Key',
