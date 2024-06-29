@@ -1,0 +1,6 @@
+{
+    "ignore": ["**/*.spec.ts", ".git", "node_modules"],
+    "watch": ["src"],
+    "exec": "npx kill-port 6655 && node dist/index.js",
+    "ext": "ts, yml"
+}
