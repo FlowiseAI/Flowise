@@ -449,7 +449,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                             return { action, observation: observation ?? '' }
                         }
                     }
-                    if (observation?.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                    if (observation?.toString().includes(SOURCE_DOCUMENTS_PREFIX)) {
                         const observationArray = observation.split(SOURCE_DOCUMENTS_PREFIX)
                         observation = observationArray[0]
                         const docs = observationArray[1]
@@ -558,7 +558,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                             input: this.input
                         }
                     )
-                    if (observation?.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                    if (observation?.toString().includes(SOURCE_DOCUMENTS_PREFIX)) {
                         const observationArray = observation.split(SOURCE_DOCUMENTS_PREFIX)
                         observation = observationArray[0]
                     }
