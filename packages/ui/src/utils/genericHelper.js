@@ -693,7 +693,7 @@ export const getConfigExamplesForCurl = (configData, bodyType, isMultiple, stopN
     const loop = Math.min(configData.length, 4)
     for (let i = 0; i < loop; i += 1) {
         const config = configData[i]
-        let exampleVal = `example`
+        let exampleVal = `"example"`
         if (config.type === 'string') exampleVal = bodyType === 'json' ? `"example"` : `example`
         else if (config.type === 'boolean') exampleVal = `true`
         else if (config.type === 'number') exampleVal = `1`

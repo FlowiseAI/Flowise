@@ -78,7 +78,11 @@ const ChatbotFull = () => {
             setChatflow(chatflowData)
             if (chatflowData.chatbotConfig) {
                 try {
+                    const chatflowType = chatflowData.type
                     const parsedConfig = JSON.parse(chatflowData.chatbotConfig)
+                    if (chatflowType === 'MULTIAGENT') {
+                        parsedConfig.showAgentMessages = true
+                    }
                     setChatbotTheme(parsedConfig)
                     if (parsedConfig.overrideConfig) {
                         // Generate new sessionId

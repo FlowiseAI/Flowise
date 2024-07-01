@@ -57,10 +57,10 @@ const deleteApiKey = async (req: Request, res: Response, next: NextFunction) => 
 // Verify api key
 const verifyApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.apiKey) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.verifyApiKey - apiKey not provided!`)
+        if (typeof req.params === 'undefined' || !req.params.apikey) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.verifyApiKey - apikey not provided!`)
         }
-        const apiResponse = await apikeyService.verifyApiKey(req.params.apiKey)
+        const apiResponse = await apikeyService.verifyApiKey(req.params.apikey)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
