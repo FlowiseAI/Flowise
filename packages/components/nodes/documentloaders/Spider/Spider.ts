@@ -55,7 +55,7 @@ class SpiderLoader extends BaseDocumentLoader {
             (doc) =>
                 new Document({
                     pageContent: doc.content || '',
-                    metadata: doc.url || {}
+                    metadata: { source: doc.url } 
                 })
         )
     }
@@ -136,7 +136,7 @@ class Spider_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const url = nodeData.inputs?.url as string
         const mode = nodeData.inputs?.mode as 'crawl' | 'scrape'
-        let params = nodeData.inputs?.params || { return_format: 'markdown' }
+        let params = nodeData.inputs?.params || {}
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const spiderApiKey = getCredentialParam('spiderApiKey', credentialData, nodeData)
 
@@ -148,10 +148,8 @@ class Spider_DocumentLoaders implements INode {
             }
         }
 
-        // ensure return_format is set to markdown if not provided in params
-        if (!params.return_format) {
-            params.return_format = 'markdown'
-        }
+        // Ensure return_format is set to markdown
+        params.return_format = 'markdown'
 
         const input: SpiderLoaderParameters = {
             url,
