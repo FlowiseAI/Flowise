@@ -55,7 +55,7 @@ class SpiderLoader extends BaseDocumentLoader {
             (doc) =>
                 new Document({
                     pageContent: doc.content || '',
-                    metadata: { source: doc.url } 
+                    metadata: { source: doc.url }
                 })
         )
     }
