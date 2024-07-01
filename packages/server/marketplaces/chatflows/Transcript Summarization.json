@@ -1,0 +1,512 @@
+{
+    "description": "Use Anthropic Claude with 200k context window to ingest whole document for summarization",
+    "framework": ["Langchain"],
+    "usecases": ["Summarization"],
+    "nodes": [
+        {
+            "width": 300,
+            "height": 253,
+            "id": "bufferMemory_0",
+            "position": {
+                "x": 240.5161028076149,
+                "y": 165.35849026339048
+            },
+            "type": "customNode",
+            "data": {
+                "id": "bufferMemory_0",
+                "label": "Buffer Memory",
+                "version": 2,
+                "name": "bufferMemory",
+                "type": "BufferMemory",
+                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Retrieve chat messages stored in database",
+                "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "bufferMemory_0-input-memoryKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+                        "name": "bufferMemory",
+                        "label": "BufferMemory",
+                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 240.5161028076149,
+                "y": 165.35849026339048
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 435,
+            "id": "conversationChain_0",
+            "position": {
+                "x": 958.9887390513221,
+                "y": 318.8734467468765
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationChain_0",
+                "label": "Conversation Chain",
+                "version": 3,
+                "name": "conversationChain",
+                "type": "ConversationChain",
+                "baseClasses": ["ConversationChain", "LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chat models specific conversational chain with memory",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "If Chat Prompt Template is provided, this will be ignored",
+                        "additionalParams": true,
+                        "optional": true,
+                        "default": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+                        "placeholder": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+                        "id": "conversationChain_0-input-systemMessagePrompt-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "conversationChain_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseMemory",
+                        "id": "conversationChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Chat Prompt Template",
+                        "name": "chatPromptTemplate",
+                        "type": "ChatPromptTemplate",
+                        "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
+                        "optional": true,
+                        "id": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationChain_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "inputModeration": "",
+                    "model": "{{chatAnthropic_0.data.instance}}",
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "chatPromptTemplate": "{{chatPromptTemplate_0.data.instance}}",
+                    "systemMessagePrompt": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationChain_0-output-conversationChain-ConversationChain|LLMChain|BaseChain|Runnable",
+                        "name": "conversationChain",
+                        "label": "ConversationChain",
+                        "type": "ConversationChain | LLMChain | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 958.9887390513221,
+                "y": 318.8734467468765
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 670,
+            "id": "chatAnthropic_0",
+            "position": {
+                "x": 585.3308245972187,
+                "y": -116.32789506560908
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatAnthropic_0",
+                "label": "ChatAnthropic",
+                "version": 6,
+                "name": "chatAnthropic",
+                "type": "ChatAnthropic",
+                "baseClasses": ["ChatAnthropic", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around ChatAnthropic large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["anthropicApi"],
+                        "id": "chatAnthropic_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "claude-3-haiku",
+                        "id": "chatAnthropic_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokensToSample",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-maxTokensToSample-number"
+                    },
+                    {
+                        "label": "Top P",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-topP-number"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_0-input-topK-number"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses claude-3-* models when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-allowImageUploads-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatAnthropic_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "claude-3-haiku-20240307",
+                    "temperature": 0.9,
+                    "maxTokensToSample": "",
+                    "topP": "",
+                    "topK": "",
+                    "allowImageUploads": true
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatAnthropic_0-output-chatAnthropic-ChatAnthropic|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatAnthropic",
+                        "label": "ChatAnthropic",
+                        "type": "ChatAnthropic | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 585.3308245972187,
+                "y": -116.32789506560908
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 690,
+            "id": "chatPromptTemplate_0",
+            "position": {
+                "x": -106.44189698270114,
+                "y": 20.133956087516538
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatPromptTemplate_0",
+                "label": "Chat Prompt Template",
+                "version": 1,
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "chatPromptTemplate_0-input-promptValues-json"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "systemMessagePrompt": "Act as an expert copywriter specializing in content optimization for SEO. Your task is to take a given YouTube transcript and transform it into a well-structured and engaging article. Your objectives are as follows:\n\nContent Transformation: Begin by thoroughly reading the provided YouTube transcript. Understand the main ideas, key points, and the overall message conveyed.\n\nSentence Structure: While rephrasing the content, pay careful attention to sentence structure. Ensure that the article flows logically and coherently.\n\nKeyword Identification: Identify the main keyword or phrase from the transcript. It's crucial to determine the primary topic that the YouTube video discusses.\n\nKeyword Integration: Incorporate the identified keyword naturally throughout the article. Use it in headings, subheadings, and within the body text. However, avoid overuse or keyword stuffing, as this can negatively affect SEO.\n\nUnique Content: Your goal is to make the article 100% unique. Avoid copying sentences directly from the transcript. Rewrite the content in your own words while retaining the original message and meaning.\n\nSEO Friendliness: Craft the article with SEO best practices in mind. This includes optimizing meta tags (title and meta description), using header tags appropriately, and maintaining an appropriate keyword density.\n\nEngaging and Informative: Ensure that the article is engaging and informative for the reader. It should provide value and insight on the topic discussed in the YouTube video.\n\nProofreading: Proofread the article for grammar, spelling, and punctuation errors. Ensure it is free of any mistakes that could detract from its quality.\n\nBy following these guidelines, create a well-optimized, unique, and informative article that would rank well in search engine results and engage readers effectively.\n\nTranscript:{transcript}",
+                    "humanMessagePrompt": "{input}",
+                    "promptValues": "{\"input\":\"{{question}}\",\"transcript\":\"{{plainText_0.data.instance}}\"}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": -106.44189698270114,
+                "y": 20.133956087516538
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 487,
+            "id": "plainText_0",
+            "position": {
+                "x": -487.7511991135089,
+                "y": 77.83838996645807
+            },
+            "type": "customNode",
+            "data": {
+                "id": "plainText_0",
+                "label": "Plain Text",
+                "version": 2,
+                "name": "plainText",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from plain text",
+                "inputParams": [
+                    {
+                        "label": "Text",
+                        "name": "text",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
+                        "id": "plainText_0-input-text-string"
+                    },
+                    {
+                        "label": "Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "plainText_0-input-metadata-json"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "plainText_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "text": "<!--\n I can't believe I'm doing this...\n Full transcript of https://www.youtube.com/watch?v=IbDAmvUwo5c\n-->\n\n00:00 - It starts by showing [this question](https://stackoverflow.com/questions/32191198/i-would-like-to-split-this-into-a-list-but-i-dont-know-how-in-python) and reading it out loud\n\n0:00 - \"I have this string. I want to split it on the pipe, but I don't know how. I don't want to split it at the white-space, only at the pipe. Is this possible?\"\n\n0:10 - The comments below the question are presented and read out loud:\n\n> Did you try Googling _anything_ about the `split()` method?\n\n> Welcome to Stack Overflow! You seem to be asking for someone to write some code for you. Stack Overflow is a question and answer site, not a code-writing service. Please see here to learn how to write effective questions.\n\n0:23 - \"Whatever happened to Stack Overflow? How did we end up in a place where we not only get rude and snarky comments but we also get robotic-like responses from real people from valid questions?\"\n\n0:36 - \"This is not a rare scenario. This has become the norm on Stack Overflow. And I just have one question. How did we end up here?\"\n\n0:46 - \"My name is Gabe. And today we're going to look at some of the key factors that resulted in the cesspool that is Stack Overflow Q&A today. I'll also explore some approaches that may solve the problems we face, so that developers can just share information without fear of reproach.\" \n\n(In big letters,  \"The Egotistical Mods of Stack Overflow\")\n\n1:08 - Title: The Stack Overflow Age\n\n1:12 - \"Let's go back in time to 2008. NASA's unmanned spacecraft Phoenix becomes the first to land on the northern polar region of Mars, Google Chrome is first released, the stock market plunges across the globe, and a little-known Stack Overflow comes into existence. Stack Overflow was created by Joel Spolsky and Jeff Atwood to address an issue that was apparent in the mid to late 2000s. The issue was that programmers had no way to easily share knowledge about difficult problems. There was Usenet which became obsolete once the World Wide Web became popular, then there was Experts Exchange where developers could share questions and answers. This had a myriad of problems the foremost being it was a paid serve. Joel wanted a free website that could replace Experts Exchange and earn money while doubling as a job listing board. He know somebody would do it eventually, so he waited.... and waited... and he waited... then one day, Jeff Atwood came to him for advice on blogging and Joel simply responded \"I've got a better idea instead\".\"\n\n2:12 - \"The Stack Overflow experiment went extraordinarily well. It was based on a gamification system similar to Reddit and other sites where users could upvote good questions and good answers. Once you got a certain amount of reputation you were granted more privileges to the site. These privileges included editing questions, closing questions and reopening questions. This means that poor questions are dealt with quickly and good answers rank higher. This worked great for moderation in the short term. However, it led to the problems we see today.\n\n2:28 - Title: \"The Problems\"\n\n2:42 - \"OK. So let's review real quickly how do users gain privilege? Well, they gain privilege by answering questions. What can you do with the privilege? You can answer questions, you can close questions, you can edit questions and you can reopen questions. OK. Well all that makes sense, well, what happens if you ask and somebody decides to close it? Well, you could reopen it but wait a second... you need the privilege to reopen it, and the privilege you don't have because... you're a new user.\"\n\n3:10 - \"OK well, what if somebody is bullying you in the comments? Well, you flag the comment OK, and then the flagged comment goes to... the moderators.\"\n\n3:19 - \"So let's just take a look at some questions on Stack Overflow right now. There's this user who asks:\"\n\n3:24 - A question is show, content verbatim save for the link, redacted in this transcript:\n\n> ### What technology was this website been built with?\n>\n> I apologise in advance if this question is not allowed here.\n>\n> Do you know what technology has been used to build this website?\n>\n> [REDACTED]\n> \n> Viewing the dev console and source has offered me no clues!\n\n(asked Nov 17 '16 at 18:34)\n\n3:31 - \"Now, I think this is a valid question. Programmers build websites using so many different technologies, it's reasonable to ask if anyone knows what a particular site used to build it. Well, the Stack Overflow users, they have a different thought. The first one says:\"\n\n> Seems like you already knew questions like this are off-topic. -- Nov 17 '16 at 18:36\n\n3:49 - \"And then this person says:\"\n\n> I see quite a bit of information in the dev. tools. -- Nov 17 '16 at 18:36\n\n\"The implication being, 'why can _you_ see what the devtools show _me_?'\nThis next person says:\"\n\n> Really? The console offered nothing? To me, it yelled out pixijs.com... -- Nov 17 '16 at 18:37\n\n4:06 - \"and this user gave a very helpful answer, that it's:\"\n\n> Magic, naturally. -- Nov 17 '16 at 18:38\n\n\"And then finally somebody just says:\"\n\n> I confirm it's pixijs  -- Nov 17 '16 at 18:39\n\n\"It's pixijs, that's what they used. And the poor user simply says thanks and then leaves with their tail between their legs.\"\n\n> My apologies :( Thanks for the link <username> -- Nov 17 '16 at 18:39\n\n4:21 - \"What's wrong with these people? Why is it so difficult to just say it's pixijs?\"\n\n4:27 - \"All right so the next question is pretty technical, but an experienced programmer should be able to help out. So this person asked:\"\n\n> ### Initialization of a constant reference with a number\n>\n> What is the meaning of the following line? Why is this allowed as 0 is an r-value and not a variable name? What is the significance of `const` in this statement?\n>\n> ```c++\n> const int &x = 0;\n> ```\n\n(asked May 15 '18 at 21:35) https://stackoverflow.com/q/50359481\n\n(Note: as presented in the video, the question was not closed and had a score of -10)\n\n4:41 - \"Aand the responses, so... first person says:\"\n\n> Homework? And what does your C++ textbook have to say on the subject? -- May 15 '18 at 21:36 (now deleted)\n\n\"And the next person, very helpfully, says:\"\n\n> Just read a [good book]. -- May 15 18' at 21:38 (now deleted)\n\n\"And then, 'here, this link has a similar question', which may or may not have been helpful at all\":\n\n> Similar: <link to another SO question> -- May 15 18' at 21:39\n\n4:56 - \"Now, I was actually curious about what this question... was, like what the answer to this was, because I didn't even know what it was. I code in C++ pretty regularly and did not know the meaning of this, I'd never seen this syntax, and didn't even know it was valid code. And this poor guy was downvoted 10 times, why? Because he had the audacity to ask a question. OK? OK.\n\n5:20 - \"So, he finally finds an answer and then he posts it to the website. Uh, the answer gets downvoted, so if anybody else is looking for something similar, they can't find it. And I was actually curious about this, like I had never seen this before, and yet if I ever were searching for it I probably wouldn't find it because Google is now gonna rank this low, since it was downvoted.\n\n5:39 - \"This next user asks:\"\n\n> ### What is e in e.preventDefault()\n>\n> I am not able to understand the parameter 'e' which is passed to prevent the Default Action in JavaScript\n> \n> ```javascript\n> document.getElementById('submit').addEventListener('click', calculate, false);\n> function calculate(e){\n>   e.preventDefault():\n> }\n> ```\n\n(asked Sep 14 '17 at 9:57) https://stackoverflow.com/q/46216042\n\n5:49 - \"Now, to an experienced programmer this is pretty obvious. However, if you don't program and you've never seen this or you're new to programming, this is a completely valid question. The responses:\"\n\n> e is the event. -- Sep 14 '17 at 9:58\n\n6:02 - \"Well, that's actually a pretty tame response but it provides absolutely no information.\"\n\n(more unmentioned comments are displayed, as seen below)\n\n> e represents the event which has a lot of properties. -- Sep 14 '17 at 9:58\n\n> You can read about the [click event here] -- Sep 14 '17 at 10:02\n\n> When the JavaScript engine calls the callback you provided, it passes an Event object. You gain access to that passed object by giving the function a parameter. You don't have to call it e; you can use any valid variable name you want. Your confusion probably arises from the fact that you provide a function called by JS, instead of the other way around. -- Sep 14 '17 at 10:03\n\n6:07 - \"Then this lovely gentleman says:\"\n\n> \"This question shows zero research effort. Aside from the fact you get that answer by literally typing your title into google, did you try anything, like `console.log(e)` on different element bindings to see what it might be?\" -- Sep 14 '17 at 10:04 (now deleted)\n\n6:22 - \"What is wrong with these people, they seem to have forgotten that Stack Overflow is a Q&A site! How dare this user ask a question! On a Q&A site!\"\n\n6:31 - \"This user says:\"\n\n> I am learning coding c++ in Unreal Engine, I got this syntax I don't really get:\n> \n> ```c++\n> class USphereComponent* ProxSphere;\n> ```\n>\n> I think this means create a class, but this class is a pointer?\n> \n> But the result is just create an object called ProxSphere from an existing class USphereComponent.\n> \n> Could anyone explain how this syntax actually means and it's usage?\n\n(asked Feb 6 '16 at 17:51) https://stackoverflow.com/questions/35244342\n\n(At the time of writing, the question had received a score inflation also caused by the extra attention from the video (+13, -9))\n\n6:42 - \"The responses:\"\n\n> Please pick up a text book and learn C++ systematically. -- Feb 6 '16 at 17:52 (now deleted)\n\n\"Um, I'm sorry? This is a Q&A site.\"\n\n> This is a class pointer declaration, no more, no less. -- Feb 6 '16 at 17:52\n\n6:53 - \"Ah, that makes it perfectly clear, how did I not see that before. Just in case you're wondering, that is sarcasm, that is not clear at all! Once again, this is an example of a problem I've never seen before, and I program in C++ almost daily. This user thankfully provided a clear and concise explanation, but why did all those other users feel the need to waste time out of their day to berate someone who had the audacity to ask a question?\"\n\n7:23 - \"This next question's answer gives us a little window into the moderator's brains. Warning, it's a scary place. This users asks:\"\n\n> ### How to answer a closed question?\n>\n> This [question](https://stackoverflow.com/questions/61054657/input-twice-to-pass-the-condition?noredirect=1#comment108031699_61054657) was closed yesterday for obvious reasons. One important function in question which answers were really depending on that wasn't in question. Then after the question was closed, OP left a comment that they had added the function which makes the question very clear.\n> \n> How can I answer this question? Should I create a chat room?\n\n(asked April 7 '20 at 13:21) Meta https://meta.stackoverflow.com/questions/396379\n\n 7:43 - \"Now, this is the crux of the problem with Stack Overflow. Closed questions are sort of left in a limbo state. They're closed so they can't be answered. You have to edit it to be able to answer it, but we've already talked about the problems that come with editing it and trying to get your question reopened. Hint hint, it requires reputation, which most people don't have.\"\n\n8:02 - \"Fortunately, a moderator gives us an answer to this question. He says:\"\n\n> ### Edit the Question to include the comment, and then vote to reopen it.\n\n\"Oh, OK so, uh, you just edit it and then you have to vote to reopen it, so even if the question is fixed, you can't reopen it at all.\"\n\n8:18 - \"And then he puts in bold:\"\n\n> **Do not open a chat room or answer in comments or otherwise work around the closing.**\n\n\"'Cuz... how dare somebody try to help some other random person on the internet.\"\n\n8:29 - Title: \"Closed Questions\"\n\n8:29 - \"OK let's change it up a bit, let's look at some questions that were closed, but lots of people disagreed with that closing.\"\n\n8:36 - \"This question says:\"\n\n> ### The Use of Multiple JFrames: Good or Bad Practice?\n>\n> I'm developing an application which displays images, and plays sounds from a database. I'm trying to decide whether or not to use a separate JFrame to add images to the database from the GUI.\n>\n> I'm just wondering whether it is good practice to use multiple JFrame windows?\n\n(asked Mar 4 '12 at 11:53) https://stackoverflow.com/questions/9554636\n\n\"Well, why was this closed? Because... it is opinion based.\"\n\n8:46 - \"Stack Overflow moderators, they hate opinions, OK? And why do they hate opinions? Well... nobody really knows, heheh... and opinions are kinda tricky because you can't tell if a question's subjective or objective, there's kind of a blurry line between those two. And who gets to decide whether it's subjective of objective? Well, the moderators.\"\n\n9:10 - \"And in the responses we can see people say this question has become more valuable than they ever thought it could. Well, I guess the mods just got this one wrong.\"\n\n9:18 - \"Oops! It looks like they got this one wrong too. This question has 557 upvotes! That's a lot on Stack Overflow, where questions typically get only 5 or 6 upvotes. Why was it closed? Well, uh, we don't know. It was closed because a mod decided it needed to be.\"\n\n> ### Does anyone have benchmarks (code & results) comparing performance of Android apps written in Xamarin C# and Java?\n\n(asked Mar 4 '12 at 11:53) https://stackoverflow.com/questions/17134522\n\n9:34 - \"Surely this was just another one-off mistake, right? Wait. The mods messed up again? \"\n\n> ### Seeking useful Eclipse Java code templates \n\n(asked Jun 22 '09 at 19:00)  https://stackoverflow.com/questions/1028858\n\n\"This question was closed because... it... wasn't focused enough. Well, it got 518 upvotes, so clearly some people, at least half a thousand of them, though it was focused enough.\"\n\n9:52 - \"I'm beginning to see a pattern here. 371 upvotes? Well, it's closed. Why? Because it's an opinion.\"\n\n> ### What is the best way to implement constants in Java?\n\n(asked Sep 15 '08 at 19:39, history locked) https://stackoverflow.com/q/66066\n\n9:56 - \"Another opinion? How dare these programmers ask an opinionated question.\"\n\n> ### Best XML parser for Java?\n\n(asked Dec 17 '08 at 6:52) https://stackoverflow.com/questions/373833\n\n10:01 - \"Finally someone was fed up enough and said:\n\n> +220 and not constructive. Clearly moderators and users have different perspectives on what is constructive. -- Jun 9 '14 at 6:40\n\n10:10 - \"I agree, random user. I completely, wholeheartedly agree.\"\n\n10:15 - \"Another opinion! Man, these stupid programmers can't stop asking subjective questions, can they!?\"\n\n> ### C++ code file extension? What is the difference between .cc and .cpp?\n\n(asked Oct 9 '09 at 17:23) https://stackoverflow.com/questions/1545080\n\n10:20 - \"These moderators, pff... they have such a difficult life.\"\n\n10:23 - \"This question was closed because, well, we actually don't know why it was closed. Eh eh.\"\n\n> ### Why have header files and .cpp files?\n\n(asked Dec 2 '08 at 13:17) https://stackoverflow.com/q/333889\n\n10:28 - \"Unfocused question. Closed! Nice. Moving on...\"\n\n> ### Calling C/C++ from Python?\n\n(asked Sep 28 '08 at 5:34) https://stackoverflow.com/questions/145270\n\n10:32 - \"More opinions. Moving on...\"\n\n> ### Case-insensitive string comparison in C++\n\n(asked Aug 14 '08 at 20:01) https://stackoverflow.com/q/11635\n\n10:34 - \"You know... I just don't like this guy's name. Let's close this one and move on.\"\n\n> ### Do you (really) write exception safe code?\n\n(asked Dec 5 '09 at 19:48) https://stackoverflow.com/questions/1853243\n\n10:38 - \"Another opinion! Oh wait, 3000 people actually wanted to know the answer to this one.\"\n\n> ### What is the best way to iterate over a dictionary?\n\n(not found via search, must have been deleted)\n\n10:42 - \"Maybe... I'm not such a good moderator. Nah, hah, these people just don't know an opinion when it smacks them in the face.\"\n\n10:54 - Title: \"Conclusion\"\n\n10:59 - \"Unfortunately I have so many more examples of this. If you want to see examples of this just click the link in the description and you can see up to 500 more questions that are just like the ones I just showed you.\"\n\nThe link: https://stackoverflow.com/search?q=closed%3A1+duplicate%3A0\n\n11:10 - \"Even though there are only 500 questions there, there's probably thousands of questions that will never see the light of day because of the rigged system that we already talked about that is in place.\"\n\n11:23 - \"Stack Overflow has a problem. I wish it didn't, because it's helped me and so many other programmers over the past decade. However, I think it's reaching its lifetime. It's going to remain a valuable resource for decades to come, but it's no longer gaining value. If you ask programmers who have asked questions on Stack Overflow, I bet you they got their own horror stories to tell. Not only that, but they'll talk about how they now go to Discord servers or Reddit, Quora, or anywhere else except Stack Overflow because, nobody likes to be berated for absolutely no reason. Maybe Stack Overflow will notice this problem. The real problem. And fix this.\"\n\n12:00 - \"Anyways, that is all I have for today. I hope you learned a little bit about the cesspool that is Stack Overflow.\"",
+                    "textSplitter": "",
+                    "metadata": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "plainText_0-output-document-Document|json",
+                                "name": "document",
+                                "label": "Document",
+                                "type": "Document | json"
+                            },
+                            {
+                                "id": "plainText_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "text"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": -487.7511991135089,
+                "y": 77.83838996645807
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 956.2443072079327,
+                "y": 19.62362357631281
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "With large context size LLM like Anthropic and Gemini, we can shovel whole content into LLM without breaking into chunks.\n\nThis is useful when you need to do summarization or translation word by word without losing any context.\n\nIn this example, we give a piece of Youtube transcript and a prompt for summarization.\n\nExample question:\nCan you summarize the key points?"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 284,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 956.2443072079327,
+                "y": 19.62362357631281
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "bufferMemory_0",
+            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-memory-BaseMemory",
+            "type": "buttonedge",
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-conversationChain_0-conversationChain_0-input-memory-BaseMemory"
+        },
+        {
+            "source": "chatAnthropic_0",
+            "sourceHandle": "chatAnthropic_0-output-chatAnthropic-ChatAnthropic|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatAnthropic_0-chatAnthropic_0-output-chatAnthropic-ChatAnthropic|BaseChatModel|BaseLanguageModel|Runnable-conversationChain_0-conversationChain_0-input-model-BaseChatModel"
+        },
+        {
+            "source": "plainText_0",
+            "sourceHandle": "plainText_0-output-text-string|json",
+            "target": "chatPromptTemplate_0",
+            "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
+            "type": "buttonedge",
+            "id": "plainText_0-plainText_0-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
+        },
+        {
+            "source": "chatPromptTemplate_0",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate",
+            "type": "buttonedge",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-conversationChain_0-conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
+        }
+    ]
+}

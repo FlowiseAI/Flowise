@@ -8,16 +8,18 @@ class StickyNote implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Sticky Note'
         this.name = 'stickyNote'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'StickyNote'
         this.icon = 'stickyNote.svg'
         this.category = 'Utilities'
+        this.tags = ['Utilities']
         this.description = 'Add a sticky note'
         this.inputs = [
             {

@@ -1,11 +1,11 @@
 {
-    "description": "A chain that automatically picks an appropriate retriever from multiple different vector databases",
-    "categories": "ChatOpenAI,Multi Retrieval QA Chain,Pinecone,Chroma,Supabase,Langchain",
-    "framework": "Langchain",
+    "description": "A chain that automatically picks an appropriate vector store retriever from multiple different vector databases",
+    "usecases": ["Documents QnA"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
-            "height": 505,
+            "height": 506,
             "id": "vectorStoreRetriever_0",
             "position": {
                 "x": 712.9322670298264,
@@ -72,7 +72,7 @@
         },
         {
             "width": 300,
-            "height": 377,
+            "height": 429,
             "id": "multiRetrievalQAChain_0",
             "position": {
                 "x": 1563.0150452201099,
@@ -149,7 +149,7 @@
         },
         {
             "width": 300,
-            "height": 505,
+            "height": 506,
             "id": "vectorStoreRetriever_1",
             "position": {
                 "x": 711.4902931206071,
@@ -216,7 +216,7 @@
         },
         {
             "width": 300,
-            "height": 505,
+            "height": 506,
             "id": "vectorStoreRetriever_2",
             "position": {
                 "x": 706.0716220151372,
@@ -283,7 +283,7 @@
         },
         {
             "width": 300,
-            "height": 329,
+            "height": 424,
             "id": "openAIEmbeddings_0",
             "position": {
                 "x": -212.46977797044045,
@@ -293,7 +293,7 @@
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "version": 3,
+                "version": 4,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -313,7 +313,7 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "id": "openAIEmbeddings_0-input-modelName-options"
+                        "id": "openAIEmbeddings_0-input-modelName-asyncOptions"
                     },
                     {
                         "label": "Strip New Lines",
@@ -346,21 +346,31 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_0-input-basepath-string"
+                    },
+                    {
+                        "label": "Dimensions",
+                        "name": "dimensions",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-dimensions-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
+                    "modelName": "text-embedding-ada-002",
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
                     "basepath": "",
-                    "modelName": "text-embedding-ada-002"
+                    "dimensions": ""
                 },
                 "outputAnchors": [
                     {
                         "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
                         "name": "openAIEmbeddings",
                         "label": "OpenAIEmbeddings",
+                        "description": "OpenAI API to generate embeddings for a given text",
                         "type": "OpenAIEmbeddings | Embeddings"
                     }
                 ],
@@ -376,7 +386,7 @@
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 1166.929741805626,
@@ -386,7 +396,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -555,17 +565,17 @@
         },
         {
             "width": 300,
-            "height": 555,
+            "height": 606,
             "id": "pinecone_0",
             "position": {
-                "x": 261.3144465918519,
-                "y": -333.57075989595313
+                "x": 268.04147939086755,
+                "y": -407.5681206851249
             },
             "type": "customNode",
             "data": {
                 "id": "pinecone_0",
                 "label": "Pinecone",
-                "version": 2,
+                "version": 3,
                 "name": "pinecone",
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
@@ -666,11 +676,20 @@
                         "name": "embeddings",
                         "type": "Embeddings",
                         "id": "pinecone_0-input-embeddings-Embeddings"
+                    },
+                    {
+                        "label": "Record Manager",
+                        "name": "recordManager",
+                        "type": "RecordManager",
+                        "description": "Keep track of the record to prevent duplication",
+                        "optional": true,
+                        "id": "pinecone_0-input-recordManager-RecordManager"
                     }
                 ],
                 "inputs": {
                     "document": "",
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "recordManager": "",
                     "pineconeIndex": "",
                     "pineconeNamespace": "",
                     "pineconeMetadataFilter": "",
@@ -684,17 +703,20 @@
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
                                 "id": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Pinecone Retriever",
+                                "description": "",
                                 "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
                             },
                             {
                                 "id": "pinecone_0-output-vectorStore-Pinecone|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Pinecone Vector Store",
+                                "description": "",
                                 "type": "Pinecone | VectorStore"
                             }
                         ],
@@ -708,24 +730,24 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 261.3144465918519,
-                "y": -333.57075989595313
+                "x": 268.04147939086755,
+                "y": -407.5681206851249
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 654,
+            "height": 704,
             "id": "chroma_0",
             "position": {
-                "x": 263.5395455972911,
-                "y": 242.72988251281214
+                "x": 271.26687710753146,
+                "y": 240.7980496352519
             },
             "type": "customNode",
             "data": {
                 "id": "chroma_0",
                 "label": "Chroma",
-                "version": 1,
+                "version": 2,
                 "name": "chroma",
                 "type": "Chroma",
                 "baseClasses": ["Chroma", "VectorStoreRetriever", "BaseRetriever"],
@@ -787,11 +809,20 @@
                         "name": "embeddings",
                         "type": "Embeddings",
                         "id": "chroma_0-input-embeddings-Embeddings"
+                    },
+                    {
+                        "label": "Record Manager",
+                        "name": "recordManager",
+                        "type": "RecordManager",
+                        "description": "Keep track of the record to prevent duplication",
+                        "optional": true,
+                        "id": "chroma_0-input-recordManager-RecordManager"
                     }
                 ],
                 "inputs": {
                     "document": "",
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "recordManager": "",
                     "collectionName": "",
                     "chromaURL": "",
                     "chromaMetadataFilter": "",
@@ -802,17 +833,20 @@
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
                                 "id": "chroma_0-output-retriever-Chroma|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Chroma Retriever",
+                                "description": "",
                                 "type": "Chroma | VectorStoreRetriever | BaseRetriever"
                             },
                             {
                                 "id": "chroma_0-output-vectorStore-Chroma|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Chroma Vector Store",
+                                "description": "",
                                 "type": "Chroma | VectorStore"
                             }
                         ],
@@ -826,29 +860,29 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 263.5395455972911,
-                "y": 242.72988251281214
+                "x": 271.26687710753146,
+                "y": 240.7980496352519
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 753,
+            "height": 803,
             "id": "supabase_0",
             "position": {
-                "x": 263.16882559270005,
-                "y": 920.6999513218148
+                "x": 274.75982285806055,
+                "y": 982.5186034037372
             },
             "type": "customNode",
             "data": {
                 "id": "supabase_0",
                 "label": "Supabase",
-                "version": 1,
+                "version": 4,
                 "name": "supabase",
                 "type": "Supabase",
                 "baseClasses": ["Supabase", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert embedded data and perform similarity search upon query using Supabase via pgvector extension",
+                "description": "Upsert embedded data and perform similarity or mmr search upon query using Supabase via pgvector extension",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
@@ -884,6 +918,17 @@
                         "id": "supabase_0-input-supabaseMetadataFilter-json"
                     },
                     {
+                        "label": "Supabase RPC Filter",
+                        "name": "supabaseRPCFilter",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "filter(\"metadata->a::int\", \"gt\", 5)\n.filter(\"metadata->c::int\", \"gt\", 7)\n.filter(\"metadata->>stuff\", \"eq\", \"right\");",
+                        "description": "Query builder-style filtering. If this is set, will override the metadata filter. Refer <a href=\"https://js.langchain.com/v0.1/docs/integrations/vectorstores/supabase/#metadata-query-builder-filtering\" target=\"_blank\">here</a> for more information",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "supabase_0-input-supabaseRPCFilter-string"
+                    },
+                    {
                         "label": "Top K",
                         "name": "topK",
                         "description": "Number of top results to fetch. Default to 4",
@@ -910,7 +955,7 @@
                         ],
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pinecone_0-input-searchType-options"
+                        "id": "supabase_0-input-searchType-options"
                     },
                     {
                         "label": "Fetch K (for MMR Search)",
@@ -920,7 +965,7 @@
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pinecone_0-input-fetchK-number"
+                        "id": "supabase_0-input-fetchK-number"
                     },
                     {
                         "label": "Lambda (for MMR Search)",
@@ -930,7 +975,7 @@
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pinecone_0-input-lambda-number"
+                        "id": "supabase_0-input-lambda-number"
                     }
                 ],
                 "inputAnchors": [
@@ -947,15 +992,25 @@
                         "name": "embeddings",
                         "type": "Embeddings",
                         "id": "supabase_0-input-embeddings-Embeddings"
+                    },
+                    {
+                        "label": "Record Manager",
+                        "name": "recordManager",
+                        "type": "RecordManager",
+                        "description": "Keep track of the record to prevent duplication",
+                        "optional": true,
+                        "id": "supabase_0-input-recordManager-RecordManager"
                     }
                 ],
                 "inputs": {
                     "document": "",
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "recordManager": "",
                     "supabaseProjUrl": "",
                     "tableName": "",
                     "queryName": "",
                     "supabaseMetadataFilter": "",
+                    "supabaseRPCFilter": "",
                     "topK": "",
                     "searchType": "similarity",
                     "fetchK": "",
@@ -966,17 +1021,20 @@
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
                                 "id": "supabase_0-output-retriever-Supabase|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Supabase Retriever",
+                                "description": "",
                                 "type": "Supabase | VectorStoreRetriever | BaseRetriever"
                             },
                             {
                                 "id": "supabase_0-output-vectorStore-Supabase|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Supabase Vector Store",
+                                "description": "",
                                 "type": "Supabase | VectorStore"
                             }
                         ],
@@ -990,8 +1048,61 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 263.16882559270005,
-                "y": 920.6999513218148
+                "x": 274.75982285806055,
+                "y": 982.5186034037372
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1564.4709721348295,
+                "y": 121.26040803337389
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Multi Retrieval QA Chain is able to pick which Vector Store Retriever to use based on user question.\n\nHowever it comes with the restriction for not being able to resume follow up conversations because there isn't any memory.\n\nIt is suitable for LLM which doesn't have function calling support.\n\nOtherwise, it is recommended to use Multiple Documents QnA template which uses Tool Agent"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 324,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1564.4709721348295,
+                "y": 121.26040803337389
             },
             "dragging": false
         }

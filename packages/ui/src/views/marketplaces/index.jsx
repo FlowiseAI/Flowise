@@ -15,17 +15,23 @@ import {
     OutlinedInput,
     Checkbox,
     ListItemText,
-    Skeleton
+    Skeleton,
+    FormControlLabel,
+    ToggleButtonGroup,
+    MenuItem,
+    Button
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconLayoutGrid, IconList } from '@tabler/icons-react'
+import { IconLayoutGrid, IconList, IconX } from '@tabler/icons-react'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
-import { gridSpacing } from '@/store/constant'
 import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
 import ToolDialog from '@/views/tools/ToolDialog'
+import { MarketplaceTable } from '@/ui-component/table/MarketplaceTable'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // API
 import marketplacesApi from '@/api/marketplaces'
@@ -35,11 +41,7 @@ import useApi from '@/hooks/useApi'
 
 // const
 import { baseURL } from '@/store/constant'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-import { MarketplaceTable } from '@/ui-component/table/MarketplaceTable'
-import MenuItem from '@mui/material/MenuItem'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
+import { gridSpacing } from '@/store/constant'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -87,6 +89,9 @@ const Marketplace = () => {
     const [isLoading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [images, setImages] = useState({})
+    const [usecases, setUsecases] = useState([])
+    const [eligibleUsecases, setEligibleUsecases] = useState([])
+    const [selectedUsecases, setSelectedUsecases] = useState([])
 
     const [showToolDialog, setShowToolDialog] = useState(false)
     const [toolDialogProps, setToolDialogProps] = useState({})
@@ -95,10 +100,14 @@ const Marketplace = () => {
 
     const [view, setView] = React.useState(localStorage.getItem('mpDisplayStyle') || 'card')
     const [search, setSearch] = useState('')
-
     const [badgeFilter, setBadgeFilter] = useState([])
     const [typeFilter, setTypeFilter] = useState([])
     const [frameworkFilter, setFrameworkFilter] = useState([])
+
+    const clearAllUsecases = () => {
+        setSelectedUsecases([])
+    }
+
     const handleBadgeFilterChange = (event) => {
         const {
             target: { value }
@@ -107,7 +116,9 @@ const Marketplace = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value
         )
+        getEligibleUsecases({ typeFilter, badgeFilter: typeof value === 'string' ? value.split(',') : value, frameworkFilter, search })
     }
+
     const handleTypeFilterChange = (event) => {
         const {
             target: { value }
@@ -116,7 +127,9 @@ const Marketplace = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value
         )
+        getEligibleUsecases({ typeFilter: typeof value === 'string' ? value.split(',') : value, badgeFilter, frameworkFilter, search })
     }
+
     const handleFrameworkFilterChange = (event) => {
         const {
             target: { value }
@@ -125,6 +138,7 @@ const Marketplace = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value
         )
+        getEligibleUsecases({ typeFilter, badgeFilter, frameworkFilter: typeof value === 'string' ? value.split(',') : value, search })
     }
 
     const handleViewChange = (event, nextView) => {
@@ -135,11 +149,12 @@ const Marketplace = () => {
 
     const onSearchChange = (event) => {
         setSearch(event.target.value)
+        getEligibleUsecases({ typeFilter, badgeFilter, frameworkFilter, search: event.target.value })
     }
 
     function filterFlows(data) {
         return (
-            data.categories?.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
+            (data.categories ? data.categories.join(',') : '').toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             data.templateName.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             (data.description && data.description.toLowerCase().indexOf(search.toLowerCase()) > -1)
         )
@@ -154,7 +169,37 @@ const Marketplace = () => {
     }
 
     function filterByFramework(data) {
-        return frameworkFilter.length > 0 ? frameworkFilter.includes(data.framework) : true
+        return frameworkFilter.length > 0 ? (data.framework || []).some((item) => frameworkFilter.includes(item)) : true
+    }
+
+    function filterByUsecases(data) {
+        return selectedUsecases.length > 0 ? (data.usecases || []).some((item) => selectedUsecases.includes(item)) : true
+    }
+
+    const getEligibleUsecases = (filter) => {
+        if (!getAllTemplatesMarketplacesApi.data) return
+
+        let filteredData = getAllTemplatesMarketplacesApi.data
+        if (filter.badgeFilter.length > 0) filteredData = filteredData.filter((data) => filter.badgeFilter.includes(data.badge))
+        if (filter.typeFilter.length > 0) filteredData = filteredData.filter((data) => filter.typeFilter.includes(data.type))
+        if (filter.frameworkFilter.length > 0)
+            filteredData = filteredData.filter((data) => (data.framework || []).some((item) => filter.frameworkFilter.includes(item)))
+        if (filter.search) {
+            filteredData = filteredData.filter(
+                (data) =>
+                    (data.categories ? data.categories.join(',') : '').toLowerCase().indexOf(filter.search.toLowerCase()) > -1 ||
+                    data.templateName.toLowerCase().indexOf(filter.search.toLowerCase()) > -1 ||
+                    (data.description && data.description.toLowerCase().indexOf(filter.search.toLowerCase()) > -1)
+            )
+        }
+
+        const usecases = []
+        for (let i = 0; i < filteredData.length; i += 1) {
+            if (filteredData[i].flowData) {
+                usecases.push(...filteredData[i].usecases)
+            }
+        }
+        setEligibleUsecases(Array.from(new Set(usecases)).sort())
     }
 
     const onUseTemplate = (selectedTool) => {
@@ -197,12 +242,13 @@ const Marketplace = () => {
         if (getAllTemplatesMarketplacesApi.data) {
             try {
                 const flows = getAllTemplatesMarketplacesApi.data
-
+                const usecases = []
                 const images = {}
                 for (let i = 0; i < flows.length; i += 1) {
                     if (flows[i].flowData) {
                         const flowDataStr = flows[i].flowData
                         const flowData = JSON.parse(flowDataStr)
+                        usecases.push(...flows[i].usecases)
                         const nodes = flowData.nodes || []
                         images[flows[i].id] = []
                         for (let j = 0; j < nodes.length; j += 1) {
@@ -214,6 +260,8 @@ const Marketplace = () => {
                     }
                 }
                 setImages(images)
+                setUsecases(Array.from(new Set(usecases)).sort())
+                setEligibleUsecases(Array.from(new Set(usecases)).sort())
             } catch (e) {
                 console.error(e)
             }
@@ -384,6 +432,39 @@ const Marketplace = () => {
                                 </ToggleButton>
                             </ToggleButtonGroup>
                         </ViewHeader>
+                        <Stack direction='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                            {usecases.map((usecase, index) => (
+                                <FormControlLabel
+                                    key={index}
+                                    size='small'
+                                    control={
+                                        <Checkbox
+                                            disabled={eligibleUsecases.length === 0 ? true : !eligibleUsecases.includes(usecase)}
+                                            color='success'
+                                            checked={selectedUsecases.includes(usecase)}
+                                            onChange={(event) => {
+                                                setSelectedUsecases(
+                                                    event.target.checked
+                                                        ? [...selectedUsecases, usecase]
+                                                        : selectedUsecases.filter((item) => item !== usecase)
+                                                )
+                                            }}
+                                        />
+                                    }
+                                    label={usecase}
+                                />
+                            ))}
+                        </Stack>
+                        {selectedUsecases.length > 0 && (
+                            <Button
+                                sx={{ width: 'max-content', borderRadius: '20px' }}
+                                variant='outlined'
+                                onClick={() => clearAllUsecases()}
+                                startIcon={<IconX />}
+                            >
+                                Clear All
+                            </Button>
+                        )}
                         {!view || view === 'card' ? (
                             <>
                                 {isLoading ? (
@@ -399,6 +480,7 @@ const Marketplace = () => {
                                             .filter(filterByType)
                                             .filter(filterFlows)
                                             .filter(filterByFramework)
+                                            .filter(filterByUsecases)
                                             .map((data, index) => (
                                                 <Box key={index}>
                                                     {data.badge && (
@@ -443,6 +525,7 @@ const Marketplace = () => {
                                 filterByType={filterByType}
                                 filterByBadge={filterByBadge}
                                 filterByFramework={filterByFramework}
+                                filterByUsecases={filterByUsecases}
                                 goToTool={goToTool}
                                 goToCanvas={goToCanvas}
                                 isLoading={isLoading}

@@ -1,16 +1,15 @@
 {
     "description": "Return response as a JSON structure as specified by a Zod schema",
-    "categories": "AdvancedStructuredOutputParser,ChatOpenAI,LLM Chain,Langchain",
-    "framework": "Langchain",
-    "badge": "NEW",
+    "framework": ["Langchain"],
+    "usecases": ["Extraction"],
     "nodes": [
         {
             "width": 300,
             "height": 508,
             "id": "llmChain_0",
             "position": {
-                "x": 1229.1699649849293,
-                "y": 245.55173505632646
+                "x": 1224.5123724068537,
+                "y": 203.63340185364572
             },
             "type": "customNode",
             "data": {
@@ -97,18 +96,19 @@
                 "selected": false
             },
             "positionAbsolute": {
-                "x": 1229.1699649849293,
-                "y": 245.55173505632646
+                "x": 1224.5123724068537,
+                "y": 203.63340185364572
             },
-            "selected": false
+            "selected": false,
+            "dragging": false
         },
         {
             "width": 300,
             "height": 690,
             "id": "chatPromptTemplate_0",
             "position": {
-                "x": 493.26582927222483,
-                "y": -156.20470841335592
+                "x": 62.32815086916713,
+                "y": -173.7208464588945
             },
             "type": "customNode",
             "data": {
@@ -166,24 +166,24 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 493.26582927222483,
-                "y": -156.20470841335592
+                "x": 62.32815086916713,
+                "y": -173.7208464588945
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 576,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 860.555928011636,
-                "y": -355.71028569475095
+                "x": 851.2457594432603,
+                "y": -352.1518756201128
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -320,7 +320,7 @@
                 ],
                 "inputs": {
                     "cache": "",
-                    "modelName": "",
+                    "modelName": "gpt-4-turbo",
                     "temperature": "0",
                     "maxTokens": "",
                     "topP": "",
@@ -345,8 +345,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 860.555928011636,
-                "y": -355.71028569475095
+                "x": 851.2457594432603,
+                "y": -352.1518756201128
             },
             "dragging": false
         },
@@ -355,8 +355,8 @@
             "height": 454,
             "id": "advancedStructuredOutputParser_0",
             "position": {
-                "x": 489.3637511211284,
-                "y": 580.0628053662244
+                "x": 449.77421420748544,
+                "y": -72.00015556436546
             },
             "type": "customNode",
             "data": {
@@ -389,8 +389,8 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "autofixParser": "",
-                    "exampleJson": "z.object({\n    title: z.string(), // Title of the movie as a string\n    yearOfRelease: z.number().int(), // Release year as an integer number,\n    genres: z.enum([\n        \"Action\", \"Comedy\", \"Drama\", \"Fantasy\", \"Horror\",\n        \"Mystery\", \"Romance\", \"Science Fiction\", \"Thriller\", \"Documentary\"\n    ]).array().max(2), // Array of genres, max of 2 from the defined enum\n    shortDescription: z.string().max(500) // Short description, max 500 characters\n})"
+                    "autofixParser": true,
+                    "exampleJson": "z.array(z.object({\n    title: z.string(), // Title of the movie as a string\n    yearOfRelease: z.number().int(), // Release year as an integer number,\n    genres: z.enum([\n        \"Action\", \"Comedy\", \"Drama\", \"Fantasy\", \"Horror\",\n        \"Mystery\", \"Romance\", \"Science Fiction\", \"Thriller\", \"Documentary\"\n    ]).array().max(2), // Array of genres, max of 2 from the defined enum\n    shortDescription: z.string().max(500) // Short description, max 500 characters\n}))"
                 },
                 "outputAnchors": [
                     {
@@ -406,9 +406,62 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 489.3637511211284,
-                "y": 580.0628053662244
+                "x": 449.77421420748544,
+                "y": -72.00015556436546
             }
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1224.8602820360084,
+                "y": 45.252502534529725
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "This template is designed to give output in JSON format defined in the Output Parser.\n\nExample question:\nTop 5 movies of all time"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 123,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1224.8602820360084,
+                "y": 45.252502534529725
+            },
+            "dragging": false
         }
     ],
     "edges": [

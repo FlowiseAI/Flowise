@@ -1,6 +1,6 @@
 {
     "name": "add_airtable",
-    "framework": "Langchain",
+    "framework": ["Langchain"],
     "description": "Add column1, column2 to Airtable",
     "color": "linear-gradient(rgb(125,71,222), rgb(128,102,23))",
     "iconSrc": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/airtable.svg",

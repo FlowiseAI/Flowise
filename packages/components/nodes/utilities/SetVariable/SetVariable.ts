@@ -8,6 +8,7 @@ class SetVariable_Utilities implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
@@ -15,11 +16,12 @@ class SetVariable_Utilities implements INode {
     constructor() {
         this.label = 'Set Variable'
         this.name = 'setVariable'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'SetVariable'
         this.icon = 'setvar.svg'
         this.category = 'Utilities'
         this.description = `Set variable which can be retrieved at a later stage. Variable is only available during runtime.`
+        this.tags = ['Utilities']
         this.baseClasses = [this.type, 'Utilities']
         this.inputs = [
             {

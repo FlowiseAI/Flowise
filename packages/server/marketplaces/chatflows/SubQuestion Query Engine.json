@@ -1,8 +1,7 @@
 {
     "description": "Breaks down query into sub questions for each relevant data source, then combine into final response",
-    "categories": "Sub Question Query Engine,Sticky Note,QueryEngine Tool,Compact and Refine,ChatOpenAI,Pinecone,LlamaIndex",
-    "framework": "LlamaIndex",
-    "badge": "NEW",
+    "usecases": ["SQL"],
+    "framework": ["LlamaIndex"],
     "nodes": [
         {
             "width": 300,

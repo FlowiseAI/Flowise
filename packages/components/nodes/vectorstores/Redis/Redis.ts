@@ -52,7 +52,6 @@ class Redis_VectorStores implements INode {
         this.icon = 'redis.svg'
         this.category = 'Vector Stores'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

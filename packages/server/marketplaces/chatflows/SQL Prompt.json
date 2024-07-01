@@ -1,16 +1,15 @@
 {
     "description": "Manually construct prompts to query a SQL database",
-    "categories": "IfElse Function,Variable Set/Get,Custom JS Function,ChatOpenAI,LLM Chain,Langchain",
-    "framework": "Langchain",
-    "badge": "new",
+    "usecases": ["SQL"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
-            "height": 511,
+            "height": 513,
             "id": "promptTemplate_0",
             "position": {
-                "x": 384.84394025989127,
-                "y": 61.21205260943492
+                "x": 384.4880563109088,
+                "y": 253.48974179902635
             },
             "type": "customNode",
             "data": {
@@ -43,8 +42,8 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "template": "Based on the provided SQL table schema and question below, return a SQL SELECT ALL query that would answer the user's question. For example: SELECT * FROM table WHERE id = '1'.\n------------\nSCHEMA: {schema}\n------------\nQUESTION: {question}\n------------\nSQL QUERY:",
-                    "promptValues": "{\"schema\":\"{{setVariable_0.data.instance}}\",\"question\":\"{{question}}\"}"
+                    "template": "You are a MySQL expert. Given an input question, create a syntactically correct MySQL query to run.\nUnless otherwise specified, do not return more than {topK} rows.\n\nHere is the relevant table info:\n{schema}\n\nBelow are a number of examples of questions and their corresponding SQL queries.\n\nUser input: List all artists.\nSQL Query: SELECT * FROM Artist;\n\nUser input: Find all albums for the artist 'AC/DC'.\nSQL Query: SELECT * FROM Album WHERE ArtistId = (SELECT ArtistId FROM Artist WHERE Name = 'AC/DC');\n\nUser input: List all tracks in the 'Rock' genre.\nSQL Query: SELECT * FROM Track WHERE GenreId = (SELECT GenreId FROM Genre WHERE Name = 'Rock');\n\nUser input: Find the total duration of all tracks.\nSQL Query: SELECT SUM(Milliseconds) FROM Track;\n\nUser input: List all customers from Canada.\nSQL Query: SELECT * FROM Customer WHERE Country = 'Canada';\n\nUser input: {question}\nSQL query:",
+                    "promptValues": "{\"schema\":\"{{customFunction_2.data.instance}}\",\"question\":\"{{question}}\",\"topK\":3}"
                 },
                 "outputAnchors": [
                     {
@@ -59,14 +58,14 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 384.84394025989127,
-                "y": 61.21205260943492
+                "x": 384.4880563109088,
+                "y": 253.48974179902635
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 507,
+            "height": 508,
             "id": "llmChain_0",
             "position": {
                 "x": 770.4559230968546,
@@ -165,17 +164,17 @@
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 372.72389181000057,
-                "y": -561.0744498265477
+                "x": 376.92707114970364,
+                "y": -666.8088336865496
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -337,24 +336,24 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 372.72389181000057,
-                "y": -561.0744498265477
+                "x": 376.92707114970364,
+                "y": -666.8088336865496
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_1",
             "position": {
-                "x": 2636.1598769864936,
-                "y": -653.0025971757484
+                "x": 2653.726672579251,
+                "y": -665.8849139437705
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_1",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -516,14 +515,14 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 2636.1598769864936,
-                "y": -653.0025971757484
+                "x": 2653.726672579251,
+                "y": -665.8849139437705
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 507,
+            "height": 508,
             "id": "llmChain_1",
             "position": {
                 "x": 3089.9937691022837,
@@ -622,20 +621,21 @@
         },
         {
             "width": 300,
-            "height": 669,
+            "height": 670,
             "id": "customFunction_2",
             "position": {
-                "x": -395.18079694059173,
-                "y": -222.8935573325382
+                "x": -19.95227863012829,
+                "y": -125.50600296188355
             },
             "type": "customNode",
             "data": {
                 "id": "customFunction_2",
                 "label": "Custom JS Function",
-                "version": 1,
+                "version": 2,
                 "name": "customFunction",
                 "type": "CustomFunction",
                 "baseClasses": ["CustomFunction", "Utilities"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Execute custom javascript function",
                 "inputParams": [
@@ -653,6 +653,7 @@
                         "label": "Function Name",
                         "name": "functionName",
                         "type": "string",
+                        "optional": true,
                         "placeholder": "My Function",
                         "id": "customFunction_2-input-functionName-string"
                     },
@@ -674,12 +675,21 @@
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
                                 "id": "customFunction_2-output-output-string|number|boolean|json|array",
                                 "name": "output",
                                 "label": "Output",
+                                "description": "",
                                 "type": "string | number | boolean | json | array"
+                            },
+                            {
+                                "id": "customFunction_2-output-EndingNode-CustomFunction",
+                                "name": "EndingNode",
+                                "label": "Ending Node",
+                                "description": "",
+                                "type": "CustomFunction"
                             }
                         ],
                         "default": "output"
@@ -692,14 +702,14 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": -395.18079694059173,
-                "y": -222.8935573325382
+                "x": -19.95227863012829,
+                "y": -125.50600296188355
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 669,
+            "height": 670,
             "id": "customFunction_1",
             "position": {
                 "x": 1887.4670208331604,
@@ -709,10 +719,11 @@
             "data": {
                 "id": "customFunction_1",
                 "label": "Custom JS Function",
-                "version": 1,
+                "version": 2,
                 "name": "customFunction",
                 "type": "CustomFunction",
                 "baseClasses": ["CustomFunction", "Utilities"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Execute custom javascript function",
                 "inputParams": [
@@ -730,6 +741,7 @@
                         "label": "Function Name",
                         "name": "functionName",
                         "type": "string",
+                        "optional": true,
                         "placeholder": "My Function",
                         "id": "customFunction_1-input-functionName-string"
                     },
@@ -751,12 +763,21 @@
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
                                 "id": "customFunction_1-output-output-string|number|boolean|json|array",
                                 "name": "output",
                                 "label": "Output",
+                                "description": "",
                                 "type": "string | number | boolean | json | array"
+                            },
+                            {
+                                "id": "customFunction_1-output-EndingNode-CustomFunction",
+                                "name": "EndingNode",
+                                "label": "Ending Node",
+                                "description": "",
+                                "type": "CustomFunction"
                             }
                         ],
                         "default": "output"
@@ -776,11 +797,11 @@
         },
         {
             "width": 300,
-            "height": 511,
+            "height": 513,
             "id": "promptTemplate_1",
             "position": {
-                "x": 2638.3935631956588,
-                "y": -18.55855423639423
+                "x": 2655.2632506040304,
+                "y": 218.145615216618
             },
             "type": "customNode",
             "data": {
@@ -813,8 +834,8 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "template": "Based on the table schema below, question, SQL query, and SQL response, write a natural language response, be details as possible:\n------------\nSCHEMA: {schema}\n------------\nQUESTION: {question}\n------------\nSQL QUERY: {sqlQuery}\n------------\nSQL RESPONSE: {sqlResponse}\n------------\nNATURAL LANGUAGE RESPONSE:",
-                    "promptValues": "{\"schema\":\"{{getVariable_0.data.instance}}\",\"question\":\"{{question}}\",\"sqlResponse\":\"{{customFunction_1.data.instance}}\",\"sqlQuery\":\"{{getVariable_1.data.instance}}\"}"
+                    "template": "Given the following user question, corresponding SQL query, and SQL result, answer the user question as details as possible.\n\nQuestion: {question}\n\nSQL Query: {sqlQuery}\n\nSQL Result: {sqlResponse}\n\nAnswer:\n",
+                    "promptValues": "{\"question\":\"{{question}}\",\"sqlResponse\":\"{{customFunction_1.data.instance}}\",\"sqlQuery\":\"{{getVariable_1.data.instance}}\"}"
                 },
                 "outputAnchors": [
                     {
@@ -830,154 +851,27 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 2638.3935631956588,
-                "y": -18.55855423639423
+                "x": 2655.2632506040304,
+                "y": 218.145615216618
             }
         },
         {
             "width": 300,
-            "height": 355,
-            "id": "setVariable_0",
-            "position": {
-                "x": 18.689175061831122,
-                "y": -62.81166351070223
-            },
-            "type": "customNode",
-            "data": {
-                "id": "setVariable_0",
-                "label": "Set Variable",
-                "version": 1,
-                "name": "setVariable",
-                "type": "SetVariable",
-                "baseClasses": ["SetVariable", "Utilities"],
-                "category": "Utilities",
-                "description": "Set variable which can be retrieved at a later stage. Variable is only available during runtime.",
-                "inputParams": [
-                    {
-                        "label": "Variable Name",
-                        "name": "variableName",
-                        "type": "string",
-                        "placeholder": "var1",
-                        "id": "setVariable_0-input-variableName-string"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Input",
-                        "name": "input",
-                        "type": "string | number | boolean | json | array",
-                        "optional": true,
-                        "list": true,
-                        "id": "setVariable_0-input-input-string | number | boolean | json | array"
-                    }
-                ],
-                "inputs": {
-                    "input": ["{{customFunction_2.data.instance}}"],
-                    "variableName": "schemaPrompt"
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "setVariable_0-output-output-string|number|boolean|json|array",
-                                "name": "output",
-                                "label": "Output",
-                                "type": "string | number | boolean | json | array"
-                            }
-                        ],
-                        "default": "output"
-                    }
-                ],
-                "outputs": {
-                    "output": "output"
-                },
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 18.689175061831122,
-                "y": -62.81166351070223
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 304,
-            "id": "getVariable_0",
-            "position": {
-                "x": 2248.4540716891547,
-                "y": -47.21232652005119
-            },
-            "type": "customNode",
-            "data": {
-                "id": "getVariable_0",
-                "label": "Get Variable",
-                "version": 1,
-                "name": "getVariable",
-                "type": "GetVariable",
-                "baseClasses": ["GetVariable", "Utilities"],
-                "category": "Utilities",
-                "description": "Get variable that was saved using Set Variable node",
-                "inputParams": [
-                    {
-                        "label": "Variable Name",
-                        "name": "variableName",
-                        "type": "string",
-                        "placeholder": "var1",
-                        "id": "getVariable_0-input-variableName-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "variableName": "schemaPrompt"
-                },
-                "outputAnchors": [
-                    {
-                        "name": "output",
-                        "label": "Output",
-                        "type": "options",
-                        "options": [
-                            {
-                                "id": "getVariable_0-output-output-string|number|boolean|json|array",
-                                "name": "output",
-                                "label": "Output",
-                                "type": "string | number | boolean | json | array"
-                            }
-                        ],
-                        "default": "output"
-                    }
-                ],
-                "outputs": {
-                    "output": "output"
-                },
-                "selected": false
-            },
-            "positionAbsolute": {
-                "x": 2248.4540716891547,
-                "y": -47.21232652005119
-            },
-            "selected": false,
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 304,
+            "height": 305,
             "id": "getVariable_1",
             "position": {
-                "x": 2256.0258940322105,
-                "y": 437.4363694364632
+                "x": 2272.8555266616872,
+                "y": 24.11364076336241
             },
             "type": "customNode",
             "data": {
                 "id": "getVariable_1",
                 "label": "Get Variable",
-                "version": 1,
+                "version": 2,
                 "name": "getVariable",
                 "type": "GetVariable",
                 "baseClasses": ["GetVariable", "Utilities"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Get variable that was saved using Set Variable node",
                 "inputParams": [
@@ -998,11 +892,13 @@
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
                                 "id": "getVariable_1-output-output-string|number|boolean|json|array",
                                 "name": "output",
                                 "label": "Output",
+                                "description": "",
                                 "type": "string | number | boolean | json | array"
                             }
                         ],
@@ -1015,15 +911,15 @@
                 "selected": false
             },
             "positionAbsolute": {
-                "x": 2256.0258940322105,
-                "y": 437.4363694364632
+                "x": 2272.8555266616872,
+                "y": 24.11364076336241
             },
             "selected": false,
             "dragging": false
         },
         {
             "width": 300,
-            "height": 355,
+            "height": 356,
             "id": "setVariable_1",
             "position": {
                 "x": 1516.338224315744,
@@ -1033,10 +929,11 @@
             "data": {
                 "id": "setVariable_1",
                 "label": "Set Variable",
-                "version": 1,
+                "version": 2,
                 "name": "setVariable",
                 "type": "SetVariable",
                 "baseClasses": ["SetVariable", "Utilities"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Set variable which can be retrieved at a later stage. Variable is only available during runtime.",
                 "inputParams": [
@@ -1067,11 +964,13 @@
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
                                 "id": "setVariable_1-output-output-string|number|boolean|json|array",
                                 "name": "output",
                                 "label": "Output",
+                                "description": "",
                                 "type": "string | number | boolean | json | array"
                             }
                         ],
@@ -1092,7 +991,7 @@
         },
         {
             "width": 300,
-            "height": 755,
+            "height": 757,
             "id": "ifElseFunction_0",
             "position": {
                 "x": 1147.8020838770517,
@@ -1102,10 +1001,11 @@
             "data": {
                 "id": "ifElseFunction_0",
                 "label": "IfElse Function",
-                "version": 1,
+                "version": 2,
                 "name": "ifElseFunction",
                 "type": "IfElseFunction",
                 "baseClasses": ["IfElseFunction", "Utilities"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Split flows based on If Else javascript functions",
                 "inputParams": [
@@ -1158,17 +1058,20 @@
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
                                 "id": "ifElseFunction_0-output-returnTrue-string|number|boolean|json|array",
                                 "name": "returnTrue",
                                 "label": "True",
+                                "description": "",
                                 "type": "string | number | boolean | json | array"
                             },
                             {
                                 "id": "ifElseFunction_0-output-returnFalse-string|number|boolean|json|array",
                                 "name": "returnFalse",
                                 "label": "False",
+                                "description": "",
                                 "type": "string | number | boolean | json | array"
                             }
                         ],
@@ -1189,11 +1092,11 @@
         },
         {
             "width": 300,
-            "height": 511,
+            "height": 513,
             "id": "promptTemplate_2",
             "position": {
-                "x": 1530.0647779039386,
-                "y": 944.9904482583751
+                "x": 1193.7489579044463,
+                "y": 615.4009446588724
             },
             "type": "customNode",
             "data": {
@@ -1242,24 +1145,24 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1530.0647779039386,
-                "y": 944.9904482583751
+                "x": 1193.7489579044463,
+                "y": 615.4009446588724
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_2",
             "position": {
-                "x": 1537.0307928738125,
-                "y": 330.7727229610632
+                "x": 1545.1023725538003,
+                "y": 493.5495798408175
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_2",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -1421,18 +1324,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1537.0307928738125,
-                "y": 330.7727229610632
+                "x": 1545.1023725538003,
+                "y": 493.5495798408175
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 507,
+            "height": 508,
             "id": "llmChain_2",
             "position": {
-                "x": 2077.2866807477812,
-                "y": 958.6594167386253
+                "x": 1914.509823868027,
+                "y": 622.3435967391327
             },
             "type": "customNode",
             "data": {
@@ -1520,8 +1423,432 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 2077.2866807477812,
-                "y": 958.6594167386253
+                "x": 1914.509823868027,
+                "y": 622.3435967391327
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": -18.950231412347364,
+                "y": -192.2980180516393
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "First, get SQL database schema"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 42,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -18.950231412347364,
+                "y": -192.2980180516393
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_1",
+            "position": {
+                "x": 1510.6324834799852,
+                "y": -221.78240261184442
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_1",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_1-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Save as variable to be used at the last Prompt Template"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_1-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 62,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1510.6324834799852,
+                "y": -221.78240261184442
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_2",
+            "position": {
+                "x": 386.88037412001086,
+                "y": 47.66735767574478
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_2",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_2-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Instruct LLM to return a SQL query using the schema.\n\nRecommend to give few examples for higher accuracy. \n\nChange the prompt accordingly to suit the type of database you are using"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_2-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 183,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 386.88037412001086,
+                "y": 47.66735767574478
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_3",
+            "position": {
+                "x": 1148.366177280569,
+                "y": -330.2148999791981
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_3",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_3-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Check if SQL Query is valid\n\nIf not, avoid executing it and return to user "
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_3-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 82,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1148.366177280569,
+                "y": -330.2148999791981
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_4",
+            "position": {
+                "x": 1881.2554569013519,
+                "y": -435.79147130381756
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_4",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_4-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Execute the SQL query after validated, and get the list of results back.\n\nTo avoid long list of results overflowing token limit, try capping the length of result here"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_4-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 143,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1881.2554569013519,
+                "y": -435.79147130381756
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_5",
+            "position": {
+                "x": 1545.0242031958799,
+                "y": 428.37859733277077
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_5",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_5-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Fallback answer if SQL query is not valid"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_5-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 42,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1545.0242031958799,
+                "y": 428.37859733277077
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_6",
+            "position": {
+                "x": 2653.037036258241,
+                "y": 53.55638699917168
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_6",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_6-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "This is the final prompt.\n\nCombine the following:\nQuestion + SQL query + SQL result\n\nto generate a final answer"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_6-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 143,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2653.037036258241,
+                "y": 53.55638699917168
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_7",
+            "position": {
+                "x": 2267.355938520518,
+                "y": -56.64296923028309
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_7",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_7-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Get the saved variable value to be used in prompt"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_7-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 62,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2267.355938520518,
+                "y": -56.64296923028309
             },
             "dragging": false
         }
@@ -1578,39 +1905,6 @@
             "targetHandle": "llmChain_1-input-prompt-BasePromptTemplate",
             "type": "buttonedge",
             "id": "promptTemplate_1-promptTemplate_1-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_1-llmChain_1-input-prompt-BasePromptTemplate",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "customFunction_2",
-            "sourceHandle": "customFunction_2-output-output-string|number|boolean|json|array",
-            "target": "setVariable_0",
-            "targetHandle": "setVariable_0-input-input-string | number | boolean | json | array",
-            "type": "buttonedge",
-            "id": "customFunction_2-customFunction_2-output-output-string|number|boolean|json|array-setVariable_0-setVariable_0-input-input-string | number | boolean | json | array",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "setVariable_0",
-            "sourceHandle": "setVariable_0-output-output-string|number|boolean|json|array",
-            "target": "promptTemplate_0",
-            "targetHandle": "promptTemplate_0-input-promptValues-json",
-            "type": "buttonedge",
-            "id": "setVariable_0-setVariable_0-output-output-string|number|boolean|json|array-promptTemplate_0-promptTemplate_0-input-promptValues-json",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "getVariable_0",
-            "sourceHandle": "getVariable_0-output-output-string|number|boolean|json|array",
-            "target": "promptTemplate_1",
-            "targetHandle": "promptTemplate_1-input-promptValues-json",
-            "type": "buttonedge",
-            "id": "getVariable_0-getVariable_0-output-output-string|number|boolean|json|array-promptTemplate_1-promptTemplate_1-input-promptValues-json",
             "data": {
                 "label": ""
             }
@@ -1676,6 +1970,14 @@
             "targetHandle": "llmChain_2-input-prompt-BasePromptTemplate",
             "type": "buttonedge",
             "id": "promptTemplate_2-promptTemplate_2-output-promptTemplate-PromptTemplate|BaseStringPromptTemplate|BasePromptTemplate|Runnable-llmChain_2-llmChain_2-input-prompt-BasePromptTemplate"
+        },
+        {
+            "source": "customFunction_2",
+            "sourceHandle": "customFunction_2-output-output-string|number|boolean|json|array",
+            "target": "promptTemplate_0",
+            "targetHandle": "promptTemplate_0-input-promptValues-json",
+            "type": "buttonedge",
+            "id": "customFunction_2-customFunction_2-output-output-string|number|boolean|json|array-promptTemplate_0-promptTemplate_0-input-promptValues-json"
         }
     ]
 }

@@ -1,12 +1,11 @@
 {
     "description": "Generate image using Replicate Stability text-to-image generative AI model",
-    "badge": "NEW",
-    "categories": "Replicate,ChatOpenAI,LLM Chain,Langchain",
-    "framework": "Langchain",
+    "framework": ["Langchain"],
+    "usecases": ["Image Generation"],
     "nodes": [
         {
             "width": 300,
-            "height": 475,
+            "height": 513,
             "id": "promptTemplate_0",
             "position": {
                 "x": 366.28009688480114,
@@ -66,7 +65,7 @@
         },
         {
             "width": 300,
-            "height": 475,
+            "height": 513,
             "id": "promptTemplate_1",
             "position": {
                 "x": 1391.1872909364881,
@@ -246,11 +245,11 @@
         },
         {
             "width": 300,
-            "height": 456,
+            "height": 508,
             "id": "llmChain_0",
             "position": {
-                "x": 1045.7783277092838,
-                "y": 242.08205161173464
+                "x": 1036.2168666805817,
+                "y": 252.83869526902453
             },
             "type": "customNode",
             "data": {
@@ -338,14 +337,14 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1045.7783277092838,
-                "y": 242.08205161173464
+                "x": 1036.2168666805817,
+                "y": 252.83869526902453
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 456,
+            "height": 508,
             "id": "llmChain_1",
             "position": {
                 "x": 1769.7463380379868,
@@ -444,17 +443,17 @@
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 1390.9908731749008,
-                "y": -332.0609187416074
+                "x": 1395.7716036892518,
+                "y": -415.72370274275096
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -600,7 +599,7 @@
                     "timeout": "",
                     "basepath": "",
                     "baseOptions": "",
-                    "allowImageUploads": true,
+                    "allowImageUploads": false,
                     "imageResolution": "low"
                 },
                 "outputAnchors": [
@@ -616,8 +615,61 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1390.9908731749008,
-                "y": -332.0609187416074
+                "x": 1395.7716036892518,
+                "y": -415.72370274275096
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1766.9902171902506,
+                "y": 22.813703651766104
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Instruct LLM to response in a markdown format in order to display image in the chat window\n\nExample question:\na cat painting"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 143,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1766.9902171902506,
+                "y": 22.813703651766104
             },
             "dragging": false
         }

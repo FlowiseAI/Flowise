@@ -1,8 +1,8 @@
 {
-    "description": "Answer question based on retrieved documents (context) with built-in memory to remember conversation using LlamaIndex",
-    "categories": "Text File,Prompt Template,ChatOpenAI,Conversation Chain,Pinecone,LlamaIndex,Redis",
-    "framework": "LlamaIndex",
-    "badge": "NEW",
+    "description": "Answer question based on retrieved documents (context) while remembering previous conversations",
+    "framework": ["LlamaIndex"],
+    "badge": "POPULAR",
+    "usecases": ["Documents QnA"],
     "nodes": [
         {
             "width": 300,

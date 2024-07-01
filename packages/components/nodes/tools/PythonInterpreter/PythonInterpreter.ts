@@ -36,7 +36,6 @@ class PythonInterpreter_Tools implements INode {
         this.type = 'PythonInterpreter'
         this.icon = 'python.svg'
         this.category = 'Tools'
-        this.badge = 'NEW'
         this.description = 'Execute python code in Pyodide sandbox environment'
         this.baseClasses = [this.type, 'Tool', ...getBaseClasses(PythonInterpreterTool)]
         this.inputs = [
