@@ -427,9 +427,10 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                             usedTools.push({
                                 tool: tool.name,
                                 toolInput: action.toolInput as any,
-                                toolOutput: (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX))
-                                    ? observation.split(SOURCE_DOCUMENTS_PREFIX)[0]
-                                    : observation
+                                toolOutput:
+                                    typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)
+                                        ? observation.split(SOURCE_DOCUMENTS_PREFIX)[0]
+                                        : observation
                             })
                         } else {
                             observation = `${action.tool} is not a valid tool, try another one.`
