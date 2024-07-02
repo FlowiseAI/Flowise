@@ -20,4 +20,4 @@ class BaiduApi implements INodeCredential {
     }
 }
 
-module.exports = { credClass: BaiduApi}
+module.exports = { credClass: BaiduApi }
