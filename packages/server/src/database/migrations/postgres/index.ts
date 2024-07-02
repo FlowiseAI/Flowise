@@ -21,6 +21,7 @@ import { AddLead1710832137905 } from './1710832137905-AddLead'
 import { AddLeadToChatMessage1711538016098 } from './1711538016098-AddLeadToChatMessage'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
 import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
+import { AddNameToChatHistory1766759476233 } from './1766759476233-AddNameToChatHistory'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -45,5 +46,6 @@ export const postgresMigrations = [
     AddLead1710832137905,
     AddLeadToChatMessage1711538016098,
     AddAgentReasoningToChatMessage1714679514451,
-    AddTypeToChatFlow1766759476232
+    AddTypeToChatFlow1766759476232,
+    AddNameToChatHistory1766759476233
 ]

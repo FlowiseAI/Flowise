@@ -372,6 +372,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const userMessage: Omit<IChatMessage, 'id'> = {
             role: 'userMessage',
             content: incomingInput.question,
+            name: memoryNode?.data?.inputs?.humanPrefix,
             chatflowid,
             chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
             chatId,
@@ -391,6 +392,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
             role: 'apiMessage',
             content: resultText,
+            name: memoryNode?.data?.inputs?.aiPrefix,
             chatflowid,
             chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
             chatId,

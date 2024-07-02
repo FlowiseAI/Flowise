@@ -10,6 +10,9 @@ export class ChatMessage implements IChatMessage {
     @Column()
     role: MessageType
 
+    @Column({ nullable: true, type: 'text' })
+    name?: string
+
     @Index()
     @Column({ type: 'uuid' })
     chatflowid: string
