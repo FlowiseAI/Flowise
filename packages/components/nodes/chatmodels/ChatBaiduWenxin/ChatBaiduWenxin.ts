@@ -1,5 +1,5 @@
 import { BaseCache } from '@langchain/core/caches'
-import { ChatBaiduWenxin } from "@langchain/community/chat_models/baiduwenxin"
+import { ChatBaiduWenxin } from '@langchain/community/chat_models/baiduwenxin'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
