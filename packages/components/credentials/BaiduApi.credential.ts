@@ -15,6 +15,11 @@ class BaiduApi implements INodeCredential {
                 label: 'Baidu Api Key',
                 name: 'baiduApiKey',
                 type: 'password'
+            },
+            {
+                label: 'Baidu Secret Key',
+                name: 'baiduSecretKey',
+                type: 'password'
             }
         ]
     }

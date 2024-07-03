@@ -61,9 +61,12 @@ class ChatBaiduWenxin_ChatModels implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const baiduApiKey = getCredentialParam('baiduApiKey', credentialData, nodeData)
+        const baiduSecretKey = getCredentialParam('baiduSecretKey', credentialData, nodeData)
 
         const obj: Partial<ChatBaiduWenxin> = {
+            streaming: true,
             baiduApiKey,
+            baiduSecretKey,
             modelName,
             temperature: temperature ? parseFloat(temperature) : undefined
         }
