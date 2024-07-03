@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./tools/toolbox.js",
     "journey": "ts-node ./journeys/index.ts",
-    "bulkProcessRunner": "npx ts-node -r dotenv/config ./bulkjobs/index.ts",
+    "bulkProcessRunner": "ts-node -r dotenv/config ./bulkjobs/index.ts",
     "migration": "node -r dotenv/config ./bulkjobs/contentModels/fineTuneMigration.js"
   },
   "keywords": [],
@@ -18,7 +18,8 @@
     "contentful": "^10.6.14",
     "contentful-management": "^11.24.3",
     "contentful-migration": "^4.20.2",
-    "csv-stringify": "^6.4.6",
+    "csv": "^6.3.9",
+    "csv-stringify": "^6.5.0",
     "dotenv": "^16.4.5",
     "flowise-configs": "link:/Users/bradtaylor/Documents/GitHub/Flowise/packages/flowise-configs",
     "lodash": "^4.17.21"
