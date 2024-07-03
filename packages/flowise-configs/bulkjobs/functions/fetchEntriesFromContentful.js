@@ -5,7 +5,6 @@ const fetchEntriesFromContentful = async (content_type, filters = {}, skip = 0, 
         ...filters,
         content_type,
         include,
-        limit: 2,
         skip
     })
 

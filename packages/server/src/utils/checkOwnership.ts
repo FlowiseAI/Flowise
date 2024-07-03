@@ -1,6 +1,6 @@
 const checkOwnership = async (entryOrArray: any | Array<any>, userId?: string, organizationId?: string) => {
     const checkEntry = (entry?: any) => {
-        if (entry?.userId === userId) {
+        if (entry?.isPublic || entry?.userId === userId) {
             return true
         }
         if (entry?.visibility && entry?.visibility?.includes('Organization')) {

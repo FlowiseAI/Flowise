@@ -17,7 +17,7 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
     constructor() {
         this.label = 'VectorStore To Document'
         this.name = 'vectorStoreToDocument'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'Document'
         this.icon = 'vectorretriever.svg'
         this.category = 'Document Loaders'

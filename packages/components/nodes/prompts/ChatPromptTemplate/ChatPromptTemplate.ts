@@ -61,7 +61,9 @@ class ChatPromptTemplate_Prompts implements INode {
         let promptValues: ICommonObject = {}
         if (promptValuesStr) {
             try {
-                promptValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
+                const sanitizedPromptValuesStr = promptValuesStr.replace(/\n/g, '\\n') // Replace newlines with escaped newlines we might want a helper function for this
+                promptValues =
+                    typeof sanitizedPromptValuesStr === 'object' ? sanitizedPromptValuesStr : JSON.parse(sanitizedPromptValuesStr)
             } catch (exception) {
                 throw new Error("Invalid JSON in the ChatPromptTemplate's promptValues: " + exception)
             }

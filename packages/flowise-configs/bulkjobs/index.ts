@@ -1,5 +1,6 @@
-const { relatedGlossaryTerms } = require('./processors')
-const relatedContentEntries = require('./jobTypes/labeling/relatedContentEntries')
+const { relatedGlossaryTerms, summaryReport } = require('./processors')
+const { relatedContentEntries } = require('./jobTypes/labeling')
+const { entryListFieldReport } = require('./jobTypes/reports')
 /*
  To use this script, you need to create a jobType, this is where your business logic goes, and a process, this is where your configuration for a processor goes.
     The jobType is a function that receives the processor and returns a function that receives the process.
@@ -7,6 +8,7 @@ const relatedContentEntries = require('./jobTypes/labeling/relatedContentEntries
 */
 
 ;(async () => {
-    const report = await relatedContentEntries(relatedGlossaryTerms)
-    console.log(report)
+    // const report = await relatedContentEntries(relatedGlossaryTerms)
+    const summary = await entryListFieldReport(summaryReport)
+    console.log(summary)
 })()

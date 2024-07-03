@@ -237,7 +237,8 @@ class Contentful_DocumentLoaders implements INode {
         // Process documents based on the determined output type
         if (nodeData?.outputs?.output === 'stringOutput') {
             // Convert loaded documents to plain text
-            return finaldocs.map((doc) => documentToPlainText(doc))
+            const finalText = finaldocs.map((doc) => documentToPlainText(doc)).join(' ---- ')
+            return finalText
         } else {
             // Return Document objects
             return finaldocs

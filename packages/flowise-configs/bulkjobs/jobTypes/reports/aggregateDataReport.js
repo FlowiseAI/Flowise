@@ -49,4 +49,4 @@ async function aggregateDataReport(processor, entries) {
     })
 }
 
-module.exports = { aggregateDataReport }
+module.exports = aggregateDataReport
