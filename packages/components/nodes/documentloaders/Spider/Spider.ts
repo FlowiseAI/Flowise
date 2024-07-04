@@ -123,7 +123,7 @@ class Spider_DocumentLoaders implements INode {
                 label: 'Limit',
                 name: 'limit',
                 type: 'number',
-                default: 25,
+                default: 25
             },
             {
                 label: 'Additional Parameters',
