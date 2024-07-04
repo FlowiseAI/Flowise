@@ -145,6 +145,7 @@ class Cheerio_DocumentLoaders implements INode {
                 return docs
             } catch (err) {
                 if (process.env.DEBUG === 'true') options.logger.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                return []
             }
         }
 
@@ -165,17 +166,17 @@ class Cheerio_DocumentLoaders implements INode {
             if (process.env.DEBUG === 'true') options.logger.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
-                docs.push(...((await cheerioLoader(page)) || []))
+                docs.push(...(await cheerioLoader(page)))
             }
             if (process.env.DEBUG === 'true') options.logger.info(`Finish ${relativeLinksMethod}`)
         } else if (selectedLinks && selectedLinks.length > 0) {
             if (process.env.DEBUG === 'true')
                 options.logger.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
             for (const page of selectedLinks.slice(0, limit)) {
-                docs.push(...((await cheerioLoader(page)) || []))
+                docs.push(...(await cheerioLoader(page)))
             }
         } else {
-            docs = (await cheerioLoader(url)) || []
+            docs = await cheerioLoader(url)
         }
 
         if (metadata) {
