@@ -49,6 +49,10 @@ switch (process.env.NODE_ENV) {
 
 ### - pnpm build
 
+Start the app:
+    ```bash
+    pnpm start
+
 ## Первый вариант запуска
 
 ### - переименовать ecosystem.config.js.example -> ecosystem.config.js
