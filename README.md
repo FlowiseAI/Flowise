@@ -8,7 +8,8 @@
 
 ### - pnpm start
 
-666
+Start the app:
+
     ```bash
     pnpm start
     ```
