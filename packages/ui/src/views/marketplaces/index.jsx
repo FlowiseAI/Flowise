@@ -204,11 +204,11 @@ const Marketplace = () => {
                         const flowDataStr = flows[i].flowData
                         const flowData = JSON.parse(flowDataStr)
                         const nodes = flowData.nodes || []
-                        images[flows[i].id] = []
+                        images[flows[i].type + flows[i].id] = []
                         for (let j = 0; j < nodes.length; j += 1) {
                             const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                            if (!images[flows[i].id].includes(imageSrc)) {
-                                images[flows[i].id].push(imageSrc)
+                            if (!images[flows[i].type + flows[i].id].includes(imageSrc)) {
+                                images[flows[i].type + flows[i].id].push(imageSrc)
                             }
                         }
                     }
@@ -417,7 +417,7 @@ const Marketplace = () => {
                                                                 <ItemCard
                                                                     onClick={() => goToCanvas(data)}
                                                                     data={data}
-                                                                    images={images[data.id]}
+                                                                    images={images[data.type + data.id]}
                                                                 />
                                                             )}
                                                             {data.type === 'Tool' && (
@@ -426,7 +426,7 @@ const Marketplace = () => {
                                                         </Badge>
                                                     )}
                                                     {!data.badge && (data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                        <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                                        <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.type + data.id]} />
                                                     )}
                                                     {!data.badge && data.type === 'Tool' && (
                                                         <ItemCard data={data} onClick={() => goToTool(data)} />
