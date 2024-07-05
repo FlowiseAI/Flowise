@@ -9,6 +9,7 @@ interface SpiderLoaderParameters {
     url: string
     apiKey?: string
     mode?: 'crawl' | 'scrape'
+    limit?: number
     params?: Record<string, unknown>
 }
 
@@ -16,11 +17,12 @@ class SpiderLoader extends BaseDocumentLoader {
     private apiKey: string
     private url: string
     private mode: 'crawl' | 'scrape'
+    private limit?: number
     private params?: Record<string, unknown>
 
     constructor(loaderParams: SpiderLoaderParameters) {
         super()
-        const { apiKey, url, mode = 'crawl', params } = loaderParams
+        const { apiKey, url, mode = 'crawl', limit, params } = loaderParams
         if (!apiKey) {
             throw new Error('Spider API key not set. You can set it as SPIDER_API_KEY in your .env file, or pass it to Spider.')
         }
@@ -28,6 +30,7 @@ class SpiderLoader extends BaseDocumentLoader {
         this.apiKey = apiKey
         this.url = url
         this.mode = mode
+        this.limit = Number(limit)
         this.params = params
     }
 
@@ -42,6 +45,9 @@ class SpiderLoader extends BaseDocumentLoader {
             }
             spiderDocs = [response.data]
         } else if (this.mode === 'crawl') {
+            if (this.params) {
+                this.params.limit = this.limit
+            }
             const response = await app.crawlUrl(this.url, this.params)
             if (!response.success) {
                 throw new Error(`Spider: Failed to crawl URL. Error: ${response.error}`)
@@ -114,6 +120,12 @@ class Spider_DocumentLoaders implements INode {
                 placeholder: 'https://spider.cloud'
             },
             {
+                label: 'Limit',
+                name: 'limit',
+                type: 'number',
+                default: 25
+            },
+            {
                 label: 'Additional Parameters',
                 name: 'params',
                 description:
@@ -136,6 +148,7 @@ class Spider_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const url = nodeData.inputs?.url as string
         const mode = nodeData.inputs?.mode as 'crawl' | 'scrape'
+        const limit = nodeData.inputs?.limit as number
         let params = nodeData.inputs?.params || {}
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const spiderApiKey = getCredentialParam('spiderApiKey', credentialData, nodeData)
@@ -155,6 +168,7 @@ class Spider_DocumentLoaders implements INode {
             url,
             mode: mode as 'crawl' | 'scrape',
             apiKey: spiderApiKey,
+            limit: limit as number,
             params: params as Record<string, unknown>
         }
 
