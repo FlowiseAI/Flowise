@@ -29,7 +29,7 @@ jobs:
           git fetch upstream
 
       - name: Sync with upstream main branch
-        with: # Set the secret as an input
+        env: # Set the secret as an input
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           echo $GH_PAT
