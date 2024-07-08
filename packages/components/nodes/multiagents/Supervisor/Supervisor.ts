@@ -273,10 +273,8 @@ class Supervisor_MultiAgents implements INode {
                  * So we have to place the system + human prompt at last
                  */
                 let prompt = ChatPromptTemplate.fromMessages([
-                    ['human', systemPrompt],
-                    ['ai', ''],
+                    ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
-                    ['ai', ''],
                     ['human', userPrompt]
                 ])
 
