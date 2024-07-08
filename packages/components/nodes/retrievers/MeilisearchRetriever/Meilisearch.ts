@@ -3,6 +3,7 @@ import type { CallbackManagerForRetrieverRun } from '@langchain/core/callbacks/m
 import { Document } from '@langchain/core/documents'
 import { Meilisearch } from 'meilisearch'
 import { search } from '@notionhq/client/build/src/api-endpoints'
+import { parse } from 'dotenv'
 
 export interface CustomRetrieverInput extends BaseRetrieverInput {}
 
@@ -12,11 +13,26 @@ export class MeilisearchRetriever extends BaseRetriever {
     private readonly host: any
     private indexUid: string
     private K: string
-    constructor(host: string, meilisearchApiKey: any, indexUid: string, K: string, fields?: CustomRetrieverInput) {
+    private semanticRatio: string
+    constructor(host: string, meilisearchApiKey: any, indexUid: string, K: string, semanticRatio: string, fields?: CustomRetrieverInput) {
         super(fields)
         this.meilisearchApiKey = meilisearchApiKey
         this.host = host
         this.indexUid = indexUid
+
+        if (semanticRatio == '') {
+            this.semanticRatio = '0.5'
+        } else {
+            let semanticRatio_Float = parseFloat(semanticRatio)
+            if (semanticRatio_Float > 1.0) {
+                this.semanticRatio = '1.0'
+            } else if (semanticRatio_Float < 0.0) {
+                this.semanticRatio = '0.0'
+            } else {
+                this.semanticRatio = semanticRatio
+            }
+        }
+
         if (K == '') {
             K = '4'
         }
@@ -34,9 +50,12 @@ export class MeilisearchRetriever extends BaseRetriever {
         const index = client.index(this.indexUid)
         // Perform the search
         const searchResults = await index.search(query, {
-            limit: parseInt(this.K, 10), // Optional: Limit the number of results
-            attributesToRetrieve: ['*'] // Optional: Specify which fields to retrieve
-            // Add other search parameters as needed
+            limit: parseInt(this.K), // Optional: Limit the number of results
+            attributesToRetrieve: ['*'], // Optional: Specify which fields to retrieve
+            hybrid: {
+                semanticRatio: parseFloat(this.semanticRatio),
+                embedder: 'default'
+            }
         })
 
         const hits = searchResults.hits
@@ -65,10 +84,38 @@ export class MeilisearchRetriever extends BaseRetriever {
                 })
         )
 
-
         return documents
     }
     //TODO
     async addNewDocumentsToIndex(): Promise<any> {
+        const client = new Meilisearch({
+            host: this.host,
+            apiKey: this.meilisearchApiKey
+        })
+        let index
+
+        try {
+            // Check if the index exists
+            index = await client.getIndex(this.indexUid)
+        } catch (error) {
+            if (error.code === 'index_not_found') {
+                // If the index does not exist, create it
+                index = await client.createIndex(this.indexUid)
+            } else {
+                // Handle other possible errors
+                console.error('An error occurred:', error)
+                return
+            }
+        }
+        const documents = [
+            { id: 1, title: 'Carol', genres: ['Romance', 'Drama'] },
+            { id: 2, title: 'Wonder Woman', genres: ['Action', 'Adventure'] },
+            { id: 3, title: 'Life of Pi', genres: ['Adventure', 'Drama'] },
+            { id: 4, title: 'Mad Max: Fury Road', genres: ['Adventure', 'Science Fiction'] },
+            { id: 5, title: 'Moana', genres: ['Fantasy', 'Action'] },
+            { id: 6, title: 'Philadelphia', genres: ['Drama'] }
+        ]
+
+        // let response = await index.addDocuments(documents)
     }
 }

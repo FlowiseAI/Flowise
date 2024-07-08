@@ -3,6 +3,7 @@ import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from 
 import { docsearch } from 'meilisearch-docsearch'
 import { Meilisearch } from 'meilisearch'
 import { MeilisearchRetriever } from './Meilisearch'
+import { integer } from '@elastic/elasticsearch/lib/api/types'
 
 class MeilisearchRetriever_node implements INode {
     label: string
@@ -54,6 +55,14 @@ class MeilisearchRetriever_node implements INode {
                 description: 'number of top searches to return as context',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Semantic Ratio',
+                name: 'semanticRatio',
+                type: 'number',
+                description: 'percentage of sematic reasoning in meilisearch hybrid search',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -87,9 +96,10 @@ class MeilisearchRetriever_node implements INode {
         const host = nodeData.inputs?.host as string
         const indexUid = nodeData.inputs?.indexUid as string
         const K = nodeData.inputs?.K as string
+        const semanticRatio = nodeData.inputs?.semanticRatio as string
         const output = nodeData.outputs?.output as string
 
-        const hybridsearchretriever = new MeilisearchRetriever(host, meilisearchApiKey, indexUid, K)
+        const hybridsearchretriever = new MeilisearchRetriever(host, meilisearchApiKey, indexUid, K,semanticRatio)
         return hybridsearchretriever
     }
 }
