@@ -191,16 +191,21 @@ class MongoDBAtlas_VectorStores implements INode {
 let mongoClientSingleton: MongoClient
 let mongoUrl: string
 
+const driverInfo = {
+    name: 'Flowise',
+    version: 'todo, 1.8.5'
+}
+
 const getMongoClient = async (newMongoUrl: string) => {
     if (!mongoClientSingleton) {
         // if client does not exist
-        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoClientSingleton = new MongoClient(newMongoUrl, { driverInfo })
         mongoUrl = newMongoUrl
         return mongoClientSingleton
     } else if (mongoClientSingleton && newMongoUrl !== mongoUrl) {
         // if client exists but url changed
         mongoClientSingleton.close()
-        mongoClientSingleton = new MongoClient(newMongoUrl)
+        mongoClientSingleton = new MongoClient(newMongoUrl, { driverInfo })
         mongoUrl = newMongoUrl
         return mongoClientSingleton
     }
