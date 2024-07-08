@@ -87,35 +87,5 @@ export class MeilisearchRetriever extends BaseRetriever {
         return documents
     }
     //TODO
-    async addNewDocumentsToIndex(): Promise<any> {
-        const client = new Meilisearch({
-            host: this.host,
-            apiKey: this.meilisearchApiKey
-        })
-        let index
-
-        try {
-            // Check if the index exists
-            index = await client.getIndex(this.indexUid)
-        } catch (error) {
-            if (error.code === 'index_not_found') {
-                // If the index does not exist, create it
-                index = await client.createIndex(this.indexUid)
-            } else {
-                // Handle other possible errors
-                console.error('An error occurred:', error)
-                return
-            }
-        }
-        const documents = [
-            { id: 1, title: 'Carol', genres: ['Romance', 'Drama'] },
-            { id: 2, title: 'Wonder Woman', genres: ['Action', 'Adventure'] },
-            { id: 3, title: 'Life of Pi', genres: ['Adventure', 'Drama'] },
-            { id: 4, title: 'Mad Max: Fury Road', genres: ['Adventure', 'Science Fiction'] },
-            { id: 5, title: 'Moana', genres: ['Fantasy', 'Action'] },
-            { id: 6, title: 'Philadelphia', genres: ['Drama'] }
-        ]
-
-        // let response = await index.addDocuments(documents)
-    }
+    async addNewDocumentsToIndex(): Promise<any> {}
 }
