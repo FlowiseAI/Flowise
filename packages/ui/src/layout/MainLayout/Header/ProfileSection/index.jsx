@@ -1,13 +1,13 @@
-import { useState, useRef, useEffect } from 'react'
+import { REMOVE_DIRTY, closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
-
+import { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 // material-ui
-import { useTheme } from '@mui/material/styles'
 import {
-    Box,
-    ButtonBase,
     Avatar,
+    Box,
+    Button,
+    ButtonBase,
     ClickAwayListener,
     Divider,
     List,
@@ -18,19 +18,30 @@ import {
     Popper,
     Typography
 } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import Transitions from '@/ui-component/extended/Transitions'
 import AboutDialog from '@/ui-component/dialog/AboutDialog'
+import Transitions from '@/ui-component/extended/Transitions'
 
 // assets
-import { IconLogout, IconSettings, IconInfoCircle } from '@tabler/icons-react'
+import { IconInfoCircle, IconLogout, IconSettings } from '@tabler/icons-react'
 
+import { IconFileExport, IconFileUpload } from '@tabler/icons-react'
 import './index.css'
+
+//API
+import chatFlowsApi from '@/api/chatflows'
+
+// Hooks
+import useApi from '@/hooks/useApi'
+import { generateExportAllFlowData } from '@/utils/genericHelper'
+import useNotifier from '@/utils/useNotifier'
+import { IconX } from '@tabler/icons-react'
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -44,6 +55,13 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     const anchorRef = useRef(null)
 
+    // ==============================|| Snackbar ||============================== //
+
+    useNotifier()
+    const dispatch = useDispatch()
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
             return
@@ -54,6 +72,57 @@ const ProfileSection = ({ username, handleLogout }) => {
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen)
     }
+
+    const errorFailed = (message) => {
+        enqueueSnackbar({
+            message,
+            options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'error',
+                persist: true,
+                action: (key) => (
+                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                        <IconX />
+                    </Button>
+                )
+            }
+        })
+    }
+
+    const importAllChatflows = () => {
+        console.log('reach importAllChatflows')
+    }
+    const getAllChatflowsApi = useApi(chatFlowsApi.getAllChatflows)
+
+    const exportAllChatflowsSuccess = () => {
+        dispatch({ type: REMOVE_DIRTY })
+        enqueueSnackbar({
+            message: `Export All Chatflows Successful`,
+            options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+                action: (key) => (
+                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                        <IconX />
+                    </Button>
+                )
+            }
+        })
+    }
+
+    useEffect(() => {
+        try {
+            console.log('reach here')
+            if (getAllChatflowsApi.error) throw new Error(getAllChatflowsApi.error)
+            if (getAllChatflowsApi.data) {
+                const allFlowData = generateExportAllFlowData(getAllChatflowsApi.data)
+                console.log(allFlowData)
+                exportAllChatflowsSuccess()
+            }
+        } catch (error) {
+            errorFailed(error)
+        }
+    }, [getAllChatflowsApi.error, getAllChatflowsApi.data])
 
     const prevOpen = useRef(open)
     useEffect(() => {
@@ -135,6 +204,28 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     }
                                                 }}
                                             >
+                                                <ListItemButton
+                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                    onClick={() => {
+                                                        getAllChatflowsApi.request()
+                                                    }}
+                                                >
+                                                    <ListItemIcon>
+                                                        <IconFileExport stroke={1.5} size='1.3rem' />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={<Typography variant='body2'>Export Chatflows</Typography>} />
+                                                </ListItemButton>
+                                                <ListItemButton
+                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                    onClick={() => {
+                                                        importAllChatflows()
+                                                    }}
+                                                >
+                                                    <ListItemIcon>
+                                                        <IconFileUpload stroke={1.5} size='1.3rem' />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={<Typography variant='body2'>Import Chatflows</Typography>} />
+                                                </ListItemButton>
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {

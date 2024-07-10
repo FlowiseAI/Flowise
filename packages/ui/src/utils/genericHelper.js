@@ -340,6 +340,10 @@ export const getFolderName = (base64ArrayStr) => {
     }
 }
 
+export const generateExportAllFlowData = (allFlowData) => {
+    return allFlowData
+}
+
 export const generateExportFlowData = (flowData) => {
     const nodes = flowData.nodes
     const edges = flowData.edges
