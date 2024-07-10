@@ -9,6 +9,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
+            - name: Use Node.js 20.x
+              uses: actions/setup-node@v3
+              with:
+                node-version: '20.x'
             - name: IGNORE autoSyncSingleCommit
               run: |
                   echo This single commit has came from a merged commit. We will ignore it. This case is handled in autoSyncMergedPullRequest workflow for merge commits comming from merged pull requests only! Beware, the regular merge commits are not handled by any workflow for the moment.
@@ -17,6 +21,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
+            - name: Use Node.js 20.x
+              uses: actions/setup-node@v3
+              with:
+                node-version: '20.x'
             - name: autoSyncSingleCommit
               env:
                   GITHUB_CONTEXT: ${{ toJSON(github) }}
