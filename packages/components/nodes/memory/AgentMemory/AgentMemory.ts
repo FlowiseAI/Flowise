@@ -1,8 +1,9 @@
 import path from 'path'
 import { getBaseClasses, getUserHome } from '../../../src/utils'
 import { SaverOptions } from './interface'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { SqliteSaver } from './sqliteSaver'
+import { DataSource } from 'typeorm'
 
 class AgentMemory_Memory implements INode {
     label: string
@@ -62,6 +63,9 @@ class AgentMemory_Memory implements INode {
         const additionalConfig = nodeData.inputs?.additionalConfig as string
         const databaseFilePath = nodeData.inputs?.databaseFilePath as string
         const databaseType = nodeData.inputs?.databaseType as string
+        const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const chatflowid = options.chatflowid as string
+        const appDataSource = options.appDataSource as DataSource
 
         let additionalConfiguration = {}
         if (additionalConfig) {
@@ -85,7 +89,10 @@ class AgentMemory_Memory implements INode {
                 : path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')
             const args: SaverOptions = {
                 datasourceOptions,
-                threadId
+                threadId,
+                appDataSource,
+                databaseEntities,
+                chatflowid
             }
             const recordManager = new SqliteSaver(args)
             return recordManager

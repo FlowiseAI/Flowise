@@ -1,4 +1,4 @@
-table {
+.react-markdown table {
     border-spacing: 0 !important;
     border-collapse: collapse !important;
     border-color: inherit !important;
@@ -8,12 +8,12 @@ table {
     overflow: auto !important;
 }
 
-tbody,
-td,
-tfoot,
-th,
-thead,
-tr {
+.react-markdown tbody,
+.react-markdown td,
+.react-markdown tfoot,
+.react-markdown th,
+.react-markdown thead,
+.react-markdown tr {
     border-color: inherit !important;
     border-style: solid !important;
     border-width: 1px !important;

@@ -20,6 +20,7 @@ export type NodeParamsType =
     | 'date'
     | 'file'
     | 'folder'
+    | 'tabs'
 
 export type CommonType = string | number | boolean | undefined | null
 
@@ -87,10 +88,11 @@ export interface INodeParams {
     additionalParams?: boolean
     loadMethod?: string
     hidden?: boolean
-    variables?: ICommonObject[]
     hideCodeExecute?: boolean
     codeExample?: string
     hint?: Record<string, string>
+    tabIdentifier?: string
+    tabs?: Array<INodeParams>
 }
 
 export interface INodeExecutionData {
@@ -157,6 +159,7 @@ export interface IUsedTool {
     tool: string
     toolInput: object
     toolOutput: string | object
+    sourceDocuments?: ICommonObject[]
 }
 
 export interface IMultiAgentNode {
@@ -175,17 +178,18 @@ export interface IMultiAgentNode {
     checkpointMemory?: any
 }
 
+type SeqAgentType = 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state' | 'llm'
+
 export interface ISeqAgentNode {
     id: string
     node: any
     name: string
     label: string
-    type: 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state'
+    type: SeqAgentType
     output: string
     llm?: any
+    startLLM?: any
     predecessorAgents?: ISeqAgentNode[]
-    workerPrompt?: string
-    workerInputVariables?: string[]
     recursionLimit?: number
     moderations?: Moderation[]
     multiModalMessageContent?: MessageContentImageUrl[]
@@ -213,8 +217,12 @@ export interface ISeqAgentsState {
 export interface IAgentReasoning {
     agentName: string
     messages: string[]
-    next: string
-    instructions: string
+    next?: string
+    instructions?: string
+    usedTools?: IUsedTool[]
+    sourceDocuments?: ICommonObject[]
+    state?: ICommonObject
+    nodeName?: string
 }
 
 export interface IFileUpload {

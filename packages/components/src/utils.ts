@@ -728,7 +728,7 @@ export const getVars = async (appDataSource: DataSource, databaseEntities: IData
     const variables = ((await appDataSource.getRepository(databaseEntities['Variable']).find()) as IVariable[]) ?? []
 
     // override variables defined in overrideConfig
-    // nodeData.inputs.variables is an Object, check each property and override the variable
+    // nodeData.inputs.vars is an Object, check each property and override the variable
     if (nodeData?.inputs?.vars) {
         for (const propertyName of Object.getOwnPropertyNames(nodeData.inputs.vars)) {
             const foundVar = variables.find((v) => v.name === propertyName)

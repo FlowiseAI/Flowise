@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { SearchApiLoader } from '@langchain/community/document_loaders/web/searchapi'
 import { getCredentialData, getCredentialParam } from '../../../src'
@@ -106,7 +106,13 @@ class SearchAPI_DocumentLoaders implements INode {
         const loader = new SearchApiLoader(loaderConfig)
 
         // Fetch documents, split if a text splitter is provided
-        let docs = textSplitter ? await loader.loadAndSplit() : await loader.load()
+        let docs: IDocument[] = []
+        if (textSplitter) {
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
+        } else {
+            docs = await loader.load()
+        }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)

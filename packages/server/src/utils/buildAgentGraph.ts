@@ -6,9 +6,16 @@ import {
     ConsoleCallbackHandler,
     additionalCallbacks,
     ISeqAgentsState,
-    ISeqAgentNode
+    ISeqAgentNode,
+    IUsedTool
 } from 'flowise-components'
-import { omit } from 'lodash'
+import { Server } from 'socket.io'
+import { omit, cloneDeep, flatten } from 'lodash'
+import { StateGraph, END, START } from '@langchain/langgraph'
+import { Document } from '@langchain/core/documents'
+import { StatusCodes } from 'http-status-codes'
+import { StructuredTool } from '@langchain/core/tools'
+import { BaseMessage, HumanMessage, AIMessage } from '@langchain/core/messages'
 import {
     IChatFlow,
     IComponentNodes,
@@ -19,7 +26,6 @@ import {
     IMessage,
     IncomingInput
 } from '../Interface'
-import { Server } from 'socket.io'
 import {
     buildFlow,
     getStartingNodes,
@@ -30,14 +36,10 @@ import {
     getMemorySessionId
 } from '../utils'
 import { getRunningExpressApp } from './getRunningExpressApp'
-import logger from './logger'
-import { StateGraph, END, START } from '@langchain/langgraph'
-import { BaseMessage, HumanMessage } from '@langchain/core/messages'
-import { cloneDeep, flatten } from 'lodash'
 import { replaceInputsWithConfig, resolveVariables } from '.'
-import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { getErrorMessage } from '../errors/utils'
+import logger from './logger'
 
 /**
  * Build Agent Graph
@@ -104,7 +106,7 @@ export const buildAgentGraph = async (
         }
 
         // Initialize nodes like ChatModels, Tools, etc.
-        const reactFlowNodes = await buildFlow({
+        const reactFlowNodes: IReactFlowNode[] = await buildFlow({
             startingNodeIds,
             reactFlowNodes: nodes,
             reactFlowEdges: edges,
@@ -144,14 +146,19 @@ export const buildAgentGraph = async (
         let agentReasoning: IAgentReasoning[] = []
         let isSequential = false
 
-        const workerNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'worker')
-        const supervisorNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'supervisor')
-        const seqAgentNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqAgent')
+        const workerNodes = reactFlowNodes.filter((node) => node.data.name === 'worker')
+        const supervisorNodes = reactFlowNodes.filter((node) => node.data.name === 'supervisor')
+        const seqAgentNodes = reactFlowNodes.filter((node) => node.data.category === 'Sequential Agents')
 
-        const mapNameToLabel: Record<string, string> = {}
+        const mapNameToLabel: Record<string, { label: string; nodeName: string }> = {}
 
         for (const node of [...workerNodes, ...supervisorNodes, ...seqAgentNodes]) {
-            mapNameToLabel[node.data.instance.name] = node.data.instance.label
+            if (!Object.prototype.hasOwnProperty.call(mapNameToLabel, node.data.instance.name)) {
+                mapNameToLabel[node.data.instance.name] = {
+                    label: node.data.instance.label,
+                    nodeName: node.data.name
+                }
+            }
         }
 
         try {
@@ -165,6 +172,7 @@ export const buildAgentGraph = async (
                     options,
                     startingNodeIds,
                     incomingInput.question,
+                    chatHistory,
                     incomingInput?.overrideConfig,
                     sessionId || chatId
                 )
@@ -178,6 +186,7 @@ export const buildAgentGraph = async (
                     appServer.nodesPool.componentNodes,
                     options,
                     incomingInput.question,
+                    chatHistory,
                     incomingInput?.overrideConfig,
                     sessionId || chatId
                 )
@@ -188,26 +197,55 @@ export const buildAgentGraph = async (
                 for await (const output of await streamResults) {
                     if (!output?.__end__) {
                         for (const agentName of Object.keys(output)) {
+                            const nodeId = output[agentName]?.messages
+                                ? output[agentName].messages[output[agentName].messages.length - 1]?.additional_kwargs?.nodeId
+                                : ''
                             const usedTools = output[agentName]?.messages
-                                ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.usedTools)
+                                ? output[agentName].messages.map((msg: BaseMessage) => msg.additional_kwargs?.usedTools)
                                 : []
                             const sourceDocuments = output[agentName]?.messages
-                                ? output[agentName].messages.map((msg: any) => msg.additional_kwargs?.sourceDocuments)
+                                ? output[agentName].messages.map((msg: BaseMessage) => msg.additional_kwargs?.sourceDocuments)
                                 : []
                             const messages = output[agentName]?.messages
-                                ? output[agentName].messages.map((msg: any) => (typeof msg === 'string' ? msg : msg.content))
+                                ? output[agentName].messages.map((msg: BaseMessage) => (typeof msg === 'string' ? msg : msg.content))
                                 : []
 
                             const state = omit(output[agentName], ['messages'])
 
+                            if (isSequential) {
+                                // check if previous node is condition
+                                const inputEdges = edges.filter(
+                                    (edg) => edg.target === nodeId && edg.targetHandle.includes(`${nodeId}-input-sequentialNode`)
+                                )
+
+                                inputEdges.forEach((edge) => {
+                                    const parentNode = reactFlowNodes.find((nd) => nd.id === edge.source)
+                                    if (parentNode) {
+                                        if (parentNode.data.name.includes('seqCondition')) {
+                                            const newMessages = messages.slice(0, -1)
+                                            newMessages.push(mapNameToLabel[agentName].label)
+                                            const reasoning = {
+                                                agentName: parentNode.data.instance?.label || parentNode.data.type,
+                                                messages: newMessages,
+                                                nodeName: parentNode.data.name,
+                                                nodeId: parentNode.data.id
+                                            }
+                                            agentReasoning.push(reasoning)
+                                        }
+                                    }
+                                })
+                            }
+
                             const reasoning = {
-                                agentName: mapNameToLabel[agentName],
+                                agentName: mapNameToLabel[agentName].label,
                                 messages,
                                 next: output[agentName]?.next,
                                 instructions: output[agentName]?.instructions,
-                                usedTools: flatten(usedTools),
-                                sourceDocuments: flatten(sourceDocuments),
-                                state
+                                usedTools: flatten(usedTools) as IUsedTool[],
+                                sourceDocuments: flatten(sourceDocuments) as Document[],
+                                state,
+                                nodeName: mapNameToLabel[agentName].nodeName,
+                                nodeId
                             }
                             agentReasoning.push(reasoning)
 
@@ -225,7 +263,7 @@ export const buildAgentGraph = async (
                                 if (reasoning.next && reasoning.next !== 'FINISH' && reasoning.next !== 'END') {
                                     socketIO
                                         .to(incomingInput.socketIOClientId)
-                                        .emit('nextAgent', mapNameToLabel[reasoning.next] || reasoning.next)
+                                        .emit('nextAgent', mapNameToLabel[reasoning.next].label || reasoning.next)
                                 }
                             }
                         }
@@ -290,7 +328,7 @@ export const buildAgentGraph = async (
 /**
  * Compile Multi Agents Graph
  * @param {IChatFlow} chatflow
- * @param {Record<string, string>} mapNameToLabel
+ * @param {Record<string, {label: string, nodeName: string }>} mapNameToLabel
  * @param {IReactFlowNode[]} reactflowNodes
  * @param {string[]} workerNodeIds
  * @param {IComponentNodes} componentNodes
@@ -301,13 +339,14 @@ export const buildAgentGraph = async (
  */
 const compileMultiAgentsGraph = async (
     chatflow: IChatFlow,
-    mapNameToLabel: Record<string, string>,
+    mapNameToLabel: Record<string, { label: string; nodeName: string }>,
     reactflowNodes: IReactFlowNode[] = [],
     workerNodeIds: string[],
     componentNodes: IComponentNodes,
     options: ICommonObject,
     startingNodeIds: string[],
     question: string,
+    chatHistory: IMessage[] = [],
     overrideConfig?: ICommonObject,
     threadId?: string
 ) => {
@@ -340,7 +379,7 @@ const compileMultiAgentsGraph = async (
 
         let flowNodeData = cloneDeep(workerNode.data)
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, [])
+        flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, chatHistory)
 
         try {
             const workerResult: IMultiAgentNode = await newNodeInstance.init(flowNodeData, question, options)
@@ -360,7 +399,7 @@ const compileMultiAgentsGraph = async (
 
     // Init supervisor nodes
     for (const supervisor in supervisorWorkers) {
-        const supervisorInputLabel = mapNameToLabel[supervisor]
+        const supervisorInputLabel = mapNameToLabel[supervisor].label
         const supervisorNode = reactflowNodes.find((node) => supervisorInputLabel === node.data.inputs?.supervisorName)
         if (!supervisorNode) continue
 
@@ -371,7 +410,7 @@ const compileMultiAgentsGraph = async (
         let flowNodeData = cloneDeep(supervisorNode.data)
 
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, [])
+        flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, chatHistory)
 
         if (flowNodeData.inputs) flowNodeData.inputs.workerNodes = supervisorWorkers[supervisor]
 
@@ -449,6 +488,7 @@ const compileSeqAgentsGraph = async (
     componentNodes: IComponentNodes,
     options: ICommonObject,
     question: string,
+    chatHistory: IMessage[] = [],
     overrideConfig?: ICommonObject,
     threadId?: string
 ) => {
@@ -482,11 +522,16 @@ const compileSeqAgentsGraph = async (
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have only one start node')
 
     const endAgentNodes: IReactFlowNode[] = reactflowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqEnd')
-    if (!endAgentNodes.length) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have at least one end node')
+    const loopNodes: IReactFlowNode[] = reactflowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqLoop')
+    if (!endAgentNodes.length && !loopNodes.length) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have at least one End/Loop node')
+    }
     /*** End of Validation ***/
 
     let flowNodeData
     let conditionalEdges: Record<string, { nodes: Record<string, string>; func: any }> = {}
+    let conditionalToolNodes: Record<string, { source: ISeqAgentNode; toolNodes: ISeqAgentNode[] }> = {}
+    let bindModel
 
     const initiateNode = async (node: IReactFlowNode) => {
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
@@ -495,20 +540,19 @@ const compileSeqAgentsGraph = async (
 
         flowNodeData = cloneDeep(node.data)
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, [])
+        flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, chatHistory)
 
         const seqAgentNode: ISeqAgentNode = await newNodeInstance.init(flowNodeData, question, options)
         return seqAgentNode
     }
 
+    /** Prepare Conditional Edges
+     *  Example: {
+     *    'seqCondition_1': { nodes: { 'Yes': 'agentName1', 'No': 'agentName2' }, func: <condition-function> },
+     *    'seqCondition_2': { nodes: { 'Yes': 'agentName3', 'No': 'agentName4' }, func: <condition-function> }
+     *  }
+     * */
     const prepareConditionalEdges = (nodeId: string, nodeInstance: ISeqAgentNode) => {
-        /** Prepare Conditional Edges
-         *  Example: {
-         *    'seqCondition_1': { nodes: { 'Yes': 'agentName1', 'No': 'agentName2' }, func: <condition-function> },
-         *    'seqCondition_2': { nodes: { 'Yes': 'agentName3', 'No': 'agentName4' }, func: <condition-function> }
-         *  }
-         * */
-
         const conditionEdges = reactflowEdges.filter((edge) => edge.target === nodeId && edge.source.includes('seqCondition')) ?? []
 
         for (const conditionEdge of conditionEdges) {
@@ -539,17 +583,38 @@ const compileSeqAgentsGraph = async (
         }
     }
 
+    /** Prepare Conditional Tool Edges
+     *  Example: {
+     *    'agent_1': { source: agent, toolNodes: [node] }
+     *  }
+     * */
+    const prepareConditionalToolEdges = (predecessorAgent: ISeqAgentNode, nodeInstance: ISeqAgentNode) => {
+        if (Object.prototype.hasOwnProperty.call(conditionalToolNodes, predecessorAgent.id)) {
+            const toolNodes = conditionalToolNodes[predecessorAgent.id].toolNodes
+            toolNodes.push(nodeInstance)
+            conditionalToolNodes[predecessorAgent.id] = { source: predecessorAgent, toolNodes }
+        } else {
+            conditionalToolNodes[predecessorAgent.id] = {
+                source: predecessorAgent,
+                toolNodes: [nodeInstance]
+            }
+        }
+    }
+
     for (const agentNodeId of getSortedDepthNodes(depthQueue)) {
         const agentNode = reactflowNodes.find((node) => node.id === agentNodeId)
         if (!agentNode) continue
 
         /*** Start processing every Agent nodes ***/
-        if (agentNode.data.name === 'seqAgent' || agentNode.data.name === 'seqEnd' || agentNode.data.name === 'seqLoopAgent') {
+        const eligibleSeqNodes = ['seqAgent', 'seqEnd', 'seqLoop', 'seqToolNode', 'seqLLMNode']
+        const nodesToAdd = ['seqAgent', 'seqToolNode', 'seqLLMNode']
+
+        if (eligibleSeqNodes.includes(agentNode.data.name)) {
             try {
                 const agentInstance: ISeqAgentNode = await initiateNode(agentNode)
 
                 // Add node to graph
-                if (agentNode.data.name === 'seqAgent') {
+                if (nodesToAdd.includes(agentNode.data.name)) {
                     seqGraph.addNode(agentInstance.name, agentInstance.node)
                 }
 
@@ -573,6 +638,8 @@ const compileSeqAgentsGraph = async (
                             seqGraph.addEdge(START, agentInstance.name)
                         } else if (predecessorAgent.type === 'condition') {
                             prepareConditionalEdges(agentNode.data.id, agentInstance)
+                        } else if (agentNode.data.name === 'seqToolNode') {
+                            prepareConditionalToolEdges(predecessorAgent, agentInstance)
                         } else if (predecessorAgent.name) {
                             edges.push(predecessorAgent.name)
                         }
@@ -581,8 +648,7 @@ const compileSeqAgentsGraph = async (
                     if (edges.length > 1) {
                         //@ts-ignore
                         seqGraph.addEdge(edges, agentInstance.name)
-                    }
-                    if (edges.length === 1) {
+                    } else if (edges.length === 1) {
                         //@ts-ignore
                         seqGraph.addEdge(...edges, agentInstance.name)
                     }
@@ -610,6 +676,41 @@ const compileSeqAgentsGraph = async (
         }
     }
 
+    for (const llmSourceNodeId in conditionalToolNodes) {
+        const connectedToolNodes = conditionalToolNodes[llmSourceNodeId].toolNodes
+        const sourceNode = conditionalToolNodes[llmSourceNodeId].source
+
+        const tools = flatten(connectedToolNodes.map((toolNode) => toolNode.node?.tools))
+
+        const routeMessage = (state: ISeqAgentsState) => {
+            const messages = state.messages as unknown as BaseMessage[]
+            const lastMessage = messages[messages.length - 1] as AIMessage
+
+            // If no tools are called, we can finish (respond to the user)
+            if (!lastMessage.tool_calls?.length) {
+                return END
+            }
+
+            for (const toolCall of lastMessage.tool_calls) {
+                for (const toolNode of connectedToolNodes) {
+                    const tools = toolNode.node?.tools as StructuredTool[]
+                    if (tools.some((tool) => tool.name === toolCall.name)) {
+                        return toolNode.name
+                    }
+                }
+            }
+            return END
+        }
+
+        bindModel = sourceNode.llm.bindTools(tools)
+
+        seqGraph.addConditionalEdges(
+            //@ts-ignore
+            sourceNode.name,
+            routeMessage
+        )
+    }
+
     // Add agentflow to pool
     ;(seqGraph as any).signal = options.signal
     appServer.chatflowPool.add(
@@ -628,7 +729,7 @@ const compileSeqAgentsGraph = async (
 
         const loggerHandler = new ConsoleCallbackHandler(logger)
         const callbacks = await additionalCallbacks(flowNodeData as any, options)
-        const config = { configurable: { thread_id: threadId } }
+        const config = { configurable: { thread_id: threadId }, bindModel }
 
         // Return stream result
         return await graph.stream(

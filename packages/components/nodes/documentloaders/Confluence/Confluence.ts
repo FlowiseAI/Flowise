@@ -119,7 +119,8 @@ class Confluence_DocumentLoaders implements INode {
         let docs = []
 
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
         } else {
             docs = await loader.load()
         }

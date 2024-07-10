@@ -1,3 +1,5 @@
+import { DataSource } from 'typeorm'
+import { BaseMessage } from '@langchain/core/messages'
 import {
     ICommonObject,
     IDatabaseEntity,
@@ -8,16 +10,11 @@ import {
     ISeqAgentNode,
     ISeqAgentsState
 } from '../../../src/Interface'
-import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../../src/utils'
-import { DataSource } from 'typeorm'
-import { NodeVM } from 'vm2'
+import { checkCondition, customGet, getVM } from '../commonUtils'
+import { getVars, prepareSandboxVars } from '../../../src/utils'
 
 const howToUseCode = `
-1. Must return a string value at the end of function:
-    - Any string value will be considered as the connection point to next Agent. Only 1 agent can be connected at a time.
-    - If you want to end the flow, return "End", and connect the "End" node.
-
-    For example:
+1. Must return a string value at the end of function. For example:
     \`\`\`js
     if ("X" === "X") {
         return "Agent"; // connect to next agent node
@@ -73,6 +70,15 @@ if (lastMessage.content) {
 
 return "End";`
 
+const TAB_IDENTIFIER = 'selectedConditionFunctionTab'
+
+interface IConditionGridItem {
+    variable: string
+    operation: string
+    value: string
+    output: string
+}
+
 class Condition_SeqAgents implements INode {
     label: string
     name: string
@@ -94,6 +100,7 @@ class Condition_SeqAgents implements INode {
         this.icon = 'condition.svg'
         this.category = 'Sequential Agents'
         this.description = 'Conditional function to determine which route to take next'
+        this.baseClasses = [this.type]
         this.inputs = [
             {
                 label: 'Condition Name',
@@ -103,37 +110,117 @@ class Condition_SeqAgents implements INode {
                 placeholder: 'If X, then Y'
             },
             {
-                label: 'Agent/Start',
-                name: 'agentOrStart',
-                type: 'Agent | START',
+                label: 'Start | Agent | LLM | Tool Node',
+                name: 'sequentialNode',
+                type: 'Start | Agent | LLMNode | ToolNode',
                 list: true
             },
             {
-                label: 'Condition Function',
-                name: 'conditionFunction',
-                type: 'conditionFunction', // This is a custom type to show as button on the UI
-                description: 'Function to evaluate the condition',
-                hint: {
-                    label: 'How to use',
-                    value: howToUseCode
-                },
-                hideCodeExecute: true,
-                default: defaultFunc,
-                codeExample: defaultFunc
+                label: 'Condition',
+                name: 'condition',
+                type: 'conditionFunction', // This is a custom type to show as button on the UI and render anchor points when saved
+                tabIdentifier: TAB_IDENTIFIER,
+                tabs: [
+                    {
+                        label: 'Condition (Table)',
+                        name: 'conditionUI',
+                        type: 'datagrid',
+                        description: 'If a condition is met, the node connected to the respective output will be executed',
+                        optional: true,
+                        datagrid: [
+                            {
+                                field: 'variable',
+                                headerName: 'Variable',
+                                type: 'freeSolo',
+                                editable: true,
+                                loadMethod: ['getPreviousMessages', 'loadStateKeys'],
+                                valueOptions: [
+                                    {
+                                        label: 'Total Messages (number)',
+                                        value: '$flow.state.messages.length'
+                                    },
+                                    {
+                                        label: 'First Message Content (string)',
+                                        value: '$flow.state.messages[0].content'
+                                    },
+                                    {
+                                        label: 'Last Message Content (string)',
+                                        value: '$flow.state.messages[-1].content'
+                                    },
+                                    {
+                                        label: `Global variable (string)`,
+                                        value: '$vars.<variable-name>'
+                                    }
+                                ],
+                                flex: 0.5,
+                                minWidth: 200
+                            },
+                            {
+                                field: 'operation',
+                                headerName: 'Operation',
+                                type: 'singleSelect',
+                                valueOptions: [
+                                    'Contains',
+                                    'Not Contains',
+                                    'Start With',
+                                    'End With',
+                                    'Is',
+                                    'Is Not',
+                                    'Is Empty',
+                                    'Is Not Empty',
+                                    'Greater Than',
+                                    'Less Than',
+                                    'Equal To',
+                                    'Not Equal To',
+                                    'Greater Than or Equal To',
+                                    'Less Than or Equal To'
+                                ],
+                                editable: true,
+                                flex: 0.4,
+                                minWidth: 150
+                            },
+                            {
+                                field: 'value',
+                                headerName: 'Value',
+                                flex: 1,
+                                editable: true
+                            },
+                            {
+                                field: 'output',
+                                headerName: 'Output Name',
+                                editable: true,
+                                flex: 0.3,
+                                minWidth: 150
+                            }
+                        ]
+                    },
+                    {
+                        label: 'Condition (Code)',
+                        name: 'conditionFunction',
+                        type: 'code',
+                        description: 'Function to evaluate the condition',
+                        hint: {
+                            label: 'How to use',
+                            value: howToUseCode
+                        },
+                        hideCodeExecute: true,
+                        codeExample: defaultFunc,
+                        optional: true
+                    }
+                ]
             }
         ]
-        this.baseClasses = [this.type]
         this.outputs = [
             {
-                label: 'Agent',
-                name: 'agent',
-                baseClasses: ['Agent'],
+                label: 'Next',
+                name: 'next',
+                baseClasses: ['Agent', 'LLMNode', 'ToolNode'],
                 isAnchor: true
             },
             {
                 label: 'End',
                 name: 'end',
-                baseClasses: ['END'],
+                baseClasses: ['Agent', 'LLMNode', 'ToolNode'],
                 isAnchor: true
             }
         ]
@@ -143,22 +230,23 @@ class Condition_SeqAgents implements INode {
         const conditionLabel = nodeData.inputs?.conditionName as string
         const conditionName = conditionLabel.toLowerCase().replace(/\s/g, '_').trim()
         const output = nodeData.outputs?.output as string
-        const agentOrStart = nodeData.inputs?.agentOrStart as ISeqAgentNode[]
+        const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
 
-        if (!agentOrStart || !agentOrStart.length) throw new Error('Condition must have a predecessor!')
+        if (!sequentialNodes || !sequentialNodes.length) throw new Error('Condition must have a predecessor!')
 
-        const workerConditionalEdge = async (state: ISeqAgentsState) => await runCondition(nodeData, input, options, state)
+        const conditionalEdge = async (state: ISeqAgentsState) => await runCondition(nodeData, input, options, state)
 
         const returnOutput: ISeqAgentNode = {
             id: nodeData.id,
-            node: workerConditionalEdge,
+            node: conditionalEdge,
             name: conditionName,
             label: conditionLabel,
             type: 'condition',
             output,
-            llm: agentOrStart[0]?.llm,
-            multiModalMessageContent: agentOrStart[0]?.multiModalMessageContent,
-            predecessorAgents: agentOrStart
+            llm: sequentialNodes[0]?.llm,
+            startLLM: sequentialNodes[0].startLLM,
+            multiModalMessageContent: sequentialNodes[0]?.multiModalMessageContent,
+            predecessorAgents: sequentialNodes
         }
 
         return returnOutput
@@ -168,43 +256,66 @@ class Condition_SeqAgents implements INode {
 const runCondition = async (nodeData: INodeData, input: string, options: ICommonObject, state: ISeqAgentsState) => {
     const appDataSource = options.appDataSource as DataSource
     const databaseEntities = options.databaseEntities as IDatabaseEntity
+    const conditionUI = nodeData.inputs?.conditionUI as string
     const conditionFunction = nodeData.inputs?.conditionFunction as string
+    const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`] as string
 
+    const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'conditionUI'
     const variables = await getVars(appDataSource, databaseEntities, nodeData)
+
     const flow = {
         chatflowId: options.chatflowid,
         sessionId: options.sessionId,
         chatId: options.chatId,
         input,
-        state
+        state,
+        vars: prepareSandboxVars(variables)
     }
 
-    let sandbox: any = {}
-    sandbox['$vars'] = prepareSandboxVars(variables)
-    sandbox['$flow'] = flow
-
-    const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-        ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-        : defaultAllowBuiltInDep
-    const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-    const deps = availableDependencies.concat(externalDeps)
-
-    const nodeVMOptions = {
-        console: 'inherit',
-        sandbox,
-        require: {
-            external: { modules: deps },
-            builtin: builtinDeps
+    if (selectedTab === 'conditionFunction' && conditionFunction) {
+        const vm = await getVM(appDataSource, databaseEntities, nodeData, flow)
+        try {
+            const response = await vm.run(`module.exports = async function() {${conditionFunction}}()`, __dirname)
+            if (typeof response !== 'string') throw new Error('Condition function must return a string')
+            return response
+        } catch (e) {
+            throw new Error(e)
         }
-    } as any
+    } else if (selectedTab === 'conditionUI' && conditionUI) {
+        try {
+            const conditionItems: IConditionGridItem[] = typeof conditionUI === 'string' ? JSON.parse(conditionUI) : conditionUI
 
-    const vm = new NodeVM(nodeVMOptions)
-    try {
-        const response = await vm.run(`module.exports = async function() {${conditionFunction}}()`, __dirname)
-        if (typeof response !== 'string') throw new Error('Condition function must return a string')
-        return response
-    } catch (e) {
-        throw new Error(e)
+            for (const item of conditionItems) {
+                if (!item.variable) throw new Error('Condition variable is required!')
+
+                if (item.variable.startsWith('$flow')) {
+                    const variableValue = customGet(flow, item.variable.replace('$flow.', ''))
+                    if (checkCondition(variableValue, item.operation, item.value)) {
+                        return item.output
+                    }
+                } else if (item.variable.startsWith('$vars')) {
+                    const variableValue = customGet(flow, item.variable.replace('$', ''))
+                    if (checkCondition(variableValue, item.operation, item.value)) {
+                        return item.output
+                    }
+                } else if (item.variable.startsWith('$')) {
+                    const nodeId = item.variable.replace('$', '')
+
+                    const messageOutput = ((state.messages as unknown as BaseMessage[]) ?? []).find(
+                        (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === nodeId
+                    )
+
+                    if (messageOutput) {
+                        if (checkCondition(messageOutput.content as string, item.operation, item.value)) {
+                            return item.output
+                        }
+                    }
+                }
+            }
+            return 'End'
+        } catch (exception) {
+            throw new Error('Invalid Condition: ' + exception)
+        }
     }
 }
 

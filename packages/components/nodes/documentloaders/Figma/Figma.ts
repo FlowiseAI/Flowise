@@ -1,6 +1,6 @@
 import { omit } from 'lodash'
 import { getCredentialData, getCredentialParam } from '../../../src'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { FigmaFileLoader, FigmaLoaderParams } from '@langchain/community/document_loaders/web/figma'
 import { TextSplitter } from 'langchain/text_splitter'
 
@@ -105,7 +105,14 @@ class Figma_DocumentLoaders implements INode {
 
         const loader = new FigmaFileLoader(figmaOptions)
 
-        let docs = textSplitter ? await loader.loadAndSplit() : await loader.load()
+        let docs: IDocument[] = []
+
+        if (textSplitter) {
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
+        } else {
+            docs = await loader.load()
+        }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)

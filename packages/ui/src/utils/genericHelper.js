@@ -1,4 +1,5 @@
 import moment from 'moment'
+import { uniq } from 'lodash'
 
 export const getUniqueNodeId = (nodeData, nodes) => {
     // Get amount of same nodes
@@ -53,6 +54,7 @@ export const initNode = (nodeData, newNodeId) => {
         'date',
         'file',
         'folder',
+        'tabs',
         'conditionFunction' // This is a special type for condition functions
     ]
 
@@ -396,18 +398,43 @@ export const getAvailableNodesForVariable = (nodes, edges, target, targetHandle)
     // example edge id = "llmChain_0-llmChain_0-output-outputPrediction-string|json-llmChain_1-llmChain_1-input-promptValues-string"
     //                    {source}  -{sourceHandle}                           -{target}  -{targetHandle}
     const parentNodes = []
-    const isSeqAgent = target.split('_')[0] === 'seqAgent'
 
-    const inputEdges = !isSeqAgent
-        ? edges.filter((edg) => edg.target === target && edg.targetHandle === targetHandle)
-        : edges.filter((edg) => edg.target === target && edg.targetHandle.includes(`${target}-input-agentOrStart`))
-    if (inputEdges && inputEdges.length) {
-        for (let j = 0; j < inputEdges.length; j += 1) {
-            const node = nodes.find((nd) => nd.id === inputEdges[j].source)
-            parentNodes.push(node)
-        }
+    const isSeqAgent = nodes.find((nd) => nd.id === target)?.data?.category === 'Sequential Agents'
+
+    function collectParentNodes(targetNodeId, nodes, edges) {
+        const inputEdges = edges.filter(
+            (edg) => edg.target === targetNodeId && edg.targetHandle.includes(`${targetNodeId}-input-sequentialNode`)
+        )
+
+        // Traverse each edge found
+        inputEdges.forEach((edge) => {
+            const parentNode = nodes.find((nd) => nd.id === edge.source)
+            if (!parentNode) return
+
+            // Recursive call to explore further up the tree
+            collectParentNodes(parentNode.id, nodes, edges)
+
+            // Check and add the parent node to the list if it does not include specific names
+            const excludeNodeNames = ['seqAgent', 'seqLLMNode', 'seqToolNode']
+            if (excludeNodeNames.includes(parentNode.data.name)) {
+                parentNodes.push(parentNode)
+            }
+        })
     }
-    return parentNodes
+
+    if (isSeqAgent) {
+        collectParentNodes(target, nodes, edges)
+        return uniq(parentNodes)
+    } else {
+        const inputEdges = edges.filter((edg) => edg.target === target && edg.targetHandle === targetHandle)
+        if (inputEdges && inputEdges.length) {
+            for (let j = 0; j < inputEdges.length; j += 1) {
+                const node = nodes.find((nd) => nd.id === inputEdges[j].source)
+                parentNodes.push(node)
+            }
+        }
+        return parentNodes
+    }
 }
 
 export const getUpsertDetails = (nodes, edges) => {
@@ -792,26 +819,56 @@ const createJsonArray = (labels) => {
         return {
             label: label,
             name: toCamelCase(label),
-            baseClasses: label.toLowerCase() === 'end' ? ['END'] : ['Agent'],
+            baseClasses: ['Agent', 'LLMNode', 'ToolNode'],
             isAnchor: true
         }
     })
 }
 
-export const getCustomConditionOutputs = (value, nodeId, existingEdges) => {
+export const getCustomConditionOutputs = (value, nodeId, existingEdges, isDataGrid) => {
     // Regex to find return statements and capture returned values
-    const regex = /return\s+(['"`])(.*?)\1;/g
+    const regex = /return\s+(['"`])(.*?)\1/g
     let match
     const numberOfReturns = []
 
-    // Loop over the matches of the regex
-    while ((match = regex.exec(value)) !== null) {
-        // Push the captured group, which is the actual return value, into results
-        numberOfReturns.push(match[2])
+    if (!isDataGrid) {
+        // Loop over the matches of the regex
+        while ((match = regex.exec(value)) !== null) {
+            // Push the captured group, which is the actual return value, into results
+            numberOfReturns.push(match[2])
+        }
+    } else {
+        try {
+            const parsedValue = JSON.parse(value)
+            if (parsedValue && parsedValue.length) {
+                for (const item of parsedValue) {
+                    if (!item.variable) {
+                        alert('Please specify a Variable. Try connecting Condition node to a previous node and select the variable')
+                        return undefined
+                    }
+                    if (!item.output) {
+                        alert('Please specify an Output Name')
+                        return undefined
+                    }
+                    if (!item.operation) {
+                        alert('Please select an operation for the condition')
+                        return undefined
+                    }
+                    numberOfReturns.push(item.output)
+                }
+                numberOfReturns.push('End')
+            }
+        } catch (e) {
+            console.error('Error parsing JSON', e)
+        }
     }
 
     if (numberOfReturns.length === 0) {
-        alert('Please add a return statement in the code block to define the output')
+        if (isDataGrid) alert('Please add an item for the condition')
+        else
+            alert(
+                'Please add a return statement in the condition code to define the output. You can refer to How to Use for more information.'
+            )
         return undefined
     }
 

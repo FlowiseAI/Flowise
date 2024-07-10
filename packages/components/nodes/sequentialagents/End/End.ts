@@ -18,24 +18,24 @@ class End_SeqAgents implements INode {
         this.label = 'End'
         this.name = 'seqEnd'
         this.version = 1.0
-        this.type = 'END'
+        this.type = 'End'
         this.icon = 'end.svg'
         this.category = 'Sequential Agents'
         this.description = 'End conversation'
+        this.baseClasses = [this.type]
         this.inputs = [
             {
-                label: 'Agent/End',
-                name: 'agentOrEnd',
-                type: 'Agent | END'
+                label: 'Start | Agent | LLM | Tool Node',
+                name: 'sequentialNode',
+                type: 'Start | Agent | LLMNode | ToolNode'
             }
         ]
-        this.baseClasses = [this.type]
         this.hideOutput = true
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const agentOrEnd = nodeData.inputs?.agentOrEnd as ISeqAgentNode
-        if (!agentOrEnd) throw new Error('End must have a predecessor!')
+        const sequentialNode = nodeData.inputs?.sequentialNode as ISeqAgentNode
+        if (!sequentialNode) throw new Error('End must have a predecessor!')
 
         const returnOutput: ISeqAgentNode = {
             id: nodeData.id,
@@ -44,7 +44,7 @@ class End_SeqAgents implements INode {
             label: END,
             type: 'end',
             output: END,
-            predecessorAgents: [agentOrEnd]
+            predecessorAgents: [sequentialNode]
         }
 
         return returnOutput

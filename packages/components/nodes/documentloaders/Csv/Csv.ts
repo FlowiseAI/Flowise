@@ -113,7 +113,8 @@ class Csv_DocumentLoaders implements INode {
                 const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    docs = await loader.load()
+                    docs = await textSplitter.splitDocuments(docs)
                 } else {
                     docs.push(...(await loader.load()))
                 }
@@ -133,7 +134,8 @@ class Csv_DocumentLoaders implements INode {
                 const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    docs = await loader.load()
+                    docs = await textSplitter.splitDocuments(docs)
                 } else {
                     docs.push(...(await loader.load()))
                 }

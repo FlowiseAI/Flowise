@@ -1,10 +1,12 @@
-import { flatten, get } from 'lodash'
+import { flatten, uniq } from 'lodash'
+import { DataSource } from 'typeorm'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { BaseMessage, HumanMessage } from '@langchain/core/messages'
+import { HumanMessage } from '@langchain/core/messages'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
+import { StringOutputParser } from '@langchain/core/output_parsers'
 import {
     INode,
     INodeData,
@@ -14,22 +16,11 @@ import {
     MessageContentImageUrl,
     INodeOutputsValue,
     ISeqAgentNode,
-    IVisionChatModal,
     IDatabaseEntity
 } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
-import { StringOutputParser } from '@langchain/core/output_parsers'
-import {
-    availableDependencies,
-    defaultAllowBuiltInDep,
-    getInputVariables,
-    getVars,
-    handleEscapeCharacters,
-    prepareSandboxVars
-} from '../../../src/utils'
-import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
-import { DataSource } from 'typeorm'
-import { NodeVM } from 'vm2'
+import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { customGet, getVM, processImageMessage, transformObjectPropertyToFunction } from '../commonUtils'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`
@@ -51,7 +42,7 @@ const howToUseCode = `
 2. If you want to use the agent's output as the value to update state, it is available as \`$flow.output\` with the following structure:
     \`\`\`json
     {
-        "output": "Hello! How can I assist you today?",
+        "content": "Hello! How can I assist you today?",
         "usedTools": [
             {
                 "tool": "tool-name",
@@ -117,9 +108,9 @@ const howToUse = `
     \`\`\`
 
     For example, if the \`toolOutput\` is the value you want to update the state with, you can do the following:
-    | Key       | Value                                 |
-    |-----------|---------------------------------------|
-    | user      | $flow.output.usedTools[0].toolOutput  |
+    | Key       | Value                                     |
+    |-----------|-------------------------------------------|
+    | user      | \`$flow.output.usedTools[0].toolOutput\`  |
 
 3. You can get default flow config, including the current "state":
     - \`$flow.sessionId\`
@@ -143,8 +134,9 @@ const defaultFunc = `const result = $flow.output;
 */
 
 return {
-  aggregate: [result.output] //update state by returning an object with the same schema
+  aggregate: [result.content]
 };`
+const TAB_IDENTIFIER = 'selectedUpdateStateMemoryTab'
 
 class Agent_SeqAgents implements INode {
     label: string
@@ -164,8 +156,9 @@ class Agent_SeqAgents implements INode {
         this.name = 'seqAgent'
         this.version = 1.0
         this.type = 'Agent'
-        this.icon = 'worker.svg'
+        this.icon = 'seqAgent.png'
         this.category = 'Sequential Agents'
+        this.description = 'Agent that can execute tools'
         this.baseClasses = [this.type]
         this.inputs = [
             {
@@ -176,22 +169,31 @@ class Agent_SeqAgents implements INode {
             },
             {
                 label: 'System Prompt',
-                name: 'agentPrompt',
+                name: 'systemMessagePrompt',
                 type: 'string',
                 rows: 4,
+                optional: true,
                 default: examplePrompt
+            },
+            {
+                label: 'Human Prompt',
+                name: 'humanMessagePrompt',
+                type: 'string',
+                description: 'This prompt will be added at the end of the messages as human message',
+                rows: 4,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Tools',
                 name: 'tools',
                 type: 'Tool',
-                list: true,
-                optional: true
+                list: true
             },
             {
-                label: 'Agent/Start',
-                name: 'agentOrStart',
-                type: 'Agent | START',
+                label: 'Start | Agent | LLM | Tool Node',
+                name: 'sequentialNode',
+                type: 'Start | Agent | LLMNode | ToolNode',
                 list: true
             },
             {
@@ -213,32 +215,93 @@ class Agent_SeqAgents implements INode {
             {
                 label: 'Update State',
                 name: 'updateStateMemory',
-                type: 'datagrid',
-                hint: {
-                    label: 'How to use',
-                    value: howToUse
-                },
-                description: customOutputFuncDesc,
-                datagrid: [
-                    { field: 'key', headerName: 'Key', editable: true },
-                    { field: 'value', headerName: 'Value', editable: true, flex: 1 }
-                ],
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Update State (Code)',
-                name: 'updateStateMemoryCode',
-                type: 'code',
-                hint: {
-                    label: 'How to use',
-                    value: howToUseCode
-                },
-                description: `${customOutputFuncDesc}. This will be used when both "Update State" and "Update State (Code)" are provided. Must return an object representing the state`,
-                hideCodeExecute: true,
-                codeExample: defaultFunc,
-                optional: true,
-                additionalParams: true
+                type: 'tabs',
+                tabIdentifier: TAB_IDENTIFIER,
+                additionalParams: true,
+                default: 'updateStateMemoryUI',
+                tabs: [
+                    {
+                        label: 'Update State (Table)',
+                        name: 'updateStateMemoryUI',
+                        type: 'datagrid',
+                        hint: {
+                            label: 'How to use',
+                            value: howToUse
+                        },
+                        description: customOutputFuncDesc,
+                        datagrid: [
+                            {
+                                field: 'key',
+                                headerName: 'Key',
+                                type: 'asyncSingleSelect',
+                                loadMethod: 'loadStateKeys',
+                                flex: 0.5,
+                                editable: true
+                            },
+                            {
+                                field: 'value',
+                                headerName: 'Value',
+                                type: 'freeSolo',
+                                valueOptions: [
+                                    {
+                                        label: 'Agent Output (string)',
+                                        value: '$flow.output.content'
+                                    },
+                                    {
+                                        label: `Used Tools (array)`,
+                                        value: '$flow.output.usedTools'
+                                    },
+                                    {
+                                        label: `First Tool Output (string)`,
+                                        value: '$flow.output.usedTools[0].toolOutput'
+                                    },
+                                    {
+                                        label: 'Source Documents (array)',
+                                        value: '$flow.output.sourceDocuments'
+                                    },
+                                    {
+                                        label: `Global variable (string)`,
+                                        value: '$vars.<variable-name>'
+                                    },
+                                    {
+                                        label: 'Input Question (string)',
+                                        value: '$flow.input'
+                                    },
+                                    {
+                                        label: 'Session Id (string)',
+                                        value: '$flow.sessionId'
+                                    },
+                                    {
+                                        label: 'Chat Id (string)',
+                                        value: '$flow.chatId'
+                                    },
+                                    {
+                                        label: 'Chatflow Id (string)',
+                                        value: '$flow.chatflowId'
+                                    }
+                                ],
+                                editable: true,
+                                flex: 1
+                            }
+                        ],
+                        optional: true,
+                        additionalParams: true
+                    },
+                    {
+                        label: 'Update State (Code)',
+                        name: 'updateStateMemoryCode',
+                        type: 'code',
+                        hint: {
+                            label: 'How to use',
+                            value: howToUseCode
+                        },
+                        description: `${customOutputFuncDesc}. Must return an object representing the state`,
+                        hideCodeExecute: true,
+                        codeExample: defaultFunc,
+                        optional: true,
+                        additionalParams: true
+                    }
+                ]
             },
             {
                 label: 'Max Iterations',
@@ -253,52 +316,54 @@ class Agent_SeqAgents implements INode {
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
-        let agentPrompt = nodeData.inputs?.agentPrompt as string
+        let agentSystemPrompt = nodeData.inputs?.systemMessagePrompt as string
+        let agentHumanPrompt = nodeData.inputs?.humanMessagePrompt as string
         const agentLabel = nodeData.inputs?.agentName as string
-        const agentOrStart = nodeData.inputs?.agentOrStart as ISeqAgentNode[]
+        const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
         const maxIterations = nodeData.inputs?.maxIterations as string
         const model = nodeData.inputs?.model as BaseChatModel
         const promptValuesStr = nodeData.inputs?.promptValues
         const output = nodeData.outputs?.output as string
 
-        if (!agentLabel) throw new Error('Worker name is required!')
+        if (!agentLabel) throw new Error('Agent name is required!')
         const agentName = agentLabel.toLowerCase().replace(/\s/g, '_').trim()
 
-        if (!agentPrompt) throw new Error('Worker prompt is required!')
+        if (!sequentialNodes || !sequentialNodes.length) throw new Error('Agent must have a predecessor!')
 
-        if (!agentOrStart || !agentOrStart.length) throw new Error('Agent must have a predecessor!')
-
-        let workerInputVariablesValues: ICommonObject = {}
+        let agentInputVariablesValues: ICommonObject = {}
         if (promptValuesStr) {
             try {
-                workerInputVariablesValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
+                agentInputVariablesValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
             } catch (exception) {
-                throw new Error("Invalid JSON in the Worker's Prompt Input Values: " + exception)
+                throw new Error("Invalid JSON in the Agent's Prompt Input Values: " + exception)
             }
         }
-        workerInputVariablesValues = handleEscapeCharacters(workerInputVariablesValues, true)
+        agentInputVariablesValues = handleEscapeCharacters(agentInputVariablesValues, true)
 
-        const llm = model || agentOrStart[0].llm
+        const llm = model || sequentialNodes[0].startLLM
         if (nodeData.inputs) nodeData.inputs.model = llm
-        const multiModalMessageContent = agentOrStart[0]?.multiModalMessageContent || (await processImageMessage(llm, nodeData, options))
+        const multiModalMessageContent = sequentialNodes[0]?.multiModalMessageContent || (await processImageMessage(llm, nodeData, options))
         const abortControllerSignal = options.signal as AbortController
-        const workerInputVariables = getInputVariables(agentPrompt)
+        const agentInputVariables = uniq([...getInputVariables(agentSystemPrompt), ...getInputVariables(agentHumanPrompt)])
 
-        if (!workerInputVariables.every((element) => Object.keys(workerInputVariablesValues).includes(element))) {
-            throw new Error('Worker input variables values are not provided!')
+        if (!agentInputVariables.every((element) => Object.keys(agentInputVariablesValues).includes(element))) {
+            throw new Error('Agent input variables values are not provided!')
         }
 
-        const workerNode = async (state: ISeqAgentsState, config: RunnableConfig) =>
-            await agentNode(
+        const workerNode = async (state: ISeqAgentsState, config: RunnableConfig) => {
+            const bindModel = config.configurable?.bindModel
+            return await agentNode(
                 {
                     state,
                     agent: await createAgent(
+                        agentName,
                         state,
-                        llm,
+                        bindModel || llm,
                         [...tools],
-                        agentPrompt,
+                        agentSystemPrompt,
+                        agentHumanPrompt,
                         multiModalMessageContent,
-                        workerInputVariablesValues,
+                        agentInputVariablesValues,
                         maxIterations,
                         {
                             sessionId: options.sessionId,
@@ -314,6 +379,7 @@ class Agent_SeqAgents implements INode {
                 },
                 config
             )
+        }
 
         const returnOutput: ISeqAgentNode = {
             id: nodeData.id,
@@ -322,12 +388,11 @@ class Agent_SeqAgents implements INode {
             label: agentLabel,
             type: 'agent',
             llm,
+            startLLM: sequentialNodes[0].startLLM,
             output,
-            predecessorAgents: agentOrStart,
-            workerPrompt: agentPrompt,
-            workerInputVariables,
+            predecessorAgents: sequentialNodes,
             multiModalMessageContent,
-            moderations: agentOrStart[0]?.moderations
+            moderations: sequentialNodes[0]?.moderations
         }
 
         return returnOutput
@@ -335,21 +400,25 @@ class Agent_SeqAgents implements INode {
 }
 
 async function createAgent(
+    agentName: string,
     state: ISeqAgentsState,
     llm: BaseChatModel,
     tools: any[],
     systemPrompt: string,
+    humanPrompt: string,
     multiModalMessageContent: MessageContentImageUrl[],
-    workerInputVariablesValues: ICommonObject,
+    agentInputVariablesValues: ICommonObject,
     maxIterations?: string,
     flowObj?: { sessionId?: string; chatId?: string; input?: string }
 ): Promise<AgentExecutor | RunnableSequence> {
     if (tools.length) {
         const promptArrays = [
-            ['system', systemPrompt],
             new MessagesPlaceholder('messages'),
             new MessagesPlaceholder('agent_scratchpad')
         ] as BaseMessagePromptTemplateLike[]
+        if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
+        if (humanPrompt) promptArrays.push(['human', humanPrompt])
+
         const prompt = ChatPromptTemplate.fromMessages(promptArrays)
 
         if (multiModalMessageContent.length) {
@@ -364,7 +433,7 @@ async function createAgent(
 
         let agent
 
-        if (!workerInputVariablesValues || !Object.keys(workerInputVariablesValues).length) {
+        if (!agentInputVariablesValues || !Object.keys(agentInputVariablesValues).length) {
             agent = RunnableSequence.from([
                 RunnablePassthrough.assign({
                     //@ts-ignore
@@ -373,18 +442,22 @@ async function createAgent(
                 prompt,
                 modelWithTools,
                 new ToolCallingAgentOutputParser()
-            ])
+            ]).withConfig({
+                metadata: { sequentialNodeName: agentName }
+            })
         } else {
             agent = RunnableSequence.from([
                 RunnablePassthrough.assign({
                     //@ts-ignore
                     agent_scratchpad: (input: { steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(input.steps)
                 }),
-                RunnablePassthrough.assign(transformObjectPropertyToFunction(workerInputVariablesValues, state)),
+                RunnablePassthrough.assign(transformObjectPropertyToFunction(agentInputVariablesValues, state)),
                 prompt,
                 modelWithTools,
                 new ToolCallingAgentOutputParser()
-            ])
+            ]).withConfig({
+                metadata: { sequentialNodeName: agentName }
+            })
         }
 
         const executor = AgentExecutor.fromAgentAndTools({
@@ -398,8 +471,12 @@ async function createAgent(
         })
         return executor
     } else {
-        const promptArrays = [['system', systemPrompt], new MessagesPlaceholder('messages')] as BaseMessagePromptTemplateLike[]
+        const promptArrays = [new MessagesPlaceholder('messages')] as BaseMessagePromptTemplateLike[]
+        if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
+        if (humanPrompt) promptArrays.push(['human', humanPrompt])
+
         const prompt = ChatPromptTemplate.fromMessages(promptArrays)
+
         if (multiModalMessageContent.length) {
             const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
             prompt.promptMessages.splice(1, 0, msg)
@@ -407,16 +484,22 @@ async function createAgent(
 
         let conversationChain
 
-        if (!workerInputVariablesValues || !Object.keys(workerInputVariablesValues).length) {
-            conversationChain = RunnableSequence.from([prompt, llm, new StringOutputParser()])
+        if (!agentInputVariablesValues || !Object.keys(agentInputVariablesValues).length) {
+            conversationChain = RunnableSequence.from([prompt, llm, new StringOutputParser()]).withConfig({
+                metadata: { sequentialNodeName: agentName }
+            })
         } else {
             conversationChain = RunnableSequence.from([
-                RunnablePassthrough.assign(transformObjectPropertyToFunction(workerInputVariablesValues, state)),
+                RunnablePassthrough.assign(transformObjectPropertyToFunction(agentInputVariablesValues, state)),
                 prompt,
                 llm,
                 new StringOutputParser()
-            ])
+            ]).withConfig({
+                metadata: { sequentialNodeName: agentName }
+            })
         }
+
+        // @ts-ignore
         return conversationChain
     }
 }
@@ -447,26 +530,35 @@ async function agentNode(
         }
         const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
         const additional_kwargs: ICommonObject = { nodeId: nodeData.id }
+
         if (result.usedTools) {
             additional_kwargs.usedTools = result.usedTools
         }
         if (result.sourceDocuments) {
             additional_kwargs.sourceDocuments = result.sourceDocuments
         }
+        if (result.output) {
+            result.content = result.output
+            delete result.output
+        }
 
-        if (nodeData.inputs?.updateStateMemory || nodeData.inputs?.updateStateMemoryCode) {
-            let output = result
-            if (typeof result === 'string') output = { output: result }
-            const returnedOutput = await getReturnOutput(nodeData, input, options, output, state)
+        const outputContent = typeof result === 'string' ? result : result.content || result.output
+
+        if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {
+            let formattedOutput = {
+                ...result,
+                content: outputContent
+            }
+            const returnedOutput = await getReturnOutput(nodeData, input, options, formattedOutput, state)
             return {
                 ...returnedOutput,
-                messages: convertCustomMessagesToAIMessages([typeof result === 'string' ? result : result.output], name, additional_kwargs)
+                messages: convertCustomMessagesToBaseMessages([outputContent], name, additional_kwargs)
             }
         } else {
             return {
                 messages: [
                     new HumanMessage({
-                        content: typeof result === 'string' ? result : result.output,
+                        content: outputContent,
                         name,
                         additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
                     })
@@ -481,8 +573,12 @@ async function agentNode(
 const getReturnOutput = async (nodeData: INodeData, input: string, options: ICommonObject, output: any, state: ISeqAgentsState) => {
     const appDataSource = options.appDataSource as DataSource
     const databaseEntities = options.databaseEntities as IDatabaseEntity
-    const updateStateMemory = nodeData.inputs?.updateStateMemory as string
+    const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`] as string
+    const updateStateMemoryUI = nodeData.inputs?.updateStateMemoryUI as string
     const updateStateMemoryCode = nodeData.inputs?.updateStateMemoryCode as string
+
+    const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'updateStateMemoryUI'
+    const variables = await getVars(appDataSource, databaseEntities, nodeData)
 
     const flow = {
         chatflowId: options.chatflowid,
@@ -490,19 +586,22 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
         chatId: options.chatId,
         input,
         output,
-        state
+        state,
+        vars: prepareSandboxVars(variables)
     }
 
-    if (updateStateMemory && !updateStateMemoryCode) {
+    if (selectedTab === 'updateStateMemoryUI' && updateStateMemoryUI) {
         try {
-            const parsedSchema = typeof updateStateMemory === 'string' ? JSON.parse(updateStateMemory) : updateStateMemory
+            const parsedSchema = typeof updateStateMemoryUI === 'string' ? JSON.parse(updateStateMemoryUI) : updateStateMemoryUI
             const obj: ICommonObject = {}
             for (const sch of parsedSchema) {
                 const key = sch.key
                 if (!key) throw new Error(`Key is required`)
                 let value = sch.value as string
                 if (value.startsWith('$flow')) {
-                    value = get(flow, sch.value.replace('$flow.', ''))
+                    value = customGet(flow, sch.value.replace('$flow.', ''))
+                } else if (value.startsWith('$vars')) {
+                    value = customGet(flow, sch.value.replace('$', ''))
                 }
                 obj[key] = value
             }
@@ -510,40 +609,21 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
         } catch (e) {
             throw new Error(e)
         }
-    }
-
-    const variables = await getVars(appDataSource, databaseEntities, nodeData)
-
-    let sandbox: any = {}
-    sandbox['$vars'] = prepareSandboxVars(variables)
-    sandbox['$flow'] = flow
-
-    const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-        ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-        : defaultAllowBuiltInDep
-    const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-    const deps = availableDependencies.concat(externalDeps)
-
-    const nodeVMOptions = {
-        console: 'inherit',
-        sandbox,
-        require: {
-            external: { modules: deps },
-            builtin: builtinDeps
+    } else if (selectedTab === 'updateStateMemoryCode' && updateStateMemoryCode) {
+        const vm = await getVM(appDataSource, databaseEntities, nodeData, flow)
+        try {
+            const response = await vm.run(`module.exports = async function() {${updateStateMemoryCode}}()`, __dirname)
+            if (typeof response !== 'object') throw new Error('Return output must be an object')
+            return response
+        } catch (e) {
+            throw new Error(e)
         }
-    } as any
-
-    const vm = new NodeVM(nodeVMOptions)
-    try {
-        const response = await vm.run(`module.exports = async function() {${updateStateMemoryCode}}()`, __dirname)
-        if (typeof response !== 'object') throw new Error('Return output must be an object')
-        return response
-    } catch (e) {
-        throw new Error(e)
     }
+
+    return {}
 }
 
-const convertCustomMessagesToAIMessages = (messages: string[], name: string, additional_kwargs: ICommonObject) => {
+const convertCustomMessagesToBaseMessages = (messages: string[], name: string, additional_kwargs: ICommonObject) => {
     return messages.map((message) => {
         return new HumanMessage({
             content: message,
@@ -551,50 +631,6 @@ const convertCustomMessagesToAIMessages = (messages: string[], name: string, add
             additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
         })
     })
-}
-
-const transformObjectPropertyToFunction = (obj: ICommonObject, state: ISeqAgentsState) => {
-    const transformedObject: ICommonObject = {}
-
-    for (const key in obj) {
-        let value = obj[key]
-        // get message from agent
-        try {
-            const parsedValue = JSON.parse(value)
-            if (typeof parsedValue === 'object' && parsedValue.id) {
-                const messageOutput = ((state.messages as unknown as BaseMessage[]) ?? []).find(
-                    (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === parsedValue.id
-                )
-                if (messageOutput) value = messageOutput.content
-            }
-        } catch (e) {
-            // do nothing
-        }
-        // get state value
-        if (value.startsWith('$flow.state')) {
-            value = get(state, value.replace('$flow.state.', ''))
-        }
-        transformedObject[key] = () => value
-    }
-
-    return transformedObject
-}
-
-const processImageMessage = async (llm: BaseChatModel, nodeData: INodeData, options: ICommonObject) => {
-    let multiModalMessageContent: MessageContentImageUrl[] = []
-
-    if (llmSupportsVision(llm)) {
-        const visionChatModel = llm as IVisionChatModal
-        multiModalMessageContent = await addImagesToMessages(nodeData, options, llm.multiModalOption)
-
-        if (multiModalMessageContent?.length) {
-            visionChatModel.setVisionModel()
-        } else {
-            visionChatModel.revertToOriginalModel()
-        }
-    }
-
-    return multiModalMessageContent
 }
 
 module.exports = { nodeClass: Agent_SeqAgents }

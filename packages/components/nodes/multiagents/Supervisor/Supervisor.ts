@@ -294,10 +294,8 @@ class Supervisor_MultiAgents implements INode {
                  * So we have to place the system + human prompt at last
                  */
                 let prompt = ChatPromptTemplate.fromMessages([
-                    ['human', systemPrompt],
-                    ['ai', ''],
+                    ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
-                    ['ai', ''],
                     ['human', userPrompt]
                 ])
 
@@ -398,6 +396,7 @@ class Supervisor_MultiAgents implements INode {
                 {
                     state,
                     agent: supervisorAgent,
+                    nodeId: nodeData.id,
                     abortControllerSignal
                 },
                 config
@@ -421,7 +420,12 @@ class Supervisor_MultiAgents implements INode {
 }
 
 async function agentNode(
-    { state, agent, abortControllerSignal }: { state: ITeamState; agent: AgentExecutor | Runnable; abortControllerSignal: AbortController },
+    {
+        state,
+        agent,
+        nodeId,
+        abortControllerSignal
+    }: { state: ITeamState; agent: AgentExecutor | Runnable; nodeId: string; abortControllerSignal: AbortController },
     config: RunnableConfig
 ) {
     try {
@@ -429,6 +433,8 @@ async function agentNode(
             throw new Error('Aborted!')
         }
         const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
+        const additional_kwargs: ICommonObject = { nodeId }
+        result.additional_kwargs = { ...result.additional_kwargs, ...additional_kwargs }
         return result
     } catch (error) {
         throw new Error('Aborted!')

@@ -175,7 +175,8 @@ class Puppeteer_DocumentLoaders implements INode {
                 }
                 const loader = new PuppeteerWebBaseLoader(url, config)
                 if (textSplitter) {
-                    docs = await loader.loadAndSplit(textSplitter)
+                    docs = await loader.load()
+                    docs = await textSplitter.splitDocuments(docs)
                 } else {
                     docs = await loader.load()
                 }

@@ -63,8 +63,8 @@
         "pnpm": ">=9"
     },
     "resolutions": {
-        "@qdrant/openapi-typescript-fetch": "1.2.1",
-        "@google/generative-ai": "^0.7.0",
+        "@qdrant/openapi-typescript-fetch": "1.2.6",
+        "@google/generative-ai": "^0.14.1",
         "openai": "4.51.0"
     }
 }

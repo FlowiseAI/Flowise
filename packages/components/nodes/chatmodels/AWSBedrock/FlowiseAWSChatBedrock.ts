@@ -1,6 +1,4 @@
-import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { BedrockChat as LCBedrockChat } from '@langchain/community/chat_models/bedrock'
-import { BaseBedrockInput } from '@langchain/community/dist/utils/bedrock'
+import { BedrockChatFields, BedrockChat as LCBedrockChat } from '@langchain/community/chat_models/bedrock'
 import { IVisionChatModal, IMultiModalOption } from '../../../src'
 
 export class BedrockChat extends LCBedrockChat implements IVisionChatModal {
@@ -9,7 +7,7 @@ export class BedrockChat extends LCBedrockChat implements IVisionChatModal {
     multiModalOption: IMultiModalOption
     id: string
 
-    constructor(id: string, fields: BaseBedrockInput & BaseChatModelParams) {
+    constructor(id: string, fields: BedrockChatFields) {
         super(fields)
         this.id = id
         this.configuredModel = fields?.model || ''

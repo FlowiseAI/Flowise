@@ -172,7 +172,9 @@ class Pdf_DocumentLoaders implements INode {
                     legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
             })
             if (textSplitter) {
-                docs.push(...(await loader.loadAndSplit(textSplitter)))
+                let splittedDocs = await loader.load()
+                splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                docs.push(...splittedDocs)
             } else {
                 docs.push(...(await loader.load()))
             }
@@ -183,7 +185,9 @@ class Pdf_DocumentLoaders implements INode {
                     legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
             })
             if (textSplitter) {
-                docs.push(...(await loader.loadAndSplit(textSplitter)))
+                let splittedDocs = await loader.load()
+                splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                docs.push(...splittedDocs)
             } else {
                 docs.push(...(await loader.load()))
             }

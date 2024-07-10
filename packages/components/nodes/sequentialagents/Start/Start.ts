@@ -19,10 +19,11 @@ class Start_SeqAgents implements INode {
         this.label = 'Start'
         this.name = 'seqStart'
         this.version = 1.0
-        this.type = 'START'
+        this.type = 'Start'
         this.icon = 'start.svg'
         this.category = 'Sequential Agents'
         this.description = 'Starting point of the conversation'
+        this.baseClasses = [this.type]
         this.inputs = [
             {
                 label: 'Chat Model',
@@ -54,7 +55,6 @@ class Start_SeqAgents implements INode {
                 list: true
             }
         ]
-        this.baseClasses = [this.type]
     }
 
     async init(nodeData: INodeData): Promise<any> {
@@ -69,6 +69,7 @@ class Start_SeqAgents implements INode {
             type: 'start',
             output: START,
             llm: model,
+            startLLM: model,
             moderations,
             checkpointMemory: nodeData.inputs?.agentMemory
         }

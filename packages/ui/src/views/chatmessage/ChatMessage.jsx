@@ -619,6 +619,16 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         }
     }
 
+    const getAgentIcon = (nodeName, instructions) => {
+        if (nodeName) {
+            return `${baseURL}/api/v1/node-icon/${nodeName}`
+        } else if (instructions) {
+            return multiagent_supervisorPNG
+        } else {
+            return multiagent_workerPNG
+        }
+    }
+
     // Get chatmessages successful
     useEffect(() => {
         if (getChatmessageApi.data?.length) {
@@ -1098,11 +1108,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                                 height: '25px',
                                                                                 width: 'auto'
                                                                             }}
-                                                                            src={
-                                                                                agent.instructions
-                                                                                    ? multiagent_supervisorPNG
-                                                                                    : multiagent_workerPNG
-                                                                            }
+                                                                            src={getAgentIcon(agent.nodeName, agent.instructions)}
                                                                             alt='agentPNG'
                                                                         />
                                                                     </Box>

@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { GithubRepoLoader, GithubRepoLoaderParams } from '@langchain/community/document_loaders/web/github'
 import { getCredentialData, getCredentialParam } from '../../../src'
@@ -139,7 +139,15 @@ class Github_DocumentLoaders implements INode {
         if (ignorePath) githubOptions.ignorePaths = JSON.parse(ignorePath)
 
         const loader = new GithubRepoLoader(repoLink, githubOptions)
-        let docs = textSplitter ? await loader.loadAndSplit(textSplitter) : await loader.load()
+
+        let docs: IDocument[] = []
+
+        if (textSplitter) {
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
+        } else {
+            docs = await loader.load()
+        }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)

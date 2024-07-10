@@ -2,9 +2,9 @@ import { BaseCheckpointSaver, Checkpoint, CheckpointMetadata } from '@langchain/
 import { RunnableConfig } from '@langchain/core/runnables'
 import { BaseMessage } from '@langchain/core/messages'
 import { DataSource, QueryRunner } from 'typeorm'
-import { CheckpointTuple, SaverOptions, SerializerProtocol, convertCheckpointMessagesToBaseMessage } from './interface'
+import { CheckpointTuple, SaverOptions, SerializerProtocol } from './interface'
 import { IMessage, MemoryMethods } from '../../../src/Interface'
-import { convertBaseMessagetoIMessage, mapChatMessageToBaseMessage } from '../../../src/utils'
+import { mapChatMessageToBaseMessage } from '../../../src/utils'
 
 export class SqliteSaver extends BaseCheckpointSaver implements MemoryMethods {
     protected isSetup: boolean
@@ -202,15 +202,34 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
         returnBaseMessages = false,
         prependMessages?: IMessage[]
     ): Promise<IMessage[] | BaseMessage[]> {
-        const checkpoints = await this.getTuple({ configurable: { thread_id: overrideSessionId } })
-        if (!checkpoints) return []
+        if (!overrideSessionId) return []
 
-        const baseMessages = convertCheckpointMessagesToBaseMessage(checkpoints)
+        const chatMessage = await this.config.appDataSource.getRepository(this.config.databaseEntities['ChatMessage']).find({
+            where: {
+                sessionId: overrideSessionId,
+                chatflowid: this.config.chatflowid
+            },
+            order: {
+                createdDate: 'ASC'
+            }
+        })
 
         if (prependMessages?.length) {
-            baseMessages.unshift(...mapChatMessageToBaseMessage(prependMessages))
+            chatMessage.unshift(...prependMessages)
         }
-        return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
+
+        if (returnBaseMessages) {
+            return mapChatMessageToBaseMessage(chatMessage)
+        }
+
+        let returnIMessages: IMessage[] = []
+        for (const m of chatMessage) {
+            returnIMessages.push({
+                message: m.content as string,
+                type: m.role
+            })
+        }
+        return returnIMessages
     }
 
     async addChatMessages(): Promise<void> {

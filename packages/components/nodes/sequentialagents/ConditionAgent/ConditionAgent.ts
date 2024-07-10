@@ -1,3 +1,9 @@
+import { uniq } from 'lodash'
+import { DataSource } from 'typeorm'
+import { z } from 'zod'
+import { BaseMessagePromptTemplateLike, ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
+import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
+import { BaseMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import {
     ICommonObject,
@@ -9,11 +15,15 @@ import {
     ISeqAgentNode,
     ISeqAgentsState
 } from '../../../src/Interface'
-import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../../src/utils'
-import { DataSource } from 'typeorm'
-import { NodeVM } from 'vm2'
-import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { StringOutputParser } from '@langchain/core/output_parsers'
+import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { checkCondition, customGet, getVM, transformObjectPropertyToFunction } from '../commonUtils'
+
+interface IConditionGridItem {
+    variable: string
+    operation: string
+    value: string
+    output: string
+}
 
 const examplePrompt = `You are an expert customer support routing system.
 Your job is to detect whether a customer support representative is routing a user to the technical support team, or just responding conversationally.`
@@ -27,11 +37,7 @@ Otherwise, respond only with the word "CONVERSATION".
 Remember, only respond with one of the above words.`
 
 const howToUseCode = `
-1. Must return a string value at the end of function:
-    - Any string value will be considered as the connection point to next Agent. Only 1 agent can be connected at a time.
-    - If you want to end the flow, return "End", and conenct the "End" node.
-
-    For example:
+1. Must return a string value at the end of function. For example:
     \`\`\`js
     if ("X" === "X") {
         return "Agent"; // connect to next agent node
@@ -63,16 +69,35 @@ const howToUseCode = `
     // Proceed to do something with the last message content
     \`\`\`
 
-3. You can also use output from the agent: \`$flow.output\` (string)
+3. If you want to use the Condition Agent's output for conditional checks, it is available as \`$flow.output\` with the following structure:
+
+    \`\`\`json
+    {
+        "content": 'Hello! How can I assist you today?',
+        "name": "",
+        "additional_kwargs": {},
+        "response_metadata": {},
+        "tool_calls": [],
+        "invalid_tool_calls": [],
+        "usage_metadata": {}
+    }
+    \`\`\`
 
     For example, we can check if the agent's output contains specific keyword:
     \`\`\`js
-    const output = $flow.output;
+    const result = $flow.output.content;
     
-    if (output.includes("some-keyword)) {
+    if (result.includes("some-keyword")) {
         return "Agent"; // connect to next agent node
     } else {
         return "End"; // connect to end node
+    }
+    \`\`\`
+
+    If Structured Output is enabled, \`$flow.output\` will be in the JSON format as defined in the Structured Output configuration:
+    \`\`\`json
+    {
+        "foo": 'var'
     }
     \`\`\`
 
@@ -87,17 +112,16 @@ const howToUseCode = `
 
 `
 
-const defaultFunc = `const result = $flow.output;
+const defaultFunc = `const result = $flow.output.content;
 
-/* 
-* Check if the agent's output contains keyword "technical" 
-*/
-if (result.toLowerCase().includes("technical")) {
+if (result.includes("some-keyword")) {
     return "Agent";
 }
 
 return "End";
-};`
+`
+
+const TAB_IDENTIFIER = 'selectedConditionFunctionTab'
 
 class ConditionAgent_SeqAgents implements INode {
     label: string
@@ -120,18 +144,18 @@ class ConditionAgent_SeqAgents implements INode {
         this.icon = 'condition.svg'
         this.category = 'Sequential Agents'
         this.description = 'Uses an agent to determine which route to take next'
+        this.baseClasses = [this.type]
         this.inputs = [
             {
-                label: 'Condition Name',
-                name: 'conditionName',
+                label: 'Name',
+                name: 'conditionAgentName',
                 type: 'string',
-                optional: true,
-                placeholder: 'If X, then Y'
+                placeholder: 'Condition Agent'
             },
             {
-                label: 'Agent/Start',
-                name: 'agentOrStart',
-                type: 'Agent | START',
+                label: 'Start | Agent | LLM | Tool Node',
+                name: 'sequentialNode',
+                type: 'Start | Agent | LLMNode | ToolNode',
                 list: true
             },
             {
@@ -143,76 +167,231 @@ class ConditionAgent_SeqAgents implements INode {
             },
             {
                 label: 'System Prompt',
-                name: 'agentPrompt',
+                name: 'systemMessagePrompt',
                 type: 'string',
                 rows: 4,
                 default: examplePrompt,
-                additionalParams: true
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Human Prompt',
-                name: 'humanPrompt',
+                name: 'humanMessagePrompt',
                 type: 'string',
                 description: 'This prompt will be added at the end of the messages as human message',
                 rows: 4,
                 default: exampleHumanPrompt,
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Format Prompt Values',
+                name: 'promptValues',
+                description: 'Assign values to the prompt variables. You can also use $flow.state.<variable-name> to get the state value',
+                type: 'json',
+                optional: true,
+                acceptVariable: true,
+                list: true,
                 additionalParams: true
             },
             {
-                label: 'Condition Function',
-                name: 'conditionFunction',
-                type: 'conditionFunction', // This is a custom type to show as button on the UI
-                description: 'Function to evaluate the condition',
-                hint: {
-                    label: 'How to use',
-                    value: howToUseCode
-                },
-                default: defaultFunc,
-                codeExample: defaultFunc,
-                hideCodeExecute: true
+                label: 'JSON Structured Output',
+                name: 'conditionAgentStructuredOutput',
+                type: 'datagrid',
+                description: 'Instruct the LLM to give output in a JSON structured schema',
+                datagrid: [
+                    { field: 'key', headerName: 'Key', editable: true },
+                    {
+                        field: 'type',
+                        headerName: 'Type',
+                        type: 'singleSelect',
+                        valueOptions: ['String', 'Number', 'Boolean', 'Enum'],
+                        editable: true
+                    },
+                    { field: 'enumValues', headerName: 'Enum Values', editable: true },
+                    { field: 'description', headerName: 'Description', flex: 1, editable: true }
+                ],
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Condition',
+                name: 'condition',
+                type: 'conditionFunction', // This is a custom type to show as button on the UI and render anchor points when saved
+                tabIdentifier: TAB_IDENTIFIER,
+                tabs: [
+                    {
+                        label: 'Condition (Table)',
+                        name: 'conditionUI',
+                        type: 'datagrid',
+                        description: 'If a condition is met, the node connected to the respective output will be executed',
+                        optional: true,
+                        datagrid: [
+                            {
+                                field: 'variable',
+                                headerName: 'Variable',
+                                type: 'freeSolo',
+                                editable: true,
+                                loadMethod: ['getPreviousMessages', 'loadStateKeys'],
+                                valueOptions: [
+                                    {
+                                        label: 'Agent Output (string)',
+                                        value: '$flow.output.content'
+                                    },
+                                    {
+                                        label: `Agent's JSON Key Output (string)`,
+                                        value: '$flow.output.<replace-with-key>'
+                                    },
+                                    {
+                                        label: 'Total Messages (number)',
+                                        value: '$flow.state.messages.length'
+                                    },
+                                    {
+                                        label: 'First Message Content (string)',
+                                        value: '$flow.state.messages[0].content'
+                                    },
+                                    {
+                                        label: 'Last Message Content (string)',
+                                        value: '$flow.state.messages[-1].content'
+                                    },
+                                    {
+                                        label: `Global variable (string)`,
+                                        value: '$vars.<variable-name>'
+                                    }
+                                ],
+                                flex: 0.5,
+                                minWidth: 200
+                            },
+                            {
+                                field: 'operation',
+                                headerName: 'Operation',
+                                type: 'singleSelect',
+                                valueOptions: [
+                                    'Contains',
+                                    'Not Contains',
+                                    'Start With',
+                                    'End With',
+                                    'Is',
+                                    'Is Not',
+                                    'Is Empty',
+                                    'Is Not Empty',
+                                    'Greater Than',
+                                    'Less Than',
+                                    'Equal To',
+                                    'Not Equal To',
+                                    'Greater Than or Equal To',
+                                    'Less Than or Equal To'
+                                ],
+                                editable: true,
+                                flex: 0.4,
+                                minWidth: 150
+                            },
+                            {
+                                field: 'value',
+                                headerName: 'Value',
+                                flex: 1,
+                                editable: true
+                            },
+                            {
+                                field: 'output',
+                                headerName: 'Output Name',
+                                editable: true,
+                                flex: 0.3,
+                                minWidth: 150
+                            }
+                        ]
+                    },
+                    {
+                        label: 'Condition (Code)',
+                        name: 'conditionFunction',
+                        type: 'code',
+                        description: 'Function to evaluate the condition',
+                        hint: {
+                            label: 'How to use',
+                            value: howToUseCode
+                        },
+                        hideCodeExecute: true,
+                        codeExample: defaultFunc,
+                        optional: true
+                    }
+                ]
             }
         ]
-        this.baseClasses = [this.type]
         this.outputs = [
             {
-                label: 'Agent',
-                name: 'agent',
-                baseClasses: ['Agent'],
+                label: 'Next',
+                name: 'next',
+                baseClasses: ['Agent', 'LLMNode', 'ToolNode'],
                 isAnchor: true
             },
             {
                 label: 'End',
                 name: 'end',
-                baseClasses: ['END'],
+                baseClasses: ['Agent', 'LLMNode', 'ToolNode'],
                 isAnchor: true
             }
         ]
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        const conditionLabel = nodeData.inputs?.conditionName as string
+        const conditionLabel = nodeData.inputs?.conditionAgentName as string
         const conditionName = conditionLabel.toLowerCase().replace(/\s/g, '_').trim()
         const output = nodeData.outputs?.output as string
-        const agentOrStart = nodeData.inputs?.agentOrStart as ISeqAgentNode[]
-        let agentPrompt = nodeData.inputs?.agentPrompt as string
-        let humanPrompt = nodeData.inputs?.humanPrompt as string
+        const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
+        let agentPrompt = nodeData.inputs?.systemMessagePrompt as string
+        let humanPrompt = nodeData.inputs?.humanMessagePrompt as string
+        const promptValuesStr = nodeData.inputs?.promptValues
+        const conditionAgentStructuredOutput = nodeData.inputs?.conditionAgentStructuredOutput
 
-        if (!agentOrStart || !agentOrStart.length) throw new Error('Condition Agent must have a predecessor!')
+        if (!sequentialNodes || !sequentialNodes.length) throw new Error('Condition Agent must have a predecessor!')
 
-        const llm = (nodeData.inputs?.model as BaseChatModel) || agentOrStart[0].llm
-        const workerConditionalEdge = async (state: ISeqAgentsState) =>
-            await runCondition(nodeData, input, options, state, llm, agentPrompt, humanPrompt)
+        const llm = (nodeData.inputs?.model as BaseChatModel) || sequentialNodes[0].startLLM
+
+        let conditionAgentInputVariablesValues: ICommonObject = {}
+        if (promptValuesStr) {
+            try {
+                conditionAgentInputVariablesValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the Condition Agent's Prompt Input Values: " + exception)
+            }
+        }
+        conditionAgentInputVariablesValues = handleEscapeCharacters(conditionAgentInputVariablesValues, true)
+
+        const conditionAgentInputVariables = uniq([...getInputVariables(agentPrompt), ...getInputVariables(humanPrompt)])
+
+        if (!conditionAgentInputVariables.every((element) => Object.keys(conditionAgentInputVariablesValues).includes(element))) {
+            throw new Error('Condition Agent input variables values are not provided!')
+        }
+
+        const abortControllerSignal = options.signal as AbortController
+
+        const conditionalEdge = async (state: ISeqAgentsState, config: RunnableConfig) =>
+            await runCondition(
+                conditionName,
+                nodeData,
+                input,
+                options,
+                state,
+                config,
+                llm,
+                agentPrompt,
+                humanPrompt,
+                conditionAgentInputVariablesValues,
+                conditionAgentStructuredOutput,
+                abortControllerSignal
+            )
 
         const returnOutput: ISeqAgentNode = {
             id: nodeData.id,
-            node: workerConditionalEdge,
+            node: conditionalEdge,
             name: conditionName,
             label: conditionLabel,
             type: 'condition',
             output,
-            llm: agentOrStart[0]?.llm,
-            multiModalMessageContent: agentOrStart[0]?.multiModalMessageContent,
-            predecessorAgents: agentOrStart
+            llm: sequentialNodes[0]?.llm,
+            startLLM: sequentialNodes[0].startLLM,
+            multiModalMessageContent: sequentialNodes[0]?.multiModalMessageContent,
+            predecessorAgents: sequentialNodes
         }
 
         return returnOutput
@@ -220,58 +399,139 @@ class ConditionAgent_SeqAgents implements INode {
 }
 
 const runCondition = async (
+    conditionName: string,
     nodeData: INodeData,
     input: string,
     options: ICommonObject,
     state: ISeqAgentsState,
+    config: RunnableConfig,
     llm: BaseChatModel,
     agentPrompt: string,
-    humanPrompt: string
+    humanPrompt: string,
+    conditionAgentInputVariablesValues: ICommonObject,
+    conditionAgentStructuredOutput: string,
+    abortControllerSignal: AbortController
 ) => {
     const appDataSource = options.appDataSource as DataSource
     const databaseEntities = options.databaseEntities as IDatabaseEntity
+    const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`] as string
+    const conditionUI = nodeData.inputs?.conditionUI as string
     const conditionFunction = nodeData.inputs?.conditionFunction as string
+    const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'conditionUI'
 
-    const prompt = ChatPromptTemplate.fromMessages([['system', agentPrompt], new MessagesPlaceholder('messages'), ['human', humanPrompt]])
+    const promptArrays = [new MessagesPlaceholder('messages')] as BaseMessagePromptTemplateLike[]
+    if (agentPrompt) promptArrays.unshift(['system', agentPrompt])
+    if (humanPrompt) promptArrays.push(['human', humanPrompt])
+    const prompt = ChatPromptTemplate.fromMessages(promptArrays)
 
-    const chain = prompt.pipe(llm).pipe(new StringOutputParser())
+    let model
+    if (conditionAgentStructuredOutput) {
+        try {
+            const structuredOutput = z.object(convertSchemaToZod(conditionAgentStructuredOutput))
+            // @ts-ignore
+            model = llm.withStructuredOutput(structuredOutput)
+        } catch (exception) {
+            console.error('Invalid JSON in Condition Agent Structured Output: ' + exception)
+            model = llm
+        }
+    } else {
+        model = llm
+    }
 
-    const output = await chain.invoke({ ...state })
+    let chain
+
+    if (!conditionAgentInputVariablesValues || !Object.keys(conditionAgentInputVariablesValues).length) {
+        chain = RunnableSequence.from([prompt, model]).withConfig({
+            metadata: { sequentialNodeName: conditionName }
+        })
+    } else {
+        chain = RunnableSequence.from([
+            RunnablePassthrough.assign(transformObjectPropertyToFunction(conditionAgentInputVariablesValues, state)),
+            prompt,
+            model
+        ]).withConfig({
+            metadata: { sequentialNodeName: conditionName }
+        })
+    }
+
+    const result = await chain.invoke({ ...state, signal: abortControllerSignal?.signal }, config)
+    result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
 
     const variables = await getVars(appDataSource, databaseEntities, nodeData)
+
     const flow = {
         chatflowId: options.chatflowid,
         sessionId: options.sessionId,
         chatId: options.chatId,
         input,
         state,
-        output
+        output: result,
+        vars: prepareSandboxVars(variables)
     }
 
-    let sandbox: any = {}
-    sandbox['$vars'] = prepareSandboxVars(variables)
-    sandbox['$flow'] = flow
-
-    const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-        ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-        : defaultAllowBuiltInDep
-    const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-    const deps = availableDependencies.concat(externalDeps)
-
-    const nodeVMOptions = {
-        console: 'inherit',
-        sandbox,
-        require: {
-            external: { modules: deps },
-            builtin: builtinDeps
+    if (selectedTab === 'conditionFunction' && conditionFunction) {
+        const vm = await getVM(appDataSource, databaseEntities, nodeData, flow)
+        try {
+            const response = await vm.run(`module.exports = async function() {${conditionFunction}}()`, __dirname)
+            if (typeof response !== 'string') throw new Error('Condition function must return a string')
+            return response
+        } catch (e) {
+            throw new Error(e)
         }
-    } as any
+    } else if (selectedTab === 'conditionUI' && conditionUI) {
+        try {
+            const conditionItems: IConditionGridItem[] = typeof conditionUI === 'string' ? JSON.parse(conditionUI) : conditionUI
 
-    const vm = new NodeVM(nodeVMOptions)
+            for (const item of conditionItems) {
+                if (!item.variable) throw new Error('Condition variable is required!')
+
+                if (item.variable.startsWith('$flow')) {
+                    const variableValue = customGet(flow, item.variable.replace('$flow.', ''))
+                    if (checkCondition(variableValue, item.operation, item.value)) {
+                        return item.output
+                    }
+                } else if (item.variable.startsWith('$vars')) {
+                    const variableValue = customGet(flow, item.variable.replace('$', ''))
+                    if (checkCondition(variableValue, item.operation, item.value)) {
+                        return item.output
+                    }
+                } else if (item.variable.startsWith('$')) {
+                    const nodeId = item.variable.replace('$', '')
+
+                    const messageOutput = ((state.messages as unknown as BaseMessage[]) ?? []).find(
+                        (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === nodeId
+                    )
+
+                    if (messageOutput) {
+                        if (checkCondition(messageOutput.content as string, item.operation, item.value)) {
+                            return item.output
+                        }
+                    }
+                }
+            }
+            return 'End'
+        } catch (exception) {
+            throw new Error('Invalid Condition: ' + exception)
+        }
+    }
+}
+
+const convertSchemaToZod = (schema: string | object): ICommonObject => {
     try {
-        const response = await vm.run(`module.exports = async function() {${conditionFunction}}()`, __dirname)
-        if (typeof response !== 'string') throw new Error('Condition function must return a string')
-        return response
+        const parsedSchema = typeof schema === 'string' ? JSON.parse(schema) : schema
+        const zodObj: ICommonObject = {}
+        for (const sch of parsedSchema) {
+            if (sch.type === 'String') {
+                zodObj[sch.key] = z.string().describe(sch.description)
+            } else if (sch.type === 'Number') {
+                zodObj[sch.key] = z.number().describe(sch.description)
+            } else if (sch.type === 'Boolean') {
+                zodObj[sch.key] = z.boolean().describe(sch.description)
+            } else if (sch.type === 'Enum') {
+                zodObj[sch.key] = z.enum(sch.enumValues.split(',').map((item: string) => item.trim())).describe(sch.description)
+            }
+        }
+        return zodObj
     } catch (e) {
         throw new Error(e)
     }

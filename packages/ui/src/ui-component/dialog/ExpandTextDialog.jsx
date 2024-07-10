@@ -94,58 +94,57 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
         <Dialog open={show} fullWidth maxWidth='md' aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
             <DialogContent>
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    {inputParam &&
-                        (inputParam.type === 'string' || inputParam.type === 'code' || inputParam.type === 'conditionFunction') && (
-                            <div style={{ flex: 70 }}>
-                                <div style={{ marginBottom: '10px', display: 'flex', flexDirection: 'row' }}>
-                                    <Typography variant='h4'>{inputParam.label}</Typography>
-                                    <div style={{ flex: 1 }} />
-                                    {inputParam.hint && (
-                                        <Button
-                                            sx={{ p: 0, px: 2 }}
-                                            color='secondary'
-                                            variant='text'
-                                            onClick={() => {
-                                                onInputHintDialogClicked(inputParam.hint)
-                                            }}
-                                        >
-                                            {inputParam.hint.label}
-                                        </Button>
-                                    )}
-                                </div>
-                                <PerfectScrollbar
-                                    style={{
-                                        border: '1px solid',
-                                        borderColor: theme.palette.grey['500'],
-                                        borderRadius: '12px',
-                                        height: '100%',
-                                        maxHeight: languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)',
-                                        overflowX: 'hidden',
-                                        backgroundColor: 'white'
-                                    }}
-                                >
-                                    <CodeEditor
-                                        disabled={dialogProps.disabled}
-                                        value={inputValue}
-                                        height={languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)'}
-                                        theme={customization.isDarkMode ? 'dark' : 'light'}
-                                        lang={languageType}
-                                        placeholder={inputParam.placeholder}
-                                        basicSetup={
-                                            languageType !== 'js'
-                                                ? {
-                                                      lineNumbers: false,
-                                                      foldGutter: false,
-                                                      autocompletion: false,
-                                                      highlightActiveLine: false
-                                                  }
-                                                : {}
-                                        }
-                                        onValueChange={(code) => setInputValue(code)}
-                                    />
-                                </PerfectScrollbar>
+                    {inputParam && (inputParam.type === 'string' || inputParam.type === 'code') && (
+                        <div style={{ flex: 70 }}>
+                            <div style={{ marginBottom: '10px', display: 'flex', flexDirection: 'row' }}>
+                                <Typography variant='h4'>{inputParam.label}</Typography>
+                                <div style={{ flex: 1 }} />
+                                {inputParam.hint && (
+                                    <Button
+                                        sx={{ p: 0, px: 2 }}
+                                        color='secondary'
+                                        variant='text'
+                                        onClick={() => {
+                                            onInputHintDialogClicked(inputParam.hint)
+                                        }}
+                                    >
+                                        {inputParam.hint.label}
+                                    </Button>
+                                )}
                             </div>
-                        )}
+                            <PerfectScrollbar
+                                style={{
+                                    border: '1px solid',
+                                    borderColor: theme.palette.grey['500'],
+                                    borderRadius: '12px',
+                                    height: '100%',
+                                    maxHeight: languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)',
+                                    overflowX: 'hidden',
+                                    backgroundColor: 'white'
+                                }}
+                            >
+                                <CodeEditor
+                                    disabled={dialogProps.disabled}
+                                    value={inputValue}
+                                    height={languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)'}
+                                    theme={customization.isDarkMode ? 'dark' : 'light'}
+                                    lang={languageType}
+                                    placeholder={inputParam.placeholder}
+                                    basicSetup={
+                                        languageType !== 'js'
+                                            ? {
+                                                  lineNumbers: false,
+                                                  foldGutter: false,
+                                                  autocompletion: false,
+                                                  highlightActiveLine: false
+                                              }
+                                            : {}
+                                    }
+                                    onValueChange={(code) => setInputValue(code)}
+                                />
+                            </PerfectScrollbar>
+                        </div>
+                    )}
                 </div>
                 {languageType === 'js' && !inputParam.hideCodeExecute && (
                     <LoadingButton
