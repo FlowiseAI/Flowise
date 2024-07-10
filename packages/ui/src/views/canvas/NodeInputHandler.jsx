@@ -122,6 +122,7 @@ const NodeInputHandler = ({
         const dialogProps = {
             data,
             inputParam,
+            disabled,
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
         }
@@ -176,7 +177,7 @@ const NodeInputHandler = ({
     const getDataGridColDef = (columns, inputParam) => {
         const colDef = []
         for (const column of columns) {
-            const stateNode = reactFlowInstance.getNodes().find((node) => node.data.name === 'seqState')
+            const stateNode = reactFlowInstance ? reactFlowInstance.getNodes().find((node) => node.data.name === 'seqState') : null
             if (column.type === 'asyncSingleSelect' && column.loadMethod && column.loadMethod.includes('loadStateKeys')) {
                 if (stateNode) {
                     const tabParam = stateNode.data.inputParams.find((param) => param.tabIdentifier)
@@ -222,8 +223,8 @@ const NodeInputHandler = ({
                 const preLoadOptions = []
                 if (column.loadMethod && column.loadMethod.includes('getPreviousMessages')) {
                     const nodes = getAvailableNodesForVariable(
-                        reactFlowInstance.getNodes(),
-                        reactFlowInstance.getEdges(),
+                        reactFlowInstance?.getNodes() || [],
+                        reactFlowInstance?.getEdges() || [],
                         data.id,
                         inputParam.id
                     )
@@ -338,8 +339,8 @@ const NodeInputHandler = ({
         const dialogProp = {
             value: inputValue,
             inputParam,
-            nodes: reactFlowInstance.getNodes(),
-            edges: reactFlowInstance.getEdges(),
+            nodes: reactFlowInstance?.getNodes() || [],
+            edges: reactFlowInstance?.getEdges() || [],
             nodeId: data.id,
             data
         }
@@ -355,7 +356,7 @@ const NodeInputHandler = ({
     const onConditionDialogSave = (newData, inputParam, tabValue) => {
         data.inputs[`${inputParam.tabIdentifier}_${data.id}`] = inputParam.tabs[tabValue].name
 
-        const existingEdges = reactFlowInstance.getEdges().filter((edge) => edge.source === data.id)
+        const existingEdges = reactFlowInstance?.getEdges().filter((edge) => edge.source === data.id) || []
         const { outputAnchors, toBeRemovedEdgeIds } = getCustomConditionOutputs(
             newData.inputs[inputParam.tabs[tabValue].name],
             data.id,
@@ -769,7 +770,6 @@ const NodeInputHandler = ({
                                         flexDirection: 'row',
                                         width: '100%'
                                     }}
-                                    disabled={disabled}
                                     sx={{ borderRadius: '12px', width: '100%', mt: 1 }}
                                     variant='outlined'
                                     onClick={() => onConditionDialogClicked(inputParam)}
