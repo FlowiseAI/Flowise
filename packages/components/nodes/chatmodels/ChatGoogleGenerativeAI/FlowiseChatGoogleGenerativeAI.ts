@@ -552,6 +552,13 @@ function zodToGeminiParameters(zodObj: any) {
     const jsonSchema: any = zodToJsonSchema(zodObj)
     // eslint-disable-next-line unused-imports/no-unused-vars
     const { $schema, additionalProperties, ...rest } = jsonSchema
+    if (rest.properties) {
+        Object.keys(rest.properties).forEach((key) => {
+            if (rest.properties[key].enum?.length) {
+                rest.properties[key] = { type: 'string', format: 'enum', enum: rest.properties[key].enum }
+            }
+        })
+    }
     return rest
 }
 

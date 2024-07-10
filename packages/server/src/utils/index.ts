@@ -379,6 +379,7 @@ export const saveUpsertFlowData = (nodeData: INodeData, upsertHistory: Record<st
 /**
  * Check if doc loader should be bypassed, ONLY if doc loader is connected to a vector store
  * Reason being we dont want to load the doc loader again whenever we are building the flow, because it was already done during upserting
+ * EXCEPT if the vector store is a memory vector store
  * TODO: Remove this logic when we remove doc loader nodes from the canvas
  * @param {IReactFlowNode} reactFlowNode
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -406,7 +407,8 @@ const checkIfDocLoaderShouldBeIgnored = (
 
     if (targetNodeId) {
         const targetNodeCategory = reactFlowNodes.find((nd) => nd.id === targetNodeId)?.data.category || ''
-        if (targetNodeCategory === 'Vector Stores') {
+        const targetNodeName = reactFlowNodes.find((nd) => nd.id === targetNodeId)?.data.name || ''
+        if (targetNodeCategory === 'Vector Stores' && targetNodeName !== 'memoryVectorStore') {
             return true
         }
     }
@@ -780,7 +782,13 @@ export const getVariableValue = (
             const variableValue = variableDict[path]
             // Replace all occurrence
             if (typeof variableValue === 'object') {
-                returnVal = returnVal.split(path).join(JSON.stringify(variableValue).replaceAll('"', '\\"').replaceAll('\\n', '\\\\n'))
+                const stringifiedValue = JSON.stringify(JSON.stringify(variableValue))
+                if (stringifiedValue.startsWith('"') && stringifiedValue.endsWith('"')) {
+                    // get rid of the double quotes
+                    returnVal = returnVal.split(path).join(stringifiedValue.substring(1, stringifiedValue.length - 1))
+                } else {
+                    returnVal = returnVal.split(path).join(JSON.stringify(variableValue).replace(/"/g, '\\"'))
+                }
             } else {
                 returnVal = returnVal.split(path).join(variableValue)
             }
@@ -1087,7 +1095,9 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'chatCohere',
             'chatGoogleGenerativeAI',
             'chatTogetherAI',
-            'chatTogetherAI_LlamaIndex'
+            'chatTogetherAI_LlamaIndex',
+            'chatFireworks',
+            'chatBaiduWenxin'
         ],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }

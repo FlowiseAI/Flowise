@@ -71,9 +71,12 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) 
         const existingLoaders = JSON.parse(entity.loaders)
         const found = existingLoaders.find((uFile: IDocumentStoreLoader) => uFile.id === loaderId)
         if (found) {
-            if (found.path) {
-                //remove the existing files, if any of the file loaders were used.
-                await removeSpecificFileFromStorage(DOCUMENT_STORE_BASE_FOLDER, entity.id, found.path)
+            if (found.files?.length) {
+                for (const file of found.files) {
+                    if (file.name) {
+                        await removeSpecificFileFromStorage(DOCUMENT_STORE_BASE_FOLDER, storeId, file.name)
+                    }
+                }
             }
             const index = existingLoaders.indexOf(found)
             if (index > -1) {
@@ -177,7 +180,7 @@ const getDocumentStoreFileChunks = async (storeId: string, fileId: string, pageN
         })
         if (found) {
             found.totalChars = totalChars
-            found.id = entity.id
+            found.id = fileId
             found.status = entity.status
         }
         const PAGE_SIZE = 50
@@ -536,8 +539,23 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
         await _normalizeFilePaths(data, entity)
         //step 2: split the file into chunks
         previewChunks(data).then(async (response) => {
-            //{ chunks: docs, totalChunks: totalChunks, previewChunkCount: data.previewChunkCount }
-            //step 3: remove base64 files and save them to storage, this needs to be rewritten
+            //step 3: remove all files associated with the loader
+            const existingLoaders = JSON.parse(entity.loaders)
+            const loader = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
+            if (data.id) {
+                const index = existingLoaders.indexOf(loader)
+                if (index > -1) {
+                    existingLoaders.splice(index, 1)
+                    if (!data.rehydrated) {
+                        if (loader.files) {
+                            loader.files.map(async (file: IDocumentStoreLoaderFile) => {
+                                await removeSpecificFileFromStorage(DOCUMENT_STORE_BASE_FOLDER, entity.id, file.name)
+                            })
+                        }
+                    }
+                }
+            }
+            //step 4: save new file to storage
             let filesWithMetadata = []
             const keys = Object.getOwnPropertyNames(data.loaderConfig)
             for (let i = 0; i < keys.length; i++) {
@@ -569,23 +587,7 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
                     break
                 }
             }
-            const existingLoaders = JSON.parse(entity.loaders)
-            const loader = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
-            if (data.id) {
-                //step 4: remove all files and chunks associated with the previous loader
-                const index = existingLoaders.indexOf(loader)
-                if (index > -1) {
-                    existingLoaders.splice(index, 1)
-                    if (!data.rehydrated) {
-                        if (loader.files) {
-                            loader.files.map(async (file: IDocumentStoreLoaderFile) => {
-                                await removeSpecificFileFromStorage(DOCUMENT_STORE_BASE_FOLDER, entity.id, file.name)
-                            })
-                        }
-                    }
-                }
-            }
-            //step 5: upload with the new files and loaderConfig
+            //step 5: update with the new files and loaderConfig
             if (filesWithMetadata.length > 0) {
                 loader.loaderConfig = data.loaderConfig
                 loader.files = filesWithMetadata
@@ -598,7 +600,12 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
             await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: newLoaderId })
             if (response.chunks) {
                 //step 8: now save the new chunks
-                const totalChars = response.chunks.reduce((acc: number, chunk) => acc + chunk.pageContent.length, 0)
+                const totalChars = response.chunks.reduce((acc, chunk) => {
+                    if (chunk.pageContent) {
+                        return acc + chunk.pageContent.length
+                    }
+                    return acc
+                }, 0)
                 response.chunks.map(async (chunk: IDocument, index: number) => {
                     const docChunk: DocumentStoreFileChunk = {
                         docId: newLoaderId,

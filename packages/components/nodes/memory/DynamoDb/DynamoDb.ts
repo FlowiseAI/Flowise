@@ -46,7 +46,8 @@ class DynamoDb_Memory implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['dynamodbMemoryApi']
+            credentialNames: ['dynamodbMemoryApi'],
+            optional: true
         }
         this.inputs = [
             {
@@ -102,12 +103,17 @@ const initializeDynamoDB = async (nodeData: INodeData, options: ICommonObject): 
     const accessKeyId = getCredentialParam('accessKey', credentialData, nodeData)
     const secretAccessKey = getCredentialParam('secretAccessKey', credentialData, nodeData)
 
-    const config: DynamoDBClientConfig = {
-        region,
-        credentials: {
+    let credentials: DynamoDBClientConfig['credentials'] | undefined
+    if (accessKeyId && secretAccessKey) {
+        credentials = {
             accessKeyId,
             secretAccessKey
         }
+    }
+
+    const config: DynamoDBClientConfig = {
+        region,
+        credentials
     }
 
     const client = new DynamoDBClient(config ?? {})
