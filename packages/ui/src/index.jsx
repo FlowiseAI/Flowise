@@ -21,7 +21,7 @@ const authorizationParams = {
     organization: import.meta.env.VITE_AUTH_ORGANIZATION_ID !== '' ? import.meta.env.VITE_AUTH_ORGANIZATION_ID : undefined,
     redirect_uri: window.location.origin,
     audience: import.meta.env.VITE_AUTH_AUDIENCE,
-    scope: 'openid profile email write:admin'
+    scope: 'openid profile email'
 }
 
 root.render(

@@ -26,7 +26,7 @@ const App = () => {
             try {
                 const newToken = await getAccessTokenSilently({
                     authorizationParams: {
-                        scope: 'write:admin'
+                        // scope: 'write:admin'
                     }
                 })
                 sessionStorage.setItem('access_token', newToken)

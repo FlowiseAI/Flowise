@@ -62,11 +62,12 @@ export const authenticationHandlerMiddleware =
                 return next()
             }
             const orgRepo = AppDataSource.getRepository(Organization)
-            let organization = await orgRepo.findOneBy({ auth0Id: userOrgId })
+            let organization = await orgRepo.findOneBy({ name: userOrgName })
             if (!organization) {
                 organization = orgRepo.create({ auth0Id: userOrgId, name: userOrgName })
             } else {
                 organization.name = userOrgName
+                organization.auth0Id = userOrgId
             }
             await orgRepo.save(organization)
 
