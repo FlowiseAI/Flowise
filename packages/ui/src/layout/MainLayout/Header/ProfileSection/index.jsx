@@ -51,6 +51,7 @@ const ProfileSection = ({ username, handleLogout }) => {
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
 
     const anchorRef = useRef(null)
+    const inputRef = useRef()
 
     // ==============================|| Snackbar ||============================== //
 
@@ -85,9 +86,46 @@ const ProfileSection = ({ username, handleLogout }) => {
             }
         })
     }
+    const saveAllChatflowsApi = useApi(chatFlowsApi.createNewChatflows)
+    const fileChange = (e) => {
+        if (!e.target.files) return
 
+        const file = e.target.files[0]
+
+        const reader = new FileReader()
+        reader.onload = (evt) => {
+            if (!evt?.target?.result) {
+                return
+            }
+            const chatflows = JSON.parse(evt.target.result)
+            saveAllChatflowsApi.request(chatflows)
+        }
+        reader.readAsText(file)
+    }
+
+    const saveAllChatflowsSuccess = () => {
+        dispatch({ type: REMOVE_DIRTY })
+        enqueueSnackbar({
+            message: `Save All Chatflows Successful`,
+            options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+                action: (key) => (
+                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                        <IconX />
+                    </Button>
+                )
+            }
+        })
+    }
+    useEffect(() => {
+        if (saveAllChatflowsApi.error) errorFailed(`Failed to save Chatflows: ${saveAllChatflowsApi.error.response.data.message}`)
+        if (saveAllChatflowsApi.data) {
+            saveAllChatflowsSuccess()
+        }
+    }, [saveAllChatflowsApi.error, saveAllChatflowsApi.data])
     const importAllChatflows = () => {
-        console.log('reach importAllChatflows')
+        inputRef.current.click()
     }
     const getAllChatflowsApi = useApi(chatFlowsApi.getAllChatflows)
 
@@ -111,7 +149,7 @@ const ProfileSection = ({ username, handleLogout }) => {
         if (getAllChatflowsApi.error) errorFailed(`Failed to retrieve Chatflows: ${getAllChatflowsApi.error.response.data.message}`)
         if (getAllChatflowsApi.data) {
             const sanitizedChatflows = sanitizeChatflows(getAllChatflowsApi.data)
-            const dataStr = JSON.stringify(sanitizedChatflows, null, 2)
+            const dataStr = JSON.stringify({ Chatflows: sanitizedChatflows }, null, 2)
             const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
             const exportFileDefaultName = 'AllChatflows.json'
@@ -226,6 +264,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     </ListItemIcon>
                                                     <ListItemText primary={<Typography variant='body2'>Import Chatflows</Typography>} />
                                                 </ListItemButton>
+                                                <input ref={inputRef} type='file' hidden onChange={fileChange} />
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {

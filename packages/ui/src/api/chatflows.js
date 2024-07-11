@@ -10,6 +10,8 @@ const getSpecificChatflowFromPublicEndpoint = (id) => client.get(`/public-chatfl
 
 const createNewChatflow = (body) => client.post(`/chatflows`, body)
 
+const createNewChatflows = (body) => client.post(`/chatflows/all`, body)
+
 const updateChatflow = (id, body) => client.put(`/chatflows/${id}`, body)
 
 const deleteChatflow = (id) => client.delete(`/chatflows/${id}`)
@@ -24,6 +26,7 @@ export default {
     getSpecificChatflow,
     getSpecificChatflowFromPublicEndpoint,
     createNewChatflow,
+    createNewChatflows,
     updateChatflow,
     deleteChatflow,
     getIsChatflowStreaming,

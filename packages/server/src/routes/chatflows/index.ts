@@ -4,6 +4,7 @@ const router = express.Router()
 
 // CREATE
 router.post('/', chatflowsController.saveChatflow)
+router.post('/all', chatflowsController.saveChatflows)
 
 // READ
 router.get('/', chatflowsController.getAllChatflows)
