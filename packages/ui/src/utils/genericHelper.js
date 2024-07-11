@@ -340,8 +340,16 @@ export const getFolderName = (base64ArrayStr) => {
     }
 }
 
-export const generateExportAllFlowData = (allFlowData) => {
-    return allFlowData
+export const sanitizeChatflows = (arrayChatflows) => {
+    const sanitizedChatflows = arrayChatflows.map((chatFlow) => {
+        const sanitizeFlowData = generateExportFlowData(JSON.parse(chatFlow.flowData))
+        return {
+            id: chatFlow.id,
+            name: chatFlow.name,
+            flowData: JSON.stringify(sanitizeFlowData, null, 2)
+        }
+    })
+    return sanitizedChatflows
 }
 
 export const generateExportFlowData = (flowData) => {

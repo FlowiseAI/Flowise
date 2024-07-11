@@ -1,4 +1,6 @@
 import { REMOVE_DIRTY, closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import { sanitizeChatflows } from '@/utils/genericHelper'
+import useNotifier from '@/utils/useNotifier'
 import PropTypes from 'prop-types'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -29,9 +31,7 @@ import AboutDialog from '@/ui-component/dialog/AboutDialog'
 import Transitions from '@/ui-component/extended/Transitions'
 
 // assets
-import { IconInfoCircle, IconLogout, IconSettings } from '@tabler/icons-react'
-
-import { IconFileExport, IconFileUpload } from '@tabler/icons-react'
+import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconX } from '@tabler/icons-react'
 import './index.css'
 
 //API
@@ -39,9 +39,6 @@ import chatFlowsApi from '@/api/chatflows'
 
 // Hooks
 import useApi from '@/hooks/useApi'
-import { generateExportAllFlowData } from '@/utils/genericHelper'
-import useNotifier from '@/utils/useNotifier'
-import { IconX } from '@tabler/icons-react'
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -75,7 +72,7 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     const errorFailed = (message) => {
         enqueueSnackbar({
-            message,
+            message: message,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'error',
@@ -111,16 +108,19 @@ const ProfileSection = ({ username, handleLogout }) => {
     }
 
     useEffect(() => {
-        try {
-            console.log('reach here')
-            if (getAllChatflowsApi.error) throw new Error(getAllChatflowsApi.error)
-            if (getAllChatflowsApi.data) {
-                const allFlowData = generateExportAllFlowData(getAllChatflowsApi.data)
-                console.log(allFlowData)
-                exportAllChatflowsSuccess()
-            }
-        } catch (error) {
-            errorFailed(error)
+        if (getAllChatflowsApi.error) errorFailed(`Failed to retrieve Chatflows: ${getAllChatflowsApi.error.response.data.message}`)
+        if (getAllChatflowsApi.data) {
+            const sanitizedChatflows = sanitizeChatflows(getAllChatflowsApi.data)
+            const dataStr = JSON.stringify(sanitizedChatflows, null, 2)
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+
+            const exportFileDefaultName = 'AllChatflows.json'
+
+            const linkElement = document.createElement('a')
+            linkElement.setAttribute('href', dataUri)
+            linkElement.setAttribute('download', exportFileDefaultName)
+            linkElement.click()
+            exportAllChatflowsSuccess()
         }
     }, [getAllChatflowsApi.error, getAllChatflowsApi.data])
 
