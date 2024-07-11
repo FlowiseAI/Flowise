@@ -53,7 +53,7 @@ export class ChatMessage implements IChatMessage {
 
     @Index()
     @Column({ type: 'uuid', nullable: true })
-    userId?: string
+    userId: string
 
     @Index()
     @Column({ type: 'uuid', nullable: true })

@@ -62,6 +62,7 @@ export interface IChatMessage {
     fileUploads?: string
     chatType: string
     chatId: string
+    userId: string
     memoryType?: string
     sessionId?: string
     createdDate: Date

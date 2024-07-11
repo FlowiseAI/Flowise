@@ -177,6 +177,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 chatId,
                 memoryType ?? '',
                 sessionId,
+                req.user?.id!,
                 userMessageDateTime,
                 fileUploads,
                 incomingInput,
@@ -376,6 +377,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             memoryType,
             sessionId,
             createdDate: userMessageDateTime,
+            userId: req.user?.id!,
             fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
             leadEmail: incomingInput.leadEmail
         }
@@ -393,6 +395,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
             chatId,
             memoryType,
+            userId: req.user?.id!,
             sessionId
         }
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
@@ -431,6 +434,7 @@ const utilBuildAgentResponse = async (
     chatId: string,
     memoryType: string,
     sessionId: string,
+    userId: string,
     userMessageDateTime: Date,
     fileUploads: IFileUpload[],
     incomingInput: ICommonObject,
@@ -454,7 +458,8 @@ const utilBuildAgentResponse = async (
                 sessionId,
                 createdDate: userMessageDateTime,
                 fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
-                leadEmail: incomingInput.leadEmail
+                leadEmail: incomingInput.leadEmail,
+                userId
             }
             await utilAddChatMessage(userMessage)
 
@@ -465,7 +470,8 @@ const utilBuildAgentResponse = async (
                 chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 chatId,
                 memoryType,
-                sessionId
+                sessionId,
+                userId
             }
             if (agentReasoning.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
             const chatMessage = await utilAddChatMessage(apiMessage)
