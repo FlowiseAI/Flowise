@@ -1,0 +1,9 @@
+{
+    "name": "perplexity_ai_search",
+    "framework": "Langchain",
+    "description": "Useful when conducting research using Perplexity AI online model.",
+    "color": "linear-gradient(rgb(155,190,84), rgb(176,69,245))",
+    "iconSrc": "https://raw.githubusercontent.com/AsharibAli/project-images/main/perplexity-ai-icon.svg",
+    "schema": "[{\"id\":1,\"property\":\"query\",\"description\":\"Query for research\",\"type\":\"string\",\"required\":true}]",
+    "func": "const fetch = require('node-fetch');\nconst apiKey = 'YOUR_PERPLEXITY_API_KEY';  // Put Your Perplexity AI API key here\n\nconst query = $query;\n\nconst options = {\n\tmethod: 'POST',\n\theaders: {\n\t\t'Content-Type': 'application/json',\n\t\t'Authorization': 'Bearer <YOUR_PERPLEXITY_API_KEY>'\n\t},\n\tbody: JSON.stringify({\n\t\tmodel: 'llama-3-sonar-small-32k-online',  // Model\n\t\tmessages: [\n\t\t\t{\n\t\t\t\trole: 'system',\n\t\t\t\tcontent: 'You are a research assistant.'\n\t\t\t},\n\t\t\t{\n\t\t\t\trole: 'user',\n\t\t\t\tcontent: query\n\t\t\t}\n\t\t]\n\t})\n};\n\ntry {\n\tconst response = await fetch('https://api.perplexity.ai/chat/completions', options);\n\tconst data = await response.json();\n\treturn JSON.stringify(data);\n} catch (error) {\n\tconsole.error(error);\n\treturn 'Error occurred while fetching data from Perplexity AI';\n}\n\n// For more details: https://docs.perplexity.ai/docs/getting-started"
+}

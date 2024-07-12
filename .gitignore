@@ -11,6 +11,9 @@
 **/logs
 **/*.log
 
+## pnpm
+.pnpm-store/
+
 ## build
 **/dist
 **/build

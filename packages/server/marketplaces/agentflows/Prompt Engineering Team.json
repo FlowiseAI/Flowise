@@ -1,0 +1,557 @@
+{
+    "description": "Prompt engineering team working together to craft Worker Prompts for your AgentFlow.",
+    "nodes": [
+        {
+            "id": "supervisor_0",
+            "position": {
+                "x": 485.1357844985962,
+                "y": 324.1719351589139
+            },
+            "type": "customNode",
+            "data": {
+                "id": "supervisor_0",
+                "label": "Supervisor",
+                "version": 1,
+                "name": "supervisor",
+                "type": "Supervisor",
+                "baseClasses": ["Supervisor"],
+                "category": "Multi Agents",
+                "inputParams": [
+                    {
+                        "label": "Supervisor Name",
+                        "name": "supervisorName",
+                        "type": "string",
+                        "placeholder": "Supervisor",
+                        "default": "Supervisor",
+                        "id": "supervisor_0-input-supervisorName-string"
+                    },
+                    {
+                        "label": "Supervisor Prompt",
+                        "name": "supervisorPrompt",
+                        "type": "string",
+                        "description": "Prompt must contains {team_members}",
+                        "rows": 4,
+                        "default": "You are a supervisor tasked with managing a conversation between the following workers: {team_members}.\nGiven the following user request, respond with the worker to act next.\nEach worker will perform a task and respond with their results and status.\nWhen finished, respond with FINISH.\nSelect strategically to minimize the number of steps taken.",
+                        "additionalParams": true,
+                        "id": "supervisor_0-input-supervisorPrompt-string"
+                    },
+                    {
+                        "label": "Recursion Limit",
+                        "name": "recursionLimit",
+                        "type": "number",
+                        "description": "Maximum number of times a call can recurse. If not provided, defaults to 100.",
+                        "default": 100,
+                        "additionalParams": true,
+                        "id": "supervisor_0-input-recursionLimit-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, GroqChat. Best result with GPT-4 model",
+                        "id": "supervisor_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "supervisor_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "supervisorName": "Supervisor",
+                    "supervisorPrompt": "You are a supervisor tasked with managing a conversation between the following workers: {team_members}.\nGiven the following user request, respond with the worker to act next.\nEach worker will perform a task and respond with their results and status.\nWhen finished, respond with FINISH.\nSelect strategically to minimize the number of steps taken.",
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "recursionLimit": 100,
+                    "inputModeration": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "supervisor_0-output-supervisor-Supervisor",
+                        "name": "supervisor",
+                        "label": "Supervisor",
+                        "description": "",
+                        "type": "Supervisor"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 430,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 485.1357844985962,
+                "y": 324.1719351589139
+            },
+            "dragging": false
+        },
+        {
+            "id": "worker_0",
+            "position": {
+                "x": 807.6882204663332,
+                "y": 326.15881845953294
+            },
+            "type": "customNode",
+            "data": {
+                "id": "worker_0",
+                "label": "Worker",
+                "version": 1,
+                "name": "worker",
+                "type": "Worker",
+                "baseClasses": ["Worker"],
+                "category": "Multi Agents",
+                "inputParams": [
+                    {
+                        "label": "Worker Name",
+                        "name": "workerName",
+                        "type": "string",
+                        "placeholder": "Worker",
+                        "id": "worker_0-input-workerName-string"
+                    },
+                    {
+                        "label": "Worker Prompt",
+                        "name": "workerPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "You are a research assistant who can search for up-to-date info using search engine.",
+                        "id": "worker_0-input-workerPrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "worker_0-input-promptValues-json"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "id": "worker_0-input-maxIterations-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "optional": true,
+                        "id": "worker_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Supervisor",
+                        "name": "supervisor",
+                        "type": "Supervisor",
+                        "id": "worker_0-input-supervisor-Supervisor"
+                    },
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "optional": true,
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat. If not specified, supervisor's model will be used",
+                        "id": "worker_0-input-model-BaseChatModel"
+                    }
+                ],
+                "inputs": {
+                    "workerName": " Prompt Creator",
+                    "workerPrompt": "You are a Prompt Engineer. Your job is to craft system prompts for AI Agents based on user requests.\n\nHere is an example:\n\n1. User asks you to craft two AI Agent prompt messages for \"researching leads and creating personalized email drafts for the sales team\".\n\n2. You generate the following:\n\nAGENT 1\n\nName: \nLead Research\n\nSytyem Prompt: \nAs a member of the sales team at company, your mission is to explore the digital landscape for potential leads. Equipped with advanced tools and a strategic approach, you analyze data, trends, and interactions to discover opportunities that others might miss. Your efforts are vital in creating pathways for meaningful engagements and driving the company's growth.\nYour goal is to identify high-value leads that align with our ideal customer profile.\nPerform a thorough analysis of lead_company, a company that has recently shown interest in our solutions. Use all available data sources to create a detailed profile, concentrating on key decision-makers, recent business developments, and potential needs that match our offerings. This task is essential for effectively customizing our engagement strategy.\nAvoid making assumptions and only use information you are certain about.\nYou should produce a comprehensive report on lead_person, including company background, key personnel, recent milestones, and identified needs. Emphasize potential areas where our solutions can add value and suggest tailored engagement strategies. Pass the info to Lead Sales Representative.\n\nAGENT 2\n\nName: \nLead Sales Representative\n\nSystem Prompt: \nYou play a crucial role within company as the link between potential clients and the solutions they need. By crafting engaging, personalized messages, you not only inform leads about our company offerings but also make them feel valued and understood. Your role is essential in transforming interest into action, guiding leads from initial curiosity to committed engagement.\nYour goal is to nurture leads with tailored, compelling communications.\nLeveraging the insights from the lead profiling report on lead_company, create a personalized outreach campaign targeting lead_person, the position of lead_company. he campaign should highlight their recent lead_activity and demonstrate how our solutions can support their objectives. Your communication should align with lead_company's company culture and values, showcasing a thorough understanding of their business and needs. Avoid making assumptions and use only verified information.\nThe output should be a series of personalized email drafts customized for lead_company, specifically addressing lead_person. Each draft should present a compelling narrative that connects our solutions to their recent accomplishments and future goals. Ensure the tone is engaging, professional, and consistent with lead_company's corporate identity. Keep in natural, don't use strange and fancy words.\n\n3. IMPORTANT: Notice how the prompts in this example work together and are connected by \"Pass the info to Lead Sales Representative.\" The first prompt focuses on researching leads, while the second leverages that information to create personalized email drafts. This creates a cohesive workflow for the AI Agents.\n\n4. If the AI agent needs to use a tool to perform its task, it will indicate this on the system prompt, but you will not write any code for them (they already have the code for the tools they use).",
+                    "tools": "",
+                    "supervisor": "{{supervisor_0.data.instance}}",
+                    "model": "",
+                    "promptValues": "",
+                    "maxIterations": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "worker_0-output-worker-Worker",
+                        "name": "worker",
+                        "label": "Worker",
+                        "description": "",
+                        "type": "Worker"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 807,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 807.6882204663332,
+                "y": 326.15881845953294
+            },
+            "dragging": false
+        },
+        {
+            "id": "worker_1",
+            "position": {
+                "x": 1149.1084792409956,
+                "y": 324.68074278187794
+            },
+            "type": "customNode",
+            "data": {
+                "id": "worker_1",
+                "label": "Worker",
+                "version": 1,
+                "name": "worker",
+                "type": "Worker",
+                "baseClasses": ["Worker"],
+                "category": "Multi Agents",
+                "inputParams": [
+                    {
+                        "label": "Worker Name",
+                        "name": "workerName",
+                        "type": "string",
+                        "placeholder": "Worker",
+                        "id": "worker_1-input-workerName-string"
+                    },
+                    {
+                        "label": "Worker Prompt",
+                        "name": "workerPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "You are a research assistant who can search for up-to-date info using search engine.",
+                        "id": "worker_1-input-workerPrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "worker_1-input-promptValues-json"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "id": "worker_1-input-maxIterations-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "optional": true,
+                        "id": "worker_1-input-tools-Tool"
+                    },
+                    {
+                        "label": "Supervisor",
+                        "name": "supervisor",
+                        "type": "Supervisor",
+                        "id": "worker_1-input-supervisor-Supervisor"
+                    },
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "optional": true,
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat. If not specified, supervisor's model will be used",
+                        "id": "worker_1-input-model-BaseChatModel"
+                    }
+                ],
+                "inputs": {
+                    "workerName": "Prompt Reviewer",
+                    "workerPrompt": "You are a meticulous and insightful AI specializing in reviewing and enhancing custom prompts created for other AI agents. Your role is crucial in ensuring that the prompts are not only accurate and clear but also optimized for the best performance of the AI agents. You pay close attention to detail and strive for perfection in prompt design. Your goal is to review and improve the custom prompts created by the prompt_creator AI. Examine the provided system prompt thoroughly, identifying any areas that can be improved for clarity, specificity, or effectiveness. Suggest modifications that enhance the prompt's structure, language, and overall quality. Ensure that the final prompt is free from ambiguity and provides precise, actionable instructions for the AI agent. The output should be an improved version of the system prompt, with clear annotations or explanations of the changes made to enhance its quality and effectiveness.\n",
+                    "tools": "",
+                    "supervisor": "{{supervisor_0.data.instance}}",
+                    "model": "",
+                    "promptValues": "",
+                    "maxIterations": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "worker_1-output-worker-Worker",
+                        "name": "worker",
+                        "label": "Worker",
+                        "description": "",
+                        "type": "Worker"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 807,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1149.1084792409956,
+                "y": 324.68074278187794
+            },
+            "dragging": false
+        },
+        {
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 134.3531319624069,
+                "y": 318.3354688270578
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "version": 6,
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_0-input-modelName-asyncOptions"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-4o",
+                    "temperature": "0.4",
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "baseOptions": "",
+                    "allowImageUploads": "",
+                    "imageResolution": "low"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 668,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 134.3531319624069,
+                "y": 318.3354688270578
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": -204.73108806492982,
+                "y": 321.243965769327
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "How it works?\nSimply explain the app you want to create, and it will generate the system prompt for each Worker.\n\nExample:\nI want to create an AI app with two AI agents. One agent would perform a Google search using the SerpApi tool on any topic provided by the user. The other agent would then send the information to my email,\ntest@test.test, using a custom tool at its disposal."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 283,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -204.73108806492982,
+                "y": 321.243965769327
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "supervisor_0",
+            "sourceHandle": "supervisor_0-output-supervisor-Supervisor",
+            "target": "worker_0",
+            "targetHandle": "worker_0-input-supervisor-Supervisor",
+            "type": "buttonedge",
+            "id": "supervisor_0-supervisor_0-output-supervisor-Supervisor-worker_0-worker_0-input-supervisor-Supervisor"
+        },
+        {
+            "source": "supervisor_0",
+            "sourceHandle": "supervisor_0-output-supervisor-Supervisor",
+            "target": "worker_1",
+            "targetHandle": "worker_1-input-supervisor-Supervisor",
+            "type": "buttonedge",
+            "id": "supervisor_0-supervisor_0-output-supervisor-Supervisor-worker_1-worker_1-input-supervisor-Supervisor"
+        },
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "supervisor_0",
+            "targetHandle": "supervisor_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-supervisor_0-supervisor_0-input-model-BaseChatModel"
+        }
+    ]
+}

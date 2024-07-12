@@ -16,6 +16,7 @@ import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 
 import { getCredentialData, getCredentialParam, getEnvironmentVariable } from './utils'
 import { ICommonObject, INodeData } from './Interface'
+import { LangWatch, LangWatchSpan, LangWatchTrace, autoconvertTypedValues } from 'langwatch'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
@@ -295,6 +296,17 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
 
                     const handler = new LunaryHandler(lunaryFields)
                     callbacks.push(handler)
+                } else if (provider === 'langWatch') {
+                    const langWatchApiKey = getCredentialParam('langWatchApiKey', credentialData, nodeData)
+                    const langWatchEndpoint = getCredentialParam('langWatchEndpoint', credentialData, nodeData)
+
+                    const langwatch = new LangWatch({
+                        apiKey: langWatchApiKey,
+                        endpoint: langWatchEndpoint
+                    })
+
+                    const trace = langwatch.getTrace()
+                    callbacks.push(trace.getLangChainCallback())
                 }
             }
         }
@@ -362,6 +374,16 @@ export class AnalyticHandler {
                         })
 
                         this.handlers['lunary'] = { client: lunary }
+                    } else if (provider === 'langWatch') {
+                        const langWatchApiKey = getCredentialParam('langWatchApiKey', credentialData, this.nodeData)
+                        const langWatchEndpoint = getCredentialParam('langWatchEndpoint', credentialData, this.nodeData)
+
+                        const langwatch = new LangWatch({
+                            apiKey: langWatchApiKey,
+                            endpoint: langWatchEndpoint
+                        })
+
+                        this.handlers['langWatch'] = { client: langwatch }
                     }
                 }
             }
@@ -374,7 +396,8 @@ export class AnalyticHandler {
         const returnIds: ICommonObject = {
             langSmith: {},
             langFuse: {},
-            lunary: {}
+            lunary: {},
+            langWatch: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -462,6 +485,33 @@ export class AnalyticHandler {
             }
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
+            let langwatchTrace: LangWatchTrace
+
+            if (!parentIds || !Object.keys(parentIds).length) {
+                const langwatch: LangWatch = this.handlers['langWatch'].client
+                langwatchTrace = langwatch.getTrace({
+                    name,
+                    metadata: { tags: ['openai-assistant'], threadId: this.options.chatId },
+                    ...this.nodeData?.inputs?.analytics?.langWatch
+                })
+            } else {
+                langwatchTrace = this.handlers['langWatch'].trace[parentIds['langWatch']]
+            }
+
+            if (langwatchTrace) {
+                const span = langwatchTrace.startSpan({
+                    name,
+                    type: 'chain',
+                    input: autoconvertTypedValues(input)
+                })
+                this.handlers['langWatch'].trace = { [langwatchTrace.traceId]: langwatchTrace }
+                this.handlers['langWatch'].span = { [span.spanId]: span }
+                returnIds['langWatch'].trace = langwatchTrace.traceId
+                returnIds['langWatch'].span = span.spanId
+            }
+        }
+
         return returnIds
     }
 
@@ -507,6 +557,15 @@ export class AnalyticHandler {
                 await monitor.trackEvent('chain', 'end', {
                     runId: chainEventId,
                     output
+                })
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            if (span) {
+                span.end({
+                    output: autoconvertTypedValues(output)
                 })
             }
         }
@@ -556,6 +615,15 @@ export class AnalyticHandler {
                 await monitor.trackEvent('chain', 'end', {
                     runId: chainEventId,
                     output: error
+                })
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            if (span) {
+                span.end({
+                    error
                 })
             }
         }
@@ -614,6 +682,18 @@ export class AnalyticHandler {
             }
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
+            const trace: LangWatchTrace | undefined = this.handlers['langWatch'].trace[parentIds['langWatch'].trace]
+            if (trace) {
+                const span = trace.startLLMSpan({
+                    name,
+                    input: autoconvertTypedValues(input)
+                })
+                this.handlers['langWatch'].span = { [span.spanId]: span }
+                returnIds['langWatch'].span = span.spanId
+            }
+        }
+
         return returnIds
     }
 
@@ -650,6 +730,15 @@ export class AnalyticHandler {
                 })
             }
         }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            if (span) {
+                span.end({
+                    output: autoconvertTypedValues(output)
+                })
+            }
+        }
     }
 
     async onLLMError(returnIds: ICommonObject, error: string | object) {
@@ -682,6 +771,15 @@ export class AnalyticHandler {
                 await monitor.trackEvent('llm', 'end', {
                     runId: llmEventId,
                     output: error
+                })
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            if (span) {
+                span.end({
+                    error
                 })
             }
         }
@@ -740,6 +838,19 @@ export class AnalyticHandler {
             }
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
+            const trace: LangWatchTrace | undefined = this.handlers['langWatch'].trace[parentIds['langWatch'].trace]
+            if (trace) {
+                const span = trace.startSpan({
+                    name,
+                    type: 'tool',
+                    input: autoconvertTypedValues(input)
+                })
+                this.handlers['langWatch'].span = { [span.spanId]: span }
+                returnIds['langWatch'].span = span.spanId
+            }
+        }
+
         return returnIds
     }
 
@@ -776,6 +887,15 @@ export class AnalyticHandler {
                 })
             }
         }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            if (span) {
+                span.end({
+                    output: autoconvertTypedValues(output)
+                })
+            }
+        }
     }
 
     async onToolError(returnIds: ICommonObject, error: string | object) {
@@ -808,6 +928,15 @@ export class AnalyticHandler {
                 await monitor.trackEvent('tool', 'end', {
                     runId: toolEventId,
                     output: error
+                })
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            if (span) {
+                span.end({
+                    error
                 })
             }
         }

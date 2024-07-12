@@ -9,6 +9,11 @@
                     "description": "Image to text, conversation, chat optimized"
                 },
                 {
+                    "label": "anthropic.claude-3.5-sonnet",
+                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    "description": "3.5 version of Claude Sonnet model"
+                },
+                {
                     "label": "anthropic.claude-3-sonnet",
                     "name": "anthropic.claude-3-sonnet-20240229-v1:0",
                     "description": "Image to text and code, multilingual conversation, complex reasoning and analysis"
@@ -216,6 +221,10 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o"
+                },
+                {
                     "label": "gpt-4",
                     "name": "gpt-4"
                 },
@@ -240,6 +249,10 @@
         {
             "name": "azureChatOpenAI_LlamaIndex",
             "models": [
+                {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o"
+                },
                 {
                     "label": "gpt-4",
                     "name": "gpt-4"
@@ -282,6 +295,11 @@
                     "label": "claude-3-opus",
                     "name": "claude-3-opus-20240229",
                     "description": "Most powerful model for highly complex tasks"
+                },
+                {
+                    "label": "claude-3.5-sonnet",
+                    "name": "claude-3-5-sonnet-20240620",
+                    "description": "3.5 version of Claude Sonnet model"
                 },
                 {
                     "label": "claude-3-sonnet",
@@ -1029,22 +1047,42 @@
                 {
                     "label": "voyage-2",
                     "name": "voyage-2",
-                    "description": "Base generalist embedding model optimized for both latency and quality"
+                    "description": "General-purpose embedding model optimized for a balance between cost, latency, and retrieval quality."
                 },
                 {
                     "label": "voyage-code-2",
                     "name": "voyage-code-2",
-                    "description": "Optimized for code retrieval"
+                    "description": "Optimized for code retrieval."
+                },
+                {
+                    "label": "voyage-finance-2",
+                    "name": "voyage-finance-2",
+                    "description": "Optimized for finance retrieval and RAG."
                 },
                 {
                     "label": "voyage-large-2",
                     "name": "voyage-large-2",
-                    "description": "Powerful generalist embedding model"
+                    "description": "General-purpose embedding model that is optimized for retrieval quality."
+                },
+                {
+                    "label": "voyage-large-2-instruct",
+                    "name": "voyage-large-2-instruct",
+                    "description": "Instruction-tuned general-purpose embedding model optimized for clustering, classification, and retrieval."
+                },
+                {
+                    "label": "voyage-law-2",
+                    "name": "voyage-law-2",
+                    "description": "Optimized for legal and long-context retrieval and RAG. Also improved performance across all domains."
                 },
                 {
                     "label": "voyage-lite-02-instruct",
                     "name": "voyage-lite-02-instruct",
                     "description": "Instruction-tuned for classification, clustering, and sentence textual similarity tasks"
+                },
+                {
+                    "label": "voyage-multilingual-2",
+                    "name": "voyage-multilingual-2",
+                    "description": "Optimized for multilingual retrieval and RAG."
                 }
             ]
         },

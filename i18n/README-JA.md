@@ -10,7 +10,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](./README.md) | [中文](./README-ZH.md) | 日本語 | [한국어](./README-KR.md)
+[English](../README.md) | [中文](./README-ZH.md) | 日本語 | [한국어](./README-KR.md)
 
 <h3>ドラッグ＆ドロップでカスタマイズした LLM フローを構築できる UI</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
@@ -44,9 +44,9 @@
 
 1. プロジェクトのルートにある `docker` フォルダに移動する
 2. `.env.example` ファイルをコピーして同じ場所に貼り付け、名前を `.env` に変更する
-3. `docker-compose up -d`
+3. `docker compose up -d`
 4. [http://localhost:3000](http://localhost:3000) を開く
-5. コンテナを停止するには、`docker-compose stop` を使用します
+5. コンテナを停止するには、`docker compose stop` を使用します
 
 ### Docker Image
 
