@@ -86,7 +86,7 @@ const ProfileSection = ({ username, handleLogout }) => {
             }
         })
     }
-    const saveAllChatflowsApi = useApi(chatFlowsApi.createNewChatflows)
+    const importChatflowsApi = useApi(chatFlowsApi.importChatflows)
     const fileChange = (e) => {
         if (!e.target.files) return
 
@@ -98,12 +98,12 @@ const ProfileSection = ({ username, handleLogout }) => {
                 return
             }
             const chatflows = JSON.parse(evt.target.result)
-            saveAllChatflowsApi.request(chatflows)
+            importChatflowsApi.request(chatflows)
         }
         reader.readAsText(file)
     }
 
-    const saveAllChatflowsSuccess = () => {
+    const importChatflowsSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
             message: `Save All Chatflows Successful`,
@@ -119,17 +119,17 @@ const ProfileSection = ({ username, handleLogout }) => {
         })
     }
     useEffect(() => {
-        if (saveAllChatflowsApi.error) errorFailed(`Failed to save Chatflows: ${saveAllChatflowsApi.error.response.data.message}`)
-        if (saveAllChatflowsApi.data) {
-            saveAllChatflowsSuccess()
+        if (importChatflowsApi.error) errorFailed(`Failed to save Chatflows: ${importChatflowsApi.error.response.data.message}`)
+        if (importChatflowsApi.data) {
+            importChatflowsSuccess()
         }
-    }, [saveAllChatflowsApi.error, saveAllChatflowsApi.data])
+    }, [importChatflowsApi.error, importChatflowsApi.data])
     const importAllChatflows = () => {
         inputRef.current.click()
     }
     const getAllChatflowsApi = useApi(chatFlowsApi.getAllChatflows)
 
-    const exportAllChatflowsSuccess = () => {
+    const exportChatflowsSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
             message: `Export All Chatflows Successful`,
@@ -158,7 +158,7 @@ const ProfileSection = ({ username, handleLogout }) => {
             linkElement.setAttribute('href', dataUri)
             linkElement.setAttribute('download', exportFileDefaultName)
             linkElement.click()
-            exportAllChatflowsSuccess()
+            exportChatflowsSuccess()
         }
     }, [getAllChatflowsApi.error, getAllChatflowsApi.data])
 

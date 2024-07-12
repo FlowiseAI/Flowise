@@ -105,10 +105,10 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
-const saveChatflows = async (req: Request, res: Response, next: NextFunction) => {
+const importChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const chatflows: Partial<ChatFlow>[] = req.body.Chatflows
-        const apiResponse = await chatflowsService.saveChatflows(chatflows)
+        const apiResponse = await chatflowsService.importChatflows(chatflows)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -177,7 +177,7 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
-    saveChatflows,
+    importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig

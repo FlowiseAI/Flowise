@@ -197,7 +197,7 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     }
 }
 
-const saveChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> => {
+const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -352,7 +352,7 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
-    saveChatflows,
+    importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig
