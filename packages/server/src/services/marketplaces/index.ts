@@ -86,6 +86,28 @@ const getAllTemplates = async () => {
         if (FlowiseDocsQnAIndex > 0) {
             sortedTemplates.unshift(sortedTemplates.splice(FlowiseDocsQnAIndex, 1)[0])
         }
+
+        // Code to add Logi Symphony chatflows to the top of marketplace.
+        let SymphonyTemplate = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Logi Symphony Prompt Chaining')
+        if (SymphonyTemplate > 0) {
+            sortedTemplates.unshift(sortedTemplates.splice(SymphonyTemplate, 1)[0])
+        }
+
+        SymphonyTemplate = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Logi Symphony Local')
+        if (SymphonyTemplate > 0) {
+            sortedTemplates.unshift(sortedTemplates.splice(SymphonyTemplate, 1)[0])
+        }
+
+        SymphonyTemplate = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Logi Symphony Query Engine')
+        if (SymphonyTemplate > 0) {
+            sortedTemplates.unshift(sortedTemplates.splice(SymphonyTemplate, 1)[0])
+        }
+
+        SymphonyTemplate = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Logi Symphony QnA')
+        if (SymphonyTemplate > 0) {
+            sortedTemplates.unshift(sortedTemplates.splice(SymphonyTemplate, 1)[0])
+        }
+
         const dbResponse = sortedTemplates
         return dbResponse
     } catch (error) {
