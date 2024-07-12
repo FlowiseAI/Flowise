@@ -31,7 +31,6 @@ class Elasticsearch_VectorStores implements INode {
         this.icon = 'elasticsearch.png'
         this.category = 'Vector Stores'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
