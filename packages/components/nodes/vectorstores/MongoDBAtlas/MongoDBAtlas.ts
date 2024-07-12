@@ -4,7 +4,7 @@ import { MongoDBAtlasVectorSearch } from '@langchain/mongodb'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, getVersion } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 class MongoDBAtlas_VectorStores implements INode {
@@ -191,12 +191,9 @@ class MongoDBAtlas_VectorStores implements INode {
 let mongoClientSingleton: MongoClient
 let mongoUrl: string
 
-const driverInfo = {
-    name: 'Flowise',
-    version: 'todo, 1.8.5'
-}
-
 const getMongoClient = async (newMongoUrl: string) => {
+    const driverInfo = { name: 'Flowise', version: (await getVersion()).version }
+
     if (!mongoClientSingleton) {
         // if client does not exist
         mongoClientSingleton = new MongoClient(newMongoUrl, { driverInfo })
