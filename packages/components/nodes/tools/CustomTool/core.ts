@@ -97,6 +97,9 @@ export class DynamicStructuredTool<
             await runManager?.handleToolError(e)
             throw e
         }
+        if (result && typeof result !== 'string') {
+            result = JSON.stringify(result)
+        }
         await runManager?.handleToolEnd(result)
         return result
     }

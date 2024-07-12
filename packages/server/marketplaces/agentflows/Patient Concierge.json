@@ -1,5 +1,7 @@
 {
     "description": "Patient concierge system that always verify the user's identity first before proceeding to answer user questions",
+    "framework": ["Langchain"],
+    "usecases": ["Chatbot"],
     "nodes": [
         {
             "id": "seqAgent_0",

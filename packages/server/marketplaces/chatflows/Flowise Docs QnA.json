@@ -1,12 +1,12 @@
 {
-    "description": "Flowise Docs Github QnA using conversational retrieval QA chain",
-    "categories": "Memory Vector Store,Github Loader,ChatOpenAI,Conversational Retrieval QA Chain,Langchain",
+    "description": "Flowise Docs Github QnA using Retrieval Augmented Generation (RAG)",
     "badge": "POPULAR",
-    "framework": "Langchain",
+    "usecases": ["Documents QnA"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
-            "height": 376,
+            "height": 378,
             "id": "markdownTextSplitter_0",
             "position": {
                 "x": 1081.1540334344143,
@@ -16,8 +16,8 @@
             "data": {
                 "id": "markdownTextSplitter_0",
                 "label": "Markdown Text Splitter",
-                "name": "markdownTextSplitter",
                 "version": 1,
+                "name": "markdownTextSplitter",
                 "type": "MarkdownTextSplitter",
                 "baseClasses": ["MarkdownTextSplitter", "RecursiveCharacterTextSplitter", "TextSplitter", "BaseDocumentTransformer"],
                 "category": "Text Splitters",
@@ -64,7 +64,7 @@
         },
         {
             "width": 300,
-            "height": 405,
+            "height": 407,
             "id": "memoryVectorStore_0",
             "position": {
                 "x": 1844.88052464165,
@@ -74,8 +74,8 @@
             "data": {
                 "id": "memoryVectorStore_0",
                 "label": "In-Memory Vector Store",
-                "name": "memoryVectorStore",
                 "version": 1,
+                "name": "memoryVectorStore",
                 "type": "Memory",
                 "baseClasses": ["Memory", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
@@ -147,18 +147,18 @@
         },
         {
             "width": 300,
-            "height": 479,
+            "height": 532,
             "id": "conversationalRetrievalQAChain_0",
             "position": {
-                "x": 2311.697827287373,
-                "y": 228.14841720207832
+                "x": 2262.1986022669694,
+                "y": 229.38589782758842
             },
             "type": "customNode",
             "data": {
                 "id": "conversationalRetrievalQAChain_0",
                 "label": "Conversational Retrieval QA Chain",
-                "name": "conversationalRetrievalQAChain",
                 "version": 3,
+                "name": "conversationalRetrievalQAChain",
                 "type": "ConversationalRetrievalQAChain",
                 "baseClasses": ["ConversationalRetrievalQAChain", "BaseChain", "Runnable"],
                 "category": "Chains",
@@ -250,8 +250,8 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 2311.697827287373,
-                "y": 228.14841720207832
+                "x": 2262.1986022669694,
+                "y": 229.38589782758842
             }
         },
         {
@@ -266,8 +266,8 @@
             "data": {
                 "id": "github_0",
                 "label": "Github",
-                "name": "github",
                 "version": 2,
+                "name": "github",
                 "type": "Document",
                 "baseClasses": ["Document"],
                 "category": "Document Loaders",
@@ -377,18 +377,18 @@
         },
         {
             "width": 300,
-            "height": 522,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 1857.367353502965,
-                "y": -104.25095383414119
+                "x": 1848.10147093022,
+                "y": -213.12507406389523
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
+                "version": 6,
                 "name": "chatOpenAI",
-                "version": 6.0,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -542,25 +542,25 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1857.367353502965,
-                "y": -104.25095383414119
+                "x": 1848.10147093022,
+                "y": -213.12507406389523
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 328,
+            "height": 424,
             "id": "openAIEmbeddings_0",
             "position": {
-                "x": 1299.9983863833309,
-                "y": 581.8406384863323
+                "x": 1114.6807349284306,
+                "y": 482.2324008293234
             },
             "type": "customNode",
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
+                "version": 4,
                 "name": "openAIEmbeddings",
-                "version": 3,
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
                 "category": "Embeddings",
@@ -579,7 +579,7 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "id": "openAIEmbeddings_0-input-modelName-options"
+                        "id": "openAIEmbeddings_0-input-modelName-asyncOptions"
                     },
                     {
                         "label": "Strip New Lines",
@@ -612,21 +612,31 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_0-input-basepath-string"
+                    },
+                    {
+                        "label": "Dimensions",
+                        "name": "dimensions",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-dimensions-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
+                    "modelName": "text-embedding-ada-002",
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
                     "basepath": "",
-                    "modelName": "text-embedding-ada-002"
+                    "dimensions": ""
                 },
                 "outputAnchors": [
                     {
                         "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
                         "name": "openAIEmbeddings",
                         "label": "OpenAIEmbeddings",
+                        "description": "OpenAI API to generate embeddings for a given text",
                         "type": "OpenAIEmbeddings | Embeddings"
                     }
                 ],
@@ -636,9 +646,168 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 1299.9983863833309,
-                "y": 581.8406384863323
+                "x": 1114.6807349284306,
+                "y": 482.2324008293234
             }
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1119.05414840041,
+                "y": 304.34680059348875
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Recursively load files from Github repo, and split into chunks according to Markdown syntax.\n\nFor private repo, you need to connect Github credential."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 143,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1119.05414840041,
+                "y": 304.34680059348875
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_1",
+            "position": {
+                "x": 1481.99061810943,
+                "y": 600.8550429213293
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_1",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_1-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Store the embeddings in-memory"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_1-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 42,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1481.99061810943,
+                "y": 600.8550429213293
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_2",
+            "position": {
+                "x": 2599.168985347108,
+                "y": 244.87044713398404
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_2",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_2-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Conversational Retrieval QA Chain composes of 2 chains:\n\n1. A chain to rephrase user question using previous conversations\n2. A chain to provide response based on the context fetched from vector store.\n\nWhy is the need for rephrasing question?\nThis is to ensure that a follow-up question can be asked. For example:\n\n- What is the address of the Bakery shop?\n- What about the opening time?\n\nA rephrased question will be:\n- What is the opening time of the Bakery shop?\n\nThis ensure a better search to vector store, hence better output quality.\n"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_2-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 465,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2599.168985347108,
+                "y": 244.87044713398404
+            },
+            "dragging": false
         }
     ],
     "edges": [

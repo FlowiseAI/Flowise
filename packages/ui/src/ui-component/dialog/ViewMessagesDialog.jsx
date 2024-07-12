@@ -196,7 +196,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     source: chatmsg.chatType === 'INTERNAL' ? 'UI' : 'API/Embed',
                     sessionId: chatmsg.sessionId ?? null,
                     memoryType: chatmsg.memoryType ?? null,
-                    email: leadEmail ?? null,
+                    email: chatmsg.leadEmail ?? null,
                     messages: [msg]
                 }
             } else if (Object.prototype.hasOwnProperty.call(obj, chatPK)) {

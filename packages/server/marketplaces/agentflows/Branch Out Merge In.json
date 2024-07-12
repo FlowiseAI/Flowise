@@ -1,5 +1,7 @@
 {
     "description": "Example of branching out into different agents, and merge the final responses back into one",
+    "framework": ["Langchain"],
+    "usecases": ["Basic"],
     "nodes": [
         {
             "id": "seqStart_0",

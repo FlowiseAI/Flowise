@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.8.2",
+    "version": "1.8.3",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -66,5 +66,33 @@
         "@qdrant/openapi-typescript-fetch": "1.2.6",
         "@google/generative-ai": "^0.14.1",
         "openai": "4.51.0"
+    },
+    "eslintIgnore": [
+        "**/dist",
+        "**/node_modules",
+        "**/build",
+        "**/package-lock.json"
+    ],
+    "prettier": {
+        "printWidth": 140,
+        "singleQuote": true,
+        "jsxSingleQuote": true,
+        "trailingComma": "none",
+        "tabWidth": 4,
+        "semi": false,
+        "endOfLine": "auto"
+    },
+    "babel": {
+        "presets": [
+            "@babel/preset-typescript",
+            [
+                "@babel/preset-env",
+                {
+                    "targets": {
+                        "node": "current"
+                    }
+                }
+            ]
+        ]
     }
 }

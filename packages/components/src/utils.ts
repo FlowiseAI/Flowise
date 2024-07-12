@@ -48,6 +48,7 @@ export const availableDependencies = [
     'langchain',
     'langfuse',
     'langsmith',
+    'langwatch',
     'linkifyjs',
     'lunary',
     'mammoth',

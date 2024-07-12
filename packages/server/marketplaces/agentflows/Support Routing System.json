@@ -1,5 +1,7 @@
 {
     "description": "An agent that can route a user to the billing or technical support team, or respond conversationally",
+    "framework": ["Langchain"],
+    "usecases": ["Chatbot"],
     "nodes": [
         {
             "id": "seqConditionAgent_0",

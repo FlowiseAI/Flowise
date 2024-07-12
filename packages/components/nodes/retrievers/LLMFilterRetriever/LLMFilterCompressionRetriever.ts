@@ -25,7 +25,6 @@ class LLMFilterCompressionRetriever_Retrievers implements INode {
         this.type = 'LLMFilterRetriever'
         this.icon = 'llmFilterRetriever.svg'
         this.category = 'Retrievers'
-        this.badge = 'NEW'
         this.description =
             'Iterate over the initially returned documents and extract, from each, only the content that is relevant to the query'
         this.baseClasses = [this.type, 'BaseRetriever']
