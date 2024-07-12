@@ -107,7 +107,9 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
 
 const saveChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        res.send(req.body)
+        const chatflows: Partial<ChatFlow>[] = req.body.Chatflows
+        const apiResponse = await chatflowsService.saveChatflows(chatflows)
+        return res.json(apiResponse)
     } catch (error) {
         next(error)
     }

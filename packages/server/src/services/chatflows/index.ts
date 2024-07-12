@@ -1,19 +1,18 @@
-import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { ChatflowType, IChatFlow } from '../../Interface'
-import { ChatFlow } from '../../database/entities/ChatFlow'
-import { getAppVersion, getTelemetryFlowObj, isFlowValidForStream, constructGraphs, getEndingNodes } from '../../utils'
-import logger from '../../utils/logger'
 import { removeFolderFromStorage } from 'flowise-components'
-import { IReactFlowObject } from '../../Interface'
-import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
+import { StatusCodes } from 'http-status-codes'
+import { ChatflowType, IChatFlow, IReactFlowObject } from '../../Interface'
+import { ChatFlow } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
-import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
+import { constructGraphs, getAppVersion, getEndingNodes, getTelemetryFlowObj, isFlowValidForStream } from '../../utils'
+import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
+import logger from '../../utils/logger'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -198,6 +197,60 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     }
 }
 
+const saveChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // step 1 - check whether there are any contradict id
+        let ids = '('
+        let count: number = 0
+        const lastCount = newChatflows.length - 1
+        newChatflows.forEach((newChatflow) => {
+            ids += `'${newChatflow.id}'`
+            if (lastCount != count) ids += ','
+            if (lastCount == count) ids += ')'
+            count += 1
+        })
+
+        // step 2 - check duplicate ids against database
+        const selectResponse = await appServer.AppDataSource.getRepository(ChatFlow)
+            .createQueryBuilder('cf')
+            .select('cf.id')
+            .where(`cf.id IN ${ids}`)
+            .getMany()
+        const foundIds = selectResponse.map((response) => {
+            return response.id
+        })
+
+        // step 3 - remove id that are only duplicate
+        let prepChatflows: Partial<ChatFlow>[] = []
+        if (foundIds.length != 0) {
+            prepChatflows = newChatflows.map((newChatflow) => {
+                let id: string = ''
+                if (newChatflow.id) id = newChatflow.id
+                if (foundIds.includes(id))
+                    return {
+                        name: (newChatflow.name += ' with new id'),
+                        flowData: newChatflow.flowData,
+                        type: 'CHATFLOW'
+                    }
+                newChatflow.type = 'CHATFLOW'
+                return newChatflow
+            })
+        }
+
+        // step 4 - transactional insert array of entities
+        const insertResponse = await appServer.AppDataSource.getRepository(ChatFlow).insert(prepChatflows)
+
+        return insertResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.saveChatflows - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
@@ -299,6 +352,7 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
+    saveChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig
