@@ -106,7 +106,7 @@ const ProfileSection = ({ username, handleLogout }) => {
     const importChatflowsSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: `Save All Chatflows Successful`,
+            message: `Import chatflows successful`,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -119,7 +119,7 @@ const ProfileSection = ({ username, handleLogout }) => {
         })
     }
     useEffect(() => {
-        if (importChatflowsApi.error) errorFailed(`Failed to save Chatflows: ${importChatflowsApi.error.response.data.message}`)
+        if (importChatflowsApi.error) errorFailed(`Failed to import chatflows: ${importChatflowsApi.error.response.data.message}`)
         if (importChatflowsApi.data) {
             importChatflowsSuccess()
         }
@@ -132,7 +132,7 @@ const ProfileSection = ({ username, handleLogout }) => {
     const exportChatflowsSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: `Export All Chatflows Successful`,
+            message: `Export chatflows successful`,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -146,7 +146,7 @@ const ProfileSection = ({ username, handleLogout }) => {
     }
 
     useEffect(() => {
-        if (getAllChatflowsApi.error) errorFailed(`Failed to retrieve Chatflows: ${getAllChatflowsApi.error.response.data.message}`)
+        if (getAllChatflowsApi.error) errorFailed(`Failed to export Chatflows: ${getAllChatflowsApi.error.response.data.message}`)
         if (getAllChatflowsApi.data) {
             const sanitizedChatflows = sanitizeChatflows(getAllChatflowsApi.data)
             const dataStr = JSON.stringify({ Chatflows: sanitizedChatflows }, null, 2)
