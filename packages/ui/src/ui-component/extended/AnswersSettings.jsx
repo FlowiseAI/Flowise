@@ -4,20 +4,23 @@ import PropTypes from 'prop-types'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 
 // material-ui
-import { Button, Box, Typography, FormGroup, FormLabel, FormControl, FormControlLabel, Checkbox } from '@mui/material'
+import { Button, Box, Typography, FormGroup, FormLabel, FormControl, FormControlLabel, Checkbox, Tooltip } from '@mui/material'
 import { IconX } from '@tabler/icons-react'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
-// store
+// Hooks
 import useNotifier from '@/utils/useNotifier'
+import { useFlags } from 'flagsmith/react'
 
 // API
 import chatflowsApi from '@/api/chatflows'
 import { TooltipWithParser } from '../tooltip/TooltipWithParser'
 
 const AnswersSettings = ({ dialogProps }) => {
+    const flags = useFlags(['chatflow:share:internal', 'org:admin'])
+
     const dispatch = useDispatch()
     const chatflow = useSelector((state) => state.canvas.chatflow)
 
@@ -89,14 +92,25 @@ const AnswersSettings = ({ dialogProps }) => {
             </Typography>
             <FormControl component='fieldset' sx={{ width: '100%', mb: 2 }}>
                 <FormGroup>
-                    {['Private', 'Organization', 'AnswerAI', 'Marketplace', 'Browser Extension'].map((type) => (
-                        <FormControlLabel
-                            key={type}
-                            disabled={type === 'Private'}
-                            control={<Checkbox checked={visibility.includes(type)} onChange={(event) => handleChange(event, type)} />}
-                            label={type}
-                        />
-                    ))}
+                    {['Private', 'Organization', 'AnswerAI', 'Marketplace', 'Browser Extension'].map((type) => {
+                        const isDisabled =
+                            type === 'Private' ||
+                            (!flags['org:admin']?.enabled && type === 'Browser Extension') ||
+                            (!flags['org:admin']?.enabled && type === 'Organization') ||
+                            (!flags['chatflow:share:internal']?.enabled && type === 'Marketplace')
+                        return (
+                            <FormControlLabel
+                                key={type}
+                                control={
+                                    <Tooltip title={isDisabled ? 'Contact your org admin to enable this option' : ''}>
+                                        <Checkbox checked={visibility.includes(type)} onChange={(event) => handleChange(event, type)} />
+                                    </Tooltip>
+                                }
+                                label={type}
+                                disabled={isDisabled}
+                            />
+                        )
+                    })}
                 </FormGroup>
             </FormControl>
             <StyledButton variant='contained' onClick={onSave}>

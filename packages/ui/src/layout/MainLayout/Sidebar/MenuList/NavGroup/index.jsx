@@ -7,14 +7,19 @@ import { Divider, List, Typography } from '@mui/material'
 // project imports
 import NavItem from '../NavItem'
 import NavCollapse from '../NavCollapse'
+import { useFlags } from 'flagsmith/react'
 
 // ==============================|| SIDEBAR MENU LIST GROUP ||============================== //
 
 const NavGroup = ({ item }) => {
     const theme = useTheme()
-
+    const flags = useFlags(['org:admin'])
+    const ADMIN_ACTIONS = ['agentflows', 'tools', 'assistants', 'credentials', 'variables', 'apikey']
     // menu list collapse & items
     const items = item.children?.map((menu) => {
+        if (ADMIN_ACTIONS?.includes(menu.id) && !flags?.org_admin?.enabled) {
+            return null
+        }
         switch (menu.type) {
             case 'collapse':
                 return <NavCollapse key={menu.id} menu={menu} level={1} />

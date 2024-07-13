@@ -14,13 +14,28 @@ import themes from '@/themes'
 import NavigationScroll from '@/layout/NavigationScroll'
 import { useAuth0 } from '@auth0/auth0-react'
 import useNotifyParentOfNavigation from './utils/useNotifyParentOfNavigation'
+import { useFlagsmith } from 'flagsmith/react'
 
 // ==============================|| APP ||============================== //
 
 const App = () => {
     const customization = useSelector((state) => state.customization)
-    const { getAccessTokenSilently, error } = useAuth0()
+    const { user, getAccessTokenSilently, error } = useAuth0()
+    const flagsmith = useFlagsmith()
     useNotifyParentOfNavigation()
+    React.useEffect(() => {
+        if (user)
+            flagsmith.identify(
+                `user_${
+                    user.email
+                        ? user.email.split('').reduce((a, b) => {
+                              a = (a << 5) - a + b.charCodeAt(0)
+                              return a & a
+                          }, 0)
+                        : ''
+                }`
+            )
+    }, [user, flagsmith])
     React.useEffect(() => {
         ;(async () => {
             try {
