@@ -23,6 +23,7 @@ import { isValidConnection } from '@/utils/genericHelper'
 import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
+import { ContentfulConfig } from '@/ui-component/contentful/ContentfulConfig'
 import ToolDialog from '@/views/tools/ToolDialog'
 import AssistantDialog from '@/views/assistants/AssistantDialog'
 import FormatPromptValuesDialog from '@/ui-component/dialog/FormatPromptValuesDialog'
@@ -333,6 +334,16 @@ const NodeInputHandler = ({ inputAnchor, inputParam, data, disabled = false, isA
                                     data.credential = newValue
                                     data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
                                 }}
+                            />
+                        )}
+
+                        {inputParam.type === 'contentfulConfig' && (
+                            <ContentfulConfig
+                                disabled={disabled}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                nodeData={data}
+                                isDarkMode={customization.isDarkMode}
                             />
                         )}
 
