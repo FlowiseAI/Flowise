@@ -402,7 +402,7 @@
                                 "field": "type",
                                 "headerName": "Type",
                                 "type": "singleSelect",
-                                "valueOptions": ["String", "Number", "Boolean", "Enum"],
+                                "valueOptions": ["String", "String Array", "Number", "Boolean", "Enum"],
                                 "editable": true
                             },
                             {

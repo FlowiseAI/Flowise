@@ -16,7 +16,7 @@ import {
     ISeqAgentsState
 } from '../../../src/Interface'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
-import { checkCondition, customGet, getVM, transformObjectPropertyToFunction } from '../commonUtils'
+import { checkCondition, convertStructuredSchemaToZod, customGet, getVM, transformObjectPropertyToFunction } from '../commonUtils'
 
 interface IConditionGridItem {
     variable: string
@@ -205,7 +205,7 @@ class ConditionAgent_SeqAgents implements INode {
                         field: 'type',
                         headerName: 'Type',
                         type: 'singleSelect',
-                        valueOptions: ['String', 'Number', 'Boolean', 'Enum'],
+                        valueOptions: ['String', 'String Array', 'Number', 'Boolean', 'Enum'],
                         editable: true
                     },
                     { field: 'enumValues', headerName: 'Enum Values', editable: true },
@@ -427,7 +427,7 @@ const runCondition = async (
     let model
     if (conditionAgentStructuredOutput) {
         try {
-            const structuredOutput = z.object(convertSchemaToZod(conditionAgentStructuredOutput))
+            const structuredOutput = z.object(convertStructuredSchemaToZod(conditionAgentStructuredOutput))
             // @ts-ignore
             model = llm.withStructuredOutput(structuredOutput)
         } catch (exception) {
@@ -513,27 +513,6 @@ const runCondition = async (
         } catch (exception) {
             throw new Error('Invalid Condition: ' + exception)
         }
-    }
-}
-
-const convertSchemaToZod = (schema: string | object): ICommonObject => {
-    try {
-        const parsedSchema = typeof schema === 'string' ? JSON.parse(schema) : schema
-        const zodObj: ICommonObject = {}
-        for (const sch of parsedSchema) {
-            if (sch.type === 'String') {
-                zodObj[sch.key] = z.string().describe(sch.description)
-            } else if (sch.type === 'Number') {
-                zodObj[sch.key] = z.number().describe(sch.description)
-            } else if (sch.type === 'Boolean') {
-                zodObj[sch.key] = z.boolean().describe(sch.description)
-            } else if (sch.type === 'Enum') {
-                zodObj[sch.key] = z.enum(sch.enumValues.split(',').map((item: string) => item.trim())).describe(sch.description)
-            }
-        }
-        return zodObj
-    } catch (e) {
-        throw new Error(e)
     }
 }
 

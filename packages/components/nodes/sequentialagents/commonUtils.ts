@@ -1,4 +1,5 @@
 import { get } from 'lodash'
+import { z } from 'zod'
 import { DataSource } from 'typeorm'
 import { NodeVM } from 'vm2'
 import { BaseMessage, MessageContentImageUrl } from '@langchain/core/messages'
@@ -176,5 +177,28 @@ export const customGet = (obj: any, path: string) => {
         return result
     } else {
         return get(obj, path)
+    }
+}
+
+export const convertStructuredSchemaToZod = (schema: string | object): ICommonObject => {
+    try {
+        const parsedSchema = typeof schema === 'string' ? JSON.parse(schema) : schema
+        const zodObj: ICommonObject = {}
+        for (const sch of parsedSchema) {
+            if (sch.type === 'String') {
+                zodObj[sch.key] = z.string().describe(sch.description)
+            } else if (sch.type === 'String Array') {
+                zodObj[sch.key] = z.array(z.string()).describe(sch.description)
+            } else if (sch.type === 'Number') {
+                zodObj[sch.key] = z.number().describe(sch.description)
+            } else if (sch.type === 'Boolean') {
+                zodObj[sch.key] = z.boolean().describe(sch.description)
+            } else if (sch.type === 'Enum') {
+                zodObj[sch.key] = z.enum(sch.enumValues.split(',').map((item: string) => item.trim())).describe(sch.description)
+            }
+        }
+        return zodObj
+    } catch (e) {
+        throw new Error(e)
     }
 }

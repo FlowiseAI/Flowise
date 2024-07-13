@@ -208,20 +208,22 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
  */
 export const getInputVariables = (paramValue: string): string[] => {
     if (typeof paramValue !== 'string') return []
-    let returnVal = paramValue
+    const returnVal = paramValue
     const variableStack = []
     const inputVariables = []
     let startIdx = 0
     const endIdx = returnVal.length
-
     while (startIdx < endIdx) {
         const substr = returnVal.substring(startIdx, startIdx + 1)
-
+        // Check for escaped curly brackets
+        if (substr === '\\' && (returnVal[startIdx + 1] === '{' || returnVal[startIdx + 1] === '}')) {
+            startIdx += 2 // Skip the escaped bracket
+            continue
+        }
         // Store the opening double curly bracket
         if (substr === '{') {
             variableStack.push({ substr, startIdx: startIdx + 1 })
         }
-
         // Found the complete variable
         if (substr === '}' && variableStack.length > 0 && variableStack[variableStack.length - 1].substr === '{') {
             const variableStartIdx = variableStack[variableStack.length - 1].startIdx

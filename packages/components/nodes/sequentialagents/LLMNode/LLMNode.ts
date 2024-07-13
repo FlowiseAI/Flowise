@@ -1,9 +1,10 @@
 import { flatten, uniq } from 'lodash'
 import { DataSource } from 'typeorm'
+import { z } from 'zod'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessageChunk } from '@langchain/core/messages'
+import { AIMessage, AIMessageChunk } from '@langchain/core/messages'
 import {
     INode,
     INodeData,
@@ -17,7 +18,7 @@ import {
 } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
-import { customGet, getVM, processImageMessage, transformObjectPropertyToFunction } from '../commonUtils'
+import { convertStructuredSchemaToZod, customGet, getVM, processImageMessage, transformObjectPropertyToFunction } from '../commonUtils'
 
 const TAB_IDENTIFIER = 'selectedUpdateStateMemoryTab'
 const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`
@@ -190,6 +191,26 @@ class LLMNode_SeqAgents implements INode {
                 additionalParams: true
             },
             {
+                label: 'JSON Structured Output',
+                name: 'llmStructuredOutput',
+                type: 'datagrid',
+                description: 'Instruct the LLM to give output in a JSON structured schema',
+                datagrid: [
+                    { field: 'key', headerName: 'Key', editable: true },
+                    {
+                        field: 'type',
+                        headerName: 'Type',
+                        type: 'singleSelect',
+                        valueOptions: ['String', 'String Array', 'Number', 'Boolean', 'Enum'],
+                        editable: true
+                    },
+                    { field: 'enumValues', headerName: 'Enum Values', editable: true },
+                    { field: 'description', headerName: 'Description', flex: 1, editable: true }
+                ],
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Update State',
                 name: 'updateStateMemory',
                 type: 'tabs',
@@ -223,6 +244,10 @@ class LLMNode_SeqAgents implements INode {
                                     {
                                         label: 'LLM Node Output (string)',
                                         value: '$flow.output.content'
+                                    },
+                                    {
+                                        label: `LLM JSON Output Key (string)`,
+                                        value: '$flow.output.<replace-with-key>'
                                     },
                                     {
                                         label: `Global variable (string)`,
@@ -283,6 +308,7 @@ class LLMNode_SeqAgents implements INode {
         const model = nodeData.inputs?.model as BaseChatModel
         const promptValuesStr = nodeData.inputs?.promptValues
         const output = nodeData.outputs?.output as string
+        const llmStructuredOutput = nodeData.inputs?.llmStructuredOutput
 
         if (!llmNodeLabel) throw new Error('LLM Node name is required!')
         const llmNodeName = llmNodeLabel.toLowerCase().replace(/\s/g, '_').trim()
@@ -294,7 +320,7 @@ class LLMNode_SeqAgents implements INode {
             try {
                 llmNodeInputVariablesValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
             } catch (exception) {
-                throw new Error("Invalid JSON in the Worker's Prompt Input Values: " + exception)
+                throw new Error("Invalid JSON in the LLM Node's Prompt Input Values: " + exception)
             }
         }
         llmNodeInputVariablesValues = handleEscapeCharacters(llmNodeInputVariablesValues, true)
@@ -306,7 +332,7 @@ class LLMNode_SeqAgents implements INode {
         const llmNodeInputVariables = uniq([...getInputVariables(systemPrompt), ...getInputVariables(humanPrompt)])
 
         if (!llmNodeInputVariables.every((element) => Object.keys(llmNodeInputVariablesValues).includes(element))) {
-            throw new Error('Worker input variables values are not provided!')
+            throw new Error('LLM Node input variables values are not provided!')
         }
 
         const workerNode = async (state: ISeqAgentsState, config: RunnableConfig) => {
@@ -322,7 +348,8 @@ class LLMNode_SeqAgents implements INode {
                         systemPrompt,
                         humanPrompt,
                         multiModalMessageContent,
-                        llmNodeInputVariablesValues
+                        llmNodeInputVariablesValues,
+                        llmStructuredOutput
                     ),
                     name: llmNodeName,
                     abortControllerSignal,
@@ -360,15 +387,27 @@ async function createAgent(
     systemPrompt: string,
     humanPrompt: string,
     multiModalMessageContent: MessageContentImageUrl[],
-    llmNodeInputVariablesValues: ICommonObject
+    llmNodeInputVariablesValues: ICommonObject,
+    llmStructuredOutput: string
 ): Promise<AgentExecutor | RunnableSequence> {
     if (tools.length) {
         if (llm.bindTools === undefined) {
-            throw new Error(`This agent only compatible with function calling models.`)
+            throw new Error(`LLM Node only compatible with function calling models.`)
         }
         // @ts-ignore
         llm = llm.bindTools(tools)
     }
+
+    if (llmStructuredOutput) {
+        try {
+            const structuredOutput = z.object(convertStructuredSchemaToZod(llmStructuredOutput))
+            // @ts-ignore
+            llm = llm.withStructuredOutput(structuredOutput)
+        } catch (exception) {
+            console.error(exception)
+        }
+    }
+
     const promptArrays = [new MessagesPlaceholder('messages')] as BaseMessagePromptTemplateLike[]
     if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
     if (humanPrompt) promptArrays.push(['human', humanPrompt])
@@ -424,19 +463,49 @@ async function agentNode(
             throw new Error('Aborted!')
         }
 
-        const result: AIMessageChunk = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
-        result.name = name
-        result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
+        const result: AIMessageChunk | ICommonObject = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
 
         if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {
             const returnedOutput = await getReturnOutput(nodeData, input, options, result, state)
-            return {
-                ...returnedOutput,
-                messages: [result]
+
+            if (nodeData.inputs?.llmStructuredOutput) {
+                const messages = [
+                    new AIMessage({
+                        content: typeof result === 'object' ? JSON.stringify(result) : result,
+                        name,
+                        additional_kwargs: { nodeId: nodeData.id }
+                    })
+                ]
+                return {
+                    ...returnedOutput,
+                    messages
+                }
+            } else {
+                result.name = name
+                result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
+                return {
+                    ...returnedOutput,
+                    messages: [result]
+                }
             }
         } else {
-            return {
-                messages: [result]
+            if (nodeData.inputs?.llmStructuredOutput) {
+                const messages = [
+                    new AIMessage({
+                        content: typeof result === 'object' ? JSON.stringify(result) : result,
+                        name,
+                        additional_kwargs: { nodeId: nodeData.id }
+                    })
+                ]
+                return {
+                    messages
+                }
+            } else {
+                result.name = name
+                result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
+                return {
+                    messages: [result]
+                }
             }
         }
     } catch (error) {

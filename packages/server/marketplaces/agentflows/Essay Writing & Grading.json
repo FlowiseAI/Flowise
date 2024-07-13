@@ -310,6 +310,40 @@
                         "id": "seqLLMNode_0-input-promptValues-json"
                     },
                     {
+                        "label": "JSON Structured Output",
+                        "name": "llmStructuredOutput",
+                        "type": "datagrid",
+                        "description": "Instruct the LLM to give output in a JSON structured schema",
+                        "datagrid": [
+                            {
+                                "field": "key",
+                                "headerName": "Key",
+                                "editable": true
+                            },
+                            {
+                                "field": "type",
+                                "headerName": "Type",
+                                "type": "singleSelect",
+                                "valueOptions": ["String", "String Array", "Number", "Boolean", "Enum"],
+                                "editable": true
+                            },
+                            {
+                                "field": "enumValues",
+                                "headerName": "Enum Values",
+                                "editable": true
+                            },
+                            {
+                                "field": "description",
+                                "headerName": "Description",
+                                "flex": 1,
+                                "editable": true
+                            }
+                        ],
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqLLMNode_0-input-llmStructuredOutput-datagrid"
+                    },
+                    {
                         "label": "Update State",
                         "name": "updateStateMemory",
                         "type": "tabs",
@@ -343,6 +377,10 @@
                                             {
                                                 "label": "LLM Node Output (string)",
                                                 "value": "$flow.output.content"
+                                            },
+                                            {
+                                                "label": "LLM JSON Output Key (string)",
+                                                "value": "$flow.output.<replace-with-key>"
                                             },
                                             {
                                                 "label": "Global variable (string)",
@@ -492,6 +530,40 @@
                         "id": "seqLLMNode_1-input-promptValues-json"
                     },
                     {
+                        "label": "JSON Structured Output",
+                        "name": "llmStructuredOutput",
+                        "type": "datagrid",
+                        "description": "Instruct the LLM to give output in a JSON structured schema",
+                        "datagrid": [
+                            {
+                                "field": "key",
+                                "headerName": "Key",
+                                "editable": true
+                            },
+                            {
+                                "field": "type",
+                                "headerName": "Type",
+                                "type": "singleSelect",
+                                "valueOptions": ["String", "String Array", "Number", "Boolean", "Enum"],
+                                "editable": true
+                            },
+                            {
+                                "field": "enumValues",
+                                "headerName": "Enum Values",
+                                "editable": true
+                            },
+                            {
+                                "field": "description",
+                                "headerName": "Description",
+                                "flex": 1,
+                                "editable": true
+                            }
+                        ],
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqLLMNode_1-input-llmStructuredOutput-datagrid"
+                    },
+                    {
                         "label": "Update State",
                         "name": "updateStateMemory",
                         "type": "tabs",
@@ -525,6 +597,10 @@
                                             {
                                                 "label": "LLM Node Output (string)",
                                                 "value": "$flow.output.content"
+                                            },
+                                            {
+                                                "label": "LLM JSON Output Key (string)",
+                                                "value": "$flow.output.<replace-with-key>"
                                             },
                                             {
                                                 "label": "Global variable (string)",
