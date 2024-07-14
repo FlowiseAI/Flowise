@@ -17,7 +17,7 @@ const NavGroup = ({ item }) => {
     const ADMIN_ACTIONS = ['agentflows', 'tools', 'assistants', 'credentials', 'variables', 'apikey']
     // menu list collapse & items
     const items = item.children?.map((menu) => {
-        if (ADMIN_ACTIONS?.includes(menu.id) && !flags?.org_admin?.enabled) {
+        if (ADMIN_ACTIONS?.includes(menu.id) && !flags['org:admin']?.enabled) {
             return null
         }
         switch (menu.type) {
