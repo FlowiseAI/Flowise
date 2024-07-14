@@ -115,7 +115,7 @@ const analyticProviders = [
         label: 'LangWatch',
         name: 'langWatch',
         icon: langwatchSVG,
-        url: 'https://langwatch.com',
+        url: 'https://langwatch.ai',
         inputs: [
             {
                 label: 'Connect Credential',
