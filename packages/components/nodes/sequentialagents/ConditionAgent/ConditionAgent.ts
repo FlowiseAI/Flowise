@@ -425,7 +425,7 @@ const runCondition = async (
     const prompt = ChatPromptTemplate.fromMessages(promptArrays)
 
     let model
-    if (conditionAgentStructuredOutput) {
+    if (conditionAgentStructuredOutput && conditionAgentStructuredOutput !== '[]') {
         try {
             const structuredOutput = z.object(convertStructuredSchemaToZod(conditionAgentStructuredOutput))
             // @ts-ignore

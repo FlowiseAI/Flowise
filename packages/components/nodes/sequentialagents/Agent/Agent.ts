@@ -351,14 +351,13 @@ class Agent_SeqAgents implements INode {
         }
 
         const workerNode = async (state: ISeqAgentsState, config: RunnableConfig) => {
-            const bindModel = config.configurable?.bindModel
             return await agentNode(
                 {
                     state,
                     agent: await createAgent(
                         agentName,
                         state,
-                        bindModel || llm,
+                        llm,
                         [...tools],
                         agentSystemPrompt,
                         agentHumanPrompt,

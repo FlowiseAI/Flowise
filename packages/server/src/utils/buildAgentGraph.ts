@@ -531,7 +531,7 @@ const compileSeqAgentsGraph = async (
     let flowNodeData
     let conditionalEdges: Record<string, { nodes: Record<string, string>; func: any }> = {}
     let conditionalToolNodes: Record<string, { source: ISeqAgentNode; toolNodes: ISeqAgentNode[] }> = {}
-    let bindModel
+    let bindModel: Record<string, any> = {}
 
     const initiateNode = async (node: IReactFlowNode) => {
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
@@ -601,6 +601,11 @@ const compileSeqAgentsGraph = async (
         }
     }
 
+    const createBindModel = (agent: ISeqAgentNode, toolNodeInstance: ISeqAgentNode) => {
+        const tools = flatten(toolNodeInstance.node?.tools)
+        bindModel[agent.id] = agent.llm.bindTools(tools)
+    }
+
     for (const agentNodeId of getSortedDepthNodes(depthQueue)) {
         const agentNode = reactflowNodes.find((node) => node.id === agentNodeId)
         if (!agentNode) continue
@@ -640,7 +645,11 @@ const compileSeqAgentsGraph = async (
                             prepareConditionalEdges(agentNode.data.id, agentInstance)
                         } else if (agentNode.data.name === 'seqToolNode') {
                             prepareConditionalToolEdges(predecessorAgent, agentInstance)
+                            createBindModel(predecessorAgent, agentInstance)
                         } else if (predecessorAgent.name) {
+                            if (agentInstance.type === 'llm' && predecessorAgent.type === 'tool') {
+                                createBindModel(agentInstance, predecessorAgent)
+                            }
                             edges.push(predecessorAgent.name)
                         }
                     }
@@ -680,8 +689,6 @@ const compileSeqAgentsGraph = async (
         const connectedToolNodes = conditionalToolNodes[llmSourceNodeId].toolNodes
         const sourceNode = conditionalToolNodes[llmSourceNodeId].source
 
-        const tools = flatten(connectedToolNodes.map((toolNode) => toolNode.node?.tools))
-
         const routeMessage = (state: ISeqAgentsState) => {
             const messages = state.messages as unknown as BaseMessage[]
             const lastMessage = messages[messages.length - 1] as AIMessage
@@ -701,8 +708,6 @@ const compileSeqAgentsGraph = async (
             }
             return END
         }
-
-        bindModel = sourceNode.llm.bindTools(tools)
 
         seqGraph.addConditionalEdges(
             //@ts-ignore

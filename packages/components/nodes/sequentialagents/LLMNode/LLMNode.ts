@@ -336,7 +336,7 @@ class LLMNode_SeqAgents implements INode {
         }
 
         const workerNode = async (state: ISeqAgentsState, config: RunnableConfig) => {
-            const bindModel = config.configurable?.bindModel
+            const bindModel = config.configurable?.bindModel?.[nodeData.id]
             return await agentNode(
                 {
                     state,
@@ -366,7 +366,7 @@ class LLMNode_SeqAgents implements INode {
             node: workerNode,
             name: llmNodeName,
             label: llmNodeLabel,
-            type: 'agent',
+            type: 'llm',
             llm,
             startLLM: sequentialNodes[0].startLLM,
             output,
@@ -398,7 +398,7 @@ async function createAgent(
         llm = llm.bindTools(tools)
     }
 
-    if (llmStructuredOutput) {
+    if (llmStructuredOutput && llmStructuredOutput !== '[]') {
         try {
             const structuredOutput = z.object(convertStructuredSchemaToZod(llmStructuredOutput))
             // @ts-ignore
@@ -468,7 +468,7 @@ async function agentNode(
         if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {
             const returnedOutput = await getReturnOutput(nodeData, input, options, result, state)
 
-            if (nodeData.inputs?.llmStructuredOutput) {
+            if (nodeData.inputs?.llmStructuredOutput && nodeData.inputs.llmStructuredOutput !== '[]') {
                 const messages = [
                     new AIMessage({
                         content: typeof result === 'object' ? JSON.stringify(result) : result,
@@ -489,7 +489,7 @@ async function agentNode(
                 }
             }
         } else {
-            if (nodeData.inputs?.llmStructuredOutput) {
+            if (nodeData.inputs?.llmStructuredOutput && nodeData.inputs.llmStructuredOutput !== '[]') {
                 const messages = [
                     new AIMessage({
                         content: typeof result === 'object' ? JSON.stringify(result) : result,
