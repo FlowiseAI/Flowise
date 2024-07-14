@@ -20,6 +20,7 @@ export type NodeParamsType =
     | 'date'
     | 'file'
     | 'folder'
+    | 'contentfulConfig'
 
 export type CommonType = string | number | boolean | undefined | null
 
