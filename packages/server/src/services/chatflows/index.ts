@@ -201,6 +201,8 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
     try {
         const appServer = getRunningExpressApp()
 
+        if (newChatflows.length == 0) throw new Error('No chatflows in this file.')
+
         // step 1 - check whether there are any contradict id
         let ids = '('
         let count: number = 0
