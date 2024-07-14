@@ -19,7 +19,7 @@ import chatflowsApi from '@/api/chatflows'
 import { TooltipWithParser } from '../tooltip/TooltipWithParser'
 
 const AnswersSettings = ({ dialogProps }) => {
-    const flags = useFlags(['chatflow:share:internal', 'org:admin'])
+    const flags = useFlags(['chatflow:share:internal', 'org:manage'])
 
     const dispatch = useDispatch()
     const chatflow = useSelector((state) => state.canvas.chatflow)
@@ -88,16 +88,19 @@ const AnswersSettings = ({ dialogProps }) => {
         <>
             <Typography variant='h4' sx={{ mb: 1 }}>
                 Workflow visibility
-                <TooltipWithParser style={{ mb: 1, mt: 2, marginLeft: 10 }} title={'Control visibility and organization permissions'} />
+                <TooltipWithParser
+                    style={{ mb: 1, mt: 2, marginLeft: 10 }}
+                    title={'Control visibility and organization permissions. Contact your organization admin to enable more options.'}
+                />
             </Typography>
             <FormControl component='fieldset' sx={{ width: '100%', mb: 2 }}>
                 <FormGroup>
                     {['Private', 'Organization', 'AnswerAI', 'Marketplace', 'Browser Extension'].map((type) => {
                         const isDisabled =
                             type === 'Private' ||
-                            (!flags['org:admin']?.enabled && type === 'Browser Extension') ||
-                            (!flags['org:admin']?.enabled && type === 'Organization') ||
-                            (!flags['chatflow:share:internal']?.enabled && type === 'Marketplace')
+                            (type === 'Browser Extension' && !flags['org:manage']?.enabled) ||
+                            (type === 'Organization' && !flags['org:manage']?.enabled) ||
+                            (type === 'Marketplace' && !flags['chatflow:share:internal']?.enabled)
                         return (
                             <FormControlLabel
                                 key={type}
