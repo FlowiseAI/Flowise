@@ -1,87 +1,11 @@
 {
     "description": "Analyse and summarize CSV data",
-    "categories": "CSV Agent,ChatOpenAI,Langchain",
-    "framework": "Langchain",
+    "usecases": ["Working with tables"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
-            "height": 377,
-            "id": "csvAgent_0",
-            "position": {
-                "x": 1064.0780498701288,
-                "y": 284.44352695304724
-            },
-            "type": "customNode",
-            "data": {
-                "id": "csvAgent_0",
-                "label": "CSV Agent",
-                "name": "csvAgent",
-                "version": 3,
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain"],
-                "category": "Agents",
-                "description": "Agent used to to answer queries on CSV data",
-                "inputParams": [
-                    {
-                        "label": "Csv File",
-                        "name": "csvFile",
-                        "type": "file",
-                        "fileType": ".csv",
-                        "id": "csvAgent_0-input-csvFile-file"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Language Model",
-                        "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "csvAgent_0-input-model-BaseLanguageModel"
-                    },
-                    {
-                        "label": "Input Moderation",
-                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
-                        "name": "inputModeration",
-                        "type": "Moderation",
-                        "optional": true,
-                        "list": true,
-                        "id": "csvAgent_0-input-inputModeration-Moderation"
-                    },
-                    {
-                        "label": "Custom Pandas Read_CSV Code",
-                        "description": "Custom Pandas <a target=\"_blank\" href=\"https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html\">read_csv</a> function. Takes in an input: \"csv_data\"",
-                        "name": "customReadCSV",
-                        "default": "read_csv(csv_data)",
-                        "type": "code",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "csvAgent_0-input-customReadCSV-code"
-                    }
-                ],
-                "inputs": {
-                    "inputModeration": "",
-                    "model": "{{chatOpenAI_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "csvAgent_0-output-csvAgent-AgentExecutor|BaseChain",
-                        "name": "csvAgent",
-                        "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1064.0780498701288,
-                "y": 284.44352695304724
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 522,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 657.3762197414501,
@@ -91,8 +15,8 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
+                "version": 6,
                 "name": "chatOpenAI",
-                "version": 6.0,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -250,6 +174,148 @@
                 "y": 220.2950766042332
             },
             "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1382.0413608492051,
+                "y": 331.1861177099975
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "This agent uses the following steps:\n\n1. Convert CSV file to Dataframe object\n\n2. Instruct LLM to generate Python code to answer user question using the dataframe provided\n\n3. Return the result in a natural language response\n\nYou can also specify the system message and custom \"read_csv file\" function. This allows more flexibility of reading CSV file with different delimiter, separator etc."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 324,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1382.0413608492051,
+                "y": 331.1861177099975
+            },
+            "dragging": false
+        },
+        {
+            "id": "csvAgent_0",
+            "position": {
+                "x": 1040.029472715762,
+                "y": 293.0369370063613
+            },
+            "type": "customNode",
+            "data": {
+                "id": "csvAgent_0",
+                "label": "CSV Agent",
+                "version": 3,
+                "name": "csvAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "category": "Agents",
+                "description": "Agent used to to answer queries on CSV data",
+                "inputParams": [
+                    {
+                        "label": "Csv File",
+                        "name": "csvFile",
+                        "type": "file",
+                        "fileType": ".csv",
+                        "id": "csvAgent_0-input-csvFile-file"
+                    },
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "additionalParams": true,
+                        "optional": true,
+                        "placeholder": "I want you to act as a document that I am having a conversation with. Your name is \"AI Assistant\". You will provide me with answers from the given info. If the answer is not included, say exactly \"Hmm, I am not sure.\" and stop after that. Refuse to answer any question not about the info. Never break character.",
+                        "id": "csvAgent_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Custom Pandas Read_CSV Code",
+                        "description": "Custom Pandas <a target=\"_blank\" href=\"https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html\">read_csv</a> function. Takes in an input: \"csv_data\"",
+                        "name": "customReadCSV",
+                        "default": "read_csv(csv_data)",
+                        "type": "code",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "csvAgent_0-input-customReadCSV-code"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "csvAgent_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "csvAgent_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "systemMessagePrompt": "",
+                    "inputModeration": "",
+                    "customReadCSV": "read_csv(csv_data)"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "csvAgent_0-output-csvAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "csvAgent",
+                        "label": "AgentExecutor",
+                        "description": "Agent used to to answer queries on CSV data",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 464,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1040.029472715762,
+                "y": 293.0369370063613
+            },
+            "dragging": false
         }
     ],
     "edges": [
@@ -259,10 +325,7 @@
             "target": "csvAgent_0",
             "targetHandle": "csvAgent_0-input-model-BaseLanguageModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-csvAgent_0-csvAgent_0-input-model-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-csvAgent_0-csvAgent_0-input-model-BaseLanguageModel"
         }
     ]
 }
