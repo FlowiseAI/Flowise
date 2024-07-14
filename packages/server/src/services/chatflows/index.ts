@@ -223,21 +223,18 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
         })
 
         // step 3 - remove id that are only duplicate
-        let prepChatflows: Partial<ChatFlow>[] = []
-        if (foundIds.length != 0) {
-            prepChatflows = newChatflows.map((newChatflow) => {
-                let id: string = ''
-                if (newChatflow.id) id = newChatflow.id
-                if (foundIds.includes(id))
-                    return {
-                        name: (newChatflow.name += ' with new id'),
-                        flowData: newChatflow.flowData,
-                        type: 'CHATFLOW'
-                    }
-                newChatflow.type = 'CHATFLOW'
-                return newChatflow
-            })
-        }
+        const prepChatflows: Partial<ChatFlow>[] = newChatflows.map((newChatflow) => {
+            let id: string = ''
+            if (newChatflow.id) id = newChatflow.id
+            if (foundIds.includes(id))
+                return {
+                    name: (newChatflow.name += ' with new id'),
+                    flowData: newChatflow.flowData,
+                    type: 'CHATFLOW'
+                }
+            newChatflow.type = 'CHATFLOW'
+            return newChatflow
+        })
 
         // step 4 - transactional insert array of entities
         const insertResponse = await appServer.AppDataSource.getRepository(ChatFlow).insert(prepChatflows)
