@@ -201,9 +201,10 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
     try {
         const appServer = getRunningExpressApp()
 
+        //step 1 - check whether file chatflows array is zero
         if (newChatflows.length == 0) throw new Error('No chatflows in this file.')
 
-        // step 1 - check whether there are any contradict id
+        // step 2 - check whether there are any contradict id
         let ids = '('
         let count: number = 0
         const lastCount = newChatflows.length - 1
@@ -214,7 +215,7 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
             count += 1
         })
 
-        // step 2 - check duplicate ids against database
+        // step 3 - check duplicate ids against database
         const selectResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('cf')
             .select('cf.id')
@@ -224,7 +225,7 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
             return response.id
         })
 
-        // step 3 - remove id that are only duplicate
+        // step 4 - remove ids that are only duplicate
         const prepChatflows: Partial<ChatFlow>[] = newChatflows.map((newChatflow) => {
             let id: string = ''
             if (newChatflow.id) id = newChatflow.id
@@ -238,7 +239,7 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
             return newChatflow
         })
 
-        // step 4 - transactional insert array of entities
+        // step 5 - transactional insert array of entities
         const insertResponse = await appServer.AppDataSource.getRepository(ChatFlow).insert(prepChatflows)
 
         return insertResponse
