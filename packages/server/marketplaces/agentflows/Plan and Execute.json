@@ -1630,7 +1630,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "note": "This is an implementation of Plan and Execute Agent. When given an objective, it will goes through:\n\n1.) Planning\n2.) Find result for each plan\n3.) Update and replan\n\nHere, we initialize states:\n\n- plan: the list of plans to tackle the objective\n- pastSteps: the list of plan + result\n- response: the final response\n- action: CONTINUE or FINISH, whether to continue the loop or finish\n"
+                    "note": "This is an implementation of Plan and Execute Agent. When given an objective, it will goes through:\n\n1.) Planning\n2.) Find result for each plan\n3.) Update and replan\n\nHere, we initialize states:\n\n- plan: the list of plans to tackle the objective\n- pastSteps: the list of plan + result\n- response: the final response\n- action: CONTINUE or FINISH, whether to continue the loop or finish\n\nExample question: How to solve world hunger?"
                 },
                 "outputAnchors": [
                     {

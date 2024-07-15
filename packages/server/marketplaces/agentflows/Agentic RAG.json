@@ -2607,7 +2607,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "note": "This is an self-improving agentic RAG.\n\n1.) LLM will decide if tools are needed to search from vector databases\n2.) Condition agent is used to decided if the documents retrieved are relevant to the question asked\n3.) If yes, generate the natural language response.\n4.) If no, rewrite the query and loop back to the first LLM"
+                    "note": "This is an self-improving agentic RAG.\n\n1.) LLM will decide if tools are needed to search from vector databases\n2.) Condition agent is used to decided if the documents retrieved are relevant to the question asked\n3.) If yes, generate the natural language response.\n4.) If no, rewrite the query and loop back to the first LLM\n\nExample question: What is the key focus area of the company?"
                 },
                 "outputAnchors": [
                     {
