@@ -78,10 +78,10 @@ const Documents = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New Document Store',
+            title: 'Создать новое хранилище документов',
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add'
+            cancelButtonName: 'Отменить',
+            confirmButtonName: 'Создать'
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -145,7 +145,12 @@ const Documents = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name' title='Document Store'>
+                    <ViewHeader
+                        onSearchChange={onSearchChange}
+                        search={true}
+                        searchPlaceholder='Поиск по имени'
+                        title='Хранилища документов'
+                    >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={view}
@@ -185,7 +190,7 @@ const Documents = () => {
                             startIcon={<IconPlus />}
                             id='btn_createVariable'
                         >
-                            Add New
+                            Создать
                         </StyledButton>
                     </ViewHeader>
                     {!view || view === 'card' ? (
@@ -332,7 +337,7 @@ const Documents = () => {
                                     alt='doc_store_empty'
                                 />
                             </Box>
-                            <div>No Document Stores Created Yet</div>
+                            <div>Пока нет хранилищ документов</div>
                         </Stack>
                     )}
                 </Stack>

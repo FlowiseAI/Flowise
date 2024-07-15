@@ -37,7 +37,7 @@ const settings = {
         },
         {
             id: 'viewLeads',
-            title: 'View Leads',
+            title: 'Посмотреть лидов',
             type: 'item',
             url: '',
             icon: icons.IconUsers

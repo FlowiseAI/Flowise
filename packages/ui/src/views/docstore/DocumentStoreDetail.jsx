@@ -159,10 +159,10 @@ const DocumentStoreDetails = () => {
 
     const onLoaderDelete = async (file) => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete Loader ${file.loaderName} ? This will delete all the associated document chunks.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: `Удалить`,
+            description: `Удалить загрузчик ${file.loaderName}? Это удалит все связанные фрагменты документов.`,
+            confirmButtonName: 'Удалить',
+            cancelButtonName: 'Отменить'
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -171,7 +171,7 @@ const DocumentStoreDetails = () => {
                 const deleteResp = await documentsApi.deleteLoaderFromStore(storeId, file.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: 'Loader and associated document chunks deleted',
+                        message: 'Загрузчик и все связанные фрагменты документов успешно удалены',
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -188,7 +188,7 @@ const DocumentStoreDetails = () => {
                 setError(error)
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
-                    message: `Failed to delete loader: ${errorData}`,
+                    message: `Не удалось удалить загрузчик: ${errorData}`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -206,10 +206,10 @@ const DocumentStoreDetails = () => {
 
     const onStoreDelete = async () => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete Store ${getSpecificDocumentStore.data?.name} ? This will delete all the associated loaders and document chunks.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: `Удалить`,
+            description: `Удалить хранилище ${getSpecificDocumentStore.data?.name}? Это действие удалит все связанные загрузчики и разделы документов.`,
+            confirmButtonName: 'Удалить',
+            cancelButtonName: 'Отменить'
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -218,7 +218,7 @@ const DocumentStoreDetails = () => {
                 const deleteResp = await documentsApi.deleteDocumentStore(storeId)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: 'Store, Loader and associated document chunks deleted',
+                        message: 'Хранилище, загрузчик и все связанные фрагменты документов успешно удалены',
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',

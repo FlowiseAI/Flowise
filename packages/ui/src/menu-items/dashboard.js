@@ -42,7 +42,7 @@ const dashboard = {
         },
         {
             id: 'agentflows',
-            title: 'Agentflows',
+            title: 'Потоки агентов',
             type: 'item',
             url: '/agentflows',
             icon: icons.IconUsersGroup,
@@ -67,7 +67,7 @@ const dashboard = {
         },
         {
             id: 'assistants',
-            title: 'Ассистенты ',
+            title: 'Ассистенты',
             type: 'item',
             url: '/assistants',
             icon: icons.IconHierarchy,
@@ -99,7 +99,7 @@ const dashboard = {
         },
         {
             id: 'document-stores',
-            title: 'Document Stores',
+            title: 'Хранилища документов',
             type: 'item',
             url: '/document-stores',
             icon: icons.IconFiles,

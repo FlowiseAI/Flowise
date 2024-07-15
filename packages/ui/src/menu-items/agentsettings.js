@@ -31,49 +31,49 @@ const agent_settings = {
     children: [
         {
             id: 'viewMessages',
-            title: 'View Messages',
+            title: 'Посмотреть сообщения',
             type: 'item',
             url: '',
             icon: icons.IconMessage
         },
         {
             id: 'viewLeads',
-            title: 'View Leads',
+            title: 'Посмотреть лидов',
             type: 'item',
             url: '',
             icon: icons.IconUsers
         },
         {
             id: 'chatflowConfiguration',
-            title: 'Configuration',
+            title: 'Конфигурация',
             type: 'item',
             url: '',
             icon: icons.IconAdjustmentsHorizontal
         },
         {
             id: 'duplicateChatflow',
-            title: 'Duplicate Agents',
+            title: 'Создать дубликат агентов',
             type: 'item',
             url: '',
             icon: icons.IconCopy
         },
         {
             id: 'loadChatflow',
-            title: 'Load Agents',
+            title: 'Загрузить агентов',
             type: 'item',
             url: '',
             icon: icons.IconFileUpload
         },
         {
             id: 'exportChatflow',
-            title: 'Export Agents',
+            title: 'Экспортировать агентов',
             type: 'item',
             url: '',
             icon: icons.IconFileExport
         },
         {
             id: 'deleteChatflow',
-            title: 'Delete Agents',
+            title: 'Удалить агентов',
             type: 'item',
             url: '',
             icon: icons.IconTrash
