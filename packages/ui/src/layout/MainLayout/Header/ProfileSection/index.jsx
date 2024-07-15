@@ -1,4 +1,4 @@
-import { REMOVE_DIRTY, closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import { REMOVE_DIRTY, closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, MENU_OPEN } from '@/store/actions'
 import { sanitizeChatflows } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import PropTypes from 'prop-types'
@@ -39,6 +39,7 @@ import chatFlowsApi from '@/api/chatflows'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -52,6 +53,9 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     const anchorRef = useRef(null)
     const inputRef = useRef()
+
+    const navigate = useNavigate()
+    const location = useLocation()
 
     // ==============================|| Snackbar ||============================== //
 
@@ -122,6 +126,13 @@ const ProfileSection = ({ username, handleLogout }) => {
         if (importChatflowsApi.error) errorFailed(`Failed to import chatflows: ${importChatflowsApi.error.response.data.message}`)
         if (importChatflowsApi.data) {
             importChatflowsSuccess()
+            // if current location is /chatflows, refresh the page
+            if (location.pathname === '/chatflows') navigate(0)
+            else {
+                // if not redirect to /chatflows
+                dispatch({ type: MENU_OPEN, id: 'chatflows' })
+                navigate('/chatflows')
+            }
         }
     }, [importChatflowsApi.error, importChatflowsApi.data])
     const importAllChatflows = () => {
