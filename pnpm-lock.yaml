@@ -531,8 +531,8 @@ importers:
                 specifier: ^7.1.0
                 version: 7.6.0
             cypress:
-                specifier: ^13.7.1
-                version: 13.7.1
+                specifier: ^13.13.0
+                version: 13.13.0
             nodemon:
                 specifier: ^2.0.22
                 version: 2.0.22
@@ -7239,8 +7239,8 @@ packages:
         resolution: { integrity: sha512-4+0D+ojEasdLndYX4Cqff057I/Jp6ysXpwKkdLQLnZxV8f6IYZmZtTP5uqD91a/kWqejoc0sSqK4u8wpTKCh8A== }
         engines: { node: '>=0.8' }
 
-    cypress@13.7.1:
-        resolution: { integrity: sha512-4u/rpFNxOFCoFX/Z5h+uwlkBO4mWzAjveURi3vqdSu56HPvVdyGTxGw4XKGWt399Y1JwIn9E1L9uMXQpc0o55w== }
+    cypress@13.13.0:
+        resolution: { integrity: sha512-ou/MQUDq4tcDJI2FsPaod2FZpex4kpIK43JJlcBgWrX8WX7R/05ZxGTuxedOuZBfxjZxja+fbijZGyxiLP6CFA== }
         engines: { node: ^16.0.0 || ^18.0.0 || >=20.0.0 }
         hasBin: true
 
@@ -20375,7 +20375,7 @@ snapshots:
 
     '@mendable/firecrawl-js@0.0.28':
         dependencies:
-            axios: 1.7.2
+            axios: 1.7.2(debug@4.3.4)
             dotenv: 16.4.5
             uuid: 9.0.1
             zod: 3.23.8
@@ -23029,7 +23029,7 @@ snapshots:
             '@crawlee/types': 3.8.1
             agentkeepalive: 4.5.0
             async-retry: 1.3.3
-            axios: 1.6.7(debug@4.3.4)
+            axios: 1.6.7
             content-type: 1.0.5
             ow: 0.28.2
             tslib: 2.6.2
@@ -23426,7 +23426,7 @@ snapshots:
         transitivePeerDependencies:
             - debug
 
-    axios@1.6.7(debug@4.3.4):
+    axios@1.6.7:
         dependencies:
             follow-redirects: 1.15.5(debug@4.3.4)
             form-data: 4.0.0
@@ -23434,9 +23434,9 @@ snapshots:
         transitivePeerDependencies:
             - debug
 
-    axios@1.7.2:
+    axios@1.7.2(debug@4.3.4):
         dependencies:
-            follow-redirects: 1.15.6
+            follow-redirects: 1.15.6(debug@4.3.4)
             form-data: 4.0.0
             proxy-from-env: 1.1.0
         transitivePeerDependencies:
@@ -24726,7 +24726,7 @@ snapshots:
 
     cmake-js@7.3.0:
         dependencies:
-            axios: 1.6.7(debug@4.3.4)
+            axios: 1.7.2(debug@4.3.4)
             debug: 4.3.4(supports-color@5.5.0)
             fs-extra: 11.2.0
             lodash.isplainobject: 4.0.6
@@ -25188,7 +25188,7 @@ snapshots:
     css-tree@2.3.1:
         dependencies:
             mdn-data: 2.0.30
-            source-map-js: 1.0.2
+            source-map-js: 1.2.0
 
     css-what@3.4.2: {}
 
@@ -25273,7 +25273,7 @@ snapshots:
         dependencies:
             find-pkg: 0.1.2
 
-    cypress@13.7.1:
+    cypress@13.13.0:
         dependencies:
             '@cypress/request': 3.0.1
             '@cypress/xvfb': 1.2.4(supports-color@8.1.1)
@@ -27071,7 +27071,9 @@ snapshots:
         optionalDependencies:
             debug: 4.3.4(supports-color@5.5.0)
 
-    follow-redirects@1.15.6: {}
+    follow-redirects@1.15.6(debug@4.3.4):
+        optionalDependencies:
+            debug: 4.3.4(supports-color@5.5.0)
 
     for-each@0.3.3:
         dependencies:
@@ -35110,7 +35112,7 @@ snapshots:
             estree-walker: 3.0.3
             is-reference: 3.0.2
             locate-character: 3.0.0
-            magic-string: 0.30.8
+            magic-string: 0.30.10
             periscopic: 3.1.0
 
     sver-compat@1.5.0:
