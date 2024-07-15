@@ -175,6 +175,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const rephrasePrompt = nodeData.inputs?.rephrasePrompt as string
         const responsePrompt = nodeData.inputs?.responsePrompt as string
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
+        const prependMessages = options?.prependMessages
 
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
@@ -210,7 +211,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         }
         const answerChain = createChain(model, vectorStoreRetriever, rephrasePrompt, customResponsePrompt)
 
-        const history = ((await memory.getChatMessages(this.sessionId, false)) as IMessage[]) ?? []
+        const history = ((await memory.getChatMessages(this.sessionId, false, prependMessages)) as IMessage[]) ?? []
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const additionalCallback = await additionalCallbacks(nodeData, options)
@@ -401,7 +402,11 @@ class BufferMemory extends FlowiseMemory implements MemoryMethods {
         this.chatflowid = fields.chatflowid
     }
 
-    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+    async getChatMessages(
+        overrideSessionId = '',
+        returnBaseMessages = false,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]> {
         if (!overrideSessionId) return []
 
         const chatMessage = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).find({
@@ -413,6 +418,10 @@ class BufferMemory extends FlowiseMemory implements MemoryMethods {
                 createdDate: 'ASC'
             }
         })
+
+        if (prependMessages?.length) {
+            chatMessage.unshift(...prependMessages)
+        }
 
         if (returnBaseMessages) {
             return mapChatMessageToBaseMessage(chatMessage)

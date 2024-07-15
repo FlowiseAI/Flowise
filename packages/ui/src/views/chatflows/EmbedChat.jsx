@@ -88,7 +88,8 @@ const buttonConfig = (isReact = false) => {
                     backgroundColor: "#3B81F6",
                     right: 20,
                     bottom: 20,
-                    size: "medium",
+                    size: 48, // small | medium | large | number
+                    dragAndDrop: true,
                     iconColor: "white",
                     customIconSrc: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg",
                 }`
@@ -96,16 +97,40 @@ const buttonConfig = (isReact = false) => {
                 backgroundColor: "#3B81F6",
                 right: 20,
                 bottom: 20,
-                size: "medium",
+                size: 48, // small | medium | large | number
+                dragAndDrop: true,
                 iconColor: "white",
                 customIconSrc: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg",
+            }`
+}
+
+const tooltipConfig = (isReact = false) => {
+    return isReact
+        ? `tooltip: {
+                    showTooltip: true,
+                    tooltipMessage: 'Hi There 👋!',
+                    tooltipBackgroundColor: 'black',
+                    tooltipTextColor: 'white',
+                    tooltipFontSize: 16,
+                }`
+        : `tooltip: {
+                showTooltip: true,
+                tooltipMessage: 'Hi There 👋!',
+                tooltipBackgroundColor: 'black',
+                tooltipTextColor: 'white',
+                tooltipFontSize: 16,
             }`
 }
 
 const chatwindowConfig = (isReact = false) => {
     return isReact
         ? `chatWindow: {
-                    welcomeMessage: "Hello! This is custom welcome message",
+                    showTitle: true,
+                    title: 'Flowise Bot',
+                    titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                    showAgentMessages: true,
+                    welcomeMessage: 'Hello! This is custom welcome message',
+                    errorMessage: 'This is a custom error message',
                     backgroundColor: "#ffffff",
                     height: 700,
                     width: 400,
@@ -124,14 +149,35 @@ const chatwindowConfig = (isReact = false) => {
                         avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
                     },
                     textInput: {
-                        placeholder: "Type your question",
-                        backgroundColor: "#ffffff",
-                        textColor: "#303235",
-                        sendButtonColor: "#3B81F6",
+                        placeholder: 'Type your question',
+                        backgroundColor: '#ffffff',
+                        textColor: '#303235',
+                        sendButtonColor: '#3B81F6',
+                        maxChars: 50,
+                        maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
+                        autoFocus: true, // If not used, autofocus is disabled on mobile and enabled on desktop. true enables it on both, false disables it on both.
+                        sendMessageSound: true,
+                        // sendSoundLocation: "send_message.mp3", // If this is not used, the default sound effect will be played if sendSoundMessage is true.
+                        receiveMessageSound: true,
+                        // receiveSoundLocation: "receive_message.mp3", // If this is not used, the default sound effect will be played if receiveSoundMessage is true.
+                    },
+                    feedback: {
+                        color: '#303235',
+                    },
+                    footer: {
+                        textColor: '#303235',
+                        text: 'Powered by',
+                        company: 'Flowise',
+                        companyLink: 'https://flowiseai.com',
                     }
                 }`
         : `chatWindow: {
-                welcomeMessage: "Hello! This is custom welcome message",
+                showTitle: true,
+                title: 'Flowise Bot',
+                titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                showAgentMessages: true,
+                welcomeMessage: 'Hello! This is custom welcome message',
+                errorMessage: 'This is a custom error message',
                 backgroundColor: "#ffffff",
                 height: 700,
                 width: 400,
@@ -150,10 +196,26 @@ const chatwindowConfig = (isReact = false) => {
                     avatarSrc: "https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png",
                 },
                 textInput: {
-                    placeholder: "Type your question",
-                    backgroundColor: "#ffffff",
-                    textColor: "#303235",
-                    sendButtonColor: "#3B81F6",
+                    placeholder: 'Type your question',
+                    backgroundColor: '#ffffff',
+                    textColor: '#303235',
+                    sendButtonColor: '#3B81F6',
+                    maxChars: 50,
+                    maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
+                    autoFocus: true, // If not used, autofocus is disabled on mobile and enabled on desktop. true enables it on both, false disables it on both.
+                    sendMessageSound: true,
+                    // sendSoundLocation: "send_message.mp3", // If this is not used, the default sound effect will be played if sendSoundMessage is true.
+                    receiveMessageSound: true,
+                    // receiveSoundLocation: "receive_message.mp3", // If this is not used, the default sound effect will be played if receiveSoundMessage is true. 
+                },
+                feedback: {
+                    color: '#303235',
+                },
+                footer: {
+                    textColor: '#303235',
+                    text: 'Powered by',
+                    company: 'Flowise',
+                    companyLink: 'https://flowiseai.com',
                 }
             }`
 }
@@ -169,6 +231,7 @@ const embedPopupHtmlCodeCustomization = (chatflowid) => {
         },
         theme: {
             ${buttonConfig()},
+            ${tooltipConfig()},
             ${chatwindowConfig()}
         }
     })
@@ -185,6 +248,7 @@ const App = () => {
             apiHost="${baseURL}"
             theme={{
                 ${buttonConfig(true)},
+                ${tooltipConfig(true)},
                 ${chatwindowConfig(true)}
             }}
         />

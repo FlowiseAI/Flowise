@@ -9,6 +9,7 @@ router.post(['/', '/:id'], chatMessageController.createChatMessage)
 router.get(['/', '/:id'], chatMessageController.getAllChatMessages)
 
 // UPDATE
+router.put(['/abort/', '/abort/:chatflowid/:chatid'], chatMessageController.abortChatMessage)
 
 // DELETE
 router.delete(['/', '/:id'], chatMessageController.removeAllChatMessages)

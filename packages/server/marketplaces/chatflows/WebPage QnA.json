@@ -1,22 +1,22 @@
 {
-    "description": "Scrape web pages for QnA with long term memory Motorhead and return source documents",
-    "categories": "HtmlToMarkdown,Cheerio Web Scraper,ChatOpenAI,Redis,Pinecone,Langchain",
-    "framework": "Langchain",
+    "description": "Scrape web pages to be used with Retrieval Augmented Generation (RAG) for question answering",
+    "usecases": ["Documents QnA"],
+    "framework": ["Langchain"],
     "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,
-            "height": 329,
+            "height": 424,
             "id": "openAIEmbeddings_0",
             "position": {
-                "x": 825.9524798523752,
-                "y": 243.50917628151723
+                "x": 805.4033852865127,
+                "y": 289.17383087232275
             },
             "type": "customNode",
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "version": 3,
+                "version": 4,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -36,7 +36,7 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "id": "openAIEmbeddings_2-input-modelName-options"
+                        "id": "openAIEmbeddings_0-input-modelName-asyncOptions"
                     },
                     {
                         "label": "Strip New Lines",
@@ -69,21 +69,31 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_0-input-basepath-string"
+                    },
+                    {
+                        "label": "Dimensions",
+                        "name": "dimensions",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-dimensions-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
+                    "modelName": "text-embedding-ada-002",
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
                     "basepath": "",
-                    "modelName": "text-embedding-ada-002"
+                    "dimensions": ""
                 },
                 "outputAnchors": [
                     {
                         "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
                         "name": "openAIEmbeddings",
                         "label": "OpenAIEmbeddings",
+                        "description": "OpenAI API to generate embeddings for a given text",
                         "type": "OpenAIEmbeddings | Embeddings"
                     }
                 ],
@@ -92,18 +102,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 825.9524798523752,
-                "y": 243.50917628151723
+                "x": 805.4033852865127,
+                "y": 289.17383087232275
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 376,
+            "height": 378,
             "id": "htmlToMarkdownTextSplitter_0",
             "position": {
-                "x": 465.86869036784685,
-                "y": -17.41141011530891
+                "x": 459.0189921792261,
+                "y": -21.97787557438943
             },
             "type": "customNode",
             "data": {
@@ -156,18 +166,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 465.86869036784685,
-                "y": -17.41141011530891
+                "x": 459.0189921792261,
+                "y": -21.97787557438943
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 480,
+            "height": 532,
             "id": "conversationalRetrievalQAChain_0",
             "position": {
-                "x": 1882.5543981868987,
-                "y": 305.08959224761225
+                "x": 1892.82894546983,
+                "y": 282.2572649522094
             },
             "type": "customNode",
             "data": {
@@ -247,7 +257,7 @@
                     "inputModeration": "",
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "vectorStoreRetriever": "{{pinecone_0.data.instance}}",
-                    "memory": "{{RedisBackedChatMemory_0.data.instance}}",
+                    "memory": "",
                     "returnSourceDocuments": true,
                     "rephrasePrompt": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
                     "responsePrompt": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer."
@@ -265,18 +275,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1882.5543981868987,
-                "y": 305.08959224761225
+                "x": 1892.82894546983,
+                "y": 282.2572649522094
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 380,
+            "height": 426,
             "id": "cheerioWebScraper_0",
             "position": {
-                "x": 825.0624964329904,
-                "y": -183.65456143262517
+                "x": 815.9295655148293,
+                "y": -190.50425962124604
             },
             "type": "customNode",
             "data": {
@@ -373,24 +383,24 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 825.0624964329904,
-                "y": -183.65456143262517
+                "x": 815.9295655148293,
+                "y": -190.50425962124604
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 1530.2074695018944,
-                "y": -247.5543013399219
+                "x": 1532.4907022314349,
+                "y": -270.38662863532466
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -552,87 +562,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1530.2074695018944,
-                "y": -247.5543013399219
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 329,
-            "id": "RedisBackedChatMemory_0",
-            "position": {
-                "x": 1203.0374706158896,
-                "y": 420.6341619933999
-            },
-            "type": "customNode",
-            "data": {
-                "id": "RedisBackedChatMemory_0",
-                "label": "Redis-Backed Chat Memory",
-                "version": 2,
-                "name": "RedisBackedChatMemory",
-                "type": "RedisBackedChatMemory",
-                "baseClasses": ["RedisBackedChatMemory", "BaseChatMemory", "BaseMemory"],
-                "category": "Memory",
-                "description": "Summarizes the conversation and stores the memory in Redis server",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "optional": true,
-                        "credentialNames": ["redisCacheApi", "redisCacheUrlApi"],
-                        "id": "RedisBackedChatMemory_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Session Id",
-                        "name": "sessionId",
-                        "type": "string",
-                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat\">more</a>",
-                        "default": "",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "RedisBackedChatMemory_0-input-sessionId-string"
-                    },
-                    {
-                        "label": "Session Timeouts",
-                        "name": "sessionTTL",
-                        "type": "number",
-                        "description": "Omit this parameter to make sessions never expire",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "RedisBackedChatMemory_0-input-sessionTTL-number"
-                    },
-                    {
-                        "label": "Memory Key",
-                        "name": "memoryKey",
-                        "type": "string",
-                        "default": "chat_history",
-                        "additionalParams": true,
-                        "id": "RedisBackedChatMemory_0-input-memoryKey-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "sessionId": "",
-                    "sessionTTL": "",
-                    "memoryKey": "chat_history"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
-                        "name": "RedisBackedChatMemory",
-                        "label": "RedisBackedChatMemory",
-                        "type": "RedisBackedChatMemory | BaseChatMemory | BaseMemory"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1203.0374706158896,
-                "y": 420.6341619933999
+                "x": 1532.4907022314349,
+                "y": -270.38662863532466
             },
             "dragging": false
         },
@@ -641,8 +572,8 @@
             "height": 555,
             "id": "pinecone_0",
             "position": {
-                "x": 1194.3821796400694,
-                "y": -162.7324497768837
+                "x": 1182.9660159923678,
+                "y": 56.45789225898284
             },
             "type": "customNode",
             "data": {
@@ -791,8 +722,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1194.3821796400694,
-                "y": -162.7324497768837
+                "x": 1182.9660159923678,
+                "y": 56.45789225898284
             },
             "dragging": false
         }
@@ -816,17 +747,6 @@
             "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseChatModel",
             "type": "buttonedge",
             "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseChatModel",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "RedisBackedChatMemory_0",
-            "sourceHandle": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
-            "target": "conversationalRetrievalQAChain_0",
-            "targetHandle": "conversationalRetrievalQAChain_0-input-memory-BaseMemory",
-            "type": "buttonedge",
-            "id": "RedisBackedChatMemory_0-RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-memory-BaseMemory",
             "data": {
                 "label": ""
             }

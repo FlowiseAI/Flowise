@@ -1,7 +1,7 @@
 {
     "description": "A chain that automatically picks an appropriate prompt from multiple prompts",
-    "categories": "ChatOpenAI,Multi Prompt Chain,Langchain",
-    "framework": "Langchain",
+    "usecases": ["Basic"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
