@@ -25,7 +25,7 @@ class Worker_MultiAgents implements INode {
     badge?: string
 
     constructor() {
-        this.label = 'Worker'
+        this.label = 'Исполнитель'
         this.name = 'worker'
         this.version = 1.0
         this.type = 'Worker'
@@ -34,13 +34,13 @@ class Worker_MultiAgents implements INode {
         this.baseClasses = [this.type]
         this.inputs = [
             {
-                label: 'Worker Name',
+                label: 'Имя исполнителя',
                 name: 'workerName',
                 type: 'string',
                 placeholder: 'Worker'
             },
             {
-                label: 'Worker Prompt',
+                label: 'Инструкция исполнителя',
                 name: 'workerPrompt',
                 type: 'string',
                 rows: 4,
@@ -54,7 +54,7 @@ class Worker_MultiAgents implements INode {
                 optional: true
             },
             {
-                label: 'Supervisor',
+                label: 'Супервайзер',
                 name: 'supervisor',
                 type: 'Supervisor'
             },
@@ -66,7 +66,7 @@ class Worker_MultiAgents implements INode {
                 description: `Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat. If not specified, supervisor's model will be used`
             },
             {
-                label: 'Format Prompt Values',
+                label: 'Формат запроса',
                 name: 'promptValues',
                 type: 'json',
                 optional: true,
@@ -74,7 +74,7 @@ class Worker_MultiAgents implements INode {
                 list: true
             },
             {
-                label: 'Max Iterations',
+                label: 'Максимальное количество итераций',
                 name: 'maxIterations',
                 type: 'number',
                 optional: true

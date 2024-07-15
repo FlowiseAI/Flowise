@@ -44,7 +44,7 @@ class Supervisor_MultiAgents implements INode {
     badge?: string
 
     constructor() {
-        this.label = 'Supervisor'
+        this.label = 'Супервайзер'
         this.name = 'supervisor'
         this.version = 1.0
         this.type = 'Supervisor'
@@ -53,10 +53,10 @@ class Supervisor_MultiAgents implements INode {
         this.baseClasses = [this.type]
         this.inputs = [
             {
-                label: 'Supervisor Name',
+                label: 'Имя Супервайзера',
                 name: 'supervisorName',
                 type: 'string',
-                placeholder: 'Supervisor',
+                placeholder: 'Супервайзер',
                 default: 'Supervisor'
             },
             {
