@@ -76,7 +76,7 @@ class Retriever_Tools implements INode {
         }
 
         const schema = z.object({
-            input: z.string().describe('query to look up in retriever')
+            input: z.string().describe('input to look up in retriever')
         })
 
         const tool = new DynamicStructuredTool({ ...input, func, schema })

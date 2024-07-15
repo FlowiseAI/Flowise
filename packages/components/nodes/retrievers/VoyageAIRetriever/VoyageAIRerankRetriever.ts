@@ -26,7 +26,6 @@ class VoyageAIRerankRetriever_Retrievers implements INode {
         this.type = 'VoyageAIRerankRetriever'
         this.icon = 'voyageai.png'
         this.category = 'Retrievers'
-        this.badge = 'NEW'
         this.description = 'Voyage AI Rerank indexes the documents from most to least semantically relevant to the query.'
         this.baseClasses = [this.type, 'BaseRetriever']
         this.credential = {
@@ -49,6 +48,10 @@ class VoyageAIRerankRetriever_Retrievers implements INode {
                     {
                         label: 'rerank-lite-1',
                         name: 'rerank-lite-1'
+                    },
+                    {
+                        label: 'rerank-1',
+                        name: 'rerank-1'
                     }
                 ],
                 default: 'rerank-lite-1',

@@ -104,7 +104,11 @@ class ConversationSummaryMemoryExtended extends FlowiseSummaryMemory implements 
         this.chatflowid = fields.chatflowid
     }
 
-    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+    async getChatMessages(
+        overrideSessionId = '',
+        returnBaseMessages = false,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]> {
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         if (!id) return []
 
@@ -118,6 +122,10 @@ class ConversationSummaryMemoryExtended extends FlowiseSummaryMemory implements 
                 createdDate: 'ASC'
             }
         })
+
+        if (prependMessages?.length) {
+            chatMessage.unshift(...prependMessages)
+        }
 
         const baseMessages = mapChatMessageToBaseMessage(chatMessage)
 

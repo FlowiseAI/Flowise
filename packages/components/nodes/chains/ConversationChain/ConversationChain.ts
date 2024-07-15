@@ -220,6 +220,7 @@ const prepareChain = async (nodeData: INodeData, options: ICommonObject, session
     let model = nodeData.inputs?.model as BaseChatModel
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const memoryKey = memory.memoryKey ?? 'chat_history'
+    const prependMessages = options?.prependMessages
 
     let messageContent: MessageContentImageUrl[] = []
     if (llmSupportsVision(model)) {
@@ -252,7 +253,7 @@ const prepareChain = async (nodeData: INodeData, options: ICommonObject, session
         {
             [inputKey]: (input: { input: string }) => input.input,
             [memoryKey]: async () => {
-                const history = await memory.getChatMessages(sessionId, true)
+                const history = await memory.getChatMessages(sessionId, true, prependMessages)
                 return history
             },
             ...promptVariables

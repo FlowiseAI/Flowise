@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { IChatFlow } from '../../Interface'
+import { ChatflowType, IChatFlow } from '../../Interface'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { getAppVersion, getTelemetryFlowObj, isFlowValidForStream, constructGraphs, getEndingNodes } from '../../utils'
 import logger from '../../utils/logger'
@@ -45,6 +45,11 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
                 return { isStreaming: false }
             }
             isStreaming = isFlowValidForStream(nodes, endingNodeData)
+        }
+
+        // If it is a Multi Agents, always enable streaming
+        if (endingNodes.filter((node) => node.data.category === 'Multi Agents').length > 0) {
+            return { isStreaming: true }
         }
 
         const dbResponse = { isStreaming: isStreaming }
@@ -99,11 +104,14 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
     }
 }
 
-const getAllChatflows = async (): Promise<IChatFlow[]> => {
+const getAllChatflows = async (type?: ChatflowType): Promise<IChatFlow[]> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
-        return dbResponse
+        if (type === 'MULTIAGENT') {
+            return dbResponse.filter((chatflow) => chatflow.type === type)
+        }
+        return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -112,16 +120,18 @@ const getAllChatflows = async (): Promise<IChatFlow[]> => {
     }
 }
 
-const getChatflowByApiKey = async (apiKeyId: string): Promise<any> => {
+const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise<any> => {
     try {
+        // Here we only get chatflows that are bounded by the apikeyid and chatflows that are not bounded by any apikey
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
+        let query = appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('cf')
             .where('cf.apikeyid = :apikeyid', { apikeyid: apiKeyId })
-            .orWhere('cf.apikeyid IS NULL')
-            .orWhere('cf.apikeyid = ""')
-            .orderBy('cf.name', 'ASC')
-            .getMany()
+        if (keyonly === undefined) {
+            query = query.orWhere('cf.apikeyid IS NULL').orWhere('cf.apikeyid = ""')
+        }
+
+        const dbResponse = await query.orderBy('cf.name', 'ASC').getMany()
         if (dbResponse.length < 1) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow not found in the database!`)
         }
@@ -227,10 +237,14 @@ const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
         }
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
     } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: chatflowsService.getSinglePublicChatflow - ${getErrorMessage(error)}`
-        )
+        if (error instanceof InternalFlowiseError && error.statusCode === StatusCodes.UNAUTHORIZED) {
+            throw error
+        } else {
+            throw new InternalFlowiseError(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                `Error: chatflowsService.getSinglePublicChatflow - ${getErrorMessage(error)}`
+            )
+        }
     }
 }
 
