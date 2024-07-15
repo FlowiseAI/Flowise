@@ -215,7 +215,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             data: s,
                             preview: s,
                             type: 'url',
-                            name: s.substring(s.lastIndexOf('/') + 1)
+                            name: s ? s.substring(s.lastIndexOf('/') + 1) : ''
                         }
                         setPreviews((prevPreviews) => [...prevPreviews, upload])
                     })
@@ -223,14 +223,14 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     item.getAsString((s) => {
                         if (s.indexOf('href') === -1) return
                         //extract href
-                        let start = s.substring(s.indexOf('href') + 6)
+                        let start = s ? s.substring(s.indexOf('href') + 6) : ''
                         let hrefStr = start.substring(0, start.indexOf('"'))
 
                         let upload = {
                             data: hrefStr,
                             preview: hrefStr,
                             type: 'url',
-                            name: hrefStr.substring(hrefStr.lastIndexOf('/') + 1)
+                            name: hrefStr ? hrefStr.substring(hrefStr.lastIndexOf('/') + 1) : ''
                         }
                         setPreviews((prevPreviews) => [...prevPreviews, upload])
                     })
@@ -283,7 +283,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         if (pos === -1) {
             mimeType = blob.type
         } else {
-            mimeType = blob.type.substring(0, pos)
+            mimeType = blob.type ? blob.type.substring(0, pos) : ''
         }
         // read blob and add to previews
         const reader = new FileReader()
@@ -597,6 +597,26 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         } else if (e.key === 'Enter') {
             e.preventDefault()
         }
+    }
+
+    const getLabel = (URL, source) => {
+        if (URL && typeof URL === 'object') {
+            if (URL.pathname && typeof URL.pathname === 'string') {
+                if (URL.pathname.substring(0, 15) === '/') {
+                    return URL.host || ''
+                } else {
+                    return `${URL.pathname.substring(0, 15)}...`
+                }
+            } else if (URL.host) {
+                return URL.host
+            }
+        }
+
+        if (source && source.pageContent && typeof source.pageContent === 'string') {
+            return `${source.pageContent.substring(0, 15)}...`
+        }
+
+        return ''
     }
 
     const downloadFile = async (fileAnnotation) => {
@@ -1207,13 +1227,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                                 <Chip
                                                                                     size='small'
                                                                                     key={index}
-                                                                                    label={
-                                                                                        URL
-                                                                                            ? URL.pathname.substring(0, 15) === '/'
-                                                                                                ? URL.host
-                                                                                                : `${URL.pathname.substring(0, 15)}...`
-                                                                                            : `${source.pageContent.substring(0, 15)}...`
-                                                                                    }
+                                                                                    label={getLabel(URL, source) || ''}
                                                                                     component='a'
                                                                                     sx={{ mr: 1, mb: 1 }}
                                                                                     variant='outlined'
@@ -1417,13 +1431,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                         <Chip
                                                             size='small'
                                                             key={index}
-                                                            label={
-                                                                URL
-                                                                    ? URL.pathname.substring(0, 15) === '/'
-                                                                        ? URL.host
-                                                                        : `${URL.pathname.substring(0, 15)}...`
-                                                                    : `${source.pageContent.substring(0, 15)}...`
-                                                            }
+                                                            label={getLabel(URL, source) || ''}
                                                             component='a'
                                                             sx={{ mr: 1, mb: 1 }}
                                                             variant='outlined'
