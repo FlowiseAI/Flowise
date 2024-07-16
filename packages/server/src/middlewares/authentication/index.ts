@@ -6,7 +6,7 @@ import { User } from '../../database/entities/User'
 import { Organization } from '../../database/entities/Organization'
 
 const jwtCheck = auth({
-    authRequired: false,
+    authRequired: true,
     secret: process.env.AUTH0_SECRET,
     audience: process.env.AUTH0_AUDIENCE,
     issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
