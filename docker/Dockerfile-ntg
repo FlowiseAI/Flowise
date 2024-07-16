@@ -1,0 +1,32 @@
+# Use the official Node.js image as the base image
+FROM node:20.15.0
+
+# Set the working directory inside the container
+WORKDIR /usr/src/app
+
+# Install pnpm globally
+RUN npm install -g pnpm@9.0.4
+
+# Copy package.json and pnpm-lock.yaml to the working directory
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies using pnpm
+RUN pnpm install
+
+# Copy the rest of the application code to the working directory
+COPY . .
+
+# Install Cypress (or any other dependencies required for your tests)
+RUN ./node_modules/.bin/cypress install
+
+# Lint the code
+RUN pnpm lint
+
+# Build the project
+RUN pnpm build
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Define the command to run the application
+CMD ["pnpm", "start"]
