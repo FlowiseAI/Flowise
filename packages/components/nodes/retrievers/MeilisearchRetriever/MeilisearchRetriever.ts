@@ -1,9 +1,11 @@
-import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
+import { getCredentialData, getCredentialParam } from '../../../src'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { docsearch } from 'meilisearch-docsearch'
 import { Meilisearch } from 'meilisearch'
 import { MeilisearchRetriever } from './Meilisearch'
-import { integer } from '@elastic/elasticsearch/lib/api/types'
+import { flatten } from 'lodash'
+import { Document } from '@langchain/core/documents'
+import { v4 as uuidv4 } from 'uuid'
+import { Embeddings } from '@langchain/core/embeddings'
 
 class MeilisearchRetriever_node implements INode {
     label: string
@@ -25,7 +27,7 @@ class MeilisearchRetriever_node implements INode {
         this.version = 1.0
         this.type = 'Meilisearch'
         this.icon = 'Meilisearch.png'
-        this.category = 'Retrievers'
+        this.category = 'Vector Stores'
         this.badge = 'NEW'
         this.description = 'Meilisearch uses hybrid search to sematically answer the query.'
         this.baseClasses = ['BaseRetriever']
@@ -36,6 +38,18 @@ class MeilisearchRetriever_node implements INode {
             credentialNames: [this.type, 'MeilisearchApi']
         }
         this.inputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                type: 'Document',
+                list: true,
+                optional: true
+            },
+            {
+                label: 'Embeddings',
+                name: 'embeddings',
+                type: 'Embeddings'
+            },
             {
                 label: 'host',
                 name: 'host',
@@ -80,26 +94,83 @@ class MeilisearchRetriever_node implements INode {
             }
         ]
     }
+    //@ts-ignore
+    vectorStoreMethods = {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<any> {
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const meilisearchAdminApiKey = getCredentialParam('adminApiKey', credentialData, nodeData)
+            const docs = nodeData.inputs?.document as Document[]
+            const host = nodeData.inputs?.host as string
+            const indexUid = nodeData.inputs?.indexUid as string
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const K = nodeData.inputs?.K as string
+            const output = nodeData.outputs?.output as string
+            let embeddingDimension: number = 384
+            const client = new Meilisearch({
+                host: host,
+                apiKey: meilisearchAdminApiKey
+            })
+            const flattenDocs = docs && docs.length ? flatten(docs) : []
+            const finalDocs = []
+            for (let i = 0; i < flattenDocs.length; i += 1) {
+                if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                    const uniqueId = uuidv4()
+                    const { pageContent, metadata } = flattenDocs[i]
+                    const docEmbedding = await embeddings.embedQuery(pageContent)
+                    embeddingDimension = docEmbedding.length
+                    const documentForIndexing = {
+                        pageContent,
+                        metadata,
+                        objectID: uniqueId,
+                        _vectors: {
+                            ollama: {
+                                embeddings: docEmbedding,
+                                regenerate: false
+                            }
+                        }
+                    }
+                    finalDocs.push(documentForIndexing)
+                }
+            }
 
-    async upsert(nodeData: INodeData, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const meilisearchApiKey = getCredentialParam('apiKey', credentialData, nodeData)
-        const host = nodeData.inputs?.host as string
-        const indexUid = nodeData.inputs?.indexUid as string
-        const K = nodeData.inputs?.K as string
-        const output = nodeData.outputs?.output as string
+            try {
+                const index = await client.getIndex(indexUid)
+                console.log('index uid ' + index.uid)
+            } catch (error) {
+                console.error('Error fetching index:', error)
+            } finally {
+                await client.createIndex(indexUid, { primaryKey: 'objectID' })
+            }
+
+            try {
+                const index = await client.index(indexUid)
+                await index.updateSettings({
+                    embedders: {
+                        ollama: {
+                            source: 'userProvided',
+                            dimensions: embeddingDimension
+                        }
+                    }
+                })
+                const addResponse = await index.addDocuments(finalDocs)
+                console.log('Documents added successfully:', addResponse)
+            } catch (error) {
+                console.error('Error occurred while adding documents:', error)
+            }
+            return
+        }
     }
-
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const meilisearchApiKey = getCredentialParam('apiKey', credentialData, nodeData)
+        const meilisearchSearchApiKey = getCredentialParam('searchApiKey', credentialData, nodeData)
         const host = nodeData.inputs?.host as string
         const indexUid = nodeData.inputs?.indexUid as string
         const K = nodeData.inputs?.K as string
         const semanticRatio = nodeData.inputs?.semanticRatio as string
+        const embeddings = nodeData.inputs?.embeddings as Embeddings
         const output = nodeData.outputs?.output as string
 
-        const hybridsearchretriever = new MeilisearchRetriever(host, meilisearchApiKey, indexUid, K,semanticRatio)
+        const hybridsearchretriever = new MeilisearchRetriever(host, meilisearchSearchApiKey, indexUid, K, semanticRatio, embeddings)
         return hybridsearchretriever
     }
 }
