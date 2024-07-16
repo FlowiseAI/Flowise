@@ -1,4 +1,4 @@
-import { REMOVE_DIRTY, closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, MENU_OPEN } from '@/store/actions'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, MENU_OPEN, REMOVE_DIRTY } from '@/store/actions'
 import { sanitizeChatflows } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import PropTypes from 'prop-types'
@@ -134,6 +134,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                 navigate('/chatflows')
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [importChatflowsApi.error, importChatflowsApi.data])
     const importAllChatflows = () => {
         inputRef.current.click()
@@ -171,6 +172,7 @@ const ProfileSection = ({ username, handleLogout }) => {
             linkElement.click()
             exportChatflowsSuccess()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllChatflowsApi.error, getAllChatflowsApi.data])
 
     const prevOpen = useRef(open)
