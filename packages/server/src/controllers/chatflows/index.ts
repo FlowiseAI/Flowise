@@ -1,11 +1,11 @@
-import { Request, Response, NextFunction } from 'express'
-import chatflowsService from '../../services/chatflows'
-import { ChatFlow } from '../../database/entities/ChatFlow'
-import { createRateLimiter } from '../../utils/rateLimit'
-import { getApiKey } from '../../utils/apiKey'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { ChatFlow } from '../../database/entities/ChatFlow'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { ChatflowType } from '../../Interface'
+import chatflowsService from '../../services/chatflows'
+import { getApiKey } from '../../utils/apiKey'
+import { createRateLimiter } from '../../utils/rateLimit'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -105,6 +105,16 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
+const importChatflows = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const chatflows: Partial<ChatFlow>[] = req.body.Chatflows
+        const apiResponse = await chatflowsService.importChatflows(chatflows)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const updateChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
@@ -167,6 +177,7 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
+    importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig
