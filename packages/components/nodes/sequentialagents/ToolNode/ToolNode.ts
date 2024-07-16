@@ -1,6 +1,6 @@
 import { flatten } from 'lodash'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams, ISeqAgentNode, IUsedTool } from '../../../src/Interface'
-import { AIMessage, BaseMessage, ToolMessage } from '@langchain/core/messages'
+import { AIMessage, AIMessageChunk, BaseMessage, ToolMessage } from '@langchain/core/messages'
 import { StructuredTool } from '@langchain/core/tools'
 import { mergeConfigs, RunnableConfig, Runnable } from '@langchain/core/runnables'
 import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
@@ -8,10 +8,13 @@ import { Document } from '@langchain/core/documents'
 import { DataSource } from 'typeorm'
 import { customGet, getVM } from '../commonUtils'
 import { getVars, prepareSandboxVars } from '../../../src/utils'
+import { ChatPromptTemplate } from '@langchain/core/prompts'
 
 interface MessagesState {
     messages: BaseMessage[]
 }
+
+const defaultApprovalPrompt = `You are about to execute tool: {tools}. Ask if user want to proceed`
 
 const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After tool execution, you might want to update the State values`
 
@@ -169,6 +172,41 @@ class ToolNode_SeqAgents implements INode {
                 placeholder: 'Tool'
             },
             {
+                label: 'Require Approval',
+                name: 'interrupt',
+                description: 'Require approval before executing tools',
+                type: 'boolean',
+                optional: true
+            },
+            {
+                label: 'Approval Prompt',
+                name: 'approvalPrompt',
+                description: 'Prompt for approval. Only applicable if "Require Approval" is enabled',
+                type: 'string',
+                default: defaultApprovalPrompt,
+                rows: 4,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Approve Button Text',
+                name: 'approveButtonText',
+                description: 'Text for approve button. Only applicable if "Require Approval" is enabled',
+                type: 'string',
+                default: 'Yes',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Reject Button Text',
+                name: 'rejectButtonText',
+                description: 'Text for reject button. Only applicable if "Require Approval" is enabled',
+                type: 'string',
+                default: 'No',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Update State',
                 name: 'updateStateMemory',
                 type: 'tabs',
@@ -267,6 +305,11 @@ class ToolNode_SeqAgents implements INode {
         const llmNode = nodeData.inputs?.llmNode as ISeqAgentNode
         if (!llmNode) throw new Error('Tool node must have a predecessor!')
 
+        const interrupt = nodeData.inputs?.interrupt as boolean
+        const approvalPrompt = nodeData.inputs?.approvalPrompt as string
+        const approveButtonText = nodeData.inputs?.approveButtonText as string
+        const rejectButtonText = nodeData.inputs?.rejectButtonText as string
+
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
         if (!tools || !tools.length) throw new Error('Tools must not be empty')
@@ -277,6 +320,19 @@ class ToolNode_SeqAgents implements INode {
         const toolNodeLabelName = toolNodeLabel.toLowerCase().replace(/\s/g, '_').trim()
 
         const toolNode = new ToolNode(tools, nodeData, input, options, toolNodeLabelName, [], { sequentialNodeName: toolNodeLabelName })
+        ;(toolNode as any).interrupt = interrupt
+
+        if (interrupt && approvalPrompt && approveButtonText && rejectButtonText) {
+            ;(toolNode as any).approvalFunc = async (usedTools: IUsedTool[]) => {
+                const prompt = ChatPromptTemplate.fromMessages([['human', approvalPrompt]])
+                const chain = prompt.pipe(llmNode.startLLM)
+                const response = (await chain.invoke({
+                    input: 'Hello there friend!',
+                    tools: JSON.stringify(usedTools)
+                })) as AIMessageChunk
+                return response.content
+            }
+        }
 
         const returnOutput: ISeqAgentNode = {
             id: nodeData.id,
@@ -402,7 +458,17 @@ class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable
                     name: tool.name,
                     content: typeof output === 'string' ? output : JSON.stringify(output),
                     tool_call_id: call.id!,
-                    additional_kwargs: { sourceDocuments, args: call.args }
+                    additional_kwargs: {
+                        sourceDocuments,
+                        args: call.args,
+                        usedTools: [
+                            {
+                                tool: tool.name ?? '',
+                                toolInput: call.args,
+                                toolOutput: output
+                            }
+                        ]
+                    }
                 })
             }) ?? []
         )

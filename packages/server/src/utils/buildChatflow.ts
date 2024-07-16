@@ -43,6 +43,8 @@ import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
 import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
+import { ChatMessage } from '../database/entities/ChatMessage'
+import { IAction } from 'flowise-components'
 
 /**
  * Build Chatflow
@@ -431,7 +433,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 }
 
 const utilBuildAgentResponse = async (
-    chatflow: IChatFlow,
+    agentflow: IChatFlow,
     isInternal: boolean,
     chatId: string,
     memoryType: string,
@@ -446,13 +448,13 @@ const utilBuildAgentResponse = async (
 ) => {
     try {
         const appServer = getRunningExpressApp()
-        const streamResults = await buildAgentGraph(chatflow, chatId, sessionId, incomingInput, isInternal, baseURL, socketIO)
+        const streamResults = await buildAgentGraph(agentflow, chatId, sessionId, incomingInput, isInternal, baseURL, socketIO)
         if (streamResults) {
-            const { finalResult, agentReasoning } = streamResults
+            const { finalResult, finalAction, sourceDocuments, usedTools, agentReasoning } = streamResults
             const userMessage: Omit<IChatMessage, 'id'> = {
                 role: 'userMessage',
                 content: incomingInput.question,
-                chatflowid: chatflow.id,
+                chatflowid: agentflow.id,
                 chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 chatId,
                 memoryType,
@@ -466,22 +468,53 @@ const utilBuildAgentResponse = async (
             const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
                 role: 'apiMessage',
                 content: finalResult,
-                chatflowid: chatflow.id,
+                chatflowid: agentflow.id,
                 chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 chatId,
                 memoryType,
                 sessionId
             }
+            if (sourceDocuments.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
+            if (usedTools.length) apiMessage.usedTools = JSON.stringify(usedTools)
             if (agentReasoning.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
+            if (Object.keys(finalAction).length) apiMessage.action = JSON.stringify(finalAction)
             const chatMessage = await utilAddChatMessage(apiMessage)
 
-            await appServer.telemetry.sendTelemetry('prediction_sent', {
+            await appServer.telemetry.sendTelemetry('agentflow_prediction_sent', {
                 version: await getAppVersion(),
-                chatlowId: chatflow.id,
+                agentflowId: agentflow.id,
                 chatId,
                 type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
+
+            // Find the previous chat message with the same action id and remove the action
+            if (incomingInput.action && Object.keys(incomingInput.action).length) {
+                let query = await appServer.AppDataSource.getRepository(ChatMessage)
+                    .createQueryBuilder('chat_message')
+                    .where('chat_message.chatId = :chatId', { chatId })
+                    .orWhere('chat_message.sessionId = :sessionId', { sessionId })
+                    .orderBy('chat_message.createdDate', 'DESC')
+                    .getMany()
+
+                for (const result of query) {
+                    if (result.action) {
+                        try {
+                            const action: IAction = JSON.parse(result.action)
+                            if (action.id === incomingInput.action.id) {
+                                const newChatMessage = new ChatMessage()
+                                Object.assign(newChatMessage, result)
+                                newChatMessage.action = null
+                                const cm = await appServer.AppDataSource.getRepository(ChatMessage).create(newChatMessage)
+                                await appServer.AppDataSource.getRepository(ChatMessage).save(cm)
+                                break
+                            }
+                        } catch (e) {
+                            // error converting action to JSON
+                        }
+                    }
+                }
+            }
 
             // Prepare response
             let result: ICommonObject = {}
@@ -492,13 +525,7 @@ const utilBuildAgentResponse = async (
             if (sessionId) result.sessionId = sessionId
             if (memoryType) result.memoryType = memoryType
             if (agentReasoning.length) result.agentReasoning = agentReasoning
-
-            await appServer.telemetry.sendTelemetry('graph_compiled', {
-                version: await getAppVersion(),
-                graphId: chatflow.id,
-                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
-                flowGraph: getTelemetryFlowObj(nodes, edges)
-            })
+            if (Object.keys(finalAction).length) result.action = finalAction
 
             return result
         }

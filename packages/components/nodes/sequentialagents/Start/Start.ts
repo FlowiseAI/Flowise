@@ -43,7 +43,7 @@ class Start_SeqAgents implements INode {
                 name: 'state',
                 type: 'State',
                 description:
-                    'State is an object that is updated by nodes in the graph, passing from one node to another. Agent Memory must be connected when using State. By default, state contains "messages" that got updated with each message sent and received.',
+                    'State is an object that is updated by nodes in the graph, passing from one node to another. By default, state contains "messages" that got updated with each message sent and received.',
                 optional: true
             },
             {

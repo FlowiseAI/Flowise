@@ -225,6 +225,12 @@ export interface IAgentReasoning {
     nodeName?: string
 }
 
+export interface IAction {
+    id?: string
+    elements?: Array<{ type: string; label: string }>
+    mapping?: { approve: string; reject: string; toolCalls: any[] }
+}
+
 export interface IFileUpload {
     data?: string
     type: string
