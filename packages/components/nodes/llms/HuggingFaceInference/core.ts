@@ -63,7 +63,7 @@ export class HuggingFaceInference extends LLM implements HFInput {
         this.frequencyPenalty = fields?.frequencyPenalty ?? this.frequencyPenalty
         this.endpoint = fields?.endpoint ?? ''
         this.apiKey = fields?.apiKey ?? getEnvironmentVariable('HUGGINGFACEHUB_API_KEY')
-        if (!this.apiKey) {
+        if (!this.apiKey && !this.endpoint) {
             throw new Error(
                 'Please set an API key for HuggingFace Hub in the environment variable HUGGINGFACEHUB_API_KEY or in the apiKey field of the HuggingFaceInference constructor.'
             )
