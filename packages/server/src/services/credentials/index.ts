@@ -108,8 +108,8 @@ const getCredentialById = async (credentialId: string, userId?: string): Promise
         const appServer = getRunningExpressApp()
         // TODO: Check if necessary to filter by userId
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId,
-            userId
+            id: credentialId
+            // userId
         })
         if (!credential) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
@@ -129,7 +129,7 @@ const getCredentialById = async (credentialId: string, userId?: string): Promise
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: credentialsService.createCredential - ${getErrorMessage(error)}`
+            `Error: credentialsService.getCredentialById - ${getErrorMessage(error)}`
         )
     }
 }

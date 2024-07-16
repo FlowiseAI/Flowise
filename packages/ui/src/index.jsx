@@ -30,7 +30,7 @@ root.render(
     <React.StrictMode>
         <FlagsmithProvider
             options={{
-                environmentID: 'AtPisjg2ZzdPuDKYNDDcBa'
+                environmentID: '6wTLhz8VakAkpZMPdoScmg'
             }}
             flagsmith={flagsmith}
         >

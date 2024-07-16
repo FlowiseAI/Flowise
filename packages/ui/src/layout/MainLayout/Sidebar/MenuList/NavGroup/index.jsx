@@ -14,13 +14,13 @@ import { useFlags } from 'flagsmith/react'
 const NavGroup = ({ item }) => {
     const theme = useTheme()
     const flags = useFlags(['org:manage', 'chatflow:manage', 'chatflow:use'])
-    const MEMBER_ACTIONS = ['chatflows', 'marketplaces', 'tools', 'assistants']
-    const BUILDER_ACTIONS = ['agentflows', 'credentials', 'variables', 'apikey']
+    const MEMBER_ACTIONS = ['chatflows', 'marketplaces', 'document-stores']
+    const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey']
     // menu list collapse & items
     const items = item.children
         ?.filter(
             (item) =>
-                // menu list collapse & items
+                // menu list collapse & itemspackages/ui/src/layout/MainLayout/Sidebar/MenuList/NavGroup/index.jsx
                 (MEMBER_ACTIONS?.includes(item.id) && flags['chatflow:use']?.enabled) ||
                 (BUILDER_ACTIONS?.includes(item.id) && flags['chatflow:manage']?.enabled)
         )
