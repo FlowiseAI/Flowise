@@ -1,7 +1,18 @@
-import { BaseCache } from '@langchain/core/caches'
-import { ChatBaiduWenxin } from '@langchain/community/chat_models/baiduwenxin'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import {
+    BaseCache
+} from '@langchain/core/caches'
+import {
+    ChatBaiduWenxin
+} from '@langchain/community/chat_models/baiduwenxin'
+import {
+    ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams
+} from '../../../src/Interface'
+import {
+    getBaseClasses, getCredentialData, getCredentialParam
+} from '../../../src/utils'
+import {
+    MODEL_TYPE, getModels
+} from '../../../src/modelLoader'
 
 class ChatBaiduWenxin_ChatModels implements INode {
     label: string
@@ -23,12 +34,14 @@ class ChatBaiduWenxin_ChatModels implements INode {
         this.icon = 'baiduwenxin.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around BaiduWenxin Chat Endpoints'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatBaiduWenxin)]
+        this.baseClasses = [this.type, ...getBaseClasses(ChatBaiduWenxin)
+        ]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['baiduApi']
+            credentialNames: ['baiduApi'
+            ]
         }
         this.inputs = [
             {
@@ -52,6 +65,12 @@ class ChatBaiduWenxin_ChatModels implements INode {
                 optional: true
             }
         ]
+    }
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'ChatBaiduWenxin')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -77,4 +96,6 @@ class ChatBaiduWenxin_ChatModels implements INode {
     }
 }
 
-module.exports = { nodeClass: ChatBaiduWenxin_ChatModels }
+module.exports = {
+    nodeClass: ChatBaiduWenxin_ChatModels
+}
