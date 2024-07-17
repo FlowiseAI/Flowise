@@ -49,8 +49,6 @@ jobs:
               uses: actions/checkout@v4
               with:
                   ref: ntg
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
             - name: Login to Docker registry
@@ -66,7 +64,7 @@ jobs:
               with:
                   context: .
                   file: ./docker/Dockerfile-ntg
-                  platforms: linux/amd64,linux/arm64
+                  platforms: linux/amd64
                   push: true
                   tags: ${{ env.CI_REGISTRY }}/ntg/chatbot/flowise:latest
 
