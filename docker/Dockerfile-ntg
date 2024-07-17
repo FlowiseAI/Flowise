@@ -7,14 +7,11 @@ WORKDIR /usr/src/app
 # Install pnpm globally
 RUN npm install -g pnpm@9.0.4
 
-# Copy package.json and pnpm-lock.yaml to the working directory
-COPY package.json pnpm-lock.yaml ./
+# Copy the application code to the working directory
+COPY . .
 
 # Install dependencies using pnpm
 RUN pnpm install
-
-# Copy the rest of the application code to the working directory
-COPY . .
 
 # Build the project
 RUN pnpm build
