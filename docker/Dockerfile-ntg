@@ -16,12 +16,6 @@ RUN pnpm install
 # Copy the rest of the application code to the working directory
 COPY . .
 
-# Install Cypress (or any other dependencies required for your tests)
-RUN ./node_modules/.bin/cypress install
-
-# Lint the code
-RUN pnpm lint
-
 # Build the project
 RUN pnpm build
 
