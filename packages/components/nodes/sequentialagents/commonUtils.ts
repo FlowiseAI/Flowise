@@ -7,6 +7,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { addImagesToMessages, llmSupportsVision } from '../../src/multiModalUtils'
 import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, IVisionChatModal } from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
+import { StructuredTool } from '@langchain/core/tools'
 
 export const SELECTED_CONDITION_TYPE_PREFIX = '_FLOWISE_SELECTED_CONDITION_TYPE_'
 
@@ -200,5 +201,22 @@ export const convertStructuredSchemaToZod = (schema: string | object): ICommonOb
         return zodObj
     } catch (e) {
         throw new Error(e)
+    }
+}
+
+export class ExtractTool extends StructuredTool {
+    name = 'extract'
+
+    description = 'Extract structured data from the output'
+
+    schema
+
+    constructor(fields: ICommonObject) {
+        super()
+        this.schema = fields.schema
+    }
+
+    async _call(input: any) {
+        return JSON.stringify(input)
     }
 }

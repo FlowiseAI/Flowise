@@ -16,7 +16,16 @@ import {
     ISeqAgentsState
 } from '../../../src/Interface'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
-import { checkCondition, convertStructuredSchemaToZod, customGet, getVM, transformObjectPropertyToFunction } from '../commonUtils'
+import {
+    ExtractTool,
+    checkCondition,
+    convertStructuredSchemaToZod,
+    customGet,
+    getVM,
+    transformObjectPropertyToFunction
+} from '../commonUtils'
+import { ChatMistralAI } from '@langchain/mistralai'
+import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
 
 interface IConditionGridItem {
     variable: string
@@ -342,10 +351,13 @@ class ConditionAgent_SeqAgents implements INode {
         let humanPrompt = nodeData.inputs?.humanMessagePrompt as string
         const promptValuesStr = nodeData.inputs?.promptValues
         const conditionAgentStructuredOutput = nodeData.inputs?.conditionAgentStructuredOutput
+        const model = nodeData.inputs?.model as BaseChatModel
 
         if (!sequentialNodes || !sequentialNodes.length) throw new Error('Condition Agent must have a predecessor!')
 
-        const llm = (nodeData.inputs?.model as BaseChatModel) || sequentialNodes[0].startLLM
+        const startLLM = sequentialNodes[0].startLLM
+        const llm = model || startLLM
+        if (nodeData.inputs) nodeData.inputs.model = llm
 
         let conditionAgentInputVariablesValues: ICommonObject = {}
         if (promptValuesStr) {
@@ -388,8 +400,8 @@ class ConditionAgent_SeqAgents implements INode {
             label: conditionLabel,
             type: 'condition',
             output,
-            llm: sequentialNodes[0]?.llm,
-            startLLM: sequentialNodes[0].startLLM,
+            llm,
+            startLLM,
             multiModalMessageContent: sequentialNodes[0]?.multiModalMessageContent,
             predecessorAgents: sequentialNodes
         }
@@ -430,6 +442,29 @@ const runCondition = async (
             const structuredOutput = z.object(convertStructuredSchemaToZod(conditionAgentStructuredOutput))
             // @ts-ignore
             model = llm.withStructuredOutput(structuredOutput)
+
+            if (llm instanceof ChatMistralAI) {
+                const tool = new ExtractTool({
+                    schema: structuredOutput
+                })
+                // @ts-ignore
+                const modelWithTool = llm.bind({
+                    tools: [tool],
+                    tool_choice: 'any',
+                    signal: abortControllerSignal ? abortControllerSignal.signal : undefined
+                })
+                model = modelWithTool
+            } else if (llm instanceof ChatGoogleGenerativeAI) {
+                const tool = new ExtractTool({
+                    schema: structuredOutput
+                })
+                // @ts-ignore
+                const modelWithTool = llm.bind({
+                    tools: [tool],
+                    signal: abortControllerSignal ? abortControllerSignal.signal : undefined
+                })
+                model = modelWithTool
+            }
         } catch (exception) {
             console.error('Invalid JSON in Condition Agent Structured Output: ' + exception)
             model = llm
@@ -454,8 +489,16 @@ const runCondition = async (
         })
     }
 
-    const result = await chain.invoke({ ...state, signal: abortControllerSignal?.signal }, config)
+    let result = await chain.invoke({ ...state, signal: abortControllerSignal?.signal }, config)
     result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
+
+    if (result.tool_calls && result.tool_calls.length) {
+        let jsonResult = {}
+        for (const toolCall of result.tool_calls) {
+            jsonResult = { ...jsonResult, ...toolCall.args }
+        }
+        result = { ...jsonResult, additional_kwargs: { nodeId: nodeData.id } }
+    }
 
     const variables = await getVars(appDataSource, databaseEntities, nodeData)
 

@@ -64,7 +64,7 @@
     },
     "resolutions": {
         "@qdrant/openapi-typescript-fetch": "1.2.6",
-        "@google/generative-ai": "^0.14.1",
+        "@google/generative-ai": "^0.15.0",
         "openai": "4.51.0"
     },
     "eslintIgnore": [

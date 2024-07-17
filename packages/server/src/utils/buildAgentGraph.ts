@@ -265,7 +265,7 @@ export const buildAgentGraph = async (
                                 usedTools: flatten(usedTools) as IUsedTool[],
                                 sourceDocuments: flatten(sourceDocuments) as Document[],
                                 state,
-                                nodeName: mapNameToLabel[agentName].nodeName,
+                                nodeName: isSequential ? mapNameToLabel[agentName].nodeName : undefined,
                                 nodeId
                             }
                             agentReasoning.push(reasoning)

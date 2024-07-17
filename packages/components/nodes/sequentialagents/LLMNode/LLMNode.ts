@@ -18,7 +18,16 @@ import {
 } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
-import { convertStructuredSchemaToZod, customGet, getVM, processImageMessage, transformObjectPropertyToFunction } from '../commonUtils'
+import {
+    ExtractTool,
+    convertStructuredSchemaToZod,
+    customGet,
+    getVM,
+    processImageMessage,
+    transformObjectPropertyToFunction
+} from '../commonUtils'
+import { ChatMistralAI } from '@langchain/mistralai'
+import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
 
 const TAB_IDENTIFIER = 'selectedUpdateStateMemoryTab'
 const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`
@@ -325,8 +334,10 @@ class LLMNode_SeqAgents implements INode {
         }
         llmNodeInputVariablesValues = handleEscapeCharacters(llmNodeInputVariablesValues, true)
 
-        const llm = model || sequentialNodes[0].startLLM
+        const startLLM = sequentialNodes[0].startLLM
+        const llm = model || startLLM
         if (nodeData.inputs) nodeData.inputs.model = llm
+
         const multiModalMessageContent = sequentialNodes[0]?.multiModalMessageContent || (await processImageMessage(llm, nodeData, options))
         const abortControllerSignal = options.signal as AbortController
         const llmNodeInputVariables = uniq([...getInputVariables(systemPrompt), ...getInputVariables(humanPrompt)])
@@ -368,7 +379,7 @@ class LLMNode_SeqAgents implements INode {
             label: llmNodeLabel,
             type: 'llm',
             llm,
-            startLLM: sequentialNodes[0].startLLM,
+            startLLM,
             output,
             predecessorAgents: sequentialNodes,
             multiModalMessageContent,
@@ -403,6 +414,27 @@ async function createAgent(
             const structuredOutput = z.object(convertStructuredSchemaToZod(llmStructuredOutput))
             // @ts-ignore
             llm = llm.withStructuredOutput(structuredOutput)
+
+            if (llm instanceof ChatMistralAI) {
+                const tool = new ExtractTool({
+                    schema: structuredOutput
+                })
+                // @ts-ignore
+                const modelWithTool = llm.bind({
+                    tools: [tool],
+                    tool_choice: 'any'
+                })
+                llm = modelWithTool
+            } else if (llm instanceof ChatGoogleGenerativeAI) {
+                const tool = new ExtractTool({
+                    schema: structuredOutput
+                })
+                // @ts-ignore
+                const modelWithTool = llm.bind({
+                    tools: [tool]
+                }) as any
+                llm = modelWithTool
+            }
         } catch (exception) {
             console.error(exception)
         }

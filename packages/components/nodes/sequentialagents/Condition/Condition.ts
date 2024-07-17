@@ -234,6 +234,8 @@ class Condition_SeqAgents implements INode {
 
         if (!sequentialNodes || !sequentialNodes.length) throw new Error('Condition must have a predecessor!')
 
+        const startLLM = sequentialNodes[0].startLLM
+
         const conditionalEdge = async (state: ISeqAgentsState) => await runCondition(nodeData, input, options, state)
 
         const returnOutput: ISeqAgentNode = {
@@ -243,8 +245,8 @@ class Condition_SeqAgents implements INode {
             label: conditionLabel,
             type: 'condition',
             output,
-            llm: sequentialNodes[0]?.llm,
-            startLLM: sequentialNodes[0].startLLM,
+            llm: startLLM,
+            startLLM,
             multiModalMessageContent: sequentialNodes[0]?.multiModalMessageContent,
             predecessorAgents: sequentialNodes
         }

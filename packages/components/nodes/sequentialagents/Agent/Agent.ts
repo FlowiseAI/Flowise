@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { HumanMessage } from '@langchain/core/messages'
+import { AIMessage, HumanMessage } from '@langchain/core/messages'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { StringOutputParser } from '@langchain/core/output_parsers'
@@ -21,6 +21,7 @@ import {
 import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
 import { customGet, getVM, processImageMessage, transformObjectPropertyToFunction } from '../commonUtils'
+import { ChatMistralAI } from '@langchain/mistralai'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`
@@ -340,8 +341,10 @@ class Agent_SeqAgents implements INode {
         }
         agentInputVariablesValues = handleEscapeCharacters(agentInputVariablesValues, true)
 
-        const llm = model || sequentialNodes[0].startLLM
+        const startLLM = sequentialNodes[0].startLLM
+        const llm = model || startLLM
         if (nodeData.inputs) nodeData.inputs.model = llm
+
         const multiModalMessageContent = sequentialNodes[0]?.multiModalMessageContent || (await processImageMessage(llm, nodeData, options))
         const abortControllerSignal = options.signal as AbortController
         const agentInputVariables = uniq([...getInputVariables(agentSystemPrompt), ...getInputVariables(agentHumanPrompt)])
@@ -354,6 +357,7 @@ class Agent_SeqAgents implements INode {
             return await agentNode(
                 {
                     state,
+                    llm,
                     agent: await createAgent(
                         agentName,
                         state,
@@ -387,7 +391,7 @@ class Agent_SeqAgents implements INode {
             label: agentLabel,
             type: 'agent',
             llm,
-            startLLM: sequentialNodes[0].startLLM,
+            startLLM,
             output,
             predecessorAgents: sequentialNodes,
             multiModalMessageContent,
@@ -506,6 +510,7 @@ async function createAgent(
 async function agentNode(
     {
         state,
+        llm,
         agent,
         name,
         abortControllerSignal,
@@ -514,6 +519,7 @@ async function agentNode(
         options
     }: {
         state: ISeqAgentsState
+        llm: BaseChatModel
         agent: AgentExecutor | RunnableSequence
         name: string
         abortControllerSignal: AbortController
@@ -551,16 +557,22 @@ async function agentNode(
             const returnedOutput = await getReturnOutput(nodeData, input, options, formattedOutput, state)
             return {
                 ...returnedOutput,
-                messages: convertCustomMessagesToBaseMessages([outputContent], name, additional_kwargs)
+                messages: convertCustomMessagesToBaseMessages([outputContent], name, additional_kwargs, llm)
             }
         } else {
             return {
                 messages: [
-                    new HumanMessage({
-                        content: outputContent,
-                        name,
-                        additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
-                    })
+                    llm instanceof ChatMistralAI
+                        ? new HumanMessage({
+                              content: outputContent,
+                              name,
+                              additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
+                          })
+                        : new AIMessage({
+                              content: outputContent,
+                              name,
+                              additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
+                          })
                 ]
             }
         }
@@ -622,13 +634,19 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
     return {}
 }
 
-const convertCustomMessagesToBaseMessages = (messages: string[], name: string, additional_kwargs: ICommonObject) => {
+const convertCustomMessagesToBaseMessages = (messages: string[], name: string, additional_kwargs: ICommonObject, llm: BaseChatModel) => {
     return messages.map((message) => {
-        return new HumanMessage({
-            content: message,
-            name: name,
-            additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
-        })
+        return llm instanceof ChatMistralAI
+            ? new HumanMessage({
+                  content: message,
+                  name,
+                  additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
+              })
+            : new AIMessage({
+                  content: message,
+                  name: name,
+                  additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
+              })
     })
 }
 
