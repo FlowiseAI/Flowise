@@ -103,8 +103,6 @@ class MeilisearchRetriever_node implements INode {
             const host = nodeData.inputs?.host as string
             const indexUid = nodeData.inputs?.indexUid as string
             const embeddings = nodeData.inputs?.embeddings as Embeddings
-            const K = nodeData.inputs?.K as string
-            const output = nodeData.outputs?.output as string
             let embeddingDimension: number = 384
             const client = new Meilisearch({
                 host: host,
@@ -132,18 +130,17 @@ class MeilisearchRetriever_node implements INode {
                     finalDocs.push(documentForIndexing)
                 }
             }
-
+            let index: any
             try {
-                const index = await client.getIndex(indexUid)
-                console.log('index uid ' + index.uid)
+                index = await client.getIndex(indexUid)
             } catch (error) {
                 console.error('Error fetching index:', error)
-            } finally {
                 await client.createIndex(indexUid, { primaryKey: 'objectID' })
+            } finally {
+                index = await client.getIndex(indexUid)
             }
 
             try {
-                const index = await client.index(indexUid)
                 await index.updateSettings({
                     embedders: {
                         ollama: {
@@ -152,8 +149,7 @@ class MeilisearchRetriever_node implements INode {
                         }
                     }
                 })
-                const addResponse = await index.addDocuments(finalDocs)
-                console.log('Documents added successfully:', addResponse)
+                await index.addDocuments(finalDocs)
             } catch (error) {
                 console.error('Error occurred while adding documents:', error)
             }
@@ -171,7 +167,11 @@ class MeilisearchRetriever_node implements INode {
         const output = nodeData.outputs?.output as string
 
         const hybridsearchretriever = new MeilisearchRetriever(host, meilisearchSearchApiKey, indexUid, K, semanticRatio, embeddings)
-        return hybridsearchretriever
+        if (output == 'meilisearch retriever') {
+            return hybridsearchretriever
+        } else {
+            return hybridsearchretriever //TODO
+        }
     }
 }
 module.exports = { nodeClass: MeilisearchRetriever_node }

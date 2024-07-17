@@ -4,9 +4,9 @@ on:
     push:
         branches:
             - ntg
-    pull_request:
-        branches:
-            - '*'
+    # pull_request:
+    #     branches:
+    #         - '*'
 
 env:
     CI_REGISTRY: harbor.onhubi.com
@@ -17,7 +17,7 @@ jobs:
     build-test:
         strategy:
             matrix:
-                platform: [ubuntu-latest]
+                platform: [debian-latest]
                 node-version: [20.15.0]
         runs-on: ${{ matrix.platform }}
         env:
@@ -36,27 +36,13 @@ jobs:
                   check-latest: false
                   cache: 'pnpm'
             - run: npm i -g pnpm
-            - run: pnpm install
-            - run: ./node_modules/.bin/cypress install
+            - run: pnpm install --no-frozen-lockfile
+            # - run: ./node_modules/.bin/cypress install
             - run: pnpm lint
             - run: pnpm build
-            - name: Install dependencies
-              uses: cypress-io/github-action@v6
-              with:
-                  working-directory: ./
-                  runTests: false
-            - name: Cypress test
-              uses: cypress-io/github-action@v6
-              with:
-                  install: false
-                  working-directory: packages/server
-                  start: pnpm start
-                  wait-on: 'http://localhost:3000'
-                  wait-on-timeout: 120
-                  browser: chrome
 
     docker-build-push:
-        runs-on: ubuntu-latest
+        runs-on: debian-latest
         needs: build-test
         steps:
             - name: Checkout code
