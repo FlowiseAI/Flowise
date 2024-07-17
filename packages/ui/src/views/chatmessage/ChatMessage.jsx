@@ -1494,7 +1494,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                         <>
                                                             {elem.type === 'approve-button' && elem.label === 'Yes' ? (
                                                                 <Button
-                                                                    sx={{ width: 'max-content', borderRadius: '20px', background: 'white' }}
+                                                                    sx={{
+                                                                        width: 'max-content',
+                                                                        borderRadius: '20px',
+                                                                        background: customization.isDarkMode ? 'transparent' : 'white'
+                                                                    }}
                                                                     variant='outlined'
                                                                     color='success'
                                                                     key={index}
@@ -1505,7 +1509,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                 </Button>
                                                             ) : elem.type === 'reject-button' && elem.label === 'No' ? (
                                                                 <Button
-                                                                    sx={{ width: 'max-content', borderRadius: '20px', background: 'white' }}
+                                                                    sx={{
+                                                                        width: 'max-content',
+                                                                        borderRadius: '20px',
+                                                                        background: customization.isDarkMode ? 'transparent' : 'white'
+                                                                    }}
                                                                     variant='outlined'
                                                                     color='error'
                                                                     key={index}

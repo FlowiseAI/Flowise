@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { AIMessage, HumanMessage } from '@langchain/core/messages'
+import { HumanMessage } from '@langchain/core/messages'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { StringOutputParser } from '@langchain/core/output_parsers'
@@ -21,7 +21,6 @@ import {
 import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
 import { customGet, getVM, processImageMessage, transformObjectPropertyToFunction } from '../commonUtils'
-import { ChatMistralAI } from '@langchain/mistralai'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`
@@ -357,7 +356,6 @@ class Agent_SeqAgents implements INode {
             return await agentNode(
                 {
                     state,
-                    llm,
                     agent: await createAgent(
                         agentName,
                         state,
@@ -510,7 +508,6 @@ async function createAgent(
 async function agentNode(
     {
         state,
-        llm,
         agent,
         name,
         abortControllerSignal,
@@ -519,7 +516,6 @@ async function agentNode(
         options
     }: {
         state: ISeqAgentsState
-        llm: BaseChatModel
         agent: AgentExecutor | RunnableSequence
         name: string
         abortControllerSignal: AbortController
@@ -557,22 +553,16 @@ async function agentNode(
             const returnedOutput = await getReturnOutput(nodeData, input, options, formattedOutput, state)
             return {
                 ...returnedOutput,
-                messages: convertCustomMessagesToBaseMessages([outputContent], name, additional_kwargs, llm)
+                messages: convertCustomMessagesToBaseMessages([outputContent], name, additional_kwargs)
             }
         } else {
             return {
                 messages: [
-                    llm instanceof ChatMistralAI
-                        ? new HumanMessage({
-                              content: outputContent,
-                              name,
-                              additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
-                          })
-                        : new AIMessage({
-                              content: outputContent,
-                              name,
-                              additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
-                          })
+                    new HumanMessage({
+                        content: outputContent,
+                        name,
+                        additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
+                    })
                 ]
             }
         }
@@ -634,19 +624,13 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
     return {}
 }
 
-const convertCustomMessagesToBaseMessages = (messages: string[], name: string, additional_kwargs: ICommonObject, llm: BaseChatModel) => {
+const convertCustomMessagesToBaseMessages = (messages: string[], name: string, additional_kwargs: ICommonObject) => {
     return messages.map((message) => {
-        return llm instanceof ChatMistralAI
-            ? new HumanMessage({
-                  content: message,
-                  name,
-                  additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
-              })
-            : new AIMessage({
-                  content: message,
-                  name: name,
-                  additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
-              })
+        return new HumanMessage({
+            content: message,
+            name,
+            additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
+        })
     })
 }
 

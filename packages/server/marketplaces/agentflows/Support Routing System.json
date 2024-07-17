@@ -546,8 +546,8 @@
                     "conditionAgentName": "Router Agent",
                     "sequentialNode": ["{{seqAgent_0.data.instance}}"],
                     "model": "",
-                    "systemMessagePrompt": "You are an expert customer support routing system.\nYour job is to detect whether a customer support representative is routing a user to the billing or technical support team, or just responding conversationally.",
-                    "humanMessagePrompt": "The previous conversation is an interaction between a customer support representative and a user.\nExtract whether the representative is routing the user to the technical support team, or just responding conversationally.\n\nIf representative want to route the user to the billing team, respond only with the word \"BILLING\".\n\nIf representative want to route the user to the technical support team, respond only with the word \"TECHNICAL\".\n\nOtherwise, respond only with the word \"CONVERSATION\".\n\nRemember, only respond with one of the above words.",
+                    "systemMessagePrompt": "You are an expert customer support routing system.\nYour job is to detect whether a frontline support is routing a user to the billing or technical support team, or just responding conversationally.",
+                    "humanMessagePrompt": "The previous conversation is an interaction between a frontline support and a user. Based on the latest message, extract whether the support is routing the user to the technical support team, or just responding conversationally.\n\nIf representative want to route the user to the billing team, respond only with the word \"BILLING\".\n\nIf representative want to route the user to the technical support team, respond only with the word \"TECHNICAL\".\n\nOtherwise, respond only with the word \"CONVERSATION\".\n\nRemember, only respond with one of the above words.",
                     "promptValues": "",
                     "conditionAgentStructuredOutput": "[{\"key\":\"route\",\"type\":\"Enum\",\"enumValues\":\"BILLING, TECHNICAL, CONVERSATION\",\"description\":\"the route to take next\",\"actions\":\"\",\"id\":1}]",
                     "condition": "",
@@ -780,7 +780,7 @@
                     "agentName": "Billing Team",
                     "systemMessagePrompt": "You are an expert billing support specialist for Flowise, a company that sells computers.\nHelp the user to the best of your ability, but be concise in your responses.\nYou have the ability to authorize refunds, which you can do collecting the required information.",
                     "humanMessagePrompt": "",
-                    "tools": "",
+                    "tools": ["{{customTool_0.data.instance}}"],
                     "sequentialNode": ["{{seqConditionAgent_0.data.instance}}"],
                     "model": "",
                     "promptValues": "",
@@ -990,7 +990,7 @@
                     "agentName": "Technical Team",
                     "systemMessagePrompt": "You are an expert at diagnosing technical computer issues. You work for a company called Flowise that sells computers.\n\nUse the \"search_manual\" tool to look for relavant information to answer user question to the best of your ability, be concise in your responses.",
                     "humanMessagePrompt": "",
-                    "tools": "",
+                    "tools": ["{{retrieverTool_0.data.instance}}"],
                     "sequentialNode": ["{{seqConditionAgent_0.data.instance}}"],
                     "model": "",
                     "promptValues": "",
@@ -1290,10 +1290,11 @@
             "data": {
                 "id": "stickyNote_0",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1329,6 +1330,438 @@
             "positionAbsolute": {
                 "x": 1291.9189620458883,
                 "y": -186.42930966821612
+            },
+            "dragging": false
+        },
+        {
+            "id": "customTool_0",
+            "position": {
+                "x": 1283.1262680528823,
+                "y": -524.6893630236756
+            },
+            "type": "customNode",
+            "data": {
+                "id": "customTool_0",
+                "label": "Custom Tool",
+                "version": 1,
+                "name": "customTool",
+                "type": "CustomTool",
+                "baseClasses": ["CustomTool", "Tool", "StructuredTool", "Runnable"],
+                "category": "Tools",
+                "description": "Use custom tool you've created in Flowise within chatflow",
+                "inputParams": [
+                    {
+                        "label": "Select Tool",
+                        "name": "selectedTool",
+                        "type": "asyncOptions",
+                        "loadMethod": "listTools",
+                        "id": "customTool_0-input-selectedTool-asyncOptions"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "selectedTool": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+                        "name": "customTool",
+                        "label": "CustomTool",
+                        "description": "Use custom tool you've created in Flowise within chatflow",
+                        "type": "CustomTool | Tool | StructuredTool | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 285,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1283.1262680528823,
+                "y": -524.6893630236756
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_1",
+            "position": {
+                "x": 966.9014980551112,
+                "y": -502.9862305655977
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_1",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_1-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "A custom tool that checks the user order receipt number and email. If record found, proceed with refund"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_1-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 82,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 966.9014980551112,
+                "y": -502.9862305655977
+            },
+            "dragging": false
+        },
+        {
+            "id": "retrieverTool_0",
+            "position": {
+                "x": 1281.4243491233265,
+                "y": 769.9943552071177
+            },
+            "type": "customNode",
+            "data": {
+                "id": "retrieverTool_0",
+                "label": "Retriever Tool",
+                "version": 2,
+                "name": "retrieverTool",
+                "type": "RetrieverTool",
+                "baseClasses": ["RetrieverTool", "DynamicTool", "Tool", "StructuredTool", "Runnable"],
+                "category": "Tools",
+                "description": "Use a retriever as allowed tool for agent",
+                "inputParams": [
+                    {
+                        "label": "Retriever Name",
+                        "name": "name",
+                        "type": "string",
+                        "placeholder": "search_state_of_union",
+                        "id": "retrieverTool_0-input-name-string"
+                    },
+                    {
+                        "label": "Retriever Description",
+                        "name": "description",
+                        "type": "string",
+                        "description": "When should agent uses to retrieve documents",
+                        "rows": 3,
+                        "placeholder": "Searches and returns documents regarding the state-of-the-union.",
+                        "id": "retrieverTool_0-input-description-string"
+                    },
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "retrieverTool_0-input-returnSourceDocuments-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Retriever",
+                        "name": "retriever",
+                        "type": "BaseRetriever",
+                        "id": "retrieverTool_0-input-retriever-BaseRetriever"
+                    }
+                ],
+                "inputs": {
+                    "name": "search_technical",
+                    "description": "Searches and return dcouments regarding technical issues",
+                    "retriever": "{{faiss_0.data.instance}}",
+                    "returnSourceDocuments": true
+                },
+                "outputAnchors": [
+                    {
+                        "id": "retrieverTool_0-output-retrieverTool-RetrieverTool|DynamicTool|Tool|StructuredTool|Runnable",
+                        "name": "retrieverTool",
+                        "label": "RetrieverTool",
+                        "description": "Use a retriever as allowed tool for agent",
+                        "type": "RetrieverTool | DynamicTool | Tool | StructuredTool | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 602,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1281.4243491233265,
+                "y": 769.9943552071177
+            },
+            "dragging": false
+        },
+        {
+            "id": "openAIEmbeddings_0",
+            "position": {
+                "x": 583.6375880054426,
+                "y": 909.5517074306946
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbeddings_0",
+                "label": "OpenAI Embeddings",
+                "version": 4,
+                "name": "openAIEmbeddings",
+                "type": "OpenAIEmbeddings",
+                "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
+                "category": "Embeddings",
+                "description": "OpenAI API to generate embeddings for a given text",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbeddings_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "text-embedding-ada-002",
+                        "id": "openAIEmbeddings_0-input-modelName-asyncOptions"
+                    },
+                    {
+                        "label": "Strip New Lines",
+                        "name": "stripNewLines",
+                        "type": "boolean",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-stripNewLines-boolean"
+                    },
+                    {
+                        "label": "Batch Size",
+                        "name": "batchSize",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-batchSize-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-basepath-string"
+                    },
+                    {
+                        "label": "Dimensions",
+                        "name": "dimensions",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-dimensions-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "text-embedding-ada-002",
+                    "stripNewLines": "",
+                    "batchSize": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "dimensions": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+                        "name": "openAIEmbeddings",
+                        "label": "OpenAIEmbeddings",
+                        "description": "OpenAI API to generate embeddings for a given text",
+                        "type": "OpenAIEmbeddings | Embeddings"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 423,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 583.6375880054426,
+                "y": 909.5517074306946
+            },
+            "dragging": false
+        },
+        {
+            "id": "faiss_0",
+            "position": {
+                "x": 932.5309685643846,
+                "y": 887.426761346469
+            },
+            "type": "customNode",
+            "data": {
+                "id": "faiss_0",
+                "label": "Faiss",
+                "version": 1,
+                "name": "faiss",
+                "type": "Faiss",
+                "baseClasses": ["Faiss", "VectorStoreRetriever", "BaseRetriever"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using Faiss library from Meta",
+                "inputParams": [
+                    {
+                        "label": "Base Path to load",
+                        "name": "basePath",
+                        "description": "Path to load faiss.index file",
+                        "placeholder": "C:\\Users\\User\\Desktop",
+                        "type": "string",
+                        "id": "faiss_0-input-basePath-string"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "faiss_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "faiss_0-input-document-Document"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "Embeddings",
+                        "id": "faiss_0-input-embeddings-Embeddings"
+                    }
+                ],
+                "inputs": {
+                    "document": "",
+                    "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "basePath": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "description": "",
+                        "options": [
+                            {
+                                "id": "faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever",
+                                "name": "retriever",
+                                "label": "Faiss Retriever",
+                                "description": "",
+                                "type": "Faiss | VectorStoreRetriever | BaseRetriever"
+                            },
+                            {
+                                "id": "faiss_0-output-vectorStore-Faiss|SaveableVectorStore|VectorStore",
+                                "name": "vectorStore",
+                                "label": "Faiss Vector Store",
+                                "description": "",
+                                "type": "Faiss | SaveableVectorStore | VectorStore"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "width": 300,
+            "height": 458,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 932.5309685643846,
+                "y": 887.426761346469
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_2",
+            "position": {
+                "x": 2011.4161039844623,
+                "y": 835.680987230599
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_2",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_2-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "This agent is a RAG that is able to search for answers given user question"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_2-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 62,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2011.4161039844623,
+                "y": 835.680987230599
             },
             "dragging": false
         }
@@ -1397,6 +1830,38 @@
             "targetHandle": "seqStart_0-input-model-BaseChatModel",
             "type": "buttonedge",
             "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-seqStart_0-seqStart_0-input-model-BaseChatModel"
+        },
+        {
+            "source": "customTool_0",
+            "sourceHandle": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+            "target": "seqAgent_1",
+            "targetHandle": "seqAgent_1-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "customTool_0-customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable-seqAgent_1-seqAgent_1-input-tools-Tool"
+        },
+        {
+            "source": "retrieverTool_0",
+            "sourceHandle": "retrieverTool_0-output-retrieverTool-RetrieverTool|DynamicTool|Tool|StructuredTool|Runnable",
+            "target": "seqAgent_2",
+            "targetHandle": "seqAgent_2-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "retrieverTool_0-retrieverTool_0-output-retrieverTool-RetrieverTool|DynamicTool|Tool|StructuredTool|Runnable-seqAgent_2-seqAgent_2-input-tools-Tool"
+        },
+        {
+            "source": "faiss_0",
+            "sourceHandle": "faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever",
+            "target": "retrieverTool_0",
+            "targetHandle": "retrieverTool_0-input-retriever-BaseRetriever",
+            "type": "buttonedge",
+            "id": "faiss_0-faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever-retrieverTool_0-retrieverTool_0-input-retriever-BaseRetriever"
+        },
+        {
+            "source": "openAIEmbeddings_0",
+            "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-embeddings-Embeddings",
+            "type": "buttonedge",
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-faiss_0-faiss_0-input-embeddings-Embeddings"
         }
     ]
 }
