@@ -1,7 +1,7 @@
 {
-    "description": "QA chain for Vectara",
-    "categories": "Vectara QA Chain,Vectara,Langchain",
-    "framework": "Langchain",
+    "description": "Using Vectara for Retrieval Augmented Generation (RAG) to answer questions from documents",
+    "usecases": ["Documents QnA"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,

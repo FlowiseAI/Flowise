@@ -1,15 +1,15 @@
 {
     "description": "Language translation using LLM Chain with a Chat Prompt Template and Chat Model",
-    "categories": "Chat Prompt Template,ChatOpenAI,LLM Chain,Langchain",
-    "framework": "Langchain",
+    "usecases": ["Basic"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
-            "height": 652,
+            "height": 690,
             "id": "chatPromptTemplate_0",
             "position": {
-                "x": 437.51367850489396,
-                "y": 649.7619214034173
+                "x": 88.10922294721732,
+                "y": 373.4354021348812
             },
             "type": "customNode",
             "data": {
@@ -52,7 +52,7 @@
                 "inputs": {
                     "systemMessagePrompt": "You are a helpful assistant that translates {input_language} to {output_language}.",
                     "humanMessagePrompt": "{text}",
-                    "promptValues": "{\"input_language\":\"English\",\"output_language\":\"French\",\"text\":\"{{question}}\"}"
+                    "promptValues": "{\"input_language\":\"English\",\"output_language\":\"French\",\"text\":\"\"}"
                 },
                 "outputAnchors": [
                     {
@@ -67,24 +67,24 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 437.51367850489396,
-                "y": 649.7619214034173
+                "x": 88.10922294721732,
+                "y": 373.4354021348812
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 436.97058562345904,
-                "y": 29.96180150605153
+                "x": 423.0077090865524,
+                "y": 380.66673510213775
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
@@ -239,18 +239,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 436.97058562345904,
-                "y": 29.96180150605153
+                "x": 423.0077090865524,
+                "y": 380.66673510213775
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 456,
+            "height": 508,
             "id": "llmChain_0",
             "position": {
-                "x": 836.089121144244,
-                "y": 510.07109938359963
+                "x": 774.5069894501554,
+                "y": 480.02655553818863
             },
             "type": "customNode",
             "data": {
@@ -339,9 +339,62 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 836.089121144244,
-                "y": 510.07109938359963
+                "x": 774.5069894501554,
+                "y": 480.02655553818863
             }
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": -258.15932684125505,
+                "y": 656.5109602097457
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "In the Format Prompt Values, we can specify the variables used in prompt.\n\n{\n    input_language: \"English\",\n    output_language: \"French\"\n}\n\nIf the last variable is not specified, in this case {text}, user question will be used as value."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 243,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -258.15932684125505,
+                "y": 656.5109602097457
+            },
+            "dragging": false
         }
     ],
     "edges": [

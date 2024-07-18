@@ -1047,22 +1047,42 @@
                 {
                     "label": "voyage-2",
                     "name": "voyage-2",
-                    "description": "Base generalist embedding model optimized for both latency and quality"
+                    "description": "General-purpose embedding model optimized for a balance between cost, latency, and retrieval quality."
                 },
                 {
                     "label": "voyage-code-2",
                     "name": "voyage-code-2",
-                    "description": "Optimized for code retrieval"
+                    "description": "Optimized for code retrieval."
+                },
+                {
+                    "label": "voyage-finance-2",
+                    "name": "voyage-finance-2",
+                    "description": "Optimized for finance retrieval and RAG."
                 },
                 {
                     "label": "voyage-large-2",
                     "name": "voyage-large-2",
-                    "description": "Powerful generalist embedding model"
+                    "description": "General-purpose embedding model that is optimized for retrieval quality."
+                },
+                {
+                    "label": "voyage-large-2-instruct",
+                    "name": "voyage-large-2-instruct",
+                    "description": "Instruction-tuned general-purpose embedding model optimized for clustering, classification, and retrieval."
+                },
+                {
+                    "label": "voyage-law-2",
+                    "name": "voyage-law-2",
+                    "description": "Optimized for legal and long-context retrieval and RAG. Also improved performance across all domains."
                 },
                 {
                     "label": "voyage-lite-02-instruct",
                     "name": "voyage-lite-02-instruct",
                     "description": "Instruction-tuned for classification, clustering, and sentence textual similarity tasks"
+                },
+                {
+                    "label": "voyage-multilingual-2",
+                    "name": "voyage-multilingual-2",
+                    "description": "Optimized for multilingual retrieval and RAG."
                 }
             ]
         },

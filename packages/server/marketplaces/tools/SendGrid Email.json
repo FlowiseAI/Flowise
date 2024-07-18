@@ -1,6 +1,6 @@
 {
     "name": "sendgrid_email",
-    "framework": "Langchain",
+    "framework": ["Langchain"],
     "description": "Send email using SendGrid",
     "color": "linear-gradient(rgb(230,108,70), rgb(222,4,98))",
     "iconSrc": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/sendgrid-icon.svg",

@@ -48,7 +48,6 @@ class Pinecone_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = `Upsert embedded data and perform similarity or mmr search using Pinecone, a leading fully managed hosted vector database`
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -156,7 +155,7 @@ class Pinecone_VectorStores implements INode {
 
             const obj: PineconeStoreParams = {
                 pineconeIndex,
-                textKey: pineconeTextKey ?? 'text'
+                textKey: pineconeTextKey || 'text'
             }
 
             if (pineconeNamespace) obj.namespace = pineconeNamespace
@@ -203,7 +202,7 @@ class Pinecone_VectorStores implements INode {
 
         const obj: PineconeStoreParams = {
             pineconeIndex,
-            textKey: pineconeTextKey ?? 'text'
+            textKey: pineconeTextKey || 'text'
         }
 
         if (pineconeNamespace) obj.namespace = pineconeNamespace
