@@ -1,0 +1,720 @@
+{
+  "nodes": [
+    {
+      "id": "chatOpenAI_0",
+      "position": {
+        "x": 772,
+        "y": 406
+      },
+      "type": "customNode",
+      "data": {
+        "id": "chatOpenAI_0",
+        "label": "ChatOpenAI",
+        "version": 6,
+        "name": "chatOpenAI",
+        "type": "ChatOpenAI",
+        "baseClasses": [
+          "ChatOpenAI",
+          "BaseChatModel",
+          "BaseLanguageModel",
+          "Runnable"
+        ],
+        "category": "Chat Models",
+        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": [
+              "openAIApi"
+            ],
+            "id": "chatOpenAI_0-input-credential-credential"
+          },
+          {
+            "label": "Model Name",
+            "name": "modelName",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "default": "gpt-3.5-turbo",
+            "id": "chatOpenAI_0-input-modelName-asyncOptions"
+          },
+          {
+            "label": "Temperature",
+            "name": "temperature",
+            "type": "number",
+            "step": 0.1,
+            "default": 0.9,
+            "optional": true,
+            "id": "chatOpenAI_0-input-temperature-number"
+          },
+          {
+            "label": "Max Tokens",
+            "name": "maxTokens",
+            "type": "number",
+            "step": 1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-maxTokens-number"
+          },
+          {
+            "label": "Top Probability",
+            "name": "topP",
+            "type": "number",
+            "step": 0.1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-topP-number"
+          },
+          {
+            "label": "Frequency Penalty",
+            "name": "frequencyPenalty",
+            "type": "number",
+            "step": 0.1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-frequencyPenalty-number"
+          },
+          {
+            "label": "Presence Penalty",
+            "name": "presencePenalty",
+            "type": "number",
+            "step": 0.1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-presencePenalty-number"
+          },
+          {
+            "label": "Timeout",
+            "name": "timeout",
+            "type": "number",
+            "step": 1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-timeout-number"
+          },
+          {
+            "label": "BasePath",
+            "name": "basepath",
+            "type": "string",
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-basepath-string"
+          },
+          {
+            "label": "BaseOptions",
+            "name": "baseOptions",
+            "type": "json",
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-baseOptions-json"
+          },
+          {
+            "label": "Allow Image Uploads",
+            "name": "allowImageUploads",
+            "type": "boolean",
+            "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+            "default": false,
+            "optional": true,
+            "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+          },
+          {
+            "label": "Image Resolution",
+            "description": "This parameter controls the resolution in which the model views the image.",
+            "name": "imageResolution",
+            "type": "options",
+            "options": [
+              {
+                "label": "Low",
+                "name": "low"
+              },
+              {
+                "label": "High",
+                "name": "high"
+              },
+              {
+                "label": "Auto",
+                "name": "auto"
+              }
+            ],
+            "default": "low",
+            "optional": false,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-imageResolution-options"
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Cache",
+            "name": "cache",
+            "type": "BaseCache",
+            "optional": true,
+            "id": "chatOpenAI_0-input-cache-BaseCache"
+          }
+        ],
+        "inputs": {
+          "cache": "",
+          "modelName": "gpt-4o",
+          "temperature": 0.9,
+          "maxTokens": "4000",
+          "topP": "0.9",
+          "frequencyPenalty": "0.5",
+          "presencePenalty": "0.3",
+          "timeout": "",
+          "basepath": "",
+          "baseOptions": "",
+          "allowImageUploads": "",
+          "imageResolution": "low"
+        },
+        "outputAnchors": [
+          {
+            "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "name": "chatOpenAI",
+            "label": "ChatOpenAI",
+            "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+            "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 670,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 772,
+        "y": 406
+      }
+    },
+    {
+      "id": "llmChain_0",
+      "position": {
+        "x": 1267.6666519184125,
+        "y": 1016.6860761011587
+      },
+      "type": "customNode",
+      "data": {
+        "id": "llmChain_0",
+        "label": "LLM Chain",
+        "version": 3,
+        "name": "llmChain",
+        "type": "LLMChain",
+        "baseClasses": [
+          "LLMChain",
+          "BaseChain",
+          "Runnable"
+        ],
+        "category": "Chains",
+        "description": "Chain to run queries against LLMs",
+        "inputParams": [
+          {
+            "label": "Chain Name",
+            "name": "chainName",
+            "type": "string",
+            "placeholder": "Name Your Chain",
+            "optional": true,
+            "id": "llmChain_0-input-chainName-string"
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Language Model",
+            "name": "model",
+            "type": "BaseLanguageModel",
+            "id": "llmChain_0-input-model-BaseLanguageModel"
+          },
+          {
+            "label": "Prompt",
+            "name": "prompt",
+            "type": "BasePromptTemplate",
+            "id": "llmChain_0-input-prompt-BasePromptTemplate"
+          },
+          {
+            "label": "Output Parser",
+            "name": "outputParser",
+            "type": "BaseLLMOutputParser",
+            "optional": true,
+            "id": "llmChain_0-input-outputParser-BaseLLMOutputParser"
+          },
+          {
+            "label": "Input Moderation",
+            "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+            "name": "inputModeration",
+            "type": "Moderation",
+            "optional": true,
+            "list": true,
+            "id": "llmChain_0-input-inputModeration-Moderation"
+          }
+        ],
+        "inputs": {
+          "model": "{{chatOpenAI_0.data.instance}}",
+          "prompt": "{{chatPromptTemplate_0.data.instance}}",
+          "outputParser": "",
+          "inputModeration": "",
+          "chainName": ""
+        },
+        "outputAnchors": [
+          {
+            "name": "output",
+            "label": "Output",
+            "type": "options",
+            "description": "",
+            "options": [
+              {
+                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain|Runnable",
+                "name": "llmChain",
+                "label": "LLM Chain",
+                "description": "",
+                "type": "LLMChain | BaseChain | Runnable"
+              },
+              {
+                "id": "llmChain_0-output-outputPrediction-string|json",
+                "name": "outputPrediction",
+                "label": "Output Prediction",
+                "description": "",
+                "type": "string | json"
+              }
+            ],
+            "default": "llmChain"
+          }
+        ],
+        "outputs": {
+          "output": "llmChain"
+        },
+        "selected": false
+      },
+      "width": 300,
+      "height": 508,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1267.6666519184125,
+        "y": 1016.6860761011587
+      },
+      "dragging": false
+    },
+    {
+      "id": "chatPromptTemplate_0",
+      "position": {
+        "x": 772.5646037813767,
+        "y": 1107.7357948570007
+      },
+      "type": "customNode",
+      "data": {
+        "id": "chatPromptTemplate_0",
+        "label": "Chat Prompt Template",
+        "version": 1,
+        "name": "chatPromptTemplate",
+        "type": "ChatPromptTemplate",
+        "baseClasses": [
+          "ChatPromptTemplate",
+          "BaseChatPromptTemplate",
+          "BasePromptTemplate",
+          "Runnable"
+        ],
+        "category": "Prompts",
+        "description": "Schema to represent a chat prompt",
+        "inputParams": [
+          {
+            "label": "System Message",
+            "name": "systemMessagePrompt",
+            "type": "string",
+            "rows": 4,
+            "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+            "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
+          },
+          {
+            "label": "Human Message",
+            "name": "humanMessagePrompt",
+            "type": "string",
+            "rows": 4,
+            "placeholder": "{text}",
+            "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
+          },
+          {
+            "label": "Format Prompt Values",
+            "name": "promptValues",
+            "type": "json",
+            "optional": true,
+            "acceptVariable": true,
+            "list": true,
+            "id": "chatPromptTemplate_0-input-promptValues-json"
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "systemMessagePrompt": "You are an AI assistant tasked with generating creative and engaging blog ideas based on provided information. Your goal is to create a list of blog topic ideas that are relevant, interesting, and tailored to the given context and variables.\n\nFirst, review the following source data for context:\n<source_data>\n{SOURCE_DATA}\n</source_data>\n\nNow, consider these important blog variables:\n<blog_variables>\n{BLOG_VARIABLES}\n</blog_variables>\n\nKeep these variables in mind as you generate ideas, as they will help shape the tone, style, and content of the blog posts.\n\nNext, focus on the following keywords or themes:\n<keywords_or_themes>\n{KEYWORDS_OR_THEMES}\n</keywords_or_themes>\n\nTo generate blog ideas:\n1. Analyze the source data, blog variables, and keywords/themes.\n2. Create connections between these elements to form unique and relevant blog topics.\n3. Ensure that each idea aligns with the overall context and target audience.\n4. Generate at least 5 distinct blog ideas, but aim for 7-10 if possible.\n5. Make sure each idea is specific enough to be actionable but broad enough to allow for creative writing.\n\nPresent your blog ideas in the following format:\n<blog_ideas>\n1. [Blog Idea Title]: Brief description of the idea (1-2 sentences)\n2. [Blog Idea Title]: Brief description of the idea (1-2 sentences)\n...\n</blog_ideas>\n\nHere are two examples of good blog idea outputs:\n\n<example>\n<blog_ideas>\n1. \"5 Eco-Friendly Home Upgrades That Save You Money\": Explore cost-effective, environmentally conscious home improvements that reduce energy bills and carbon footprint.\n2. \"The Hidden History of Your Neighborhood: Uncovering Local Landmarks\": Guide readers on how to research and discover fascinating historical facts about their immediate surroundings.\n</blog_ideas>\n</example>\n\nRemember to be creative, relevant, and engaging in your ideas. Consider current trends, potential reader interests, and how the ideas relate to the provided context and variables. Don't be afraid to think outside the box while still maintaining relevance to the given information.\n\nNow, generate your list of blog ideas based on the provided information and instructions.",
+          "humanMessagePrompt": "{transcript}",
+          "promptValues": "{\"SOURCE_DATA\":\"{{plainText_0.data.instance}}\",\"KEYWORDS_OR_THEMES\":\"{{plainText_1.data.instance}}\",\"BLOG_VARIABLES\":\"{{plainText_2.data.instance}}\"}"
+        },
+        "outputAnchors": [
+          {
+            "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "name": "chatPromptTemplate",
+            "label": "ChatPromptTemplate",
+            "description": "Schema to represent a chat prompt",
+            "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 690,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 772.5646037813767,
+        "y": 1107.7357948570007
+      }
+    },
+    {
+      "id": "plainText_0",
+      "position": {
+        "x": 241.657251927135,
+        "y": 665.1768286084023
+      },
+      "type": "customNode",
+      "data": {
+        "id": "plainText_0",
+        "label": "Plain Text",
+        "version": 2,
+        "name": "plainText",
+        "type": "Document",
+        "baseClasses": [
+          "Document"
+        ],
+        "category": "Document Loaders",
+        "description": "Load data from plain text",
+        "inputParams": [
+          {
+            "label": "Text",
+            "name": "text",
+            "type": "string",
+            "rows": 4,
+            "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
+            "id": "plainText_0-input-text-string"
+          },
+          {
+            "label": "Additional Metadata",
+            "name": "metadata",
+            "type": "json",
+            "description": "Additional metadata to be added to the extracted documents",
+            "optional": true,
+            "additionalParams": true,
+            "id": "plainText_0-input-metadata-json"
+          },
+          {
+            "label": "Omit Metadata Keys",
+            "name": "omitMetadataKeys",
+            "type": "string",
+            "rows": 4,
+            "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
+            "placeholder": "key1, key2, key3.nestedKey1",
+            "optional": true,
+            "additionalParams": true,
+            "id": "plainText_0-input-omitMetadataKeys-string"
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Text Splitter",
+            "name": "textSplitter",
+            "type": "TextSplitter",
+            "optional": true,
+            "id": "plainText_0-input-textSplitter-TextSplitter"
+          }
+        ],
+        "inputs": {
+          "text": "WEBVTT\n\n1\n00:01:33.550 --> 00:01:35.859\nBen Leiner: Hey, everyone, hey? Becca glad you could make it.\n\n2\n00:01:39.080 --> 00:01:40.130\nBen Leiner: hey, Brad?\n\n3\n00:01:40.310 --> 00:01:41.250\nBrad Taylor: How's it going.\n\n4\n00:01:42.338 --> 00:01:49.109\nBen Leiner: It's going well, we've got. Becca's on the call. She's a contractor who works with us on design.\n\n5\n00:01:49.190 --> 00:01:53.469\nBen Leiner: Just another set of another set of eyes. For for what we're working on today.\n\n6\n00:01:53.710 --> 00:01:55.350\nBrad Taylor: Awesome great to meet you, becca.\n\n7\n00:01:56.450 --> 00:02:04.040\nbecca ray: Hey? You, too. I'm sorry in advance. If I have some Internet issues, I'm happy. But excited to be a part of this.\n\n8\n00:02:04.770 --> 00:02:08.690\nBen Leiner: I've seen your name on slack for a long time, but have you? And I actually met.\n\n9\n00:02:10.320 --> 00:02:18.069\nbecca ray: We? What did we do? We had a brainstorm session together. But that was a probably a couple of months ago.\n\n10\n00:02:18.320 --> 00:02:19.240\nBen Leiner: Okay. Well.\n\n11\n00:02:19.240 --> 00:02:20.010\nbecca ray: Yeah.\n\n12\n00:02:20.010 --> 00:02:21.369\nBen Leiner: Nice to meet you again.\n\n13\n00:02:21.370 --> 00:02:23.230\nbecca ray: Yeah, you too.\n\n14\n00:02:24.181 --> 00:02:31.480\nBen Leiner: I, I typically run product marketing and consumer insights. So this project at the website is a little out of my lane.\n\n15\n00:02:31.797 --> 00:02:35.792\nBen Leiner: As Brad's heard me say a million times. I'm approaching it with the\n\n16\n00:02:36.310 --> 00:02:45.510\nBen Leiner: with the attitude of Mel Gibson in any one of his war movies just basically running at it with a spear and trying to not get stabbed too many times by by, you know.\n\n17\n00:02:45.760 --> 00:02:52.860\nBen Leiner: internal politics or ignorance, or any of these other things, so glad you can be here to to help us fly right.\n\n18\n00:02:55.490 --> 00:02:56.820\nBrad Taylor: So, yeah.\n\n19\n00:02:56.820 --> 00:03:00.920\nMichelle Villasenor: This is the house, the Lego House, where he stole a bunch of Legos and.\n\n20\n00:03:00.920 --> 00:03:02.240\nBen Leiner: Oh, yeah. Yeah. Yeah.\n\n21\n00:03:04.370 --> 00:03:10.310\nBrad Taylor: Yeah, it's a, it's kind of more. My vision board. I definitely wanna have a wall like this, especially for my kids.\n\n22\n00:03:10.340 --> 00:03:16.495\nBrad Taylor: Oh, one day. But yeah, I love Legos love just building things that way.\n\n23\n00:03:16.880 --> 00:03:23.399\nBen Leiner: There was, there was a new story that we mocked up for our social media that involved a guy stealing just a shitload of Legos.\n\n24\n00:03:24.060 --> 00:03:27.450\nBen Leiner: So so the the inside joke was that that person was you.\n\n25\n00:03:27.838 --> 00:03:31.859\nBen Leiner: and and you know, given the philosophy of Route last Rev. Perhaps it could be.\n\n26\n00:03:32.170 --> 00:03:36.700\nBrad Taylor: Right. That's great how to send me that story.\n\n27\n00:03:37.250 --> 00:03:51.389\nBrad Taylor: Excellent. So from our end, we also have Max and Louis. So Max is actually our head of engineering and runs all of our engineering team and his partner, Louis, actually has been doing design with us for the last 3 years and\n\n28\n00:03:51.854 --> 00:04:03.670\nBrad Taylor: has developed our design and component library. Throughout the history of the company. And yeah, love to introduce. Yeah, wanna introduce yourself.\n\n29\n00:04:04.760 --> 00:04:07.089\nMax Techera: Nice to meet you all, Louis.\n\n30\n00:04:08.320 --> 00:04:09.060\nBrad Taylor: Yeah.\n\n31\n00:04:09.960 --> 00:04:19.720\nBrad Taylor: excellent. Yeah. And then Max is just yeah. He's he's gonna be. You'll be working with him a lot more when you're in the implementation phase when Adam and Max and\n\n32\n00:04:20.148 --> 00:04:42.380\nBrad Taylor: mainly their team is gonna be doing all the implementation. So the goals of today? So we've gone through. And you know, we have our last Rev. Starter design component library. What we've done is we've put in what we had for the Logos, the different colors, and kind of just put that in there.\n\n33\n00:04:42.698 --> 00:05:09.131\nBrad Taylor: Just for a light touch. And really, the goal of this meeting is to go over everything that's in this Sigma file. Get Michelle and Becca into the figma file, working with Louie to now say, okay. Now that we have this in here, it has our, you know, basic branding stuff. Now, let's, you know, really. Now start to do some revs on it for you know, making the design modern and you know, ready to go\n\n34\n00:05:09.780 --> 00:05:20.460\nBrad Taylor: so feel free to ask any questions. It's a pretty in depth figma file. But yeah would love to. If you have any questions, just let me know.\n\n35\n00:05:21.710 --> 00:05:24.090\nBrad Taylor: So 1st off\n\n36\n00:05:25.700 --> 00:05:31.910\nBrad Taylor: actually, while I'm doing this, Max, can you invite Becca and Michelle to this Sigma file.\n\n37\n00:05:34.050 --> 00:05:34.740\nMax Techera: Good thing.\n\n38\n00:05:35.160 --> 00:05:35.750\nBrad Taylor: Yeah.\n\n39\n00:05:36.530 --> 00:05:39.620\nMax Techera: You will please post your emails, the chat.\n\n40\n00:05:43.220 --> 00:06:04.755\nBrad Taylor: Alright. So the very 1st thing we do when we engage with a new client is 1st start with the design system, I'm sure you, you can appreciate, you know, having a good design system. Having a good Lego box from the beginning is is very important to ensuring that you have design consistency across.\n\n41\n00:06:05.500 --> 00:06:26.137\nBrad Taylor: you know. Right now, we're talking about just the marketing website, a lot of our clients. They use these this component library for a lot of other sites like help centers and internets and things like that. So we try to build it in a way that is scalable and reusable for the future. So that when you need to new, build new pages, new designs? You can say, okay, what?\n\n42\n00:06:26.420 --> 00:06:36.560\nBrad Taylor: Using the analogy again, Legos, do I have right now? Can I build what I want to build with that great? No developer or Hey, we actually have this really cool campaign going out.\n\n43\n00:06:36.560 --> 00:06:56.799\nBrad Taylor: We only have to build that one little piece, and that's kind of the flexibility of this design framework is that you know, you kind of get the the the easy things out of the box. And then you know, that allows you to spend your time. Really thinking of the new design patterns and new components that really bring, you know, the smart news brand to life.\n\n44\n00:06:57.710 --> 00:07:19.060\nBrad Taylor: So so we break it into in this this file has, what we have what we call our Adams. So these are the basic basic building blocks of it. So you have your Logos, your colors, your typography. The different effects styles the icon, the iconography that you have and your buttons, and then how it sits on the grid system.\n\n45\n00:07:19.540 --> 00:07:33.470\nBrad Taylor: then we have what are called molecules. So this is, these are the things that are made up of the atoms. So, for instance, cards is made up of images, you know, ctas and buttons you have forms, and you have inputs of that.\n\n46\n00:07:34.100 --> 00:07:55.580\nBrad Taylor: Then you have, you know, kind of what we call organisms, which is basically collections, new groups, tabs and then different templates, and kind of these all build off of each other ultimately, till you get to pages, which is what you then, you know, see on the web page but they're all built off of these design components.\n\n47\n00:07:56.480 --> 00:08:05.770\nBrad Taylor: And then, of course, we have some guidelines in there, too, around, like image and aspect ratio styles and the different file components. So any questions on that for\n\n48\n00:08:05.870 --> 00:08:06.760\nBrad Taylor: move on.\n\n49\n00:08:09.130 --> 00:08:10.080\nBrad Taylor: Alright.\n\n50\n00:08:10.480 --> 00:08:27.288\nBrad Taylor: So the very 1st page on this is kind of like the guidelines. And this is really meant, you know, we we use this in the discovery, but it's also best, if, too, if you know post discovery, this is kind of used and and and made an integral part of your design process. And when we're actually creating new pages, new\n\n51\n00:08:28.143 --> 00:08:31.320\nBrad Taylor: well, depending new new design components, I should say\n\n52\n00:08:31.430 --> 00:08:59.530\nBrad Taylor: so. There's some instructions in here on editing the components and figma. So we have a concept of what are called master components. And this is designed in a way, so you can change it in one place, and when you're building your pages, when you're building, when you see the different variations of those components, you don't have to change it in a bunch of different ways. And we can walk through like doing that. In in a in a separate training session.\n\n53\n00:09:01.187 --> 00:09:11.250\nBrad Taylor: Yeah. Yeah. So like, for instance, here, you know, adding a media components. It has some instructions here. Where your local styles are are located.\n\n54\n00:09:12.366 --> 00:09:13.600\nBrad Taylor: And then\n\n55\n00:09:13.660 --> 00:09:17.449\nBrad Taylor: some information about like aspect. Ratio.\n\n56\n00:09:18.431 --> 00:09:23.370\nBrad Taylor: So just some just general figma guidelines across these different places.\n\n57\n00:09:25.220 --> 00:09:44.950\nBrad Taylor: So then, we start into the individual elements. So we start 1st with your logo. So here you can access. You know your assets folder. So wherever you end up housing your final assets, it's good to have that final link so that anyone can get there and get the final assets. Icons, fonts, things like that, and back and forth\n\n58\n00:09:45.100 --> 00:10:02.440\nBrad Taylor: we have kind of. Then we talk about like, what's primary. What's the inverse? We go a lot we do dig, and you'll see, especially in the colors area. We think a lot about like Ada. Compliance and things like that. To make sure that we're that your your sites, you know, up to standards\n\n59\n00:10:02.760 --> 00:10:11.190\nBrad Taylor: so different usages from square around. You know any other usages that you may wanna, you know, create. We could add those here, too.\n\n60\n00:10:11.595 --> 00:10:21.360\nBrad Taylor: Spacing around, you know, what's the clear space look like? And the different types of variants on different, maybe background colors or imagery things like that?\n\n61\n00:10:22.039 --> 00:10:29.590\nBrad Taylor: And then, of course, any notes, and then the master component is down here that you could then edit these things.\n\n62\n00:10:31.850 --> 00:10:42.530\nBrad Taylor: So then we get into the colors. So we put in your brand colors here. So looking at the different primary, the secondary and tertiary colors.\n\n63\n00:10:43.175 --> 00:10:56.889\nBrad Taylor: We have a color combination based off of that based off of viewability. So background, foreground, color combinations. To ensure. You know, these are the right contrast that you would use when\n\n64\n00:10:57.370 --> 00:10:58.250\nBrad Taylor: you know.\n\n65\n00:10:58.480 --> 00:11:07.269\nBrad Taylor: putting these different together. So even though we have different. You know these colors, there's different shades of it. So we kind of give you that full spectrum of how these could be used\n\n66\n00:11:10.680 --> 00:11:17.080\nBrad Taylor: typography. So once again, we try to keep everything. So it's very standardized.\n\n67\n00:11:17.100 --> 00:11:28.919\nBrad Taylor: We give the basic. You know, this is our basic typography, the fonts, the weights, the heights, the spacings and the different used cases that these fonts are used in.\n\n68\n00:11:29.443 --> 00:11:39.066\nBrad Taylor: This is the basic out of the box. Of course, there may be, you know, cases where maybe an H. 2, because it's in a card looks a little different, and we'll start to identify those different things\n\n69\n00:11:39.380 --> 00:11:46.237\nBrad Taylor: and what those styles are. But this would be where you would see your different you know,\n\n70\n00:11:46.880 --> 00:11:52.259\nBrad Taylor: typography and the different use cases as we start to build out those use cases there.\n\n71\n00:11:53.510 --> 00:12:04.479\nBrad Taylor: effect styles. Pretty basic right now. This would be where we house all of the different effects styles that we end up having from like hover effects to. In this case we just have, like, what is the shadow? And\n\n72\n00:12:04.856 --> 00:12:15.249\nBrad Taylor: you know, look like on the different variants for different effect styles so we try to keep this pretty light right now in the beginning, and that you know a lot of what\n\n73\n00:12:15.260 --> 00:12:19.975\nBrad Taylor: we'll be doing. The design is kind of adding some of these effect styles and making it\n\n74\n00:12:20.690 --> 00:12:23.000\nBrad Taylor: pop, as people like to say\n\n75\n00:12:23.857 --> 00:12:32.790\nBrad Taylor: so then we have our iconography. Do we ever get the final icons? I know there was some back and forth on that.\n\n76\n00:12:34.540 --> 00:12:36.779\nMax Techera: Those are the ones that are wearing the.\n\n77\n00:12:36.780 --> 00:12:37.649\nBen Leiner: We did.\n\n78\n00:12:41.000 --> 00:12:41.700\nMax Techera: Bite.\n\n79\n00:12:41.940 --> 00:12:48.180\nMax Techera: but the above one were they should be updated.\n\n80\n00:12:49.730 --> 00:12:51.860\nMichelle Villasenor: Okay, I'll look at the\n\n81\n00:12:52.670 --> 00:12:54.130\nMichelle Villasenor: email.\n\n82\n00:12:55.740 --> 00:12:56.400\nMichelle Villasenor: 'kay.\n\n83\n00:12:57.110 --> 00:13:03.104\nBrad Taylor: So we'll definitely show the different iconography in this piece, too. So we have the the assets. But this is.\n\n84\n00:13:03.450 --> 00:13:15.740\nBrad Taylor: you know, once again, a very important part of the design libraries. You know the iconography, how you're using it when you're using it. Cta, usage, nav usage other usage of like cards and things like that.\n\n85\n00:13:18.100 --> 00:13:20.589\nBrad Taylor: yeah. And then the different sizes.\n\n86\n00:13:21.540 --> 00:13:50.260\nBrad Taylor: and we go into buttons. So the whole main ctas of what you have on your site. So out of the box. We have different variants for our different buttons, and you'll see this come up now that we're getting into the more we're we're we're moving up. So we have contained, which is just, you know, basic contained. We have corner rounded, we have outlined and outlined round it. And you know, different text.\n\n87\n00:13:50.260 --> 00:13:51.580\nMax Techera: It could.\n\n88\n00:13:52.280 --> 00:13:53.170\nMax Techera: Bree.\n\n89\n00:13:53.530 --> 00:13:55.020\nMax Techera: There's some default\n\n90\n00:13:55.100 --> 00:13:56.210\nMax Techera: autumns.\n\n91\n00:13:58.700 --> 00:13:59.959\nBrad Taylor: The default. Buttons.\n\n92\n00:14:01.210 --> 00:14:06.520\nMax Techera: Yeah, I was looking at the current site, and I was trying to\n\n93\n00:14:06.790 --> 00:14:07.930\nMax Techera: date a bit\n\n94\n00:14:08.470 --> 00:14:10.760\nMax Techera: to define the this time for the book\n\n95\n00:14:11.170 --> 00:14:12.579\nMax Techera: got it? Let's see.\n\n96\n00:14:13.450 --> 00:14:15.961\nBrad Taylor: Yeah, so yeah, trying to. Yeah.\n\n97\n00:14:16.600 --> 00:14:24.530\nBrad Taylor: yeah, I get well on this one, too. When we have the containment button corner contained around, we would then style this, you know\n\n98\n00:14:24.900 --> 00:14:37.559\nBrad Taylor: we're doing on the current. But we would style this so that these variants and then in the Cms you can choose which one. And also okay, can infer which one to use depending on. If it's being used in a card.\n\n99\n00:14:37.580 --> 00:14:41.610\nBrad Taylor: a list, a different component things like that. So\n\n100\n00:14:42.223 --> 00:14:51.926\nBrad Taylor: and we can add different button and Cta styles as well, too. And you can kind of see some of these like, for instance, the app download we've added\n\n101\n00:14:52.628 --> 00:15:02.739\nBrad Taylor: for yours. And then also, you know, text no padding and different areas. So we'll continue if we have other Ctas, and how links look on the site.\n\n102\n00:15:05.200 --> 00:15:09.209\nMax Techera: Just just small comment on on this as we go through these different\n\n103\n00:15:09.310 --> 00:15:13.930\nMax Techera: files. You see there, maybe a lot of things, or maybe not enough for your site.\n\n104\n00:15:14.247 --> 00:15:21.750\nMax Techera: This is our base starters. This are where we start now. What we're going to go through in the next few weeks of finding out what of this?\n\n105\n00:15:21.930 --> 00:15:26.859\nMax Techera: But we want which ones we don't want, and where we kind of find that Martin is\n\n106\n00:15:27.520 --> 00:15:28.390\nMax Techera: brand.\n\n107\n00:15:28.960 --> 00:15:29.660\nMax Techera: Now.\n\n108\n00:15:29.850 --> 00:15:30.215\nBrad Taylor: Yeah.\n\n109\n00:15:30.730 --> 00:15:42.259\nBrad Taylor: yeah, absolutely. Yeah. And really, the goal of this kind of jump start this. And really, you know, take advantage of everything we've learned over the last 5 years of building these component based design sites.\n\n110\n00:15:43.021 --> 00:15:48.960\nBrad Taylor: So the grid system, very important in terms of your spacing. I think you know.\n\n111\n00:15:49.200 --> 00:16:08.080\nBrad Taylor: I I think this team will appreciate. I think spacing is a is an under appreciated piece of the design aesthetics but is very important, and how all of these fit on a grid and and in ensuring that the responsiveness and it looks great in all of the different styles.\n\n112\n00:16:09.380 --> 00:16:17.370\nBrad Taylor: So there's the 1st part before I get into the next kind of like as we start to talk about the any parts, about kind of like the building blocks. So so far.\n\n113\n00:16:20.150 --> 00:16:36.630\nBrad Taylor: So now we get into the different variations of the different things. So one big piece that is that, the site is made up of our cards, we see cards and blogs, we see cards and people. We see cards and value prop like icons and things like that. So\n\n114\n00:16:36.640 --> 00:16:39.177\nBrad Taylor: you know, one of the things that's\n\n115\n00:16:41.530 --> 00:16:42.485\nBrad Taylor: we\n\n116\n00:16:43.870 --> 00:16:45.360\nBrad Taylor: we see.\n\n117\n00:16:46.990 --> 00:16:53.530\nBrad Taylor: yeah, you will get comments access if we give back comment, access for sure on that right now. There.\n\n118\n00:16:54.070 --> 00:17:09.379\nBrad Taylor: but but yeah. So we we go through and we decide variance. And from a design perspective. You know we have. And we put in here what can be available. So, for instance, avatar overlaying title, body copy, Cta.\n\n119\n00:17:10.073 --> 00:17:28.289\nBrad Taylor: all of these components will have those. So it's kind of, you know, those are your building blocks. Say, okay, how do I use these 5 data points? 6 data points to then make a card. We have our basic ones like, Hey, a circle profile. We have, you know, testimonial where it might be over here a little bit.\n\n120\n00:17:28.420 --> 00:17:36.809\nBrad Taylor: but they're all just rearranging the same kind of, you know, text fields in different ways. So this is a pricing\n\n121\n00:17:36.820 --> 00:17:49.900\nBrad Taylor: one. This is just, you know, some icons. This is using more of a rich media instead of just an image. This is using the image, but it also has a byline for like author and the month and date.\n\n122\n00:17:50.601 --> 00:17:56.860\nBrad Taylor: You also have horizontal ones that fill up the entire space, perhaps, or maybe multiple cta\n\n123\n00:17:56.960 --> 00:18:13.758\nBrad Taylor: a cards. We also have logo cards. So this would be, how you do Logos of like black and white? This so that. Yeah. You then create these kind of cards that have different aspects. So like, for instance, this one's still a card, but it's just using just the image.\n\n124\n00:18:14.310 --> 00:18:20.849\nBrad Taylor: So lots of flexibility. But usually cards are groups. That are done in collections.\n\n125\n00:18:23.413 --> 00:18:36.186\nBrad Taylor: Well, it's been too much. This is just a list of all the different inputs. So this is how we start styling your forms and the different pieces there. Right now, we have the main inputs in the search for that. But if\n\n126\n00:18:36.520 --> 00:18:40.840\nBrad Taylor: we have other fields that we need to do as well, then we can.\n\n127\n00:18:42.248 --> 00:18:51.500\nBrad Taylor: So this is just those forms kind of put together. So you know, either having the form and kind of how it looks like on the wide side by side.\n\n128\n00:18:51.610 --> 00:18:59.730\nBrad Taylor: or on mobile, and also what it would look like, for instance, like an email or just a single single one.\n\n129\n00:19:02.370 --> 00:19:17.641\nBrad Taylor: Then we get into collections, which is another major piece of particular websites. So now that you have these cards or these different elements? You know, how do you put these on there? So this is one example. We have a quote item that you can do like a carousel of quotes.\n\n130\n00:19:18.357 --> 00:19:23.712\nBrad Taylor: You have, these cards, where which are usually used for like blogs, or just\n\n131\n00:19:24.100 --> 00:19:31.449\nBrad Taylor: calling out different pieces where you have a list where you can have like 2, you know, or you know, 3. You can have rich media.\n\n132\n00:19:31.680 --> 00:19:44.729\nBrad Taylor: and what they kind of look like with 3, 4, 2, or just one on the different card styles. You can see kind of what they look like in logo carousels, as you can see, this has this, you can kind of see full\n\n133\n00:19:45.073 --> 00:19:59.299\nBrad Taylor: outputs. And all of these, what I'm gonna be doing is putting these in as templates. So that when you're creating new content. These are kind of like your starting points, and then you can just update them. As you go.\n\n134\n00:20:01.143 --> 00:20:19.699\nBrad Taylor: There's also, for instance, here, different, using different image heights for different, like image carousels. Maybe you want full. So these are like a lot of the different ways you can do collections which I don't think most of what we talked about. There wasn't anything that wouldn't fit in this area.\n\n135\n00:20:23.330 --> 00:20:28.055\nBrad Taylor: Then we go into navigation. So this is kind of the different ways that that\n\n136\n00:20:28.480 --> 00:20:42.410\nBrad Taylor: yeah, outside of just even the header and footer. But like just navigating the site. So, for instance, pagination breadcrumbs at the top, we're gonna have bread crumbs navigation groups. So like, Hey, when you have a\n\n137\n00:20:42.843 --> 00:20:48.899\nBrad Taylor: dropdowns and nested links. What does that look like? What does the you know? Horizontal\n\n138\n00:20:49.383 --> 00:21:02.456\nBrad Taylor: for categories or navigation groups look like? This is for you know, typically used on blogs. Looks like what we showed yesterday, where you have a search and maybe a few dropdowns for categories.\n\n139\n00:21:03.184 --> 00:21:13.546\nBrad Taylor: What does that look like. And what does that filtering capabilities? Sometimes you have a nav, or you want like a hero with, like a, you know, centered navigation with different things.\n\n140\n00:21:14.255 --> 00:21:18.099\nBrad Taylor: So you know, if you if that component and what that looks like.\n\n141\n00:21:19.090 --> 00:21:21.290\nBrad Taylor: and then the master components here.\n\n142\n00:21:22.700 --> 00:21:31.638\nBrad Taylor: then, we have a different type of collection. So these are like collections of collections, so to speak. And typically where you see that are in\n\n143\n00:21:32.956 --> 00:21:34.410\nBrad Taylor: tabs. So\n\n144\n00:21:34.890 --> 00:21:45.079\nBrad Taylor: you have a tab of different, maybe card groups. Right? So this is a collection of cards. So you have, you know, 4 different collections of those cards.\n\n145\n00:21:45.534 --> 00:21:57.370\nBrad Taylor: Another good example of this are accordions. So this is just another way of displaying collections and contents. This shows both of them in the same kind of component there.\n\n146\n00:22:01.530 --> 00:22:09.280\nBrad Taylor: So let me get into another core piece, which are blocks. Most websites are made up of blocks. So think of, you know.\n\n147\n00:22:09.820 --> 00:22:18.085\nBrad Taylor: some content on the left something on the right. Right? So a lot of different variations here. This will be a lot of where you kind of spend.\n\n148\n00:22:18.710 --> 00:22:41.400\nBrad Taylor: I think a a great deal. There's a lot of flexibility in this of what type of media we can put on there from masking to the ways that you even, do you know, background colors and making them go together with background images. But here's just a couple of just examples of just difference, you know side by side, maybe add an accordion with a call out at the bottom.\n\n149\n00:22:41.901 --> 00:22:49.920\nBrad Taylor: you know, here's 1 with a card that just has an accordion, or, you know, just listing text with a Cta\n\n150\n00:22:50.305 --> 00:23:04.059\nBrad Taylor: here's another one where it just has a block of listing where it just lists a bunch of items. Maybe a good example of this might be the job postings. Maybe that's more of the accordion. But you have options.\n\n151\n00:23:05.007 --> 00:23:14.390\nBrad Taylor: Yeah. And then these different types of blocks are also very easy. So, for instance, you may see here that we have a block newsletter. Right? Well.\n\n152\n00:23:14.440 --> 00:23:28.825\nBrad Taylor: you know, one way you can do, and that's the flexibility versus the you know, ease of use is that sometimes, even though you saw that on the forms like in order to create like a a brand new section.\n\n153\n00:23:29.160 --> 00:23:45.440\nBrad Taylor: you'd have to create like, maybe 4 or 5 content types in there, cause it's so nested. So when we say, like, you know what I just want a newsletter one, we'll just create as a block variance. So it's all pre configured for you. Right? So it's using the same components, same front end. But we're gonna make it easy for you so that\n\n154\n00:23:45.440 --> 00:24:03.470\nBrad Taylor: when you select it, if it's a common component that you're using. We'll put that usually in the block. So it's less configuration. But having the ultimate configuration, let you experiment with putting different Lego blocks together and then saying, Oh, I like this. Let's save it for a new variation.\n\n155\n00:24:05.854 --> 00:24:14.359\nBrad Taylor: Yeah. And then just different things from blocks from even just plain text with tags, and just a lot of different variations of this.\n\n156\n00:24:16.540 --> 00:24:24.360\nBrad Taylor: Then we have footers and headers. So standard footer. You know, links social logo.\n\n157\n00:24:24.830 --> 00:24:42.669\nBrad Taylor: not too much out last. I have that same thing with the header you know, being able to display. You know what the header looks like, and both you know all the mobile devices what the menu looks like. How nested the menu right now, I think it's just gonna be a basic menu at this point.\n\n158\n00:24:43.956 --> 00:24:47.529\nBrad Taylor: But we'll put in all of the header there\n\n159\n00:24:49.380 --> 00:25:11.360\nBrad Taylor: and then heroes. So these are typically above the fold on landing pages things like that. You know what's the what's and this is a little bit different. Sometimes there's overlap between blocks and sections. But really, this is once again a kind of more helper. A lot of you know, landing pages. They have some major thing that they wanna have at the top. We call it the hero\n\n160\n00:25:11.664 --> 00:25:22.559\nBrad Taylor: that you have lots of different things. Maybe you just wanna have text within there. Maybe you wanna have side by side with a Cta or and these can all be images or videos or forms, or\n\n161\n00:25:22.640 --> 00:25:24.399\nBrad Taylor: yeah, anything else?\n\n162\n00:25:25.166 --> 00:25:31.043\nBrad Taylor: And then we show the different color combinations you could use with that and some of these\n\n163\n00:25:31.420 --> 00:25:38.760\nBrad Taylor: coming down. And as we think about different hero variations and different use cases, we'll build off this as well.\n\n164\n00:25:40.320 --> 00:25:50.989\nBrad Taylor: and then use of modals. So if there's any, gonna be any use of modals, we'll have these styled in there for different use, cases for forms, for\n\n165\n00:25:51.470 --> 00:25:53.010\nBrad Taylor: additional information.\n\n166\n00:25:53.040 --> 00:25:54.330\nBrad Taylor: things like that.\n\n167\n00:25:55.960 --> 00:25:58.199\nBrad Taylor: Any questions before I get into pages\n\n168\n00:25:58.360 --> 00:25:59.890\nBrad Taylor: and the building blocks.\n\n169\n00:26:01.100 --> 00:26:01.800\nBrad Taylor: Huh?\n\n170\n00:26:02.810 --> 00:26:15.519\nBrad Taylor: So Louie went through, and we've done an audit of your current pages right now. I know that right now we this is kind of what we have off. So we have, you know, from the about\n\n171\n00:26:15.560 --> 00:26:22.100\nBrad Taylor: leadership press release an individual article, publishers, page\n\n172\n00:26:22.463 --> 00:26:33.136\nBrad Taylor: the advertising page, the advertising audience, and all the different links to the pages as well, just so that we could get kind of a vision board of like what you currently have.\n\n173\n00:26:33.650 --> 00:26:44.829\nBrad Taylor: And you know where we're going. It's always good to see like, Hey, this is where we were. And now this is where you know we are now as we do it, so that will be our next step.\n\n174\n00:26:45.562 --> 00:26:48.700\nBrad Taylor: Is that we're gonna start taking\n\n175\n00:26:48.900 --> 00:27:00.818\nBrad Taylor: a lot of these different components that we put in here and starting to build out what those new pages look like in here, and that would be the next step. Is that\n\n176\n00:27:01.220 --> 00:27:03.579\nBrad Taylor: well, we're working through?\n\n177\n00:27:04.712 --> 00:27:07.737\nBrad Taylor: you know the design pieces working through.\n\n178\n00:27:08.622 --> 00:27:10.737\nBrad Taylor: You know, when Louise, you know.\n\n179\n00:27:11.960 --> 00:27:34.899\nBrad Taylor: hey, yeah, working on the design. What we wanna have is like your team in there giving feedback on the design, but also starting to use this sigma file to, you know, use the components. Use the master components to then build these pages, because that's when you're gonna see like when it all put together like, oh, this, it's easier to edit the text. It's easier, probably, for you to work in.\n\n180\n00:27:34.900 --> 00:27:50.069\nBrad Taylor: and then that can help us. Then collaborate cause, you know. When you actually see these, you know components put together and see how they look like all put together, there might be a padding adjustments. You know, there's a lot of things that we can look at, and it's.\n\n181\n00:27:50.070 --> 00:28:11.790\nBrad Taylor: you know, as designers here. So it's a little bit easier working. And then the closer that we have to what those final pages are gonna look like in our development. That also then helps ensure that there's not as much back and forth in the Qa process, because we have like real content that we're using in there. We have designs that have been.\n\n182\n00:28:12.110 --> 00:28:20.180\nBrad Taylor: you know, meticulously looked at and all different aspect ratios using those components built together. So\n\n183\n00:28:21.810 --> 00:28:24.750\nBrad Taylor: yeah, that's that's where we're at\n\n184\n00:28:26.170 --> 00:28:27.200\nBrad Taylor: questions.\n\n185\n00:28:30.210 --> 00:28:55.168\nMichelle Villasenor: No, I think this seems really straightforward. I think there's just like some nuances going through like as you were going through it, like, I know, there's probably more of a priority on some like color palettes or just elements that we'd probably want to include in some of these templates. But that's something that we can go through. And just like leave comments. Just to make sure that those are represented. But this is very\n\n186\n00:28:55.480 --> 00:29:16.020\nMichelle Villasenor: standard and appreciate you doing all the work to to put this together. And I love seeing where we are currently all in one place. I think it also make it easy to reference back to just so we can kinda see like what's really needed. And what's just something we can make into something else. So thank you for for doing that.\n\n187\n00:29:16.600 --> 00:29:25.180\nBrad Taylor: Awesome. Yeah. And if you have any other like pigmas or anything you're working on, too. We wanna figure out how we can incorporate this stuff into there. Please.\n\n188\n00:29:25.180 --> 00:29:26.120\nMichelle Villasenor: Yeah, yeah, like.\n\n189\n00:29:26.120 --> 00:29:32.770\nBrad Taylor: Let us know. I'm sure you know you have the zone files. But yeah, we want to collaborate with you. So we're kind of helping with that.\n\n190\n00:29:32.770 --> 00:29:57.729\nMichelle Villasenor: I was gonna say, me becca and another designer got together a couple of days ago and did sort of a a similar audit with all things design. And we kind of dumped everything into a jam board. And we're trying to streamline the brand, look and feel based off of the new brand direction. It's only been in existence the new brand direction for a couple of months since.\n\n191\n00:29:57.730 --> 00:30:21.809\nMichelle Villasenor: So we've just been exploring different avenues on how to bring that to life. And I think from that we were kind of realizing, like what works and what doesn't work and put together kind of like a core mood board, which we are then going to kind of tweak and update and add some like new things to the guideline. So I have one of our other designers. Kind of, you know, putting more color. And I think to\n\n192\n00:30:21.810 --> 00:30:46.169\nMichelle Villasenor: what it is we're trying to achieve visually as a brand. I don't think it's a huge departure. It's just more like nuances of like things we kinda can't do. And naturally, you guys have already started exploring that so like strokes around buttons, that's something we wanna include in our visual library which wasn't there before. And things like that. So it's not. I don't think what you guys have done is any departure of where we're\n\n193\n00:30:46.170 --> 00:30:57.789\nMichelle Villasenor: we're headed. But I just wanted to give you a little bit more insight as to kind of a focus direction, so then that can hopefully inspire. Some some styles on on your end, too.\n\n194\n00:30:59.320 --> 00:31:23.995\nBrad Taylor: Yeah, absolutely. So we'll definitely we definitely wanna see that. And I think the best way that we work is, you know, with those vision boards with the mood boards. Let us know. Cause I think that helps Louis us to understand. Like what you like, what you don't like. It's also good to see. You know what the decision process was. That's good. And so the final one cause like, Oh, why didn't you? Or why? You know, what did you like, or what didn't you like? So\n\n195\n00:31:24.270 --> 00:31:36.030\nBrad Taylor: being a part of that process will really help and whether it's, you know, keeping in that one, or move it over to here up to you. You all to decide the best you know, working.\n\n196\n00:31:36.180 --> 00:32:02.030\nBrad Taylor: But I think it's it'll be very important for us, especially that was gonna be our next thing is like, Hey, now, we need to understand like, what do you like? Right? Like we see, we see, like the cutouts of the images and the brand guideline, we can, you know, put those masks. But outside of that, what are different elements, you know. I think when we got sent over some blog pages that you know was liked, so you know just as much as we can put on there, that'd be great.\n\n197\n00:32:02.030 --> 00:32:07.276\nMichelle Villasenor: Sure. Yeah, and we can do the exercise, too, of like walking through\n\n198\n00:32:08.390 --> 00:32:28.209\nMichelle Villasenor: you know what we did. I don't know if you have anything else on the calendar or on the agenda for this meeting, but we could just kinda quickly flash, since Becca is also on this call, and she can add some color if I miss anything. But we can kinda walk you through what we pulled if that's helpful and just kinda show you.\n\n199\n00:32:28.210 --> 00:32:36.449\nBrad Taylor: Absolutely. Yeah. I mean, that's the goal of this is kind of like, here's where we are. Where are you all at? Let's now like collaborate together.\n\n200\n00:32:36.450 --> 00:32:41.659\nMichelle Villasenor: Yeah. And ideally, we'd love to keep all the styles in this in your figma that you have. And\n\n201\n00:32:41.920 --> 00:33:06.539\nMichelle Villasenor: in the beginning of the call when you said, this is the link that goes to all the assets. We are trying to consolidate a like actual destination on our Google drive that has all of the components. So it is an easy download for partners to access. So that will exist, and that is also included in our like more visual guideline that we're creating with a link out to this downloadable link. So I think we're all kind of\n\n202\n00:33:06.540 --> 00:33:17.279\nMichelle Villasenor: into the same place, which is good. Becca, do you have the link you can share with me? Because I'm on a different computer and it's not saved in my history.\n\n203\n00:33:22.950 --> 00:33:25.120\nMichelle Villasenor: You just slack it to me if you want.\n\n204\n00:33:34.570 --> 00:33:37.470\nbecca ray: The why the Internet is acronym.\n\n205\n00:33:37.810 --> 00:33:41.440\nMichelle Villasenor: Yeah, like white white. Now, as much as the Internet will go.\n\n206\n00:33:43.810 --> 00:33:45.139\nMichelle Villasenor: That's Amy.\n\n207\n00:33:45.720 --> 00:33:47.080\nMichelle Villasenor: Okay? Alright.\n\n208\n00:33:48.950 --> 00:33:50.929\nMichelle Villasenor: I don't know if I can find it.\n\n209\n00:33:51.360 --> 00:33:52.520\nMichelle Villasenor: Oh, thank you.\n\n210\n00:33:54.520 --> 00:33:56.280\nMichelle Villasenor: Okay.\n\n211\n00:33:57.270 --> 00:34:00.320\nMichelle Villasenor: Oh, my God, of course it's like, hold on!\n\n212\n00:34:01.369 --> 00:34:05.840\nMichelle Villasenor: Hold on! I get kicked out of stuff like every 2 days. Hold on.\n\n213\n00:34:08.139 --> 00:34:10.059\nMax Techera: The whole octa situation.\n\n214\n00:34:11.179 --> 00:34:13.799\nMax Techera: I mean to all the platforms every day.\n\n215\n00:34:13.800 --> 00:34:15.290\nMichelle Villasenor: I know it's nightmare.\n\n216\n00:34:15.460 --> 00:34:20.439\nBrad Taylor: It always happens right for a call. It's like, and then Google, just like, automatically, log me out just like right.\n\n217\n00:34:20.440 --> 00:34:20.900\nMichelle Villasenor: Oh! Like.\n\n218\n00:34:20.900 --> 00:34:25.013\nBrad Taylor: Like writing an email. I'm like, really thought that was a great time. Oh, you're AI, and you can't.\n\n219\n00:34:25.230 --> 00:34:29.399\nMichelle Villasenor: Computer restarts. And it's like you need a reboot\n\n220\n00:34:29.730 --> 00:34:33.090\nMichelle Villasenor: and authenticator. Alright, hold on.\n\n221\n00:34:33.520 --> 00:34:38.112\nBrad Taylor: I recently had my windows machine just literally restart right in the middle of a podcast.\n\n222\n00:34:38.400 --> 00:34:39.620\nMichelle Villasenor: Oh no!\n\n223\n00:34:40.230 --> 00:34:40.960\nBrad Taylor: Oh!\n\n224\n00:34:49.669 --> 00:34:51.159\nMichelle Villasenor: My God! Well done!\n\n225\n00:34:52.689 --> 00:34:54.529\nMichelle Villasenor: 8, 3, 7\n\n226\n00:35:00.359 --> 00:35:01.639\nMichelle Villasenor: have no idea.\n\n227\n00:35:03.909 --> 00:35:05.199\nMichelle Villasenor: Oh, here we go.\n\n228\n00:35:19.239 --> 00:35:19.939\nMichelle Villasenor: Yes.\n\n229\n00:35:28.479 --> 00:35:47.137\nMichelle Villasenor: okay. And Becca feel free to like, jump in and interrupt if I'm missing anything. But basically we got together the other day and just kinda looked at all the creative that we did from like a marketing perspective. So this includes any like organic, social paid landing page designs, any sort of\n\n230\n00:35:47.669 --> 00:35:54.299\nMichelle Villasenor: branded or partnership initiatives which it could be like conferences or announcements or things like that.\n\n231\n00:35:54.429 --> 00:36:10.009\nMichelle Villasenor: So we just kinda dumped everything in one place. So we looked at a 3 60 like brand campaign that we did. We were looking at ads and organic posts like kind of looking at categories, and how we were representing certain categories across\n\n232\n00:36:10.009 --> 00:36:33.969\nMichelle Villasenor: our channels. And then we, you know, Asl app stores, screens, and also announcements on Linkedin and then landing pages. So from there we kind of started pulling things out and categorizing visually. So seeing that there was just kind of this, these bold color washes that we were using really bright using the bright, bold colors.\n\n233\n00:36:34.309 --> 00:36:38.559\nMichelle Villasenor: gradations like, when did they show up? How did we use them?\n\n234\n00:36:39.379 --> 00:36:55.359\nMichelle Villasenor: What we're calling the pill which I think you guys call tags? Like those little these little guys things that have just like a lot of white space, negative space just like clean this like thread, visual device.\n\n235\n00:36:55.569 --> 00:37:19.473\nMichelle Villasenor: the container, which is like the the Rectangle square. However, you want it to like show up. Just so. You know. The container was inspired by like the actual articles that you see in the app, so like the the vis, the image container, and seeing if we can use that both on and off the app and using that as a visual device. So like this, like rounded corner,\n\n236\n00:37:20.190 --> 00:37:30.839\nMichelle Villasenor: mechanism. And so from there we just kinda started pulling to see like, where was where was like a cohesive visual language and what wasn't making sense\n\n237\n00:37:30.839 --> 00:37:37.049\nMichelle Villasenor: to us. And so we came to this little mood board here\n\n238\n00:37:37.349 --> 00:37:39.939\nMichelle Villasenor: where we liked this\n\n239\n00:37:40.189 --> 00:38:00.319\nMichelle Villasenor: balance of negative space with the use of containers, both solid colors without strokes and strokes. Obviously, like design, can change, based off of whatever the used cases when we incorporated illustrations, we liked them to be a little bit done in a\n\n240\n00:38:00.519 --> 00:38:30.059\nMichelle Villasenor: I guess a cleaner way where it's on a lighter background versus a a darker background. Just so they pop more and kind of have a more of a moment, and we also felt that it should be more purposeful whenever we include included the illustrations versus illustrations everywhere, so that might be more of like an icon based illustration system with one off kind of moments like these that can kind of help tell a visual story when gradient showed up that kind of represents\n\n241\n00:38:30.396 --> 00:38:43.533\nMichelle Villasenor: like a spectrum of information. So here in this, like kind of blue to purple to red, is is really speaking to politics and showing kind of the range of information from left to right, and everything in between.\n\n242\n00:38:43.929 --> 00:39:07.109\nMichelle Villasenor: And then here on the bottom left, where it's like the green to blue gradient. That's also showing, like we have a range of information and a range of topics. That is all. In one place. When we talk about the container, we felt that it's important if there's multiple containers together. So let's say on the landing page, if there's\n\n243\n00:39:07.109 --> 00:39:18.909\nMichelle Villasenor: maybe a carousel maybe showing like I don't know if there's ever like image. I think there was one layout that you guys had where there was a couple of images kind of next to each other, just making sure that there was this like\n\n244\n00:39:18.909 --> 00:39:43.649\nMichelle Villasenor: nice balance, negative spaces between everything. If we used a big container, how does that bleed? When does it? W. Does it make sense when it's like taking up full? art boards, things like that. So this kind of felt like it was the right balance of that push and pull between like using the container to negative space to gradation. I don't know if Becky, you wanna add anything else\n\n245\n00:39:44.029 --> 00:39:45.329\nMichelle Villasenor: on that.\n\n246\n00:39:45.500 --> 00:40:00.258\nbecca ray: Yeah, I think I think specifically to some topics or themes that we're seeing that came through in this exploration. We did. That will be relevant with kind of tweaking the component system. You all build the stuff like.\n\n247\n00:40:01.030 --> 00:40:13.649\nbecca ray: you know. I think previously we had a lot of different styles happening everywhere. We have, like some drop shot at some places, and and then we got a little bit more flat in some places, and I think we're kind of leaning more into that flat world? Some moments like that.\n\n248\n00:40:13.670 --> 00:40:22.719\nbecca ray: and then things like Michelle. If you zoom in on the article one that's about the mother. Yeah.\n\n249\n00:40:22.900 --> 00:40:29.719\nbecca ray: okay, so even some like little micro moments like that tag. So this in this case is just showing\n\n250\n00:40:30.332 --> 00:40:57.700\nbecca ray: like the publisher. So maybe we can get some clues from almost like that to kind of pull back into the Ui elements that you guys are building in the toolkit so that can maybe fit back into the Adams. And how we kind of like create color or adding consistencies in that world. So I think there's some moments from this that we can kind of feed back in, or even that example below that\n\n251\n00:40:58.237 --> 00:41:09.342\nbecca ray: where we do have, like the fully rounded pearls that are a little bit like puffier. Is there another place where that makes sense for feeding that back into the ui for the website?\n\n252\n00:41:09.660 --> 00:41:35.170\nMichelle Villasenor: Yeah. And what we're playing around with, too, is like, when these little this shape container showed up. It was when it was directly related to an article. So this mimics the ui in the app of like, how they tag in in the app currently. And so we were thinking, if there was like a repo on organic social about a particular article. Then this\n\n253\n00:41:35.170 --> 00:42:04.360\nMichelle Villasenor: more squared, rounded, cornered tag would show up. But if we talked about like high level topics or lists, or like anything that just felt a little bit unrelated, more like smart news. The brand than these more circular pills would show up. So it's like macro. Smart news, the brand micro article. Just so. It kinda had a little bit more of a 1 to one relationship with, like. The experience in in the app.\n\n254\n00:42:06.610 --> 00:42:23.360\nbecca ray: Yeah. And then I think, also, just kind of at like a yeah, like this zoomed out level. Just how colors coming into play where we've got this kind of like, I think it's our surface color is most often the heavily used color color.\n\n255\n00:42:23.650 --> 00:42:38.770\nbecca ray: So maybe there's moments where we decide to to lean into some of the different colors, because right now it seems like they might be in more of these like lighter shades. In that component library that you guys will so maybe we can start to just kind of like.\n\n256\n00:42:39.200 --> 00:42:42.820\nbecca ray: find this happy medium between how color is coming into play.\n\n257\n00:42:43.290 --> 00:42:50.409\nMichelle Villasenor: Yeah. And what we were talking about to in our call was, I know, blue and green were kind of\n\n258\n00:42:50.410 --> 00:43:15.359\nMichelle Villasenor: emerging as our primary colors out of the whole group. But based off of this exercise, we felt that the orange also added like a nice balance, and then we saw red is more of like an alert color, or like a notification color. So I think, thinking about that, too, of like blue, green, and orange being kind of like the core trio colors which you guys naturally already\n\n259\n00:43:15.360 --> 00:43:28.659\nMichelle Villasenor: pulled out and red being an alert. And then we also are going to be introducing a purple that feels like it's part of this color ecosystem. So then it can kind of help.\n\n260\n00:43:28.670 --> 00:43:55.130\nMichelle Villasenor: That would also be like a tertiary color that will introduce. But we see that more. When talking about like politics. I don't. I doubt you guys will have like political, specific things in on the website. But just so you're aware, like the way we're gonna probably talk about it and customer facing content. If we do talk about politics, will you show this gradation, or, you know, use purple just so we can show that we're like this\n\n261\n00:43:55.280 --> 00:43:58.349\nMichelle Villasenor: balanced new source.\n\n262\n00:43:58.530 --> 00:44:01.649\nMichelle Villasenor: So those are kind of like the nuances that we\n\n263\n00:44:01.810 --> 00:44:22.850\nMichelle Villasenor: kinda came to on our call the other day. Obviously, this brand guideline work and the branding work that we did is very fresh. So I just feel like everything that we've done to date was definitely an exploration. And I think, it's heading in this like nice, clean, approachable, but friendly.\n\n264\n00:44:23.560 --> 00:44:40.060\nMichelle Villasenor: what direction? Oh, one other thing we did talk about is typography. We were talking about using the serif when on like the website. And anything that speaks about the brand is like the headline. It would be like everything, serif.\n\n265\n00:44:40.060 --> 00:45:03.610\nMichelle Villasenor: And then when it gets a little bit more further down the funnel like, maybe on organic, social, or maybe like an email, maybe a notification and app. That's when you start getting the sans serif. So we would recommend doing the the serif as kind of a headline typeface for for the website, and using the sansera as a secondary supporter.\n\n266\n00:45:04.100 --> 00:45:04.820\nMichelle Villasenor: which I believe.\n\n267\n00:45:04.820 --> 00:45:06.209\nMax Techera: So you only have one\n\n268\n00:45:06.580 --> 00:45:11.420\nMax Techera: like just the one title per page where it's better if and then everything else is just.\n\n269\n00:45:12.070 --> 00:45:12.760\nMichelle Villasenor: Yeah.\n\n270\n00:45:13.371 --> 00:45:21.629\nMax Techera: I wonder just what you were talking before about, like how you have identified shapes, and how the outlines work in information about like the brand versus\n\n271\n00:45:22.160 --> 00:45:26.169\nMax Techera: news. Do you find that happens as well with callers?\n\n272\n00:45:26.550 --> 00:45:27.849\nMax Techera: You say it's more.\n\n273\n00:45:28.430 --> 00:45:29.610\nMax Techera: not as much.\n\n274\n00:45:29.610 --> 00:45:54.599\nMichelle Villasenor: Not as much. I think we're trying to get away. I think historically, smart news has associated categories with the colors that are in the tabs so like, let's I don't remember off the top of my head, but I think oh, here's an example so like politics is green here, and so a lot of material they would do in their content would be green and when you have a limited color palette, it just gets really complex very quickly. You can't just\n\n275\n00:45:54.600 --> 00:46:02.419\nMichelle Villasenor: like have every color, because then politics and then entertainment become the same color. So it just gets a little tricky.\n\n276\n00:46:02.420 --> 00:46:15.180\nMichelle Villasenor: I think, for us, politics would be the only category that will introduce purple to just to kind of visually represent like a blend but everything else will relatively\n\n277\n00:46:15.240 --> 00:46:20.440\nMichelle Villasenor: maintain in that, you know a mix of the greens, blues, and oranges.\n\n278\n00:46:23.500 --> 00:46:32.730\nMax Techera: This is just to get into the mindset of what what you guys are kind of thinking of, because once we get these into content full side, like you have all of these options to choose. So you want.\n\n279\n00:46:32.730 --> 00:46:33.090\nMichelle Villasenor: Yeah.\n\n280\n00:46:33.090 --> 00:46:37.719\nMax Techera: Adding new blogs or creating new heroes, basically that you can choose that at that moment.\n\n281\n00:46:37.720 --> 00:46:38.320\nMichelle Villasenor: Yeah.\n\n282\n00:46:39.160 --> 00:46:42.297\nMax Techera: This looks great. This is very, very useful.\n\n283\n00:46:42.690 --> 00:47:03.187\nMichelle Villasenor: Good. Do you want me to send? Obviously, we're gonna continue to refine it on our side. But I can shoot a screenshot of this over to you. Just so you can use as a visual reference and guide cause we're we're gonna we're using this mood board here as a guide internally right now as well. And also sharing it to like our our creative agency.\n\n284\n00:47:03.560 --> 00:47:25.390\nMichelle Villasenor: but yeah, if you have any other questions, or if you're like, what was the thinking behind this like? Feel free to to reach out, and we'll be happy to talk through it, cause in all honesty. We're, you know, we're still trying to really define it right now, and I know we had some rough general notes about like do's and don'ts based off of our conversation the other day.\n\n285\n00:47:25.790 --> 00:47:26.370\nBrad Taylor: Home.\n\n286\n00:47:26.700 --> 00:47:41.439\nBrad Taylor: Yeah, I mean, this is great. This is definitely exactly where we wanted to go next, or is like, you know, get that vision board out there seems like a lot of thoughts gone into, you know, with negative spacing color usage in particular topics. So\n\n287\n00:47:41.788 --> 00:47:52.399\nBrad Taylor: these are all great information to know, especially when we talk talking about topic, usage and stuff like that like, how do we make it? So that you know you have politics as green right now. You wanna make it purple.\n\n288\n00:47:52.470 --> 00:47:58.039\nBrad Taylor: hey? Maybe it's you know, something else in the future. How do we make it? So that it's just there, and you have to go back and change everything.\n\n289\n00:47:58.510 --> 00:48:00.163\nBrad Taylor: Yeah. So we'll we'll make sure that we\n\n290\n00:48:00.702 --> 00:48:06.510\nBrad Taylor: if they're gonna be tightly tied to that that's good information to have. I did notice that. Well, I mean it was a\n\n291\n00:48:06.720 --> 00:48:27.029\nBrad Taylor: semi recent. But how often do you all? And what part of the brand is making sure that the the screenshots of the app have up to date news cause I was just realizing, like, if it has like out of date news. It might seem kind of like old and outdated. Now, I feel like that's would be like a heavy lift to kinda always be Updating it with at least somewhat recent news.\n\n292\n00:48:27.240 --> 00:48:28.300\nMichelle Villasenor: Yeah, is that.\n\n293\n00:48:28.320 --> 00:48:32.780\nBrad Taylor: Go into the brand, or in the kind of imagery, and when you think of the app.\n\n294\n00:48:32.960 --> 00:48:41.329\nMichelle Villasenor: Yeah, typically from regarding the land or the site. Historically, we haven't been able to touch any updates so like\n\n295\n00:48:41.430 --> 00:48:50.290\nMichelle Villasenor: that hasn't been able to get updated. When it comes to the app store. I know we refresh the app store like every month.\n\n296\n00:48:50.710 --> 00:48:51.810\nBrad Taylor: Right? Okay.\n\n297\n00:48:51.810 --> 00:48:55.159\nMichelle Villasenor: We try to keep it pretty relevant.\n\n298\n00:48:55.160 --> 00:49:03.089\nBrad Taylor: Yeah, okay? So then we can, yeah, so yeah, we definitely wanna have kind of maybe in the process of the web matches the app store. Yeah.\n\n299\n00:49:04.130 --> 00:49:04.675\nBrad Taylor: Yeah,\n\n300\n00:49:05.470 --> 00:49:13.400\nBrad Taylor: it's just from my as consumer. When I see an app with old screenshots, I assume that hasn't been updated. I just do.\n\n301\n00:49:13.600 --> 00:49:14.180\nMichelle Villasenor: That.\n\n302\n00:49:14.462 --> 00:49:21.529\nBrad Taylor: So that's I was like, Oh, that could be a when I saw I was like, Oh, those are actually really recent. So\n\n303\n00:49:21.820 --> 00:49:22.490\nBrad Taylor: yeah,\n\n304\n00:49:23.420 --> 00:49:39.260\nBrad Taylor: okay, anything else. We can go over on this. We're gonna work. I know our action items. We're gonna get you into our figma. I think there I had to move it over to, I think when I cloned it, it cloned in my personal. For whatever reason I moved it over to Last Rab. And I'll give, you know, Max, the editing\n\n305\n00:49:39.602 --> 00:49:43.969\nBrad Taylor: capabilities so we can comment and stuff like that. We'll figure that piece out\n\n306\n00:49:44.410 --> 00:49:49.970\nBrad Taylor: you're gonna serve a screenshot or also share the that stigma with our team.\n\n307\n00:49:50.860 --> 00:50:00.905\nBrad Taylor: And then and then, yeah, I think then, our next what we'd like to do is schedule some time 2 weeks from now. Have another review session.\n\n308\n00:50:01.610 --> 00:50:24.290\nBrad Taylor: We can kinda go see where we're at the main things that we really wanna focus on are those global elements. Right now, I wouldn't get too caught up into like the individual components. Cause I think of the header, the navigation items, tech hobby colors, those types of things. We can put those in and start doing that. So that\n\n309\n00:50:24.290 --> 00:50:44.530\nBrad Taylor: you know we can start development. Those are kind of the requirements needed to start development. Then those individual pieces. Ideally, we have them finalized before we start development we we got. We all know how this goes. So we can definitely, iteratively kind of go over that. But we'll wanna make sure that we're not constantly changing it. Cause\n\n310\n00:50:44.780 --> 00:50:47.789\nBrad Taylor: once we've started development on a component like\n\n311\n00:50:47.890 --> 00:50:57.109\nBrad Taylor: that's kind of locked down at that point. Besides, like, you know, maybe there's like a weird, spacing thing that we didn't account for in the figma. Of course there's bugs, but, like\n\n312\n00:50:57.120 --> 00:51:07.519\nBrad Taylor: major changes should be finalized. Doesn't mean we can't change it after launch. But when we start development on a component we like, save that's locked in for at least to launch.\n\n313\n00:51:09.000 --> 00:51:12.469\nMax Techera: Exactly. That's why like this next few weeks, what I would like to see is\n\n314\n00:51:12.490 --> 00:51:26.740\nMax Techera: top of the caller, usage and topography that we do an expiration in the signal like what shapes look like? What are the shapes we're going to use? What are they gonna be used for? Same thing with outlining like from that level. So then, we can agree on that, you know.\n\n315\n00:51:27.340 --> 00:51:33.390\nMax Techera: apes and outlines and containers, and so, and then transition that into buttons and arts and everything else.\n\n316\n00:51:37.100 --> 00:51:37.670\nBrad Taylor: Cool.\n\n317\n00:51:38.640 --> 00:51:50.489\nBrad Taylor: awesome. Well, I'll send a follow up email, just kind of summarizing this this talk. And we'll just if we could Ben kind of get something scheduled.\n\n318\n00:51:50.650 --> 00:51:58.380\nBrad Taylor: Well, we just go ahead and schedule 2 weeks from now and then 2 weeks from then, and we'll assume the next one's gonna be like kind of like our next.\n\n319\n00:51:58.996 --> 00:52:01.529\nBrad Taylor: You know, design. You know\n\n320\n00:52:02.020 --> 00:52:06.150\nBrad Taylor: the the global elements, then that further 2 weeks kind of be more like a\n\n321\n00:52:06.400 --> 00:52:12.609\nBrad Taylor: Hey, this is kind of we're we're we're close, maybe another thing, and then we'll then, if we need a 3rd one\n\n322\n00:52:14.500 --> 00:52:15.460\nBrad Taylor: sound good\n\n323\n00:52:16.750 --> 00:52:17.809\nBrad Taylor: sounds great.\n\n324\n00:52:18.060 --> 00:52:23.319\nBen Leiner: And I'm I'm about to send your emails to Michelle so that she can send access to her file to you.\n\n325\n00:52:24.340 --> 00:52:26.010\nBrad Taylor: And please\n\n326\n00:52:26.200 --> 00:52:34.873\nBrad Taylor: through slack, through whatever communication. Please communicate with us early and often and asynchronously. Don't feel like you have to wait till our next meeting.\n\n327\n00:52:35.473 --> 00:52:41.950\nBrad Taylor: That way. We haven't, you know. We can get as much progress done as possible between now and then, so, but we always like to have a checkup meeting\n\n328\n00:52:42.170 --> 00:52:46.380\nBrad Taylor: regularly, just to see where everyone's at. Make sure everyone's not blocked.\n\n329\n00:52:49.050 --> 00:52:53.759\nBrad Taylor: Excellent anything else anything, Max or Louie. Any other questions where we let everyone go.\n\n330\n00:52:54.800 --> 00:52:58.670\nMax Techera: Great meeting you all thanks for going through that pile and all the thoughts behind it.\n\n331\n00:53:00.920 --> 00:53:01.890\nMax Techera: Excellent.\n\n332\n00:53:01.890 --> 00:53:02.810\nMichelle Villasenor: Thank you.\n\n333\n00:53:03.520 --> 00:53:07.830\nBrad Taylor: Well, thank you all, and we will have a or have a great rest of your day.\n\n334\n00:53:07.970 --> 00:53:09.600\nBrad Taylor: Thank you. Alright, bye, bye.\n\n335\n00:53:09.600 --> 00:53:11.180\nbecca ray: Thank you. Bye.\n\n",
+          "textSplitter": "",
+          "metadata": "",
+          "omitMetadataKeys": ""
+        },
+        "outputAnchors": [
+          {
+            "name": "output",
+            "label": "Output",
+            "type": "options",
+            "description": "Array of document objects containing metadata and pageContent",
+            "options": [
+              {
+                "id": "plainText_0-output-document-Document|json",
+                "name": "document",
+                "label": "Document",
+                "description": "Array of document objects containing metadata and pageContent",
+                "type": "Document | json"
+              },
+              {
+                "id": "plainText_0-output-text-string|json",
+                "name": "text",
+                "label": "Text",
+                "description": "Concatenated string from pageContent of documents",
+                "type": "string | json"
+              }
+            ],
+            "default": "document"
+          }
+        ],
+        "outputs": {
+          "output": "text"
+        },
+        "selected": false
+      },
+      "width": 300,
+      "height": 487,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 241.657251927135,
+        "y": 665.1768286084023
+      },
+      "dragging": false
+    },
+    {
+      "id": "plainText_1",
+      "position": {
+        "x": 253.11843023929117,
+        "y": 1241.3433718805468
+      },
+      "type": "customNode",
+      "data": {
+        "id": "plainText_1",
+        "label": "Plain Text",
+        "version": 2,
+        "name": "plainText",
+        "type": "Document",
+        "baseClasses": [
+          "Document"
+        ],
+        "category": "Document Loaders",
+        "description": "Load data from plain text",
+        "inputParams": [
+          {
+            "label": "Text",
+            "name": "text",
+            "type": "string",
+            "rows": 4,
+            "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
+            "id": "plainText_1-input-text-string"
+          },
+          {
+            "label": "Additional Metadata",
+            "name": "metadata",
+            "type": "json",
+            "description": "Additional metadata to be added to the extracted documents",
+            "optional": true,
+            "additionalParams": true,
+            "id": "plainText_1-input-metadata-json"
+          },
+          {
+            "label": "Omit Metadata Keys",
+            "name": "omitMetadataKeys",
+            "type": "string",
+            "rows": 4,
+            "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
+            "placeholder": "key1, key2, key3.nestedKey1",
+            "optional": true,
+            "additionalParams": true,
+            "id": "plainText_1-input-omitMetadataKeys-string"
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Text Splitter",
+            "name": "textSplitter",
+            "type": "TextSplitter",
+            "optional": true,
+            "id": "plainText_1-input-textSplitter-TextSplitter"
+          }
+        ],
+        "inputs": {
+          "text": "",
+          "textSplitter": "",
+          "metadata": "",
+          "omitMetadataKeys": ""
+        },
+        "outputAnchors": [
+          {
+            "name": "output",
+            "label": "Output",
+            "type": "options",
+            "description": "Array of document objects containing metadata and pageContent",
+            "options": [
+              {
+                "id": "plainText_1-output-document-Document|json",
+                "name": "document",
+                "label": "Document",
+                "description": "Array of document objects containing metadata and pageContent",
+                "type": "Document | json"
+              },
+              {
+                "id": "plainText_1-output-text-string|json",
+                "name": "text",
+                "label": "Text",
+                "description": "Concatenated string from pageContent of documents",
+                "type": "string | json"
+              }
+            ],
+            "default": "document"
+          }
+        ],
+        "outputs": {
+          "output": "text"
+        },
+        "selected": false
+      },
+      "width": 300,
+      "height": 487,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 253.11843023929117,
+        "y": 1241.3433718805468
+      },
+      "dragging": false
+    },
+    {
+      "id": "plainText_2",
+      "position": {
+        "x": 261.2587639216367,
+        "y": 1761.0555564459105
+      },
+      "type": "customNode",
+      "data": {
+        "id": "plainText_2",
+        "label": "Plain Text",
+        "version": 2,
+        "name": "plainText",
+        "type": "Document",
+        "baseClasses": [
+          "Document"
+        ],
+        "category": "Document Loaders",
+        "description": "Load data from plain text",
+        "inputParams": [
+          {
+            "label": "Text",
+            "name": "text",
+            "type": "string",
+            "rows": 4,
+            "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
+            "id": "plainText_2-input-text-string"
+          },
+          {
+            "label": "Additional Metadata",
+            "name": "metadata",
+            "type": "json",
+            "description": "Additional metadata to be added to the extracted documents",
+            "optional": true,
+            "additionalParams": true,
+            "id": "plainText_2-input-metadata-json"
+          },
+          {
+            "label": "Omit Metadata Keys",
+            "name": "omitMetadataKeys",
+            "type": "string",
+            "rows": 4,
+            "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
+            "placeholder": "key1, key2, key3.nestedKey1",
+            "optional": true,
+            "additionalParams": true,
+            "id": "plainText_2-input-omitMetadataKeys-string"
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Text Splitter",
+            "name": "textSplitter",
+            "type": "TextSplitter",
+            "optional": true,
+            "id": "plainText_2-input-textSplitter-TextSplitter"
+          }
+        ],
+        "inputs": {
+          "text": "Topics for Review\nAnalytics and Metrics\n1. Overview\nThe Analytics and Metrics section focuses on providing a robust framework for tracking and analyzing the performance of the web application. This section details the tools and methodologies chosen for comprehensive tracking, capturing both quantitative and qualitative metrics to inform strategic decisions and improve user experience.\n2. Metrics Strategy\nStakeholder Meetings and Input:\nKey stakeholders, including Brad Taylor and Xiao Yuan, emphasized the importance of aligning metrics with the project's objectives. Metrics span various domains such as SEO, user engagement, and qualitative feedback. Understanding the reasons behind the project and the metrics for success ensures alignment across teams.\n3. Tools and Integrations\nGoogle Analytics and Google Tag Manager:\nGoogle Analytics (GA4) and Google Tag Manager (GTM) are the primary tools for tracking. Existing accounts will be used to streamline integration, with admin access provided during development for setup.\nGTM will deploy all tracking pixels and manage scripts, making it easier to manage and update tracking configurations as needed.\nIn-House Tracking Systems:\nFor user-facing products, in-house tracking systems may be employed, but for the corporate site, Google Analytics and GTM are preferred for their specific use-case suitability.\nAdditional Tracking:\nThere is flexibility to integrate additional tracking scripts to meet future requirements, ensuring adaptability in the analytics setup.\nMobile App Tracking:\nAdjust will be used for tracking mobile app downloads and engagement, ensuring mobile-specific metrics are captured effectively.\nBlog and Content Analytics:\nIntegration with platforms like ghost.io will track newsletter engagement and provide detailed insights into user interaction with blog content, aiding in SEO and user retention strategies.\n4. Specific Use Cases and Examples\nMobile App Tracking:\nAdjust will handle mobile app downloads and engagement, ensuring precise attribution for mobile interactions.\nBlog and Content Analytics:\nghost.io will be used for tracking blog and newsletter metrics, helping understand user interactions and inform content strategy.\n5. Technical Specifications and Requirements\nSetup and Access:\nUse existing Google Analytics (GA4) accounts and configure them through Google Tag Manager.\nProvide temporary admin access during the development phase for setup and configuration.\nTracking Scope:\nTrack SEO performance, user engagement, and bounce rates.\nCapture qualitative feedback and integrate it into the analytics framework.\nEnsure the setup is flexible for future additions.\n6. Challenges and Concerns\nIntegration with Existing Systems:\nConcerns about integrating in-house tracking systems with Google Analytics were addressed by deciding to use GA and GTM for the corporate site to avoid complications.\nSEO and Content Migration:\nMaintaining SEO equity during transitions is critical, necessitating careful planning around content migration and page structure.\n7. Conflicting Information and Perspectives\nNo major conflicts were identified; however, there is a clear distinction between tracking needs for user-facing products and the corporate site.\n8. Action Items and Follow-ups\nConfirm Detailed Configurations: Ensure GTM and GA4 setups include comprehensive event tracking.\nDevelop Data Reconciliation Plan: Outline how data from Adjust and Google Analytics will be reconciled and reported.\nFinalize SEO Metrics: Define and configure specific SEO metrics to be tracked.\nIntegrate Qualitative Feedback: Plan for capturing and integrating qualitative feedback.\nEnsure Compliance: Establish mechanisms to ensure compliance with GDPR, CCPA, and other regulations.\n9. Conclusion and Summary\nThe Analytics and Metrics section outlines a comprehensive and adaptable framework to measure the effectiveness of the web application. Leveraging tools like Google Analytics, GTM, and Adjust, while considering specific needs for mobile and blog analytics, ensures thorough tracking capabilities. The strategic approach to metrics covers both qualitative and quantitative aspects, ensuring accurate success measurement.\nKey Themes and Priorities\nUtilization of proven analytics tools.\nFlexibility to integrate additional tracking scripts.\nStrategic alignment with stakeholder goals.\nDetailed planning for content migration and SEO impact.\nAreas Requiring Further Investigation\nDetailed configuration settings for Google Tag Manager.\nContinuous monitoring and adjustment post-deployment to refine tracking and metrics.\nImplementation of user privacy compliance mechanisms.\nGlossary\nGA4 (Google Analytics 4): The latest version of Google Analytics, focusing on event-based tracking.\nGoogle Tag Manager: A tool that allows for the easy management of tracking pixels and other script tags.\nSEO (Search Engine Optimization): The process of optimizing content to improve its visibility in search engine results.\nGhost.io: A platform for publishing newsletters and blogs, offering built-in analytics.\nAdjust: A mobile analytics platform specialized in tracking app downloads and engagement.\nThis section synthesizes all relevant information from the meetings, presenting a clear and detailed understanding of the analytics and metrics requirements for the project.\n\n\n\nAuthentication/Authorization\nHere is a comprehensive summary addressing each of the targeted questions:\nAre there any specific authentication methods (e.g., username/password, OAuth, multi-factor authentication) that the website needs to support?\nThe available transcripts do not contain specific information about the authentication methods (such as username/password, OAuth, or multi-factor authentication) required for the website. However, there are general mentions of security measures and the need to ensure that users can log in efficiently.\nWhat user roles and permissions need to be implemented, and how will these roles impact access to different parts of the website?\nThe transcripts lack detailed descriptions of specific user roles and permissions. Nevertheless, they highlight the importance of defining user roles and ensuring that different users have appropriate access levels. For instance, there's a clear emphasis on ensuring that stakeholders have the correct permissions for approving changes and updates.\nAre there any regulatory or compliance standards (e.g., GDPR, HIPAA) that the website must adhere to in relation to authentication and authorization?\nThe transcripts do not provide explicit references to regulatory or compliance standards like GDPR or HIPAA in relation to authentication and authorization. While compliance and regulatory mentions are present, they are more focused on other aspects such as content migration and data management.\nWhat are the fallback mechanisms in case of authentication failure or unauthorized access attempts?\nThere is no specific mention of fallback mechanisms for authentication failures or unauthorized access attempts. However, the importance of having robust security measures and conducting code and security reviews is reiterated. For example, Brad Taylor mentions ensuring that nothing breaks in other areas when changes are made, indicating a need for comprehensive security protocols.\nHow will the authentication and authorization processes integrate with other parts of the system (e.g., user profile management, third-party services)?\nIntegration points are discussed in the context of other functionalities and data migrations, but there's no detailed information on how the authentication and authorization processes will integrate specifically with user profile management or third-party services. The focus is more on ensuring seamless functionality and usability for various components like forms, blog filters, and search functionality.\nAdditional Information and Action Items\nSecurity Reviews: There are multiple mentions of conducting code and security reviews to ensure the system's integrity and reliability. For instance, during user acceptance testing, Brad Taylor emphasizes reviewing the entire system to avoid any vulnerabilities (Timestamp: 35:37).\nStakeholder Access and Authorization: The importance of ensuring that all stakeholders have proper access and authorization is highlighted. For example, discussions often revolve around who needs to approve changes and how those approvals should be documented to avoid last-minute changes (Timestamp: 39:26).\nFallback and Contingency Plans: While fallback mechanisms for authentication failures are not directly addressed, the need for contingency plans is mentioned, especially around launch dates and potential issues that could arise (Timestamp: 39:26).\nConclusion\nThe meeting transcripts provide a broad understanding of the project's focus on security, stakeholder access, and the need for thorough reviews, but they lack detailed information on specific authentication and authorization methods, user roles, compliance standards, and integration details.\n\n\nGDPR\nThe GDPR (General Data Protection Regulation) governs the privacy and security of personal data in the European Union. Compliance with GDPR is critical for ensuring data protection and avoiding potential penalties. This section outlines the required functionalities, integrations, and processes to ensure full compliance with GDPR.\n2. Data Collection and Processing\n2.1 User Consent\nRequirement: All data collected must be based on explicit user consent.\nImplementation: Utilize a consent management platform (CMP) to gather and manage user permissions.\nDetails from Meetings:\nBrad Taylor consistently emphasized integrating a consent management platform to ensure explicit user consent for all data collection activities, including tracking pixels and analytics, which should be activated only after user consent.\n2.2 Data Minimization\nRequirement: Collect only necessary data to achieve specific purposes.\nImplementation: Regular audits of data collection forms to ensure minimal data collection.\nDetails from Meetings:\nBen Leiner highlighted the importance of auditing forms and data collection points to enforce data minimization principles, ensuring unnecessary data is not collected.\n3. User Rights\n3.1 Right to Access\nRequirement: Users must be able to request and obtain a copy of their personal data.\nDetails from Meetings:\nXiao Yuan: \"We need to have a systematic and straightforward process for users to request their data, ensuring easy access and transparency.\"\n3.2 Right to Rectification\nRequirement: Users must be able to correct inaccurate data.\nDetails from Meetings:\nBrad Taylor: \"Implement an easily accessible mechanism for users to update or correct their data.\"\n3.3 Right to Erasure\nRequirement: Users must be able to request deletion of their personal data.\nDetails from Meetings:\nDivya Prakash: \"We should have a secure and verifiable way for users to request data deletion.\"\n4. Data Security\n4.1 Encryption\nRequirement: Encrypt personal data both in transit and at rest.\nDetails from Meetings:\nBrad Taylor: \"Encryption is non-negotiable for all stored and transmitted data. We should use industry-standard encryption protocols.\"\n4.2 Access Control\nRequirement: Implement strict access control mechanisms.\nDetails from Meetings:\nXiao Yuan: \"Admin access should be limited and closely monitored, with regular reviews of access privileges.\"\n5. Third-Party Integrations\n5.1 Compliance of Third Parties\nRequirement: Ensure third-party services are GDPR compliant.\nDetails from Meetings:\nBrad Taylor: \"We must verify the GDPR compliance of all third-party services that access our user data.\"\nExample: Utilization of SendGrid for email subscriptions is contingent on their compliance verification.\n5.2 Data Processing Agreements\nRequirement: Establish data processing agreements (DPAs) with third-party vendors.\nDetails from Meetings:\nBen Leiner: \"DPAs are essential with every third-party provider to ensure they adhere to GDPR standards.\"\n6. Data Breach Notification\n6.1 Incident Response Plan\nRequirement: Create and maintain an incident response plan for data breaches.\nDetails from Meetings:\nBrad Taylor: \"An incident response plan should be in place that includes immediate data breach notifications to affected users and relevant authorities within 72 hours.\"\n7. Documentation and Accountability\n7.1 Record Keeping\nRequirement: Maintain records of data processing activities.\nDetails from Meetings:\nBen Leiner: \"Detailed records of all data processing activities must be maintained and regularly reviewed.\"\n7.2 Regular Audits\nRequirement: Conduct regular audits to ensure continuous compliance.\nDetails from Meetings:\nXiao Yuan: \"Conducting regular compliance audits is crucial to identify and rectify any lapses in GDPR adherence.\"\n8. Handling International Data Transfers\n8.1 Procedures and Safeguards\nRequirement: Implement procedures and safeguards for international data transfers in compliance with GDPR.\nDetails from Meetings:\nBrad Taylor: \"We need to establish clear procedures for secure international data transfers, including the use of standard contractual clauses (SCCs) and adherence to data protection standards of the recipient country.\"\n9. Conclusion\nThe meeting discussions revealed a strong emphasis on the meticulous handling of user data, securing user consent, and maintaining transparent data processing practices. The GDPR requirements mandate conscious efforts towards data minimization, user rights fulfillment, robust data security measures, and rigorous third-party compliance checks. Regular audits and keeping comprehensive records will play significant roles in sustaining GDPR compliance.\n\n\n\n\nHosting\nContent Management Hosting with Contentful\nOverview: SmartNews will utilize Contentful as its content management hosting platform. Contentful is a headless CMS designed for scalability and extensibility, allowing SmartNews to manage content efficiently across all web properties. The platform is user-friendly for non-technical team members, making it easy to update and manage content.\nImplementation:\nTechnology Stack:\nFramework:\n\n Optimized for React with Next.js.\nComponents:\n\n Pre-built, branded components for ease of use.\nCI/CD Integration:\n\n Out-of-the-box Continuous Integration and Continuous Deployment setup.\nContentful Features:\nLive Editor:\nCustom live editor for real-time updates to components or pages.\nExample: \"I can just quickly come in here, edit it. I can move things up and down, do basic updates\" (Brad Taylor, Timestamp: 53:09).\nAI Integration:\nTools integrated to optimize content for SEO and other metrics.\nExample: \"This is one of the tools that we've also built that hooks into AnswerAI to help you optimize your content\" (Brad Taylor, Timestamp: 53:09).\nSupport Plan:\nLast Rev offers support for content updates, making the process easier and more efficient.\nExample: \"If you still don't want to do it as part of your support plan, if you send us over like that piece of content, we'll just do it for you\" (Brad Taylor, Timestamp: 53:09).\nCustomization and Branding:\nUtilizes a starter kit with pre-designed components branded for SmartNews.\nFlexible component structure ensures future scalability and brand consistency.\nPlaceholder content initially, followed by the migration of real content.\nExample: \"For instance, like you were talking about the blogs, like there's different ways to do blog cards. These will obviously be put into your own branding and very unique to you\" (Brad Taylor, Timestamp: 36:45).\nWebsite Hosting and Deployment with Vercel\nOverview: SmartNews will use Vercel for website hosting and deployment. Vercel provides an optimal environment for Next.js applications, ensuring fast and reliable performance.\nImplementation:\nTechnology Stack:\nUtilizes Vercel's seamless integration with Next.js for deploying applications.\nOffers automatic scaling and serverless functions for optimal performance.\nDeployment and Continuous Delivery:\nVercel's platform will be set up for continuous deployment from Last Rev accounts.\nEnsures automatic deployment for any updates pushed to the repository.\nAccount and Billing:\nLast Rev will use its own accounts for Vercel and Contentful, with SmartNews billed monthly with a 25% markup.\nAlternatively, SmartNews can use its own accounts but must provide seats for Last Rev's support team.\nSupport and Maintenance:\nSupport Structure:\nLast Rev will provide ongoing support and maintenance.\nIncludes secure methods to share API keys and other sensitive credentials.\nExample: \"We'll just need to securely get the API key from you. So I'd love to set up a, we can set it through, you know, PGP, We also have a few different other encrypted ways\" (Brad Taylor, Timestamp: 22:08).\nMigration and Content Management:\nProgrammatic and manual migration of existing content from WordPress and other platforms.\nExample: \"My assumption is usually like a homepage or these landing pages, you'll want to migrate them\" (Brad Taylor, Timestamp: 4:47).\nContinuous improvements to page components for better usability.\nExample: \"We're going to go through all the different pages, And give this week, we're gonna deploy kind of what that kind of out of the box looks like\" (Brad Taylor, Timestamp: 58:53).\n\nConclusion\nThis hosting setup provides a robust, scalable, and flexible infrastructure for SmartNews. Leveraging Contentful for content management and Vercel for hosting and deployment ensures seamless integration, optimal performance, and easy content updates.\nKey Themes:\nScalability and Extensibility\nEase of Use for Content Editors\nContinuous Deployment and Improvement\nCustomization with SmartNews Branding\nAction Items:\nSet up Contentful space with predefined content models.\nInitiate deployment processes using Vercel.\nDefine support and maintenance processes.\nHandle account setups and billing logistics.\nThis section culminates the insights gathered from detailed discussions and is crafted to ensure a smooth and effective hosting environment for SmartNews.\n\nSearch Indexing & Blog Post Filters\n Overview\nThe \"Search Indexing and Blog Post Filters\" section outlines the essential requirements and functionalities needed to enable efficient search capabilities and categorization of blog posts on our platform. The implementation aims to ensure users can easily find relevant content through various filtering mechanisms and chronological ordering.\n Key Functionalities\nSearch Indexing\nUnified Search Capability: The search function should encompass all blog posts regardless of their categorization. Users should be able to search for specific terms and retrieve results spanning across different blog categories.\nKeyword Highlighting: When search results are displayed, the keywords used in the search query should be highlighted within the content snippets. This feature enhances the user experience by allowing users to quickly identify the relevance of each result.\n2.2. Blog Post Filters\nTagging System: Each blog post should be tagged with relevant keywords. Tags can relate to content types (e.g., press releases, advertising blogs), topics (e.g., compliance, risk management), or other classifications. This tagging system will enable users to filter blog posts based on their interests.\nSaved Filters: Users should have the ability to apply saved filters to quickly access specific subsets of blog posts. This functionality could be based on tag categories or chronological order.\nChronological Order: Blog posts should be displayed in reverse chronological order by default. Users should have the option to sort blog posts by date, either ascending or descending.\n3. Technical Specifications\n3.1. Content Management\nContent Model: The blogs will be managed using a content model referred to as \"page blog.\" Each blog entry will be categorized and tagged appropriately.\nComponent-Based Display: Various components on different pages can pull blog content based on predefined filters. For example:\nA component on the Advertising page will display only blog posts tagged with \"advertising.\"\nA similar component on the Careers page will display career-focused blog posts.\nManual Selection: In addition to dynamic filtering, administrators should have the option to manually select specific blog posts for display on particular pages.\n3.2. URL Management\nCanonical Links\n: To avoid duplicate content issues and ensure SEO compliance, canonical links should be used. This means that if the same blog post appears under different URLs (e.g., categorized under multiple tags), the canonical URL will be specified.\n4. User Experience Considerations\n4.1. Aggregated Blog Page\nUnified Blog Section: There will be a central blog page aggregating all blog posts. This page will serve as the main hub for blog content, displaying the latest posts from all categories.\nSubsection Blogs: While there will be a unified blog page, each main category (e.g., Advertising, Careers, News) will also have its dedicated section where users can view posts specific to those categories.\n4.2. Cross-Promotion\nCross-Page Display\n: Blog posts should seamlessly appear on various site sections based on their tags, ensuring relevant content is promoted across multiple pages without duplication of effort.\n5. Examples and Use Cases\n5.1. Example Implementations\nLively Blog Example: One of our clients, Lively, uses a model where they have different tagged sections such as health savings accounts, benefits, etc. This model can be adapted to our needs with tags like press releases, advertising, etc.\nDrada Blog Example: Another example is Drada's blog, which aggregates recent posts but also allows filtering by specific topics like compliance or risk management.\n5.2. Use Cases\nRecruitment Drive: Career-related blog posts tagged accordingly can be featured on the Careers page, with specific call-to-action links encouraging job applications.\nProduct Updates: New product feature updates can be tagged and displayed on the homepage, ensuring visibility to all site visitors.\n6. Potential Challenges and Roadblocks\nOver-Complex Categorization: Too many subcategories might confuse users. The focus should be on maintaining a balance between detailed tagging and user-friendly navigation.\nSEO Implications: Ensuring all tagged posts are recognized uniformly by search engines requires careful implementation of canonical links and robust URL management.\n7. Unresolved Issues and Next Steps\nURL Export and Cleanup: A comprehensive export of all current site URLs is needed to consolidate taxonomy and avoid duplicate content.\nFinalization of Tag Categories: A decision is required on the final list of tag categories to be implemented for efficient tagging of future blog posts.\n8. Key Themes and Priorities\nThe primary goal is to strike a balance between having a unified blog experience and providing specific, easy-to-find content through effective use of filters and tags. Chronological ordering combined with flexible filtering should enhance user experience and content discoverability.\n9. Critical Analysis and Questions\nTo ensure the functional requirements are thorough and aligned with the project goals, several areas need further clarification and exploration. Below are specific, targeted questions designed to address potential inconsistencies, ambiguities, and gaps within this section.\nClarification on Filtering Mechanism:\nQuestion\n: What user interface elements will be implemented to allow users to manage and update their saved filters? Is there a dashboard or a specific section for filter management?\nExplanation\n: Understanding this will help define the user interface requirements and ensure that the filtering mechanism is user-friendly and accessible. It will also provide clarity on how users interact with and customize their filters, which is crucial for the overall user experience.\nEdge Cases for Manual Selection:\nQuestion\n: Under what specific scenarios should manual selection of blog posts take precedence over dynamic filtering? How will conflicts between manually selected and dynamically filtered posts be resolved?\nExplanation\n: This question aims to uncover the decision-making process and rules governing manual selection versus dynamic filtering. It is important for ensuring content management flexibility while maintaining consistent and logical content display.\nTechnical Requirements for Canonical URLs:\nQuestion\n: What technical approach and tools will be utilized to implement canonical URLs, and how will this integrate with the existing URL management system?\nExplanation\n: Proper implementation of canonical URLs is vital for SEO and avoiding duplicate content penalties. This question seeks to understand the technical framework required to manage canonical links effectively, which is critical for maintaining SEO integrity.\nUser Expectation Alignment:\nQuestion\n: What specific methods will be used to gather user feedback on the effectiveness of the search and filter functionalities? How will this feedback be integrated into system improvements?\nExplanation\n: Continuous user feedback is essential for iterative development and ensuring the system evolves to meet user needs. This question focuses on the mechanisms in place to collect and utilize user feedback to optimize search and filtering functionalities.\nHidden Assumptions and Risks:\nQuestion\n: Are there any underlying assumptions regarding the scalability and performance of the content tagging and filtering system as the volume of content grows? What potential risks should be considered?\nExplanation\n: Identifying hidden assumptions and potential risks early on can prevent future performance and scalability issues. This question aims to uncover any overlooked factors that might impact the system as the content library expands, ensuring long-term sustainability.\nConclusion\nImplementing an effective search indexing and blog post filtering system will significantly enhance our website’s usability and ensure that relevant content is easily accessible to our users. The combination of unified search, chronological ordering, and versatile tagging will create a dynamic and user-friendly blog experience. However, addressing the identified questions will be crucial to refining the functional requirements and ensuring successful implementation.\n\n\n\n\nFirst/Third-party Integrations\nFirst/Third-party Integrations Section of the Functional Requirements Document (FRD)\n1. Overview\nThis section details the first and third-party integrations required to enhance the functionality, user experience, and operational efficiency of our system. These integrations encompass form integrations, CRM systems, blog management systems, and customer support solutions. Each integration is designed to work seamlessly within the existing infrastructure, providing a cohesive experience for users and administrators alike.\n2. Form Integrations\n2.1 HubSpot Integration\nDescription: HubSpot forms are integral for capturing user information for various purposes, such as newsletter sign-ups and advertiser interest.\nFunctionality:\nNewsletter Sign-Up Form\n: Captures user details to subscribe to newsletters.\nAdvertiser Media Kit Form\n: Collects information from potential advertisers.\nForms are embedded using HubSpot IDs managed through Contentful.\nUpon submission, forms trigger emails and redirect users to specified pages.\nUser Experience:\nUsers interact with well-designed forms that are easy to complete and submit.\nAfter submission, users receive immediate feedback and are redirected appropriately.\nDeveloper Experience:\nSimple embedding and management of forms via Contentful.\nConfigurable email triggers and redirect URLs.\nChallenges:\nEnsuring consistent styling of embedded forms with the website's design.\nImplementing CAPTCHA to prevent spam submissions.\nSynchronizing form data seamlessly with HubSpot CRM.\n2.2 Salesforce Integration\nDescription: Salesforce is used for managing leads and running marketing campaigns, integrating tightly with website forms.\nFunctionality:\nLead Collection\n: Salesforce is used to collect and manage publisher information.\nMarketing Campaigns\n: Salesforce operates as a CRM for newsletter campaigns and other marketing efforts.\nForms can be embedded via iFrames or customized to post data directly to Salesforce.\nUser Experience:\nUsers access intuitive forms that collect necessary information efficiently.\nConsistent look and feel with the rest of the website.\nDeveloper Experience:\nEmbedded forms managed through a straightforward configuration.\nAbility to test in sandbox environments to ensure data integrity.\nChallenges:\nHandling custom form fields dynamically and ensuring proper naming conventions.\nAddressing potential styling issues with embedded forms.\nManaging sandbox and production environments separately to prevent data contamination.\n3. Blog Management System Integration\n3.1 Ghost Integration\nDescription: Ghost CMS will be used for managing blog content, facilitating easier updates and metric tracking.\nFunctionality:\nCentralized content management, with synchronization capabilities between Ghost and the primary headless CMS.\nUtilize Ghost's API for content operations and metric tracking.\nUser Experience:\nReaders access timely, well-organized blog content with enhanced engagement tracking.\nDeveloper Experience:\nUse Ghost's API for streamlined content management and integration.\nEfficiently track content performance using built-in Ghost analytics.\nChallenges:\nInitial setup and integration costs.\nThorough testing and validation to ensure seamless integration.\n4. Customer Support Integrations\n4.1 Help Forum\nDescription: A help forum is required for users to report issues, give feedback, and seek support.\nFunctionality:\nPositioned on the homepage for easy access.\nSupports user registration, feedback submission, and bug reporting.\nUser Experience:\nUsers can easily find and interact with the help forum, receiving timely support and information.\nDeveloper Experience:\nStraightforward implementation using existing support tools.\nClear channels for managing user feedback and issues.\nChallenges:\nIntegrating the help forum into the existing website structure.\nEnsuring it provides a user-friendly interface and integrates well with support systems.\n5. Content Aggregation and Filtering\n5.1 Press Release and Blog Aggregation\nDescription: Aggregating various content types into a single, filterable hub for easier access and management.\nFunctionality:\nCentralized hub for press releases, blogs, and newsletters.\nFilter content by type, date, and other relevant metrics.\nUser Experience:\nUsers can easily locate and filter content, enhancing their engagement and satisfaction.\nDeveloper Experience:\nEfficient tagging and categorization of content for seamless aggregation.\nSimple interface for managing and displaying content.\nChallenges:\nConsistent tagging and synchronizing of different content types.\nDesigning a user-friendly filtering interface.\n6. Newsletter Management\n6.1 Marketing CRM Integration\nDescription: Integrating with a marketing CRM (Braze or Moengage) for comprehensive newsletter management and engagement tracking.\nFunctionality:\nCollection and synchronization of email addresses through website forms.\nUse CRM for sending newsletters, managing campaigns, and tracking engagement.\nUser Experience:\nSubscribers receive newsletters tailored to their interests, enhancing engagement.\nDeveloper Experience:\nSmooth data flow between website forms and the CRM.\nClear metrics and KPIs for evaluating campaign success.\nChallenges:\nDeciding on the most suitable CRM (Braze vs. Moengage).\nEnsuring seamless integration and data synchronization.\n7. Action Items and Follow-up Questions\nAction Items:\nReview API documentation for Ghost integration.\nConfirm sandbox environment usage for Salesforce.\nFinalize CRM (Braze or Moengage) for newsletter management.\nScope the help forum feature and integrate it into the project plan.\nFollow-up Questions:\nWhat are the specific dynamic fields required for custom forms?\nWhat is the implementation timeline for Ghost integration?\nAre there additional forms that need integration not previously discussed?\nWhat specific metrics or KPIs should be tracked via HubSpot or Salesforce?\nWhat are the key user experience considerations for the help forum?\n8. Summary\nSuccessfully integrating these systems is essential for creating a seamless user and developer experience. HubSpot and Salesforce will enhance lead management and marketing efforts, while Ghost will streamline content management. Proper planning and execution will ensure that challenges are addressed, and integrations function smoothly, leading to an efficient and cohesive system.\nForms\nSection: Forms - Purpose and Integrations\n1. Introduction to Forms\nForms are integral to the functionality of the website, playing a crucial role in capturing user data, facilitating interactions, and enhancing user engagement. They serve multiple purposes, including newsletter sign-ups, media kit requests, and advertising inquiries. Effective integration and management of forms ensure seamless interactions and efficient data processing.\n2. Purpose of Forms\nThe primary purposes of the forms within the project are outlined below:\nNewsletter Sign-Up\n: Allows users to subscribe to newsletters, keeping them informed of updates, promotions, and new content.\nAdvertisers Media Kit Requests\n: Provides potential advertisers with necessary information about advertising opportunities and media capabilities.\nSubscriber and Publisher Engagement\n: Facilitates deeper engagement with both subscribers and potential publishers.\n3. Technical Integration of Forms\nForms on the website integrate with various third-party platforms to handle submissions and data processing. These integrations ensure efficient data management and alignment with broader project goals.\nHubSpot Integration: Forms are embedded into the site via HubSpot by placing the HubSpot ID within Contentful. This integration captures and manages submitted data within HubSpot, facilitating efficient processing. Specific interactions include email triggers post-submission, redirection to different pages, and CAPTCHA for security.\n\"Our typical integration is we have in Contentful where you put the HubSpot ID. It then displays the form.\" - Brad Taylor\nSalesforce Forms Integration: Forms are integrated with Salesforce for customer relationship management. Embedding Salesforce forms ensures streamlined data handling and better user information management within the Salesforce ecosystem.\n\"Almost everything is moving to Salesforce... if we need to do like a custom form, posting to Salesforce, it gets a little more complex because you need to make sure you have the right form field names.\" - Adam Harris\nSendGrid Integration: SendGrid handles subscription management, especially for newsletters, by integrating form data for email delivery and subscription updates.\n\"Subscription is SendGrid.\" - Adam Harris\n4. Context and Examples\nNewsletter Form: Captures user emails and preferences, sending the data to HubSpot and SendGrid for management. Fields include email address, preferences, and subscription type. Post-submission actions include sending a confirmation email and redirecting to a thank-you page.\nAdvertisers Media Kit Form: Captures inquiries from potential advertisers, forwarding information to Salesforce for processing by the sales team. Fields typically include name, company, email, and advertising interests.\nPublisher Engagement Form: Captures data from potential and current publishers, integrating with Salesforce for comprehensive data tracking and follow-up.\n5. Challenges and Considerations\nSeveral challenges and considerations associated with form integrations were highlighted:\nDynamic Fields: Implementing dynamic fields, where options change based on previous selections, adds complexity. Ensuring correct field names and conditions is critical for seamless data capture.\n\"If you're doing anything with forms with dynamic fields... that's much more difficult to do for kind of like rebuilding the form.\" - Adam Harris\nStyling and Embedding Issues: Ensuring consistency in design and user experience while embedding forms from third-party platforms is crucial.\n\"Careful of like the styling a bit and some things like that.\" - Adam Harris\nData Validation and Error Handling: Data validation and error handling are managed within the integrated platforms. Ensuring robust validation mechanisms and user notifications on errors is essential for data integrity and user experience.\n\"It gets a little bit more complex because you need to make sure you have the right form field names and everything like that.\" - Adam Harris\nSecurity and Compliance: Assumptions about user access and permissions, such as the requirement for business emails, need to be managed to ensure security and compliance with data protection regulations.\n\"There is a business requirements, a business email address requirement on this.\" - Brad Taylor\nTesting Across Devices and Browsers: Comprehensive testing of forms, especially those with dynamic fields, across different devices and browsers is critical to ensure functionality and user experience.\n\"I think we just want to have at least for debugging purposes and QA purposes, a login just so we can see the submissions coming in so we don't have to bug anyone on your team.\" - Brad Taylor\n6. Summary\nForms are essential for the website's functionality, serving multiple purposes from data collection to user engagement. Integrations with HubSpot, Salesforce, and SendGrid ensure efficient data processing and management. Addressing challenges such as dynamic fields and maintaining consistent styling are essential for successful implementation. Continuous collaboration and planning are necessary to integrate these forms seamlessly, aligning with the broader project goals of enhancing user engagement, data analytics, and CRM capabilities.\n\nAccessibility \nDo you have the current ability/future need to be in compliance with ADA Levels\nHow do you currently manage Aria Labels, etc.?\nContent & Taxonomy\nContent & URL Taxonomy Section of the FRD\n1. Unified Taxonomy Approach\nObjective: To create a streamlined and cohesive content taxonomy that consolidates URLs and content from multiple existing sites into a unified structure under the main domain, enhancing both user experience and SEO.\nChallenges Addressed:\nInconsistent and fragmented URL structures across multiple sites.\nDifficulty in navigating and finding relevant content.\nSuboptimal SEO performance due to dispersed content locations.\nUser Experience:\nUsers will have a single, cohesive point of entry to access various types of content.\nTopic-based filtering will allow users to easily find content relevant to their interests.\nDeveloper Experience:\nSimplified site architecture facilitates easier maintenance and updates.\nClear URL structure reduces complexity in managing redirects and canonical links.\nExample Structure:\nMain Landing Page: smartnews.com\nBlog Aggregation: smartnews.com/blog (with topic filters)\nSpecialized Content Sections: smartnews.com/ads, smartnews.com/press-releases\n\n2. Subdomains vs. Subpaths\nObjective: To transition from subdomains to subpaths within smartnews.com, enhancing SEO benefits and user navigation consistency.\nChallenges Addressed:\nFragmented user experience caused by multiple subdomains.\nSEO dilution due to separate subdomains.\nUser Experience:\nA unified browsing experience under a single domain.\nEasier navigation through consistent and predictable URL paths.\nDeveloper Experience:\nCentralized management of URL paths, reducing complexity.\nImproved SEO practices through consolidated domain authority.\nExample Decisions:\nPrimary Domain: smartnews.com\nProduct Information: about.smartnews.com\nContent Categories: smartnews.com/blog, smartnews.com/ads\n\n3. Canonical Links for SEO\nObjective: To implement canonical links to manage duplicate content and enhance SEO integrity across the unified site structure.\nChallenges Addressed:\nDuplicate content leading to SEO penalties.\nInconsistent content appearance across multiple locations.\nUser Experience:\nConsistent content delivery regardless of where the user accesses it from.\nImproved search engine visibility and ranking.\nDeveloper Experience:\nSimplified SEO management through clear canonical link implementation.\nEnsured that search engines recognize the primary source of content.\nImplementation Strategy:\nCanonical Links: Include canonical tags on pages with similar content to point to the primary URL.\n\n4. Navigation and User Flow\nObjective: To design an intuitive navigation system that allows users to effortlessly find and access various content sections.\nChallenges Addressed:\nComplex and disjointed navigation across different parts of the site.\nUser difficulty in finding relevant content quickly.\nUser Experience:\nCentralized hub (smartnews.com) with clear sub-links for different content areas.\nTopic-based filters and an intuitive layout enhance content discoverability.\nDeveloper Experience:\nClear navigation hierarchy simplifies UI/UX design.\nConsistent navigation patterns reduce development and maintenance efforts.\nExample Navigation:\nMain Navigation: Home, Blog, Ads, Press Releases\nSub-navigation within Blog: Compliance, Risk Management, Industry News\n\n5. Technical Implementation and DNS Management\nObjective: To define detailed DNS and hosting requirements for routing subpaths efficiently to various backends.\nChallenges Addressed:\nEnsuring reliable routing of subpaths to appropriate backends.\nMaintaining site performance and reliability.\nUser Experience:\nSeamless and fast-loading pages regardless of the content section accessed.\nReliable access to different parts of the site due to efficient DNS management.\nDeveloper Experience:\nClear guidelines for DNS setup and management.\nRobust infrastructure ensures scalability and performance.\nTechnical Requirements:\nSetup DNS to support subpath routing.\nCoordinate with hosting providers to ensure backend alignment with defined subpaths.\n\nAction Items and Next Steps\nURL Export and Analysis:\nObtain or crawl existing URLs from current sites to form a baseline for the new taxonomy.\nSite Architecture Planning:\nDevelop detailed documentation of the proposed URL structure and content layout.\nSEO Strategy Implementation:\nImplement canonical links and ensure SEO best practices are followed.\nUser Experience Design:\nDesign intuitive navigation and filtering options for the unified blog and specialized sections.\nTechnical Setup:\nDefine DNS and hosting configurations to support the new subpath routing structure.\nConclusion\nThe unified content and URL taxonomy for SmartNews aims to enhance SEO, user experience, and content discoverability by consolidating content under a single domain with well-structured subpaths. Through careful planning and execution, existing content will be re-categorized and presented in a cohesive manner, supported by robust technical infrastructure and clear navigation paths. Metrics such as site traffic and user engagement will be used to evaluate the success of this initiative, ensuring alignment with SmartNews’s broader corporate strategy.\n\nDo you have a complete site taxonomy of URLs we would be migrating? We need the main unique templates and do not need every blog post or resource URL.\nWhat plugins are you using for content entry (examples like Advanced Custom Fields, Divvy, Gutenberg etc..)\nAre there specific pages that contain more complex functionality that should be called out?\nFrom which platforms will we need to do an initial content migration? \nWhat format is the content (Markdown, JSON, YAML, third-party system)?\nHow many total pages/blog posts/case studies/resources etc.. will we be migrating?\nWhat are your most significant content entry pain points currently?\nDesign\nFunctional Requirements for the Web Project\nChallenges Being Solved\nThe primary challenges this project aims to solve include:\nEstablishing Credibility: By incorporating social proof prominently, the website seeks to immediately establish trust and credibility among users.\nUser Engagement: Strategically designed layouts and interactive elements aim to increase user engagement and reduce bounce rates.\nDynamic Content Management: Implement a content management system that allows easy updates and customization for non-technical users.\nPerformance Optimization: Ensuring the website loads quickly and smoothly, even with interactive elements like GIFs and animations.\nScalability and Flexibility: Utilizing a component-based design to allow for easy updates, scalability, and alignment with evolving brand guidelines.\nUser Experience\nHomepage\nAbove the Fold:\nSocial Proof: Display of user reviews, testimonials, and partner logos.\nCall to Action (CTA): Immediate and prominent CTAs to drive user action.\nApp Screenshots: Visual representation of the app's key features.\nGIF Section:\nFeature Highlight: Animated GIFs showcasing unique features.\nUser Scenarios: Visual stories showing how the app solves user problems.\nFallback Content: Static images or messages in case GIFs fail to load.\nFeature Section:\nDifferentiators: Highlights what sets the app apart from competitors.\nUser Reviews: Additional social proof and user testimonials.\nEngagement Metrics: Data or graphs that show user engagement and satisfaction.\nOther Page Types\nBlog Pages:\nDynamic Content: Blog collections that can be updated dynamically.\nMedia Variations: Options for small/large thumbnails, side-by-side media, etc.\nInteractive Elements: Filters and sorting options for better user interaction.\nFAQ Pages:\nAccordion Style: Expandable sections for each FAQ topic.\nSearch Functionality: Enable users to quickly find relevant information.\nComponent-Based Layouts:\nContent Flexibility: Mix and match various components (text blocks, image blocks, CTAs, etc.).\nLego Blocks: Pre-defined components that can be rearranged to create new pages.\nStyle Variations: Multiple configurations for media, logos, cards, and more.\nDeveloper Experience\nHeadless CMS Integration\nCMS Selection: Preferred use of Contentful or similar headless CMS for content management.\nComponent Library: A robust React-based component library for creating and managing page elements.\nDynamic Updates: CMS integration to allow real-time content updates without needing extensive technical skills.\nFallback Mechanisms: Ensure all dynamic elements have fallback designs for when animations or media fail to load.\nPerformance Optimization\nLight Animations: Simple and non-intrusive animations to avoid performance lags.\nLoad Time Monitoring: Regular performance checks to ensure quick load times.\nSEO Optimization: Ensuring that all pages and components are SEO-friendly to improve search engine rankings.\nKey Performance Indicators (KPIs)\nUser Engagement Metrics: Tracking page views, time spent on page, and bounce rates.\nConversion Rates: Measuring the effectiveness of CTAs and user paths leading to conversions.\nContent Update Efficiency: Monitoring the ease and frequency of content updates made through the CMS.\nPerformance Metrics: Load times, animation performance, and fallback effectiveness.\nUser Feedback: Collecting and analyzing user feedback to continuously refine layouts and content.\nBy addressing these key areas, the web project aims to provide a seamless, engaging, and credible user experience, while also ensuring a streamlined developer experience for ongoing content management and site updates.\n\n",
+          "textSplitter": "",
+          "metadata": "",
+          "omitMetadataKeys": ""
+        },
+        "outputAnchors": [
+          {
+            "name": "output",
+            "label": "Output",
+            "type": "options",
+            "description": "Array of document objects containing metadata and pageContent",
+            "options": [
+              {
+                "id": "plainText_2-output-document-Document|json",
+                "name": "document",
+                "label": "Document",
+                "description": "Array of document objects containing metadata and pageContent",
+                "type": "Document | json"
+              },
+              {
+                "id": "plainText_2-output-text-string|json",
+                "name": "text",
+                "label": "Text",
+                "description": "Concatenated string from pageContent of documents",
+                "type": "string | json"
+              }
+            ],
+            "default": "document"
+          }
+        ],
+        "outputs": {
+          "output": "text"
+        },
+        "selected": false
+      },
+      "width": 300,
+      "height": 487,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 261.2587639216367,
+        "y": 1761.0555564459105
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "chatOpenAI_0",
+      "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+      "target": "llmChain_0",
+      "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
+      "type": "buttonedge",
+      "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_0-llmChain_0-input-model-BaseLanguageModel"
+    },
+    {
+      "source": "chatPromptTemplate_0",
+      "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+      "target": "llmChain_0",
+      "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+      "type": "buttonedge",
+      "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate"
+    },
+    {
+      "source": "plainText_0",
+      "sourceHandle": "plainText_0-output-document-Document|json",
+      "target": "chatPromptTemplate_0",
+      "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
+      "type": "buttonedge",
+      "id": "plainText_0-plainText_0-output-document-Document|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
+    },
+    {
+      "source": "plainText_1",
+      "sourceHandle": "plainText_1-output-document-Document|json",
+      "target": "chatPromptTemplate_0",
+      "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
+      "type": "buttonedge",
+      "id": "plainText_1-plainText_1-output-document-Document|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
+    },
+    {
+      "source": "plainText_2",
+      "sourceHandle": "plainText_2-output-text-string|json",
+      "target": "chatPromptTemplate_0",
+      "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
+      "type": "buttonedge",
+      "id": "plainText_2-plainText_2-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
+    }
+  ]
+}

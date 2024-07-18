@@ -16,7 +16,8 @@ import {
     Checkbox,
     ListItemText,
     Skeleton,
-    Typography
+    Tabs,
+    Tab
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconLayoutGrid, IconList } from '@tabler/icons-react'
@@ -48,8 +49,8 @@ function TabPanel(props) {
         <div
             role='tabpanel'
             hidden={value !== index}
-            id={`attachment-tabpanel-${index}`}
-            aria-labelledby={`attachment-tab-${index}`}
+            id={`marketplace-tabpanel-${index}`}
+            aria-labelledby={`marketplace-tab-${index}`}
             {...other}
         >
             {value === index && <Box sx={{ p: 1 }}>{children}</Box>}
@@ -63,8 +64,14 @@ TabPanel.propTypes = {
     value: PropTypes.number.isRequired
 }
 
+function a11yProps(index) {
+    return {
+        id: `marketplace-tab-${index}`,
+        'aria-controls': `marketplace-tabpanel-${index}`
+    }
+}
+
 const badges = ['POPULAR', 'NEW']
-const types = ['Chatflow', 'Agentflow', 'Tool']
 const framework = ['Langchain', 'LlamaIndex']
 const MenuProps = {
     PaperProps: {
@@ -78,11 +85,11 @@ const SelectStyles = {
         borderRadius: 2
     }
 }
+
 // ==============================|| Marketplace ||============================== //
 
 const Marketplace = () => {
     const navigate = useNavigate()
-
     const theme = useTheme()
 
     const [isLoading, setLoading] = useState(true)
@@ -96,68 +103,44 @@ const Marketplace = () => {
 
     const [view, setView] = React.useState(localStorage.getItem('mpDisplayStyle') || 'card')
     const [search, setSearch] = useState('')
+    const [tabValue, setTabValue] = useState(0)
 
     const [badgeFilter, setBadgeFilter] = useState([])
-    const [typeFilter, setTypeFilter] = useState([])
     const [frameworkFilter, setFrameworkFilter] = useState([])
-    const marketplaceCategories = useMemo(
-        () =>
-            Object.entries(
-                getAllTemplatesMarketplacesApi.data
-                    ?.filter(filterByBadge)
-                    .filter(filterByType)
-                    .filter(filterFlows)
-                    .filter(filterByFramework)
-                    .reduce(
-                        (accum, data) => ({
-                            ...accum,
-                            [data.badge?.toUpperCase() ?? 'OTHER']: [...(accum[data.badge?.toUpperCase() ?? 'OTHER'] || []), data]
-                        }),
-                        {}
-                    ) ?? {}
-            ).sort(([a], [b]) => {
-                const order = ['SHARED BY ME', 'SHARED BY OTHERS', 'NEW', 'POPULAR', 'OTHER']
-                const indexA = order.indexOf(a)
-                const indexB = order.indexOf(b)
-                if (indexA !== -1 && indexB !== -1) return indexA - indexB
-                if (indexA !== -1) return -1
-                if (indexB !== -1) return 1
-                return a.localeCompare(b)
-            }),
-        [filterByBadge, filterByFramework, filterByType, filterFlows, getAllTemplatesMarketplacesApi.data]
-    )
+
+    const marketplaceCategories = useMemo(() => {
+        const filteredData = getAllTemplatesMarketplacesApi.data?.filter(filterByBadge).filter(filterFlows).filter(filterByFramework) ?? []
+
+        return {
+            Chatflow: filteredData.filter((item) => item.type === 'Chatflow'),
+            Agentflow: filteredData.filter((item) => item.type === 'Agentflow'),
+            Tool: filteredData.filter((item) => item.type === 'Tool'),
+            AnswerAI: filteredData.filter((item) => item.type === 'AnswerAI')
+        }
+    }, [filterByBadge, filterByFramework, filterFlows, getAllTemplatesMarketplacesApi.data])
+
     const handleBadgeFilterChange = (event) => {
         const {
             target: { value }
         } = event
-        setBadgeFilter(
-            // On autofill we get a stringified value.
-            typeof value === 'string' ? value.split(',') : value
-        )
+        setBadgeFilter(typeof value === 'string' ? value.split(',') : value)
     }
-    const handleTypeFilterChange = (event) => {
-        const {
-            target: { value }
-        } = event
-        setTypeFilter(
-            // On autofill we get a stringified value.
-            typeof value === 'string' ? value.split(',') : value
-        )
-    }
+
     const handleFrameworkFilterChange = (event) => {
         const {
             target: { value }
         } = event
-        setFrameworkFilter(
-            // On autofill we get a stringified value.
-            typeof value === 'string' ? value.split(',') : value
-        )
+        setFrameworkFilter(typeof value === 'string' ? value.split(',') : value)
     }
 
     const handleViewChange = (event, nextView) => {
         if (nextView === null) return
         localStorage.setItem('mpDisplayStyle', nextView)
         setView(nextView)
+    }
+
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue)
     }
 
     const onSearchChange = (event) => {
@@ -174,10 +157,6 @@ const Marketplace = () => {
 
     function filterByBadge(data) {
         return badgeFilter.length > 0 ? badgeFilter.includes(data.badge) : true
-    }
-
-    function filterByType(data) {
-        return typeFilter.length > 0 ? typeFilter.includes(data.type) : true
     }
 
     function filterByFramework(data) {
@@ -216,8 +195,6 @@ const Marketplace = () => {
 
     useEffect(() => {
         getAllTemplatesMarketplacesApi.request()
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
@@ -257,6 +234,54 @@ const Marketplace = () => {
         }
     }, [getAllTemplatesMarketplacesApi.error])
 
+    const renderContent = (category, data) => {
+        if (isLoading) {
+            return (
+                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                    <Skeleton variant='rounded' height={160} />
+                    <Skeleton variant='rounded' height={160} />
+                    <Skeleton variant='rounded' height={160} />
+                </Box>
+            )
+        }
+
+        if (!data || data.length === 0) {
+            return (
+                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                    <Box sx={{ p: 2, height: 'auto' }}>
+                        <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />
+                    </Box>
+                    <div>No {category} Available</div>
+                </Stack>
+            )
+        }
+
+        return (
+            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                {data.map((item, index) => (
+                    <Box key={index}>
+                        <Badge
+                            sx={{
+                                width: '100%',
+                                height: '100%',
+                                '& .MuiBadge-badge': {
+                                    right: 20
+                                }
+                            }}
+                            color={item.badge === 'POPULAR' ? 'primary' : 'error'}
+                        >
+                            <ItemCard
+                                onClick={() => (category === 'Tool' ? goToTool(item) : goToCanvas(item))}
+                                data={item}
+                                images={images[item.id]}
+                            />
+                        </Badge>
+                    </Box>
+                ))}
+            </Box>
+        )
+    }
+
     return (
         <>
             <MainCard>
@@ -291,49 +316,13 @@ const Marketplace = () => {
                                             MenuProps={MenuProps}
                                             sx={SelectStyles}
                                         >
-                                            {marketplaceCategories.map(([name]) => (
+                                            {badges.map((name) => (
                                                 <MenuItem
                                                     key={name}
                                                     value={name}
                                                     sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
                                                 >
                                                     <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={name} />
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <FormControl
-                                        sx={{
-                                            borderRadius: 2,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'end',
-                                            minWidth: 120
-                                        }}
-                                    >
-                                        <InputLabel size='small' id='type-badge-label'>
-                                            Type
-                                        </InputLabel>
-                                        <Select
-                                            size='small'
-                                            labelId='type-badge-label'
-                                            id='type-badge-checkbox'
-                                            multiple
-                                            value={typeFilter}
-                                            onChange={handleTypeFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
-                                            renderValue={(selected) => selected.join(', ')}
-                                            MenuProps={MenuProps}
-                                            sx={SelectStyles}
-                                        >
-                                            {types.map((name) => (
-                                                <MenuItem
-                                                    key={name}
-                                                    value={name}
-                                                    sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
-                                                >
-                                                    <Checkbox checked={typeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
                                                     <ListItemText primary={name} />
                                                 </MenuItem>
                                             ))}
@@ -415,88 +404,78 @@ const Marketplace = () => {
                                 </ToggleButton>
                             </ToggleButtonGroup>
                         </ViewHeader>
+
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <Tabs value={tabValue} onChange={handleTabChange} aria-label='marketplace tabs'>
+                                <Tab label='AnswerAI' {...a11yProps(0)} />
+                                <Tab label='Templates' {...a11yProps(1)} />
+                                <Tab label='Agentflows' {...a11yProps(2)} />
+                                <Tab label='Tools' {...a11yProps(3)} />
+                            </Tabs>
+                        </Box>
+
                         {!view || view === 'card' ? (
                             <>
-                                {isLoading ? (
-                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                        <Skeleton variant='rounded' height={160} />
-                                        <Skeleton variant='rounded' height={160} />
-                                        <Skeleton variant='rounded' height={160} />
-                                    </Box>
-                                ) : (
-                                    marketplaceCategories.map(([category, templates]) => (
-                                        <>
-                                            <Typography variant='h6'>{category}</Typography>
-                                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                                {templates?.map((data, index) => (
-                                                    <Box key={index}>
-                                                        {data.badge && (
-                                                            <Badge
-                                                                sx={{
-                                                                    width: '100%',
-                                                                    height: '100%',
-                                                                    '& .MuiBadge-badge': {
-                                                                        right: 20
-                                                                    }
-                                                                }}
-                                                                // badgeContent={data.badge}
-                                                                color={data.badge === 'POPULAR' ? 'primary' : 'error'}
-                                                            >
-                                                                {(data.type === 'Chatflow' || data.type === 'Agentflow' || !!data.type) && (
-                                                                    <ItemCard
-                                                                        onClick={() => goToCanvas(data)}
-                                                                        data={data}
-                                                                        images={images[data.id]}
-                                                                    />
-                                                                )}
-                                                                {data.type === 'Tool' && (
-                                                                    <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                                )}
-                                                            </Badge>
-                                                        )}
-                                                        {!data.badge &&
-                                                            (data.type === 'Chatflow' || data.type === 'Agentflow' || !!data.type) && (
-                                                                <ItemCard
-                                                                    onClick={() => goToCanvas(data)}
-                                                                    data={data}
-                                                                    images={images[data.id]}
-                                                                />
-                                                            )}
-                                                        {!data.badge && data.type === 'Tool' && (
-                                                            <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                        )}
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        </>
-                                    ))
-                                )}
+                                <TabPanel value={tabValue} index={0}>
+                                    {renderContent('AnswerAI', marketplaceCategories.AnswerAI)}
+                                </TabPanel>
+                                <TabPanel value={tabValue} index={1}>
+                                    {renderContent('Chatflow', marketplaceCategories.Chatflow)}
+                                </TabPanel>
+                                <TabPanel value={tabValue} index={2}>
+                                    {renderContent('Agentflow', marketplaceCategories.Agentflow)}
+                                </TabPanel>
+                                <TabPanel value={tabValue} index={3}>
+                                    {renderContent('Tool', marketplaceCategories.Tool)}
+                                </TabPanel>
                             </>
                         ) : (
-                            <MarketplaceTable
-                                data={getAllTemplatesMarketplacesApi.data}
-                                filterFunction={filterFlows}
-                                filterByType={filterByType}
-                                filterByBadge={filterByBadge}
-                                filterByFramework={filterByFramework}
-                                goToTool={goToTool}
-                                goToCanvas={goToCanvas}
-                                isLoading={isLoading}
-                                setError={setError}
-                            />
-                        )}
-
-                        {!isLoading && (!getAllTemplatesMarketplacesApi.data || getAllTemplatesMarketplacesApi.data.length === 0) && (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
-                                        src={WorkflowEmptySVG}
-                                        alt='WorkflowEmptySVG'
+                            <>
+                                <TabPanel value={tabValue} index={0}>
+                                    <MarketplaceTable
+                                        data={marketplaceCategories.Tool}
+                                        filterFunction={filterFlows}
+                                        filterByBadge={filterByBadge}
+                                        filterByFramework={filterByFramework}
+                                        goToTool={goToTool}
+                                        isLoading={isLoading}
+                                        setError={setError}
                                     />
-                                </Box>
-                                <div>No Marketplace Yet</div>
-                            </Stack>
+                                </TabPanel>
+                                <TabPanel value={tabValue} index={1}>
+                                    <MarketplaceTable
+                                        data={marketplaceCategories.Chatflow}
+                                        filterFunction={filterFlows}
+                                        filterByBadge={filterByBadge}
+                                        filterByFramework={filterByFramework}
+                                        goToCanvas={goToCanvas}
+                                        isLoading={isLoading}
+                                        setError={setError}
+                                    />
+                                </TabPanel>
+                                <TabPanel value={tabValue} index={2}>
+                                    <MarketplaceTable
+                                        data={marketplaceCategories.Agentflow}
+                                        filterFunction={filterFlows}
+                                        filterByBadge={filterByBadge}
+                                        filterByFramework={filterByFramework}
+                                        goToCanvas={goToCanvas}
+                                        isLoading={isLoading}
+                                        setError={setError}
+                                    />
+                                </TabPanel>
+                                <TabPanel value={tabValue} index={3}>
+                                    <MarketplaceTable
+                                        data={marketplaceCategories.AnswerAI}
+                                        filterFunction={filterFlows}
+                                        filterByBadge={filterByBadge}
+                                        filterByFramework={filterByFramework}
+                                        goToTool={goToTool}
+                                        isLoading={isLoading}
+                                        setError={setError}
+                                    />
+                                </TabPanel>
+                            </>
                         )}
                     </Stack>
                 )}
@@ -507,7 +486,7 @@ const Marketplace = () => {
                 onCancel={() => setShowToolDialog(false)}
                 onConfirm={() => setShowToolDialog(false)}
                 onUseTemplate={(tool) => onUseTemplate(tool)}
-            ></ToolDialog>
+            />
         </>
     )
 }

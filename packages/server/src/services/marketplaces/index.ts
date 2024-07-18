@@ -97,6 +97,25 @@ const getAllTemplates = async (userId?: string, organizationId?: string) => {
             }
             templates.push(template)
         })
+
+        marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'answerai')
+        jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+        jsonsInDir.forEach((file, index) => {
+            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'answerai', file)
+            const fileData = fs.readFileSync(filePath)
+            const fileDataObj = JSON.parse(fileData.toString())
+            const template = {
+                id: index,
+                templateName: file.split('.json')[0],
+                flowData: fileData.toString(),
+                badge: fileDataObj?.badge,
+                framework: fileDataObj?.framework,
+                categories: fileDataObj?.categories,
+                type: 'AnswerAI',
+                description: fileDataObj?.description || ''
+            }
+            templates.push(template)
+        })
         const sortedTemplates = templates.sort((a, b) => a.templateName.localeCompare(b.templateName))
         const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')
         if (FlowiseDocsQnAIndex > 0) {

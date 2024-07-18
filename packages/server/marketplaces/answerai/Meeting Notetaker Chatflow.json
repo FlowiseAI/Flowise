@@ -1,0 +1,500 @@
+{
+  "nodes": [
+    {
+      "id": "chatOpenAI_0",
+      "position": {
+        "x": 770.7124395505948,
+        "y": 406
+      },
+      "type": "customNode",
+      "data": {
+        "id": "chatOpenAI_0",
+        "label": "ChatOpenAI",
+        "version": 6,
+        "name": "chatOpenAI",
+        "type": "ChatOpenAI",
+        "baseClasses": [
+          "ChatOpenAI",
+          "BaseChatModel",
+          "BaseLanguageModel",
+          "Runnable"
+        ],
+        "category": "Chat Models",
+        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+        "inputParams": [
+          {
+            "label": "Connect Credential",
+            "name": "credential",
+            "type": "credential",
+            "credentialNames": [
+              "openAIApi"
+            ],
+            "id": "chatOpenAI_0-input-credential-credential"
+          },
+          {
+            "label": "Model Name",
+            "name": "modelName",
+            "type": "asyncOptions",
+            "loadMethod": "listModels",
+            "default": "gpt-3.5-turbo",
+            "id": "chatOpenAI_0-input-modelName-asyncOptions"
+          },
+          {
+            "label": "Temperature",
+            "name": "temperature",
+            "type": "number",
+            "step": 0.1,
+            "default": 0.9,
+            "optional": true,
+            "id": "chatOpenAI_0-input-temperature-number"
+          },
+          {
+            "label": "Max Tokens",
+            "name": "maxTokens",
+            "type": "number",
+            "step": 1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-maxTokens-number"
+          },
+          {
+            "label": "Top Probability",
+            "name": "topP",
+            "type": "number",
+            "step": 0.1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-topP-number"
+          },
+          {
+            "label": "Frequency Penalty",
+            "name": "frequencyPenalty",
+            "type": "number",
+            "step": 0.1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-frequencyPenalty-number"
+          },
+          {
+            "label": "Presence Penalty",
+            "name": "presencePenalty",
+            "type": "number",
+            "step": 0.1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-presencePenalty-number"
+          },
+          {
+            "label": "Timeout",
+            "name": "timeout",
+            "type": "number",
+            "step": 1,
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-timeout-number"
+          },
+          {
+            "label": "BasePath",
+            "name": "basepath",
+            "type": "string",
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-basepath-string"
+          },
+          {
+            "label": "BaseOptions",
+            "name": "baseOptions",
+            "type": "json",
+            "optional": true,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-baseOptions-json"
+          },
+          {
+            "label": "Allow Image Uploads",
+            "name": "allowImageUploads",
+            "type": "boolean",
+            "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+            "default": false,
+            "optional": true,
+            "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+          },
+          {
+            "label": "Image Resolution",
+            "description": "This parameter controls the resolution in which the model views the image.",
+            "name": "imageResolution",
+            "type": "options",
+            "options": [
+              {
+                "label": "Low",
+                "name": "low"
+              },
+              {
+                "label": "High",
+                "name": "high"
+              },
+              {
+                "label": "Auto",
+                "name": "auto"
+              }
+            ],
+            "default": "low",
+            "optional": false,
+            "additionalParams": true,
+            "id": "chatOpenAI_0-input-imageResolution-options"
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Cache",
+            "name": "cache",
+            "type": "BaseCache",
+            "optional": true,
+            "id": "chatOpenAI_0-input-cache-BaseCache"
+          }
+        ],
+        "inputs": {
+          "cache": "",
+          "modelName": "gpt-4o",
+          "temperature": "0.4",
+          "maxTokens": "4000",
+          "topP": "0.9",
+          "frequencyPenalty": "0.5",
+          "presencePenalty": "0.3",
+          "timeout": "",
+          "basepath": "",
+          "baseOptions": "",
+          "allowImageUploads": "",
+          "imageResolution": "low"
+        },
+        "outputAnchors": [
+          {
+            "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "name": "chatOpenAI",
+            "label": "ChatOpenAI",
+            "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+            "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 670,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 770.7124395505948,
+        "y": 406
+      }
+    },
+    {
+      "id": "llmChain_0",
+      "position": {
+        "x": 1267.6666519184125,
+        "y": 1016.6860761011587
+      },
+      "type": "customNode",
+      "data": {
+        "id": "llmChain_0",
+        "label": "LLM Chain",
+        "version": 3,
+        "name": "llmChain",
+        "type": "LLMChain",
+        "baseClasses": [
+          "LLMChain",
+          "BaseChain",
+          "Runnable"
+        ],
+        "category": "Chains",
+        "description": "Chain to run queries against LLMs",
+        "inputParams": [
+          {
+            "label": "Chain Name",
+            "name": "chainName",
+            "type": "string",
+            "placeholder": "Name Your Chain",
+            "optional": true,
+            "id": "llmChain_0-input-chainName-string"
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Language Model",
+            "name": "model",
+            "type": "BaseLanguageModel",
+            "id": "llmChain_0-input-model-BaseLanguageModel"
+          },
+          {
+            "label": "Prompt",
+            "name": "prompt",
+            "type": "BasePromptTemplate",
+            "id": "llmChain_0-input-prompt-BasePromptTemplate"
+          },
+          {
+            "label": "Output Parser",
+            "name": "outputParser",
+            "type": "BaseLLMOutputParser",
+            "optional": true,
+            "id": "llmChain_0-input-outputParser-BaseLLMOutputParser"
+          },
+          {
+            "label": "Input Moderation",
+            "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+            "name": "inputModeration",
+            "type": "Moderation",
+            "optional": true,
+            "list": true,
+            "id": "llmChain_0-input-inputModeration-Moderation"
+          }
+        ],
+        "inputs": {
+          "model": "{{chatOpenAI_0.data.instance}}",
+          "prompt": "{{chatPromptTemplate_0.data.instance}}",
+          "outputParser": "",
+          "inputModeration": "",
+          "chainName": ""
+        },
+        "outputAnchors": [
+          {
+            "name": "output",
+            "label": "Output",
+            "type": "options",
+            "description": "",
+            "options": [
+              {
+                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain|Runnable",
+                "name": "llmChain",
+                "label": "LLM Chain",
+                "description": "",
+                "type": "LLMChain | BaseChain | Runnable"
+              },
+              {
+                "id": "llmChain_0-output-outputPrediction-string|json",
+                "name": "outputPrediction",
+                "label": "Output Prediction",
+                "description": "",
+                "type": "string | json"
+              }
+            ],
+            "default": "llmChain"
+          }
+        ],
+        "outputs": {
+          "output": "llmChain"
+        },
+        "selected": false
+      },
+      "width": 300,
+      "height": 508,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1267.6666519184125,
+        "y": 1016.6860761011587
+      },
+      "dragging": false
+    },
+    {
+      "id": "chatPromptTemplate_0",
+      "position": {
+        "x": 769.9894828825663,
+        "y": 1107.7357948570007
+      },
+      "type": "customNode",
+      "data": {
+        "id": "chatPromptTemplate_0",
+        "label": "Chat Prompt Template",
+        "version": 1,
+        "name": "chatPromptTemplate",
+        "type": "ChatPromptTemplate",
+        "baseClasses": [
+          "ChatPromptTemplate",
+          "BaseChatPromptTemplate",
+          "BasePromptTemplate",
+          "Runnable"
+        ],
+        "category": "Prompts",
+        "description": "Schema to represent a chat prompt",
+        "inputParams": [
+          {
+            "label": "System Message",
+            "name": "systemMessagePrompt",
+            "type": "string",
+            "rows": 4,
+            "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+            "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
+          },
+          {
+            "label": "Human Message",
+            "name": "humanMessagePrompt",
+            "type": "string",
+            "rows": 4,
+            "placeholder": "{text}",
+            "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
+          },
+          {
+            "label": "Format Prompt Values",
+            "name": "promptValues",
+            "type": "json",
+            "optional": true,
+            "acceptVariable": true,
+            "list": true,
+            "id": "chatPromptTemplate_0-input-promptValues-json"
+          }
+        ],
+        "inputAnchors": [],
+        "inputs": {
+          "systemMessagePrompt": "As an AI assistant specializing in meeting analysis and note-taking, your task is to create a comprehensive and detailed overview of a meeting based on a full transcript. Please structure your notes as follows:\n1. Header\nMeeting Title\nDate and Time\nAttendees (list all participants)\nLink to Recording: [Insert link here]\n\n2. Table of Contents\nCreate a detailed table of contents with timestamps for each major section and subsection. Format as follows:\n[Timestamp] Section Title\n[Timestamp] Subsection Title\n\n3. Executive Summary (250-300 words)\nProvide a concise overview of the meeting in one or two paragraphs. Be sure to include:\nMain purpose of the meeting\nKey participants and their roles\nHigh-level summary of main topics discussed\nCritical decisions made\nOverall meeting outcome\n\n4. Detailed Meeting Notes\nFor each main topic or agenda item:\n\n4.1 [Topic Title]\nContext: Briefly explain why this topic was discussed\nBullet point list of key points:\nList main ideas, arguments, Decisions, action items, challenges, concerns or information shared\nIf you need to quote someone, use the format: \"[Name]: [Key point]\"\n\n5. Overall Action Items and Next Steps\nCompile a comprehensive list of all action items and next steps from the entire meeting:\nAction Item: [Description]\nAssigned to: [Name]\nDeadline: [Date] (if discussed)\nRelated Topic: [Topic Title]\n\n6. Open Questions and Parking Lot Items\nList any unresolved questions or items that were deferred for future discussion.\n\n\nGuidelines:\nUse clear, concise language\nMaintain objectivity in reporting discussions and decisions\nUse bullet points for better readability\nInclude direct quotes when they significantly contribute to understanding\nHighlight important information, decisions, or action items\nEnsure all acronyms are spelled out on first use\nDouble-check that all names and technical terms are spelled correctly\n\nUse this Transcript:\n{transcript}",
+          "humanMessagePrompt": "Please analyze the provided transcript thoroughly and create the meeting notes following this structure. Ensure that the notes are comprehensive, well-organized, and capture all essential information from the meeting.",
+          "promptValues": "{\"transcript\":\"{{plainText_0.data.instance}}\",\"user_input\":\"{{question}}\"}"
+        },
+        "outputAnchors": [
+          {
+            "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "name": "chatPromptTemplate",
+            "label": "ChatPromptTemplate",
+            "description": "Schema to represent a chat prompt",
+            "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
+          }
+        ],
+        "outputs": {},
+        "selected": false
+      },
+      "width": 300,
+      "height": 690,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 769.9894828825663,
+        "y": 1107.7357948570007
+      }
+    },
+    {
+      "id": "plainText_0",
+      "position": {
+        "x": 392.0484688937149,
+        "y": 926.4869590094474
+      },
+      "type": "customNode",
+      "data": {
+        "id": "plainText_0",
+        "label": "Plain Text",
+        "version": 2,
+        "name": "plainText",
+        "type": "Document",
+        "baseClasses": [
+          "Document"
+        ],
+        "category": "Document Loaders",
+        "description": "Load data from plain text",
+        "inputParams": [
+          {
+            "label": "Text",
+            "name": "text",
+            "type": "string",
+            "rows": 4,
+            "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
+            "id": "plainText_0-input-text-string"
+          },
+          {
+            "label": "Additional Metadata",
+            "name": "metadata",
+            "type": "json",
+            "description": "Additional metadata to be added to the extracted documents",
+            "optional": true,
+            "additionalParams": true,
+            "id": "plainText_0-input-metadata-json"
+          },
+          {
+            "label": "Omit Metadata Keys",
+            "name": "omitMetadataKeys",
+            "type": "string",
+            "rows": 4,
+            "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
+            "placeholder": "key1, key2, key3.nestedKey1",
+            "optional": true,
+            "additionalParams": true,
+            "id": "plainText_0-input-omitMetadataKeys-string"
+          }
+        ],
+        "inputAnchors": [
+          {
+            "label": "Text Splitter",
+            "name": "textSplitter",
+            "type": "TextSplitter",
+            "optional": true,
+            "id": "plainText_0-input-textSplitter-TextSplitter"
+          }
+        ],
+        "inputs": {
+          "text": "Alright,\nso\nthe\ngoal\nof\nthis\nis\nto\nQA\nanswer\nAI.\nFirst\nthing\nyou\ngo\nto\nis\nbeta\ntheanswer\nAI.\nUh,\nyou\nshould\nbe\ndirected\nto\na\nlogin\nscreen.\nYou\nshould\ntest\nthat\nyou\ncan\nlog\nin\nwith\nan\nemail\nand\npassword\nand\ntest\nthat\nyou\ncan\nlog\nin\nwith\nyour\ngoogle.\nYou\nshould\nalso\ntest\nthat\nyou\ncan\nlog\nin\nwith\nOkta,\nwhich\nI'll\ngo\nover\nin\na\nminute.\nUm,\nthat'll\nbe\nprobably\ntomorrow\nor\nFriday.\nUm,\nso\nthen\nuh,\nwell\nonce\nyou're\nlogged\nin,\nso\nthat'd\nbe\nthe\nvery\nfirst\nthing\nthat\nyou\nwant\nto\nverify.\nUh,\nthen\nif\nyou're\npart\nof\nmultiple\norganizations,\nyou're\ngoing\nto\nsee\nuh,\nthat\nlist\nof\norganizations.\nUh,\nfor\nthe\npurposes\nof\nQA,\nwe're\ngoing\nto\nbe\nqain\non\num,\nstaging.\nYeah,\nthat's\na\npen\nstaging.\nYes.\nUm,\nI'm\nrecording\nthis\nwhole\nthing,\ntranscribing\nit.\nOh\nyeah.\nI\nmean\nyou\nwant\nto\ntake\nnotes,\nthat's\nfine,\nthat's\nfine.\nUm,\nso\nanswer\nAI\nstaging\nis\nwhere\nwe're\ngoing\nto\nbe\ndoing\num,\nour\ntesting.\nSo\nyou\nlog\nin,\nchoose\nthe\norganization,\nanswer\na,\nstaging.\nOkay,\nthere\nare\ntwo\ndifferent\nareas\nof\nthe\nsite\nthat\nwe're\ngoing\nto\nbe\nqueuing.\nThe\nmain\none\nthat\nyou're\ngoing\nto\nbe\nworking\nwith\nis\num,\nthis\none\nright\nhere,\nwhich\nis\nwhat\nuh,\nis\navailable\nto\nthe\nuser.\nSo\nup\nat\nthe\ntop\nthey\nshould\nsee\nthe\nuh,\nonly\nthe\nones\nuh,\nthat\nare\nshared\nin\num,\nthe\nUI.\nSo\nin\norder\nfor\nit\nto\nshow\nup,\nup\nin\nthe\ntop\nin\nthe\nanswer\nAI.\nUh,\nanswer\nunif\ninterface.\nUm,\nin\nchat\nflows.\nSo\nif\nI\ngo\nto\nthe\npresidential\ndebate,\nthe\none\nthat\nwe\nwere\njust\non,\nand\nI\ngo\nover\nhere\nto\nthe\nsettings\nup\nin\nthe\ntop\nright\nof\na\nchat\nflow\ndetails.\nUnder\nconfiguration\nthere's\na\ncheckbox\nto\nsay\nanswer\nAI.\nIf\nthat\ncheckbox\nis\nchecked,\nthen\nit\nshould\nshow\nup\nin\nthat\num,\nchat.\nSo\na\ngood\ntest\nof\nthis\nwould\nbe\nto\njust\ntest,\nyou\nknow,\nselect\nit,\nsee\nif\nit\nshows\nup,\nunselect\nit,\ngo\nback,\nit\nshouldn't\nshow\nup.\nOkay.\nOkay.\nOrganization.\nSo\nthis\nis\nwhere\nyou\ncan\nshare\nit\nwith\nthe\norganization.\nWhen\nyou\ndo\nthis,\nthis\nmakes\nit\nso\nthat\nI\ncan\nsee\nthe\nchat\nflow.\nUm,\nit's\nindependent\nof\nthis.\nThat\nmeans\nyou\ncan\nif\nyou,\norganization,\nmeaning\nthe\ncompany\nlike\nyou\nand\nthe\nother\npeople.\nRight.\nAnyone\nthat's\npart\nof\nuh,\nanswer\nAI\nstaging\nshould\nbe\nable\nto\nsee\nthis\nif\nyou\ndid\norganization,\nyou\nwant\npublic,\nanyone\nin\npublic\ncan\nsee\nit.\nUm,\nso\nthat's\nso\nthat\nyou\ncan,\nand\nyou\ncan\nkind\nof\nsee\nwhen\nit's\nbeen\nshared,\num,\nfor\nthat.\nSo\nlike\nif\nI\ngo\ninto\nthis\none,\nthis\none\nhas\nbeen\nshared\nin\nthe\nmarketplace,\num,\nbut\nit\nis\nmine.\nSo\nyou\nshould\nalways\nonly\nbe\nable\nto\nsee\nones\nthat\nyou've\ncreated,\num,\nor\nones\nthat\nhave\nbeen\nshared\nwith\nyou,\num,\nin\nthis\nchatflow.\nSo\ngoing\nback\nover\nto\nthe\nfront\nend.\nSo\nthat's\nhow\nyou\nsee\nwhich\nones\nare\nin\nhere.\nSomeone\nhas\nto\nliterally\nsay,\nI\nwant\nto\nshow\nthis\nin\nthe\nanswer\nAI\nuser\ninterface\nfrom\nthe\nsettings\nbutton\nup\nin\nthe\ntop\nright\nhand\ncorner.\nSo\nthen\nthe\nnext\nthing\non\nall\nof\nthese\nis\njust\nchat\nwith\nit.\nRight?\nSo,\npolitical\npundit,\nyou\nknow,\nwhat\nis,\nuh,\nwhat\ndid\nJoe\nBiden\nsay?\nRight?\nYou\ncan\njust\nchat\nand\nsay\nwhatever\nthe\nfuck\nyou\nwant\nto\nit.\nUm,\nthe\nbig\nthings\non\nthis\nthat\nyou\nneed\nto\nlook\nis,\nyou\nknow,\ndoes\nit\nrespond,\nthat's\nthe\nbiggest\none.\nDid\nit\nrespond\nwith\nthis?\nAnd\nthen\nalso\ncheck\nin\nthis\nreferences\nif\nit\nis\nusing.\nNot\nall\nuse\nlike\ndocument\nstores,\nnot\nall\nuse,\nuh,\nuh,\nthat,\num,\nbit.\nSo\nin\nthis\none\nyou\ncan\nsee\nthat\nit\nused,\nthis\nis\nthe\ncontent\nthat\nit\nused\nfrom\nthe\ntranscript\nto\ncreate\nthis\nanswer.\nSo\nthis\nis\n1234-5678\n910\nchunks.\nYou\ncan\ntell\nthe\ndifferent\nchunks\nfrom\nthis,\nuh,\nfrom\nthe\nline.\nUm,\nif\nI\ngo\ninto\nthis\nchat\nflow\nand\nhow\nit's\nset\nup,\nm\nyou\ncan\nsee\ntop\nk\nis\nten.\nIf\nI\nchange\nthis\nto\n15,\nuh,\nrelevant\nchunks\nor\nwhatever\nthat\nit\ncalls.\nExactly.\nTop\nK\nis\nthe\nnumber\nof\nrelevant\nchunks\nthat\nit\ncalls.\nUm,\nand\nthis\nshould\nbe\npretty,\nI\nmean,\ntest\nit\nto\nmake\nsure\nthat\nit\nis\nthat.\nBut\nnow\nif\nI\ngo\nhere,\num,\nyou\nknow,\nwhat\ndid\nDonald\nTrump\nsay?\n1234-5678\n910\n1112\n13\n1415.\nSo\ngave\nmore.\nYou\ncan\nsee\nthat\nit's,\nyou\nknow,\nresponding\nas\nis.\nI\nknow\nthis\nbecause\nI\ngo\nto\nthe\ntruth\nseeker.\nUm,\nyou\nknow,\ntell\nme\nwhat\nDonald,\num,\nsaid.\nSo\nnow\nit\ngives\nme\nan\noverview\nof\nwhat\nhe\nsaid,\nnone\nof\nthe\ncommentary.\nUh,\nit's\nlike\nhow\nour\nnews\nis,\nhow\nour\nnew,\nhow\nI\nwish\nour\nnews\nwas.\nAnd\nonce\nagain,\nyou\nkind\nof\nsee\nthis\nis\nthe,\num,\nthese\nare,\nuh,\nreferences\nhere.\nSo\nthe\nbiggest\nthings\non\nthis\nis\nto\nmake\nsure\nthat\nit's\nactually\nresponding.\nThe\nother\nthing\nis\nwhen\nyou\ngo\ninto\nthis,\nlike,\nwhat\ndid\nJoe\nBiden\nsay?\nDoes\nit\nhave\nthe\nhistory?\nRight.\nIt\nshould\nhave\nyour\nchat\nhistory\nin\nhere.\nSo\nhere\nI\ncan\nsee\nthat\nit\nhad\nthe\nchat\nhistory.\nI\ncan\nsee\nthe\nresponse\nfrom\nthat.\nWhat\nwas\nin\nthat\nbit?\nThe\nchat\nhistory.\nMeaning\nthat's,\nthat's\nwhat\nI\nasked\nlast\ntime.\nOh,\nokay.\nSo\nnow\nover\non\nthe\nleft,\nit\nhas\nyour\nchat\nhistory.\nOkay.\nSo\nwhen\nyou\nclick\non\none.\nSo\nas\nyou\ncan\nsee,\nit\nhas,\nso\nhere's\na\nbug.\nSo\nit\nonly\nshows\nme\nwhat\nthe\nlast\nchat\nwas\nbecause\nwe\nhad\ntwo\nchats.\nDo\nyou\nremember?\nYeah.\nBut\nwasn't\nthe\nother\none\nin\na\nseparate,\nit\nwas\nin\nthe\npundit\none?\nNo,\nI\nhad,\nI\nasked\ntwo\nas\na\npart\nof\nit.\nSo\nlet's,\nlet's\ntry\nthat\nagain.\nSo,\ntrue\nseeker.\nSo\nI'm\ngoing\nto\nsay,\nwhat\ndid\nDonald\nTrump\nsay?\nAnd\nit's\ngoing\nto\ngive\nthis,\nand\nthen\nI'm\ngoing\nto\nask\nit\nwhat\nJoe\nBiden\nsaid.\nAnd\ntechnically,\nif\nI\ngo\nback\nto\nthis,\nthen\nit\nshould\nsee\nshow\nboth,\nuh,\nchats.\nSo\nnow\nwhat\ndid\nJoe\nBiden\nsay?\nOkay,\nso\nnow\nwe\nhave\ntwo\nresponses.\nAnd\nthis\nis\nwhat\nyou\njust\nneed\nto\ncheck\nto\nmake\nsure\nthat,\num,\nthe\nhistory\nis\nthere.\nSo\nnow\nwe\ngo,\nlet's\nsay\nI\ngo,\ngreat,\nI\nwant\nto\ngo\nover\nhere,\ndo\nsome\nstuff.\nWhatever\nI've\nclicked\nout\nof\nhere.\nNow\nI'm\ngoing\nto\ngo\nback\nto\nthis\none.\nIt\nonly\nhas\none.\nIt\ndoesn't\nhave\nthe\nfirst\nthing\nthat\nwe\nasked\nit.\nOh,\nuh,\nso\nit's\nonly\nkeeping\nthe\nlast\nthing.\nYeah.\nThat\nmeans\nthe\nmemory\nor\nwhatever's\nnot\non\nor\nsomething\nelse.\nSome\nkind\nof\na,\nyeah.\nSo,\nuh,\nbasically\njust,\nyou\ndon't\nneed\nto\nknow\nwhat's\nhappening\non\nthis.\nJust\nbe\nlike,\nhey,\nI'm\nnot\nseeing\na,\nand\nbe\nvery\ndescriptive\nabout\nit.\nSo,\nfor\ninstance,\non\nthis\none,\nyou\nneed\nto\nsay\nlike,\nit\nshows\nthe\nsecond.\nSo\nif\nI\nactually\nupdate\nthis\nand\nsay,\num,\nwas\nthere\nanything\nsaid,\nuh,\nabout\neducation?\nOkay,\nlet's\ntest\nthis.\nSo\nit\ngave\nme\nresponse.\nThat's\ngreat.\nThat's\nnot\nwhat\nI'm\ntrying.\nSo\nnow\nif\nI\nrefresh\nthis\nchat,\nit's,\noh,\nno,\nhere\nwe\ngo.\nOkay,\nso\nnow\nif\nI\ngo\nback\nto\nthis\none.\nOh,\nit\nis\nthere.\nSo\nsomething's\nhappening\nwhere\nthe\nfirst\none\ndidn't\nget\nsaved.\nSo\nthis\nis\nwhere\nit's\ngoing\nto\nbe\nkind\nof\nlike,\nokay,\nlike,\nyou're\ngoing\nto\nhave\nto\nbe\nvery\ndescriptive\non\nthis.\nSo\nlet's\ntry\nto\nreproduce\nthat.\nOkay,\nso\nI'm\ngonna\nsay\nnew\nchat.\nWhat\ndid\nJoe\nBiden,\nI'd,\nuh,\nprobably\neven,\nbecause\nwhat\nyou\nsay\nto\nthis\nis\nreally\nirrelevant\nto,\nbecause\nwe're\nnot\ntesting\nthe\nright,\nthe\ncorrectness\nof\nthe\nprompts,\nwe're\nmore\ntesting\nthe\nworkability\nof\nit.\nSo\nyou\nprobably\njust\ncopy\nand\npaste.\nWhat\ndid\nJoe\nBiden\nsay?\nAnd\nI\nwould\nprobably\neven\nrecommend,\nlike,\nusing,\nlike,\nphrases\nthat,\num,\nyou\ncan\nuse\nfor.\nOkay,\nso\nI\nhave\nthat.\nSo\nI\nasked\nJoe\nBiden\nnow\nI'm\ngoing\nto\nsay,\nwhat\ndid\nDonald\nTrump\nsay?\nSo\nnow\nif\nI\ngo\nback\ninto\nthis,\nit\nshould\nhave\nboth\nof\nthose,\nbut\nwe'll\nsee\nwhich\none\nit\nactually\nkept.\nSo\nnow\nif\nI\ngo\nover\nhere\nto.\nYeah,\nit\nlooks\nlike\nit's,\nyeah,\nfor\nwhatever\nreason,\nit's\nnot\nbecause\nwe\nasked\nwhat\nJoe\nBiden\nsaid\nfirst.\nAnd\nthen\nwe\nask\nthat.\nSo\nit\nonly\ngets\nthe\nsecond\none.\nSo\nnow\nI'm\nwondering\nif\nI\nsay,\num,\ndid\nJoe\nBiden\nlook\nsleepy?\nSomething\ndifferent.\nAll\nright,\nso\nthere\nwe\ngo.\nSo\nnow\nI'm\ngoing\nto\nsay,\nuh,\nI'm\ngoing\nto\nrefresh\nthis\npage.\nI'm\ngoing\nto\ngo\nback\nto\nit.\nI\nsee\nit\nthere\nnow.\nSaid,\ndid\nDonald,\num,\nTrump\nlook\nlike\na\nbuffoon?\nAll\nright,\nso\nthere's\nthat.\nNow\nif\nI\ngo\nback\nto\nthis.\nYeah,\nit\nonly\nhas\nthe\nlast\none.\nSo\nthere's\na\nbug\nthere.\nOkay.\nWhy\ndid\nit\nwork\nin\none\ncase?\nI\ndon't\nknow.\nThis\nis\nwhat\nneeds\nto\nhappen.\nThis\nis\nwhy,\nuh,\nbeing\nspecific\non\nthat.\nSo\nbasically,\nI'm\ngoing\nto\ngo\ninto\nthis\nand\nI'll\nsend\nyou\nthis.\nBut\nbasically,\num,\nthe\ntitle\nis,\nuh,\nchat\nhistory\nnot\ngetting\nsaved\ncorrectly.\nThen\nyou\nsay\nsteps\nto.\nSo\nthe\nsteps\nto\nreproduce\nthis.\nSo\nsteps\nto\nreproduce\none,\nuh,\nopen\na\nnew\nchat\nand\nask\na\nquestion.\nTo\nask\na\nsecond\nquestion,\nleave\nthe\nchat,\ncome\nback\nto\nthe\nchat,\nand\nonly\nthe\nlatest,\num,\nmessage\nappears.\nAll\nprevious\nmessages\nare\nnothing\nthere.\nAnd\nthen\nif,\nwhat\nif\nwe\nasked\na\nthird\nquestion\nand\nthe\nthird\none\nwas\nthere,\num,\nhow\nmany\npeople\nwere\nin\nthe\naudience?\nAnd\nthis\nis\nwhy\nsometimes,\nlike,\nyou\nknow,\nit's\ngonna\nsay,\nlike,\nwhatever,\nbut\nthat\nway\nI\ncan\ncome\nback\nand\nI\ncan\nmake\nsure.\nOkay,\nso\nDonald\nTrump.\nUm,\nnow\nwhat\ncounts\nas\ngoing\naway\nfrom,\nfrom\nthe\nchat?\nJust\nleaving\nthis\nwindow.\nSo,\nlike,\ngoing\nanywhere\nelse\nin\nthe,\nuh,\nin\nthe\napplication.\nRight.\nAnd\nthen\nyou\nshould\nsee.\nTo\nsee\nit\nupdated\nthe\nname\nof\nthe\nchat\nto\nsee\nhow\nmany\nwere\nthere.\nOh,\ninteresting.\nSo\nthat\none\ndidn't\neven\nsave.\nOh,\nno,\nthere\nit\nis.\nSo\nif\nI\nrefreshed\nit,\nit\nwas\nthere.\nOkay,\nso\ntechnically,\nwhen\nI\ngo\nback\nto\nit\nand\nask\na\nthird\nquestion,\nit's\nnot\nimmediately\nthere.\nWhen\nI\nrefresh\nthe\npage,\nit,\num,\nit\nscrews\nup.\nOr,\nuh,\nthe\nthird\nmessage\nis\nthere,\nbut\nstill\nnot\nthe\nfirst.\nSo\nthis\nis\nalso.\nSo\ndo\nyou\nknow\nhow\nto,\num,\ncreate,\num.\nUh,\ndo\nyou\nknow\nhow\nto\ncreate\nscreenshots\nor\nscreen\nvideos?\nYeah,\ncommand\nshift\nfour\nor\nwhatever?\nUh,\nyeah,\ncommand\nshift\nfour.\nDoes\nscreenshots\nmake\nyour\nfive?\nYeah.\nOh,\ncommand\nshift\nfive.\nYeah.\nAnd\nthen\nyou\ncan\nchange\nthe\nwindow\nsize.\nMother\nof\nJesus.\nYeah.\nDon't\ntell\nme\nI\ntaught\nyou\nsomething.\nOh,\nyou\nhave\nno\nidea\nwhat\nyou\njust\ntaught\nme.\nLike,\nI've\nconstantly\njust\ngone\nin\nthere,\ndone\nthat,\nbecause\nI\nscreen\nrecord\nfor\nmy\nvideos\nall\nthe\ntime.\nCommission.\nI\nknew\ncommand\nshift\nfour\njust\ndoesn't\nknow\nabout.\nAll\nright,\nso,\nyeah,\nso\nyou\ncan\neither\ndo\nwhole\nscreen\nor\nselect\nthe\narea\nof\nthe\nscreen\nyou\nwant\nto.\nSo\non\nthis\none,\nwhat\nI'd\nprobably\ndo\nis\nrecord\nand\nbe\nlike,\nyou\nknow.\nUh,\nyeah,\nso\nI\njust\nstarted\na\nnew\none\nto\njust\nshow\nthis.\nWe\nshould\nprobably\ntry\na\nfourth\nquestion\nto\nsee,\nyou\nknow,\nif\nit's\njust\nthe\nfirst\none\nthat's\ngetting\nlost.\nWell,\nI'm\ngoing\nto\ndo\nthis\none\nfirst.\nThat\nis\na\ngood\nthing\nto\ncheck,\nthough.\nUm,\nso\nnow\nI'm\ngoing\nto\ngo\nout,\nand\nnow\nI'm\ngonna\ngo.\nWe\ndon't\nhave\nwhat.\nWe\ndon't\nhave\nwhat\nJoe\nBiden\nsaid,\nwhich\nwas\nthe\nfirst\none.\nBut\nif\nI\ngo\nin\nhere\nand\nsay,\nI\nget.\nAnd\nnow\nwhen\nI\ngo\nback\nhere,\nI\nstill\nhave\nthat.\nAnd\nI\nstill\nhave\nthat,\nbut\nI\ndon't\nhave\nthe\nfirst.\nYeah.\nSo\ndo\none\nmore.\nDo\none\nmore\nand\nsee\nif\nthe\nthird\none\nshows\nup.\nNo.\nAt\nthe\nbottom\nof\nthis,\nwho\nWondez?\nThen\nwe\ncan\nknow\nif\nit's\njust\nan\nissue\nof\nthe\nfirst\none\nonly.\nEverything.\nYep.\nIt's\njust\nthe\nfirst\none.\nI\nthink.\nJust\nthe\nfirst\none's\ndisappearing.\nAll\nright.\nUm,\nso\nthen\nI\nwould\ntake\nthis.\nWhere\ndid\nit\nstop?\nFuck.\nDid\nI\nnot\nget\nit\nrecorded\nright\nhere?\nWell,\nyeah,\nI\nguess\nI\ngot\nthis\none,\nbut\nI\nthought\nI,\num.\nIf\nyou're\ndoing\na\nscreen\nrecord,\nthere'll\nbe,\nlike,\na\nlittle\nrecord\nbutton\nup\nin\nyour.\nYour\ntoolbar.\nYeah,\nthat's\nwhat\nI.\nYou\nhave\nto\nhit\nthe\nbutton\nto\nget\nit\nstarted.\nThat\nshould\nfive.\nAnd\nthen.\nAnd\nthen.\nNo,\nyou're\nin\nthe\nwrong\nthing.\nGo\nover\nto\nthat\nthen.\nYeah.\nRecord\nselected\nportion.\nUh,\nokay,\nso\nlet's\ndo\nthat\nagain.\nM\njust\nto,\nlike,\nshow,\nlike,\nthis\nis.\nWhat\ndid\nJoe\nBiden\nsay?\nHow\nmany\nmoderators\nare\nthere?\nWe\ndon't\nhave\nthe\nJoe\nBiden,\nbut\nthen\nif\nI'm\nlike,\nwho,\nuh,\nwon?\nThat'd\nbe\nfunny\nif\nit\nwas,\nlike,\ntrouble.\nTruth.\nSo\nthat's\na\nseparate\none,\nbut\nwe\ncan\ntell\nthat,\nuh,\nthis\nis\nall\nhappening.\nSo\nI'm\ngoing\nto\ngo\nover\nhere\nand\nstop.\nYep.\nThere\nyou\ngo.\nAnd\nwhere'd\nit\ngo?\nIt\ngoes\ndown\nthere.\nYep.\nThen\nyou\ncan\nedit\nit.\nUm,\nwhere\ndid\nit\nsave\nit?\nWherever\nyou\nhave\nit\nset\nup\nto\nsave\nwhich.\nMhm.\nOh,\none\nthing.\nWhy\nare\nyou\nnot\ndoing\none\nof\nthe\nthing\nother\nthings\nis\nlike,\nyou'll\nwant\nto,\nlike\nthis\nis,\num,\nthe\nchat\nand\nuser\nexperience.\nWe\nforgot\nto\ndo\nthat\nauthentication.\nUm,\nit's\nreally\nlike\nthe\ncategory.\nYeah,\nwhichever.\nIf\nyou\ndon't,\nif\nyou\nforget\nabout\nit,\ndon't\nworry\nabout\nit.\nI\nmean,\nmost\nof\nit's\ngoing\nto\nbe\nchat\nand\nuser\nexperience,\nright,\nexactly.\nYeah.\nUh,\nhey,\nwould\nyou\nmind\nif\nI\nlike,\nuh,\nopen\nthe,\nuh,\nwindow\nor\ndo\nit?\nYeah,\njust\na\nlittle\nmore.\nSo\nthen,\nyou\nknow,\nthat's\nthe\nbiggest\nthing.\nIs\nit\ngiving\nthese\nsort\nof\nresponses,\num,\nand\nchat\nhistory.\nRight.\nAnd\nthen\nalso,\ntoo,\nis\nit\nsaving\nit\ncorrectly?\nAre\nyou\nable\nto\nget\nto\npast\nones,\ncontinue\nthem?\nAll\nthat\ngood\nstuff.\nInteresting.\nThat's\ncool\nthat\nit's\nsaving\nthat.\nAll\nright.\nUm,\nso\nthe\nother\nthings\nthat\nis\npart\nof\nthis,\nuh,\nm\nis\nwhen\nyou\nare\nin\na\nchat\nflow\nand\nyou\ndon't\nwant\nto\nhave\nto\ndo\nthe.\nSo\nlet's\ngo\nback\nover\nto\nthis.\nIs\nthat\nin\nthe\nsettings?\nSo\na\nlot\nof\nthe\nthings\nthat\nyou'll\nbe\ndoing\nis\neither\ndoing\nsome\nsettings\nthat\nare\nin\nhere.\nSo\nin\nthe\nsettings\ngear,\nin\nthe\nconfiguration\nand\nthe\npermissions,\nis\nit\nin\nthe\nmarketplace,\nis\nit\nin\nthe\nanswer\nAI\ndropdown,\nis\nit\navailable\nin\nthe\norganization,\nwhich\nyou\ncan\nhave\nlike\nmaybe\ntwo?\nI\nwould\nprobably\nhave\nlike,\none\nbrowser\nwith\nlike\none,\nuh,\nlike\none\nlogged\nin\nand\none\nbrowser\nwith\nthe\nother\none\nlogged\nin.\nWe'll\nset\nyou\nup\nwith\nthat.\nOkay,\nI\nhave\na\nquick\nquestion.\nWhat's\nthe\ndifference\nbetween,\nyou\nknow,\nAI,\nuh,\nanswer\nAI\nand\norganization?\nI\nmean,\norganization\nis\neverybody\nthat\nworks\nfor\nyou.\nAnswer\nAI\njust\nmeans\nthat\nyou\nactually\nwant\nit\nin\nyour\nchat\nin\nthat\ndropdown,\nbecause\nthere\nare\nflows\nthat\nyou\nmay\nnot\nwant\nin\nthe\ndropdown\nbecause\nyou're\nusing\nthem\nfor\nlike,\nit's\nlike\na\nfavorites\nalmost,\nright?\nIt's\nlike\nadding\nit\nto\nyour\nfavorites\nto\nbe\nable\nto\nbe\nused\nin\nthe\nmain\nUI.\nYeah,\nthat's\na\ngood\nway\nto\nput\nit.\nUm,\nso\nthen,\num,\nstarter\nprompts.\nSo\nwhat\nif\nI\nwas\nlike,\nwhat\ndid\nJoe\nBiden\nsay?\nAnd\nwhat\ndid\nTrump\nsay?\nLet's\nsave\nthose.\nNow,\nwhen\nI\ngo\nback\nover\nhere,\nyou\nshould\nget\nsome\noptions.\nThere.\nI\nwas\nin\nthe,\nI\nwas\nin\nthe\npolitical\npundit,\nnot\nthe\ntruth\nseekers.\nSo\nas\nyou\ncan\nsee\nhere,\nwe\nhave\nthe\noptions.\nThey\nshould\nchange\nand\nadd\nthem\ndown\nhere.\nWhen\nyou\nadd\nthem,\nand\nwhen\nyou\nclick\non\nit,\nit\nshould\nautomatically\ndo\nthat.\nAnd,\num,\nyeah,\ngive\na\nresponse.\nSame\nthing.\nIt\nshould\njust\ngive\nthat.\nBut\nthe\nbig\nthing\non\nthere\nis\njust\nmaking\nsure\nthat\nit,\num,\nif\nyou\nadd\nthem,\num,\nso\nthat'd\nbe\na\nuse.\nCase\nnumber\ntwo,\ndid\nsaved\nuh,\nprompts\nin\nthe\nsettings\nof\nuh,\nthe\nchat\nflow\nshow\nup\nin\nanswer\nAI.\nSo\nthat's\nanother\nthing\nto\nalways\ntest.\nUm,\nokay,\nso\nthen\nuh,\nwhat,\nso\nthis\nis\nkind\nof\nlike\nthat\nlittle\nwindow\nis\njust\nlike\na\nlittle\nuh,\na\nlittle\nversion\nof\nthe\nmain\npage\nthat\nyou\ncan\nsee\nfrom\nwithin\nthe\ndeveloping.\nYeah,\nthis\nis\nfor\ndevelopers\nthat\nare\ncreating\nthese\nchat\nflows.\nSo\nthey\nkind\nof\nlike\ntest\nit\nout.\nIt\ndoesn't\nhave\nhistory,\nit\ndoesn't\nsave\nyour\npast\nchats,\nall\nthat\nstuff.\nIt's\njust\nfor\nlike,\nyeah,\none\noffs.\nLike\nif\nyou\nwant\nto\nactually\nuse\nthis\nand\nhave\nyour\npast\nchats\nand\nall\nthat\nstuff,\nyou\nhave\nto\nactually\ngo\ninto\nanswer\nAI\nto\ndo\nthat.\nAnd\nmost\npeople\nare\nonly\ngoing,\nlike,\nmost\npeople\nare\nnot\ngoing\nto\nsee\nthis\nwhole\nthing.\nYeah.\nLike\nif\nthey've\nbeen,\nyou\nknow,\ntheir\ncompany\nhas\nbuilt\nthis.\nRight,\nor\ndeployed\nit\nbecause\nthey\ndon't\nwant\nto\nhave\nuh,\nthey\nwant\nto\nsay\nwhich\nchat\nflows\nthey\nhave\naccess\nto.\nRight,\nokay,\nso\nwhere's\nthat?\nAnd\nthen,\num,\nand\nright\nnow\nthat's\npretty\nmuch\nit\non\nthe\nfront\nend\nof\nthose\nchat\nflows.\nSo\ncan\nI\ndo\na\nquick\nreview\nhere?\nSure.\nSo\nuh,\nfor\neach,\nuh,\nfor\neach,\nwhat\ndo\nwe\ncall\nthem,\neach\nworkflow\nor\nwhatever\nwe\nneed,\nuh,\nto\nlogin\nwith\nGoogle,\nlogin\nwith\nan\nemail\npassword,\netcetera.\nIs\nthat\nrelated\nto\neach\nflow\nor\nis\nthat\njust\na\ngeneral\nthing?\nThat's\na\ngeneral\nthing.\nSo\nwhat's\ngoing\nto\nhappen\nis\nwe're\ngoing\nto\nmake\nchanges\nto\nthe\ncode.\nSo\nyou're\ngoing\nto\nidentify\nbugs.\nRight.\nAnd\nsetting\nthis\nup?\nWe\nboth\nare.\nUh,\nbecause\nI'm\ngoing\nto\nbe\nsetting\nup\nthese\ndefault\nworkflows\nand\nthen\nI'm\ngoing\nto\nsay,\nhey\nGreg,\nhere's\na\nnew\nworkflow.\nCan\nyou\ntest\nit\nout,\nmake\nsure\nthat\nit's\nworking?\nUm,\nand\nall\nthat.\nDo\nI\nhave\nto\ndo\nthat\nlogin\nstuff\nfor\neach\nworkflow\nor\nthat's\nonce\nyou're\nlogged\nin,\nif\nI\ndo\na\nnew\ncode\npush,\nthat's\nwhen\nI'm\nlike,\nokay,\nyou\nneed\nto\ngo\nthrough,\ncheck\nthe\nlogin,\ncheck\nthe\npermissions,\ncheck\nall\nthose\nthings.\nOkay.\nSo\nyeah,\nthe\nfirst\npart\nwas\nmake\nsure\nyou\ncan\nlog\nin.\nSecond\nwas\nto\ngo\ninto\nthe\nsettings\nand\ncheck\nto\nsee\nthat\nit's\na,\nyou\nknow\nwhat,\nwhich,\nwhich\nuh,\nareas\nare\nchecked\nand\nif\nit's\nactually\nin\nthose\nareas\nand\nI'm\nonly,\nam\nI\nchecking\nlike\nall\nthose\ndifferent\nthings\nor\nmainly\njust\npublic\nor\nmarketplace.\nOnce\nyou're\nin\nyour\nown\naccount,\nyou'll\nbe\nable\nto\nsee,\nbe\nlike,\nhey,\njust\ncheck\nto\nmake\nsure\nthe\nsame\nones,\nyou\nknow,\nshould\nshow\nthere.\nShow\nthere.\nRight.\nBecause,\nlike,\nideally\nnothing\nhas\nchanged.\nRight.\nBecause\nif\nyou\nhaven't\nchanged\nthat\nsettings\nand\nthen\njust\ncheck\none\nto\nbe\nlike,\nI\nadded\nit\nand,\nuh,\nand\nit\nshows\nup.\nI\nremoved\nit.\nIt\ndoesn't\nshow\nup\nanymore\nin\nthe\nsettings.\nRight.\nIf\nI\ngo\nto\nthis,\num,\nwhy\nis\nthe\nother\none\nnot\nshowing\nup\nfor\nme?\nWhere's\nthe\ntruth\nseeker?\nOh,\nbecause\nit's\nnot,\nit's\ncalled,\noh,\nthere's\nno\npolitical\nin\nthere.\nOkay.\nYeah.\nSo,\nlike,\nif\nI\ngo\nin\nhere\nand\nI\nsay\nconfiguration,\nI\nremove\nit\nand\nhit\nsave\nand.\nRight.\nAnd\nthen\nI\ngo\ninto\nhere,\nI\ndon't\nsee\nit\nanymore.\nBut\nif\nI\ngo\nback\nover\nhere\nand\nthat\nwas\na,\nthat\nwas\nanswer,\nAI\nis\nwhat\nputs\nit\nin\nthat\ndrop\ndown\nmenu.\nYep.\nOkay.\nYeah.\nAnd\nthen,\nuh,\norganization\nis\njust,\npeople\nwill\nbe\nable\nto\nsee\nit\nfrom\ntheir\nworkflow\nchatflows\nmenu.\nAnd\nthe\npublic\nwould\nbe,\nanybody\ncan\nsee\nit\nfrom\nthe\nchat\nflows,\nbut\nit\nwon't\nnecessarily\nbe\nin\ntheir\ndrop\ndown\nor\nwhatever,\nbecause\nthat's\nsomething\nis\ncustomized.\nMm\nhmm.\nSo\nthat's\nthe.\nSo,\nyeah,\nchecking\nthose,\nchecking\nthe.\nMake\nsure\nthat\nthe,\nuh,\nthose\nare\nall\ngood\nto\ngo\nthe\nother.\nSo\nthen\nthe\none\nthing\nthat\nAdam\nis\ngoing\nto\nbe\npossibly\nrolling\nout\nthis\nweek\nis\nthe\nability\nto,\nwhich\nis\ngonna\nbe\nthe\nbig\nthing\nthat\nI'm\ngonna\nwant\nyou\nto\ntest,\num,\nwhich\nis,\nuh,\nwhich\nhopefully\nwe\nget\nto\nit\nthis\nweek.\nIf\nnot,\noh,\nwell,\nit's\nnot\ngonna\ngo\nout\nthis\nweek,\nbut,\num,\nessentially\nwhere\nI\nshowed\nit\nto\nyesterday,\nyou're\ngonna\nhave,\nlike,\na\nlittle\ndrop\ndown\nover\nhere\non\nthe\nright\nto\nbe\nable\nto,\nlike,\nif\nthe\nchat\nflow\nasks\nfor,\nlike,\na\ndocument,\nyou're\ngonna\nbe\nable\nto\nadd\ndocuments\nfrom\ninside\nhere.\nRight\nnow,\nyou\ncan't,\nyou\ncan\nonly\ndo\nwhat\nit's\nbeen\nset\nup\nwith.\nLike,\nthis\nonly\nhas\naccess\nto\nthe,\num,\ndebate\ntranscript.\nRight.\nAnd\nthere\nare\ncases\nwhere\nif\nI\ndeploy\nit,\nI\nonly\nwant\nthem\nto\nhave\naccess\nto\nthis\ndata\nset.\nBut\nthen\nthere\nare\ncases\nwhere\nyou're\nlike,\nhey,\nI\nwant\nto\nallow\nthem\nto\nmaybe\nadd\nthe\nlatest\nnews\nto\nthis.\nRight.\nOr\nwhatever\nit\nis.\nSo\nthat's\ngonna\nbe\nthe\nbig\none.\nSo\nthen\nthe\nother\nthing.\nSo\nthis\nis\none\narea\nthat\nI'll\nwant\nyou\nto\ntest.\nUm,\nand\njust\nusing\nthis,\nis\nthere\nany\nway\nto\nkeep\nthat,\nuh,\nsidebar\npopped\nout\nor.\nNo,\nit\njust\nnaturally\nhides.\nYeah,\nbut\nis\nthat,\nuh,\nsome,\nthis\nis\nfeedback,\ntoo.\nI\nmean,\nI\nwould.\nI\npersonally,\nif\nI\nhad\nthe\noption,\nI\nwould\nleave.\nIt\npopped\nout.\nYeah.\nJust\nbecause\nstuff\nthat\nauto\nhides,\nuh,\nI\ndon't\nknow,\njust\ndon't\nlove\nit.\nYeah,\nI'm\nnot,\nI'm\nnot\nthrilled\nwith\nthis\nsidebar,\nI'll\ntell\nyou\nthat.\nAlso\nthe\npop\nup,\nuh,\ndown\nhere\nwhen\nyou\nhit,\nuh,\nwhatever,\nis\nthat\na\npuzzle\npiece\nor\nwhat\nis\nthat\nthing?\nIt's\na\nlittle\nrobot.\nA\nlittle\nrobot.\nOkay.\nYeah,\nit's\nkind\nof,\nyou\nnotice\nhow\nit's\nkind\nof\nhard.\nIt's\nlike\nif\nyou\nend\nup\ngoing\npast\nit,\nit\ngoes,\nyeah,\nthat,\ncould\nyou,\nyeah,\nthat\nwould\nalso\nbe\nnice\nif\nthat\nstayed\nsteady\nuntil\nyou\neither.\nAh,\nI\nguess\nif\nyou\ngo\npast\nit,\nyou're\nnot\nconsider\nyou're\nin\nthe\nmenu\nanymore.\nRight?\nWhat\nwas\nthat?\nIf\nyou\ngo\npast\nit,\nmeaning\nyou\ngo\nabove\nsidekick\nstudio,\nit's\nnow\nnot\nseeing\nyou\nas\nbeing\nin\nthe\nmenu\nand\nthen\nit\ndisappears.\nMhm.\nThat\nwould\nbe\nanother\nthing.\nIt\nwould\nbe\nnice,\nI\nmean,\nto\nhave\nthat\noption\nof\nlike,\nyou\nknow,\nstay\npopped\nout\nbecause\nI\nwould\nprobably,\nif\nI\nwere,\nif\nI\nwere\nable\nto\ndo\nthis,\nI\nwould\nlike\nto\nhave\nthat\npopped\nout\nall\nthe\ntime.\nAnd\nthose\non,\nyou\nknow,\nI\nagree\nit\nlooks\ncool,\nbut\nall\nthat\nkind\nof\nlike,\nugh,\ntrying\nto,\ntrying\nto\ncatch\nit,\nuh,\ncan\nget\nannoying.\nI\nagree.\nIt's\nuh,\ngood\nfeedback.\nSo\nthe\nother\nplace\ntoo\nis\nmarketplace.\nSo\nwhen\nyou\nactually\nput,\nso\nwhat\nI'm\ngoing\nto\nbe\ndoing\nis\nI'm\ngoing\nto\nbe\ncreating\nthese\ndefault\nworkflows\nin\nthe\nmarketplace.\nOkay.\nAnd\nthen\ntechnically\nyou\nshould\nbe\nable\nto\ngo\ninto\nany\nof\nthese,\nlike\nfor\ninstance,\nthis\nAI\n101\ncourse\ncreator.\nOkay,\njust\nquick\npause.\nSo\nhow,\nso\nhow\ndoes\nmarketplace,\nhow\nis\nthat\ndifferent\nthan\nchatflows?\nAren't\nthose\njust\ncertain\nchat\nflows\nthat\nyou've\ncreated?\nYeah,\nmarketplace,\nmeaning\nwhat,\nthey're\navailable\nto\neverybody\nor.\nRight.\nSo\nanyone\nthat's\npart\nof\nthis\norganization\ncan\nuh,\nadd\nthese.\nSo\nthis\nis\nwhere\nI'm\nlike,\nhey,\ndo\nyou\nwant\na\nblog\ncreator?\nIt's\nalready\nbeen\npreset\nup\nwith\nthe\ntemplate,\nthe\nvery,\nlike\nall\nthese\nplain\ntext\nthings.\nI'm\nlike,\nyeah,\nI\nwant\nto\nuse\nthis\none.\nI\njust\nsay\nuse.\nAnd\nnow\nit's\nin\nmy\nthing,\nso\nI\nshould\nbe\nable\nto\nsay\nuse\nit.\nSelect\nthe\ncredentials.\nSo\nright\nnow\nI\nhave\nfull\nadmin\naccess.\nRight.\nSo\none\nof\nthe\nthings\nthat\nneeds\nto\nbe\ntested\nis\nthat\nthat\nstaging\nis\ngoing\nto\nhave\ndefault,\nuh,\ncredentials.\nAnd\nyou'll\nneed\nto\nbe\nable\nto\nlike\nmake\nsure\nthat\nyou\ncan\nget\nsomething\nfrom\nthe\nmarketplace\nand\nuse\nit\nwithout\never\nhaving\nto\nput\nyour\nown\ncredentials\nin.\nOkay,\nso\nmarketplaces\nis\nkind\nof\nlike,\nhey,\nwe\npre\nmade\nthese\ntools\nand\nuh,\nyou\ndon't\neven\nhave\nto\nlog\nin\nor\nanything.\nIt's\njust\nlike\nalmost\nlike\na,\nlike\nthe\nchat\nGPT\nwhere\nyou're\nlike,\nyeah,\nanybody\ncan\nroll\nup\nand\njust\nuse\nit\nbecause\nyou\ndon't\nhave\nto\nbe\nlike\nlogged\nin\nto\nuse\nchat,\ndo\nyou?\nYou'll\nhave\nto\nbe\nlogged\nin\nto\nuse\nthis.\nNo,\nI\nknow,\nbut\nI'm\njust\nsaying.\nOkay,\nbut\nyou\ndon't\nhave\nto\nhave\ncredentials,\nyou\nhave\nto\nbe\nlogged\nin\nto\nuse\nchat.\nI\nthink.\nI\ndon't\nknow,\nmaybe\nI'm\nwrong,\nI\ndon't\nknow,\nI\nhaven't\nused\nthat,\nlike\nthat\nkind\nof,\nuh,\nI\nhave\nno\nidea.\nThere\nwas\nlike\na,\njust\nlike\na\nanonymous,\nbut\nthis\nis\njust,\nyeah,\nso\nlike,\nyou\nknow,\nfor\ninstance,\nI\nhave\nall\nthese\nchat\nflows,\nright?\nThese\nare\nones\nthat\nI've\ncreated,\nwell,\nthese\nmarketplace\nones,\nthese\nare\nall\nones\nthat\ncould\nbe\nused\nfor,\nwell,\nhere's\none\nI\nknow.\nClicking\non\ntools,\ngo\nto\nthe\nmarket\nplace,\nclick\non\na\ntool,\nall\nI\nsee\nis\na\nwhite\nscreen.\nHow\ndid\nyou\nget\nit\nto\ndo\nall\nthat\nnumbered\ntext,\nnumbered\nlist?\nI\njust\nsaid\none\ndot\nand\nit\nautomatically\ndid\nit.\nOh,\nand\nthen\nafter\nthat\nit\njust\nrepeats\nthe\npattern.\nYeah,\njust,\nyeah,\nnew.\nAnd\nthen\nthis\nright\nhere,\nyou\ncould\ndo\nit.\nSo\nwhat\nis\nthat?\nHmm?\nIs\nthat\npart\nof\nairtable\nor\nwhatever?\nYeah,\nI\nthink\nso.\nOkay.\nOkay,\nso\nthere's\none\nbug.\nUm,\nso\none\nthing.\nYeah.\nYou\nshould\nnever\nbe\nable\nto\nsee\nor\nedit\nany\ncredentials\nthat\naren't\nyours.\nSo\nthese\nare\nones\nthat\nI\nhave\nthat\nare\nnot\ntechnically\nmine.\nSo\nas\nyou\ncan\nsee,\nI\ncan\nsee\nthem,\nbut\nI\ncan't\nedit\nthem.\nThis\none\nI\ncan\nedit\nbecause\nthat's\nyou.\nBecause\nthat's\nme.\nThese\nyou\ncan't,\nuh,\nedit\nand\nyou\nshould\nnot.\nSo\nlike\nwhatever\nwe\nlog\nin\nwith,\njust\ndouble\ncheck\nto\nmake\nsure\nthat\none,\nyou\ncan\nsee\nthem,\nthe\nsame\ncredentials,\nthe\nsame\nlist.\nMaybe\ntake\na\nscreenshot\nof\nit\nthe\nfirst\ntime\nyou\nlog\ninto\nstaging\nto\nsee\nwhich\nones\nyou\ncan\nsee\nand\nthen\nmake\nuh,\nsure\nthat\nthat's\nthat\nsame\nlist.\nAnd\nthen\nyou\nshould\nbe\nable\nto\nadd\nyour\nown\ncredentials\nas\nwell\ntoo,\nwhich\nI\ncan\ngive\nyou\nsome\nAPI\nkeys\nto\ntest\nwith.\nThese\ncredentials,\nyou\nsaid\nthey're\nnot\nyours.\nLike\nwho,\nwho\nput\nthose\nin?\nWho\nare\nthey\nfor?\nSo\nthese\nare\nglobal\nones.\nSo\nin\norder\nfor\nusers,\nuh,\nto\nget\nin\nand\nstart\nusing\nit\nimmediately,\nwe're\nbasically\nadding\nour\nown\nAPI\nkeys\nfor\nlike\nchat\nGPT,\num,\nmainly\njust\nchat\nGPT,\nuh,\nand\nthen\nbasically\nthat\nway\nthey\ncan\nselect\nit\nand\nuse\nours.\nAnd\nthen\nwe\njust\ncharge\nthem.\nWhereas\nif\nyou\nuse\nyour\nown\nOpenAI\nkeys,\nthen\nyou're\nusing\nyour\nown\naccount.\nOkay.\nBut\nthey\ndo\nget\ncharged\nby\nuse\nor\nwhatever.\nYeah.\nUm,\nand\nthen,\nyeah,\nyou\ndon't\nhave\nto\nworry\nabout\nany\nof\nthese\nthings\ndown\nhere.\nUm,\nso\nthen\nthe\nother\nthing\nthat\nI'll\nhave\nyou\ntest\nwith\na\nlot\nis\nthis\ncontentful\nloader.\nSo\nI\ncreated\nthis\ncontentful\nloader\nwhere\nyou\ncan\nchoose,\nlike\nfor\ninstance,\nmy\nmarketing\nwebsite\ndelivery\ntokens.\nOh.\nCause\nI\nknow.\nWhy\nam\nI\nin\nstaging?\nYeah,\nI\nam\nin\nstaging.\nThat's\nwhy.\nGot\nit.\nOkay.\nUm,\nlet\nme\ntry.\nYeah.\nUm.\nMhm.\nSo\nI'm\njust\nadding\nthis\ncredential\nin\nhere\nfor\nme\nto\njust\nshow\nyou.\nBut\nwe'll\nneed\nto\nadd\nyour,\nI'm\nactually\ncurious\nif\nI\ndidn't\nshare\nthis,\nhow\nto\nmake\nit\nan\nadmin.\nThat's\nright.\nUm.\nMhm.\nCool.\nSo\nnow\nthat\nI\nhave\nthat,\nI\ncan\njust\nselect\nthis\nand\nwhat\nit\ndoes\nis\nsay,\nokay,\nwhat\ncontent\ntype\ndo\nwe\nwant?\nLet's\nlook\nat\nthe\num,\nthe\nuh,\nmedia\ntranscripts\nor\nthe\npolitical,\nlet's\nlook\nat\nthe\npolitical\nstatements.\nI\nwant\nto\nbring\nin\nthe\nstatements\nand\nthe\nAI\nreasoning.\nI\ncan\nsay\nprocess.\nOh,\nI\nmeant\nto\npreview,\nnot\nprocess.\nWe'll\nsee\nif\nthat\nworks.\nDid\nI\njust\nkill\nstaging?\nNo,\nno,\nI\ngot\nit.\nGot\nit.\nSo\nI\nknow\nI\ndid.\nSo\nyeah,\nhere\nit\nis.\nSo\nhere's\nthe.\nShe\nseems\nto\nbe\nalone.\nLiterally\nalone.\nAnd\nher\ndisgraceful\ndisrespect\nfor\nthe\nUnited\nStates,\nthe\nSupreme\ncourt,\nshe\nthinks,\nhmm\nhm.\nWho\nwas\nthat?\nLet's\nedit\nthe\nconfig,\npeople.\nMedia\nsource.\nAnd\nI'm\nactually\ngoing\nto\nedit\nthis\nconfig.\nSo\nthat's\na\nrelated\nthing.\nSo\nwith\nrelated\nones.\nMedia\nsource,\nI'm\ngoing\nto\nsay\nthe\nsource\nname\nnow.\nIt\nshould\ninclude.\nYep,\nsource\nname.\nNewsmax.\nLiterally\na\nloon.\nI'm\nlike,\noh,\nshe's\nliterally\nalone.\nLiterally\na\nloon.\nYeah.\nSo\nnow\nit\nadds\nthat\npiece\nto\nit.\nSo\nthis\nallows\nme\nto\num,\nconfigure\nand\nget\nthe\ninformation\nthat\nwe\nhave\nin\ncontentful\ninto\nhere\nso\nthat\nI\ncan\nlike\nchat\nwith\nit.\nDoes\nthat\nmake\nsense?\nI\nthink\nso,\nyeah.\nI\nmean,\nyou're\njust\nselecting,\nit's\ngot\na\nlot\nof\ninformation\nabout\nall\nthis\nstuff.\nAnd\nyou're\njust\nlike,\nit's\nlike\ntags.\nYou're\nturning\non\nand\noff\nto\nsee\nlike,\nokay,\nlike\nI\nwant\nthis\nand\nthat.\nI\nwant\nto\nsee\nwho\nsaid\nit\nand\nwhat\nthey\nsaid.\nSo\nto\nvalidate\nthat,\nI\ncould\ngo\nin\nhere,\nI\ncan\nlook\nat\nthis,\nget\nthis\nentry\nid\nand\nliterally\njust\nclick\ninto\nany\none\nof\nthese.\nWhat\ndo\nyou\nneed?\nI\nmoved\na\ncouple\nthings.\nSorry,\nwhat\nare\nyou\nlooking\nat?\nI\nbrought\nsome\nfood\nover,\nas\nyou\ncan\nsee.\nI\nsaw.\nThank\nyou.\nAll\nright,\nso\nin\norder\nto\ndo\nthis,\nyou\ncan\njust\nliterally\nclick\non\nany\nid,\nreplace\nthis\nwith\nthat\nid.\nBoom.\nSo\nyou\ncan\nkind\nof\nsee\nif\nI,\nfor\ninstance,\nif\nI\nupdate\nthis\nand\nsay\npolitical\nspectrum.\nSo\nthe\nway\nthis\nworks\nis\nyou\nhave\nyour\nmain\ncontent\ntype,\nwhich\nis\npolitical\nstatements,\nwhich\nis\nthis\ntype.\nOkay.\nIt's\nup\nhere\nin\nthe\nleft.\nYou\ncan\nalso\nget\nto\nit\nby\njust\nlooking\nhere\nfor\njust\nthis\nwill\nshow\nyou\nonly\npolitical\nstatements\nand\nthen\nwhich\nfields\nyou\nwant\nfrom\nthat.\nSo\nif\nI\nlook\nat\nthe\npolitical,\nat\nthis\none,\nif\nI\nwanted\nthe\ntopic,\nall\nI'd\nhave\nto\ndo\nis\nchoose\ntopic,\nsave,\num,\npreview.\nSo\nwhen\nyou\nput\nthat\ncode\nin,\nyou're\ngoing\nto\nsee\nthe\nentire\nentry\nwith\nall\nthe\nfields.\nYou\nfigure\nout\nwhat\nyou\nwant\nout\nof\nthose\nfields,\nright?\nBecause\nthese\ncontent,\ntopic\npeople,\nstatement,\nsource,\neverything,\neverything,\nthis\npolitical\nstatement\nhas\nthe\nsame\nstructure\nfor\nall\nof\nthem.\nSo\nthen\nyou're\njust\nsaying,\nhey,\nI\nwant\nin\nthis\nconfig,\nthese\nare\nthe\nfields\nI\nwant,\nright?\nMaybe\nI\nwant\nthe\nsentiment,\nmaybe\nI\nwant\nthe\npolitical,\ndepending\non\nwhat\nI'm\nusing\nthis\nfor.\nRight?\nAnd\nthen\nthat\ngets\nadded\nright\nhere.\nNow\none\nthing\nis\nthat,\nuh,\nit\nalso\ndoes,\nit's\num.\nSo\nif\nI\nadded\noriginal\nvideo,\nright?\nSo\nthis\nis\ncalled\nactually\noriginal\nvideo.\nSo\nif\nI\nadd\nthat\none\nand\nhit\nsave,\nit's\ngonna\nhave\nthe\nvideo.\nSo,\nlooks\nlike\ndidn't\nshow.\nOh,\nI\nknow\nwhy.\nYeah,\nbecause\nthe\nmedia\nsource,\nI\nsaid\nsource\nname\nonly.\nGive\nme\nthe\nsource\nname.\nBecause\nthis\nis\na\nmedia\nsource\ntranscript.\nYou\ncan\nsee\nit\nright\nthere.\nUh,\nthen\nyou\nwould\njust\nneed\nto\nsay,\nokay,\nsource\nname.\nIf\nI\nclick\ninto\nhere,\nsource\nname.\nSo\nif\nI\nchose\nviews\nas\na\npart\nof\nthis.\nSo,\nuh,\nedit\nviews,\nsave.\nNow\nI\npreview\nthat.\nI\nnow\nget\nviews.\nSo\nbecause\nthese\nare\nrelated\npieces\nof\ncontent,\nthis\nis\nlike,\nokay,\nof\nthe\nrelated\nones,\nwhich\nfields\ndo\nyou\nwant?\nBecause\nI\nmay\nnot\nneed\nall\nof\nthis,\nbut\nlet's\nsay\nI\ndid\nwant\nthe\nYouTube\nvideo\nURL,\nright?\nI\ngo\nin\nhere,\nconfig\nedita\nvideo\nid.\nI\nnow\ngot\nthe\nvideo\nid\nfor\nthis.\nAnd\nwould\nyou\nput,\nput\nthat\ninto\nYouTube\nthen?\nOr\nis\nthat\njust\ninto\nbringing\nup\nthe\nactual\nrecord?\nNo,\nI\ncould,\nI\ncould\nliterally\nuse\nthis\nid\nthen.\nLike\nif\nI\ngo\nto,\nif\nI\ngo\nto\nYouTube,\nyeah,\nit's\nalways\nforward\nslash\nwatch,\nthen\nquestion\nMark\nV\nand\nthen\njust\nreplace\nthis.\nOkay.\nWelcome\nback\nto\nAmerica's\nagenda.\nWe\ncontinue\nto\nfollow\nthe\nbreaking\nnews\nfrom\ntoday,\nfrom\nthe\nSupreme\nCourt,\nthey\nhave\nunanimously\nruled\nto\nkeep\nTrump\non\nthe\nballot\nin\nColorado.\nNow,\nSCOTUS\nwas\nexpected\nto\ndismiss\nTrump's\nballot\neligibility\nscrotus.\nSo\nyeah,\nmy\ngoal\nis\nwith\nthis\nis\nto\nlike,\nbe\nlike,\nokay,\nwhere?\nAnd\nthen\nultimately\nbe\nable\nto\nsay\nwhen\nshe,\nthat\nstatement\nis.\nBut\nyeah,\nthat\nway\nI\ncould\nbe\nlike,\nwhat\nwas\nthat\nabout\nthat?\nIt's\nlike,\nboom.\nUh,\nshe\nwas\nreally,\nit\ngoes\ndirectly\nto\nthat\nstatement.\nYou\nmean\nthat\nstatement\nlike\nin\nthe\nvideo?\nYeah,\nyeah,\nbecause\nI\nmean,\nit's\na\nlong\nvideo,\nright.\nSo\nI\nwant,\nI\nwant\njust\nthis\nstatement,\nright?\nI\ndon't\nhave\nthat\nright\nnow.\nI\nwouldn't\neven\nknow\nwhat\ntimestamp\nit\nis.\nBut\nthis\nis\nkind\nof,\nI\nalready\nhave\nthe\ninfrastructure\nand\nI'll\nrun\nit\nacross\nall\nthese,\nget\nthat\ninformation\ntoo\nif\nI\nwanted\nit.\nBut,\num,\nthe\nreason\nI\nbring\nthis\nup\nis\nbecause\nthis\nis\ngoing\nto\nbe\none\nof\nthe,\num,\nones\nthat\nyou\ntest.\nSo\nfor\ninstance,\nif\nI\nincluded\nthe\nfield\nnames\nand\nhit\npreview,\nthat\nI\ncan\nactually\nsee\nlike\nvideo\nid\ntopic,\nmedia\nsource\nfor\nlike\ndebugging\npurposes.\nYeah.\nSo\nI\ncan\nthen,\nyou\nknow,\nif\nI'm\ndebugging,\nI\ncan\nquickly\nsee\nlike\nwhere\nit\ncame\nfrom.\nSo\nthis\nis\noriginal\nvideo\nsource\nname.\nI\nuh,\ndon't\nget\nthat.\nWhy\nis\nthere\ntwo\nthere?\nBecause,\nuh,\noriginal\nvideo\nis\nthe,\nis,\nis\nthis\nuh,\none\nwhich\nis\nlinked\nto\nanother\nobject.\nSo\nthen\nit's\nlike,\nhey,\nof\noriginal\nvideo\nwe\nget\nsource\nname\nviews\nand\nvideo\nid.\nOkay.\nSo\nyou\ncan\nkind\nof\nsee\nthat\ntree\nof\nit.\nDoes\nthat\nmake\nsense?\nYeah,\nlike\nideally,\nI\nmean,\nif\nyou\nwere\nthinking\ntree\nlike\nviews\nand\nvideo,\nwhatever\nwould\nbe\nsort\nof\nindented\nas\nwell\nbecause\nthey're\nall,\nthey're\nall\ncoming\nback\nas\na,\nyeah,\nI\ncould\nupdate\nthis\nso\nthat\nit's\nlike\noriginal\nvideo\nviews.\nOriginal\nvideo.\nSo\nyou\ncould\nsee\nlike\nthese\nwere\ncoming\nfrom\nthis\nsub\none.\nI\nguess\nthat's\na\ngood\nuse.\nAnd\nthen\nthese\nare,\nyou\nknow,\nare\ncoming\nfrom\nthe\nmain\nitem.\nOkay.\nYeah.\nAnd\nthen\nI\ncould\nsave\nthis,\nI\ncould\nprocess\nit\nand\nthen\nbasically\ncreate\na\nchatbot\nwith\nit.\nSo\nthis\nwill\nbe\none\nthat\nI\nwant\nyou\nto\ntest,\num,\nand\nkind\nof\nmaking\nsure\nthat\neverything\nis\nworking\nas\nto\nbe\nexpected\nthere.\nUm,\nnow\nwhat\nI'm\ngoing\nto\nbe\ndoing\nis\nI'm\ngoing\nto\nbe\ngoing\nthrough\nand\nI'm\ngoing\nto\nbe\ncreating\nall\nof\nthese\nworkflows\nhere.\nSo\nit\nlooks\nlike\n41.\nUm,\nso\nnow\nI'm\nbasically\ngoing\nto\ncreate\nit,\nput\nit\nin\nthe\nmarketplace,\nbe\nlike,\nhey\nGreg,\ncan\nyou\ngive\nit\na\nwhirl\ntest?\nAnd\nthen\nhonestly\nyou\nknow,\ntry\nto\nbreak\nit,\nyou\nknow,\ntry\ndifferent\nthings.\nTry,\nyou\nknow,\nlong\nchats.\nRight.\nTry\njust\ncontinuing\nto.\nJust\nchat,\nsee\nwhat\nhappens.\nRight.\nContinue,\nuh,\nto\nask\nit\nquestions.\nContinue\nto\ndo\nthings,\num,\ngo\nback\nand\nforth\nbetween\nthem.\nUm,\nyeah,\nupdate\nthese,\nbut\njust\nkind\nof,\nlike,\nmake\nlots\nof\ndifferent\nchanges,\num,\nto\nit.\nAnd\nthen,\num.\nSo\nthen\nwhat\nelse?\nI\nthink\nthat's\nit\nfor\nnow.\n\n",
+          "textSplitter": "",
+          "metadata": "",
+          "omitMetadataKeys": ""
+        },
+        "outputAnchors": [
+          {
+            "name": "output",
+            "label": "Output",
+            "type": "options",
+            "description": "Array of document objects containing metadata and pageContent",
+            "options": [
+              {
+                "id": "plainText_0-output-document-Document|json",
+                "name": "document",
+                "label": "Document",
+                "description": "Array of document objects containing metadata and pageContent",
+                "type": "Document | json"
+              },
+              {
+                "id": "plainText_0-output-text-string|json",
+                "name": "text",
+                "label": "Text",
+                "description": "Concatenated string from pageContent of documents",
+                "type": "string | json"
+              }
+            ],
+            "default": "document"
+          }
+        ],
+        "outputs": {
+          "output": "text"
+        },
+        "selected": false
+      },
+      "width": 300,
+      "height": 487,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 392.0484688937149,
+        "y": 926.4869590094474
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "chatOpenAI_0",
+      "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+      "target": "llmChain_0",
+      "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
+      "type": "buttonedge",
+      "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_0-llmChain_0-input-model-BaseLanguageModel"
+    },
+    {
+      "source": "chatPromptTemplate_0",
+      "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+      "target": "llmChain_0",
+      "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+      "type": "buttonedge",
+      "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate"
+    },
+    {
+      "source": "plainText_0",
+      "sourceHandle": "plainText_0-output-document-Document|json",
+      "target": "chatPromptTemplate_0",
+      "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
+      "type": "buttonedge",
+      "id": "plainText_0-plainText_0-output-document-Document|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
+    }
+  ]
+}
