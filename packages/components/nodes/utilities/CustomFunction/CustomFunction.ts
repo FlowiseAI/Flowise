@@ -167,6 +167,7 @@ class CustomFunction_Utilities implements INode {
             }
             return response
         } catch (e) {
+            console.error(`[CustomJavascript] Error in function ${functionName}`, e)
             throw new Error(`[CustomJavascript] Error in function ${functionName} - ${e.message ?? e}`)
         }
     }

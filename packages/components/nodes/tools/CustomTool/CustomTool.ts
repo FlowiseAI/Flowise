@@ -1,5 +1,5 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { convertSchemaToZod, getBaseClasses, getVars } from '../../../src/utils'
+import { convertSchemaToZod, getBaseClasses, getUserHome, getVars } from '../../../src/utils'
 import { DynamicStructuredTool } from './core'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
@@ -100,7 +100,8 @@ class CustomTool_Tools implements INode {
 
             return dynamicStructuredTool
         } catch (e) {
-            throw new Error(e)
+            console.error(`[CustomJavascript] Error in custom tool: ${this.name}`, e)
+            throw new Error(`[CustomJavascript] Error in custom tool: ${this.name} - ${e.message ?? e}`)
         }
     }
 }

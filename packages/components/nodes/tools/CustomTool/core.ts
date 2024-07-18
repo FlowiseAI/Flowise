@@ -3,7 +3,9 @@ import { NodeVM } from 'vm2'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { StructuredTool, ToolParams } from '@langchain/core/tools'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
-import { availableDependencies, defaultAllowBuiltInDep, prepareSandboxVars } from '../../../src/utils'
+import { availableDependencies, defaultAllowBuiltInDep, getUserHome, prepareSandboxVars } from '../../../src/utils'
+import path from 'path'
+import fs from 'fs'
 
 class ToolInputParsingException extends Error {
     output?: string
@@ -109,39 +111,50 @@ export class DynamicStructuredTool<
         _?: CallbackManagerForToolRun,
         flowConfig?: { sessionId?: string; chatId?: string; input?: string }
     ): Promise<string> {
-        let sandbox: any = {}
-        if (typeof arg === 'object' && Object.keys(arg).length) {
-            for (const item in arg) {
-                sandbox[`$${item}`] = arg[item]
+        try {
+            let sandbox: any = {}
+            if (typeof arg === 'object' && Object.keys(arg).length) {
+                for (const item in arg) {
+                    sandbox[`$${item}`] = arg[item]
+                }
             }
-        }
 
-        sandbox['$vars'] = prepareSandboxVars(this.variables)
+            sandbox['$vars'] = prepareSandboxVars(this.variables)
 
-        // inject flow properties
-        if (this.flowObj) {
-            sandbox['$flow'] = { ...this.flowObj, ...flowConfig }
-        }
-
-        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-            : defaultAllowBuiltInDep
-        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = availableDependencies.concat(externalDeps)
-
-        const options = {
-            console: 'inherit',
-            sandbox,
-            require: {
-                external: { modules: deps },
-                builtin: builtinDeps
+            // inject flow properties
+            if (this.flowObj) {
+                sandbox['$flow'] = { ...this.flowObj, ...flowConfig }
             }
-        } as any
 
-        const vm = new NodeVM(options)
-        const response = await vm.run(`module.exports = async function() {${this.code}}()`, __dirname)
+            const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
+                ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
+                : defaultAllowBuiltInDep
+            const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
+            const deps = availableDependencies.concat(externalDeps)
 
-        return response
+            const options = {
+                console: 'inherit',
+                sandbox,
+                require: {
+                    external: { modules: deps },
+                    builtin: builtinDeps
+                }
+            } as any
+
+            const customFunctions = await getConfigFile('custom_functions.js')
+            const vm = new NodeVM(options)
+            const response = await vm.run(
+                `${customFunctions}
+            module.exports = async function() {${this.code}}()`,
+                __dirname
+            )
+
+            return response
+        } catch (e) {
+            console.error(`[CustomJavascript] Error in custom tool: ${this.name}`, e)
+
+            return `[CustomJavascript] Error in custom tool: ${this.name} - ${e.message ?? e}`
+        }
     }
 
     setVariables(variables: any[]) {
@@ -150,5 +163,15 @@ export class DynamicStructuredTool<
 
     setFlowObject(flow: any) {
         this.flowObj = flow
+    }
+}
+
+export const getConfigFile = async (fileName: string): Promise<string> => {
+    // read home .flowise filename
+    const filePath = path.join(getUserHome(), '.flowise', fileName)
+    try {
+        return await fs.promises.readFile(filePath, 'utf8')
+    } catch (error) {
+        return ''
     }
 }
