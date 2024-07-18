@@ -36,6 +36,7 @@ import './index.css'
 
 //API
 import chatFlowsApi from '@/api/chatflows'
+import exportImportApi from '@/api/exportImport'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -139,12 +140,12 @@ const ProfileSection = ({ username, handleLogout }) => {
     const importAllChatflows = () => {
         inputRef.current.click()
     }
-    const getAllChatflowsApi = useApi(chatFlowsApi.getAllChatflows)
+    const getAllExportImportApi = useApi(exportImportApi.getAll)
 
-    const exportChatflowsSuccess = () => {
+    const exportAllSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: `Export chatflows successful`,
+            message: `Export all successful`,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -158,9 +159,9 @@ const ProfileSection = ({ username, handleLogout }) => {
     }
 
     useEffect(() => {
-        if (getAllChatflowsApi.error) errorFailed(`Failed to export Chatflows: ${getAllChatflowsApi.error.response.data.message}`)
-        if (getAllChatflowsApi.data) {
-            const sanitizedChatflows = sanitizeChatflows(getAllChatflowsApi.data)
+        if (getAllExportImportApi.error) errorFailed(`Failed to export all: ${getAllExportImportApi.error.response.data.message}`)
+        if (getAllExportImportApi.data) {
+            const sanitizedChatflows = sanitizeChatflows(getAllExportImportApi.data)
             const dataStr = JSON.stringify({ Chatflows: sanitizedChatflows }, null, 2)
             const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
@@ -170,10 +171,10 @@ const ProfileSection = ({ username, handleLogout }) => {
             linkElement.setAttribute('href', dataUri)
             linkElement.setAttribute('download', exportFileDefaultName)
             linkElement.click()
-            exportChatflowsSuccess()
+            exportAllSuccess()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getAllChatflowsApi.error, getAllChatflowsApi.data])
+    }, [getAllExportImportApi.error, getAllExportImportApi.data])
 
     const prevOpen = useRef(open)
     useEffect(() => {
@@ -258,13 +259,13 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
-                                                        getAllChatflowsApi.request()
+                                                        getAllExportImportApi.request()
                                                     }}
                                                 >
                                                     <ListItemIcon>
                                                         <IconFileExport stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Export Chatflows</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>Export All</Typography>} />
                                                 </ListItemButton>
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
