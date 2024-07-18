@@ -2,12 +2,14 @@ import { get } from 'lodash'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
 import { NodeVM } from 'vm2'
-import { BaseMessage, MessageContentImageUrl } from '@langchain/core/messages'
+import { AIMessage, BaseMessage, HumanMessage, MessageContentImageUrl, ToolMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { addImagesToMessages, llmSupportsVision } from '../../src/multiModalUtils'
 import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, IVisionChatModal } from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
 import { StructuredTool } from '@langchain/core/tools'
+import { ChatMistralAI } from '@langchain/mistralai'
+import { ChatAnthropic } from '@langchain/anthropic'
 
 export const SELECTED_CONDITION_TYPE_PREFIX = '_FLOWISE_SELECTED_CONDITION_TYPE_'
 
@@ -202,6 +204,61 @@ export const convertStructuredSchemaToZod = (schema: string | object): ICommonOb
     } catch (e) {
         throw new Error(e)
     }
+}
+
+export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) => {
+    // get rid of non-string messages
+    const messages = (state.messages as unknown as BaseMessage[]).filter((message) => typeof message.content === 'string')
+
+    const isToolMessage = (message: BaseMessage) => message instanceof ToolMessage || message.constructor.name === 'ToolMessageChunk'
+    const isAIMessage = (message: BaseMessage) => message instanceof AIMessage || message.constructor.name === 'AIMessageChunk'
+    const isHumanMessage = (message: BaseMessage) => message instanceof HumanMessage || message.constructor.name === 'HumanMessageChunk'
+
+    if (llm instanceof ChatMistralAI) {
+        if (messages.length > 1) {
+            const lastSecondMessage = messages[messages.length - 2]
+            const lastMessage = messages[messages.length - 1]
+
+            /*
+             * MistralAI does not support last message as AI Message
+             * If last message is AI Message, convert it to Human Message
+             * If 2nd last message is a Tool Message:
+             * - AND last message is AI Message: append Human Message
+             * - AND last message is Human Message: append AI Message between Tool and Human Message
+             */
+            if (!isToolMessage(lastSecondMessage) && isAIMessage(lastMessage)) {
+                messages.pop()
+                messages.push(new HumanMessage({ ...lastMessage }))
+            } else if (isToolMessage(lastSecondMessage) && isAIMessage(lastMessage)) {
+                messages.push(new HumanMessage({ content: 'Given the user question, answer user query' }))
+            } else if (isToolMessage(lastSecondMessage) && isHumanMessage(lastMessage)) {
+                messages.pop()
+                messages.push(new AIMessage({ content: '' }))
+                messages.push(lastMessage)
+            }
+        } else if (messages.length === 1) {
+            const lastMessage = messages[messages.length - 1]
+            if (isToolMessage(lastMessage)) {
+                const lastMessageContent = lastMessage.content as string
+                if (lastMessageContent.includes('Acknowledge that and ask if user needs any help.')) {
+                    messages.push(new AIMessage({ content: `Tool calls got denied. Do you have other questions?` }))
+                }
+            }
+        }
+    } else if (llm instanceof ChatAnthropic) {
+        /*
+         * Anthropic does not support first message as AI Message
+         */
+        if (messages.length) {
+            const firstMessage = messages[0]
+            if (isAIMessage(firstMessage)) {
+                messages.shift()
+                messages.unshift(new HumanMessage({ ...firstMessage }))
+            }
+        }
+    }
+
+    return messages
 }
 
 export class ExtractTool extends StructuredTool {

@@ -36,7 +36,8 @@ import {
     constructGraphs,
     databaseEntities,
     getSessionChatHistory,
-    getMemorySessionId
+    getMemorySessionId,
+    clearSessionMemory
 } from '../utils'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { replaceInputsWithConfig, resolveVariables } from '.'
@@ -377,6 +378,8 @@ export const buildAgentGraph = async (
                 }
             }
         } catch (e) {
+            // clear agent memory because it has already been saved
+            await clearSessionMemory(nodes, appServer.nodesPool.componentNodes, chatId, appServer.AppDataSource, sessionId)
             if (getErrorMessage(e).includes('Aborted')) {
                 if (socketIO && incomingInput.socketIOClientId) {
                     socketIO.to(incomingInput.socketIOClientId).emit('abort')

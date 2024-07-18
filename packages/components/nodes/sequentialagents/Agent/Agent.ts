@@ -20,7 +20,7 @@ import {
 } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
-import { customGet, getVM, processImageMessage, transformObjectPropertyToFunction } from '../commonUtils'
+import { customGet, getVM, processImageMessage, transformObjectPropertyToFunction, restructureMessages } from '../commonUtils'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`
@@ -356,6 +356,7 @@ class Agent_SeqAgents implements INode {
             return await agentNode(
                 {
                     state,
+                    llm,
                     agent: await createAgent(
                         agentName,
                         state,
@@ -508,6 +509,7 @@ async function createAgent(
 async function agentNode(
     {
         state,
+        llm,
         agent,
         name,
         abortControllerSignal,
@@ -516,6 +518,7 @@ async function agentNode(
         options
     }: {
         state: ISeqAgentsState
+        llm: BaseChatModel
         agent: AgentExecutor | RunnableSequence
         name: string
         abortControllerSignal: AbortController
@@ -529,6 +532,10 @@ async function agentNode(
         if (abortControllerSignal.signal.aborted) {
             throw new Error('Aborted!')
         }
+
+        // @ts-ignore
+        state.messages = restructureMessages(llm, state)
+
         const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
         const additional_kwargs: ICommonObject = { nodeId: nodeData.id }
 

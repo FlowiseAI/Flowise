@@ -43,7 +43,7 @@
         "@langchain/google-vertexai": "^0.0.19",
         "@langchain/groq": "^0.0.8",
         "@langchain/langgraph": "^0.0.22",
-        "@langchain/mistralai": "^0.0.19",
+        "@langchain/mistralai": "^0.0.26",
         "@langchain/mongodb": "^0.0.1",
         "@langchain/openai": "^0.0.30",
         "@langchain/pinecone": "^0.0.3",

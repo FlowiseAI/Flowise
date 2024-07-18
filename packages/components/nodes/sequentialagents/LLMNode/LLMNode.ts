@@ -24,9 +24,9 @@ import {
     customGet,
     getVM,
     processImageMessage,
-    transformObjectPropertyToFunction
+    transformObjectPropertyToFunction,
+    restructureMessages
 } from '../commonUtils'
-import { ChatMistralAI } from '@langchain/mistralai'
 import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
 
 const TAB_IDENTIFIER = 'selectedUpdateStateMemoryTab'
@@ -351,6 +351,7 @@ class LLMNode_SeqAgents implements INode {
             return await agentNode(
                 {
                     state,
+                    llm,
                     agent: await createAgent(
                         llmNodeName,
                         state,
@@ -412,20 +413,8 @@ async function createAgent(
     if (llmStructuredOutput && llmStructuredOutput !== '[]') {
         try {
             const structuredOutput = z.object(convertStructuredSchemaToZod(llmStructuredOutput))
-            // @ts-ignore
-            llm = llm.withStructuredOutput(structuredOutput)
 
-            if (llm instanceof ChatMistralAI) {
-                const tool = new ExtractTool({
-                    schema: structuredOutput
-                })
-                // @ts-ignore
-                const modelWithTool = llm.bind({
-                    tools: [tool],
-                    tool_choice: 'any'
-                })
-                llm = modelWithTool
-            } else if (llm instanceof ChatGoogleGenerativeAI) {
+            if (llm instanceof ChatGoogleGenerativeAI) {
                 const tool = new ExtractTool({
                     schema: structuredOutput
                 })
@@ -434,6 +423,9 @@ async function createAgent(
                     tools: [tool]
                 }) as any
                 llm = modelWithTool
+            } else {
+                // @ts-ignore
+                llm = llm.withStructuredOutput(structuredOutput)
             }
         } catch (exception) {
             console.error(exception)
@@ -473,6 +465,7 @@ async function createAgent(
 async function agentNode(
     {
         state,
+        llm,
         agent,
         name,
         abortControllerSignal,
@@ -481,6 +474,7 @@ async function agentNode(
         options
     }: {
         state: ISeqAgentsState
+        llm: BaseChatModel
         agent: AgentExecutor | RunnableSequence
         name: string
         abortControllerSignal: AbortController
@@ -495,7 +489,19 @@ async function agentNode(
             throw new Error('Aborted!')
         }
 
-        const result: AIMessageChunk | ICommonObject = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
+        // @ts-ignore
+        state.messages = restructureMessages(llm, state)
+
+        let result: AIMessageChunk | ICommonObject = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
+
+        const llmStructuredOutput = nodeData.inputs?.llmStructuredOutput
+        if (llmStructuredOutput && llmStructuredOutput !== '[]' && result.tool_calls && result.tool_calls.length) {
+            let jsonResult = {}
+            for (const toolCall of result.tool_calls) {
+                jsonResult = { ...jsonResult, ...toolCall.args }
+            }
+            result = { ...jsonResult, additional_kwargs: { nodeId: nodeData.id } }
+        }
 
         if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {
             const returnedOutput = await getReturnOutput(nodeData, input, options, result, state)

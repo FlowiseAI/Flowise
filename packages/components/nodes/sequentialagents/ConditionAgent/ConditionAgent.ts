@@ -22,9 +22,9 @@ import {
     convertStructuredSchemaToZod,
     customGet,
     getVM,
-    transformObjectPropertyToFunction
+    transformObjectPropertyToFunction,
+    restructureMessages
 } from '../commonUtils'
-import { ChatMistralAI } from '@langchain/mistralai'
 import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
 
 interface IConditionGridItem {
@@ -440,21 +440,8 @@ const runCondition = async (
     if (conditionAgentStructuredOutput && conditionAgentStructuredOutput !== '[]') {
         try {
             const structuredOutput = z.object(convertStructuredSchemaToZod(conditionAgentStructuredOutput))
-            // @ts-ignore
-            model = llm.withStructuredOutput(structuredOutput)
 
-            if (llm instanceof ChatMistralAI) {
-                const tool = new ExtractTool({
-                    schema: structuredOutput
-                })
-                // @ts-ignore
-                const modelWithTool = llm.bind({
-                    tools: [tool],
-                    tool_choice: 'any',
-                    signal: abortControllerSignal ? abortControllerSignal.signal : undefined
-                })
-                model = modelWithTool
-            } else if (llm instanceof ChatGoogleGenerativeAI) {
+            if (llm instanceof ChatGoogleGenerativeAI) {
                 const tool = new ExtractTool({
                     schema: structuredOutput
                 })
@@ -464,6 +451,9 @@ const runCondition = async (
                     signal: abortControllerSignal ? abortControllerSignal.signal : undefined
                 })
                 model = modelWithTool
+            } else {
+                // @ts-ignore
+                model = llm.withStructuredOutput(structuredOutput)
             }
         } catch (exception) {
             console.error('Invalid JSON in Condition Agent Structured Output: ' + exception)
@@ -489,10 +479,13 @@ const runCondition = async (
         })
     }
 
+    // @ts-ignore
+    state.messages = restructureMessages(model, state)
+
     let result = await chain.invoke({ ...state, signal: abortControllerSignal?.signal }, config)
     result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
 
-    if (result.tool_calls && result.tool_calls.length) {
+    if (conditionAgentStructuredOutput && conditionAgentStructuredOutput !== '[]' && result.tool_calls && result.tool_calls.length) {
         let jsonResult = {}
         for (const toolCall of result.tool_calls) {
             jsonResult = { ...jsonResult, ...toolCall.args }
