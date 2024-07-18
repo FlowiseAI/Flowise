@@ -403,8 +403,8 @@
             "name": "chatOpenAI",
             "models": [
                 {
-                    "lable": "gpt-4o mini",
-                    "name": "gpt-4o mini"
+                    "lable": "gpt-4o-mini",
+                    "name": "gpt-4o-mini"
                 },
                 {
                     "label": "gpt-4o",
