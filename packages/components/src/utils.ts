@@ -48,6 +48,7 @@ export const availableDependencies = [
     'langchain',
     'langfuse',
     'langsmith',
+    'langwatch',
     'linkifyjs',
     'lunary',
     'mammoth',
@@ -660,6 +661,8 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
 export const flattenObject = (obj: ICommonObject, parentKey?: string) => {
     let result: any = {}
 
+    if (!obj) return result
+
     Object.keys(obj).forEach((key) => {
         const value = obj[key]
         const _key = parentKey ? parentKey + '.' + key : key
@@ -768,4 +771,29 @@ export const prepareSandboxVars = (variables: IVariable[]) => {
         }
     }
     return vars
+}
+
+let version: string
+export const getVersion: () => Promise<{ version: string }> = async () => {
+    if (version != null) return { version }
+
+    const checkPaths = [
+        path.join(__dirname, '..', 'package.json'),
+        path.join(__dirname, '..', '..', 'package.json'),
+        path.join(__dirname, '..', '..', '..', 'package.json'),
+        path.join(__dirname, '..', '..', '..', '..', 'package.json'),
+        path.join(__dirname, '..', '..', '..', '..', '..', 'package.json')
+    ]
+    for (const checkPath of checkPaths) {
+        try {
+            const content = await fs.promises.readFile(checkPath, 'utf8')
+            const parsedContent = JSON.parse(content)
+            version = parsedContent.version
+            return { version }
+        } catch {
+            continue
+        }
+    }
+
+    throw new Error('None of the package.json paths could be parsed')
 }

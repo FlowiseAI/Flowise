@@ -340,6 +340,18 @@ export const getFolderName = (base64ArrayStr) => {
     }
 }
 
+export const sanitizeChatflows = (arrayChatflows) => {
+    const sanitizedChatflows = arrayChatflows.map((chatFlow) => {
+        const sanitizeFlowData = generateExportFlowData(JSON.parse(chatFlow.flowData))
+        return {
+            id: chatFlow.id,
+            name: chatFlow.name,
+            flowData: JSON.stringify(sanitizeFlowData, null, 2)
+        }
+    })
+    return sanitizedChatflows
+}
+
 export const generateExportFlowData = (flowData) => {
     const nodes = flowData.nodes
     const edges = flowData.edges
@@ -549,14 +561,14 @@ export const removeDuplicateURL = (message) => {
     if (!message.sourceDocuments) return newSourceDocuments
 
     message.sourceDocuments.forEach((source) => {
-        if (source.metadata && source.metadata.source) {
+        if (source && source.metadata && source.metadata.source) {
             if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
                 visitedURLs.push(source.metadata.source)
                 newSourceDocuments.push(source)
             } else if (!isValidURL(source.metadata.source)) {
                 newSourceDocuments.push(source)
             }
-        } else {
+        } else if (source) {
             newSourceDocuments.push(source)
         }
     })
@@ -693,7 +705,7 @@ export const getConfigExamplesForCurl = (configData, bodyType, isMultiple, stopN
     const loop = Math.min(configData.length, 4)
     for (let i = 0; i < loop; i += 1) {
         const config = configData[i]
-        let exampleVal = `example`
+        let exampleVal = `"example"`
         if (config.type === 'string') exampleVal = bodyType === 'json' ? `"example"` : `example`
         else if (config.type === 'boolean') exampleVal = `true`
         else if (config.type === 'number') exampleVal = `1`
