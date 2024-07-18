@@ -56,7 +56,8 @@ const getAllTemplates = async (userId?: string, organizationId?: string) => {
                 framework: fileDataObj?.framework,
                 categories: fileDataObj?.categories,
                 type: 'Chatflow',
-                description: fileDataObj?.description || ''
+                description: fileDataObj?.description || '',
+                iconSrc: fileDataObj?.iconSrc || ''
             }
             templates.push(template)
         })
@@ -93,7 +94,8 @@ const getAllTemplates = async (userId?: string, organizationId?: string) => {
                 framework: fileDataObj?.framework,
                 categories: fileDataObj?.categories,
                 type: 'Agentflow',
-                description: fileDataObj?.description || ''
+                description: fileDataObj?.description || '',
+                iconSrc: fileDataObj?.iconSrc || ''
             }
             templates.push(template)
         })
@@ -112,7 +114,8 @@ const getAllTemplates = async (userId?: string, organizationId?: string) => {
                 framework: fileDataObj?.framework,
                 categories: fileDataObj?.categories,
                 type: 'AnswerAI',
-                description: fileDataObj?.description || ''
+                description: fileDataObj?.description || '',
+                iconSrc: fileDataObj?.iconSrc || ''
             }
             templates.push(template)
         })
