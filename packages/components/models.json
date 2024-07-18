@@ -600,6 +600,10 @@
             "name": "chatMistralAI",
             "models": [
                 {
+                    "label": "open-mistral-nemo",
+                    "name": "open-mistral-nemo"
+                },
+                {
                     "label": "open-mistral-7b",
                     "name": "open-mistral-7b"
                 },
