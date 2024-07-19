@@ -260,5 +260,21 @@ export interface IUploadFileSizeAndTypes {
     maxUploadSize: number
 }
 
+export interface IEncryption {
+    id: string
+    name: string
+    EncryptionKey: string
+    updatedDate: Date
+    createdDate: Date
+}
+
+export interface IEncryptionCredential {
+    id: string
+    encryptionId: string
+    credentialId: string
+    updatedDate: Date
+    createdDate: Date
+}
+
 // DocumentStore related
 export * from './Interface.DocumentStore'
