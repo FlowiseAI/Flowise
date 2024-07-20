@@ -1038,7 +1038,7 @@
                 "inputs": {
                     "agentName": "Researcher",
                     "systemMessagePrompt": "You are a research assistant who can search for up-to-date info using search engine.",
-                    "humanMessagePrompt": "Given the conversation, determine if you need to use the google custom search tool to search for more information related to user question, or just respond conversationally.\n\nIf respond conversationally, answer user question using the provided info",
+                    "humanMessagePrompt": "Given the conversation, respond to user with a more detailed answer. Use the tool provided to search for more information if necessary.\n\nAnswer:",
                     "tools": ["{{googleCustomSearch_0.data.instance}}"],
                     "sequentialNode": ["{{seqAgent_2.data.instance}}"],
                     "model": "",

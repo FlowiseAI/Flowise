@@ -236,8 +236,10 @@ export const buildAgentGraph = async (
                                 if (cleanedDocs.length) totalSourceDocuments.push(...cleanedDocs)
                             }
 
+                            /*
+                             * Check if the next node is a condition node, if yes, then add the agent reasoning of the condition node
+                             */
                             if (isSequential) {
-                                // check if previous node is condition
                                 const inputEdges = edges.filter(
                                     (edg) => edg.target === nodeId && edg.targetHandle.includes(`${nodeId}-input-sequentialNode`)
                                 )
@@ -320,16 +322,8 @@ export const buildAgentGraph = async (
                     const lastMessages = agentReasoning[agentReasoning.length - 1].messages
                     const lastAgentReasoningMessage = lastMessages[lastMessages.length - 1]
 
-                    if (lastAgentReasoningMessage) {
-                        finalResult = lastAgentReasoningMessage
-                        if (socketIO && incomingInput.socketIOClientId) {
-                            socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
-                        }
-                    } else if (!lastAgentReasoningMessage && lastMessageRaw.tool_calls && lastMessageRaw.tool_calls.length > 0) {
-                        /*
-                         * This is dedicated logic for interrupting tool nodes
-                         */
-
+                    // If last message is an AI Message with tool calls, that means the last node was interrupted
+                    if (lastMessageRaw.tool_calls && lastMessageRaw.tool_calls.length > 0) {
                         // The last node that got interrupted
                         const node = reactFlowNodes.find((node) => node.id === lastMessageRaw.additional_kwargs.nodeId)
 
@@ -376,6 +370,11 @@ export const buildAgentGraph = async (
                             }
                         }
                         totalUsedTools.push(...mappedToolCalls)
+                    } else if (lastAgentReasoningMessage) {
+                        finalResult = lastAgentReasoningMessage
+                        if (socketIO && incomingInput.socketIOClientId) {
+                            socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
+                        }
                     }
                 }
 
@@ -951,7 +950,8 @@ const compileSeqAgentsGraph = async (
                     return new ToolMessage({
                         name: toolCall.name,
                         content: `Tool ${toolCall.name} call denied by user. Acknowledge that, and DONT perform further actions. Only ask if user have other questions`,
-                        tool_call_id: toolCall.id!
+                        tool_call_id: toolCall.id!,
+                        additional_kwargs: { toolCallsDenied: true }
                     })
                 })
             }

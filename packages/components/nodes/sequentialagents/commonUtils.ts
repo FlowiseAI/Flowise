@@ -207,41 +207,48 @@ export const convertStructuredSchemaToZod = (schema: string | object): ICommonOb
 }
 
 export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) => {
-    // get rid of non-string messages
-    const messages = (state.messages as unknown as BaseMessage[]).filter((message) => typeof message.content === 'string')
+    const messages: BaseMessage[] = []
+    for (const message of state.messages as unknown as BaseMessage[]) {
+        // Sometimes Anthropic can return a message with content types of array, ignore that EXECEPT when tool calls are present
+        if ((message as any).tool_calls?.length) {
+            message.content = JSON.stringify(message.content)
+        }
+
+        if (typeof message.content === 'string') {
+            messages.push(message)
+        }
+    }
 
     const isToolMessage = (message: BaseMessage) => message instanceof ToolMessage || message.constructor.name === 'ToolMessageChunk'
     const isAIMessage = (message: BaseMessage) => message instanceof AIMessage || message.constructor.name === 'AIMessageChunk'
     const isHumanMessage = (message: BaseMessage) => message instanceof HumanMessage || message.constructor.name === 'HumanMessageChunk'
 
+    /*
+     * MistralAI does not support:
+     * 1.) Last message as AI Message or Tool Message
+     * 2.) Tool Message followed by Human Message
+     */
     if (llm instanceof ChatMistralAI) {
         if (messages.length > 1) {
-            const lastSecondMessage = messages[messages.length - 2]
-            const lastMessage = messages[messages.length - 1]
+            for (let i = 0; i < messages.length; i++) {
+                const message = messages[i]
 
-            /*
-             * MistralAI does not support last message as AI Message
-             * If last message is AI Message, convert it to Human Message
-             * If 2nd last message is a Tool Message:
-             * - AND last message is AI Message: append Human Message
-             * - AND last message is Human Message: append AI Message between Tool and Human Message
-             */
-            if (!isToolMessage(lastSecondMessage) && isAIMessage(lastMessage)) {
-                messages.pop()
-                messages.push(new HumanMessage({ ...lastMessage }))
-            } else if (isToolMessage(lastSecondMessage) && isAIMessage(lastMessage)) {
-                messages.push(new HumanMessage({ content: 'Given the user question, answer user query' }))
-            } else if (isToolMessage(lastSecondMessage) && isHumanMessage(lastMessage)) {
-                messages.pop()
-                messages.push(new AIMessage({ content: '' }))
-                messages.push(lastMessage)
-            }
-        } else if (messages.length === 1) {
-            const lastMessage = messages[messages.length - 1]
-            if (isToolMessage(lastMessage)) {
-                const lastMessageContent = lastMessage.content as string
-                if (lastMessageContent.includes('Acknowledge that and ask if user needs any help.')) {
+                // If last message is denied Tool Message, add a new Human Message
+                if (isToolMessage(message) && i === messages.length - 1 && message.additional_kwargs?.toolCallsDenied) {
                     messages.push(new AIMessage({ content: `Tool calls got denied. Do you have other questions?` }))
+                } else if (i + 1 < messages.length) {
+                    const nextMessage = messages[i + 1]
+                    const currentMessage = message
+
+                    // If current message is Tool Message and next message is Human Message, add AI Message between Tool and Human Message
+                    if (isToolMessage(currentMessage) && isHumanMessage(nextMessage)) {
+                        messages.splice(i + 1, 0, new AIMessage({ content: 'Tool calls executed' }))
+                    }
+
+                    // If last message is AI Message or Tool Message, add Human Message
+                    if (i + 1 === messages.length - 1 && (isAIMessage(nextMessage) || isToolMessage(nextMessage))) {
+                        messages.push(new HumanMessage({ content: nextMessage.content || 'Given the user question, answer user query' }))
+                    }
                 }
             }
         }
