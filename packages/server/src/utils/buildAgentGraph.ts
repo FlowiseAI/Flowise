@@ -206,6 +206,8 @@ export const buildAgentGraph = async (
                 for await (const output of await streamResults) {
                     if (!output?.__end__) {
                         for (const agentName of Object.keys(output)) {
+                            if (!mapNameToLabel[agentName]) continue
+
                             const nodeId = output[agentName]?.messages
                                 ? output[agentName].messages[output[agentName].messages.length - 1]?.additional_kwargs?.nodeId
                                 : ''
@@ -327,21 +329,39 @@ export const buildAgentGraph = async (
                         /*
                          * This is dedicated logic for interrupting tool nodes
                          */
+
+                        // The last node that got interrupted
+                        const node = reactFlowNodes.find((node) => node.id === lastMessageRaw.additional_kwargs.nodeId)
+
+                        // Find the next tool node that is connected to the interrupted node, to get the approve/reject button text
                         const tooNodeId = edges.find(
                             (edge) =>
                                 edge.target.includes('seqToolNode') &&
                                 edge.source === (lastMessageRaw.additional_kwargs && lastMessageRaw.additional_kwargs.nodeId)
                         )?.target
                         const connectedToolNode = reactFlowNodes.find((node) => node.id === tooNodeId)
+
+                        // Map raw tool calls to used tools, to be shown on interrupted message
                         const mappedToolCalls = lastMessageRaw.tool_calls.map((toolCall) => {
                             return { tool: toolCall.name, toolInput: toolCall.args, toolOutput: '' }
                         })
 
-                        if (connectedToolNode) {
-                            const result = await connectedToolNode.data.instance.node.approvalFunc(mappedToolCalls)
-                            finalResult = result || 'Do you want to proceed?'
-                            const approveButtonText = connectedToolNode.data.inputs?.approveButtonText || 'Yes'
-                            const rejectButtonText = connectedToolNode.data.inputs?.rejectButtonText || 'No'
+                        // Emit the interrupt message to the client
+                        let approveButtonText = 'Yes'
+                        let rejectButtonText = 'No'
+
+                        if (connectedToolNode || node) {
+                            if (connectedToolNode) {
+                                const result = await connectedToolNode.data.instance.node.seekPermissionMessage(mappedToolCalls)
+                                finalResult = result || 'Do you want to proceed?'
+                                approveButtonText = connectedToolNode.data.inputs?.approveButtonText || 'Yes'
+                                rejectButtonText = connectedToolNode.data.inputs?.rejectButtonText || 'No'
+                            } else if (node) {
+                                const result = await node.data.instance.agentInterruptToolNode.seekPermissionMessage(mappedToolCalls)
+                                finalResult = result || 'Do you want to proceed?'
+                                approveButtonText = node.data.inputs?.approveButtonText || 'Yes'
+                                rejectButtonText = node.data.inputs?.rejectButtonText || 'No'
+                            }
                             finalAction = {
                                 id: uuidv4(),
                                 mapping: { approve: approveButtonText, reject: rejectButtonText, toolCalls: lastMessageRaw.tool_calls },
@@ -355,7 +375,6 @@ export const buildAgentGraph = async (
                                 socketIO.to(incomingInput.socketIOClientId).emit('action', finalAction)
                             }
                         }
-
                         totalUsedTools.push(...mappedToolCalls)
                     }
                 }
@@ -378,7 +397,7 @@ export const buildAgentGraph = async (
                 }
             }
         } catch (e) {
-            // clear agent memory because it has already been saved
+            // clear agent memory because checkpoints were saved during runtime
             await clearSessionMemory(nodes, appServer.nodesPool.componentNodes, chatId, appServer.AppDataSource, sessionId)
             if (getErrorMessage(e).includes('Aborted')) {
                 if (socketIO && incomingInput.socketIOClientId) {
@@ -596,7 +615,7 @@ const compileSeqAgentsGraph = async (
         }
     }
 
-    const seqGraph = new StateGraph<any>({
+    let seqGraph = new StateGraph<any>({
         //@ts-ignore
         channels
     })
@@ -616,6 +635,7 @@ const compileSeqAgentsGraph = async (
 
     let flowNodeData
     let conditionalEdges: Record<string, { nodes: Record<string, string>; func: any }> = {}
+    let interruptedRouteMapping: Record<string, Record<string, string>> = {}
     let conditionalToolNodes: Record<string, { source: ISeqAgentNode; toolNodes: ISeqAgentNode[] }> = {}
     let bindModel: Record<string, any> = {}
     let interruptToolNodeNames = []
@@ -633,12 +653,55 @@ const compileSeqAgentsGraph = async (
         return seqAgentNode
     }
 
-    /** Prepare Conditional Edges
+    /*
+     *  Two objectives we want to achieve here:
+     *  1.) Prepare the mapping of conditional outputs to next nodes. This mapping will ONLY be used to add conditional edges to the Interrupted Agent connected next to Condition/ConditionAgent Node.
+     *    For example, if the condition node has 2 outputs 'Yes' and 'No', and 'Yes' leads to 'agentName1' and 'No' leads to 'agentName2', then the mapping should be like:
+     *    {
+     *      <conditionNodeId>: { 'Yes': 'agentName1', 'No': 'agentName2' }
+     *    }
+     *  2.) With the interruptedRouteMapping object, avoid adding conditional edges to the Interrupted Agent for the nodes that are already interrupted by tools. It will be separately added from the function - agentInterruptToolFunc
+     */
+    const processInterruptedRouteMapping = (conditionNodeId: string) => {
+        const conditionEdges = reactflowEdges.filter((edge) => edge.source === conditionNodeId) ?? []
+
+        for (const conditionEdge of conditionEdges) {
+            const nextNodeId = conditionEdge.target
+            const conditionNodeOutputAnchorId = conditionEdge.sourceHandle
+
+            const nextNode = reactflowNodes.find((node) => node.id === nextNodeId)
+            if (!nextNode) continue
+
+            const conditionNode = reactflowNodes.find((node) => node.id === conditionNodeId)
+            if (!conditionNode) continue
+
+            const outputAnchors = conditionNode?.data.outputAnchors
+            if (!outputAnchors || !outputAnchors.length || !outputAnchors[0].options) continue
+
+            const conditionOutputAnchorLabel =
+                outputAnchors[0].options.find((option: any) => option.id === conditionNodeOutputAnchorId)?.label ?? ''
+            if (!conditionOutputAnchorLabel) continue
+
+            if (Object.prototype.hasOwnProperty.call(interruptedRouteMapping, conditionNodeId)) {
+                interruptedRouteMapping[conditionNodeId] = {
+                    ...interruptedRouteMapping[conditionNodeId],
+                    [conditionOutputAnchorLabel]: nextNode.data.instance.name
+                }
+            } else {
+                interruptedRouteMapping[conditionNodeId] = {
+                    [conditionOutputAnchorLabel]: nextNode.data.instance.name
+                }
+            }
+        }
+    }
+
+    /*
+     *  Prepare Conditional Edges
      *  Example: {
-     *    'seqCondition_1': { nodes: { 'Yes': 'agentName1', 'No': 'agentName2' }, func: <condition-function> },
+     *    'seqCondition_1': { nodes: { 'Yes': 'agentName1', 'No': 'agentName2' }, func: <condition-function>, disabled: true },
      *    'seqCondition_2': { nodes: { 'Yes': 'agentName3', 'No': 'agentName4' }, func: <condition-function> }
      *  }
-     * */
+     */
     const prepareConditionalEdges = (nodeId: string, nodeInstance: ISeqAgentNode) => {
         const conditionEdges = reactflowEdges.filter((edge) => edge.target === nodeId && edge.source.includes('seqCondition')) ?? []
 
@@ -670,34 +733,36 @@ const compileSeqAgentsGraph = async (
         }
     }
 
-    /** Prepare Conditional Tool Edges
+    /*
+     *  Prepare Conditional Tool Edges. This is just for LLMNode -> ToolNode
      *  Example: {
      *    'agent_1': { source: agent, toolNodes: [node] }
      *  }
-     * */
-    const prepareConditionalToolEdges = (predecessorAgent: ISeqAgentNode, nodeInstance: ISeqAgentNode) => {
+     */
+    const prepareLLMToToolEdges = (predecessorAgent: ISeqAgentNode, toolNodeInstance: ISeqAgentNode) => {
         if (Object.prototype.hasOwnProperty.call(conditionalToolNodes, predecessorAgent.id)) {
             const toolNodes = conditionalToolNodes[predecessorAgent.id].toolNodes
-            toolNodes.push(nodeInstance)
+            toolNodes.push(toolNodeInstance)
             conditionalToolNodes[predecessorAgent.id] = { source: predecessorAgent, toolNodes }
         } else {
             conditionalToolNodes[predecessorAgent.id] = {
                 source: predecessorAgent,
-                toolNodes: [nodeInstance]
+                toolNodes: [toolNodeInstance]
             }
         }
     }
 
+    /*** This is to bind the tools to the model of LLMNode, when the LLMNode is predecessor/successor of ToolNode ***/
     const createBindModel = (agent: ISeqAgentNode, toolNodeInstance: ISeqAgentNode) => {
         const tools = flatten(toolNodeInstance.node?.tools)
         bindModel[agent.id] = agent.llm.bindTools(tools)
     }
 
+    /*** Start processing every Agent nodes ***/
     for (const agentNodeId of getSortedDepthNodes(depthQueue)) {
         const agentNode = reactflowNodes.find((node) => node.id === agentNodeId)
         if (!agentNode) continue
 
-        /*** Start processing every Agent nodes ***/
         const eligibleSeqNodes = ['seqAgent', 'seqEnd', 'seqLoop', 'seqToolNode', 'seqLLMNode']
         const nodesToAdd = ['seqAgent', 'seqToolNode', 'seqLLMNode']
 
@@ -705,9 +770,42 @@ const compileSeqAgentsGraph = async (
             try {
                 const agentInstance: ISeqAgentNode = await initiateNode(agentNode)
 
-                // Add node to graph
                 if (nodesToAdd.includes(agentNode.data.name)) {
+                    // Add node to graph
                     seqGraph.addNode(agentInstance.name, agentInstance.node)
+
+                    /*
+                     * If it is an Interrupted Agent, we want to:
+                     * 1.) Add conditional edges to the Interrupted Agent via agentInterruptToolFunc
+                     * 2.) Add agent to the interruptToolNodeNames list
+                     */
+                    if (agentInstance.type === 'agent' && agentNode.data.inputs?.interrupt) {
+                        interruptToolNodeNames.push(agentInstance.agentInterruptToolNode.name)
+
+                        const nextNodeId = reactflowEdges.find((edge) => edge.source === agentNode.id)?.target
+                        const nextNode = reactflowNodes.find((node) => node.id === nextNodeId)
+
+                        let nextNodeSeqAgentName = ''
+                        if (nextNodeId && nextNode) {
+                            nextNodeSeqAgentName = nextNode.data.instance.name
+
+                            // If next node is Condition Node, process the interrupted route mapping, see more details from comments of processInterruptedRouteMapping
+                            if (nextNode.data.name.includes('seqCondition')) {
+                                const conditionNode = nextNodeId
+                                processInterruptedRouteMapping(conditionNode)
+                                seqGraph = await agentInstance.agentInterruptToolFunc(
+                                    seqGraph,
+                                    undefined,
+                                    nextNode.data.instance.node,
+                                    interruptedRouteMapping[conditionNode]
+                                )
+                            } else {
+                                seqGraph = await agentInstance.agentInterruptToolFunc(seqGraph, nextNodeSeqAgentName)
+                            }
+                        } else {
+                            seqGraph = await agentInstance.agentInterruptToolFunc(seqGraph, nextNodeSeqAgentName)
+                        }
+                    }
                 }
 
                 if (agentInstance.predecessorAgents) {
@@ -729,19 +827,36 @@ const compileSeqAgentsGraph = async (
                             //@ts-ignore
                             seqGraph.addEdge(START, agentInstance.name)
                         } else if (predecessorAgent.type === 'condition') {
-                            prepareConditionalEdges(agentNode.data.id, agentInstance)
+                            /*
+                             * If current node is Condition Node, AND predecessor is an Interrupted Agent
+                             * Don't add conditional edges to the Interrupted Agent, as it will be added separately from the function - agentInterruptToolFunc
+                             */
+                            if (!Object.prototype.hasOwnProperty.call(interruptedRouteMapping, predecessorAgent.id)) {
+                                prepareConditionalEdges(agentNode.data.id, agentInstance)
+                            }
                         } else if (agentNode.data.name === 'seqToolNode') {
-                            prepareConditionalToolEdges(predecessorAgent, agentInstance)
+                            // Prepare the conditional edges for LLMNode -> ToolNode AND bind the tools to LLMNode
+                            prepareLLMToToolEdges(predecessorAgent, agentInstance)
                             createBindModel(predecessorAgent, agentInstance)
-                            if (agentInstance.node.interrupt) interruptToolNodeNames.push(agentInstance.name)
+
+                            // If current ToolNode has interrupt turned on, add the ToolNode name to interruptToolNodeNames
+                            if (agentInstance.node.interrupt) {
+                                interruptToolNodeNames.push(agentInstance.name)
+                            }
                         } else if (predecessorAgent.name) {
+                            // In the scenario when ToolNode -> LLMNode, bind the tools to LLMNode
                             if (agentInstance.type === 'llm' && predecessorAgent.type === 'tool') {
                                 createBindModel(agentInstance, predecessorAgent)
                             }
-                            edges.push(predecessorAgent.name)
+
+                            // Add edge to graph ONLY when predecessor is not an Interrupted Agent
+                            if (!predecessorAgent.agentInterruptToolNode) {
+                                edges.push(predecessorAgent.name)
+                            }
                         }
                     }
 
+                    // Edges can be multiple, in the case of parallel node executions
                     if (edges.length > 1) {
                         //@ts-ignore
                         seqGraph.addEdge(edges, agentInstance.name)
@@ -756,7 +871,7 @@ const compileSeqAgentsGraph = async (
         }
     }
 
-    /*** Add conditional edges to graph ***/
+    /*** Add conditional edges to graph for condition nodes ***/
     for (const conditionNodeId in conditionalEdges) {
         const startConditionEdges = reactflowEdges.filter((edge) => edge.target === conditionNodeId)
         if (!startConditionEdges.length) continue
@@ -773,6 +888,7 @@ const compileSeqAgentsGraph = async (
         }
     }
 
+    /*** Add conditional edges to graph for LLMNode -> ToolNode ***/
     for (const llmSourceNodeId in conditionalToolNodes) {
         const connectedToolNodes = conditionalToolNodes[llmSourceNodeId].toolNodes
         const sourceNode = conditionalToolNodes[llmSourceNodeId].source
@@ -781,14 +897,13 @@ const compileSeqAgentsGraph = async (
             const messages = state.messages as unknown as BaseMessage[]
             const lastMessage = messages[messages.length - 1] as AIMessage
 
-            // If no tools are called, we can finish (respond to the user)
             if (!lastMessage.tool_calls?.length) {
                 return END
             }
 
             for (const toolCall of lastMessage.tool_calls) {
                 for (const toolNode of connectedToolNodes) {
-                    const tools = toolNode.node?.tools as StructuredTool[]
+                    const tools = (toolNode.node?.tools as StructuredTool[]) || ((toolNode as any).tools as StructuredTool[])
                     if (tools.some((tool) => tool.name === toolCall.name)) {
                         return toolNode.name
                     }
@@ -804,7 +919,7 @@ const compileSeqAgentsGraph = async (
         )
     }
 
-    // Add agentflow to pool
+    /*** Add agentflow to pool ***/
     ;(seqGraph as any).signal = options.signal
     appServer.chatflowPool.add(
         `${chatflow.id}_${options.chatId}`,
@@ -813,7 +928,7 @@ const compileSeqAgentsGraph = async (
         overrideConfig
     )
 
-    // Get memory
+    /*** Get memory ***/
     const startNode = reactflowNodes.find((node: IReactFlowNode) => node.data.name === 'seqStart')
     let memory = startNode?.data.instance?.checkpointMemory
 
@@ -824,7 +939,6 @@ const compileSeqAgentsGraph = async (
         const callbacks = await additionalCallbacks(flowNodeData as any, options)
         const config = { configurable: { thread_id: threadId }, bindModel }
 
-        // Return stream result
         let humanMsg: { messages: HumanMessage[] | ToolMessage[] } | null = {
             messages: [new HumanMessage({ content: question })]
         }
@@ -836,13 +950,12 @@ const compileSeqAgentsGraph = async (
                 messages: action.mapping.toolCalls.map((toolCall) => {
                     return new ToolMessage({
                         name: toolCall.name,
-                        content: `Tool ${toolCall.name} call denied by user. Acknowledge that and ask if user needs any help.`,
+                        content: `Tool ${toolCall.name} call denied by user. Acknowledge that, and DONT perform further actions. Only ask if user have other questions`,
                         tool_call_id: toolCall.id!
                     })
                 })
             }
         }
-
         return await graph.stream(humanMsg, { callbacks: [loggerHandler, ...callbacks], configurable: config })
     } catch (e) {
         logger.error('Error compile graph', e)

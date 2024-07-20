@@ -194,6 +194,8 @@ export interface ISeqAgentNode {
     moderations?: Moderation[]
     multiModalMessageContent?: MessageContentImageUrl[]
     checkpointMemory?: any
+    agentInterruptToolNode?: any
+    agentInterruptToolFunc?: any
 }
 
 export interface ITeamState {

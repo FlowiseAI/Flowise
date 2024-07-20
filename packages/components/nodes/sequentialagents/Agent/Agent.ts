@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { HumanMessage } from '@langchain/core/messages'
+import { AIMessage, AIMessageChunk, BaseMessage, HumanMessage, ToolMessage } from '@langchain/core/messages'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import { StringOutputParser } from '@langchain/core/output_parsers'
@@ -16,12 +16,25 @@ import {
     MessageContentImageUrl,
     INodeOutputsValue,
     ISeqAgentNode,
-    IDatabaseEntity
+    IDatabaseEntity,
+    IUsedTool,
+    IDocument
 } from '../../../src/Interface'
-import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
+import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
-import { customGet, getVM, processImageMessage, transformObjectPropertyToFunction, restructureMessages } from '../commonUtils'
+import {
+    customGet,
+    getVM,
+    processImageMessage,
+    transformObjectPropertyToFunction,
+    restructureMessages,
+    MessagesState,
+    RunnableCallable
+} from '../commonUtils'
+import { END, StateGraph } from '@langchain/langgraph'
+import { StructuredTool } from '@langchain/core/tools'
 
+const defaultApprovalPrompt = `You are about to execute tool: {tools}. Ask if user want to proceed`
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 const customOutputFuncDesc = `This is only applicable when you have a custom State at the START node. After agent execution, you might want to update the State values`
 const howToUseCode = `
@@ -204,6 +217,13 @@ class Agent_SeqAgents implements INode {
                 description: `Overwrite model to be used for this agent`
             },
             {
+                label: 'Require Approval',
+                name: 'interrupt',
+                description: 'Require approval before executing tools. Will proceed when tools are not called',
+                type: 'boolean',
+                optional: true
+            },
+            {
                 label: 'Format Prompt Values',
                 name: 'promptValues',
                 description: 'Assign values to the prompt variables. You can also use $flow.state.<variable-name> to get the state value',
@@ -211,6 +231,34 @@ class Agent_SeqAgents implements INode {
                 optional: true,
                 acceptVariable: true,
                 list: true
+            },
+            {
+                label: 'Approval Prompt',
+                name: 'approvalPrompt',
+                description: 'Prompt for approval. Only applicable if "Require Approval" is enabled',
+                type: 'string',
+                default: defaultApprovalPrompt,
+                rows: 4,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Approve Button Text',
+                name: 'approveButtonText',
+                description: 'Text for approve button. Only applicable if "Require Approval" is enabled',
+                type: 'string',
+                default: 'Yes',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Reject Button Text',
+                name: 'rejectButtonText',
+                description: 'Text for reject button. Only applicable if "Require Approval" is enabled',
+                type: 'string',
+                default: 'No',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Update State',
@@ -324,6 +372,7 @@ class Agent_SeqAgents implements INode {
         const model = nodeData.inputs?.model as BaseChatModel
         const promptValuesStr = nodeData.inputs?.promptValues
         const output = nodeData.outputs?.output as string
+        const approvalPrompt = nodeData.inputs?.approvalPrompt as string
 
         if (!agentLabel) throw new Error('Agent name is required!')
         const agentName = agentLabel.toLowerCase().replace(/\s/g, '_').trim()
@@ -352,15 +401,32 @@ class Agent_SeqAgents implements INode {
             throw new Error('Agent input variables values are not provided!')
         }
 
+        const interrupt = nodeData.inputs?.interrupt as boolean
+
+        const toolName = `tool_${nodeData.id}`
+        const toolNode = new ToolNode(tools, nodeData, input, options, toolName, [], { sequentialNodeName: toolName })
+
+        ;(toolNode as any).seekPermissionMessage = async (usedTools: IUsedTool[]) => {
+            const prompt = ChatPromptTemplate.fromMessages([['human', approvalPrompt || defaultApprovalPrompt]])
+            const chain = prompt.pipe(startLLM)
+            const response = (await chain.invoke({
+                input: 'Hello there!',
+                tools: JSON.stringify(usedTools)
+            })) as AIMessageChunk
+            return response.content
+        }
+
         const workerNode = async (state: ISeqAgentsState, config: RunnableConfig) => {
             return await agentNode(
                 {
                     state,
                     llm,
+                    interrupt,
                     agent: await createAgent(
                         agentName,
                         state,
                         llm,
+                        interrupt,
                         [...tools],
                         agentSystemPrompt,
                         agentHumanPrompt,
@@ -383,6 +449,48 @@ class Agent_SeqAgents implements INode {
             )
         }
 
+        const toolInterrupt = async (
+            graph: StateGraph<any>,
+            nextNodeName?: string,
+            runCondition?: any,
+            conditionalMapping: ICommonObject = {}
+        ) => {
+            const routeMessage = async (state: ISeqAgentsState) => {
+                const messages = state.messages as unknown as BaseMessage[]
+                const lastMessage = messages[messages.length - 1] as AIMessage
+
+                if (!lastMessage?.tool_calls?.length) {
+                    // if next node is condition node, run the condition
+                    if (runCondition) {
+                        const returnNodeName = await runCondition(state)
+                        return returnNodeName
+                    }
+                    return nextNodeName || END
+                }
+                return toolName
+            }
+
+            graph.addNode(toolName, toolNode)
+
+            if (nextNodeName) {
+                // @ts-ignore
+                graph.addConditionalEdges(agentName, routeMessage, {
+                    [toolName]: toolName,
+                    [END]: END,
+                    [nextNodeName]: nextNodeName,
+                    ...conditionalMapping
+                })
+            } else {
+                // @ts-ignore
+                graph.addConditionalEdges(agentName, routeMessage, { [toolName]: toolName, [END]: END, ...conditionalMapping })
+            }
+
+            // @ts-ignore
+            graph.addEdge(toolName, agentName)
+
+            return graph
+        }
+
         const returnOutput: ISeqAgentNode = {
             id: nodeData.id,
             node: workerNode,
@@ -394,7 +502,9 @@ class Agent_SeqAgents implements INode {
             output,
             predecessorAgents: sequentialNodes,
             multiModalMessageContent,
-            moderations: sequentialNodes[0]?.moderations
+            moderations: sequentialNodes[0]?.moderations,
+            agentInterruptToolNode: interrupt ? toolNode : undefined,
+            agentInterruptToolFunc: interrupt ? toolInterrupt : undefined
         }
 
         return returnOutput
@@ -405,6 +515,7 @@ async function createAgent(
     agentName: string,
     state: ISeqAgentsState,
     llm: BaseChatModel,
+    interrupt: boolean,
     tools: any[],
     systemPrompt: string,
     humanPrompt: string,
@@ -412,8 +523,8 @@ async function createAgent(
     agentInputVariablesValues: ICommonObject,
     maxIterations?: string,
     flowObj?: { sessionId?: string; chatId?: string; input?: string }
-): Promise<AgentExecutor | RunnableSequence> {
-    if (tools.length) {
+): Promise<any> {
+    if (tools.length && !interrupt) {
         const promptArrays = [
             new MessagesPlaceholder('messages'),
             new MessagesPlaceholder('agent_scratchpad')
@@ -472,6 +583,39 @@ async function createAgent(
             maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
         })
         return executor
+    } else if (tools.length && interrupt) {
+        if (llm.bindTools === undefined) {
+            throw new Error(`Agent Node only compatible with function calling models.`)
+        }
+        // @ts-ignore
+        llm = llm.bindTools(tools)
+
+        const promptArrays = [new MessagesPlaceholder('messages')] as BaseMessagePromptTemplateLike[]
+        if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
+        if (humanPrompt) promptArrays.push(['human', humanPrompt])
+
+        const prompt = ChatPromptTemplate.fromMessages(promptArrays)
+        if (multiModalMessageContent.length) {
+            const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
+            prompt.promptMessages.splice(1, 0, msg)
+        }
+
+        let agent
+
+        if (!agentInputVariablesValues || !Object.keys(agentInputVariablesValues).length) {
+            agent = RunnableSequence.from([prompt, llm]).withConfig({
+                metadata: { sequentialNodeName: agentName }
+            })
+        } else {
+            agent = RunnableSequence.from([
+                RunnablePassthrough.assign(transformObjectPropertyToFunction(agentInputVariablesValues, state)),
+                prompt,
+                llm
+            ]).withConfig({
+                metadata: { sequentialNodeName: agentName }
+            })
+        }
+        return agent
     } else {
         const promptArrays = [new MessagesPlaceholder('messages')] as BaseMessagePromptTemplateLike[]
         if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
@@ -501,7 +645,6 @@ async function createAgent(
             })
         }
 
-        // @ts-ignore
         return conversationChain
     }
 }
@@ -510,6 +653,7 @@ async function agentNode(
     {
         state,
         llm,
+        interrupt,
         agent,
         name,
         abortControllerSignal,
@@ -519,6 +663,7 @@ async function agentNode(
     }: {
         state: ISeqAgentsState
         llm: BaseChatModel
+        interrupt: boolean
         agent: AgentExecutor | RunnableSequence
         name: string
         abortControllerSignal: AbortController
@@ -536,7 +681,32 @@ async function agentNode(
         // @ts-ignore
         state.messages = restructureMessages(llm, state)
 
-        const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
+        let result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
+
+        if (interrupt) {
+            const messages = state.messages as unknown as BaseMessage[]
+            const lastMessage = messages[messages.length - 1]
+
+            // If the last message is a tool message and is an interrupted message, format output into standard agent output
+            if (lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
+                let formattedAgentResult: { output?: string; usedTools?: IUsedTool[]; sourceDocuments?: IDocument[] } = {}
+                formattedAgentResult.output = result.content
+                if (lastMessage.additional_kwargs?.usedTools) {
+                    formattedAgentResult.usedTools = lastMessage.additional_kwargs.usedTools as IUsedTool[]
+                }
+                if (lastMessage.additional_kwargs?.sourceDocuments) {
+                    formattedAgentResult.sourceDocuments = lastMessage.additional_kwargs.sourceDocuments as IDocument[]
+                }
+                result = formattedAgentResult
+            } else {
+                result.name = name
+                result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id, interrupt: true }
+                return {
+                    messages: [result]
+                }
+            }
+        }
+
         const additional_kwargs: ICommonObject = { nodeId: nodeData.id }
 
         if (result.usedTools) {
@@ -639,6 +809,78 @@ const convertCustomMessagesToBaseMessages = (messages: string[], name: string, a
             additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
         })
     })
+}
+
+class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable<T, T> {
+    tools: StructuredTool[]
+    nodeData: INodeData
+    inputQuery: string
+    options: ICommonObject
+
+    constructor(
+        tools: StructuredTool[],
+        nodeData: INodeData,
+        inputQuery: string,
+        options: ICommonObject,
+        name: string = 'tools',
+        tags: string[] = [],
+        metadata: ICommonObject = {}
+    ) {
+        super({ name, metadata, tags, func: (input, config) => this.run(input, config) })
+        this.tools = tools
+        this.nodeData = nodeData
+        this.inputQuery = inputQuery
+        this.options = options
+    }
+
+    private async run(input: BaseMessage[] | MessagesState, config: RunnableConfig): Promise<BaseMessage[] | MessagesState> {
+        const message = Array.isArray(input) ? input[input.length - 1] : input.messages[input.messages.length - 1]
+
+        if (message._getType() !== 'ai') {
+            throw new Error('ToolNode only accepts AIMessages as input.')
+        }
+
+        const outputs = await Promise.all(
+            (message as AIMessage).tool_calls?.map(async (call) => {
+                const tool = this.tools.find((tool) => tool.name === call.name)
+                if (tool === undefined) {
+                    throw new Error(`Tool ${call.name} not found.`)
+                }
+                let output = await tool.invoke(call.args, config)
+                let sourceDocuments: Document[] = []
+                if (output?.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                    const outputArray = output.split(SOURCE_DOCUMENTS_PREFIX)
+                    output = outputArray[0]
+                    const docs = outputArray[1]
+                    try {
+                        sourceDocuments = JSON.parse(docs)
+                    } catch (e) {
+                        console.error('Error parsing source documents from tool')
+                    }
+                }
+                return new ToolMessage({
+                    name: tool.name,
+                    content: typeof output === 'string' ? output : JSON.stringify(output),
+                    tool_call_id: call.id!,
+                    additional_kwargs: {
+                        sourceDocuments,
+                        args: call.args,
+                        usedTools: [
+                            {
+                                tool: tool.name ?? '',
+                                toolInput: call.args,
+                                toolOutput: output
+                            }
+                        ]
+                    }
+                })
+            }) ?? []
+        )
+
+        const additional_kwargs: ICommonObject = { nodeId: this.nodeData.id }
+        outputs.forEach((result) => (result.additional_kwargs = { ...result.additional_kwargs, ...additional_kwargs }))
+        return Array.isArray(input) ? outputs : { messages: outputs }
+    }
 }
 
 module.exports = { nodeClass: Agent_SeqAgents }

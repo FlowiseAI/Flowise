@@ -2,17 +2,13 @@ import { flatten } from 'lodash'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams, ISeqAgentNode, IUsedTool } from '../../../src/Interface'
 import { AIMessage, AIMessageChunk, BaseMessage, ToolMessage } from '@langchain/core/messages'
 import { StructuredTool } from '@langchain/core/tools'
-import { mergeConfigs, RunnableConfig, Runnable } from '@langchain/core/runnables'
+import { RunnableConfig } from '@langchain/core/runnables'
 import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 import { Document } from '@langchain/core/documents'
 import { DataSource } from 'typeorm'
-import { customGet, getVM } from '../commonUtils'
+import { MessagesState, RunnableCallable, customGet, getVM } from '../commonUtils'
 import { getVars, prepareSandboxVars } from '../../../src/utils'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
-
-interface MessagesState {
-    messages: BaseMessage[]
-}
 
 const defaultApprovalPrompt = `You are about to execute tool: {tools}. Ask if user want to proceed`
 
@@ -323,11 +319,11 @@ class ToolNode_SeqAgents implements INode {
         ;(toolNode as any).interrupt = interrupt
 
         if (interrupt && approvalPrompt && approveButtonText && rejectButtonText) {
-            ;(toolNode as any).approvalFunc = async (usedTools: IUsedTool[]) => {
-                const prompt = ChatPromptTemplate.fromMessages([['human', approvalPrompt]])
+            ;(toolNode as any).seekPermissionMessage = async (usedTools: IUsedTool[]) => {
+                const prompt = ChatPromptTemplate.fromMessages([['human', approvalPrompt || defaultApprovalPrompt]])
                 const chain = prompt.pipe(llmNode.startLLM)
                 const response = (await chain.invoke({
-                    input: 'Hello there friend!',
+                    input: 'Hello there!',
                     tools: JSON.stringify(usedTools)
                 })) as AIMessageChunk
                 return response.content
@@ -349,61 +345,6 @@ class ToolNode_SeqAgents implements INode {
         }
 
         return returnOutput
-    }
-}
-
-interface RunnableCallableArgs extends Partial<any> {
-    name?: string
-    func: (...args: any[]) => any
-    tags?: string[]
-    trace?: boolean
-    recurse?: boolean
-}
-
-class RunnableCallable<I = unknown, O = unknown> extends Runnable<I, O> {
-    lc_namespace: string[] = ['langgraph']
-
-    func: (...args: any[]) => any
-
-    tags?: string[]
-
-    config?: RunnableConfig
-
-    trace: boolean = true
-
-    recurse: boolean = true
-
-    constructor(fields: RunnableCallableArgs) {
-        super()
-        this.name = fields.name ?? fields.func.name
-        this.func = fields.func
-        this.config = fields.tags ? { tags: fields.tags } : undefined
-        this.trace = fields.trace ?? this.trace
-        this.recurse = fields.recurse ?? this.recurse
-
-        if (fields.metadata) {
-            this.config = { ...this.config, metadata: { ...this.config, ...fields.metadata } }
-        }
-    }
-
-    async invoke(input: any, options?: Partial<RunnableConfig> | undefined): Promise<any> {
-        if (this.func === undefined) {
-            return this.invoke(input, options)
-        }
-
-        let returnValue: any
-
-        if (this.trace) {
-            returnValue = await this._callWithConfig(this.func, input, mergeConfigs(this.config, options))
-        } else {
-            returnValue = await this.func(input, mergeConfigs(this.config, options))
-        }
-
-        if (returnValue instanceof Runnable && this.recurse) {
-            return await returnValue.invoke(input, options)
-        }
-
-        return returnValue
     }
 }
 

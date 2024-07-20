@@ -303,9 +303,10 @@ const runCondition = async (nodeData: INodeData, input: string, options: ICommon
                 } else if (item.variable.startsWith('$')) {
                     const nodeId = item.variable.replace('$', '')
 
-                    const messageOutput = ((state.messages as unknown as BaseMessage[]) ?? []).find(
+                    const messageOutputs = ((state.messages as unknown as BaseMessage[]) ?? []).filter(
                         (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === nodeId
                     )
+                    const messageOutput = messageOutputs[messageOutputs.length - 1]
 
                     if (messageOutput) {
                         if (checkCondition(messageOutput.content as string, item.operation, item.value)) {

@@ -2,16 +2,15 @@ import { get } from 'lodash'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
 import { NodeVM } from 'vm2'
+import { StructuredTool } from '@langchain/core/tools'
+import { ChatMistralAI } from '@langchain/mistralai'
+import { ChatAnthropic } from '@langchain/anthropic'
+import { Runnable, RunnableConfig, mergeConfigs } from '@langchain/core/runnables'
 import { AIMessage, BaseMessage, HumanMessage, MessageContentImageUrl, ToolMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { addImagesToMessages, llmSupportsVision } from '../../src/multiModalUtils'
 import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, IVisionChatModal } from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
-import { StructuredTool } from '@langchain/core/tools'
-import { ChatMistralAI } from '@langchain/mistralai'
-import { ChatAnthropic } from '@langchain/anthropic'
-
-export const SELECTED_CONDITION_TYPE_PREFIX = '_FLOWISE_SELECTED_CONDITION_TYPE_'
 
 export const checkCondition = (input: string | number | undefined, condition: string, value: string | number = ''): boolean => {
     if (!input) return false
@@ -87,9 +86,10 @@ export const transformObjectPropertyToFunction = (obj: ICommonObject, state: ISe
         try {
             const parsedValue = JSON.parse(value)
             if (typeof parsedValue === 'object' && parsedValue.id) {
-                const messageOutput = ((state.messages as unknown as BaseMessage[]) ?? []).find(
+                const messageOutputs = ((state.messages as unknown as BaseMessage[]) ?? []).filter(
                     (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === parsedValue.id
                 )
+                const messageOutput = messageOutputs[messageOutputs.length - 1]
                 if (messageOutput) value = messageOutput.content
             }
         } catch (e) {
@@ -275,5 +275,64 @@ export class ExtractTool extends StructuredTool {
 
     async _call(input: any) {
         return JSON.stringify(input)
+    }
+}
+
+export interface RunnableCallableArgs extends Partial<any> {
+    name?: string
+    func: (...args: any[]) => any
+    tags?: string[]
+    trace?: boolean
+    recurse?: boolean
+}
+
+export interface MessagesState {
+    messages: BaseMessage[]
+}
+
+export class RunnableCallable<I = unknown, O = unknown> extends Runnable<I, O> {
+    lc_namespace: string[] = ['langgraph']
+
+    func: (...args: any[]) => any
+
+    tags?: string[]
+
+    config?: RunnableConfig
+
+    trace: boolean = true
+
+    recurse: boolean = true
+
+    constructor(fields: RunnableCallableArgs) {
+        super()
+        this.name = fields.name ?? fields.func.name
+        this.func = fields.func
+        this.config = fields.tags ? { tags: fields.tags } : undefined
+        this.trace = fields.trace ?? this.trace
+        this.recurse = fields.recurse ?? this.recurse
+
+        if (fields.metadata) {
+            this.config = { ...this.config, metadata: { ...this.config, ...fields.metadata } }
+        }
+    }
+
+    async invoke(input: any, options?: Partial<RunnableConfig> | undefined): Promise<any> {
+        if (this.func === undefined) {
+            return this.invoke(input, options)
+        }
+
+        let returnValue: any
+
+        if (this.trace) {
+            returnValue = await this._callWithConfig(this.func, input, mergeConfigs(this.config, options))
+        } else {
+            returnValue = await this.func(input, mergeConfigs(this.config, options))
+        }
+
+        if (returnValue instanceof Runnable && this.recurse) {
+            return await returnValue.invoke(input, options)
+        }
+
+        return returnValue
     }
 }
