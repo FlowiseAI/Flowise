@@ -76,7 +76,7 @@ class S3_DocumentLoaders implements INode {
                 name: 'prefix',
                 type: 'string',
                 description: 'Limits the response to keys that begin with the specified prefix',
-                placeholder: '',
+                placeholder: 'TestFolder/Something',
                 optional: true
             },
             {
