@@ -458,6 +458,10 @@
             "name": "chatOpenAI",
             "models": [
                 {
+                    "label": "gpt-4o-mini",
+                    "name": "gpt-4o-mini"
+                },
+                {
                     "label": "gpt-4o",
                     "name": "gpt-4o"
                 },
@@ -595,6 +599,10 @@
         {
             "name": "chatMistralAI",
             "models": [
+                {
+                    "label": "open-mistral-nemo",
+                    "name": "open-mistral-nemo"
+                },
                 {
                     "label": "open-mistral-7b",
                     "name": "open-mistral-7b"
