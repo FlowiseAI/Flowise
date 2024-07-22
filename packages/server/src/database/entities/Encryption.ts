@@ -11,7 +11,7 @@ export class Encryption implements IEncryption {
     name: string
 
     @Column()
-    EncryptionKey: string
+    encryptionKey: string
 
     @Column({ type: 'timestamp' })
     @CreateDateColumn()

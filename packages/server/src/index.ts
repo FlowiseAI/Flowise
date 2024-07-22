@@ -1,25 +1,24 @@
-import express from 'express'
-import { Request, Response } from 'express'
-import path from 'path'
 import cors from 'cors'
-import http from 'http'
+import express, { Request, Response } from 'express'
 import basicAuth from 'express-basic-auth'
+import http from 'http'
+import path from 'path'
 import { Server } from 'socket.io'
 import { DataSource } from 'typeorm'
-import { IChatFlow } from './Interface'
-import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
-import logger, { expressRequestLogger } from './utils/logger'
+import { CachePool } from './CachePool'
+import { ChatflowPool } from './ChatflowPool'
 import { getDataSource } from './DataSource'
+import { IChatFlow } from './Interface'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
-import { ChatflowPool } from './ChatflowPool'
-import { CachePool } from './CachePool'
-import { initializeRateLimiter } from './utils/rateLimit'
-import { getAPIKeys } from './utils/apiKey'
-import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
-import { Telemetry } from './utils/telemetry'
-import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
+import flowiseApiV1Router from './routes'
+import { getEncryptionKey, getNodeModulesPackagePath } from './utils'
+import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
+import { getAPIKeys } from './utils/apiKey'
+import logger, { expressRequestLogger } from './utils/logger'
+import { initializeRateLimiter } from './utils/rateLimit'
+import { Telemetry } from './utils/telemetry'
 
 declare global {
     namespace Express {
@@ -60,6 +59,7 @@ export class App {
             // Initialize API keys
             await getAPIKeys()
 
+            console.log('reach step 1')
             // Initialize encryption key
             await getEncryptionKey()
 

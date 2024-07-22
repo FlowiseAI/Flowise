@@ -1,6 +1,19 @@
-import path from 'path'
+import { randomBytes } from 'crypto'
+import { AES, enc } from 'crypto-js'
+import {
+    convertChatHistoryToText,
+    FlowiseMemory,
+    getEncryptionKeyPath,
+    getInputVariables,
+    handleEscapeCharacters,
+    ICommonObject,
+    IDatabaseEntity,
+    IFileUpload,
+    IMessage
+} from 'flowise-components'
 import fs from 'fs'
-import logger from './logger'
+import { cloneDeep, get, isEqual } from 'lodash'
+import path from 'path'
 import { Server } from 'socket.io'
 import {
     IComponentCredentials,
@@ -9,6 +22,7 @@ import {
     ICredentialReqBody,
     IDepthQueue,
     IExploredNode,
+    IncomingInput,
     INodeData,
     INodeDependencies,
     INodeDirectedGraph,
@@ -16,36 +30,25 @@ import {
     IOverrideConfig,
     IReactFlowEdge,
     IReactFlowNode,
-    IVariableDict,
-    IncomingInput
+    IVariableDict
 } from '../Interface'
-import { cloneDeep, get, isEqual } from 'lodash'
-import {
-    convertChatHistoryToText,
-    getInputVariables,
-    handleEscapeCharacters,
-    getEncryptionKeyPath,
-    ICommonObject,
-    IDatabaseEntity,
-    IMessage,
-    FlowiseMemory,
-    IFileUpload
-} from 'flowise-components'
-import { randomBytes } from 'crypto'
-import { AES, enc } from 'crypto-js'
+import logger from './logger'
 
+import { StatusCodes } from 'http-status-codes'
+import { DataSource } from 'typeorm'
+import { CachePool } from '../CachePool'
+import { Assistant } from '../database/entities/Assistant'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
-import { Tool } from '../database/entities/Tool'
-import { Assistant } from '../database/entities/Assistant'
-import { DataSource } from 'typeorm'
-import { CachePool } from '../CachePool'
-import { Variable } from '../database/entities/Variable'
 import { DocumentStore } from '../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
+import { Encryption } from '../database/entities/Encryption'
+import { Tool } from '../database/entities/Tool'
+import { Variable } from '../database/entities/Variable'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
+import { getErrorMessage } from '../errors/utils'
+import { getRunningExpressApp } from './getRunningExpressApp'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -1169,23 +1172,88 @@ export const generateEncryptKey = (): string => {
     return randomBytes(24).toString('base64')
 }
 
+// /**
+//  * Returns the encryption key
+//  * @returns {Promise<string>}
+//  */
+// export const getEncryptionKey = async (): Promise<string> => {
+//     if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
+//         return process.env.FLOWISE_SECRETKEY_OVERWRITE
+//     }
+//     try {
+//         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+//     } catch (error) {
+//         const encryptKey = generateEncryptKey()
+//         const defaultLocation = process.env.SECRETKEY_PATH
+//             ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
+//             : path.join(getUserHome(), '.flowise', 'encryption.key')
+//         await fs.promises.writeFile(defaultLocation, encryptKey)
+//         return encryptKey
+//     }
+// }
+
 /**
  * Returns the encryption key
  * @returns {Promise<string>}
  */
 export const getEncryptionKey = async (): Promise<string> => {
-    if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
-        return process.env.FLOWISE_SECRETKEY_OVERWRITE
-    }
     try {
-        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+        const appServer = getRunningExpressApp()
+
+        // step 1 - get value of FLOWISE_SECRETKEY_OVERWRITE
+        let SECRETKEY_OVERWRITE: string = ''
+        if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '')
+            SECRETKEY_OVERWRITE = process.env.FLOWISE_SECRETKEY_OVERWRITE
+
+        // step 2 - get value of SECRETKEY_FROM_PATH if exists
+        let SECRETKEY_FROM_PATH: string = ''
+        try {
+            SECRETKEY_FROM_PATH = await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+        } catch (error) {
+            // bypass error if not found, there's no need to create this file anymore
+        }
+
+        console.log('reach step 3')
+        // step 3 - store values into database if not exists
+        const dbFindResponse = await appServer.AppDataSource.getRepository(Encryption).find({ select: { encryptionKey: true } })
+        const encryptionKeys = dbFindResponse.map((response) => {
+            return response.encryptionKey
+        })
+
+        console.log('reach step 4')
+        // step 4 - insert SECRETKEY into database if not duplicate
+        const prepEncryptionKeys: Partial<Encryption>[] = []
+        let nameCounter: number = encryptionKeys.length
+        const pushToPrepEncryptionKeys = (SECRETKEY: string) => {
+            if (SECRETKEY != '' && !encryptionKeys.includes(SECRETKEY)) {
+                nameCounter += 1
+                prepEncryptionKeys.push({ name: nameCounter.toString(), encryptionKey: SECRETKEY })
+            }
+        }
+        pushToPrepEncryptionKeys(SECRETKEY_FROM_PATH)
+        pushToPrepEncryptionKeys(SECRETKEY_OVERWRITE)
+        console.log('reach step 4a')
+        if (prepEncryptionKeys.length != 0) await appServer.AppDataSource.getRepository(Encryption).insert(prepEncryptionKeys)
+
+        console.log('reach step 5')
+        // step 5 - return value based on latest created date
+        const dbFindOneResponse = await appServer.AppDataSource.getRepository(Encryption).findOne({
+            select: { encryptionKey: true },
+            order: { createdDate: 'DESC' }
+        })
+
+        if (dbFindOneResponse != null) return dbFindOneResponse.encryptionKey
+
+        // step 6 - will reach when there are no value created in SECRETKEY_OVERWRITE, SECRETKEY_FROM_PATH and database
+        const encryptionKey: string = generateEncryptKey()
+        nameCounter += 1
+        await appServer.AppDataSource.getRepository(Encryption).insert({
+            name: nameCounter.toString(),
+            encryptionKey
+        })
+        return encryptionKey
     } catch (error) {
-        const encryptKey = generateEncryptKey()
-        const defaultLocation = process.env.SECRETKEY_PATH
-            ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
-            : path.join(getUserHome(), '.flowise', 'encryption.key')
-        await fs.promises.writeFile(defaultLocation, encryptKey)
-        return encryptKey
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: utils.getEncryptionKey - ${getErrorMessage(error)}`)
     }
 }
 

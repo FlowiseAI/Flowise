@@ -90,6 +90,22 @@ export interface ICredential {
     createdDate: Date
 }
 
+export interface IEncryption {
+    id: string
+    name: string
+    encryptionKey: string
+    updatedDate: Date
+    createdDate: Date
+}
+
+export interface IEncryptionCredential {
+    id: string
+    encryptionId: string
+    credentialId: string
+    updatedDate: Date
+    createdDate: Date
+}
+
 export interface IVariable {
     id: string
     name: string
@@ -258,22 +274,6 @@ export interface ICredentialReturnResponse extends ICredential {
 export interface IUploadFileSizeAndTypes {
     fileTypes: string[]
     maxUploadSize: number
-}
-
-export interface IEncryption {
-    id: string
-    name: string
-    EncryptionKey: string
-    updatedDate: Date
-    createdDate: Date
-}
-
-export interface IEncryptionCredential {
-    id: string
-    encryptionId: string
-    credentialId: string
-    updatedDate: Date
-    createdDate: Date
 }
 
 // DocumentStore related
