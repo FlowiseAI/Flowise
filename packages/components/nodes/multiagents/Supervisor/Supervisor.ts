@@ -30,6 +30,9 @@ Select strategically to minimize the number of steps taken.`
 
 const routerToolName = 'route'
 
+const defaultSummarization = 'Conversation finished'
+const defaultInstruction = 'Conversation finished'
+
 class Supervisor_MultiAgents implements INode {
     label: string
     name: string
@@ -46,7 +49,7 @@ class Supervisor_MultiAgents implements INode {
     constructor() {
         this.label = 'Supervisor'
         this.name = 'supervisor'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Supervisor'
         this.icon = 'supervisor.svg'
         this.category = 'Multi Agents'
@@ -73,6 +76,13 @@ class Supervisor_MultiAgents implements INode {
                 name: 'model',
                 type: 'BaseChatModel',
                 description: `Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, GroqChat. Best result with GPT-4 model`
+            },
+            {
+                label: 'Agent Memory',
+                name: 'agentMemory',
+                type: 'BaseCheckpointSaver',
+                description: 'Save the state of the agent',
+                optional: true
             },
             {
                 label: 'Recursion Limit',
@@ -120,13 +130,15 @@ class Supervisor_MultiAgents implements INode {
 
             let userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${memberOptions.join(
                 ', '
-            )}`
+            )}
+            Remember to give reasonings, instructions and summarization`
 
             const tool = new RouteTool({
                 schema: z.object({
                     reasoning: z.string(),
                     next: z.enum(['FINISH', ...members]),
-                    instructions: z.string().describe('The specific instructions of the sub-task the next role should accomplish.')
+                    instructions: z.string().describe('The specific instructions of the sub-task the next role should accomplish.'),
+                    summarization: z.string().optional().describe('Summarization of the conversation')
                 })
             })
 
@@ -144,6 +156,7 @@ class Supervisor_MultiAgents implements INode {
                 multiModalMessageContent = messages.multiModalMessageContent
 
                 // Force Mistral to use tool
+                // @ts-ignore
                 const modelWithTool = llm.bind({
                     tools: [tool],
                     tool_choice: 'any',
@@ -162,14 +175,16 @@ class Supervisor_MultiAgents implements INode {
                                 next: Object.keys(toolAgentAction.args).length ? toolAgentAction.args.next : 'FINISH',
                                 instructions: Object.keys(toolAgentAction.args).length
                                     ? toolAgentAction.args.instructions
-                                    : 'Conversation finished',
-                                team_members: members.join(', ')
+                                    : defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: Object.keys(toolAgentAction.args).length ? toolAgentAction.args.summarization : ''
                             }
                         } else {
                             return {
                                 next: 'FINISH',
-                                instructions: 'Conversation finished',
-                                team_members: members.join(', ')
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         }
                     })
@@ -177,7 +192,7 @@ class Supervisor_MultiAgents implements INode {
                 // Force Anthropic to use tool : https://docs.anthropic.com/claude/docs/tool-use#forcing-tool-use
                 userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${memberOptions.join(
                     ', '
-                )}. Use the ${routerToolName} tool in your response.`
+                )}. Remember to give reasonings, instructions and summarization. Use the ${routerToolName} tool in your response.`
 
                 let prompt = ChatPromptTemplate.fromMessages([
                     ['system', systemPrompt],
@@ -206,19 +221,22 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         } else {
                             return {
                                 next: 'FINISH',
-                                instructions: 'Conversation finished',
-                                team_members: members.join(', ')
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         }
                     })
@@ -229,7 +247,7 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
-                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
+                const messages = await processImageMessage(1, llm as any, prompt, nodeData, options)
                 prompt = messages.prompt
                 multiModalMessageContent = messages.multiModalMessageContent
 
@@ -251,19 +269,22 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         } else {
                             return {
                                 next: 'FINISH',
-                                instructions: 'Conversation finished',
-                                team_members: members.join(', ')
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         }
                     })
@@ -298,19 +319,22 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         } else {
                             return {
                                 next: 'FINISH',
-                                instructions: 'Conversation finished',
-                                team_members: members.join(', ')
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         }
                     })
@@ -341,19 +365,22 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         } else {
                             return {
                                 next: 'FINISH',
-                                instructions: 'Conversation finished',
-                                team_members: members.join(', ')
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         }
                     })
@@ -369,6 +396,7 @@ class Supervisor_MultiAgents implements INode {
                 {
                     state,
                     agent: supervisorAgent,
+                    nodeId: nodeData.id,
                     abortControllerSignal
                 },
                 config
@@ -383,7 +411,8 @@ class Supervisor_MultiAgents implements INode {
             recursionLimit,
             llm,
             moderations,
-            multiModalMessageContent
+            multiModalMessageContent,
+            checkpointMemory: nodeData.inputs?.agentMemory
         }
 
         return returnOutput
@@ -391,7 +420,12 @@ class Supervisor_MultiAgents implements INode {
 }
 
 async function agentNode(
-    { state, agent, abortControllerSignal }: { state: ITeamState; agent: AgentExecutor | Runnable; abortControllerSignal: AbortController },
+    {
+        state,
+        agent,
+        nodeId,
+        abortControllerSignal
+    }: { state: ITeamState; agent: AgentExecutor | Runnable; nodeId: string; abortControllerSignal: AbortController },
     config: RunnableConfig
 ) {
     try {
@@ -399,6 +433,8 @@ async function agentNode(
             throw new Error('Aborted!')
         }
         const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
+        const additional_kwargs: ICommonObject = { nodeId }
+        result.additional_kwargs = { ...result.additional_kwargs, ...additional_kwargs }
         return result
     } catch (error) {
         throw new Error('Aborted!')

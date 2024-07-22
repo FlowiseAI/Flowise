@@ -1,8 +1,8 @@
-import { BaseMessage, AIMessage, AIMessageChunk, isBaseMessage, ChatMessage, MessageContent } from '@langchain/core/messages'
+import { BaseMessage, AIMessage, AIMessageChunk, isBaseMessage, ChatMessage, MessageContentComplex } from '@langchain/core/messages'
 import { CallbackManagerForLLMRun } from '@langchain/core/callbacks/manager'
 import { BaseChatModel, type BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 import { ChatGeneration, ChatGenerationChunk, ChatResult } from '@langchain/core/outputs'
-import { ToolCall } from '@langchain/core/messages/tool'
+import { ToolCallChunk } from '@langchain/core/messages/tool'
 import { NewTokenIndices } from '@langchain/core/callbacks/base'
 import {
     EnhancedGenerateContentResponse,
@@ -12,11 +12,19 @@ import {
     GenerativeModel,
     GoogleGenerativeAI as GenerativeAI
 } from '@google/generative-ai'
-import type { SafetySetting } from '@google/generative-ai'
+import type {
+    FunctionCallPart,
+    FunctionResponsePart,
+    SafetySetting,
+    UsageMetadata,
+    FunctionDeclarationsTool as GoogleGenerativeAIFunctionDeclarationsTool,
+    GenerateContentRequest
+} from '@google/generative-ai'
 import { ICommonObject, IMultiModalOption, IVisionChatModal } from '../../../src'
 import { StructuredToolInterface } from '@langchain/core/tools'
 import { isStructuredTool } from '@langchain/core/utils/function_calling'
 import { zodToJsonSchema } from 'zod-to-json-schema'
+import { BaseLanguageModelCallOptions } from '@langchain/core/language_models/base'
 
 interface TokenUsage {
     completionTokens?: number
@@ -24,7 +32,17 @@ interface TokenUsage {
     totalTokens?: number
 }
 
-export interface GoogleGenerativeAIChatInput extends BaseChatModelParams {
+interface GoogleGenerativeAIChatCallOptions extends BaseLanguageModelCallOptions {
+    tools?: StructuredToolInterface[] | GoogleGenerativeAIFunctionDeclarationsTool[]
+    /**
+     * Whether or not to include usage data, like token counts
+     * in the streamed response chunks.
+     * @default true
+     */
+    streamUsage?: boolean
+}
+
+export interface GoogleGenerativeAIChatInput extends BaseChatModelParams, Pick<GoogleGenerativeAIChatCallOptions, 'streamUsage'> {
     modelName?: string
     model?: string
     temperature?: number
@@ -34,10 +52,15 @@ export interface GoogleGenerativeAIChatInput extends BaseChatModelParams {
     stopSequences?: string[]
     safetySettings?: SafetySetting[]
     apiKey?: string
+    apiVersion?: string
+    baseUrl?: string
     streaming?: boolean
 }
 
-class LangchainChatGoogleGenerativeAI extends BaseChatModel implements GoogleGenerativeAIChatInput {
+class LangchainChatGoogleGenerativeAI
+    extends BaseChatModel<GoogleGenerativeAIChatCallOptions, AIMessageChunk>
+    implements GoogleGenerativeAIChatInput
+{
     modelName = 'gemini-pro'
 
     temperature?: number
@@ -55,6 +78,8 @@ class LangchainChatGoogleGenerativeAI extends BaseChatModel implements GoogleGen
     apiKey?: string
 
     streaming = false
+
+    streamUsage = true
 
     private client: GenerativeModel
 
@@ -114,6 +139,8 @@ class LangchainChatGoogleGenerativeAI extends BaseChatModel implements GoogleGen
 
         this.streaming = fields?.streaming ?? this.streaming
 
+        this.streamUsage = fields?.streamUsage ?? this.streamUsage
+
         this.getClient()
     }
 
@@ -144,6 +171,18 @@ class LangchainChatGoogleGenerativeAI extends BaseChatModel implements GoogleGen
     override bindTools(tools: (StructuredToolInterface | Record<string, unknown>)[], kwargs?: Partial<ICommonObject>) {
         //@ts-ignore
         return this.bind({ tools: convertToGeminiTools(tools), ...kwargs })
+    }
+
+    invocationParams(options?: this['ParsedCallOptions']): Omit<GenerateContentRequest, 'contents'> {
+        const tools = options?.tools as GoogleGenerativeAIFunctionDeclarationsTool[] | StructuredToolInterface[] | undefined
+        if (Array.isArray(tools) && !tools.some((t: any) => !('lc_namespace' in t))) {
+            return {
+                tools: convertToGeminiTools(options?.tools as StructuredToolInterface[]) as any
+            }
+        }
+        return {
+            tools: options?.tools as GoogleGenerativeAIFunctionDeclarationsTool[] | undefined
+        }
     }
 
     convertFunctionResponse(prompts: Content[]) {
@@ -178,7 +217,7 @@ class LangchainChatGoogleGenerativeAI extends BaseChatModel implements GoogleGen
         this.convertFunctionResponse(prompt)
 
         if (tools.length > 0) {
-            this.getClient(tools)
+            this.getClient(tools as Tool[])
         } else {
             this.getClient()
         }
@@ -214,6 +253,7 @@ class LangchainChatGoogleGenerativeAI extends BaseChatModel implements GoogleGen
             const tokenUsage: TokenUsage = {}
             const stream = this._streamResponseChunks(messages, options, runManager)
             const finalChunks: Record<number, ChatGenerationChunk> = {}
+
             for await (const chunk of stream) {
                 const index = (chunk.generationInfo as NewTokenIndices)?.completion ?? 0
                 if (finalChunks[index] === undefined) {
@@ -239,45 +279,62 @@ class LangchainChatGoogleGenerativeAI extends BaseChatModel implements GoogleGen
         let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
         prompt = checkIfEmptyContentAndSameRole(prompt)
 
-        //@ts-ignore
-        if (options.tools !== undefined && options.tools.length > 0) {
-            const result = await this._generateNonStreaming(prompt, options, runManager)
-            const generationMessage = result.generations[0].message as AIMessage
-            if (generationMessage === undefined) {
-                throw new Error('Could not parse Groq output.')
-            }
-            const toolCallChunks = generationMessage.tool_calls?.map((toolCall, i) => ({
-                name: toolCall.name,
-                args: JSON.stringify(toolCall.args),
-                id: toolCall.id,
-                index: i
-            }))
-            yield new ChatGenerationChunk({
-                message: new AIMessageChunk({
-                    content: generationMessage.content,
-                    additional_kwargs: generationMessage.additional_kwargs,
-                    tool_call_chunks: toolCallChunks
-                }),
-                text: generationMessage.tool_calls?.length ? '' : (generationMessage.content as string)
-            })
+        const parameters = this.invocationParams(options)
+        const request = {
+            ...parameters,
+            contents: prompt
+        }
+
+        const tools = options.tools ?? []
+        if (tools.length > 0) {
+            this.getClient(tools as Tool[])
         } else {
-            const stream = await this.caller.callWithOptions({ signal: options?.signal }, async () => {
-                this.getClient()
-                const { stream } = await this.client.generateContentStream({
-                    contents: prompt
-                })
-                return stream
-            })
+            this.getClient()
+        }
 
-            for await (const response of stream) {
-                const chunk = convertResponseContentToChatGenerationChunk(response)
-                if (!chunk) {
-                    continue
+        const stream = await this.caller.callWithOptions({ signal: options?.signal }, async () => {
+            const { stream } = await this.client.generateContentStream(request)
+            return stream
+        })
+
+        let usageMetadata: UsageMetadata | ICommonObject | undefined
+        let index = 0
+        for await (const response of stream) {
+            if ('usageMetadata' in response && this.streamUsage !== false && options.streamUsage !== false) {
+                const genAIUsageMetadata = response.usageMetadata as {
+                    promptTokenCount: number
+                    candidatesTokenCount: number
+                    totalTokenCount: number
                 }
-
-                yield chunk
-                await runManager?.handleLLMNewToken(chunk.text ?? '')
+                if (!usageMetadata) {
+                    usageMetadata = {
+                        input_tokens: genAIUsageMetadata.promptTokenCount,
+                        output_tokens: genAIUsageMetadata.candidatesTokenCount,
+                        total_tokens: genAIUsageMetadata.totalTokenCount
+                    }
+                } else {
+                    // Under the hood, LangChain combines the prompt tokens. Google returns the updated
+                    // total each time, so we need to find the difference between the tokens.
+                    const outputTokenDiff = genAIUsageMetadata.candidatesTokenCount - (usageMetadata as ICommonObject).output_tokens
+                    usageMetadata = {
+                        input_tokens: 0,
+                        output_tokens: outputTokenDiff,
+                        total_tokens: outputTokenDiff
+                    }
+                }
             }
+
+            const chunk = convertResponseContentToChatGenerationChunk(response, {
+                usageMetadata: usageMetadata as UsageMetadata,
+                index
+            })
+            index += 1
+            if (!chunk) {
+                continue
+            }
+
+            yield chunk
+            await runManager?.handleLLMNewToken(chunk.text ?? '')
         }
     }
 }
@@ -296,8 +353,8 @@ export class ChatGoogleGenerativeAI extends LangchainChatGoogleGenerativeAI impl
     }
 
     revertToOriginalModel(): void {
-        super.modelName = this.configuredModel
-        super.maxOutputTokens = this.configuredMaxToken
+        this.modelName = this.configuredModel
+        this.maxOutputTokens = this.configuredMaxToken
     }
 
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
@@ -306,10 +363,23 @@ export class ChatGoogleGenerativeAI extends LangchainChatGoogleGenerativeAI impl
 
     setVisionModel(): void {
         if (this.modelName !== 'gemini-pro-vision' && this.modelName !== 'gemini-1.5-pro-latest') {
-            super.modelName = 'gemini-1.5-pro-latest'
-            super.maxOutputTokens = this.configuredMaxToken ? this.configuredMaxToken : 8192
+            this.modelName = 'gemini-1.5-pro-latest'
+            this.maxOutputTokens = this.configuredMaxToken ? this.configuredMaxToken : 8192
         }
     }
+}
+
+function messageContentMedia(content: MessageContentComplex): Part {
+    if ('mimeType' in content && 'data' in content) {
+        return {
+            inlineData: {
+                mimeType: content.mimeType,
+                data: content.data
+            }
+        }
+    }
+
+    throw new Error('Invalid media content')
 }
 
 function getMessageAuthor(message: BaseMessage) {
@@ -336,69 +406,88 @@ function convertAuthorToRole(author: string) {
         case 'tool':
             return 'function'
         default:
-            // Instead of throwing, we return model
+            // Instead of throwing, we return model (Needed for Multi Agent)
             // throw new Error(`Unknown / unsupported author: ${author}`)
             return 'model'
     }
 }
 
-function convertMessageContentToParts(content: MessageContent, isMultimodalModel: boolean): Part[] {
-    if (typeof content === 'string') {
-        return [{ text: content }]
+function convertMessageContentToParts(message: BaseMessage, isMultimodalModel: boolean): Part[] {
+    if (typeof message.content === 'string' && message.content !== '') {
+        return [{ text: message.content }]
     }
 
-    return content.map((c) => {
-        if (c.type === 'text') {
-            return {
-                text: c.text
-            }
-        }
+    let functionCalls: FunctionCallPart[] = []
+    let functionResponses: FunctionResponsePart[] = []
+    let messageParts: Part[] = []
 
-        if (c.type === 'tool_use') {
-            return {
-                functionCall: c.functionCall
+    if ('tool_calls' in message && Array.isArray(message.tool_calls) && message.tool_calls.length > 0) {
+        functionCalls = message.tool_calls.map((tc) => ({
+            functionCall: {
+                name: tc.name,
+                args: tc.args
             }
-        }
-
-        /*if (c.type === "tool_use" || c.type === "tool_result") {
-            // TODO: Fix when SDK types are fixed
-            return {
-              ...contentPart,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } as any;
-        }*/
-
-        if (c.type === 'image_url') {
-            if (!isMultimodalModel) {
-                throw new Error(`This model does not support images`)
-            }
-            let source
-            if (typeof c.image_url === 'string') {
-                source = c.image_url
-            } else if (typeof c.image_url === 'object' && 'url' in c.image_url) {
-                source = c.image_url.url
-            } else {
-                throw new Error('Please provide image as base64 encoded data URL')
-            }
-            const [dm, data] = source.split(',')
-            if (!dm.startsWith('data:')) {
-                throw new Error('Please provide image as base64 encoded data URL')
-            }
-
-            const [mimeType, encoding] = dm.replace(/^data:/, '').split(';')
-            if (encoding !== 'base64') {
-                throw new Error('Please provide image as base64 encoded data URL')
-            }
-
-            return {
-                inlineData: {
-                    data,
-                    mimeType
+        }))
+    } else if (message._getType() === 'tool' && message.name && message.content) {
+        functionResponses = [
+            {
+                functionResponse: {
+                    name: message.name,
+                    response: message.content
                 }
             }
-        }
-        throw new Error(`Unknown content type ${(c as { type: string }).type}`)
-    })
+        ]
+    } else if (Array.isArray(message.content)) {
+        messageParts = message.content.map((c) => {
+            if (c.type === 'text') {
+                return {
+                    text: c.text
+                }
+            }
+
+            if (c.type === 'image_url') {
+                if (!isMultimodalModel) {
+                    throw new Error(`This model does not support images`)
+                }
+                let source
+                if (typeof c.image_url === 'string') {
+                    source = c.image_url
+                } else if (typeof c.image_url === 'object' && 'url' in c.image_url) {
+                    source = c.image_url.url
+                } else {
+                    throw new Error('Please provide image as base64 encoded data URL')
+                }
+                const [dm, data] = source.split(',')
+                if (!dm.startsWith('data:')) {
+                    throw new Error('Please provide image as base64 encoded data URL')
+                }
+
+                const [mimeType, encoding] = dm.replace(/^data:/, '').split(';')
+                if (encoding !== 'base64') {
+                    throw new Error('Please provide image as base64 encoded data URL')
+                }
+
+                return {
+                    inlineData: {
+                        data,
+                        mimeType
+                    }
+                }
+            } else if (c.type === 'media') {
+                return messageContentMedia(c)
+            } else if (c.type === 'tool_use') {
+                return {
+                    functionCall: {
+                        name: c.name,
+                        args: c.input
+                    }
+                }
+            }
+            throw new Error(`Unknown content type ${(c as { type: string }).type}`)
+        })
+    }
+
+    return [...messageParts, ...functionCalls, ...functionResponses]
 }
 
 /*
@@ -440,7 +529,7 @@ function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel
                 throw new Error('Google Generative AI requires alternate messages between authors')
             }
 
-            const parts = convertMessageContentToParts(message.content, isMultimodalModel)
+            const parts = convertMessageContentToParts(message, isMultimodalModel)
 
             if (acc.mergeWithPreviousContent) {
                 const prevContent = acc.content[acc.content.length - 1]
@@ -454,8 +543,13 @@ function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel
                     content: acc.content
                 }
             }
+            let actualRole = role
+            if (actualRole === 'function') {
+                // GenerativeAI API will throw an error if the role is not "user" or "model."
+                actualRole = 'user'
+            }
             const content: Content = {
-                role,
+                role: actualRole,
                 parts
             }
             return {
@@ -467,80 +561,80 @@ function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel
     ).content
 }
 
-function mapGenerateContentResultToChatResult(response: EnhancedGenerateContentResponse): ChatResult {
+function mapGenerateContentResultToChatResult(
+    response: EnhancedGenerateContentResponse,
+    extra?: {
+        usageMetadata: UsageMetadata | undefined
+    }
+): ChatResult {
     // if rejected or error, return empty generations with reason in filters
     if (!response.candidates || response.candidates.length === 0 || !response.candidates[0]) {
         return {
             generations: [],
             llmOutput: {
-                filters: response?.promptFeedback
+                filters: response.promptFeedback
             }
         }
     }
 
-    const [candidate] = response.candidates
-    const { content, ...generationInfo } = candidate
-    const text = content.parts.map(({ text }) => text).join('')
-
-    if (content.parts.some((part) => part.functionCall)) {
-        const toolCalls: ToolCall[] = []
-        for (const fcPart of content.parts) {
-            const fc = fcPart.functionCall
-            if (fc) {
-                const { name, args } = fc
-                toolCalls.push({ name, args })
-            }
-        }
-
-        const functionCalls = toolCalls.map((tool) => {
-            return { functionCall: { name: tool.name, args: tool.args }, type: 'tool_use' }
-        })
-        const generation: ChatGeneration = {
-            text,
-            message: new AIMessage({
-                content: functionCalls,
-                name: !content ? undefined : content.role,
-                additional_kwargs: generationInfo,
-                tool_calls: toolCalls
-            }),
-            generationInfo
-        }
-        return {
-            generations: [generation]
-        }
-    } else {
-        const generation: ChatGeneration = {
-            text,
-            message: new AIMessage({
-                content: text,
-                name: !content ? undefined : content.role,
-                additional_kwargs: generationInfo
-            }),
-            generationInfo
-        }
-
-        return {
-            generations: [generation]
-        }
-    }
-}
-
-function convertResponseContentToChatGenerationChunk(response: EnhancedGenerateContentResponse): ChatGenerationChunk | null {
-    if (!response.candidates || response.candidates.length === 0) {
-        return null
-    }
+    const functionCalls = response.functionCalls()
     const [candidate] = response.candidates
     const { content, ...generationInfo } = candidate
     const text = content?.parts[0]?.text ?? ''
 
+    const generation: ChatGeneration = {
+        text,
+        message: new AIMessage({
+            content: text,
+            tool_calls: functionCalls,
+            additional_kwargs: {
+                ...generationInfo
+            },
+            usage_metadata: extra?.usageMetadata as any
+        }),
+        generationInfo
+    }
+
+    return {
+        generations: [generation]
+    }
+}
+
+function convertResponseContentToChatGenerationChunk(
+    response: EnhancedGenerateContentResponse,
+    extra: {
+        usageMetadata?: UsageMetadata | undefined
+        index: number
+    }
+): ChatGenerationChunk | null {
+    if (!response.candidates || response.candidates.length === 0) {
+        return null
+    }
+    const functionCalls = response.functionCalls()
+    const [candidate] = response.candidates
+    const { content, ...generationInfo } = candidate
+    const text = content?.parts[0]?.text ?? ''
+
+    const toolCallChunks: ToolCallChunk[] = []
+    if (functionCalls) {
+        toolCallChunks.push(
+            ...functionCalls.map((fc) => ({
+                ...fc,
+                args: JSON.stringify(fc.args),
+                index: extra.index
+            }))
+        )
+    }
     return new ChatGenerationChunk({
         text,
         message: new AIMessageChunk({
             content: text,
             name: !content ? undefined : content.role,
+            tool_call_chunks: toolCallChunks,
             // Each chunk can have unique "generationInfo", and merging strategy is unclear,
             // so leave blank for now.
-            additional_kwargs: {}
+            additional_kwargs: {},
+            usage_metadata: extra.usageMetadata as any
         }),
         generationInfo
     })

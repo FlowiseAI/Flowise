@@ -136,9 +136,6 @@ export default class Start extends Command {
         // Telemetry
         if (flags.DISABLE_FLOWISE_TELEMETRY) process.env.DISABLE_FLOWISE_TELEMETRY = flags.DISABLE_FLOWISE_TELEMETRY
 
-        // Disable langchain warnings
-        process.env.LANGCHAIN_SUPPRESS_MIGRATION_WARNINGS = 'true'
-
         // Model list config
         if (flags.MODEL_LIST_CONFIG_JSON) process.env.MODEL_LIST_CONFIG_JSON = flags.MODEL_LIST_CONFIG_JSON
 
