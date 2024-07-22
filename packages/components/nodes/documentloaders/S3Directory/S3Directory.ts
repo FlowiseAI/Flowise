@@ -271,7 +271,9 @@ class S3_DocumentLoaders implements INode {
             let docs = []
 
             if (textSplitter) {
-                docs = await loader.loadAndSplit(textSplitter)
+                let splittedDocs = await loader.load()
+                splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                docs.push(...splittedDocs)
             } else {
                 docs = await loader.load()
             }
