@@ -23,7 +23,7 @@ class MeilisearchRetriever_node implements INode {
 
     constructor() {
         this.label = 'Meilisearch retriever'
-        this.name = 'Meilisearch retriever'
+        this.name = 'MeilisearchRetriever'
         this.version = 1.0
         this.type = 'Meilisearch'
         this.icon = 'Meilisearch.png'
@@ -82,15 +82,9 @@ class MeilisearchRetriever_node implements INode {
         this.outputs = [
             {
                 label: 'Meilisearch Retriever',
-                name: 'meilisearch retriever',
+                name: 'MeilisearchRetriever',
                 description: 'retrieve answers',
                 baseClasses: this.baseClasses
-            },
-            {
-                label: 'another output',
-                name: 'meilisearch documents',
-                description: 'return documents containing pageContent and metadata',
-                baseClasses: ['Document', 'json']
             }
         ]
     }
@@ -164,14 +158,9 @@ class MeilisearchRetriever_node implements INode {
         const K = nodeData.inputs?.K as string
         const semanticRatio = nodeData.inputs?.semanticRatio as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const output = nodeData.outputs?.output as string
 
         const hybridsearchretriever = new MeilisearchRetriever(host, meilisearchSearchApiKey, indexUid, K, semanticRatio, embeddings)
-        if (output == 'meilisearch retriever') {
-            return hybridsearchretriever
-        } else {
-            return hybridsearchretriever //TODO
-        }
+        return hybridsearchretriever
     }
 }
 module.exports = { nodeClass: MeilisearchRetriever_node }

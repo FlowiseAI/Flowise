@@ -56,7 +56,7 @@ export class MeilisearchRetriever extends BaseRetriever {
             apiKey: this.meilisearchSearchApiKey
         })
 
-        const index = client.index(this.indexUid)
+        const index = await client.index(this.indexUid)
         const questionEmbedding = await this.embeddings.embedQuery(query)
         // Perform the search
         const searchResults = await index.search(query, {
