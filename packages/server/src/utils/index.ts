@@ -1213,14 +1213,12 @@ export const getEncryptionKey = async (): Promise<string> => {
             // bypass error if not found, there's no need to create this file anymore
         }
 
-        console.log('reach step 3')
         // step 3 - store values into database if not exists
-        const dbFindResponse = await appServer.AppDataSource.getRepository(Encryption).find({ select: { encryptionKey: true } })
+        let dbFindResponse = await appServer.AppDataSource.getRepository(Encryption).find({ select: { encryptionKey: true } })
         const encryptionKeys = dbFindResponse.map((response) => {
             return response.encryptionKey
         })
 
-        console.log('reach step 4')
         // step 4 - insert SECRETKEY into database if not duplicate
         const prepEncryptionKeys: Partial<Encryption>[] = []
         let nameCounter: number = encryptionKeys.length
@@ -1232,17 +1230,14 @@ export const getEncryptionKey = async (): Promise<string> => {
         }
         pushToPrepEncryptionKeys(SECRETKEY_FROM_PATH)
         pushToPrepEncryptionKeys(SECRETKEY_OVERWRITE)
-        console.log('reach step 4a')
         if (prepEncryptionKeys.length != 0) await appServer.AppDataSource.getRepository(Encryption).insert(prepEncryptionKeys)
 
-        console.log('reach step 5')
         // step 5 - return value based on latest created date
-        const dbFindOneResponse = await appServer.AppDataSource.getRepository(Encryption).findOne({
+        dbFindResponse = await appServer.AppDataSource.getRepository(Encryption).find({
             select: { encryptionKey: true },
-            order: { createdDate: 'DESC' }
+            order: { updatedDate: 'DESC' }
         })
-
-        if (dbFindOneResponse != null) return dbFindOneResponse.encryptionKey
+        if (dbFindResponse != null) return dbFindResponse[0].encryptionKey
 
         // step 6 - will reach when there are no value created in SECRETKEY_OVERWRITE, SECRETKEY_FROM_PATH and database
         const encryptionKey: string = generateEncryptKey()

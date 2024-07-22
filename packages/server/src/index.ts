@@ -59,7 +59,6 @@ export class App {
             // Initialize API keys
             await getAPIKeys()
 
-            console.log('reach step 1')
             // Initialize encryption key
             await getEncryptionKey()
 
