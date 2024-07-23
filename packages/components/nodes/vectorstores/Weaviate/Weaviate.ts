@@ -7,6 +7,7 @@ import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, Indexi
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
+import { VectorStore } from '@langchain/core/vectorstores'
 
 class Weaviate_VectorStores implements INode {
     label: string
@@ -179,7 +180,7 @@ class Weaviate_VectorStores implements INode {
 
             try {
                 if (recordManager) {
-                    const vectorStore = await WeaviateStore.fromExistingIndex(embeddings, obj)
+                    const vectorStore = (await WeaviateStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore
                     await recordManager.createSchema()
                     const res = await index({
                         docsSource: finalDocs,
@@ -234,7 +235,7 @@ class Weaviate_VectorStores implements INode {
             weaviateFilter = typeof weaviateFilter === 'object' ? weaviateFilter : JSON.parse(weaviateFilter)
         }
 
-        const vectorStore = await WeaviateStore.fromExistingIndex(embeddings, obj)
+        const vectorStore = (await WeaviateStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore
 
         return resolveVectorStoreOrRetriever(nodeData, vectorStore, weaviateFilter)
     }

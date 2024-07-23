@@ -46,8 +46,8 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
             isStreaming = isFlowValidForStream(nodes, endingNodeData)
         }
 
-        // If it is a Multi Agents, always enable streaming
-        if (endingNodes.filter((node) => node.data.category === 'Multi Agents').length > 0) {
+        // If it is a Multi/Sequential Agents, always enable streaming
+        if (endingNodes.filter((node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents').length > 0) {
             return { isStreaming: true }
         }
 

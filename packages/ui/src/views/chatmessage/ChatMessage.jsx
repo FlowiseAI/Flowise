@@ -35,7 +35,9 @@ import {
     IconTrash,
     IconX,
     IconTool,
-    IconSquareFilled
+    IconSquareFilled,
+    IconDeviceSdCard,
+    IconCheck
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -54,9 +56,9 @@ import { ImageButton, ImageSrc, ImageBackdrop, ImageMarked } from '@/ui-componen
 import CopyToClipboardButton from '@/ui-component/button/CopyToClipboardButton'
 import ThumbsUpButton from '@/ui-component/button/ThumbsUpButton'
 import ThumbsDownButton from '@/ui-component/button/ThumbsDownButton'
-import './ChatMessage.css'
 import { cancelAudioRecording, startAudioRecording, stopAudioRecording } from './audio-recording'
 import './audio-recording.css'
+import './ChatMessage.css'
 
 // api
 import chatmessageApi from '@/api/chatmessage'
@@ -408,7 +410,16 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
             if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
-            allMessages[allMessages.length - 1].agentReasoning = JSON.parse(agentReasoning)
+            allMessages[allMessages.length - 1].agentReasoning = agentReasoning
+            return allMessages
+        })
+    }
+
+    const updateLastMessageAction = (action) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            allMessages[allMessages.length - 1].action = action
             return allMessages
         })
     }
@@ -488,11 +499,22 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         handleSubmit(undefined, promptStarterInput)
     }
 
+    const handleActionClick = async (elem, action) => {
+        setUserInput(elem.label)
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            allMessages[allMessages.length - 1].action = null
+            return allMessages
+        })
+        handleSubmit(undefined, elem.label, action)
+    }
+
     // Handle form submission
-    const handleSubmit = async (e, promptStarterInput) => {
+    const handleSubmit = async (e, selectedInput, action) => {
         if (e) e.preventDefault()
 
-        if (!promptStarterInput && userInput.trim() === '') {
+        if (!selectedInput && userInput.trim() === '') {
             const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
             if (!(previews.length >= 1 && containsAudio)) {
                 return
@@ -501,7 +523,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
         let input = userInput
 
-        if (promptStarterInput !== undefined && promptStarterInput.trim() !== '') input = promptStarterInput
+        if (selectedInput !== undefined && selectedInput.trim() !== '') input = selectedInput
 
         setLoading(true)
         const urls = previews.map((item) => {
@@ -524,6 +546,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             if (urls && urls.length > 0) params.uploads = urls
             if (leadEmail) params.leadEmail = leadEmail
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
+            if (action) params.action = action
 
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
 
@@ -566,6 +589,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             usedTools: data?.usedTools,
                             fileAnnotations: data?.fileAnnotations,
                             agentReasoning: data?.agentReasoning,
+                            action: data?.action,
                             type: 'apiMessage',
                             feedback: null
                         }
@@ -638,6 +662,16 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         }
     }
 
+    const getAgentIcon = (nodeName, instructions) => {
+        if (nodeName) {
+            return `${baseURL}/api/v1/node-icon/${nodeName}`
+        } else if (instructions) {
+            return multiagent_supervisorPNG
+        } else {
+            return multiagent_workerPNG
+        }
+    }
+
     // Get chatmessages successful
     useEffect(() => {
         if (getChatmessageApi.data?.length) {
@@ -654,6 +688,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 if (message.usedTools) obj.usedTools = JSON.parse(message.usedTools)
                 if (message.fileAnnotations) obj.fileAnnotations = JSON.parse(message.fileAnnotations)
                 if (message.agentReasoning) obj.agentReasoning = JSON.parse(message.agentReasoning)
+                if (message.action) obj.action = JSON.parse(message.action)
                 if (message.fileUploads) {
                     obj.fileUploads = JSON.parse(message.fileUploads)
                     obj.fileUploads.forEach((file) => {
@@ -777,6 +812,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             socket.on('token', updateLastMessage)
 
             socket.on('agentReasoning', updateLastMessageAgentReasoning)
+
+            socket.on('action', updateLastMessageAction)
 
             socket.on('nextAgent', updateLastMessageNextAgent)
 
@@ -919,6 +956,15 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         setIsLeadSaving(false)
     }
 
+    const getInputDisabled = () => {
+        return (
+            loading ||
+            !chatflowid ||
+            (leadsConfig?.status && !isLeadSaved) ||
+            (messages[messages.length - 1].action && Object.keys(messages[messages.length - 1].action).length > 0)
+        )
+    }
+
     return (
         <div onDragEnter={handleDrag}>
             {isDragActive && (
@@ -981,31 +1027,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                             width: '100%'
                                         }}
                                     >
-                                        {message.usedTools && (
-                                            <div
-                                                style={{
-                                                    display: 'block',
-                                                    flexDirection: 'row',
-                                                    width: '100%'
-                                                }}
-                                            >
-                                                {message.usedTools.map((tool, index) => {
-                                                    return tool ? (
-                                                        <Chip
-                                                            size='small'
-                                                            key={index}
-                                                            label={tool.tool}
-                                                            component='a'
-                                                            sx={{ mr: 1, mt: 1 }}
-                                                            variant='outlined'
-                                                            clickable
-                                                            icon={<IconTool size={15} />}
-                                                            onClick={() => onSourceDialogClick(tool, 'Used Tools')}
-                                                        />
-                                                    ) : null
-                                                })}
-                                            </div>
-                                        )}
                                         {message.fileUploads && message.fileUploads.length > 0 && (
                                             <div
                                                 style={{
@@ -1117,11 +1138,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                                 height: '25px',
                                                                                 width: 'auto'
                                                                             }}
-                                                                            src={
-                                                                                agent.instructions
-                                                                                    ? multiagent_supervisorPNG
-                                                                                    : multiagent_workerPNG
-                                                                            }
+                                                                            src={getAgentIcon(agent.nodeName, agent.instructions)}
                                                                             alt='agentPNG'
                                                                         />
                                                                     </Box>
@@ -1150,6 +1167,26 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                                 />
                                                                             ) : null
                                                                         })}
+                                                                    </div>
+                                                                )}
+                                                                {agent.state && Object.keys(agent.state).length > 0 && (
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'block',
+                                                                            flexDirection: 'row',
+                                                                            width: '100%'
+                                                                        }}
+                                                                    >
+                                                                        <Chip
+                                                                            size='small'
+                                                                            label={'State'}
+                                                                            component='a'
+                                                                            sx={{ mr: 1, mt: 1 }}
+                                                                            variant='outlined'
+                                                                            clickable
+                                                                            icon={<IconDeviceSdCard size={15} />}
+                                                                            onClick={() => onSourceDialogClick(agent.state, 'State')}
+                                                                        />
                                                                     </div>
                                                                 )}
                                                                 {agent.messages.length > 0 && (
@@ -1218,6 +1255,31 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                             </CardContent>
                                                         </Card>
                                                     )
+                                                })}
+                                            </div>
+                                        )}
+                                        {message.usedTools && (
+                                            <div
+                                                style={{
+                                                    display: 'block',
+                                                    flexDirection: 'row',
+                                                    width: '100%'
+                                                }}
+                                            >
+                                                {message.usedTools.map((tool, index) => {
+                                                    return tool ? (
+                                                        <Chip
+                                                            size='small'
+                                                            key={index}
+                                                            label={tool.tool}
+                                                            component='a'
+                                                            sx={{ mr: 1, mt: 1 }}
+                                                            variant='outlined'
+                                                            clickable
+                                                            icon={<IconTool size={15} />}
+                                                            onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                        />
+                                                    ) : null
                                                 })}
                                             </div>
                                         )}
@@ -1417,6 +1479,64 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 })}
                                             </div>
                                         )}
+                                        {message.action && (
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexWrap: 'wrap',
+                                                    flexDirection: 'row',
+                                                    width: '100%',
+                                                    gap: '8px'
+                                                }}
+                                            >
+                                                {(message.action.elements || []).map((elem, index) => {
+                                                    return (
+                                                        <>
+                                                            {elem.type === 'approve-button' && elem.label === 'Yes' ? (
+                                                                <Button
+                                                                    sx={{
+                                                                        width: 'max-content',
+                                                                        borderRadius: '20px',
+                                                                        background: customization.isDarkMode ? 'transparent' : 'white'
+                                                                    }}
+                                                                    variant='outlined'
+                                                                    color='success'
+                                                                    key={index}
+                                                                    startIcon={<IconCheck />}
+                                                                    onClick={() => handleActionClick(elem, message.action)}
+                                                                >
+                                                                    {elem.label}
+                                                                </Button>
+                                                            ) : elem.type === 'reject-button' && elem.label === 'No' ? (
+                                                                <Button
+                                                                    sx={{
+                                                                        width: 'max-content',
+                                                                        borderRadius: '20px',
+                                                                        background: customization.isDarkMode ? 'transparent' : 'white'
+                                                                    }}
+                                                                    variant='outlined'
+                                                                    color='error'
+                                                                    key={index}
+                                                                    startIcon={<IconX />}
+                                                                    onClick={() => handleActionClick(elem, message.action)}
+                                                                >
+                                                                    {elem.label}
+                                                                </Button>
+                                                            ) : (
+                                                                <Button
+                                                                    sx={{ width: 'max-content', borderRadius: '20px', background: 'white' }}
+                                                                    variant='outlined'
+                                                                    key={index}
+                                                                    onClick={() => handleActionClick(elem, message.action)}
+                                                                >
+                                                                    {elem.label}
+                                                                </Button>
+                                                            )}
+                                                        </>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
                                 </Box>
                             )
@@ -1546,7 +1666,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             // eslint-disable-next-line
                             autoFocus
                             sx={{ width: '100%' }}
-                            disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
+                            disabled={getInputDisabled()}
                             onKeyDown={handleEnter}
                             id='userInput'
                             name='userInput'
@@ -1558,20 +1678,9 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             startAdornment={
                                 isChatFlowAvailableForUploads && (
                                     <InputAdornment position='start' sx={{ pl: 2 }}>
-                                        <IconButton
-                                            onClick={handleUploadClick}
-                                            type='button'
-                                            disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
-                                            edge='start'
-                                        >
+                                        <IconButton onClick={handleUploadClick} type='button' disabled={getInputDisabled()} edge='start'>
                                             <IconPhotoPlus
-                                                color={
-                                                    loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
-                                                        ? '#9e9e9e'
-                                                        : customization.isDarkMode
-                                                        ? 'white'
-                                                        : '#1e88e5'
-                                                }
+                                                color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
                                             />
                                         </IconButton>
                                     </InputAdornment>
@@ -1584,29 +1693,19 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                             <IconButton
                                                 onClick={() => onMicrophonePressed()}
                                                 type='button'
-                                                disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
+                                                disabled={getInputDisabled()}
                                                 edge='end'
                                             >
                                                 <IconMicrophone
                                                     className={'start-recording-button'}
-                                                    color={
-                                                        loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
-                                                            ? '#9e9e9e'
-                                                            : customization.isDarkMode
-                                                            ? 'white'
-                                                            : '#1e88e5'
-                                                    }
+                                                    color={getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
                                                 />
                                             </IconButton>
                                         </InputAdornment>
                                     )}
                                     {!isAgentCanvas && (
                                         <InputAdornment position='end' sx={{ padding: '15px' }}>
-                                            <IconButton
-                                                type='submit'
-                                                disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
-                                                edge='end'
-                                            >
+                                            <IconButton type='submit' disabled={getInputDisabled()} edge='end'>
                                                 {loading ? (
                                                     <div>
                                                         <CircularProgress color='inherit' size={20} />
@@ -1615,11 +1714,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                     // Send icon SVG in input field
                                                     <IconSend
                                                         color={
-                                                            loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
-                                                                ? '#9e9e9e'
-                                                                : customization.isDarkMode
-                                                                ? 'white'
-                                                                : '#1e88e5'
+                                                            getInputDisabled() ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'
                                                         }
                                                     />
                                                 )}
@@ -1630,14 +1725,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                         <>
                                             {!loading && (
                                                 <InputAdornment position='end' sx={{ padding: '15px' }}>
-                                                    <IconButton
-                                                        type='submit'
-                                                        disabled={loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)}
-                                                        edge='end'
-                                                    >
+                                                    <IconButton type='submit' disabled={getInputDisabled()} edge='end'>
                                                         <IconSend
                                                             color={
-                                                                loading || !chatflowid || (leadsConfig?.status && !isLeadSaved)
+                                                                getInputDisabled()
                                                                     ? '#9e9e9e'
                                                                     : customization.isDarkMode
                                                                     ? 'white'
