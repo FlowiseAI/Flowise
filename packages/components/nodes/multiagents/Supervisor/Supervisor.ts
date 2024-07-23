@@ -28,6 +28,8 @@ Each worker will perform a task and respond with their results and status.
 When finished, respond with FINISH.
 Select strategically to minimize the number of steps taken.`
 
+const userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: {member_options}`
+
 const routerToolName = 'route'
 
 const defaultSummarization = 'Conversation finished'
@@ -72,6 +74,16 @@ class Supervisor_MultiAgents implements INode {
                 additionalParams: true
             },
             {
+                label: 'Supervisor User Prompt',
+                name: 'supervisorUserPrompt',
+                type: 'string',
+                description: '{member_options} will be replaced with what can be act next. if this is empty, this will not send to assistant',
+                rows: 4,
+                default: userPrompt,
+                optional: true,
+                additionalParams: true,
+            },
+            {
                 label: 'Tool Calling Chat Model',
                 name: 'model',
                 type: 'BaseChatModel',
@@ -106,6 +118,7 @@ class Supervisor_MultiAgents implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const llm = nodeData.inputs?.model as BaseChatModel
         const supervisorPrompt = nodeData.inputs?.supervisorPrompt as string
+        const supervisorUserPrompt = nodeData.inputs?.supervisorUserPrompt as string
         const supervisorLabel = nodeData.inputs?.supervisorName as string
         const _recursionLimit = nodeData.inputs?.recursionLimit as string
         const recursionLimit = _recursionLimit ? parseFloat(_recursionLimit) : 100
@@ -123,15 +136,12 @@ class Supervisor_MultiAgents implements INode {
 
         let multiModalMessageContent: MessageContentImageUrl[] = []
 
-        async function createTeamSupervisor(llm: BaseChatModel, systemPrompt: string, members: string[]): Promise<Runnable> {
+        async function createTeamSupervisor(llm: BaseChatModel, systemPrompt: string, userPrompt: string, members: string[]): Promise<Runnable> {
             const memberOptions = ['FINISH', ...members]
 
             systemPrompt = systemPrompt.replaceAll('{team_members}', members.join(', '))
+            userPrompt = userPrompt.replaceAll('{member_options}', memberOptions.join(', '))
 
-            let userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${memberOptions.join(
-                ', '
-            )}
-            Remember to give reasonings, instructions and summarization`
 
             const tool = new RouteTool({
                 schema: z.object({
@@ -145,11 +155,17 @@ class Supervisor_MultiAgents implements INode {
             let supervisor
 
             if (llm instanceof ChatMistralAI) {
-                let prompt = ChatPromptTemplate.fromMessages([
+                const promptMessages: Parameters<typeof ChatPromptTemplate.fromMessages>[0] = [
                     ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
                     ['human', userPrompt]
-                ])
+                ]
+
+                if (userPrompt.trim().length === 0) {
+                    promptMessages.pop()
+                }
+
+                let prompt = ChatPromptTemplate.fromMessages(promptMessages)
 
                 const messages = await processImageMessage(1, llm, prompt, nodeData, options)
                 prompt = messages.prompt
@@ -241,11 +257,17 @@ class Supervisor_MultiAgents implements INode {
                         }
                     })
             } else if (llm instanceof ChatOpenAI) {
-                let prompt = ChatPromptTemplate.fromMessages([
+                const promptMessages: Parameters<typeof ChatPromptTemplate.fromMessages>[0] = [
                     ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
                     ['human', userPrompt]
-                ])
+                ]
+
+                if (userPrompt.trim().length === 0) {
+                    promptMessages.pop()
+                }
+
+                let prompt = ChatPromptTemplate.fromMessages(promptMessages)
 
                 const messages = await processImageMessage(1, llm as any, prompt, nodeData, options)
                 prompt = messages.prompt
@@ -339,11 +361,17 @@ class Supervisor_MultiAgents implements INode {
                         }
                     })
             } else {
-                let prompt = ChatPromptTemplate.fromMessages([
+                const promptMessages: Parameters<typeof ChatPromptTemplate.fromMessages>[0] = [
                     ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
                     ['human', userPrompt]
-                ])
+                ]
+
+                if (userPrompt.trim().length === 0) {
+                    promptMessages.pop()
+                }
+
+                let prompt = ChatPromptTemplate.fromMessages(promptMessages)
 
                 const messages = await processImageMessage(1, llm, prompt, nodeData, options)
                 prompt = messages.prompt
@@ -389,7 +417,12 @@ class Supervisor_MultiAgents implements INode {
             return supervisor
         }
 
-        const supervisorAgent = await createTeamSupervisor(llm, supervisorPrompt ? supervisorPrompt : sysPrompt, workersNodeNames)
+        const supervisorAgent = await createTeamSupervisor(
+            llm, 
+            supervisorPrompt ? supervisorPrompt : sysPrompt, 
+            supervisorUserPrompt,
+            workersNodeNames
+        )
 
         const supervisorNode = async (state: ITeamState, config: RunnableConfig) =>
             await agentNode(
