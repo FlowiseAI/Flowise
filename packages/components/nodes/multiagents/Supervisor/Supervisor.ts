@@ -77,11 +77,12 @@ class Supervisor_MultiAgents implements INode {
                 label: 'Supervisor User Prompt',
                 name: 'supervisorUserPrompt',
                 type: 'string',
-                description: '{member_options} will be replaced with what can be act next. if this is empty, this will not send to assistant',
+                description:
+                    '{member_options} will be replaced with what can be act next. if this is empty, this will not send to assistant',
                 rows: 4,
                 default: userPrompt,
                 optional: true,
-                additionalParams: true,
+                additionalParams: true
             },
             {
                 label: 'Tool Calling Chat Model',
@@ -136,12 +137,16 @@ class Supervisor_MultiAgents implements INode {
 
         let multiModalMessageContent: MessageContentImageUrl[] = []
 
-        async function createTeamSupervisor(llm: BaseChatModel, systemPrompt: string, userPrompt: string, members: string[]): Promise<Runnable> {
+        async function createTeamSupervisor(
+            llm: BaseChatModel,
+            systemPrompt: string,
+            userPrompt: string,
+            members: string[]
+        ): Promise<Runnable> {
             const memberOptions = ['FINISH', ...members]
 
             systemPrompt = systemPrompt.replaceAll('{team_members}', members.join(', '))
             userPrompt = userPrompt.replaceAll('{member_options}', memberOptions.join(', '))
-
 
             const tool = new RouteTool({
                 schema: z.object({
@@ -418,8 +423,8 @@ class Supervisor_MultiAgents implements INode {
         }
 
         const supervisorAgent = await createTeamSupervisor(
-            llm, 
-            supervisorPrompt ? supervisorPrompt : sysPrompt, 
+            llm,
+            supervisorPrompt ? supervisorPrompt : sysPrompt,
             supervisorUserPrompt,
             workersNodeNames
         )
