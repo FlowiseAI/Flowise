@@ -206,7 +206,7 @@ export interface ITeamState {
     team_members: string[]
     next: string
     instructions: string
-    summarization: string
+    summarization?: string
 }
 
 export interface ISeqAgentsState {

@@ -147,6 +147,7 @@ export const buildAgentGraph = async (
         let streamResults
         let finalResult = ''
         let finalSummarization = ''
+        let lastWorkerResult = ''
         let agentReasoning: IAgentReasoning[] = []
         let isSequential = false
         let lastMessageRaw = {} as AIMessageChunk
@@ -182,7 +183,8 @@ export const buildAgentGraph = async (
                     incomingInput.question,
                     chatHistory,
                     incomingInput?.overrideConfig,
-                    sessionId || chatId
+                    sessionId || chatId,
+                    seqAgentNodes.some((node) => node.data.inputs?.summarization)
                 )
             } else {
                 isSequential = true
@@ -277,6 +279,12 @@ export const buildAgentGraph = async (
 
                             finalSummarization = output[agentName]?.summarization ?? ''
 
+                            lastWorkerResult =
+                                output[agentName]?.messages?.length &&
+                                output[agentName].messages[output[agentName].messages.length - 1]?.additional_kwargs?.type === 'worker'
+                                    ? output[agentName].messages[output[agentName].messages.length - 1].content
+                                    : lastWorkerResult
+
                             if (socketIO && incomingInput.socketIOClientId) {
                                 if (!isStreamingStarted) {
                                     isStreamingStarted = true
@@ -305,10 +313,13 @@ export const buildAgentGraph = async (
 
                 /*
                  * For multi agents mode, sometimes finalResult is empty
-                 * Provide summary as final result
+                 * 1.) Provide lastWorkerResult as final result if available
+                 * 2.) Provide summary as final result if available
                  */
-                if (!isSequential && !finalResult && finalSummarization) {
-                    finalResult = finalSummarization
+                if (!isSequential && !finalResult) {
+                    if (lastWorkerResult) finalResult = lastWorkerResult
+                    else if (finalSummarization) finalResult = finalSummarization
+
                     if (socketIO && incomingInput.socketIOClientId) {
                         socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
                     }
@@ -425,6 +436,7 @@ export const buildAgentGraph = async (
  * @param {string} question
  * @param {ICommonObject} overrideConfig
  * @param {string} threadId
+ * @param {boolean} summarization
  */
 const compileMultiAgentsGraph = async (
     chatflow: IChatFlow,
@@ -437,7 +449,8 @@ const compileMultiAgentsGraph = async (
     question: string,
     chatHistory: IMessage[] = [],
     overrideConfig?: ICommonObject,
-    threadId?: string
+    threadId?: string,
+    summarization?: boolean
 ) => {
     const appServer = getRunningExpressApp()
     const channels: ITeamState = {
@@ -447,9 +460,10 @@ const compileMultiAgentsGraph = async (
         },
         next: 'initialState',
         instructions: "Solve the user's request.",
-        team_members: [],
-        summarization: 'summarize'
+        team_members: []
     }
+
+    if (summarization) channels.summarization = 'summarize'
 
     const workflowGraph = new StateGraph<ITeamState>({
         //@ts-ignore
