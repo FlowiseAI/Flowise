@@ -30,7 +30,6 @@ Select strategically to minimize the number of steps taken.`
 
 const routerToolName = 'route'
 
-const defaultSummarization = 'Conversation finished'
 const defaultInstruction = 'Conversation finished'
 
 class Supervisor_MultiAgents implements INode {
@@ -131,14 +130,13 @@ class Supervisor_MultiAgents implements INode {
             let userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${memberOptions.join(
                 ', '
             )}
-            Remember to give reasonings, instructions and summarization`
+            Remember to give reasonings and instructions`
 
             const tool = new RouteTool({
                 schema: z.object({
                     reasoning: z.string(),
                     next: z.enum(['FINISH', ...members]),
-                    instructions: z.string().describe('The specific instructions of the sub-task the next role should accomplish.'),
-                    summarization: z.string().optional().describe('Summarization of the conversation')
+                    instructions: z.string().describe('The specific instructions of the sub-task the next role should accomplish.')
                 })
             })
 
@@ -176,15 +174,13 @@ class Supervisor_MultiAgents implements INode {
                                 instructions: Object.keys(toolAgentAction.args).length
                                     ? toolAgentAction.args.instructions
                                     : defaultInstruction,
-                                team_members: members.join(', '),
-                                summarization: Object.keys(toolAgentAction.args).length ? toolAgentAction.args.summarization : ''
+                                team_members: members.join(', ')
                             }
                         } else {
                             return {
                                 next: 'FINISH',
                                 instructions: defaultInstruction,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                team_members: members.join(', ')
                             }
                         }
                     })
@@ -192,7 +188,7 @@ class Supervisor_MultiAgents implements INode {
                 // Force Anthropic to use tool : https://docs.anthropic.com/claude/docs/tool-use#forcing-tool-use
                 userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${memberOptions.join(
                     ', '
-                )}. Remember to give reasonings, instructions and summarization. Use the ${routerToolName} tool in your response.`
+                )}. Remember to give reasonings, and instructions. Use the ${routerToolName} tool in your response.`
 
                 let prompt = ChatPromptTemplate.fromMessages([
                     ['system', systemPrompt],
@@ -221,22 +217,19 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', '),
-                                summarization: toolAgentAction.toolInput.summarization
+                                team_members: members.join(', ')
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                team_members: members.join(', ')
                             }
                         } else {
                             return {
                                 next: 'FINISH',
                                 instructions: defaultInstruction,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                team_members: members.join(', ')
                             }
                         }
                     })
@@ -269,22 +262,19 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', '),
-                                summarization: toolAgentAction.toolInput.summarization
+                                team_members: members.join(', ')
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                team_members: members.join(', ')
                             }
                         } else {
                             return {
                                 next: 'FINISH',
                                 instructions: defaultInstruction,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                team_members: members.join(', ')
                             }
                         }
                     })
@@ -319,22 +309,19 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', '),
-                                summarization: toolAgentAction.toolInput.summarization
+                                team_members: members.join(', ')
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                team_members: members.join(', ')
                             }
                         } else {
                             return {
                                 next: 'FINISH',
                                 instructions: defaultInstruction,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                team_members: members.join(', ')
                             }
                         }
                     })
@@ -365,22 +352,19 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', '),
-                                summarization: toolAgentAction.toolInput.summarization
+                                team_members: members.join(', ')
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                team_members: members.join(', ')
                             }
                         } else {
                             return {
                                 next: 'FINISH',
                                 instructions: defaultInstruction,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                team_members: members.join(', ')
                             }
                         }
                     })
