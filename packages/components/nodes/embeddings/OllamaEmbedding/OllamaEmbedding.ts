@@ -61,6 +61,7 @@ class OllamaEmbedding_Embeddings implements INode {
                 label: 'Use MMap',
                 name: 'useMMap',
                 type: 'boolean',
+                default: true,
                 optional: true,
                 additionalParams: true
             }
@@ -83,7 +84,9 @@ class OllamaEmbedding_Embeddings implements INode {
         const requestOptions: OllamaInput = {}
         if (numThread) requestOptions.numThread = parseFloat(numThread)
         if (numGpu) requestOptions.numGpu = parseFloat(numGpu)
-        if (useMMap !== undefined) requestOptions.useMMap = useMMap
+
+        // default useMMap to true
+        requestOptions.useMMap = useMMap === undefined ? true : useMMap
 
         if (Object.keys(requestOptions).length) obj.requestOptions = requestOptions
 
