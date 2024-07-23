@@ -84,30 +84,19 @@ export const utilGetChatMessage = async (
 
         const messages = (await query.getMany()) as Array<ChatMessage & { feedback: ChatMessageFeedback }>
 
-        if (feedbackTypes) {
+        if (feedbackTypes && feedbackTypes.length > 0) {
             // just applying a filter to the messages array will only return the messages that have feedback,
             // but we also want the message before the feedback message which is the user message.
-            return messages.reduce(
-                (
-                    result: Array<
-                        ChatMessage & {
-                            feedback: ChatMessageFeedback
-                        }
-                    >,
-                    current,
-                    index,
-                    array
-                ) => {
-                    if (current.role === 'apiMessage' && current?.feedback && feedbackTypes.includes(current.feedback.rating)) {
-                        if (index > 0) {
-                            result.push(array[index - 1])
-                        }
-                        result.push(current)
-                    }
-                    return result
-                },
-                []
-            )
+            const indicesToKeep = new Set()
+
+            messages.forEach((message, index) => {
+                if (message.role === 'apiMessage' && message.feedback && feedbackTypes.includes(message.feedback.rating)) {
+                    if (index > 0) indicesToKeep.add(index - 1)
+                    indicesToKeep.add(index)
+                }
+            })
+
+            return messages.filter((_, index) => indicesToKeep.has(index))
         }
 
         return messages
