@@ -23,7 +23,7 @@ import chatflowsApi from '@/api/chatflows'
 
 import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
-import { baseURL } from '@/store/constant'
+import { uiBaseURL } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
 import SaveChatflowDialog from '@/ui-component/dialog/SaveChatflowDialog'
@@ -248,7 +248,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         setAnchorEl(null)
         try {
             localStorage.setItem('duplicatedFlowData', chatflow.flowData)
-            window.open(`${baseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
+            window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
         } catch (e) {
             console.error(e)
         }
