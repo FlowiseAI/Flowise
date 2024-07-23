@@ -146,7 +146,6 @@ export const buildAgentGraph = async (
 
         let streamResults
         let finalResult = ''
-        let finalSummarization = ''
         let agentReasoning: IAgentReasoning[] = []
         let isSequential = false
         let lastMessageRaw = {} as AIMessageChunk
@@ -275,8 +274,6 @@ export const buildAgentGraph = async (
                             }
                             agentReasoning.push(reasoning)
 
-                            finalSummarization = output[agentName]?.summarization ?? ''
-
                             if (socketIO && incomingInput.socketIOClientId) {
                                 if (!isStreamingStarted) {
                                     isStreamingStarted = true
@@ -300,17 +297,6 @@ export const buildAgentGraph = async (
                         if (socketIO && incomingInput.socketIOClientId) {
                             socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
                         }
-                    }
-                }
-
-                /*
-                 * For multi agents mode, sometimes finalResult is empty
-                 * Provide summary as final result
-                 */
-                if (!isSequential && !finalResult && finalSummarization) {
-                    finalResult = finalSummarization
-                    if (socketIO && incomingInput.socketIOClientId) {
-                        socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
                     }
                 }
 
@@ -447,8 +433,7 @@ const compileMultiAgentsGraph = async (
         },
         next: 'initialState',
         instructions: "Solve the user's request.",
-        team_members: [],
-        summarization: 'summarize'
+        team_members: []
     }
 
     const workflowGraph = new StateGraph<ITeamState>({
