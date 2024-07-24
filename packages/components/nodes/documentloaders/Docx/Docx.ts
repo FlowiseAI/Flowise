@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { DocxLoader } from 'langchain/document_loaders/fs/docx'
+import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { getFileFromStorage } from '../../../src'
 
 class Docx_DocumentLoaders implements INode {
@@ -88,7 +88,9 @@ class Docx_DocumentLoaders implements INode {
                 const loader = new DocxLoader(blob)
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    let splittedDocs = await loader.load()
+                    splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                    docs.push(...splittedDocs)
                 } else {
                     docs.push(...(await loader.load()))
                 }
@@ -108,7 +110,9 @@ class Docx_DocumentLoaders implements INode {
                 const loader = new DocxLoader(blob)
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    let splittedDocs = await loader.load()
+                    splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                    docs.push(...splittedDocs)
                 } else {
                     docs.push(...(await loader.load()))
                 }

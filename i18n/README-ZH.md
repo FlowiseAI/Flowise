@@ -44,9 +44,9 @@
 
 1. 进入项目根目录下的 `docker` 文件夹
 2. 创建 `.env` 文件并指定 `PORT`（参考 `.env.example`）
-3. 运行 `docker-compose up -d`
+3. 运行 `docker compose up -d`
 4. 打开 [http://localhost:3000](http://localhost:3000)
-5. 可以通过 `docker-compose stop` 停止容器
+5. 可以通过 `docker compose stop` 停止容器
 
 ### Docker 镜像
 

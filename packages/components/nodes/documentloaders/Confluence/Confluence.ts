@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from 'langchain/document_loaders/web/confluence'
+import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from '@langchain/community/document_loaders/web/confluence'
 import { getCredentialData, getCredentialParam } from '../../../src'
 
 class Confluence_DocumentLoaders implements INode {
@@ -119,7 +119,8 @@ class Confluence_DocumentLoaders implements INode {
         let docs = []
 
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
         } else {
             docs = await loader.load()
         }

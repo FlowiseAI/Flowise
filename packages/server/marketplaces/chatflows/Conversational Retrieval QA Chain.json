@@ -1,12 +1,12 @@
 {
-    "description": "Text file QnA using conversational retrieval QA chain",
-    "categories": "TextFile,ChatOpenAI,Conversational Retrieval QA Chain,Pinecone,Langchain",
+    "description": "Documents QnA using Retrieval Augmented Generation (RAG) with Mistral and FAISS for similarity search",
     "badge": "POPULAR",
-    "framework": "Langchain",
+    "usecases": ["Documents QnA"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
-            "height": 329,
+            "height": 424,
             "id": "openAIEmbeddings_0",
             "position": {
                 "x": 795.6162477805387,
@@ -16,7 +16,7 @@
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "version": 3,
+                "version": 4,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -36,7 +36,7 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "id": "openAIEmbeddings_0-input-modelName-options"
+                        "id": "openAIEmbeddings_0-input-modelName-asyncOptions"
                     },
                     {
                         "label": "Strip New Lines",
@@ -69,21 +69,31 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_0-input-basepath-string"
+                    },
+                    {
+                        "label": "Dimensions",
+                        "name": "dimensions",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-dimensions-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
+                    "modelName": "text-embedding-ada-002",
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
                     "basepath": "",
-                    "modelName": "text-embedding-ada-002"
+                    "dimensions": ""
                 },
                 "outputAnchors": [
                     {
                         "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
                         "name": "openAIEmbeddings",
                         "label": "OpenAIEmbeddings",
+                        "description": "OpenAI API to generate embeddings for a given text",
                         "type": "OpenAIEmbeddings | Embeddings"
                     }
                 ],
@@ -99,7 +109,7 @@
         },
         {
             "width": 300,
-            "height": 429,
+            "height": 430,
             "id": "recursiveCharacterTextSplitter_0",
             "position": {
                 "x": 406.08456707531263,
@@ -168,7 +178,7 @@
         },
         {
             "width": 300,
-            "height": 419,
+            "height": 421,
             "id": "textFile_0",
             "position": {
                 "x": 786.5497697231324,
@@ -250,7 +260,7 @@
         },
         {
             "width": 300,
-            "height": 480,
+            "height": 532,
             "id": "conversationalRetrievalQAChain_0",
             "position": {
                 "x": 1558.6564094656787,
@@ -332,8 +342,8 @@
                 ],
                 "inputs": {
                     "inputModeration": "",
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "vectorStoreRetriever": "{{pinecone_0.data.instance}}",
+                    "model": "{{chatMistralAI_0.data.instance}}",
+                    "vectorStoreRetriever": "{{faiss_0.data.instance}}",
                     "memory": "",
                     "rephrasePrompt": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.\n\nChat History:\n{chat_history}\nFollow Up Input: {question}\nStandalone Question:",
                     "responsePrompt": "You are a helpful assistant. Using the provided context, answer the user's question to the best of your ability using the resources provided.\nIf there is nothing in the context relevant to the question at hand, just say \"Hmm, I'm not sure.\" Don't try to make up an answer.\n------------\n{context}\n------------\nREMEMBER: If there is no relevant information within the context, just say \"Hmm, I'm not sure.\" Don't try to make up an answer."
@@ -353,235 +363,33 @@
                 "x": 1558.6564094656787,
                 "y": 386.60217819991124
             },
-            "selected": false
-        },
-        {
-            "width": 300,
-            "height": 574,
-            "id": "chatOpenAI_0",
-            "position": {
-                "x": 1194.3554779412727,
-                "y": -46.74877201166788
-            },
-            "type": "customNode",
-            "data": {
-                "id": "chatOpenAI_0",
-                "label": "ChatOpenAI",
-                "version": 6.0,
-                "name": "chatOpenAI",
-                "type": "ChatOpenAI",
-                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
-                "category": "Chat Models",
-                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["openAIApi"],
-                        "id": "chatOpenAI_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Model Name",
-                        "name": "modelName",
-                        "type": "asyncOptions",
-                        "loadMethod": "listModels",
-                        "default": "gpt-3.5-turbo",
-                        "id": "chatOpenAI_0-input-modelName-options"
-                    },
-                    {
-                        "label": "Temperature",
-                        "name": "temperature",
-                        "type": "number",
-                        "step": 0.1,
-                        "default": 0.9,
-                        "optional": true,
-                        "id": "chatOpenAI_0-input-temperature-number"
-                    },
-                    {
-                        "label": "Max Tokens",
-                        "name": "maxTokens",
-                        "type": "number",
-                        "step": 1,
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-maxTokens-number"
-                    },
-                    {
-                        "label": "Top Probability",
-                        "name": "topP",
-                        "type": "number",
-                        "step": 0.1,
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-topP-number"
-                    },
-                    {
-                        "label": "Frequency Penalty",
-                        "name": "frequencyPenalty",
-                        "type": "number",
-                        "step": 0.1,
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
-                    },
-                    {
-                        "label": "Presence Penalty",
-                        "name": "presencePenalty",
-                        "type": "number",
-                        "step": 0.1,
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-presencePenalty-number"
-                    },
-                    {
-                        "label": "Timeout",
-                        "name": "timeout",
-                        "type": "number",
-                        "step": 1,
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-timeout-number"
-                    },
-                    {
-                        "label": "BasePath",
-                        "name": "basepath",
-                        "type": "string",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-basepath-string"
-                    },
-                    {
-                        "label": "BaseOptions",
-                        "name": "baseOptions",
-                        "type": "json",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-baseOptions-json"
-                    },
-                    {
-                        "label": "Allow Image Uploads",
-                        "name": "allowImageUploads",
-                        "type": "boolean",
-                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
-                        "default": false,
-                        "optional": true,
-                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
-                    },
-                    {
-                        "label": "Image Resolution",
-                        "description": "This parameter controls the resolution in which the model views the image.",
-                        "name": "imageResolution",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "Low",
-                                "name": "low"
-                            },
-                            {
-                                "label": "High",
-                                "name": "high"
-                            },
-                            {
-                                "label": "Auto",
-                                "name": "auto"
-                            }
-                        ],
-                        "default": "low",
-                        "optional": false,
-                        "additionalParams": true,
-                        "id": "chatOpenAI_0-input-imageResolution-options"
-                    }
-                ],
-                "inputAnchors": [
-                    {
-                        "label": "Cache",
-                        "name": "cache",
-                        "type": "BaseCache",
-                        "optional": true,
-                        "id": "chatOpenAI_0-input-cache-BaseCache"
-                    }
-                ],
-                "inputs": {
-                    "cache": "",
-                    "modelName": "gpt-3.5-turbo-16k",
-                    "temperature": 0.9,
-                    "maxTokens": "",
-                    "topP": "",
-                    "frequencyPenalty": "",
-                    "presencePenalty": "",
-                    "timeout": "",
-                    "basepath": "",
-                    "baseOptions": "",
-                    "allowImageUploads": true,
-                    "imageResolution": "low"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-                        "name": "chatOpenAI",
-                        "label": "ChatOpenAI",
-                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
             "selected": false,
-            "positionAbsolute": {
-                "x": 1194.3554779412727,
-                "y": -46.74877201166788
-            },
             "dragging": false
         },
         {
-            "width": 300,
-            "height": 555,
-            "id": "pinecone_0",
+            "id": "faiss_0",
             "position": {
-                "x": 1192.4771449209463,
-                "y": 552.43946147251
+                "x": 1193.61786387649,
+                "y": 559.055052045731
             },
             "type": "customNode",
             "data": {
-                "id": "pinecone_0",
-                "label": "Pinecone",
-                "version": 2,
-                "name": "pinecone",
-                "type": "Pinecone",
-                "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
+                "id": "faiss_0",
+                "label": "Faiss",
+                "version": 1,
+                "name": "faiss",
+                "type": "Faiss",
+                "baseClasses": ["Faiss", "VectorStoreRetriever", "BaseRetriever"],
                 "category": "Vector Stores",
-                "description": "Upsert embedded data and perform similarity or mmr search using Pinecone, a leading fully managed hosted vector database",
+                "description": "Upsert embedded data and perform similarity search upon query using Faiss library from Meta",
                 "inputParams": [
                     {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["pineconeApi"],
-                        "id": "pinecone_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Pinecone Index",
-                        "name": "pineconeIndex",
+                        "label": "Base Path to load",
+                        "name": "basePath",
+                        "description": "Path to load faiss.index file",
+                        "placeholder": "C:\\Users\\User\\Desktop",
                         "type": "string",
-                        "id": "pinecone_0-input-pineconeIndex-string"
-                    },
-                    {
-                        "label": "Pinecone Namespace",
-                        "name": "pineconeNamespace",
-                        "type": "string",
-                        "placeholder": "my-first-namespace",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pinecone_0-input-pineconeNamespace-string"
-                    },
-                    {
-                        "label": "Pinecone Metadata Filter",
-                        "name": "pineconeMetadataFilter",
-                        "type": "json",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "pinecone_0-input-pineconeMetadataFilter-json"
+                        "id": "faiss_0-input-basePath-string"
                     },
                     {
                         "label": "Top K",
@@ -591,46 +399,7 @@
                         "type": "number",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "pinecone_0-input-topK-number"
-                    },
-                    {
-                        "label": "Search Type",
-                        "name": "searchType",
-                        "type": "options",
-                        "default": "similarity",
-                        "options": [
-                            {
-                                "label": "Similarity",
-                                "name": "similarity"
-                            },
-                            {
-                                "label": "Max Marginal Relevance",
-                                "name": "mmr"
-                            }
-                        ],
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pinecone_0-input-searchType-options"
-                    },
-                    {
-                        "label": "Fetch K (for MMR Search)",
-                        "name": "fetchK",
-                        "description": "Number of initial documents to fetch for MMR reranking. Default to 20. Used only when the search type is MMR",
-                        "placeholder": "20",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pinecone_0-input-fetchK-number"
-                    },
-                    {
-                        "label": "Lambda (for MMR Search)",
-                        "name": "lambda",
-                        "description": "Number between 0 and 1 that determines the degree of diversity among the results, where 0 corresponds to maximum diversity and 1 to minimum diversity. Used only when the search type is MMR",
-                        "placeholder": "0.5",
-                        "type": "number",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "pinecone_0-input-lambda-number"
+                        "id": "faiss_0-input-topK-number"
                     }
                 ],
                 "inputAnchors": [
@@ -640,43 +409,41 @@
                         "type": "Document",
                         "list": true,
                         "optional": true,
-                        "id": "pinecone_0-input-document-Document"
+                        "id": "faiss_0-input-document-Document"
                     },
                     {
                         "label": "Embeddings",
                         "name": "embeddings",
                         "type": "Embeddings",
-                        "id": "pinecone_0-input-embeddings-Embeddings"
+                        "id": "faiss_0-input-embeddings-Embeddings"
                     }
                 ],
                 "inputs": {
-                    "document": ["{{textFile_0.data.instance}}"],
+                    "document": ["{{textFile_0.data.instance}}", "{{documentStore_0.data.instance}}"],
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
-                    "pineconeIndex": "",
-                    "pineconeNamespace": "",
-                    "pineconeMetadataFilter": "",
-                    "topK": "",
-                    "searchType": "similarity",
-                    "fetchK": "",
-                    "lambda": ""
+                    "basePath": "",
+                    "topK": ""
                 },
                 "outputAnchors": [
                     {
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
-                                "id": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+                                "id": "faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
-                                "label": "Pinecone Retriever",
-                                "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
+                                "label": "Faiss Retriever",
+                                "description": "",
+                                "type": "Faiss | VectorStoreRetriever | BaseRetriever"
                             },
                             {
-                                "id": "pinecone_0-output-vectorStore-Pinecone|VectorStore",
+                                "id": "faiss_0-output-vectorStore-Faiss|SaveableVectorStore|VectorStore",
                                 "name": "vectorStore",
-                                "label": "Pinecone Vector Store",
-                                "type": "Pinecone | VectorStore"
+                                "label": "Faiss Vector Store",
+                                "description": "",
+                                "type": "Faiss | SaveableVectorStore | VectorStore"
                             }
                         ],
                         "default": "retriever"
@@ -687,11 +454,264 @@
                 },
                 "selected": false
             },
+            "width": 300,
+            "height": 459,
             "selected": false,
             "positionAbsolute": {
-                "x": 1192.4771449209463,
-                "y": 552.43946147251
+                "x": 1193.61786387649,
+                "y": 559.055052045731
             },
+            "dragging": false
+        },
+        {
+            "id": "documentStore_0",
+            "position": {
+                "x": 785.3020265031932,
+                "y": -215.72424937010018
+            },
+            "type": "customNode",
+            "data": {
+                "id": "documentStore_0",
+                "label": "Document Store",
+                "version": 1,
+                "name": "documentStore",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from pre-configured document stores",
+                "inputParams": [
+                    {
+                        "label": "Select Store",
+                        "name": "selectedStore",
+                        "type": "asyncOptions",
+                        "loadMethod": "listStores",
+                        "id": "documentStore_0-input-selectedStore-asyncOptions"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "selectedStore": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "description": "Array of document objects containing metadata and pageContent",
+                        "options": [
+                            {
+                                "id": "documentStore_0-output-document-Document|json",
+                                "name": "document",
+                                "label": "Document",
+                                "description": "Array of document objects containing metadata and pageContent",
+                                "type": "Document | json"
+                            },
+                            {
+                                "id": "documentStore_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "description": "Concatenated string from pageContent of documents",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "document"
+                },
+                "selected": false
+            },
+            "width": 300,
+            "height": 312,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 785.3020265031932,
+                "y": -215.72424937010018
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1546.6369661154768,
+                "y": -107.3962162381467
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Conversational Retrieval QA Chain composes of 2 chains:\n\n1. A chain to rephrase user question using previous conversations\n2. A chain to provide response based on the context fetched from vector store.\n\nWhy is the need for rephrasing question?\nThis is to ensure that a follow-up question can be asked. For example:\n\n- What is the address of the Bakery shop?\n- What about the opening time?\n\nA rephrased question will be:\n- What is the opening time of the Bakery shop?\n\nThis ensure a better search to vector store, hence better output quality.\n"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 465,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1546.6369661154768,
+                "y": -107.3962162381467
+            },
+            "dragging": false
+        },
+        {
+            "id": "chatMistralAI_0",
+            "position": {
+                "x": 1185.9624817228073,
+                "y": -60.75719138037451
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatMistralAI_0",
+                "label": "ChatMistralAI",
+                "version": 3,
+                "name": "chatMistralAI",
+                "type": "ChatMistralAI",
+                "baseClasses": ["ChatMistralAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around Mistral large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["mistralAIApi"],
+                        "id": "chatMistralAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "mistral-tiny",
+                        "id": "chatMistralAI_0-input-modelName-asyncOptions"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "description": "What sampling temperature to use, between 0.0 and 1.0. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatMistralAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Output Tokens",
+                        "name": "maxOutputTokens",
+                        "type": "number",
+                        "description": "The maximum number of tokens to generate in the completion.",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-maxOutputTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "description": "Nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Random Seed",
+                        "name": "randomSeed",
+                        "type": "number",
+                        "description": "The seed to use for random sampling. If set, different calls will generate deterministic results.",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-randomSeed-number"
+                    },
+                    {
+                        "label": "Safe Mode",
+                        "name": "safeMode",
+                        "type": "boolean",
+                        "description": "Whether to inject a safety prompt before all conversations.",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-safeMode-boolean"
+                    },
+                    {
+                        "label": "Override Endpoint",
+                        "name": "overrideEndpoint",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatMistralAI_0-input-overrideEndpoint-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatMistralAI_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "mistral-tiny",
+                    "temperature": 0.9,
+                    "maxOutputTokens": "",
+                    "topP": "",
+                    "randomSeed": "",
+                    "safeMode": "",
+                    "overrideEndpoint": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatMistralAI_0-output-chatMistralAI-ChatMistralAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatMistralAI",
+                        "label": "ChatMistralAI",
+                        "description": "Wrapper around Mistral large language models that use the Chat endpoint",
+                        "type": "ChatMistralAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 574,
+            "positionAbsolute": {
+                "x": 1185.9624817228073,
+                "y": -60.75719138037451
+            },
+            "selected": false,
             "dragging": false
         }
     ],
@@ -710,46 +730,42 @@
         {
             "source": "textFile_0",
             "sourceHandle": "textFile_0-output-document-Document|json",
-            "target": "pinecone_0",
-            "targetHandle": "pinecone_0-input-document-Document",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-document-Document",
             "type": "buttonedge",
-            "id": "textFile_0-textFile_0-output-document-Document|json-pinecone_0-pinecone_0-input-document-Document",
-            "data": {
-                "label": ""
-            }
+            "id": "textFile_0-textFile_0-output-document-Document|json-faiss_0-faiss_0-input-document-Document"
         },
         {
             "source": "openAIEmbeddings_0",
             "sourceHandle": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
-            "target": "pinecone_0",
-            "targetHandle": "pinecone_0-input-embeddings-Embeddings",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-embeddings-Embeddings",
             "type": "buttonedge",
-            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-pinecone_0-pinecone_0-input-embeddings-Embeddings",
-            "data": {
-                "label": ""
-            }
+            "id": "openAIEmbeddings_0-openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings-faiss_0-faiss_0-input-embeddings-Embeddings"
         },
         {
-            "source": "pinecone_0",
-            "sourceHandle": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
+            "source": "documentStore_0",
+            "sourceHandle": "documentStore_0-output-document-Document|json",
+            "target": "faiss_0",
+            "targetHandle": "faiss_0-input-document-Document",
+            "type": "buttonedge",
+            "id": "documentStore_0-documentStore_0-output-document-Document|json-faiss_0-faiss_0-input-document-Document"
+        },
+        {
+            "source": "faiss_0",
+            "sourceHandle": "faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever",
             "target": "conversationalRetrievalQAChain_0",
             "targetHandle": "conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
             "type": "buttonedge",
-            "id": "pinecone_0-pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever",
-            "data": {
-                "label": ""
-            }
+            "id": "faiss_0-faiss_0-output-retriever-Faiss|VectorStoreRetriever|BaseRetriever-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-vectorStoreRetriever-BaseRetriever"
         },
         {
-            "source": "chatOpenAI_0",
-            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "source": "chatMistralAI_0",
+            "sourceHandle": "chatMistralAI_0-output-chatMistralAI-ChatMistralAI|BaseChatModel|BaseLanguageModel|Runnable",
             "target": "conversationalRetrievalQAChain_0",
             "targetHandle": "conversationalRetrievalQAChain_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseChatModel",
-            "data": {
-                "label": ""
-            }
+            "id": "chatMistralAI_0-chatMistralAI_0-output-chatMistralAI-ChatMistralAI|BaseChatModel|BaseLanguageModel|Runnable-conversationalRetrievalQAChain_0-conversationalRetrievalQAChain_0-input-model-BaseChatModel"
         }
     ]
 }

@@ -104,7 +104,9 @@ class Json_DocumentLoaders implements INode {
                 const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined)
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    let splittedDocs = await loader.load()
+                    splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                    docs.push(...splittedDocs)
                 } else {
                     docs.push(...(await loader.load()))
                 }
@@ -124,7 +126,9 @@ class Json_DocumentLoaders implements INode {
                 const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined)
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    let splittedDocs = await loader.load()
+                    splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                    docs.push(...splittedDocs)
                 } else {
                     docs.push(...(await loader.load()))
                 }

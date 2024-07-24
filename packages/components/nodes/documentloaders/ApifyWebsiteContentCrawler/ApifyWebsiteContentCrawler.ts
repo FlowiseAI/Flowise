@@ -2,7 +2,7 @@ import { omit } from 'lodash'
 import { INode, INodeData, INodeParams, ICommonObject } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { TextSplitter } from 'langchain/text_splitter'
-import { ApifyDatasetLoader } from 'langchain/document_loaders/web/apify_dataset'
+import { ApifyDatasetLoader } from '@langchain/community/document_loaders/web/apify_dataset'
 import { Document } from '@langchain/core/documents'
 
 class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
@@ -165,7 +165,8 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
         let docs = []
 
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
         } else {
             docs = await loader.load()
         }
