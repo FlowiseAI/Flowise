@@ -60,8 +60,7 @@ const NavGroup = ({ item, drawerToggle, trigger }) => {
                     // hover states
                     '& .MuiListItemButton-root:hover': {
                         bgcolor: '#017744'
-                    },
-                    py: '20px'
+                    }
                 }}
                 subheader={
                     item.title && (
