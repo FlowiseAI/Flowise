@@ -127,6 +127,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
                 type: m.role
             })
         }
+
         return returnIMessages
     }
 

@@ -1,3 +1,7 @@
+import { ZepMemory, ZepMemoryInput } from '@getzep/zep-cloud/langchain'
+import { BaseMessage } from '@langchain/core/messages'
+import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
+import { ICommonObject } from '../../../src'
 import { IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 import {
     convertBaseMessagetoIMessage,
@@ -6,11 +10,6 @@ import {
     getCredentialParam,
     mapChatMessageToBaseMessage
 } from '../../../src/utils'
-import { ZepMemory, ZepMemoryInput } from '@getzep/zep-cloud/langchain'
-
-import { ICommonObject } from '../../../src'
-import { InputValues, MemoryVariables, OutputValues } from 'langchain/memory'
-import { BaseMessage } from 'langchain/schema'
 
 class ZepMemoryCloud_Memory implements INode {
     label: string
