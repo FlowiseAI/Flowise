@@ -1,0 +1,78 @@
+import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
+import { getBaseClasses, getInputVariables } from '../../../src/utils'
+import { PromptTemplateInput } from '@langchain/core/prompts'
+import { Langfuse } from "langfuse";
+
+class PromptLangfuse_Prompts implements INode {
+    label: string
+    name: string
+    version: number
+    description: string
+    type: string
+    icon: string
+    category: string
+    baseClasses: string[]
+    inputs: INodeParams[]
+
+    constructor() {
+        this.label = 'Prompt Template LangFuse'
+        this.name = 'promptLangFuse'
+        this.version = 1.0
+        this.type = 'PromptTemplate'
+        this.icon = 'prompt.svg'
+        this.category = 'Prompts'
+        this.description = 'Schema to represent a basic prompt for an LLM'
+        this.baseClasses = [this.type, ...getBaseClasses(PromptTemplate)]
+        this.inputs = [
+            {
+                label: 'Prompt Name',
+                name: 'template',
+                type: 'string',
+                rows: 1,
+                placeholder: `Name of the template`
+            },
+            {
+                label: 'Format Prompt Values',
+                name: 'promptValues',
+                type: 'json',
+                optional: true,
+                acceptVariable: true,
+                list: true
+            }
+        ]
+    }
+
+    async init(nodeData: INodeData): Promise<any> {
+        const langfuse = new Langfuse();
+ 
+        const langfusePrompt = await langfuse.getPrompt(nodeData.inputs?.template as string)
+        const template = langfusePrompt.getLangchainPrompt();
+
+        const promptValuesStr = nodeData.inputs?.promptValues
+
+        let promptValues: ICommonObject = {}
+        if (promptValuesStr) {
+            try {
+                promptValues = typeof promptValuesStr === 'object' ? promptValuesStr : JSON.parse(promptValuesStr)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the PromptTemplate's promptValues: " + exception)
+            }
+        }
+
+        const inputVariables = getInputVariables(template)
+
+        try {
+            const options: PromptTemplateInput = {
+                template,
+                inputVariables
+            }
+            const prompt = new PromptTemplate(options)
+            prompt.promptValues = promptValues
+            return prompt
+        } catch (e) {
+            throw new Error(e)
+        }
+    }
+}
+
+module.exports = { nodeClass: PromptLangfuse_Prompts }
