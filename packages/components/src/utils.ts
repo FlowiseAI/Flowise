@@ -1,13 +1,13 @@
+import { AIMessage, BaseMessage, HumanMessage } from '@langchain/core/messages'
 import axios from 'axios'
 import { load } from 'cheerio'
-import * as fs from 'fs'
-import * as path from 'path'
-import { JSDOM } from 'jsdom'
-import { z } from 'zod'
-import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
 import { AES, enc } from 'crypto-js'
-import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import * as fs from 'fs'
+import { JSDOM } from 'jsdom'
+import * as path from 'path'
+import { DataSource } from 'typeorm'
+import { z } from 'zod'
+import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -463,6 +463,7 @@ export const getEncryptionKeyPath = (): string => {
  * @returns {Promise<string>}
  */
 const getEncryptionKey = async (): Promise<string> => {
+    console.log('=========> Reach packages\\components\\src\\utils.ts getEncryptionKey')
     if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
         return process.env.FLOWISE_SECRETKEY_OVERWRITE
     }
@@ -481,6 +482,7 @@ const getEncryptionKey = async (): Promise<string> => {
  * @returns {Promise<ICommonObject>}
  */
 const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
+    console.log('=========> Reach packages\\components\\src\\utils.ts decryptCredentialData')
     const encryptKey = await getEncryptionKey()
     const decryptedData = AES.decrypt(encryptedData, encryptKey)
     try {
@@ -498,6 +500,7 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
  * @returns {Promise<ICommonObject>}
  */
 export const getCredentialData = async (selectedCredentialId: string, options: ICommonObject): Promise<ICommonObject> => {
+    console.log('=========> Reach packages\\components\\src\\utils.ts getCredentialData')
     const appDataSource = options.appDataSource as DataSource
     const databaseEntities = options.databaseEntities as IDatabaseEntity
 

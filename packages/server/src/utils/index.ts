@@ -1,9 +1,7 @@
-import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
 import {
     convertChatHistoryToText,
     FlowiseMemory,
-    getEncryptionKeyPath,
     getInputVariables,
     handleEscapeCharacters,
     ICommonObject,
@@ -43,12 +41,10 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { DocumentStore } from '../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
-import { Encryption } from '../database/entities/Encryption'
 import { Tool } from '../database/entities/Tool'
 import { Variable } from '../database/entities/Variable'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
-import { getErrorMessage } from '../errors/utils'
-import { getRunningExpressApp } from './getRunningExpressApp'
+import { getEncryptionKey } from './encryptionKey'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -1165,99 +1161,13 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
 }
 
 /**
- * Generate an encryption key
- * @returns {string}
- */
-export const generateEncryptKey = (): string => {
-    return randomBytes(24).toString('base64')
-}
-
-// /**
-//  * Returns the encryption key
-//  * @returns {Promise<string>}
-//  */
-// export const getEncryptionKey = async (): Promise<string> => {
-//     if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
-//         return process.env.FLOWISE_SECRETKEY_OVERWRITE
-//     }
-//     try {
-//         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
-//     } catch (error) {
-//         const encryptKey = generateEncryptKey()
-//         const defaultLocation = process.env.SECRETKEY_PATH
-//             ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
-//             : path.join(getUserHome(), '.flowise', 'encryption.key')
-//         await fs.promises.writeFile(defaultLocation, encryptKey)
-//         return encryptKey
-//     }
-// }
-
-/**
- * Returns the encryption key
- * @returns {Promise<string>}
- */
-export const getEncryptionKey = async (): Promise<string> => {
-    try {
-        const appServer = getRunningExpressApp()
-
-        // step 1 - get value of FLOWISE_SECRETKEY_OVERWRITE
-        let SECRETKEY_OVERWRITE: string = ''
-        if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '')
-            SECRETKEY_OVERWRITE = process.env.FLOWISE_SECRETKEY_OVERWRITE
-
-        // step 2 - get value of SECRETKEY_FROM_PATH if exists
-        let SECRETKEY_FROM_PATH: string = ''
-        try {
-            SECRETKEY_FROM_PATH = await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
-        } catch (error) {
-            // bypass error if not found, there's no need to create this file anymore
-        }
-
-        // step 3 - store values into database if not exists
-        let dbFindResponse = await appServer.AppDataSource.getRepository(Encryption).find({ select: { encryptionKey: true } })
-        const encryptionKeys = dbFindResponse.map((response) => {
-            return response.encryptionKey
-        })
-
-        // step 4 - insert SECRETKEY into database if not duplicate
-        const prepEncryptionKeys: Partial<Encryption>[] = []
-        let nameCounter: number = encryptionKeys.length
-        const pushToPrepEncryptionKeys = (SECRETKEY: string) => {
-            if (SECRETKEY != '' && !encryptionKeys.includes(SECRETKEY)) {
-                nameCounter += 1
-                prepEncryptionKeys.push({ name: nameCounter.toString(), encryptionKey: SECRETKEY })
-            }
-        }
-        pushToPrepEncryptionKeys(SECRETKEY_FROM_PATH)
-        pushToPrepEncryptionKeys(SECRETKEY_OVERWRITE)
-        if (prepEncryptionKeys.length != 0) await appServer.AppDataSource.getRepository(Encryption).insert(prepEncryptionKeys)
-
-        // step 5 - return value based on latest created date
-        dbFindResponse = await appServer.AppDataSource.getRepository(Encryption).find({
-            select: { encryptionKey: true },
-            order: { updatedDate: 'DESC' }
-        })
-        if (dbFindResponse != null) return dbFindResponse[0].encryptionKey
-
-        // step 6 - will reach when there are no value created in SECRETKEY_OVERWRITE, SECRETKEY_FROM_PATH and database
-        const encryptionKey: string = generateEncryptKey()
-        nameCounter += 1
-        await appServer.AppDataSource.getRepository(Encryption).insert({
-            name: nameCounter.toString(),
-            encryptionKey
-        })
-        return encryptionKey
-    } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: utils.getEncryptionKey - ${getErrorMessage(error)}`)
-    }
-}
-
-/**
  * Encrypt credential data
  * @param {ICredentialDataDecrypted} plainDataObj
  * @returns {Promise<string>}
  */
 export const encryptCredentialData = async (plainDataObj: ICredentialDataDecrypted): Promise<string> => {
+    console.log('=========> Reach packages\\server\\src\\utilsencryptionKey.ts encryptCredentialData')
+
     const encryptKey = await getEncryptionKey()
     return AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString()
 }
@@ -1274,6 +1184,7 @@ export const decryptCredentialData = async (
     componentCredentialName?: string,
     componentCredentials?: IComponentCredentials
 ): Promise<ICredentialDataDecrypted> => {
+    console.log('=========> Reach packages\\server\\src\\utilsencryptionKey.ts decryptCredentialData')
     const encryptKey = await getEncryptionKey()
     const decryptedData = AES.decrypt(encryptedData, encryptKey)
     const decryptedDataStr = decryptedData.toString(enc.Utf8)
