@@ -128,33 +128,15 @@ const UploadJSONFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <div
-                        style={{
-                            width: 50,
-                            height: 50,
-                            marginRight: 10,
-                            borderRadius: '50%',
-                            backgroundColor: 'white'
-                        }}
-                    >
-                        <IconFileUpload
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                padding: 7,
-                                borderRadius: '50%',
-                                objectFit: 'contain'
-                            }}
-                        />
-                    </div>
-                    {'Upload Apikeys JSON File'}
+                    <IconFileUpload style={{ marginRight: '10px' }} />
+                    Import API Keys
                 </div>
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            Select existing api.json file to import
+                            Import api.json file
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                     </Stack>
