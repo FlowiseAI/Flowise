@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { Browser, Page, PuppeteerWebBaseLoader, PuppeteerWebBaseLoaderOptions } from 'langchain/document_loaders/web/puppeteer'
+import { Browser, Page, PuppeteerWebBaseLoader, PuppeteerWebBaseLoaderOptions } from '@langchain/community/document_loaders/web/puppeteer'
 import { test } from 'linkifyjs'
 import { webCrawl, xmlScrape } from '../../../src'
 import { PuppeteerLifeCycleEvent } from 'puppeteer'
@@ -175,7 +175,8 @@ class Puppeteer_DocumentLoaders implements INode {
                 }
                 const loader = new PuppeteerWebBaseLoader(url, config)
                 if (textSplitter) {
-                    docs = await loader.loadAndSplit(textSplitter)
+                    docs = await loader.load()
+                    docs = await textSplitter.splitDocuments(docs)
                 } else {
                     docs = await loader.load()
                 }

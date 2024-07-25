@@ -6,7 +6,7 @@ import {
     UnstructuredLoaderStrategy,
     SkipInferTableTypes,
     HiResModelName
-} from 'langchain/document_loaders/fs/unstructured'
+} from '@langchain/community/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class UnstructuredFolder_DocumentLoaders implements INode {

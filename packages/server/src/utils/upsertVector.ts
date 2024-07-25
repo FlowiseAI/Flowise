@@ -117,24 +117,24 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
 
         const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
-        const upsertedResult = await buildFlow(
+        const upsertedResult = await buildFlow({
             startingNodeIds,
-            nodes,
-            edges,
-            filteredGraph,
+            reactFlowNodes: nodes,
+            reactFlowEdges: edges,
+            graph: filteredGraph,
             depthQueue,
-            appServer.nodesPool.componentNodes,
-            incomingInput.question,
+            componentNodes: appServer.nodesPool.componentNodes,
+            question: incomingInput.question,
             chatHistory,
             chatId,
-            sessionId ?? '',
+            sessionId: sessionId ?? '',
             chatflowid,
-            appServer.AppDataSource,
-            incomingInput?.overrideConfig,
-            appServer.cachePool,
+            appDataSource: appServer.AppDataSource,
+            overrideConfig: incomingInput?.overrideConfig,
+            cachePool: appServer.cachePool,
             isUpsert,
             stopNodeId
-        )
+        })
 
         const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.data.id))
 
