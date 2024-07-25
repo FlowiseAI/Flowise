@@ -21,6 +21,7 @@ import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
 import { AddEncryption1721308320215 } from './1721309779046-AddEncryption'
 import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
+import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 
 export const mariadbMigrations = [
     Init1693840429259,
@@ -45,5 +46,6 @@ export const mariadbMigrations = [
     AddLeadToChatMessage1711538023578,
     AddAgentReasoningToChatMessage1714679514451,
     AddTypeToChatFlow1766759476232,
-    AddEncryption1721308320215
+    AddEncryption1721308320215,
+    AddActionToChatMessage1721078251523
 ]

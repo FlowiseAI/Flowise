@@ -439,6 +439,7 @@ class OllamaFunctions extends BaseChatModel<ChatOllamaFunctionsCallOptions> {
         }
     }
 
+    //@ts-ignore
     override bindTools(
         tools: StructuredToolInterface[],
         kwargs?: Partial<ICommonObject>

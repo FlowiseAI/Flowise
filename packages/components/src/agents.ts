@@ -11,6 +11,7 @@ import { Runnable, RunnableSequence, RunnablePassthrough } from '@langchain/core
 import { Serializable } from '@langchain/core/load/serializable'
 import { renderTemplate } from '@langchain/core/prompts'
 import { ChatGeneration } from '@langchain/core/outputs'
+import { Document } from '@langchain/core/documents'
 import { BaseChain, SerializedLLMChain } from 'langchain/chains'
 import {
     CreateReactAgentParams,
@@ -421,7 +422,8 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                 {
                                     sessionId: this.sessionId,
                                     chatId: this.chatId,
-                                    input: this.input
+                                    input: this.input,
+                                    state: inputs
                                 }
                             )
                             usedTools.push({
@@ -556,7 +558,8 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                         {
                             sessionId: this.sessionId,
                             chatId: this.chatId,
-                            input: this.input
+                            input: this.input,
+                            state: inputs
                         }
                     )
                     if (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)) {
