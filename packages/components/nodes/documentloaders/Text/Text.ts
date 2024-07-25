@@ -106,7 +106,9 @@ class Text_DocumentLoaders implements INode {
                 const loader = new TextLoader(blob)
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    let splittedDocs = await loader.load()
+                    splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                    docs.push(...splittedDocs)
                 } else {
                     docs.push(...(await loader.load()))
                 }
@@ -126,7 +128,9 @@ class Text_DocumentLoaders implements INode {
                 const loader = new TextLoader(blob)
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    let splittedDocs = await loader.load()
+                    splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                    docs.push(...splittedDocs)
                 } else {
                     docs.push(...(await loader.load()))
                 }

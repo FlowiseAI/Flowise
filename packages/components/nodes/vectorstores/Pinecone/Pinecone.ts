@@ -3,6 +3,7 @@ import { Pinecone, PineconeConfiguration } from '@pinecone-database/pinecone'
 import { PineconeStoreParams, PineconeStore } from '@langchain/pinecone'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
+import { VectorStore } from '@langchain/core/vectorstores'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
@@ -162,7 +163,7 @@ class Pinecone_VectorStores implements INode {
 
             try {
                 if (recordManager) {
-                    const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
+                    const vectorStore = (await PineconeStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore
                     await recordManager.createSchema()
                     const res = await index({
                         docsSource: finalDocs,
@@ -211,7 +212,7 @@ class Pinecone_VectorStores implements INode {
             obj.filter = metadatafilter
         }
 
-        const vectorStore = await PineconeStore.fromExistingIndex(embeddings, obj)
+        const vectorStore = (await PineconeStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore
 
         return resolveVectorStoreOrRetriever(nodeData, vectorStore, obj.filter)
     }

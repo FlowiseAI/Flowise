@@ -1,12 +1,12 @@
 import { flatten } from 'lodash'
 import { ZepClient } from '@getzep/zep-cloud'
 import { IZepConfig, ZepVectorStore } from '@getzep/zep-cloud/langchain'
-import { Embeddings } from 'langchain/embeddings/base'
 import { Document } from 'langchain/document'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { FakeEmbeddings } from 'langchain/embeddings/fake'
+import { Embeddings } from '@langchain/core/embeddings'
 
 class Zep_CloudVectorStores implements INode {
     label: string
