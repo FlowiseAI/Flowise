@@ -162,7 +162,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     }, [getSpecificToolApi.data])
 
     useEffect(() => {
-        if (getSpecificToolApi.error) {
+        if (getSpecificToolApi.error && setError) {
             setError(getSpecificToolApi.error)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -418,7 +418,9 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                             <TooltipWithParser
-                                title={'Название инструмента должно состоять из маленькой заглавной буквы и подчеркивания. Пример: мой_инструмент'}
+                                title={
+                                    'Название инструмента должно состоять из маленькой заглавной буквы и подчеркивания. Пример: мой_инструмент'
+                                }
                             />
                         </Stack>
                         <OutlinedInput

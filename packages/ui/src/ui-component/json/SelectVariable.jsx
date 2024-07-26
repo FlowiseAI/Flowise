@@ -4,6 +4,7 @@ import { Box, List, ListItemButton, ListItem, ListItemAvatar, ListItemText, Typo
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import robotPNG from '@/assets/images/robot.png'
 import chatPNG from '@/assets/images/chathistory.png'
+import diskPNG from '@/assets/images/floppy-disc.png'
 import { baseURL } from '@/store/constant'
 import { translationObject } from '@/translate'
 const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectAndReturnVal }) => {
@@ -109,9 +110,10 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                 {availableNodesForVariable &&
                                     availableNodesForVariable.length > 0 &&
                                     availableNodesForVariable.map((node, index) => {
-                                        const selectedOutputAnchor = node.data.outputAnchors[0].options.find(
-                                            (ancr) => ancr.name === node.data.outputs['output']
-                                        )
+                                        const selectedOutputAnchor =
+                                            node.data.outputAnchors.length &&
+                                            node.data.outputAnchors[0].options &&
+                                            node.data.outputAnchors[0].options.find((ancr) => ancr.name === node.data.outputs['output'])
                                         return (
                                             <ListItemButton
                                                 key={index}
@@ -164,6 +166,45 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                             </ListItemButton>
                                         )
                                     })}
+                                {isSequentialAgent &&
+                                    (sequentialStateMessagesSelection || []).map((item, index) => (
+                                        <ListItemButton
+                                            key={index}
+                                            sx={{
+                                                p: 0,
+                                                borderRadius: `${customization.borderRadius}px`,
+                                                boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
+                                                mb: 1
+                                            }}
+                                            disabled={disabled}
+                                            onClick={() => onSelectAndReturnVal(item.primary)}
+                                        >
+                                            <ListItem alignItems='center'>
+                                                <ListItemAvatar>
+                                                    <div
+                                                        style={{
+                                                            width: 50,
+                                                            height: 50,
+                                                            borderRadius: '50%',
+                                                            backgroundColor: 'white'
+                                                        }}
+                                                    >
+                                                        <img
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                padding: 10,
+                                                                objectFit: 'contain'
+                                                            }}
+                                                            alt='state'
+                                                            src={diskPNG}
+                                                        />
+                                                    </div>
+                                                </ListItemAvatar>
+                                                <ListItemText sx={{ ml: 1 }} primary={item.primary} secondary={item.secondary} />
+                                            </ListItem>
+                                        </ListItemButton>
+                                    ))}
                             </List>
                         </Box>
                     </PerfectScrollbar>
@@ -176,7 +217,8 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
 SelectVariable.propTypes = {
     availableNodesForVariable: PropTypes.array,
     disabled: PropTypes.bool,
-    onSelectAndReturnVal: PropTypes.func
+    onSelectAndReturnVal: PropTypes.func,
+    isSequentialAgent: PropTypes.bool
 }
 
 export default SelectVariable

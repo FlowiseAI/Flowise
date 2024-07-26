@@ -36,7 +36,6 @@ class Upstash_VectorStores implements INode {
         this.description =
             'Добавляйте данные в виде эмбеддингов или строк и используйте поиск по схожести с Upstash, лидирующей серверлес платформой для работы с данными'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

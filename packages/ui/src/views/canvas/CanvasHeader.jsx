@@ -166,7 +166,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
             chatflowid: chatflow.id,
             chatflowApiKeyId: chatflow.apikeyid,
             isFormDataRequired,
-            isSessionMemory
+            isSessionMemory,
+            isAgentCanvas
         })
         setAPIDialogOpen(true)
     }

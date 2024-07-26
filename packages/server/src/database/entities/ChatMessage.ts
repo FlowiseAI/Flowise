@@ -32,6 +32,9 @@ export class ChatMessage implements IChatMessage {
     @Column({ nullable: true, type: 'text' })
     fileUploads?: string
 
+    @Column({ nullable: true, type: 'text' })
+    action?: string | null
+
     @Column()
     chatType: string
 

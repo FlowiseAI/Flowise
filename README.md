@@ -10,50 +10,105 @@
 
 English | [中文](./README-ZH.md) | [日本語](./README-JA.md) | [한국어](./README-KR.md)
 
-## PM2
+<h3>Drag & drop UI to build your customized LLM flow</h3>
+<a href="https://github.com/FlowiseAI/Flowise">
+<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
-## Имена и порты
+## ⚡Quick Start
 
-### имена редактируются в файлах STARTAI\_'ONE-FIVE'\_ecosystem.config.js
+Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
-### порты PORT=3000 PORT_ONE=3021 PORT_TWO=3022 PORT_THREE=3023 PORT_FOUR=3024 PORT_FIVE=3025 редактировать порты в packages\server\.env
+1. Install Flowise
+    ```bash
+    npm install -g flowise
+    ```
+2. Start Flowise
 
-### Порт выбирается в зависимости от NODE_ENV название которого ровно имени STARTAI\_'ONE-FIVE'\_, для добавления нового или изенения порта нужно отредактировать файл packages\server\src\index.ts в котором используется функция запуска приложения на нужном порте
+    ```bash
+    npx flowise start
+    ```
 
-```
-switch (process.env.NODE_ENV) {
-        case 'STARTAI_DEFAULT':
-            port = parseInt(process.env.PORT || '', 10) || 3000
-            break
-        case 'STARTAI_ONE':
-            port = parseInt(process.env.PORT_ONE || '', 10) || 3021
-            break
-        case 'STARTAI_TWO':
-            port = parseInt(process.env.PORT_TWO || '', 10) || 3022
-            break
-        case 'STARTAI_THREE':
-            port = parseInt(process.env.PORT_THREE || '', 10) || 3023
-            break
-        case 'STARTAI_FOUR':
-            port = parseInt(process.env.PORT_FOUR || '', 10) || 3024
-            break
-        case 'STARTAI_FIVE':
-            port = parseInt(process.env.PORT_FIVE || '', 10) || 3025
-            break
-        case 'STARTAI_TEST':
-            port = parseInt(process.env.PORT_TEST || '', 10) || 3026
-            break
-        default:
-}
-```
+    With username & password
 
-### - pnpm install
+    ```bash
+    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
+    ```
 
-### - pnpm build
+3. Open [http://localhost:3000](http://localhost:3000)
 
-Start the app:
+## 🐳 Docker
+
+### Docker Compose
+
+1. Go to `docker` folder at the root of the project
+2. Copy `.env.example` file, paste it into the same location, and rename to `.env`
+3. `docker-compose up -d`
+4. Open [http://localhost:3000](http://localhost:3000)
+5. You can bring the containers down by `docker-compose stop`
+
+### Docker Image
+
+1. Build the image locally:
+    ```bash
+    docker build --no-cache -t flowise .
+    ```
+2. Run image:
+
+    ```bash
+    docker run -d --name flowise -p 3000:3000 flowise
+    ```
+
+3. Stop image:
+    ```bash
+    docker stop flowise
+    ```
+
+## 👨‍💻 Developers
+
+Flowise has 3 different modules in a single mono repository.
+
+-   `server`: Node backend to serve API logics
+-   `ui`: React frontend
+-   `components`: Third-party nodes integrations
+
+### Prerequisite
+
+-   Install [PNPM](https://pnpm.io/installation)
+    ```bash
+    npm i -g pnpm
+    ```
+
+### Setup
+
+1. Clone the repository
+
+    ```bash
+    git clone https://github.com/FlowiseAI/Flowise.git
+    ```
+
+2. Go into repository folder
+
+    ```bash
+    cd Flowise
+    ```
+
+3. Install all dependencies of all modules:
+
+    ```bash
+    pnpm install
+    ```
+
+4. Build all the code:
+
+    ```bash
+    pnpm build
+    ```
+
+5. Start the app:
+
     ```bash
     pnpm start
+    ```
 
 ## Первый вариант запуска
 

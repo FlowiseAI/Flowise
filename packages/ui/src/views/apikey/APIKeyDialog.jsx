@@ -77,7 +77,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                 onConfirm()
             }
         } catch (error) {
-            setError(error)
+            if (setError) setError(error)
             enqueueSnackbar({
                 message: `Ошибка удаления API ключа: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -116,7 +116,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                 onConfirm()
             }
         } catch (error) {
-            setError(error)
+            if (setError) setError(error)
             enqueueSnackbar({
                 message: `Ошибка сохранения API ключа: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
