@@ -103,6 +103,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
     const [chatTypeFilter, setChatTypeFilter] = useState([])
+    const [feedbackTypeFilter, setFeedbackTypeFilter] = useState([])
     const [startDate, setStartDate] = useState(new Date().setMonth(new Date().getMonth() - 1))
     const [endDate, setEndDate] = useState(new Date())
     const [leadEmail, setLeadEmail] = useState('')
@@ -150,6 +151,24 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         })
         getStatsApi.request(dialogProps.chatflow.id, {
             chatType: chatTypes.length ? chatTypes : undefined,
+            startDate: startDate,
+            endDate: endDate
+        })
+    }
+
+    const onFeedbackTypeSelected = (feedbackTypes) => {
+        setFeedbackTypeFilter(feedbackTypes)
+
+        getChatmessageApi.request(dialogProps.chatflow.id, {
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypes.length ? feedbackTypes : undefined,
+            startDate: startDate,
+            endDate: endDate,
+            order: 'ASC'
+        })
+        getStatsApi.request(dialogProps.chatflow.id, {
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypes.length ? feedbackTypes : undefined,
             startDate: startDate,
             endDate: endDate
         })
@@ -382,7 +401,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     const handleItemClick = (idx, chatmsg) => {
         setSelectedMessageIndex(idx)
-        getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(getChatPK(chatmsg)))
+        if (feedbackTypeFilter.length > 0) {
+            getChatmessageFromPKApi.request(dialogProps.chatflow.id, {
+                ...transformChatPKToParams(getChatPK(chatmsg)),
+                feedbackType: feedbackTypeFilter
+            })
+        } else {
+            getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(getChatPK(chatmsg)))
+        }
     }
 
     const onURLClick = (data) => {
@@ -436,7 +462,16 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setAllChatLogs(getChatmessageApi.data)
             const chatPK = processChatLogs(getChatmessageApi.data)
             setSelectedMessageIndex(0)
-            if (chatPK) getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(chatPK))
+            if (chatPK) {
+                if (feedbackTypeFilter.length > 0) {
+                    getChatmessageFromPKApi.request(dialogProps.chatflow.id, {
+                        ...transformChatPKToParams(chatPK),
+                        feedbackType: feedbackTypeFilter
+                    })
+                } else {
+                    getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(chatPK))
+                }
+            }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -459,6 +494,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setAllChatLogs([])
             setChatMessages([])
             setChatTypeFilter([])
+            setFeedbackTypeFilter([])
             setSelectedMessageIndex(0)
             setSelectedChatId('')
             setStartDate(new Date().setMonth(new Date().getMonth() - 1))
@@ -475,6 +511,17 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         else dispatch({ type: HIDE_CANVAS_DIALOG })
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
+
+    useEffect(() => {
+        if (dialogProps.chatflow) {
+            // when the filter is cleared fetch all messages
+            if (feedbackTypeFilter.length === 0) {
+                getChatmessageApi.request(dialogProps.chatflow.id)
+                getStatsApi.request(dialogProps.chatflow.id)
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [feedbackTypeFilter])
 
     const component = show ? (
         <Dialog
@@ -530,7 +577,15 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 customInput={<DatePickerCustomInput />}
                             />
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', minWidth: '200px', marginRight: 10 }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                minWidth: '200px',
+                                marginRight: 10
+                            }}
+                        >
                             <b style={{ marginRight: 10 }}>Source</b>
                             <MultiDropdown
                                 key={JSON.stringify(chatTypeFilter)}
@@ -547,6 +602,34 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 ]}
                                 onSelect={(newValue) => onChatTypeSelected(newValue)}
                                 value={chatTypeFilter}
+                                formControlSx={{ mt: 0 }}
+                            />
+                        </div>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                minWidth: '200px',
+                                marginRight: 10
+                            }}
+                        >
+                            <b style={{ marginRight: 10 }}>Feedback</b>
+                            <MultiDropdown
+                                key={JSON.stringify(feedbackTypeFilter)}
+                                name='chatType'
+                                options={[
+                                    {
+                                        label: 'Positive',
+                                        name: 'THUMBS_UP'
+                                    },
+                                    {
+                                        label: 'Negative',
+                                        name: 'THUMBS_DOWN'
+                                    }
+                                ]}
+                                onSelect={(newValue) => onFeedbackTypeSelected(newValue)}
+                                value={feedbackTypeFilter}
                                 formControlSx={{ mt: 0 }}
                             />
                         </div>
