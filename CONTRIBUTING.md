@@ -155,6 +155,7 @@ Flowise support different environment variables to configure your instance. You 
 | S3_STORAGE_ACCESS_KEY_ID     | AWS Access Key                                                                                  | String                                           |                                     |
 | S3_STORAGE_SECRET_ACCESS_KEY | AWS Secret Key                                                                                  | String                                           |                                     |
 | S3_STORAGE_REGION            | Region for S3 bucket                                                                            | String                                           |                                     |
+| S3_ENDPOINT_URL              | Custom Endpoint for S3                                                                          | String                                           |                                     |
 
 You can also specify the env variables when using `npx`. For example:
 
