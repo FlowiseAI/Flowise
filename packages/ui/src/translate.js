@@ -302,7 +302,7 @@ export const translationObject = {
     'Штраф за повторение': 'Штраф за повторение',
     'Error Message': 'Сообщение ошибки',
     'Input Moderation': 'Модерация ввода',
-    'Tools': 'Инструменты',
+    Tools: 'Инструменты',
     'Tool Calling Chat Model': 'Инструмент вызвова модели чата',
     'Only compatible with models that are capable of function calling. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI':
         'Совместимо только с моделями, поддерживающими вызов функций. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI',
@@ -707,8 +707,8 @@ export const translationObject = {
     'Load and process data from web search results': 'Загрузить и обработать данные из результатов веб-поиска',
     'Load data from subtitles files': 'Загрузить данные из файлов субтитров',
     'Load data from text files': 'Загрузить данные из текстовых файлов',
-    'Use Unstructured.io to load data from a file path': 'Использовать Unstructured.io для загрузки данных из пути к файлу',
-    'Use Unstructured.io to load data from a folder': 'Использовать Unstructured.io для загрузки данных из папки',
+    'Use Unstructured.io to load data from a file path': 'Используйте Unstructured.io для загрузки данных из пути к файлу',
+    'Use Unstructured.io to load data from a folder': 'Используйте Unstructured.io для загрузки данных из папки',
     'Search documents with scores from vector store': 'Поиск документов с оценками из векторного хранилища',
     'AWS Bedrock embedding models to generate embeddings for a given text':
         'Модели внедрения AWS Bedrock для создания внедрений для заданного текста',
@@ -735,7 +735,8 @@ export const translationObject = {
     'Remembers previous conversational back and forths directly': 'Запоминает предыдущие разговоры напрямую',
     'Uses a window of size k to surface the last k back-and-forth to use as memory':
         'Использует окно размером k, чтобы отображать последние k обратных сообщений для использования в качестве памяти',
-    'Uses token length to decide when to summarize conversations': 'Использует длину токена, чтобы решить, когда подводить итоги разговоров.',
+    'Uses token length to decide when to summarize conversations':
+        'Использует длину токена, чтобы решить, когда подводить итоги разговоров.',
     'Summarizes the conversation and stores the current summary in memory': 'Суммирует беседу и хранит текущее резюме в памяти',
     'Stores the conversation in dynamo db table': 'Сохраняет беседу в таблице DynamoDB',
     'Stores the conversation in MongoDB Atlas': 'Сохраняет беседу в MongoDB Atlas',

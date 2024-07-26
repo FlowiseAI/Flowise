@@ -22,7 +22,7 @@ class ChatTogetherAI_LlamaIndex_ChatModels implements INode {
         this.type = 'ChatTogetherAI'
         this.icon = 'togetherai.png'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around ChatTogetherAI LLM specific for LlamaIndex'
+        this.description = 'Обертка вокруг ChatTogetherAI LLM для LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(TogetherLLM)]
         this.tags = ['LlamaIndex']
         this.credential = {
