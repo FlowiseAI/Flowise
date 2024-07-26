@@ -52,7 +52,8 @@ export default class Start extends Command {
         S3_STORAGE_BUCKET_NAME: Flags.string(),
         S3_STORAGE_ACCESS_KEY_ID: Flags.string(),
         S3_STORAGE_SECRET_ACCESS_KEY: Flags.string(),
-        S3_STORAGE_REGION: Flags.string()
+        S3_STORAGE_REGION: Flags.string(),
+        S3_ENDPOINT_URL: Flags.string()
     }
 
     async stopProcess() {
@@ -146,6 +147,7 @@ export default class Start extends Command {
         if (flags.S3_STORAGE_ACCESS_KEY_ID) process.env.S3_STORAGE_ACCESS_KEY_ID = flags.S3_STORAGE_ACCESS_KEY_ID
         if (flags.S3_STORAGE_SECRET_ACCESS_KEY) process.env.S3_STORAGE_SECRET_ACCESS_KEY = flags.S3_STORAGE_SECRET_ACCESS_KEY
         if (flags.S3_STORAGE_REGION) process.env.S3_STORAGE_REGION = flags.S3_STORAGE_REGION
+        if (flags.S3_ENDPOINT_URL) process.env.S3_ENDPOINT_URL = flags.S3_ENDPOINT_URL
 
         await (async () => {
             try {

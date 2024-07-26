@@ -148,6 +148,7 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 | S3_STORAGE_ACCESS_KEY_ID     | AWS 访问密钥 (Access Key)                                            | 字符串                                          |                                     |
 | S3_STORAGE_SECRET_ACCESS_KEY | AWS 密钥 (Secret Key)                                                | 字符串                                          |                                     |
 | S3_STORAGE_REGION            | S3 存储地区                                                          | 字符串                                          |                                     |
+| S3_ENDPOINT_URL              | S3 端点 URL                                                          | 字符串                                          |                                     |
 
 您也可以在使用 `npx` 时指定环境变量。例如：
 
