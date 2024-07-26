@@ -12,6 +12,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      '@langchain/langgraph':
+        specifier: 0.0.31
+        version: 0.0.31
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.19.4
@@ -3207,6 +3211,15 @@ packages:
 
   '@langchain/langgraph@0.0.22':
     resolution: {integrity: sha512-VdWUDRo/CXe1SjR34WxtbIwxIykSKjbdduKaNxCIPCZYxhfeL+NY3xi3F8ES6RTQV9gNYrl6ODuuXQtACQpK7g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      better-sqlite3: ^9.5.0
+    peerDependenciesMeta:
+      better-sqlite3:
+        optional: true
+
+  '@langchain/langgraph@0.0.31':
+    resolution: {integrity: sha512-f5QMSLy/RnLktsqnNm2mq8gp1xplHwQf87XIPVO0IYuumOJiafx5lE7ahPO+fVmCzAz6LxcsVocvD0JqxXR/2w==}
     engines: {node: '>=18'}
     peerDependencies:
       better-sqlite3: ^9.5.0
@@ -19891,6 +19904,24 @@ snapshots:
       zod: 3.22.4
       zod-to-json-schema: 3.22.5(zod@3.22.4)
 
+  '@langchain/core@0.2.18':
+    dependencies:
+      ansi-styles: 5.2.0
+      camelcase: 6.3.0
+      decamelize: 1.2.0
+      js-tiktoken: 1.0.12
+      langsmith: 0.1.39(@langchain/core@0.2.18)
+      ml-distance: 4.0.1
+      mustache: 4.2.0
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      uuid: 10.0.0
+      zod: 3.22.4
+      zod-to-json-schema: 3.22.5(zod@3.22.4)
+    transitivePeerDependencies:
+      - langchain
+      - openai
+
   '@langchain/core@0.2.18(langchain@0.2.11(vqll32up452adv43qi6l7seuui))(openai@4.51.0(encoding@0.1.13))':
     dependencies:
       ansi-styles: 5.2.0
@@ -19976,6 +20007,15 @@ snapshots:
     dependencies:
       '@langchain/core': 0.2.18(langchain@0.2.11(vqll32up452adv43qi6l7seuui))(openai@4.51.0(encoding@0.1.13))
       uuid: 9.0.1
+    transitivePeerDependencies:
+      - langchain
+      - openai
+
+  '@langchain/langgraph@0.0.31':
+    dependencies:
+      '@langchain/core': 0.2.18
+      uuid: 10.0.0
+      zod: 3.23.8
     transitivePeerDependencies:
       - langchain
       - openai
@@ -25179,7 +25219,7 @@ snapshots:
   css-tree@2.3.1:
     dependencies:
       mdn-data: 2.0.30
-      source-map-js: 1.0.2
+      source-map-js: 1.2.0
 
   css-what@3.4.2: {}
 
@@ -29620,6 +29660,16 @@ snapshots:
       '@langchain/core': 0.2.18(langchain@0.2.11(vqll32up452adv43qi6l7seuui))(openai@4.51.0(encoding@0.1.13))
       langchain: 0.2.11(vqll32up452adv43qi6l7seuui)
       openai: 4.51.0(encoding@0.1.13)
+
+  langsmith@0.1.39(@langchain/core@0.2.18):
+    dependencies:
+      '@types/uuid': 9.0.8
+      commander: 10.0.1
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      uuid: 9.0.1
+    optionalDependencies:
+      '@langchain/core': 0.2.18
 
   langsmith@0.1.6:
     dependencies:
@@ -35036,7 +35086,7 @@ snapshots:
       estree-walker: 3.0.3
       is-reference: 3.0.2
       locate-character: 3.0.0
-      magic-string: 0.30.8
+      magic-string: 0.30.10
       periscopic: 3.1.0
 
   sver-compat@1.5.0:

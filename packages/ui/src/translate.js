@@ -302,7 +302,7 @@ export const translationObject = {
     'Штраф за повторение': 'Штраф за повторение',
     'Error Message': 'Сообщение ошибки',
     'Input Moderation': 'Модерация ввода',
-    'Tools': 'Инструменты',
+    Tools: 'Инструменты',
     'Tool Calling Chat Model': 'Инструмент вызвова модели чата',
     'Only compatible with models that are capable of function calling. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI':
         'Совместимо только с моделями, поддерживающими вызов функций. ChatOpenAI, ChatMistral, ChatAnthropic, ChatVertexAI',
@@ -707,7 +707,7 @@ export const translationObject = {
     'Load and process data from web search results': 'Загрузить и обработать данные из результатов веб-поиска',
     'Load data from subtitles files': 'Загрузить данные из файлов субтитров',
     'Load data from text files': 'Загрузить данные из текстовых файлов',
-    'Use Unstructured.io to load data from a file path': 'Использовать Unstructured.io для загрузки данных из пути к файлу',
+    'Use Unstructured.io to load data from a file path': 'Используйте Unstructured.io для загрузки данных из пути к файлу',
     'Use Unstructured.io to load data from a folder': 'Использовать Unstructured.io для загрузки данных из папки',
     'Search documents with scores from vector store': 'Поиск документов с оценками из векторного хранилища',
     'AWS Bedrock embedding models to generate embeddings for a given text':
@@ -735,7 +735,8 @@ export const translationObject = {
     'Remembers previous conversational back and forths directly': 'Запоминает предыдущие разговоры напрямую',
     'Uses a window of size k to surface the last k back-and-forth to use as memory':
         'Использует окно размером k, чтобы отображать последние k обратных сообщений для использования в качестве памяти',
-    'Uses token length to decide when to summarize conversations': 'Использует длину токена, чтобы решить, когда подводить итоги разговоров.',
+    'Uses token length to decide when to summarize conversations':
+        'Использует длину токена, чтобы решить, когда подводить итоги разговоров.',
     'Summarizes the conversation and stores the current summary in memory': 'Суммирует беседу и хранит текущее резюме в памяти',
     'Stores the conversation in dynamo db table': 'Сохраняет беседу в таблице DynamoDB',
     'Stores the conversation in MongoDB Atlas': 'Сохраняет беседу в MongoDB Atlas',
@@ -1380,7 +1381,7 @@ export const translationObject = {
     'Generate multiple search queries related to: {input}. Provide these alternative questions separated by newlines, do not add any numbers.':
         'Создайте несколько поисковых запросов, связанных с: {input}. Укажите эти альтернативные вопросы, разделенные символами новой строки, не добавляйте никаких цифр.',
     'Reciprocal Rank Fusion to re-rank search results by multiple query generation':
-        'Reciprocal Rank Fusion для повторного ранжирования результатов поиска путем создания нескольких запросов.',
+        'Reciprocal Rank Fusion для повторного ранжирования результатов поиска путем создания нескольких запросов',
     'Number of synthetic queries to generate. Default to 4':
         'Количество синтетических запросов, которые нужно сгенерировать. По умолчанию 4',
     'Query Count': 'Количество запросов',
@@ -1519,6 +1520,7 @@ export const translationObject = {
     'Breaks down query into sub questions for each relevant data source, then combine into final response':
         'Разбивает запрос на подвопросы для каждого соответствующего источника данных, а затем объединяет их в окончательный ответ.',
     Chatflow: 'Чат',
+    'Multi Agents': 'Мульти Агенты',
     Tool: 'Инструмент',
     'Split flows based on if else condition': 'Разделение потоков на основе условия if else',
     'Answer question based on retrieved documents (context) with built-in memory to remember conversation using LlamaIndex':

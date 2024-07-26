@@ -43,7 +43,7 @@ class ChatOllamaFunction_ChatModels implements INode {
         this.type = 'ChatOllamaFunction'
         this.icon = 'Ollama.svg'
         this.category = 'Chat Models'
-        this.description = 'Run open-source function-calling compatible LLM on Ollama'
+        this.description = 'Запускайте LLM с открытым исходным кодом, совместимый с вызовом функций, на Ollama'
         this.baseClasses = [this.type, ...getBaseClasses(OllamaFunctions)]
         this.inputs = [
             {

@@ -23,7 +23,7 @@ class DocStore_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 'dstore.svg'
         this.category = 'Document Loaders'
-        this.description = `Load data from pre-configured document stores`
+        this.description = `Загружайте данные из предварительно настроенных хранилищ документов`
         this.baseClasses = [this.type]
         this.inputs = [
             {
