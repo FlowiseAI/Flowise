@@ -24,6 +24,7 @@ export default class Start extends Command {
         IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         BLOB_STORAGE_PATH: Flags.string(),
+        APIKEY_STORAGE_TYPE: Flags.string(),
         APIKEY_PATH: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
         FLOWISE_SECRETKEY_OVERWRITE: Flags.string(),
@@ -100,6 +101,7 @@ export default class Start extends Command {
         // Authorization
         if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
         if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
+        if (flags.APIKEY_STORAGE_TYPE) process.env.APIKEY_STORAGE_TYPE = flags.APIKEY_STORAGE_TYPE
         if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
 
         // API Configuration
