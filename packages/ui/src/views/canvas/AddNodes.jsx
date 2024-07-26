@@ -56,6 +56,7 @@ const translationsNodes = {
     Embeddings: 'Вложения',
     LLMs: 'Языковая модель для агентов',
     Memory: 'Типы памяти',
+    'Multi Agents': 'Мульти агенты',
     'Output Parsers': 'Выходные парсеры',
     Prompts: 'Подсказки для модели',
     Retrievers: 'Ретриверы',
