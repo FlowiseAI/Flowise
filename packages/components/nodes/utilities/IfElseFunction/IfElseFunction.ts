@@ -11,7 +11,6 @@ class IfElseFunction_Utilities implements INode {
     type: string
     icon: string
     category: string
-    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
@@ -19,13 +18,12 @@ class IfElseFunction_Utilities implements INode {
     constructor() {
         this.label = 'IfElse Function'
         this.name = 'ifElseFunction'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'IfElseFunction'
         this.icon = 'ifelsefunction.svg'
         this.category = 'Utilities'
         this.description = `Split flows based on If Else javascript functions`
         this.baseClasses = [this.type, 'Utilities']
-        this.tags = ['Utilities']
         this.inputs = [
             {
                 label: 'Input Variables',
@@ -66,14 +64,12 @@ class IfElseFunction_Utilities implements INode {
             {
                 label: 'True',
                 name: 'returnTrue',
-                baseClasses: ['string', 'number', 'boolean', 'json', 'array'],
-                isAnchor: true
+                baseClasses: ['string', 'number', 'boolean', 'json', 'array']
             },
             {
                 label: 'False',
                 name: 'returnFalse',
-                baseClasses: ['string', 'number', 'boolean', 'json', 'array'],
-                isAnchor: true
+                baseClasses: ['string', 'number', 'boolean', 'json', 'array']
             }
         ]
     }

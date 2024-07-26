@@ -7,7 +7,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 513,
+            "height": 475,
             "id": "promptTemplate_0",
             "position": {
                 "x": 366.28009688480114,
@@ -67,7 +67,7 @@
         },
         {
             "width": 300,
-            "height": 513,
+            "height": 475,
             "id": "promptTemplate_1",
             "position": {
                 "x": 1391.1872909364881,
@@ -247,11 +247,11 @@
         },
         {
             "width": 300,
-            "height": 508,
+            "height": 456,
             "id": "llmChain_0",
             "position": {
-                "x": 1036.2168666805817,
-                "y": 252.83869526902453
+                "x": 1045.7783277092838,
+                "y": 242.08205161173464
             },
             "type": "customNode",
             "data": {
@@ -339,14 +339,14 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1036.2168666805817,
-                "y": 252.83869526902453
+                "x": 1045.7783277092838,
+                "y": 242.08205161173464
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 508,
+            "height": 456,
             "id": "llmChain_1",
             "position": {
                 "x": 1769.7463380379868,
@@ -445,17 +445,17 @@
         },
         {
             "width": 300,
-            "height": 670,
+            "height": 574,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 1395.7716036892518,
-                "y": -415.72370274275096
+                "x": 1390.9908731749008,
+                "y": -332.0609187416074
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6,
+                "version": 6.0,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -601,7 +601,7 @@
                     "timeout": "",
                     "basepath": "",
                     "baseOptions": "",
-                    "allowImageUploads": false,
+                    "allowImageUploads": true,
                     "imageResolution": "low"
                 },
                 "outputAnchors": [
@@ -617,61 +617,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1395.7716036892518,
-                "y": -415.72370274275096
-            },
-            "dragging": false
-        },
-        {
-            "id": "stickyNote_0",
-            "position": {
-                "x": 1766.9902171902506,
-                "y": 22.813703651766104
-            },
-            "type": "stickyNote",
-            "data": {
-                "id": "stickyNote_0",
-                "label": "Sticky Note",
-                "version": 2,
-                "name": "stickyNote",
-                "type": "StickyNote",
-                "baseClasses": ["StickyNote"],
-                "tags": ["Utilities"],
-                "category": "Utilities",
-                "description": "Add a sticky note",
-                "inputParams": [
-                    {
-                        "label": "",
-                        "name": "note",
-                        "type": "string",
-                        "rows": 1,
-                        "placeholder": "Type something here",
-                        "optional": true,
-                        "id": "stickyNote_0-input-note-string"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "note": "Instruct LLM to response in a markdown format in order to display image in the chat window\n\nExample question:\na cat painting"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "stickyNote_0-output-stickyNote-StickyNote",
-                        "name": "stickyNote",
-                        "label": "StickyNote",
-                        "description": "Add a sticky note",
-                        "type": "StickyNote"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "width": 300,
-            "height": 143,
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1766.9902171902506,
-                "y": 22.813703651766104
+                "x": 1390.9908731749008,
+                "y": -332.0609187416074
             },
             "dragging": false
         }

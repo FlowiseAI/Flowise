@@ -25,6 +25,7 @@ class EmbeddingsFilterRetriever_Retrievers implements INode {
         this.type = 'EmbeddingsFilterRetriever'
         this.icon = 'compressionRetriever.svg'
         this.category = 'Retrievers'
+        this.badge = 'NEW'
         this.description = 'A document compressor that uses embeddings to drop documents unrelated to the query'
         this.baseClasses = [this.type, 'BaseRetriever']
         this.inputs = [

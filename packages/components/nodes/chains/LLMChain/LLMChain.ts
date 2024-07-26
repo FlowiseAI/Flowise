@@ -110,9 +110,7 @@ class LLMChain_Chains implements INode {
             })
             const inputVariables = chain.prompt.inputVariables as string[] // ["product"]
             promptValues = injectOutputParser(this.outputParser, chain, promptValues)
-            // Disable streaming because its not final chain
-            const disableStreaming = true
-            const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData, disableStreaming)
+            const res = await runPrediction(inputVariables, chain, input, promptValues, options, nodeData)
             // eslint-disable-next-line no-console
             console.log('\x1b[92m\x1b[1m\n*****OUTPUT PREDICTION*****\n\x1b[0m\x1b[0m')
             // eslint-disable-next-line no-console
@@ -156,13 +154,12 @@ const runPrediction = async (
     input: string,
     promptValuesRaw: ICommonObject | undefined,
     options: ICommonObject,
-    nodeData: INodeData,
-    disableStreaming?: boolean
+    nodeData: INodeData
 ) => {
     const loggerHandler = new ConsoleCallbackHandler(options.logger)
     const callbacks = await additionalCallbacks(nodeData, options)
 
-    const isStreaming = !disableStreaming && options.socketIO && options.socketIOClientId
+    const isStreaming = options.socketIO && options.socketIOClientId
     const socketIO = isStreaming ? options.socketIO : undefined
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
     const moderations = nodeData.inputs?.inputModeration as Moderation[]

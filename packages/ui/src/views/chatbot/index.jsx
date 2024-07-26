@@ -76,16 +76,9 @@ const ChatbotFull = () => {
         if (getSpecificChatflowFromPublicApi.data || getSpecificChatflowApi.data) {
             const chatflowData = getSpecificChatflowFromPublicApi.data || getSpecificChatflowApi.data
             setChatflow(chatflowData)
-
-            const chatflowType = chatflowData.type
             if (chatflowData.chatbotConfig) {
-                let parsedConfig = {}
-                if (chatflowType === 'MULTIAGENT') {
-                    parsedConfig.showAgentMessages = true
-                }
-
                 try {
-                    parsedConfig = { ...parsedConfig, ...JSON.parse(chatflowData.chatbotConfig) }
+                    const parsedConfig = JSON.parse(chatflowData.chatbotConfig)
                     setChatbotTheme(parsedConfig)
                     if (parsedConfig.overrideConfig) {
                         // Generate new sessionId
@@ -96,11 +89,9 @@ const ChatbotFull = () => {
                     }
                 } catch (e) {
                     console.error(e)
-                    setChatbotTheme(parsedConfig)
+                    setChatbotTheme({})
                     setChatbotOverrideConfig({})
                 }
-            } else if (chatflowType === 'MULTIAGENT') {
-                setChatbotTheme({ showAgentMessages: true })
             }
         }
     }, [getSpecificChatflowFromPublicApi.data, getSpecificChatflowApi.data])

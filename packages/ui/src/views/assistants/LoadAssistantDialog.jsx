@@ -40,7 +40,7 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected,
     }, [getAllAvailableAssistantsApi.data])
 
     useEffect(() => {
-        if (getAllAvailableAssistantsApi.error && setError) {
+        if (getAllAvailableAssistantsApi.error) {
             setError(getAllAvailableAssistantsApi.error)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

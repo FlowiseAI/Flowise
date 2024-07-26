@@ -27,7 +27,6 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import langsmithPNG from '@/assets/images/langchain.png'
 import langfuseSVG from '@/assets/images/langfuse.svg'
 import lunarySVG from '@/assets/images/lunary.svg'
-import langwatchSVG from '@/assets/images/langwatch.svg'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -105,26 +104,6 @@ const analyticProviders = [
             },
             {
                 label: 'Вкл/выкл',
-                name: 'status',
-                type: 'boolean',
-                optional: true
-            }
-        ]
-    },
-    {
-        label: 'LangWatch',
-        name: 'langWatch',
-        icon: langwatchSVG,
-        url: 'https://langwatch.ai',
-        inputs: [
-            {
-                label: 'Connect Credential',
-                name: 'credential',
-                type: 'credential',
-                credentialNames: ['langwatchApi']
-            },
-            {
-                label: 'On/Off',
                 name: 'status',
                 type: 'boolean',
                 optional: true

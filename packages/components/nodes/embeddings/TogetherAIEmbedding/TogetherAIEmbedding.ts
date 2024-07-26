@@ -55,7 +55,9 @@ class TogetherAIEmbedding_Embeddings implements INode {
         const obj: Partial<TogetherAIEmbeddingsParams> = {
             modelName: modelName,
             apiKey: togetherAIApiKey,
-            model: modelName
+            //@ts-ignore
+            model: modelName,
+            togetherAIApiKey: togetherAIApiKey
         }
 
         const model = new TogetherAIEmbeddings(obj)

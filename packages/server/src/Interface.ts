@@ -1,4 +1,3 @@
-import { IAction } from 'flowise-components'
 import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
 
 export type MessageType = 'apiMessage' | 'userMessage'
@@ -49,7 +48,6 @@ export interface IChatMessage {
     sessionId?: string
     createdDate: Date
     leadEmail?: string
-    action?: string | null
 }
 
 export interface IChatMessageFeedback {
@@ -220,7 +218,6 @@ export interface IncomingInput {
     uploads?: IFileUpload[]
     leadEmail?: string
     history?: IMessage[]
-    action?: IAction
 }
 
 export interface IActiveChatflows {

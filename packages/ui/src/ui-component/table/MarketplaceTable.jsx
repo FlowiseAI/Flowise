@@ -14,7 +14,6 @@ import {
     TableHead,
     TableRow,
     Typography,
-    Stack,
     useTheme
 } from '@mui/material'
 
@@ -43,7 +42,6 @@ export const MarketplaceTable = ({
     filterByBadge,
     filterByType,
     filterByFramework,
-    filterByUsecases,
     goToCanvas,
     goToTool,
     isLoading
@@ -82,8 +80,7 @@ export const MarketplaceTable = ({
                             <StyledTableCell style={{ width: '35%' }} key='3'>
                                 Узлы
                             </StyledTableCell>
-                            <StyledTableCell key='5'>Nodes</StyledTableCell>
-                            <StyledTableCell component='th' scope='row' key='6'>
+                            <StyledTableCell component='th' scope='row' style={{ width: '5%' }} key='4'>
                                 &nbsp;
                             </StyledTableCell>
                         </TableRow>
@@ -107,20 +104,8 @@ export const MarketplaceTable = ({
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
                                 </StyledTableRow>
                                 <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
@@ -145,7 +130,6 @@ export const MarketplaceTable = ({
                                     .filter(filterByType)
                                     .filter(filterFunction)
                                     .filter(filterByFramework)
-                                    .filter(filterByUsecases)
                                     .map((row, index) => (
                                         <StyledTableRow key={index}>
                                             <StyledTableCell key='0'>
@@ -174,50 +158,29 @@ export const MarketplaceTable = ({
                                                 </Typography>
                                             </StyledTableCell>
                                             <StyledTableCell key='3'>
-                                                <Stack flexDirection='row' sx={{ gap: 1, flexWrap: 'wrap' }}>
-                                                    {row.framework &&
-                                                        row.framework.length > 0 &&
-                                                        row.framework.map((framework, index) => (
-                                                            <Chip
-                                                                variant='outlined'
-                                                                key={index}
-                                                                size='small'
-                                                                label={framework}
-                                                                style={{ marginRight: 3, marginBottom: 3 }}
-                                                            />
-                                                        ))}
-                                                </Stack>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'row',
+                                                        flexWrap: 'wrap',
+                                                        marginTop: 5
+                                                    }}
+                                                >
+                                                    {row.categories &&
+                                                        row.categories
+                                                            .split(',')
+                                                            .map((tag, index) => (
+                                                                <Chip
+                                                                    variant='outlined'
+                                                                    key={index}
+                                                                    size='small'
+                                                                    label={tag.toUpperCase()}
+                                                                    style={{ marginRight: 3, marginBottom: 3 }}
+                                                                />
+                                                            ))}
+                                                </div>
                                             </StyledTableCell>
                                             <StyledTableCell key='4'>
-                                                <Stack flexDirection='row' sx={{ gap: 1, flexWrap: 'wrap' }}>
-                                                    {row.usecases &&
-                                                        row.usecases.length > 0 &&
-                                                        row.usecases.map((usecase, index) => (
-                                                            <Chip
-                                                                variant='outlined'
-                                                                key={index}
-                                                                size='small'
-                                                                label={usecase}
-                                                                style={{ marginRight: 3, marginBottom: 3 }}
-                                                            />
-                                                        ))}
-                                                </Stack>
-                                            </StyledTableCell>
-                                            <StyledTableCell key='5'>
-                                                <Stack flexDirection='row' sx={{ gap: 1, flexWrap: 'wrap' }}>
-                                                    {row.categories &&
-                                                        row.categories.map((tag, index) => (
-                                                            <Chip
-                                                                variant='outlined'
-                                                                key={index}
-                                                                size='small'
-                                                                label={tag}
-                                                                style={{ marginRight: 3, marginBottom: 3 }}
-                                                            />
-                                                        ))}
-                                                </Stack>
-                                            </StyledTableCell>
-                                            <StyledTableCell key='6'>
                                                 <Typography>
                                                     {row.badge &&
                                                         row.badge
@@ -250,7 +213,6 @@ MarketplaceTable.propTypes = {
     filterByBadge: PropTypes.func,
     filterByType: PropTypes.func,
     filterByFramework: PropTypes.func,
-    filterByUsecases: PropTypes.func,
     goToTool: PropTypes.func,
     goToCanvas: PropTypes.func,
     isLoading: PropTypes.bool

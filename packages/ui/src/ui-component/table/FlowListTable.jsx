@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import moment from 'moment'
@@ -15,7 +14,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TableSortLabel,
     Tooltip,
     Typography,
     useTheme
@@ -43,41 +41,9 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-const getLocalStorageKeyName = (name, isAgentCanvas) => {
-    return (isAgentCanvas ? 'agentcanvas' : 'chatflowcanvas') + '_' + name
-}
-
 export const FlowListTable = ({ data, images, isLoading, filterFunction, updateFlowsApi, setError, isAgentCanvas }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
-
-    const localStorageKeyOrder = getLocalStorageKeyName('order', isAgentCanvas)
-    const localStorageKeyOrderBy = getLocalStorageKeyName('orderBy', isAgentCanvas)
-
-    const [order, setOrder] = useState(localStorage.getItem(localStorageKeyOrder) || 'desc')
-    const [orderBy, setOrderBy] = useState(localStorage.getItem(localStorageKeyOrderBy) || 'updatedDate')
-
-    const handleRequestSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc'
-        const newOrder = isAsc ? 'desc' : 'asc'
-        setOrder(newOrder)
-        setOrderBy(property)
-        localStorage.setItem(localStorageKeyOrder, newOrder)
-        localStorage.setItem(localStorageKeyOrderBy, property)
-    }
-
-    const sortedData = data
-        ? [...data].sort((a, b) => {
-              if (orderBy === 'name') {
-                  return order === 'asc' ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '')
-              } else if (orderBy === 'updatedDate') {
-                  return order === 'asc'
-                      ? new Date(a.updatedDate) - new Date(b.updatedDate)
-                      : new Date(b.updatedDate) - new Date(a.updatedDate)
-              }
-              return 0
-          })
-        : []
 
     return (
         <>
@@ -147,7 +113,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                             </>
                         ) : (
                             <>
-                                {sortedData.filter(filterFunction).map((row, index) => (
+                                {data?.filter(filterFunction).map((row, index) => (
                                     <StyledTableRow key={index}>
                                         <StyledTableCell key='0'>
                                             <Tooltip title={row.templateName || row.name}>

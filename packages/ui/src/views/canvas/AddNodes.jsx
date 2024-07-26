@@ -40,7 +40,6 @@ import { StyledFab } from '@/ui-component/button/StyledFab'
 import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons-react'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 import LangChainPNG from '@/assets/images/langchain.png'
-import utilNodesPNG from '@/assets/images/utilNodes.png'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -113,9 +112,6 @@ function a11yProps(index) {
 
 const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager']
 const allowedAgentModel = {}
-const exceptions = {
-    Memory: ['agentMemory']
-}
 
 const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const theme = useTheme()
@@ -166,19 +162,9 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         filterSearch(searchValue, newValue)
     }
 
-    const addException = () => {
-        let nodes = []
-        for (const category in exceptions) {
-            const nodeNames = exceptions[category]
-            nodes.push(...nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name)))
-        }
-        return nodes
-    }
-
     const getSearchedNodes = (value) => {
         if (isAgentCanvas) {
             const nodes = nodesData.filter((nd) => !blacklistCategoriesForAgentCanvas.includes(nd.category))
-            nodes.push(...addException())
             const passed = nodes.filter((nd) => {
                 const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
                 const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
@@ -186,7 +172,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             })
             return passed
         }
-        const nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents' && nd.category !== 'Sequential Agents')
+        const nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents')
         const passed = nodes.filter((nd) => {
             const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
             const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
@@ -212,13 +198,10 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const groupByTags = (nodes, newTabValue = 0) => {
         const langchainNodes = nodes.filter((nd) => !nd.tags)
         const llmaindexNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('LlamaIndex'))
-        const utilitiesNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('Utilities'))
         if (newTabValue === 0) {
             return langchainNodes
-        } else if (newTabValue === 1) {
-            return llmaindexNodes
         } else {
-            return utilitiesNodes
+            return llmaindexNodes
         }
     }
 
@@ -248,15 +231,10 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                         filteredResult[category] = nodes
                     }
                 }
-
-                // Allow exceptions
-                if (Object.keys(exceptions).includes(category)) {
-                    filteredResult[category] = addException()
-                }
             }
             setNodes(filteredResult)
+            categorizeVectorStores(filteredResult, accordianCategories, isFilter)
             accordianCategories['Multi Agents'] = true
-            accordianCategories['Sequential Agents'] = true
             setCategoryExpanded(accordianCategories)
         } else {
             const taggedNodes = groupByTags(nodes, newTabValue)
@@ -270,12 +248,13 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
             const filteredResult = {}
             for (const category in result) {
-                if (category === 'Multi Agents' || category === 'Sequential Agents') {
+                if (category === 'Multi Agents') {
                     continue
                 }
                 filteredResult[category] = result[category]
             }
             setNodes(filteredResult)
+            categorizeVectorStores(filteredResult, accordianCategories, isFilter)
             setCategoryExpanded(accordianCategories)
         }
     }
@@ -300,16 +279,6 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const onDragStart = (event, node) => {
         event.dataTransfer.setData('application/reactflow', JSON.stringify(node))
         event.dataTransfer.effectAllowed = 'move'
-    }
-
-    const getImage = (tabValue) => {
-        if (tabValue === 0) {
-            return LangChainPNG
-        } else if (tabValue === 1) {
-            return LlamaindexPNG
-        } else {
-            return utilNodesPNG
-        }
     }
 
     useEffect(() => {
@@ -420,7 +389,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                 onChange={handleTabChange}
                                                 aria-label='tabs'
                                             >
-                                                {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
+                                                {['LangChain', 'LlamaIndex'].map((item, index) => (
                                                     <Tab
                                                         icon={
                                                             <div
@@ -430,12 +399,12 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                             >
                                                                 <img
                                                                     style={{
-                                                                        width: '20px',
-                                                                        height: '20px',
+                                                                        width: '25px',
+                                                                        height: '25px',
                                                                         borderRadius: '50%',
                                                                         objectFit: 'contain'
                                                                     }}
-                                                                    src={getImage(index)}
+                                                                    src={index === 0 ? LangChainPNG : LlamaindexPNG}
                                                                     alt={item}
                                                                 />
                                                             </div>
@@ -447,6 +416,27 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                         {...a11yProps(index)}
                                                     ></Tab>
                                                 ))}
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center',
+                                                        borderRadius: 10,
+                                                        background: 'rgb(254,252,191)',
+                                                        paddingLeft: 6,
+                                                        paddingRight: 6,
+                                                        paddingTop: 1,
+                                                        paddingBottom: 1,
+                                                        width: 'max-content',
+                                                        position: 'absolute',
+                                                        top: 0,
+                                                        right: 0,
+                                                        fontSize: '0.65rem',
+                                                        fontWeight: 700
+                                                    }}
+                                                >
+                                                    <span style={{ color: 'rgb(116,66,16)' }}>BETA</span>
+                                                </div>
                                             </Tabs>
                                         )}
 

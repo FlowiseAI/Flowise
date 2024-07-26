@@ -19,7 +19,7 @@ export const getAPIKeyPath = (): string => {
  */
 export const generateAPIKey = (): string => {
     const buffer = randomBytes(32)
-    return buffer.toString('base64url')
+    return buffer.toString('base64')
 }
 
 /**

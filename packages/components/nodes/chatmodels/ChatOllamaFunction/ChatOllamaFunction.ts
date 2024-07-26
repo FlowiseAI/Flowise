@@ -45,6 +45,7 @@ class ChatOllamaFunction_ChatModels implements INode {
         this.category = 'Chat Models'
         this.description = 'Run open-source function-calling compatible LLM on Ollama'
         this.baseClasses = [this.type, ...getBaseClasses(OllamaFunctions)]
+        this.badge = 'NEW'
         this.inputs = [
             {
                 label: 'Cache',
@@ -439,7 +440,6 @@ class OllamaFunctions extends BaseChatModel<ChatOllamaFunctionsCallOptions> {
         }
     }
 
-    //@ts-ignore
     override bindTools(
         tools: StructuredToolInterface[],
         kwargs?: Partial<ICommonObject>

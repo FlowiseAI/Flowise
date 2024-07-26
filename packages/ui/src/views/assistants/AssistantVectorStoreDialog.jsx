@@ -100,7 +100,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
     }, [listAssistantVectorStoreApi.data])
 
     useEffect(() => {
-        if (getAssistantVectorStoreApi.error && setError) {
+        if (getAssistantVectorStoreApi.error) {
             setError(getAssistantVectorStoreApi.error)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,7 +152,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
             }
             setLoading(false)
         } catch (error) {
-            if (setError) setError(error)
+            setError(error)
             enqueueSnackbar({
                 message: `Failed to delete Vector Store: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -198,7 +198,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
             }
             setLoading(false)
         } catch (error) {
-            if (setError) setError(error)
+            setError(error)
             enqueueSnackbar({
                 message: `Failed to add new Vector Store: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -249,7 +249,8 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
             }
             setLoading(false)
         } catch (error) {
-            if (setError) setError(error)
+            console.error('error=', error)
+            setError(error)
             enqueueSnackbar({
                 message: `Failed to save Vector Store: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data

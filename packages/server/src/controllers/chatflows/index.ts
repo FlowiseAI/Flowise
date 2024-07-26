@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response } from 'express'
-import { StatusCodes } from 'http-status-codes'
-import { ChatFlow } from '../../database/entities/ChatFlow'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { ChatflowType } from '../../Interface'
+import { Request, Response, NextFunction } from 'express'
 import chatflowsService from '../../services/chatflows'
-import { getApiKey } from '../../utils/apiKey'
+import { ChatFlow } from '../../database/entities/ChatFlow'
 import { createRateLimiter } from '../../utils/rateLimit'
+import { getApiKey } from '../../utils/apiKey'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
+import { ChatflowType } from '../../Interface'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -71,7 +71,7 @@ const getChatflowByApiKey = async (req: Request, res: Response, next: NextFuncti
         if (!apikey) {
             return res.status(401).send('Unauthorized')
         }
-        const apiResponse = await chatflowsService.getChatflowByApiKey(apikey.id, req.query.keyonly)
+        const apiResponse = await chatflowsService.getChatflowByApiKey(apikey.id)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -99,16 +99,6 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         const newChatFlow = new ChatFlow()
         Object.assign(newChatFlow, body)
         const apiResponse = await chatflowsService.saveChatflow(newChatFlow)
-        return res.json(apiResponse)
-    } catch (error) {
-        next(error)
-    }
-}
-
-const importChatflows = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const chatflows: Partial<ChatFlow>[] = req.body.Chatflows
-        const apiResponse = await chatflowsService.importChatflows(chatflows)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -177,7 +167,6 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
-    importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig

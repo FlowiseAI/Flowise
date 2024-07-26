@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { IDocument, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
+import { PDFLoader } from 'langchain/document_loaders/fs/pdf'
 import { getFileFromStorage } from '../../../src'
 
 class Pdf_DocumentLoaders implements INode {
@@ -172,9 +172,7 @@ class Pdf_DocumentLoaders implements INode {
                     legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
             })
             if (textSplitter) {
-                let splittedDocs = await loader.load()
-                splittedDocs = await textSplitter.splitDocuments(splittedDocs)
-                docs.push(...splittedDocs)
+                docs.push(...(await loader.loadAndSplit(textSplitter)))
             } else {
                 docs.push(...(await loader.load()))
             }
@@ -185,9 +183,7 @@ class Pdf_DocumentLoaders implements INode {
                     legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
             })
             if (textSplitter) {
-                let splittedDocs = await loader.load()
-                splittedDocs = await textSplitter.splitDocuments(splittedDocs)
-                docs.push(...splittedDocs)
+                docs.push(...(await loader.loadAndSplit(textSplitter)))
             } else {
                 docs.push(...(await loader.load()))
             }

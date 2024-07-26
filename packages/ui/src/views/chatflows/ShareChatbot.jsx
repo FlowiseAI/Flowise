@@ -44,7 +44,7 @@ const defaultConfig = {
     }
 }
 
-const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
+const ShareChatbot = ({ isSessionMemory }) => {
     const dispatch = useDispatch()
     const theme = useTheme()
     const chatflow = useSelector((state) => state.canvas.chatflow)
@@ -148,8 +148,6 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
         if (isSessionMemory) obj.overrideConfig.generateNewSession = generateNewSession
 
         if (chatbotConfig?.starterPrompts) obj.starterPrompts = chatbotConfig.starterPrompts
-
-        if (isAgentCanvas) obj.showAgentMessages = true
 
         return obj
     }
@@ -544,8 +542,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
 }
 
 ShareChatbot.propTypes = {
-    isSessionMemory: PropTypes.bool,
-    isAgentCanvas: PropTypes.bool
+    isSessionMemory: PropTypes.bool
 }
 
 export default ShareChatbot

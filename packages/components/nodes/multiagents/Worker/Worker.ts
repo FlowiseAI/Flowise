@@ -21,19 +21,17 @@ class Worker_MultiAgents implements INode {
     icon: string
     category: string
     baseClasses: string[]
-    hideOutput: boolean
     inputs?: INodeParams[]
     badge?: string
 
     constructor() {
         this.label = 'Исполнитель'
         this.name = 'worker'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'Worker'
         this.icon = 'worker.svg'
         this.category = 'Multi Agents'
         this.baseClasses = [this.type]
-        this.hideOutput = true
         this.inputs = [
             {
                 label: 'Имя исполнителя',
@@ -139,7 +137,6 @@ class Worker_MultiAgents implements INode {
                     state,
                     agent: agent,
                     name: workerName,
-                    nodeId: nodeData.id,
                     abortControllerSignal
                 },
                 config
@@ -202,33 +199,19 @@ async function createAgent(
         }
         const modelWithTools = llm.bindTools(tools)
 
-        let agent
-
-        if (!workerInputVariablesValues || !Object.keys(workerInputVariablesValues).length) {
-            agent = RunnableSequence.from([
-                RunnablePassthrough.assign({
-                    //@ts-ignore
-                    agent_scratchpad: (input: { steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(input.steps)
-                }),
-                prompt,
-                modelWithTools,
-                new ToolCallingAgentOutputParser()
-            ])
-        } else {
-            agent = RunnableSequence.from([
-                RunnablePassthrough.assign({
-                    //@ts-ignore
-                    agent_scratchpad: (input: { steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(input.steps)
-                }),
-                RunnablePassthrough.assign(transformObjectPropertyToFunction(workerInputVariablesValues)),
-                prompt,
-                modelWithTools,
-                new ToolCallingAgentOutputParser()
-            ])
-        }
+        const agent = RunnableSequence.from([
+            RunnablePassthrough.assign({
+                //@ts-ignore
+                agent_scratchpad: (input: { steps: ToolsAgentStep[] }) => formatToOpenAIToolMessages(input.steps)
+            }),
+            RunnablePassthrough.assign(transformObjectPropertyToFunction(workerInputVariablesValues)),
+            prompt,
+            modelWithTools,
+            new ToolCallingAgentOutputParser()
+        ])
 
         const executor = AgentExecutor.fromAgentAndTools({
-            agent,
+            agent: agent,
             tools,
             sessionId: flowObj?.sessionId,
             chatId: flowObj?.chatId,
@@ -250,19 +233,12 @@ async function createAgent(
             const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
             prompt.promptMessages.splice(1, 0, msg)
         }
-
-        let conversationChain
-
-        if (!workerInputVariablesValues || !Object.keys(workerInputVariablesValues).length) {
-            conversationChain = RunnableSequence.from([prompt, llm, new StringOutputParser()])
-        } else {
-            conversationChain = RunnableSequence.from([
-                RunnablePassthrough.assign(transformObjectPropertyToFunction(workerInputVariablesValues)),
-                prompt,
-                llm,
-                new StringOutputParser()
-            ])
-        }
+        const conversationChain = RunnableSequence.from([
+            RunnablePassthrough.assign(transformObjectPropertyToFunction(workerInputVariablesValues)),
+            prompt,
+            llm,
+            new StringOutputParser()
+        ])
         return conversationChain
     }
 }
@@ -272,18 +248,16 @@ async function agentNode(
         state,
         agent,
         name,
-        nodeId,
         abortControllerSignal
-    }: { state: ITeamState; agent: AgentExecutor | RunnableSequence; name: string; nodeId: string; abortControllerSignal: AbortController },
+    }: { state: ITeamState; agent: AgentExecutor | RunnableSequence; name: string; abortControllerSignal: AbortController },
     config: RunnableConfig
 ) {
     try {
         if (abortControllerSignal.signal.aborted) {
             throw new Error('Aborted!')
         }
-
         const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
-        const additional_kwargs: ICommonObject = { nodeId, type: 'worker' }
+        const additional_kwargs: ICommonObject = {}
         if (result.usedTools) {
             additional_kwargs.usedTools = result.usedTools
         }

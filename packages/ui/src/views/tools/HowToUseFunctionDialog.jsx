@@ -46,9 +46,6 @@ const HowToUseFunctionDialog = ({ show, onCancel }) => {
                             <li>
                                 <code>$flow.input</code>
                             </li>
-                            <li>
-                                <code>$flow.state</code>
-                            </li>
                         </ul>
                     </li>
                     <li style={{ marginTop: 10 }}>

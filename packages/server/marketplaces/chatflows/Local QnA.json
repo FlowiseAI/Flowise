@@ -2,8 +2,8 @@
     "description": "Цепочка вопросов и ответов с использованием локального LLM Ollama, модели встраивания LocalAI и локального хранилища векторов Faiss",
     "title": "Локальный QnA",
     "badge": "POPULAR",
-    "usecases": ["Documents QnA"],
-    "framework": ["Langchain"],
+    "categories": "Text File,ChatOllama,Conversational Retrieval QA Chain,Faiss,Langchain",
+    "framework": "Langchain",
     "nodes": [
         {
             "width": 300,

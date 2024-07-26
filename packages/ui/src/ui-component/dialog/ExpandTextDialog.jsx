@@ -22,7 +22,7 @@ import useApi from '@/hooks/useApi'
 
 import './ExpandTextDialog.css'
 
-const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicked, onConfirm }) => {
+const ExpandTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
 
     const theme = useTheme()
@@ -38,17 +38,12 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
     const executeCustomFunctionNodeApi = useApi(nodesApi.executeCustomFunctionNode)
 
     useEffect(() => {
-        if (dialogProps.value) {
-            setInputValue(dialogProps.value)
-        }
+        if (dialogProps.value) setInputValue(dialogProps.value)
         if (dialogProps.inputParam) {
             setInputParam(dialogProps.inputParam)
             if (dialogProps.inputParam.type === 'code') {
                 setLanguageType('js')
             }
-        }
-        if (dialogProps.languageType) {
-            setLanguageType(dialogProps.languageType)
         }
 
         return () => {
@@ -83,7 +78,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
     useEffect(() => {
         if (executeCustomFunctionNodeApi.error) {
             if (typeof executeCustomFunctionNodeApi.error === 'object' && executeCustomFunctionNodeApi.error?.response?.data) {
-                setCodeExecutedResult(JSON.stringify(executeCustomFunctionNodeApi.error?.response?.data, null, 2))
+                setCodeExecutedResult(executeCustomFunctionNodeApi.error?.response?.data)
             } else if (typeof executeCustomFunctionNodeApi.error === 'string') {
                 setCodeExecutedResult(executeCustomFunctionNodeApi.error)
             }
@@ -105,7 +100,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                                     borderColor: theme.palette.grey['500'],
                                     borderRadius: '12px',
                                     height: '100%',
-                                    maxHeight: languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)',
+                                    maxHeight: languageType === 'js' ? 'calc(100vh - 250px)' : 'calc(100vh - 220px)',
                                     overflowX: 'hidden',
                                     backgroundColor: 'white'
                                 }}
@@ -113,18 +108,13 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                                 <CodeEditor
                                     disabled={dialogProps.disabled}
                                     value={inputValue}
-                                    height={languageType === 'js' ? 'calc(100vh - 330px)' : 'calc(100vh - 220px)'}
+                                    height={languageType === 'js' ? 'calc(100vh - 250px)' : 'calc(100vh - 220px)'}
                                     theme={customization.isDarkMode ? 'dark' : 'light'}
                                     lang={languageType}
                                     placeholder={translationObject[inputParam.placeholder] || inputParam.placeholder}
                                     basicSetup={
                                         languageType !== 'js'
-                                            ? {
-                                                  lineNumbers: false,
-                                                  foldGutter: false,
-                                                  autocompletion: false,
-                                                  highlightActiveLine: false
-                                              }
+                                            ? { lineNumbers: false, foldGutter: false, autocompletion: false, highlightActiveLine: false }
                                             : {}
                                     }
                                     onValueChange={(code) => setInputValue(code)}
@@ -133,7 +123,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                         </div>
                     )}
                 </div>
-                {languageType === 'js' && !inputParam.hideCodeExecute && (
+                {languageType === 'js' && (
                     <LoadingButton
                         sx={{
                             mt: 2,
@@ -162,7 +152,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                     <div style={{ marginTop: '15px' }}>
                         <CodeEditor
                             disabled={true}
-                            value={codeExecutedResult.toString()}
+                            value={codeExecutedResult}
                             height='max-content'
                             theme={customization.isDarkMode ? 'dark' : 'light'}
                             lang={'js'}
@@ -187,8 +177,7 @@ ExpandTextDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func,
-    onInputHintDialogClicked: PropTypes.func
+    onConfirm: PropTypes.func
 }
 
 export default ExpandTextDialog

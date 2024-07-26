@@ -1,9 +1,8 @@
-import { ChatOllama } from '@langchain/community/chat_models/ollama'
+import { ChatOllama, ChatOllamaInput } from '@langchain/community/chat_models/ollama'
 import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { OllamaInput } from '@langchain/community/llms/ollama'
-import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 
 class ChatOllama_ChatModels implements INode {
     label: string
@@ -209,7 +208,7 @@ class ChatOllama_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: OllamaInput & BaseChatModelParams = {
+        const obj: ChatOllamaInput & BaseLLMParams = {
             baseUrl,
             temperature: parseFloat(temperature),
             model: modelName

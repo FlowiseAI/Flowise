@@ -111,7 +111,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
                 onConfirm(createResp.data.id)
             }
         } catch (err) {
-            if (setError) setError(err)
+            setError(err)
             enqueueSnackbar({
                 message: `Не удалось добавить новую переменную: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -156,7 +156,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
-            if (setError) setError(err)
+            setError(err)
             enqueueSnackbar({
                 message: `Не удалось сохранить переменную: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data

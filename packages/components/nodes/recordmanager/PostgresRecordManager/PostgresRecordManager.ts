@@ -25,6 +25,7 @@ class PostgresRecordManager_RecordManager implements INode {
         this.category = 'Record Manager'
         this.description = 'Use Postgres to keep track of document writes into the vector databases'
         this.baseClasses = [this.type, 'RecordManager', ...getBaseClasses(PostgresRecordManager)]
+        this.badge = 'NEW'
         this.inputs = [
             {
                 label: 'Host',

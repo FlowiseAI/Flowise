@@ -178,9 +178,8 @@ const uploadFilesToAssistantVectorStore = async (
         const openai = new OpenAI({ apiKey: openAIApiKey })
         const uploadedFiles = []
         for (const file of files) {
-            const toFile = await OpenAI.toFile(fs.readFileSync(file.filePath), file.fileName)
             const createdFile = await openai.files.create({
-                file: toFile,
+                file: new File([new Blob([fs.readFileSync(file.filePath)])], file.fileName),
                 purpose: 'assistants'
             })
             uploadedFiles.push(createdFile)

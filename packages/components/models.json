@@ -9,11 +9,6 @@
                     "description": "Image to text, conversation, chat optimized"
                 },
                 {
-                    "label": "anthropic.claude-3.5-sonnet",
-                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                    "description": "3.5 version of Claude Sonnet model"
-                },
-                {
                     "label": "anthropic.claude-3-sonnet",
                     "name": "anthropic.claude-3-sonnet-20240229-v1:0",
                     "description": "Image to text and code, multilingual conversation, complex reasoning and analysis"
@@ -221,10 +216,6 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
-                    "label": "gpt-4o",
-                    "name": "gpt-4o"
-                },
-                {
                     "label": "gpt-4",
                     "name": "gpt-4"
                 },
@@ -249,10 +240,6 @@
         {
             "name": "azureChatOpenAI_LlamaIndex",
             "models": [
-                {
-                    "label": "gpt-4o",
-                    "name": "gpt-4o"
-                },
                 {
                     "label": "gpt-4",
                     "name": "gpt-4"
@@ -295,11 +282,6 @@
                     "label": "claude-3-opus",
                     "name": "claude-3-opus-20240229",
                     "description": "Most powerful model for highly complex tasks"
-                },
-                {
-                    "label": "claude-3.5-sonnet",
-                    "name": "claude-3-5-sonnet-20240620",
-                    "description": "3.5 version of Claude Sonnet model"
                 },
                 {
                     "label": "claude-3-sonnet",
@@ -424,26 +406,6 @@
             "name": "groqChat",
             "models": [
                 {
-                    "label": "llama-3.1-405b-reasoning",
-                    "name": "llama-3.1-405b-reasoning"
-                },
-                {
-                    "label": "llama-3.1-70b-versatile",
-                    "name": "llama-3.1-70b-versatile"
-                },
-                {
-                    "label": "llama-3.1-8b-instant",
-                    "name": "llama-3.1-8b-instant"
-                },
-                {
-                    "label": "llama3-groq-70b-8192-tool-use-preview",
-                    "name": "llama3-groq-70b-8192-tool-use-preview"
-                },
-                {
-                    "label": "llama3-groq-8b-8192-tool-use-preview",
-                    "name": "llama3-groq-8b-8192-tool-use-preview"
-                },
-                {
                     "label": "gemma-7b-it",
                     "name": "gemma-7b-it"
                 },
@@ -477,10 +439,6 @@
         {
             "name": "chatOpenAI",
             "models": [
-                {
-                    "label": "gpt-4o-mini",
-                    "name": "gpt-4o-mini"
-                },
                 {
                     "label": "gpt-4o",
                     "name": "gpt-4o"
@@ -619,10 +577,6 @@
         {
             "name": "chatMistralAI",
             "models": [
-                {
-                    "label": "open-mistral-nemo",
-                    "name": "open-mistral-nemo"
-                },
                 {
                     "label": "open-mistral-7b",
                     "name": "open-mistral-7b"

@@ -20,7 +20,6 @@ import { AddLead1710832117612 } from './1710832117612-AddLead'
 import { AddLeadToChatMessage1711537986113 } from './1711537986113-AddLeadToChatMessage'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
 import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
-import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -44,6 +43,5 @@ export const sqliteMigrations = [
     AddLead1710832117612,
     AddLeadToChatMessage1711537986113,
     AddAgentReasoningToChatMessage1714679514451,
-    AddTypeToChatFlow1766759476232,
-    AddActionToChatMessage1721078251523
+    AddTypeToChatFlow1766759476232
 ]

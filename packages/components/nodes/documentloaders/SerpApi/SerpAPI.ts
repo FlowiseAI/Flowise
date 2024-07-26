@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
-import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { SerpAPILoader } from '@langchain/community/document_loaders/web/serpapi'
+import { SerpAPILoader } from 'langchain/document_loaders/web/serpapi'
 import { getCredentialData, getCredentialParam } from '../../../src'
 
 class SerpAPI_DocumentLoaders implements INode {
@@ -80,14 +80,7 @@ class SerpAPI_DocumentLoaders implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const serpApiKey = getCredentialParam('serpApiKey', credentialData, nodeData)
         const loader = new SerpAPILoader({ q: query, apiKey: serpApiKey })
-
-        let docs: IDocument[] = []
-        if (textSplitter) {
-            docs = await loader.load()
-            docs = await textSplitter.splitDocuments(docs)
-        } else {
-            docs = await loader.load()
-        }
+        let docs = textSplitter ? await loader.loadAndSplit() : await loader.load()
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)

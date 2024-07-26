@@ -35,7 +35,6 @@ const CanvasNode = ({ data }) => {
     const [infoDialogProps, setInfoDialogProps] = useState({})
     const [warningMessage, setWarningMessage] = useState('')
     const [open, setOpen] = useState(false)
-    const [isForceCloseNodeInfo, setIsForceCloseNodeInfo] = useState(null)
 
     const handleClose = () => {
         setOpen(false)
@@ -89,7 +88,7 @@ const CanvasNode = ({ data }) => {
                 border={false}
             >
                 <NodeTooltip
-                    open={getNodeInfoOpenStatus()}
+                    open={!canvas.canvasDialogShow && open}
                     onClose={handleClose}
                     onOpen={handleOpen}
                     disableFocusListener={true}
@@ -215,18 +214,7 @@ const CanvasNode = ({ data }) => {
                         {data.inputParams
                             .filter((inputParam) => !inputParam.hidden)
                             .map((inputParam, index) => (
-                                <NodeInputHandler
-                                    key={index}
-                                    inputParam={inputParam}
-                                    data={data}
-                                    onHideNodeInfoDialog={(status) => {
-                                        if (status) {
-                                            setIsForceCloseNodeInfo(true)
-                                        } else {
-                                            setIsForceCloseNodeInfo(null)
-                                        }
-                                    }}
-                                />
+                                <NodeInputHandler key={index} inputParam={inputParam} data={data} />
                             ))}
                         {data.inputParams.find((param) => param.additionalParams) && (
                             <div
