@@ -95,8 +95,5 @@
                 }
             ]
         ]
-    },
-    "dependencies": {
-        "@langchain/langgraph": "0.0.31"
     }
 }

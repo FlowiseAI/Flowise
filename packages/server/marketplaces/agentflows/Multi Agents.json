@@ -1,5 +1,5 @@
 {
-    "description": "Мультиагенты с супервизором и агентами, созданные с использованием узлов последовательных агентов.",
+    "description": "Multi agents with supervisor and agents, constructed using Sequential Agents nodes",
     "framework": ["Langchain"],
     "usecases": ["Reflective Agent"],
     "nodes": [

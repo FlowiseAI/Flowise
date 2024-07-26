@@ -21,7 +21,7 @@ class ChatOllama_LlamaIndex_ChatModels implements INode {
         this.type = 'ChatOllama'
         this.icon = 'Ollama.svg'
         this.category = 'Chat Models'
-        this.description = 'Обертка вокруг ChatOllama LLM для LlamaIndex'
+        this.description = 'Wrapper around ChatOllama LLM specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(Ollama)]
         this.tags = ['LlamaIndex']
         this.inputs = [

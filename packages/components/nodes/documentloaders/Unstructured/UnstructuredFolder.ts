@@ -29,7 +29,7 @@ class UnstructuredFolder_DocumentLoaders implements INode {
         this.icon = 'unstructured-folder.svg'
         this.category = 'Document Loaders'
         this.description =
-            'Используйте Unstructured.io для загрузки данных из папки. Примечание: В настоящее время не поддерживаются форматы .png и .heic'
+            "Use Unstructured.io to load data from a folder. Note: Currently doesn't support .png and .heic until unstructured is updated."
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',

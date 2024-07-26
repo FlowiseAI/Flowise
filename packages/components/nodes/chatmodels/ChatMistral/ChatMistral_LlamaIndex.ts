@@ -23,7 +23,7 @@ class ChatMistral_LlamaIndex_ChatModels implements INode {
         this.type = 'ChatMistral'
         this.icon = 'MistralAI.svg'
         this.category = 'Chat Models'
-        this.description = 'Обертка вокруг ChatMistral LLM для LlamaIndex'
+        this.description = 'Wrapper around ChatMistral LLM specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(MistralAI)]
         this.tags = ['LlamaIndex']
         this.credential = {
