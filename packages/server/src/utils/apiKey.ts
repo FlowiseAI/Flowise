@@ -4,7 +4,7 @@ import moment from 'moment'
 import fs from 'fs'
 import path from 'path'
 import logger from './logger'
-import { APIKEYS_STORAGE_JSON } from '../AppConfig'
+import { appConfig } from '../AppConfig'
 
 /**
  * Returns the api key path
@@ -51,7 +51,7 @@ export const compareKeys = (storedKey: string, suppliedKey: string): boolean => 
  * @returns {Promise<ICommonObject[]>}
  */
 export const getAPIKeys = async (): Promise<ICommonObject[]> => {
-    if (!APIKEYS_STORAGE_JSON) {
+    if (appConfig.apiKeys.storageType !== 'json') {
         return []
     }
     try {

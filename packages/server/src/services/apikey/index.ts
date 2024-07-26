@@ -15,17 +15,24 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ApiKey } from '../../database/entities/ApiKey'
-import { APIKEYS_STORAGE_DB, APIKEYS_STORAGE_JSON } from '../../AppConfig'
+import { appConfig } from '../../AppConfig'
 import { randomBytes } from 'crypto'
 import { Not, IsNull } from 'typeorm'
 
+const _apikeysStoredInJson = (): boolean => {
+    return appConfig.apiKeys.storageType === 'json'
+}
+
+const _apikeysStoredInDb = (): boolean => {
+    return appConfig.apiKeys.storageType === 'db'
+}
+
 const getAllApiKeys = async () => {
     try {
-        if (APIKEYS_STORAGE_JSON) {
-            //
+        if (_apikeysStoredInJson()) {
             const keys = await getAPIKeys_json()
             return await addChatflowsCount(keys)
-        } else if (APIKEYS_STORAGE_DB) {
+        } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
             let keys = await appServer.AppDataSource.getRepository(ApiKey).find()
             if (keys.length === 0) {
@@ -43,9 +50,9 @@ const getAllApiKeys = async () => {
 
 const getApiKey = async (keyName: string) => {
     try {
-        if (APIKEYS_STORAGE_JSON) {
+        if (_apikeysStoredInJson()) {
             return getApiKey_json(keyName)
-        } else if (APIKEYS_STORAGE_DB) {
+        } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
             const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
                 keyName: keyName
@@ -64,10 +71,10 @@ const getApiKey = async (keyName: string) => {
 
 const createApiKey = async (keyName: string) => {
     try {
-        if (APIKEYS_STORAGE_JSON) {
+        if (_apikeysStoredInJson()) {
             const keys = await addAPIKey_json(keyName)
             return await addChatflowsCount(keys)
-        } else if (APIKEYS_STORAGE_DB) {
+        } else if (_apikeysStoredInDb()) {
             const apiKey = generateAPIKey()
             const apiSecret = generateSecretHash(apiKey)
             const appServer = getRunningExpressApp()
@@ -90,10 +97,10 @@ const createApiKey = async (keyName: string) => {
 // Update api key
 const updateApiKey = async (id: string, keyName: string) => {
     try {
-        if (APIKEYS_STORAGE_JSON) {
+        if (_apikeysStoredInJson()) {
             const keys = await updateAPIKey_json(id, keyName)
             return await addChatflowsCount(keys)
-        } else if (APIKEYS_STORAGE_DB) {
+        } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
             const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
                 id: id
@@ -114,10 +121,10 @@ const updateApiKey = async (id: string, keyName: string) => {
 
 const deleteApiKey = async (id: string) => {
     try {
-        if (APIKEYS_STORAGE_JSON) {
+        if (_apikeysStoredInJson()) {
             const keys = await deleteAPIKey_json(id)
             return await addChatflowsCount(keys)
-        } else if (APIKEYS_STORAGE_DB) {
+        } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
             const dbResponse = await appServer.AppDataSource.getRepository(ApiKey).delete({ id: id })
             if (!dbResponse) {
@@ -142,14 +149,14 @@ const importKeys = async (body: any) => {
         const bf = Buffer.from(splitDataURI[1] || '', 'base64')
         const plain = bf.toString('utf8')
         const keys = JSON.parse(plain)
-        if (APIKEYS_STORAGE_JSON) {
+        if (_apikeysStoredInJson()) {
             if (body.importMode === 'replaceAll') {
                 await replaceAllAPIKeys_json(keys)
             } else {
                 await importKeys_json(keys, body.importMode)
             }
             return await addChatflowsCount(keys)
-        } else if (APIKEYS_STORAGE_DB) {
+        } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
             const allApiKeys = await appServer.AppDataSource.getRepository(ApiKey).find()
             if (body.importMode === 'replaceAll') {
@@ -213,13 +220,13 @@ const importKeys = async (body: any) => {
 
 const verifyApiKey = async (paramApiKey: string): Promise<string> => {
     try {
-        if (APIKEYS_STORAGE_JSON) {
+        if (_apikeysStoredInJson()) {
             const apiKey = await getApiKey_json(paramApiKey)
             if (!apiKey) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
             return 'OK'
-        } else if (APIKEYS_STORAGE_DB) {
+        } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
             const apiKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
                 apiKey: paramApiKey

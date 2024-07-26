@@ -1,3 +1,6 @@
-export const APIKEYS_STORAGE_JSON = !process.env.APIKEY_STORAGE_TYPE || process.env.APIKEY_STORAGE_TYPE === 'json'
-export const APIKEYS_STORAGE_DB =
-    process.env.APIKEY_STORAGE_TYPE === 'db' || process.env.APIKEY_STORAGE_TYPE === 'DB' || process.env.APIKEY_STORAGE_TYPE === 'Db'
+export const appConfig = {
+    apiKeys: {
+        storageType: process.env.APIKEY_STORAGE_TYPE ? process.env.APIKEY_STORAGE_TYPE.toLowerCase() : 'json'
+    }
+    // todo: add more config options here like database, log, storage, credential and allow modification from UI
+}
