@@ -1,24 +1,16 @@
-import { useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-// material-ui
-import { Badge, Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
-
-// project imports
-import MainCard from '@/ui-component/cards/MainCard'
-import ItemCard from '@/ui-component/cards/ItemCard'
-import { gridSpacing } from '@/store/constant'
-import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
-import LoginDialog from '@/ui-component/dialog/LoginDialog'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import { FlowListTable } from '@/ui-component/table/FlowListTable'
-import { StyledButton } from '@/ui-component/button/StyledButton'
+import { Box, Tabs, Tab, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
+import FlowListView from '@/ui-component/lists/FlowListView'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
+import MainCard from '@/ui-component/cards/MainCard'
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import { IconPlus } from '@tabler/icons-react'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import marketplacesApi from '@/api/marketplaces'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -26,46 +18,48 @@ import useApi from '@/hooks/useApi'
 // const
 import { baseURL } from '@/store/constant'
 
-// icons
-import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
+function TabPanel(props) {
+    const { children, value, index, ...other } = props
+    return (
+        <div
+            role='tabpanel'
+            hidden={value !== index}
+            id={`agentflow-tabpanel-${index}`}
+            aria-labelledby={`agentflow-tab-${index}`}
+            {...other}
+        >
+            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+        </div>
+    )
+}
 
-// ==============================|| AGENTS ||============================== //
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired
+}
 
 const Agentflows = () => {
     const navigate = useNavigate()
-    const theme = useTheme()
 
+    const [tabValue, setTabValue] = useState(0)
     const [isLoading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [images, setImages] = useState({})
+    const [nodeTypes, setNodeTypes] = useState({})
+    const [myAgentflows, setMyAgentflows] = useState([])
+    const [answerAIAgentflows, setAnswerAIAgentflows] = useState([])
+    const [communityAgentflows, setCommunityAgentflows] = useState([])
+
     const [search, setSearch] = useState('')
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false)
-    const [loginDialogProps, setLoginDialogProps] = useState({})
+    const [categoryFilter, setCategoryFilter] = useState('All')
+    const [categories, setCategories] = useState(['All'])
 
-    const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
-    const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
+    const getAllAgentflowsApi = useApi(chatflowsApi.getAllAgentflows)
+    const getMarketplaceAgentflowsApi = useApi(marketplacesApi.getAllTemplatesFromMarketplaces)
 
-    const handleChange = (event, nextView) => {
-        if (nextView === null) return
-        localStorage.setItem('flowDisplayStyle', nextView)
-        setView(nextView)
-    }
-
-    const onSearchChange = (event) => {
-        setSearch(event.target.value)
-    }
-
-    function filterFlows(data) {
-        return (
-            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1)
-        )
-    }
-
-    const onLoginClick = (username, password) => {
-        localStorage.setItem('username', username)
-        localStorage.setItem('password', password)
-        navigate(0)
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue)
     }
 
     const addNew = () => {
@@ -76,158 +70,190 @@ const Agentflows = () => {
         navigate(`/agentcanvas/${selectedAgentflow.id}`)
     }
 
-    useEffect(() => {
-        getAllAgentflows.request()
+    const goToMarketplaceCanvas = (selectedAgentflow) => {
+        navigate(`/marketplace/${selectedAgentflow.id}`, {
+            state: selectedAgentflow
+        })
+    }
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    const onSearchChange = (event) => {
+        setSearch(event.target.value)
+    }
+
+    const handleCategoryChange = (event) => {
+        setCategoryFilter(event.target.value)
+    }
+
+    useEffect(() => {
+        getAllAgentflowsApi.request()
+        getMarketplaceAgentflowsApi.request()
     }, [])
 
     useEffect(() => {
-        if (getAllAgentflows.error) {
-            if (getAllAgentflows.error?.response?.status === 401) {
-                setLoginDialogProps({
-                    title: 'Login',
-                    confirmButtonName: 'Login'
-                })
-                setLoginDialogOpen(true)
-            } else {
-                setError(getAllAgentflows.error)
-            }
+        if (getAllAgentflowsApi.error || getMarketplaceAgentflowsApi.error) {
+            setError(getAllAgentflowsApi.error || getMarketplaceAgentflowsApi.error)
         }
-    }, [getAllAgentflows.error])
+    }, [getAllAgentflowsApi.error, getMarketplaceAgentflowsApi.error])
 
     useEffect(() => {
-        setLoading(getAllAgentflows.loading)
-    }, [getAllAgentflows.loading])
+        setLoading(getAllAgentflowsApi.loading || getMarketplaceAgentflowsApi.loading)
+    }, [getAllAgentflowsApi.loading, getMarketplaceAgentflowsApi.loading])
 
     useEffect(() => {
-        if (getAllAgentflows.data) {
-            try {
-                const agentflows = getAllAgentflows.data
-                const images = {}
-                for (let i = 0; i < agentflows.length; i += 1) {
-                    const flowDataStr = agentflows[i].flowData
-                    const flowData = JSON.parse(flowDataStr)
-                    const nodes = flowData.nodes || []
-                    images[agentflows[i].id] = []
-                    for (let j = 0; j < nodes.length; j += 1) {
-                        const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                        if (!images[agentflows[i].id].includes(imageSrc)) {
-                            images[agentflows[i].id].push(imageSrc)
+        if (getAllAgentflowsApi.data && getMarketplaceAgentflowsApi.data) {
+            const processFlowData = (flows) => {
+                const processedImages = {}
+                const processedNodeTypes = {}
+                flows.forEach((flow) => {
+                    if (flow && flow.flowData) {
+                        try {
+                            const flowData = JSON.parse(flow.flowData)
+                            const nodes = flowData.nodes || []
+                            processedImages[flow.id] = []
+                            processedNodeTypes[flow.id] = []
+                            nodes.forEach((node) => {
+                                if (node && node.data && node.data.category && node.data.name && node.data.label) {
+                                    if (['Multi Agents', 'Chat Models', 'Tools', 'Document Loaders'].includes(node.data.category)) {
+                                        const imageSrc = `${baseURL}/api/v1/node-icon/${node.data.name}`
+                                        if (!processedImages[flow.id].includes(imageSrc)) {
+                                            processedImages[flow.id].push(imageSrc)
+                                            processedNodeTypes[flow.id].push(node.data.label)
+                                        }
+                                    }
+                                }
+                            })
+                        } catch (error) {
+                            console.error(`Error processing flow data for flow ${flow.id}:`, error)
                         }
                     }
-                }
-                setImages(images)
-            } catch (e) {
-                console.error(e)
+                })
+                return { processedImages, processedNodeTypes }
             }
+
+            const myAgentflowsData = getAllAgentflowsApi.data
+            const { processedImages: myImages, processedNodeTypes: myNodeTypes } = processFlowData(myAgentflowsData)
+            setMyAgentflows(myAgentflowsData)
+
+            const marketplaceAgentflows = getMarketplaceAgentflowsApi.data
+            const answerAIFlows = marketplaceAgentflows.filter((flow) => flow.type === 'Agentflow')
+            const communityFlows = marketplaceAgentflows.filter((flow) => flow.type === 'Agent Community')
+
+            const { processedImages: answerAIImages, processedNodeTypes: answerAINodeTypes } = processFlowData(answerAIFlows)
+            const { processedImages: communityImages, processedNodeTypes: communityNodeTypes } = processFlowData(communityFlows)
+
+            setAnswerAIAgentflows(answerAIFlows)
+            setCommunityAgentflows(communityFlows)
+
+            setImages({ ...myImages, ...answerAIImages, ...communityImages })
+            setNodeTypes({ ...myNodeTypes, ...answerAINodeTypes, ...communityNodeTypes })
+
+            const allFlows = [...myAgentflowsData, ...answerAIFlows, ...communityFlows]
+            const uniqueCategories = ['All', ...new Set(allFlows.flatMap((item) => (item?.category ? item.category.split(';') : [])))]
+            setCategories(uniqueCategories)
         }
-    }, [getAllAgentflows.data])
+    }, [getAllAgentflowsApi.data, getMarketplaceAgentflowsApi.data])
+
+    const filterFlows = (flows, search, categoryFilter) => {
+        const searchRegex = new RegExp(search, 'i') // 'i' flag for case-insensitive search
+
+        return flows.filter((flow) => {
+            if (!flow) return false
+
+            // Check category first
+            const category = flow.category || ''
+            if (categoryFilter !== 'All' && !category.includes(categoryFilter)) {
+                return false
+            }
+
+            // If category matches, then check search
+            const name = flow.name || flow.templateName || ''
+            const description = flow.description || ''
+            const searchText = `${name} ${description}`
+
+            return searchRegex.test(searchText)
+        })
+    }
+
+    const filteredMyAgentflows = useMemo(() => filterFlows(myAgentflows, search, categoryFilter), [myAgentflows, search, categoryFilter])
+
+    const filteredAnswerAIAgentflows = useMemo(
+        () => filterFlows(answerAIAgentflows, search, categoryFilter),
+        [answerAIAgentflows, search, categoryFilter]
+    )
+
+    const filteredCommunityAgentflows = useMemo(
+        () => filterFlows(communityAgentflows, search, categoryFilter),
+        [communityAgentflows, search, categoryFilter]
+    )
 
     return (
         <MainCard>
-            {error ? (
-                <ErrorBoundary error={error} />
-            ) : (
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name or Category' title='Agents'>
-                        <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
-                            value={view}
-                            color='primary'
-                            exclusive
-                            onChange={handleChange}
-                        >
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='card'
-                                title='Card View'
-                            >
-                                <IconLayoutGrid />
-                            </ToggleButton>
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='list'
-                                title='List View'
-                            >
-                                <IconList />
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                        <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
-                            Add New
-                        </StyledButton>
-                    </ViewHeader>
-                    {!view || view === 'card' ? (
-                        <>
-                            {isLoading && !getAllAgentflows.data ? (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
-                                </Box>
-                            ) : (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.filter(filterFlows).map((data, index) =>
-                                        data.badge ? (
-                                            <Badge
-                                                key={index}
-                                                sx={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    '& .MuiBadge-badge': {
-                                                        right: 20
-                                                    }
-                                                }}
-                                                badgeContent={data.badge}
-                                                color={data.badge === 'SHARED' ? 'error' : 'primary'}
-                                            >
-                                                <ItemCard onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                            </Badge>
-                                        ) : (
-                                            <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                        )
-                                    )}
-                                </Box>
-                            )}
-                        </>
-                    ) : (
-                        <FlowListTable
-                            isAgentCanvas={true}
-                            data={getAllAgentflows.data}
-                            images={images}
-                            isLoading={isLoading}
-                            filterFunction={filterFlows}
-                            updateFlowsApi={getAllAgentflows}
-                            setError={setError}
-                        />
-                    )}
-                    {!isLoading && (!getAllAgentflows.data || getAllAgentflows.data.length === 0) && (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                            <Box sx={{ p: 2, height: 'auto' }}>
-                                <img
-                                    style={{ objectFit: 'cover', height: '12vh', width: 'auto' }}
-                                    src={AgentsEmptySVG}
-                                    alt='AgentsEmptySVG'
-                                />
-                            </Box>
-                            <div>No Agents Yet</div>
-                        </Stack>
-                    )}
-                </Stack>
-            )}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <ViewHeader
+                    onSearchChange={onSearchChange}
+                    search={true}
+                    searchPlaceholder='Search Name, Description or Category'
+                    title='Agentflows'
+                >
+                    <FormControl sx={{ minWidth: 120, mr: 1 }}>
+                        <InputLabel id='category-filter-label'>Category</InputLabel>
+                        <Select labelId='category-filter-label' value={categoryFilter} onChange={handleCategoryChange} label='Category'>
+                            {categories.map((category) => (
+                                <MenuItem key={category} value={category}>
+                                    {category}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />}>
+                        Add New
+                    </StyledButton>
+                </ViewHeader>
 
-            <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
-            <ConfirmDialog />
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    <Tabs value={tabValue} onChange={handleTabChange} aria-label='agentflow tabs'>
+                        <Tab label='My Agentflows' />
+                        <Tab label='AnswerAI Supported' />
+                        <Tab label='Community' />
+                    </Tabs>
+                </Box>
+                <TabPanel value={tabValue} index={0}>
+                    <FlowListView
+                        data={filteredMyAgentflows}
+                        images={images}
+                        nodeTypes={nodeTypes}
+                        isLoading={isLoading}
+                        updateFlowsApi={getAllAgentflowsApi}
+                        setError={setError}
+                        type='agentflows'
+                        onItemClick={goToCanvas}
+                    />
+                </TabPanel>
+                <TabPanel value={tabValue} index={1}>
+                    <FlowListView
+                        data={filteredAnswerAIAgentflows}
+                        images={images}
+                        nodeTypes={nodeTypes}
+                        isLoading={isLoading}
+                        updateFlowsApi={getMarketplaceAgentflowsApi}
+                        setError={setError}
+                        type='marketplace'
+                        onItemClick={goToMarketplaceCanvas}
+                    />
+                </TabPanel>
+                <TabPanel value={tabValue} index={2}>
+                    <FlowListView
+                        data={filteredCommunityAgentflows}
+                        images={images}
+                        nodeTypes={nodeTypes}
+                        isLoading={isLoading}
+                        updateFlowsApi={getMarketplaceAgentflowsApi}
+                        setError={setError}
+                        type='marketplace'
+                        onItemClick={goToMarketplaceCanvas}
+                    />
+                </TabPanel>
+            </Box>
         </MainCard>
     )
 }

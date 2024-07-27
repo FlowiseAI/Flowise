@@ -8,7 +8,16 @@ import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
+import {
+    IconSettings,
+    IconChevronLeft,
+    IconDeviceFloppy,
+    IconPencil,
+    IconCheck,
+    IconX,
+    IconCode,
+    IconAdjustmentsHorizontal
+} from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
@@ -184,6 +193,14 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
         handleSaveFlow(flowName)
     }
 
+    const onConfigurationButtonClick = () => {
+        setChatflowConfigurationDialogProps({
+            title: `${title} Configuration`,
+            chatflow: chatflow
+        })
+        setChatflowConfigurationDialogOpen(true)
+    }
+
     useEffect(() => {
         if (updateChatflowApi.data) {
             setFlowName(updateChatflowApi.data.name)
@@ -332,6 +349,26 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                     </Box>
                 </Stack>
                 <Box>
+                    <ButtonBase title='Custom Action' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.secondary.light,
+                                color: theme.palette.secondary.dark,
+                                '&:hover': {
+                                    background: theme.palette.secondary.dark,
+                                    color: theme.palette.secondary.light
+                                }
+                            }}
+                            color='inherit'
+                            onClick={onConfigurationButtonClick}
+                        >
+                            <IconAdjustmentsHorizontal stroke={1.5} size='1.3rem' />
+                        </Avatar>
+                    </ButtonBase>
                     {chatflow?.id && flags?.['chatflow:share:external']?.enabled && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
                             <Avatar

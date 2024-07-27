@@ -26,6 +26,7 @@ import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionTo
 import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
 import { AddAnswersConfig1714692854264 } from './1714692854264-AddAnswersConfig'
 import { AddUser1716422641414 } from './1716422641414-AddUser'
+import { AddDescriptionToChatFlow1722099922876 } from './1722101786123-AddDescriptionToChatflow'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -55,5 +56,6 @@ export const mysqlMigrations = [
     AddVectorStoreConfigToDocStore1715861032479,
     AddApiKey1720230151480,
     AddActionToChatMessage1721078251523,
-    LongTextColumn1722301395521
+    LongTextColumn1722301395521,
+    AddDescriptionToChatFlow1722099922876
 ]

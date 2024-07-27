@@ -18,9 +18,9 @@ import chatflowsApi from '@/api/chatflows'
 // utils
 import useNotifier from '@/utils/useNotifier'
 
-const RateLimit = () => {
+const RateLimit = ({ dialogProps }) => {
     const dispatch = useDispatch()
-    const chatflow = useSelector((state) => state.canvas.chatflow)
+    const chatflow = useSelector((state) => state?.canvas?.chatflow) || dialogProps.chatflow
     const chatflowid = chatflow.id
     const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
 
@@ -151,7 +151,8 @@ const RateLimit = () => {
 }
 
 RateLimit.propTypes = {
-    isSessionMemory: PropTypes.bool
+    isSessionMemory: PropTypes.bool,
+    dialogProps: PropTypes.object
 }
 
 export default RateLimit

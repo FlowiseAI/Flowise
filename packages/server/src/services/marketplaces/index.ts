@@ -15,6 +15,7 @@ type ITemplate = {
     usecases: string[]
     nodes: IReactFlowNode[]
     edges: IReactFlowEdge[]
+    iconSrc?: string
 }
 
 const getCategories = (fileDataObj: ITemplate) => {
@@ -49,10 +50,9 @@ const getAllTemplates = async (userId?: string, organizationId?: string) => {
                 templateName: chatflow.name,
                 flowData: chatflow.flowData,
                 badge: chatflow.userId === userId ? `SHARED BY ME` : `SHARED BY OTHERS`,
-                // framework: `chatflow.framework`,
-                // categories: `chatflow.categories`,
-                type: chatflow.type
-                // description: `chatflow.description`
+                categories: chatflow.category,
+                type: chatflow.type === 'MULTIAGENT' ? 'Agent Community' : 'Chatflow Community',
+                description: chatflow.description
             }
             templates.push(template)
         })

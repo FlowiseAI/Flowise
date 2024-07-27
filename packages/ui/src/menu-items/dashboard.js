@@ -39,14 +39,6 @@ const dashboard = {
             isBeta: true
         },
         {
-            id: 'marketplaces',
-            title: 'Marketplaces',
-            type: 'item',
-            url: '/marketplaces',
-            icon: icons.IconBuildingStore,
-            breadcrumbs: true
-        },
-        {
             id: 'tools',
             title: 'Tools',
             type: 'item',
@@ -56,7 +48,7 @@ const dashboard = {
         },
         {
             id: 'assistants',
-            title: 'Assistants',
+            title: 'OpenAI Assistants',
             type: 'item',
             url: '/assistants',
             icon: icons.IconRobot,
