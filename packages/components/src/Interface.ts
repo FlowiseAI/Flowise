@@ -153,6 +153,8 @@ export interface INodeCredential {
 export interface IMessage {
     message: string
     type: MessageType
+    role?: MessageType
+    content?: string
 }
 
 export interface IUsedTool {
