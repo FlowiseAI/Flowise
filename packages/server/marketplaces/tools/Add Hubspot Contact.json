@@ -1,6 +1,5 @@
 {
     "name": "add_contact_hubspot",
-    "framework": ["Langchain"],
     "description": "Add new contact to Hubspot",
     "color": "linear-gradient(rgb(85,198,123), rgb(0,230,99))",
     "iconSrc": "https://cdn.worldvectorlogo.com/logos/hubspot-1.svg",

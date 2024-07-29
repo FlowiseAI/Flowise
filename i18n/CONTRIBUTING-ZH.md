@@ -128,7 +128,8 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 | DEBUG                        | 打印组件的日志                                                       | 布尔值                                          |                                     |
 | LOG_PATH                     | 存储日志文件的位置                                                   | 字符串                                          | `your-path/Flowise/logs`            |
 | LOG_LEVEL                    | 日志的不同级别                                                       | 枚举字符串: `error`, `info`, `verbose`, `debug` | `info`                              |
-| APIKEY_PATH                  | 存储 API 密钥的位置                                                  | 字符串                                          | `your-path/Flowise/packages/server` |
+| APIKEY_STORAGE_TYPE          | 存储 API 密钥的存储类型                                              | 枚举字符串: `json`, `db`                        | `json`                              |
+| APIKEY_PATH                  | 存储 API 密钥的位置, 当`APIKEY_STORAGE_TYPE`是`json`                 | 字符串                                          | `your-path/Flowise/packages/server` |
 | TOOL_FUNCTION_BUILTIN_DEP    | 用于工具函数的 NodeJS 内置模块                                       | 字符串                                          |                                     |
 | TOOL_FUNCTION_EXTERNAL_DEP   | 用于工具函数的外部模块                                               | 字符串                                          |                                     |
 | DATABASE_TYPE                | 存储 flowise 数据的数据库类型                                        | 枚举字符串: `sqlite`, `mysql`, `postgres`       | `sqlite`                            |
@@ -148,6 +149,8 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 | S3_STORAGE_ACCESS_KEY_ID     | AWS 访问密钥 (Access Key)                                            | 字符串                                          |                                     |
 | S3_STORAGE_SECRET_ACCESS_KEY | AWS 密钥 (Secret Key)                                                | 字符串                                          |                                     |
 | S3_STORAGE_REGION            | S3 存储地区                                                          | 字符串                                          |                                     |
+| S3_ENDPOINT_URL              | S3 端点 URL                                                          | 字符串                                          |                                     |
+| SHOW_COMMUNITY_NODES         | 显示由社区创建的节点                                                 | 布尔值                                          |                                     |
 
 您也可以在使用 `npx` 时指定环境变量。例如：
 

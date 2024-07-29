@@ -20,6 +20,7 @@ export type NodeParamsType =
     | 'date'
     | 'file'
     | 'folder'
+    | 'tabs'
 
 export type CommonType = string | number | boolean | undefined | null
 
@@ -63,6 +64,8 @@ export interface INodeOutputsValue {
     name: string
     baseClasses: string[]
     description?: string
+    hidden?: boolean
+    isAnchor?: boolean
 }
 
 export interface INodeParams {
@@ -85,7 +88,11 @@ export interface INodeParams {
     additionalParams?: boolean
     loadMethod?: string
     hidden?: boolean
-    variables?: ICommonObject[]
+    hideCodeExecute?: boolean
+    codeExample?: string
+    hint?: Record<string, string>
+    tabIdentifier?: string
+    tabs?: Array<INodeParams>
 }
 
 export interface INodeExecutionData {
@@ -109,6 +116,8 @@ export interface INodeProperties {
     filePath?: string
     badge?: string
     deprecateMessage?: string
+    hideOutput?: boolean
+    author?: string
 }
 
 export interface INode extends INodeProperties {
@@ -145,12 +154,15 @@ export interface INodeCredential {
 export interface IMessage {
     message: string
     type: MessageType
+    role?: MessageType
+    content?: string
 }
 
 export interface IUsedTool {
     tool: string
     toolInput: object
     toolOutput: string | object
+    sourceDocuments?: ICommonObject[]
 }
 
 export interface IMultiAgentNode {
@@ -166,6 +178,27 @@ export interface IMultiAgentNode {
     recursionLimit?: number
     moderations?: Moderation[]
     multiModalMessageContent?: MessageContentImageUrl[]
+    checkpointMemory?: any
+}
+
+type SeqAgentType = 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state' | 'llm'
+
+export interface ISeqAgentNode {
+    id: string
+    node: any
+    name: string
+    label: string
+    type: SeqAgentType
+    output: string
+    llm?: any
+    startLLM?: any
+    predecessorAgents?: ISeqAgentNode[]
+    recursionLimit?: number
+    moderations?: Moderation[]
+    multiModalMessageContent?: MessageContentImageUrl[]
+    checkpointMemory?: any
+    agentInterruptToolNode?: any
+    agentInterruptToolFunc?: any
 }
 
 export interface ITeamState {
@@ -176,13 +209,31 @@ export interface ITeamState {
     team_members: string[]
     next: string
     instructions: string
+    summarization?: string
+}
+
+export interface ISeqAgentsState {
+    messages: {
+        value: (x: BaseMessage[], y: BaseMessage[]) => BaseMessage[]
+        default: () => BaseMessage[]
+    }
 }
 
 export interface IAgentReasoning {
     agentName: string
     messages: string[]
-    next: string
-    instructions: string
+    next?: string
+    instructions?: string
+    usedTools?: IUsedTool[]
+    sourceDocuments?: ICommonObject[]
+    state?: ICommonObject
+    nodeName?: string
+}
+
+export interface IAction {
+    id?: string
+    elements?: Array<{ type: string; label: string }>
+    mapping?: { approve: string; reject: string; toolCalls: any[] }
 }
 
 export interface IFileUpload {

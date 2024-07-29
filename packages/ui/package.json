@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "1.8.4",
+    "version": "2.0.1",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -14,6 +14,7 @@
         "@emotion/cache": "^11.4.0",
         "@emotion/react": "^11.10.6",
         "@emotion/styled": "^11.10.6",
+        "@mui/base": "5.0.0-beta.40",
         "@mui/icons-material": "5.0.3",
         "@mui/lab": "5.0.0-alpha.156",
         "@mui/material": "5.15.0",
@@ -92,7 +93,7 @@
         "react-scripts": "^5.0.1",
         "rimraf": "^5.0.5",
         "sass": "^1.42.1",
-        "typescript": "^4.8.4",
+        "typescript": "^5.4.5",
         "vite": "^5.0.2",
         "vite-plugin-pwa": "^0.17.0",
         "vite-plugin-react-js-support": "^1.0.7"

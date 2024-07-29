@@ -20,6 +20,7 @@ class MeilisearchRetriever_node implements INode {
     credential: INodeParams
     badge: string
     outputs: INodeOutputsValue[]
+    author?: string
 
     constructor() {
         this.label = 'Meilisearch'
@@ -31,6 +32,7 @@ class MeilisearchRetriever_node implements INode {
         this.badge = 'NEW'
         this.description = `Upsert embedded data and perform similarity search upon query using Meilisearch hybrid search functionality`
         this.baseClasses = ['BaseRetriever']
+        this.author = 'Mohamed Yasser Oaf'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

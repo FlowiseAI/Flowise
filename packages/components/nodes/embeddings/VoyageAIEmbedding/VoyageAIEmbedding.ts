@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { VoyageEmbeddings, VoyageEmbeddingsParams } from 'langchain/embeddings/voyage'
+import { VoyageEmbeddings, VoyageEmbeddingsParams } from '@langchain/community/embeddings/voyage'
 
 class VoyageAIEmbedding_Embeddings implements INode {
     label: string

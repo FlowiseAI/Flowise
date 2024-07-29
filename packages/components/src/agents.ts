@@ -11,6 +11,7 @@ import { Runnable, RunnableSequence, RunnablePassthrough } from '@langchain/core
 import { Serializable } from '@langchain/core/load/serializable'
 import { renderTemplate } from '@langchain/core/prompts'
 import { ChatGeneration } from '@langchain/core/outputs'
+import { Document } from '@langchain/core/documents'
 import { BaseChain, SerializedLLMChain } from 'langchain/chains'
 import {
     CreateReactAgentParams,
@@ -338,7 +339,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
     }
 
     async _call(inputs: ChainValues, runManager?: CallbackManagerForChainRun): Promise<AgentExecutorOutput> {
-        const toolsByName = Object.fromEntries(this.tools.map((t) => [t.name.toLowerCase(), t]))
+        const toolsByName = Object.fromEntries(this.tools.map((t) => [t.name?.toLowerCase(), t]))
 
         const steps: AgentStep[] = []
         let iterations = 0
@@ -421,7 +422,8 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                 {
                                     sessionId: this.sessionId,
                                     chatId: this.chatId,
-                                    input: this.input
+                                    input: this.input,
+                                    state: inputs
                                 }
                             )
                             usedTools.push({
@@ -556,7 +558,8 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                         {
                             sessionId: this.sessionId,
                             chatId: this.chatId,
-                            input: this.input
+                            input: this.input,
+                            state: inputs
                         }
                     )
                     if (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)) {
@@ -605,7 +608,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
 
     async _getToolReturn(nextStepOutput: AgentStep): Promise<AgentFinish | null> {
         const { action, observation } = nextStepOutput
-        const nameToolMap = Object.fromEntries(this.tools.map((t) => [t.name.toLowerCase(), t]))
+        const nameToolMap = Object.fromEntries(this.tools.map((t) => [t.name?.toLowerCase(), t]))
         const [returnValueKey = 'output'] = this.agent.returnValues
         // Invalid tools won't be in the map, so we return False.
         if (action.tool in nameToolMap) {

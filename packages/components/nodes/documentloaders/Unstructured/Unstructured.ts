@@ -3,7 +3,7 @@ import {
     SkipInferTableTypes,
     UnstructuredLoaderOptions,
     UnstructuredLoaderStrategy
-} from 'langchain/document_loaders/fs/unstructured'
+} from '@langchain/community/document_loaders/fs/unstructured'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
 import { StringWithAutocomplete } from 'langchain/dist/util/types'
 import { Document } from '@langchain/core/documents'
