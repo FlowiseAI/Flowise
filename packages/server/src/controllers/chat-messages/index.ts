@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { chatType, IReactFlowObject } from '../../Interface'
+import { ChatMessageRatingType, chatType, IReactFlowObject } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
 import chatMessagesService from '../../services/chat-messages'
 import { clearSessionMemory } from '../../utils'
@@ -49,6 +49,26 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
+        let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
+        if (feedbackTypeFilters) {
+            try {
+                const feedbackTypeFilterArray = JSON.parse(JSON.stringify(feedbackTypeFilters))
+                if (
+                    feedbackTypeFilterArray.includes(ChatMessageRatingType.THUMBS_UP) &&
+                    feedbackTypeFilterArray.includes(ChatMessageRatingType.THUMBS_DOWN)
+                ) {
+                    feedbackTypeFilters = [ChatMessageRatingType.THUMBS_UP, ChatMessageRatingType.THUMBS_DOWN]
+                } else if (feedbackTypeFilterArray.includes(ChatMessageRatingType.THUMBS_UP)) {
+                    feedbackTypeFilters = [ChatMessageRatingType.THUMBS_UP]
+                } else if (feedbackTypeFilterArray.includes(ChatMessageRatingType.THUMBS_DOWN)) {
+                    feedbackTypeFilters = [ChatMessageRatingType.THUMBS_DOWN]
+                } else {
+                    feedbackTypeFilters = undefined
+                }
+            } catch (e) {
+                return res.status(500).send(e)
+            }
+        }
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
@@ -65,7 +85,8 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             startDate,
             endDate,
             messageId,
-            feedback
+            feedback,
+            feedbackTypeFilters
         )
         return res.json(apiResponse)
     } catch (error) {

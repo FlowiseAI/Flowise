@@ -101,6 +101,43 @@ class State_SeqAgents implements INode {
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'stateMemoryUI'
+        const stateMemory = nodeData.inputs?.stateMemory as string
+
+        if (stateMemory && stateMemory !== 'stateMemoryUI' && stateMemory !== 'stateMemoryCode') {
+            try {
+                const parsedSchema = typeof stateMemory === 'string' ? JSON.parse(stateMemory) : stateMemory
+                const obj: ICommonObject = {}
+                for (const sch of parsedSchema) {
+                    const key = sch.Key
+                    if (!key) throw new Error(`Key is required`)
+                    const type = sch.Operation
+                    const defaultValue = sch['Default Value']
+
+                    if (type === 'Append') {
+                        obj[key] = {
+                            value: (x: any, y: any) => (Array.isArray(y) ? x.concat(y) : x.concat([y])),
+                            default: () => (defaultValue ? JSON.parse(defaultValue) : [])
+                        }
+                    } else {
+                        obj[key] = {
+                            value: (x: any, y: any) => y ?? x,
+                            default: () => defaultValue
+                        }
+                    }
+                }
+                const returnOutput: ISeqAgentNode = {
+                    id: nodeData.id,
+                    node: obj,
+                    name: 'state',
+                    label: 'state',
+                    type: 'state',
+                    output: START
+                }
+                return returnOutput
+            } catch (e) {
+                throw new Error(e)
+            }
+        }
 
         if (!stateMemoryUI && !stateMemoryCode) {
             const returnOutput: ISeqAgentNode = {

@@ -296,6 +296,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                             <Typography variant='h4'>Add Nodes</Typography>
                                         </Stack>
                                         <OutlinedInput
+                                            // eslint-disable-next-line
+                                            autoFocus
                                             sx={{ width: '100%', pr: 2, pl: 2, my: 2 }}
                                             id='input-search-node'
                                             value={searchValue}

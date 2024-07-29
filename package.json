@@ -56,7 +56,10 @@
         "onlyBuiltDependencies": [
             "faiss-node",
             "sqlite3"
-        ]
+        ],
+        "overrides": {
+            "@langchain/core": "0.2.18"
+        }
     },
     "engines": {
         "node": ">=18.15.0 <19.0.0 || ^20",

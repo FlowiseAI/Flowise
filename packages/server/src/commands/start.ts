@@ -24,6 +24,7 @@ export default class Start extends Command {
         IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         BLOB_STORAGE_PATH: Flags.string(),
+        APIKEY_STORAGE_TYPE: Flags.string(),
         APIKEY_PATH: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
         FLOWISE_SECRETKEY_OVERWRITE: Flags.string(),
@@ -52,7 +53,8 @@ export default class Start extends Command {
         S3_STORAGE_BUCKET_NAME: Flags.string(),
         S3_STORAGE_ACCESS_KEY_ID: Flags.string(),
         S3_STORAGE_SECRET_ACCESS_KEY: Flags.string(),
-        S3_STORAGE_REGION: Flags.string()
+        S3_STORAGE_REGION: Flags.string(),
+        S3_ENDPOINT_URL: Flags.string()
     }
 
     async stopProcess() {
@@ -99,6 +101,7 @@ export default class Start extends Command {
         // Authorization
         if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
         if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
+        if (flags.APIKEY_STORAGE_TYPE) process.env.APIKEY_STORAGE_TYPE = flags.APIKEY_STORAGE_TYPE
         if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
 
         // API Configuration
@@ -146,6 +149,7 @@ export default class Start extends Command {
         if (flags.S3_STORAGE_ACCESS_KEY_ID) process.env.S3_STORAGE_ACCESS_KEY_ID = flags.S3_STORAGE_ACCESS_KEY_ID
         if (flags.S3_STORAGE_SECRET_ACCESS_KEY) process.env.S3_STORAGE_SECRET_ACCESS_KEY = flags.S3_STORAGE_SECRET_ACCESS_KEY
         if (flags.S3_STORAGE_REGION) process.env.S3_STORAGE_REGION = flags.S3_STORAGE_REGION
+        if (flags.S3_ENDPOINT_URL) process.env.S3_ENDPOINT_URL = flags.S3_ENDPOINT_URL
 
         await (async () => {
             try {
