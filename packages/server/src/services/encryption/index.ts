@@ -2,10 +2,12 @@ import { randomBytes } from 'crypto'
 import { getEncryptionKeyPath } from 'flowise-components'
 import fs from 'fs'
 
+import { AES } from 'crypto-js'
 import { StatusCodes } from 'http-status-codes'
 import { Encryption } from '../../database/entities/Encryption'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { ICredentialDataDecrypted } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 /**
@@ -110,7 +112,19 @@ const get = async (credential?: Credential): Promise<Encryption> => {
     }
 }
 
+/**
+ * Encrypt credential data
+ * @param {ICredentialDataDecrypted} plainDataObj
+ * @param {Encryption} encryption
+ * @returns {Promise<string>}
+ */
+export const encrypt = async (plainDataObj: ICredentialDataDecrypted, encryption?: Encryption): Promise<string> => {
+    if (!encryption) encryption = await get()
+    return AES.encrypt(JSON.stringify(plainDataObj), encryption.encryptionKey).toString()
+}
+
 export default {
+    encrypt,
     generate,
     get
 }

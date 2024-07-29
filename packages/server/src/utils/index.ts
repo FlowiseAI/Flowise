@@ -1181,18 +1181,6 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
 }
 
 /**
- * Encrypt credential data
- * @param {ICredentialDataDecrypted} plainDataObj
- * @returns {Promise<string>}
- */
-export const encryptCredentialData = async (plainDataObj: ICredentialDataDecrypted): Promise<string> => {
-    console.log('=========> Reach packages\\server\\src\\utilsencryptionKey.ts encryptCredentialData')
-
-    const encyption = await encryption.get()
-    return AES.encrypt(JSON.stringify(plainDataObj), encyption.encryptionKey).toString()
-}
-
-/**
  * Decrypt credential data
  * @param {string} encryptedData
  * @param {string} componentCredentialName
@@ -1233,7 +1221,7 @@ export const transformToCredentialEntity = async (body: ICredentialReqBody): Pro
     }
 
     if (body.plainDataObj) {
-        const encryptedData = await encryptCredentialData(body.plainDataObj)
+        const encryptedData = await encryption.encrypt(body.plainDataObj)
         credentialBody.encryptedData = encryptedData
     }
 
