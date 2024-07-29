@@ -68,7 +68,7 @@ const generate = async (): Promise<Encryption> => {
         await appServer.AppDataSource.getRepository(Encryption).save(newEncryption)
         return newEncryption
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: utils.generateEncryption - ${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.generate - ${getErrorMessage(error)}`)
     }
 }
 
@@ -108,7 +108,7 @@ const get = async (credential?: Credential): Promise<Encryption> => {
         //step 3 - not able to find encryption key
         throw new Error('No encryption key available')
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: utils.getEncryption - ${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.get - ${getErrorMessage(error)}`)
     }
 }
 
@@ -119,8 +119,12 @@ const get = async (credential?: Credential): Promise<Encryption> => {
  * @returns {Promise<string>}
  */
 export const encrypt = async (plainDataObj: ICredentialDataDecrypted, encryption?: Encryption): Promise<string> => {
-    if (!encryption) encryption = await get()
-    return AES.encrypt(JSON.stringify(plainDataObj), encryption.encryptionKey).toString()
+    try {
+        if (!encryption) encryption = await get()
+        return AES.encrypt(JSON.stringify(plainDataObj), encryption.encryptionKey).toString()
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.encrypt - ${getErrorMessage(error)}`)
+    }
 }
 
 export default {
