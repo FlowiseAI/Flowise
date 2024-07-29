@@ -117,6 +117,7 @@ export interface INodeProperties {
     badge?: string
     deprecateMessage?: string
     hideOutput?: boolean
+    author?: string
 }
 
 export interface INode extends INodeProperties {

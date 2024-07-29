@@ -54,7 +54,8 @@ export default class Start extends Command {
         S3_STORAGE_ACCESS_KEY_ID: Flags.string(),
         S3_STORAGE_SECRET_ACCESS_KEY: Flags.string(),
         S3_STORAGE_REGION: Flags.string(),
-        S3_ENDPOINT_URL: Flags.string()
+        S3_ENDPOINT_URL: Flags.string(),
+        SHOW_COMMUNITY_NODES: Flags.string()
     }
 
     async stopProcess() {
@@ -97,6 +98,7 @@ export default class Start extends Command {
         if (flags.DEBUG) process.env.DEBUG = flags.DEBUG
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
         if (flags.DISABLE_CHATFLOW_REUSE) process.env.DISABLE_CHATFLOW_REUSE = flags.DISABLE_CHATFLOW_REUSE
+        if (flags.SHOW_COMMUNITY_NODES) process.env.SHOW_COMMUNITY_NODES = flags.SHOW_COMMUNITY_NODES
 
         // Authorization
         if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
