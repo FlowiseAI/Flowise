@@ -9,14 +9,11 @@ overrides:
   '@google/generative-ai': ^0.15.0
   openai: 4.51.0
   '@langchain/core': 0.2.18
+  '@langchain/aws': ^0.0.6
 
 importers:
 
   .:
-    dependencies:
-      '@langchain/aws':
-        specifier: ^0.0.6
-        version: 0.0.6(@aws-sdk/client-sso-oidc@3.620.0(@aws-sdk/client-sts@3.620.0))(@aws-sdk/client-sts@3.620.0)(langchain@0.2.11)(openai@4.51.0)(zod@3.23.8)
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.19.4
@@ -10724,7 +10721,7 @@ packages:
       '@gomomento/sdk-core': ^1.51.1
       '@gomomento/sdk-web': ^1.51.1
       '@langchain/anthropic': '*'
-      '@langchain/aws': '*'
+      '@langchain/aws': ^0.0.6
       '@langchain/cohere': '*'
       '@langchain/community': '*'
       '@langchain/google-genai': '*'
@@ -17115,6 +17112,7 @@ snapshots:
       '@aws-crypto/util': 5.2.0
       '@aws-sdk/types': 3.609.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-crypto/crc32c@3.0.0':
     dependencies:
@@ -17156,6 +17154,7 @@ snapshots:
       '@aws-sdk/util-locate-window': 3.495.0
       '@smithy/util-utf8': 2.2.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-crypto/sha256-js@3.0.0':
     dependencies:
@@ -17176,6 +17175,7 @@ snapshots:
   '@aws-crypto/supports-web-crypto@5.2.0':
     dependencies:
       tslib: 2.6.2
+    optional: true
 
   '@aws-crypto/util@3.0.0':
     dependencies:
@@ -17237,6 +17237,7 @@ snapshots:
       tslib: 2.6.2
     transitivePeerDependencies:
       - aws-crt
+    optional: true
 
   '@aws-sdk/client-bedrock-runtime@3.422.0':
     dependencies:
@@ -17333,6 +17334,7 @@ snapshots:
       tslib: 2.6.2
     transitivePeerDependencies:
       - aws-crt
+    optional: true
 
   '@aws-sdk/client-dynamodb@3.529.1':
     dependencies:
@@ -17428,6 +17430,7 @@ snapshots:
       uuid: 9.0.1
     transitivePeerDependencies:
       - aws-crt
+    optional: true
 
   '@aws-sdk/client-s3@3.529.1':
     dependencies:
@@ -17580,6 +17583,7 @@ snapshots:
       tslib: 2.6.2
     transitivePeerDependencies:
       - aws-crt
+    optional: true
 
   '@aws-sdk/client-sso@3.421.0':
     dependencies:
@@ -17705,6 +17709,7 @@ snapshots:
       tslib: 2.6.2
     transitivePeerDependencies:
       - aws-crt
+    optional: true
 
   '@aws-sdk/client-sts@3.421.0':
     dependencies:
@@ -17837,6 +17842,7 @@ snapshots:
       tslib: 2.6.2
     transitivePeerDependencies:
       - aws-crt
+    optional: true
 
   '@aws-sdk/core@3.529.1':
     dependencies:
@@ -17857,6 +17863,7 @@ snapshots:
       '@smithy/types': 3.3.0
       fast-xml-parser: 4.2.5
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/credential-provider-env@3.418.0':
     dependencies:
@@ -17878,6 +17885,7 @@ snapshots:
       '@smithy/property-provider': 3.1.3
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/credential-provider-http@3.525.0':
     dependencies:
@@ -17902,6 +17910,7 @@ snapshots:
       '@smithy/types': 3.3.0
       '@smithy/util-stream': 3.1.3
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/credential-provider-ini@3.421.0':
     dependencies:
@@ -17952,6 +17961,7 @@ snapshots:
     transitivePeerDependencies:
       - '@aws-sdk/client-sso-oidc'
       - aws-crt
+    optional: true
 
   '@aws-sdk/credential-provider-node@3.421.0':
     dependencies:
@@ -18004,6 +18014,7 @@ snapshots:
       - '@aws-sdk/client-sso-oidc'
       - '@aws-sdk/client-sts'
       - aws-crt
+    optional: true
 
   '@aws-sdk/credential-provider-process@3.418.0':
     dependencies:
@@ -18028,6 +18039,7 @@ snapshots:
       '@smithy/shared-ini-file-loader': 3.1.4
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/credential-provider-sso@3.421.0':
     dependencies:
@@ -18066,6 +18078,7 @@ snapshots:
     transitivePeerDependencies:
       - '@aws-sdk/client-sso-oidc'
       - aws-crt
+    optional: true
 
   '@aws-sdk/credential-provider-web-identity@3.418.0':
     dependencies:
@@ -18092,6 +18105,7 @@ snapshots:
       '@smithy/property-provider': 3.1.3
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/endpoint-cache@3.495.0':
     dependencies:
@@ -18155,6 +18169,7 @@ snapshots:
       '@smithy/protocol-http': 4.1.0
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/middleware-location-constraint@3.523.0':
     dependencies:
@@ -18179,6 +18194,7 @@ snapshots:
       '@aws-sdk/types': 3.609.0
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/middleware-recursion-detection@3.418.0':
     dependencies:
@@ -18200,6 +18216,7 @@ snapshots:
       '@smithy/protocol-http': 4.1.0
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/middleware-sdk-s3@3.525.0':
     dependencies:
@@ -18269,6 +18286,7 @@ snapshots:
       '@smithy/protocol-http': 4.1.0
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/region-config-resolver@3.418.0':
     dependencies:
@@ -18295,6 +18313,7 @@ snapshots:
       '@smithy/util-config-provider': 3.0.0
       '@smithy/util-middleware': 3.0.3
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/signature-v4-multi-region@3.525.0':
     dependencies:
@@ -18365,6 +18384,7 @@ snapshots:
       '@smithy/shared-ini-file-loader': 3.1.4
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/types@3.418.0':
     dependencies:
@@ -18403,6 +18423,7 @@ snapshots:
       '@smithy/types': 3.3.0
       '@smithy/util-endpoints': 2.0.5
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/util-locate-window@3.495.0':
     dependencies:
@@ -18428,6 +18449,7 @@ snapshots:
       '@smithy/types': 3.3.0
       bowser: 2.11.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/util-user-agent-node@3.418.0':
     dependencies:
@@ -18449,6 +18471,7 @@ snapshots:
       '@smithy/node-config-provider': 3.1.4
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@aws-sdk/util-utf8-browser@3.259.0':
     dependencies:
@@ -20795,7 +20818,7 @@ snapshots:
       - langchain
       - openai
 
-  '@langchain/aws@0.0.6(@aws-sdk/client-sso-oidc@3.620.0(@aws-sdk/client-sts@3.620.0))(@aws-sdk/client-sts@3.620.0)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)':
+  '@langchain/aws@0.0.6(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)':
     dependencies:
       '@aws-sdk/client-bedrock-agent-runtime': 3.620.0
       '@aws-sdk/client-bedrock-runtime': 3.620.0
@@ -20811,22 +20834,6 @@ snapshots:
       - openai
       - zod
     optional: true
-
-  '@langchain/aws@0.0.6(@aws-sdk/client-sso-oidc@3.620.0(@aws-sdk/client-sts@3.620.0))(@aws-sdk/client-sts@3.620.0)(langchain@0.2.11)(openai@4.51.0)(zod@3.23.8)':
-    dependencies:
-      '@aws-sdk/client-bedrock-agent-runtime': 3.620.0
-      '@aws-sdk/client-bedrock-runtime': 3.620.0
-      '@aws-sdk/client-kendra': 3.620.0
-      '@aws-sdk/credential-provider-node': 3.620.0(@aws-sdk/client-sso-oidc@3.620.0(@aws-sdk/client-sts@3.620.0))(@aws-sdk/client-sts@3.620.0)
-      '@langchain/core': 0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)
-      zod-to-json-schema: 3.23.1(zod@3.23.8)
-    transitivePeerDependencies:
-      - '@aws-sdk/client-sso-oidc'
-      - '@aws-sdk/client-sts'
-      - aws-crt
-      - langchain
-      - openai
-      - zod
 
   '@langchain/cohere@0.0.7(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
     dependencies:
@@ -20929,24 +20936,6 @@ snapshots:
       decamelize: 1.2.0
       js-tiktoken: 1.0.12
       langsmith: 0.1.39(@langchain/core@0.2.18(langchain@0.2.11(5xaxj6runn4n4kbyjcwxs7ldgu))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.11(5xaxj6runn4n4kbyjcwxs7ldgu))(openai@4.51.0(encoding@0.1.13))
-      ml-distance: 4.0.1
-      mustache: 4.2.0
-      p-queue: 6.6.2
-      p-retry: 4.6.2
-      uuid: 10.0.0
-      zod: 3.23.8
-      zod-to-json-schema: 3.23.1(zod@3.23.8)
-    transitivePeerDependencies:
-      - langchain
-      - openai
-
-  '@langchain/core@0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)':
-    dependencies:
-      ansi-styles: 5.2.0
-      camelcase: 6.3.0
-      decamelize: 1.2.0
-      js-tiktoken: 1.0.12
-      langsmith: 0.1.39(@langchain/core@0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0))(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)
       ml-distance: 4.0.1
       mustache: 4.2.0
       p-queue: 6.6.2
@@ -21128,18 +21117,6 @@ snapshots:
       - encoding
       - langchain
 
-  '@langchain/openai@0.1.3(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))':
-    dependencies:
-      '@langchain/core': 0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)
-      js-tiktoken: 1.0.12
-      openai: 4.51.0(encoding@0.1.13)
-      zod: 3.23.8
-      zod-to-json-schema: 3.23.1(zod@3.23.8)
-    transitivePeerDependencies:
-      - encoding
-      - langchain
-    optional: true
-
   '@langchain/pinecone@0.0.3(langchain@0.2.11(5xaxj6runn4n4kbyjcwxs7ldgu))(openai@4.51.0(encoding@0.1.13))':
     dependencies:
       '@langchain/core': 0.2.18(langchain@0.2.11(5xaxj6runn4n4kbyjcwxs7ldgu))(openai@4.51.0(encoding@0.1.13))
@@ -21167,15 +21144,6 @@ snapshots:
     transitivePeerDependencies:
       - langchain
       - openai
-
-  '@langchain/textsplitters@0.0.1(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)':
-    dependencies:
-      '@langchain/core': 0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)
-      js-tiktoken: 1.0.12
-    transitivePeerDependencies:
-      - langchain
-      - openai
-    optional: true
 
   '@langchain/textsplitters@0.0.1(langchain@0.2.3(s4um6b5xxxz2w2gdjs5ybvlwba))(openai@4.51.0(encoding@0.1.13))':
     dependencies:
@@ -22125,6 +22093,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/chunked-blob-reader-native@2.1.2':
     dependencies:
@@ -22150,6 +22119,7 @@ snapshots:
       '@smithy/util-config-provider': 3.0.0
       '@smithy/util-middleware': 3.0.3
       tslib: 2.6.2
+    optional: true
 
   '@smithy/core@1.3.7':
     dependencies:
@@ -22172,6 +22142,7 @@ snapshots:
       '@smithy/types': 3.3.0
       '@smithy/util-middleware': 3.0.3
       tslib: 2.6.2
+    optional: true
 
   '@smithy/credential-provider-imds@2.2.6':
     dependencies:
@@ -22188,6 +22159,7 @@ snapshots:
       '@smithy/types': 3.3.0
       '@smithy/url-parser': 3.0.3
       tslib: 2.6.2
+    optional: true
 
   '@smithy/eventstream-codec@2.1.4':
     dependencies:
@@ -22202,6 +22174,7 @@ snapshots:
       '@smithy/types': 3.3.0
       '@smithy/util-hex-encoding': 3.0.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/eventstream-serde-browser@2.1.4':
     dependencies:
@@ -22214,6 +22187,7 @@ snapshots:
       '@smithy/eventstream-serde-universal': 3.0.4
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/eventstream-serde-config-resolver@2.1.4':
     dependencies:
@@ -22224,6 +22198,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/eventstream-serde-node@2.1.4':
     dependencies:
@@ -22236,6 +22211,7 @@ snapshots:
       '@smithy/eventstream-serde-universal': 3.0.4
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/eventstream-serde-universal@2.1.4':
     dependencies:
@@ -22248,6 +22224,7 @@ snapshots:
       '@smithy/eventstream-codec': 3.1.2
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/fetch-http-handler@2.4.4':
     dependencies:
@@ -22264,6 +22241,7 @@ snapshots:
       '@smithy/types': 3.3.0
       '@smithy/util-base64': 3.0.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/hash-blob-browser@2.1.4':
     dependencies:
@@ -22285,6 +22263,7 @@ snapshots:
       '@smithy/util-buffer-from': 3.0.0
       '@smithy/util-utf8': 3.0.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/hash-stream-node@2.1.4':
     dependencies:
@@ -22301,6 +22280,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/is-array-buffer@2.1.1':
     dependencies:
@@ -22309,6 +22289,7 @@ snapshots:
   '@smithy/is-array-buffer@3.0.0':
     dependencies:
       tslib: 2.6.2
+    optional: true
 
   '@smithy/md5-js@2.1.4':
     dependencies:
@@ -22327,6 +22308,7 @@ snapshots:
       '@smithy/protocol-http': 4.1.0
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/middleware-endpoint@2.4.6':
     dependencies:
@@ -22347,6 +22329,7 @@ snapshots:
       '@smithy/url-parser': 3.0.3
       '@smithy/util-middleware': 3.0.3
       tslib: 2.6.2
+    optional: true
 
   '@smithy/middleware-retry@2.1.6':
     dependencies:
@@ -22371,6 +22354,7 @@ snapshots:
       '@smithy/util-retry': 3.0.3
       tslib: 2.6.2
       uuid: 9.0.1
+    optional: true
 
   '@smithy/middleware-serde@2.2.1':
     dependencies:
@@ -22381,6 +22365,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/middleware-stack@2.1.4':
     dependencies:
@@ -22391,6 +22376,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/node-config-provider@2.2.5':
     dependencies:
@@ -22405,6 +22391,7 @@ snapshots:
       '@smithy/shared-ini-file-loader': 3.1.4
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/node-http-handler@2.4.2':
     dependencies:
@@ -22421,6 +22408,7 @@ snapshots:
       '@smithy/querystring-builder': 3.0.3
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/property-provider@2.1.4':
     dependencies:
@@ -22431,6 +22419,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/protocol-http@3.2.2':
     dependencies:
@@ -22441,6 +22430,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/querystring-builder@2.1.4':
     dependencies:
@@ -22453,6 +22443,7 @@ snapshots:
       '@smithy/types': 3.3.0
       '@smithy/util-uri-escape': 3.0.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/querystring-parser@2.1.4':
     dependencies:
@@ -22463,6 +22454,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/service-error-classification@2.1.4':
     dependencies:
@@ -22471,6 +22463,7 @@ snapshots:
   '@smithy/service-error-classification@3.0.3':
     dependencies:
       '@smithy/types': 3.3.0
+    optional: true
 
   '@smithy/shared-ini-file-loader@2.3.5':
     dependencies:
@@ -22481,6 +22474,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/signature-v4@2.1.4':
     dependencies:
@@ -22503,6 +22497,7 @@ snapshots:
       '@smithy/util-uri-escape': 3.0.0
       '@smithy/util-utf8': 3.0.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/smithy-client@2.4.4':
     dependencies:
@@ -22521,6 +22516,7 @@ snapshots:
       '@smithy/types': 3.3.0
       '@smithy/util-stream': 3.1.3
       tslib: 2.6.2
+    optional: true
 
   '@smithy/types@2.11.0':
     dependencies:
@@ -22541,6 +22537,7 @@ snapshots:
       '@smithy/querystring-parser': 3.0.3
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-base64@2.2.0':
     dependencies:
@@ -22553,6 +22550,7 @@ snapshots:
       '@smithy/util-buffer-from': 3.0.0
       '@smithy/util-utf8': 3.0.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-body-length-browser@2.1.1':
     dependencies:
@@ -22561,6 +22559,7 @@ snapshots:
   '@smithy/util-body-length-browser@3.0.0':
     dependencies:
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-body-length-node@2.2.1':
     dependencies:
@@ -22569,6 +22568,7 @@ snapshots:
   '@smithy/util-body-length-node@3.0.0':
     dependencies:
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-buffer-from@2.1.1':
     dependencies:
@@ -22579,6 +22579,7 @@ snapshots:
     dependencies:
       '@smithy/is-array-buffer': 3.0.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-config-provider@2.2.1':
     dependencies:
@@ -22587,6 +22588,7 @@ snapshots:
   '@smithy/util-config-provider@3.0.0':
     dependencies:
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-defaults-mode-browser@2.1.6':
     dependencies:
@@ -22603,6 +22605,7 @@ snapshots:
       '@smithy/types': 3.3.0
       bowser: 2.11.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-defaults-mode-node@2.2.6':
     dependencies:
@@ -22623,6 +22626,7 @@ snapshots:
       '@smithy/smithy-client': 3.1.11
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-endpoints@1.1.5':
     dependencies:
@@ -22635,6 +22639,7 @@ snapshots:
       '@smithy/node-config-provider': 3.1.4
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-hex-encoding@2.1.1':
     dependencies:
@@ -22643,6 +22648,7 @@ snapshots:
   '@smithy/util-hex-encoding@3.0.0':
     dependencies:
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-middleware@2.1.4':
     dependencies:
@@ -22653,6 +22659,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-retry@2.1.4':
     dependencies:
@@ -22665,6 +22672,7 @@ snapshots:
       '@smithy/service-error-classification': 3.0.3
       '@smithy/types': 3.3.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-stream@2.1.4':
     dependencies:
@@ -22687,6 +22695,7 @@ snapshots:
       '@smithy/util-hex-encoding': 3.0.0
       '@smithy/util-utf8': 3.0.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-uri-escape@2.1.1':
     dependencies:
@@ -22695,6 +22704,7 @@ snapshots:
   '@smithy/util-uri-escape@3.0.0':
     dependencies:
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-utf8@2.2.0':
     dependencies:
@@ -22705,6 +22715,7 @@ snapshots:
     dependencies:
       '@smithy/util-buffer-from': 3.0.0
       tslib: 2.6.2
+    optional: true
 
   '@smithy/util-waiter@2.1.4':
     dependencies:
@@ -30713,7 +30724,7 @@ snapshots:
       '@gomomento/sdk': 1.68.1(encoding@0.1.13)
       '@gomomento/sdk-core': 1.68.1
       '@langchain/anthropic': 0.2.1(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
-      '@langchain/aws': 0.0.6(@aws-sdk/client-sso-oidc@3.620.0(@aws-sdk/client-sts@3.620.0))(@aws-sdk/client-sts@3.620.0)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)
+      '@langchain/aws': 0.0.6(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)
       '@langchain/cohere': 0.0.7(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
       '@langchain/community': 0.2.17(j7gdy64zttq2usm57thmwllun4)
       '@langchain/google-genai': 0.0.22(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)
@@ -30753,31 +30764,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - openai
-
-  langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0):
-    dependencies:
-      '@langchain/core': 0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)
-      '@langchain/openai': 0.1.3(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))
-      '@langchain/textsplitters': 0.0.1(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)
-      binary-extensions: 2.2.0
-      js-tiktoken: 1.0.12
-      js-yaml: 4.1.0
-      jsonpointer: 5.0.1
-      langchainhub: 0.0.8
-      langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0))(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)
-      ml-distance: 4.0.1
-      openapi-types: 12.1.3
-      p-retry: 4.6.2
-      uuid: 10.0.0
-      yaml: 2.4.1
-      zod: 3.23.8
-      zod-to-json-schema: 3.23.1(zod@3.23.8)
-    optionalDependencies:
-      '@langchain/aws': 0.0.6(@aws-sdk/client-sso-oidc@3.620.0(@aws-sdk/client-sts@3.620.0))(@aws-sdk/client-sts@3.620.0)(langchain@0.2.11)(openai@4.51.0)(zod@3.23.8)
-    transitivePeerDependencies:
-      - encoding
-      - openai
-    optional: true
 
   langchain@0.2.3(s4um6b5xxxz2w2gdjs5ybvlwba):
     dependencies:
@@ -30863,19 +30849,6 @@ snapshots:
       langchain: 0.2.11(5xaxj6runn4n4kbyjcwxs7ldgu)
       openai: 4.51.0(encoding@0.1.13)
 
-  langsmith@0.1.32(@langchain/core@0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0))(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0):
-    dependencies:
-      '@types/uuid': 9.0.8
-      commander: 10.0.1
-      p-queue: 6.6.2
-      p-retry: 4.6.2
-      uuid: 9.0.1
-    optionalDependencies:
-      '@langchain/core': 0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)
-      langchain: 0.2.11(@langchain/aws@0.0.6)(openai@4.51.0)
-      openai: 4.51.0(encoding@0.1.13)
-    optional: true
-
   langsmith@0.1.32(@langchain/core@0.2.18(langchain@0.2.3(s4um6b5xxxz2w2gdjs5ybvlwba))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(s4um6b5xxxz2w2gdjs5ybvlwba))(openai@4.51.0(encoding@0.1.13)):
     dependencies:
       '@types/uuid': 9.0.8
@@ -30898,18 +30871,6 @@ snapshots:
     optionalDependencies:
       '@langchain/core': 0.2.18(langchain@0.2.11(5xaxj6runn4n4kbyjcwxs7ldgu))(openai@4.51.0(encoding@0.1.13))
       langchain: 0.2.11(5xaxj6runn4n4kbyjcwxs7ldgu)
-      openai: 4.51.0(encoding@0.1.13)
-
-  langsmith@0.1.39(@langchain/core@0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0))(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0):
-    dependencies:
-      '@types/uuid': 9.0.8
-      commander: 10.0.1
-      p-queue: 6.6.2
-      p-retry: 4.6.2
-      uuid: 9.0.1
-    optionalDependencies:
-      '@langchain/core': 0.2.18(langchain@0.2.11(@langchain/aws@0.0.6)(openai@4.51.0))(openai@4.51.0)
-      langchain: 0.2.11(@langchain/aws@0.0.6)(openai@4.51.0)
       openai: 4.51.0(encoding@0.1.13)
 
   langsmith@0.1.39(@langchain/core@0.2.18(langchain@0.2.3(s4um6b5xxxz2w2gdjs5ybvlwba))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(s4um6b5xxxz2w2gdjs5ybvlwba))(openai@4.51.0(encoding@0.1.13)):
