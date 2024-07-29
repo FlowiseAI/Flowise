@@ -97,5 +97,8 @@
                 }
             ]
         ]
+    },
+    "dependencies": {
+        "@langchain/aws": "^0.0.6"
     }
 }
