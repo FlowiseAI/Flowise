@@ -1,7 +1,7 @@
 import { getCredentialData, getCredentialParam } from '../../../src'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { Meilisearch } from 'meilisearch'
-import { MeilisearchRetriever } from './Meilisearch'
+import { MeilisearchRetriever } from './core'
 import { flatten } from 'lodash'
 import { Document } from '@langchain/core/documents'
 import { v4 as uuidv4 } from 'uuid'
@@ -22,20 +22,20 @@ class MeilisearchRetriever_node implements INode {
     outputs: INodeOutputsValue[]
 
     constructor() {
-        this.label = 'Meilisearch retriever'
-        this.name = 'MeilisearchRetriever'
+        this.label = 'Meilisearch'
+        this.name = 'meilisearch'
         this.version = 1.0
         this.type = 'Meilisearch'
         this.icon = 'Meilisearch.png'
         this.category = 'Vector Stores'
         this.badge = 'NEW'
-        this.description = 'Meilisearch uses hybrid search to sematically answer the query.'
+        this.description = `Upsert embedded data and perform similarity search upon query using Meilisearch hybrid search functionality`
         this.baseClasses = ['BaseRetriever']
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: [this.type, 'MeilisearchApi']
+            credentialNames: ['meilisearchApi']
         }
         this.inputs = [
             {
@@ -51,13 +51,13 @@ class MeilisearchRetriever_node implements INode {
                 type: 'Embeddings'
             },
             {
-                label: 'host',
+                label: 'Host',
                 name: 'host',
                 type: 'string',
                 description: 'This is the URL for the desired Meilisearch instance'
             },
             {
-                label: 'indexUid',
+                label: 'Index Uid',
                 name: 'indexUid',
                 type: 'string',
                 description: 'UID for the index to answer from'
@@ -87,12 +87,19 @@ class MeilisearchRetriever_node implements INode {
                 baseClasses: this.baseClasses
             }
         ]
+        this.outputs = [
+            {
+                label: 'Meilisearch Retriever',
+                name: 'retriever',
+                baseClasses: this.baseClasses
+            }
+        ]
     }
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<any> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-            const meilisearchAdminApiKey = getCredentialParam('adminApiKey', credentialData, nodeData)
+            const meilisearchAdminApiKey = getCredentialParam('meilisearchAdminApiKey', credentialData, nodeData)
             const docs = nodeData.inputs?.document as Document[]
             const host = nodeData.inputs?.host as string
             const indexUid = nodeData.inputs?.indexUid as string
@@ -150,9 +157,9 @@ class MeilisearchRetriever_node implements INode {
             return
         }
     }
-    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const meilisearchSearchApiKey = getCredentialParam('searchApiKey', credentialData, nodeData)
+        const meilisearchSearchApiKey = getCredentialParam('meilisearchSearchApiKey', credentialData, nodeData)
         const host = nodeData.inputs?.host as string
         const indexUid = nodeData.inputs?.indexUid as string
         const K = nodeData.inputs?.K as string

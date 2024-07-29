@@ -1,5 +1,4 @@
 import { BaseRetriever, type BaseRetrieverInput } from '@langchain/core/retrievers'
-import type { CallbackManagerForRetrieverRun } from '@langchain/core/callbacks/manager'
 import { Document } from '@langchain/core/documents'
 import { Meilisearch } from 'meilisearch'
 import { Embeddings } from '@langchain/core/embeddings'
@@ -48,7 +47,7 @@ export class MeilisearchRetriever extends BaseRetriever {
         this.K = K
     }
 
-    async _getRelevantDocuments(query: string, runManager?: CallbackManagerForRetrieverRun): Promise<Document[]> {
+    async _getRelevantDocuments(query: string): Promise<Document[]> {
         // Pass `runManager?.getChild()` when invoking internal runnables to enable tracing
         // const additionalDocs = await someOtherRunnable.invoke(params, runManager?.getChild())
         const client = new Meilisearch({
@@ -77,7 +76,7 @@ export class MeilisearchRetriever extends BaseRetriever {
         ]
         try {
             documents = hits.map(
-                (hit) =>
+                (hit: any) =>
                     new Document({
                         pageContent: hit.pageContent,
                         metadata: {
