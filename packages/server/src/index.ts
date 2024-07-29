@@ -13,10 +13,10 @@ import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
 import errorHandlerMiddleware from './middlewares/errors'
 import flowiseApiV1Router from './routes'
+import encryption from './services/encryption'
 import { getNodeModulesPackagePath } from './utils'
 import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
 import { getAPIKeys } from './utils/apiKey'
-import { generateEncryptKey } from './utils/encryptionKey'
 import logger, { expressRequestLogger } from './utils/logger'
 import { initializeRateLimiter } from './utils/rateLimit'
 import { Telemetry } from './utils/telemetry'
@@ -61,7 +61,10 @@ export class App {
             await getAPIKeys()
 
             // Initialize encryption key
-            await generateEncryptKey()
+            await encryption.generate()
+
+            // Initializa encryption credential relationship
+            // await insertEncryptionCredential()
 
             // Initialize Rate Limit
             const AllChatFlow: IChatFlow[] = await getAllChatFlow()

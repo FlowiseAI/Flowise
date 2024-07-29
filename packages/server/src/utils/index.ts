@@ -44,7 +44,7 @@ import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileCh
 import { Tool } from '../database/entities/Tool'
 import { Variable } from '../database/entities/Variable'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
-import { getEncryptionKey } from './encryptionKey'
+import encryption from '../services/encryption'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -1188,8 +1188,8 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
 export const encryptCredentialData = async (plainDataObj: ICredentialDataDecrypted): Promise<string> => {
     console.log('=========> Reach packages\\server\\src\\utilsencryptionKey.ts encryptCredentialData')
 
-    const encryptKey = await getEncryptionKey()
-    return AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString()
+    const encyption = await encryption.get()
+    return AES.encrypt(JSON.stringify(plainDataObj), encyption.encryptionKey).toString()
 }
 
 /**
@@ -1205,8 +1205,8 @@ export const decryptCredentialData = async (
     componentCredentials?: IComponentCredentials
 ): Promise<ICredentialDataDecrypted> => {
     console.log('=========> Reach packages\\server\\src\\utilsencryptionKey.ts decryptCredentialData')
-    const encryptKey = await getEncryptionKey()
-    const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    const encyption = await encryption.get()
+    const decryptedData = AES.decrypt(encryptedData, encyption.encryptionKey)
     const decryptedDataStr = decryptedData.toString(enc.Utf8)
     if (!decryptedDataStr) return {}
     try {
