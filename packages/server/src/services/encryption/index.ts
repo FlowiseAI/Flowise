@@ -38,19 +38,16 @@ const generate = async (): Promise<Encryption> => {
         })
 
         // step 4 - insert SECRETKEY into database if not duplicate
-        const prepEncryptionKeys: Partial<Encryption>[] = []
         let nameCounter: number = encryptionKeys.length
-        const pushToPrepEncryptionKeys = (SECRETKEY: string) => {
+        const insertLegacyEncryption = async (SECRETKEY: string) => {
             if (SECRETKEY != '' && !encryptionKeys.includes(SECRETKEY)) {
                 nameCounter += 1
-                prepEncryptionKeys.push({ name: nameCounter.toString(), encryptionKey: SECRETKEY })
+                const newEncryption: Partial<Encryption> = { name: nameCounter.toString(), encryptionKey: SECRETKEY }
+                await create(newEncryption)
             }
         }
-        pushToPrepEncryptionKeys(SECRETKEY_FROM_PATH)
-        pushToPrepEncryptionKeys(SECRETKEY_OVERWRITE)
-        if (prepEncryptionKeys.length != 0) {
-            await appServer.AppDataSource.getRepository(Encryption).insert(prepEncryptionKeys)
-        }
+        await insertLegacyEncryption(SECRETKEY_FROM_PATH)
+        await insertLegacyEncryption(SECRETKEY_OVERWRITE)
 
         // step 5 - return value based on latest updated date
         try {
@@ -61,19 +58,41 @@ const generate = async (): Promise<Encryption> => {
 
         // step 6 - will reach when there are no encryptionKey value created in SECRETKEY_OVERWRITE, SECRETKEY_FROM_PATH and encryption table in database
         nameCounter += 1
-        const newEncryption = await appServer.AppDataSource.getRepository(Encryption).create({
-            name: nameCounter.toString(),
-            encryptionKey: randomBytes(24).toString('base64')
-        })
-        await appServer.AppDataSource.getRepository(Encryption).save(newEncryption)
-        return newEncryption
+        const newEncryption: Partial<Encryption> = { name: nameCounter.toString() }
+        return await create(newEncryption)
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.generate - ${getErrorMessage(error)}`)
     }
 }
 
 /**
- * Returns the encryption
+ * Return new encryption
+ * @param {Partial<Encryption>} credential
+ * @returns {Promise<Encryption>}
+ */
+const create = async (encryption: Partial<Encryption>): Promise<Encryption> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // step 1 - check whether encryption key is undefined, if yes generate new key
+        if (!encryption.encryptionKey) encryption.encryptionKey = randomBytes(24).toString('base64')
+
+        // step 2 - check whether encryption name is undefined, if yes throw error
+        if (!encryption.name) throw new Error('Please provide a name for this encryption.')
+
+        // step 3 - save into database's encryption table
+        const newEncryption = await appServer.AppDataSource.getRepository(Encryption).create(encryption)
+        await appServer.AppDataSource.getRepository(Encryption).save(newEncryption)
+
+        // step 4 - return new encryption
+        return newEncryption
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.create - ${getErrorMessage(error)}`)
+    }
+}
+
+/**
+ * Return correct encryption based on database's encryption_credential table
  * @param {Credential} credential
  * @returns {Promise<Encryption>}
  */
@@ -128,6 +147,7 @@ export const encrypt = async (plainDataObj: ICredentialDataDecrypted, encryption
 }
 
 export default {
+    create,
     encrypt,
     generate,
     get
