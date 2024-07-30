@@ -13,7 +13,8 @@ import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, IVisionChat
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
 
 export const checkCondition = (input: string | number | undefined, condition: string, value: string | number = ''): boolean => {
-    if (!input) return false
+    if (!input && condition === 'Is Empty') return true
+    else if (!input) return false
 
     // Function to check if a string is a valid number
     const isNumericString = (str: string): boolean => /^-?\d*\.?\d+$/.test(str)
