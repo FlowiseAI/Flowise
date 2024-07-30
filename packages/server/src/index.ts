@@ -60,11 +60,8 @@ export class App {
             // Initialize API keys
             await getAPIKeys()
 
-            // Initialize encryption key
-            await encryption.generate()
-
-            // Initializa encryption credential relationship
-            // await insertEncryptionCredential()
+            // Initialize encryption and encryption_credential
+            await encryption.init()
 
             // Initialize Rate Limit
             const AllChatFlow: IChatFlow[] = await getAllChatFlow()

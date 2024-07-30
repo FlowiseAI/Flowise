@@ -1,14 +1,60 @@
 import { randomBytes } from 'crypto'
+import { AES, enc } from 'crypto-js'
 import { getEncryptionKeyPath } from 'flowise-components'
 import fs from 'fs'
-
-import { AES } from 'crypto-js'
 import { StatusCodes } from 'http-status-codes'
+import { Credential } from '../../database/entities/Credential'
 import { Encryption } from '../../database/entities/Encryption'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { ICredentialDataDecrypted } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import encryptionCredential from '../encryptionCredential'
+
+const init = async () => {
+    try {
+        // Step 1 - Create encryption in database's encryption table
+        await generate()
+
+        // Step 2 - Resync encryption and encryption in database's encryption_credential table
+        await resync()
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.init - ${getErrorMessage(error)}`)
+    }
+}
+
+const resync = async (): Promise<void> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // step 1 - get all encryption and credential
+        const allEncryption: Encryption[] = await appServer.AppDataSource.getRepository(Encryption).find()
+        const allCredential: Credential[] = await appServer.AppDataSource.getRepository(Credential).find()
+
+        // step 2 - loop credential then loop each encryption to find the correct 1 to perform insert/update into encryption_credential table
+        await allCredential.map(async (credential) => {
+            await allEncryption.map(async (encryption) => {
+                // step 2a - try decrypt encryptedData with encryptionKey
+                const decryptResult = await decrypt(credential.encryptedData, encryption.encryptionKey)
+                if (decryptResult) {
+                    console.info(`credential ${credential.encryptedData} and encryption ${encryption.encryptionKey} are a match.`)
+
+                    // step 2b - check whether to inesrt or update into DB
+                    const dbResponse = await encryptionCredential.findByCredentialId(credential.id)
+                    if (dbResponse.length == 0) {
+                        // insert
+                        return await encryptionCredential.create(encryption.id, credential.id)
+                    } else if (dbResponse.length == 1) {
+                        // update
+                        return await encryptionCredential.updateEncryptionId(encryption.id, credential.id)
+                    }
+                }
+            })
+        })
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.resync - ${getErrorMessage(error)}`)
+    }
+}
 
 /**
  * Generate an encryption key
@@ -124,7 +170,7 @@ const get = async (credential?: Credential): Promise<Encryption> => {
             return dbResponse[0]
         }
 
-        //step 3 - not able to find encryption key
+        // step 3 - not able to find encryption key
         throw new Error('No encryption key available')
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.get - ${getErrorMessage(error)}`)
@@ -137,7 +183,7 @@ const get = async (credential?: Credential): Promise<Encryption> => {
  * @param {Encryption} encryption
  * @returns {Promise<string>}
  */
-export const encrypt = async (plainDataObj: ICredentialDataDecrypted, encryption?: Encryption): Promise<string> => {
+const encrypt = async (plainDataObj: ICredentialDataDecrypted, encryption?: Encryption): Promise<string> => {
     try {
         if (!encryption) encryption = await get()
         return AES.encrypt(JSON.stringify(plainDataObj), encryption.encryptionKey).toString()
@@ -146,9 +192,36 @@ export const encrypt = async (plainDataObj: ICredentialDataDecrypted, encryption
     }
 }
 
+/**
+ * Decrypt encrypted data.
+ *
+ * @param encryptedData - encryptedData from Credential entity
+ * @param encryptionKey - encryptionKey from Encryption entity
+ * @returns string | void
+ *
+ * @remarks `void` means `encryptedData` is  not decryptable
+ */
+const decrypt = async (encryptedData: string, encryptionKey?: string): Promise<string | void> => {
+    try {
+        // step 1 - find correct encryption if not provided
+        if (!encryptionKey) encryptionKey = (await get()).encryptionKey
+
+        // step 2 - decrypt encryptedData with encryption available
+        return AES.decrypt(encryptedData, encryptionKey).toString(enc.Utf8)
+    } catch (error) {
+        // step 3 - return void when failed decryption
+        console.error(`Error: encryptionService.decrypt - encryptedData: ${encryptedData} not able to decrypt`)
+        console.error(`Error: encryptionService.decrypt - ${getErrorMessage(error)}`)
+        return
+    }
+}
+
 export default {
     create,
+    decrypt,
     encrypt,
-    generate,
-    get
+    get,
+    init,
+    // reason to export resync is because user can resync when they found encryption and credential does not match
+    resync
 }
