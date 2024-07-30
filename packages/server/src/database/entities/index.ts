@@ -11,6 +11,7 @@ import { Lead } from './Lead'
 import { Tool } from './Tool'
 import { UpsertHistory } from './UpsertHistory'
 import { Variable } from './Variable'
+import { ApiKey } from './ApiKey'
 
 export const entities = {
     ChatFlow,
@@ -25,5 +26,6 @@ export const entities = {
     DocumentStore,
     DocumentStoreFileChunk,
     Lead,
-    UpsertHistory
+    UpsertHistory,
+    ApiKey
 }

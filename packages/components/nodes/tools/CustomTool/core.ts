@@ -42,6 +42,7 @@ export class DynamicStructuredTool<
 
     func: DynamicStructuredToolInput['func']
 
+    // @ts-ignore
     schema: T
     private variables: any[]
     private flowObj: any

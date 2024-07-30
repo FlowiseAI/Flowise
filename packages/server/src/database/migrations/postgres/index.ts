@@ -22,6 +22,7 @@ import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
 import { AddEncryption1721308320215 } from './1721309779046-AddEncryption'
 import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
+import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 
 export const postgresMigrations = [
@@ -49,5 +50,6 @@ export const postgresMigrations = [
     AddAgentReasoningToChatMessage1714679514451,
     AddTypeToChatFlow1766759476232,
     AddEncryption1721308320215,
+    AddApiKey1720230151480,
     AddActionToChatMessage1721078251523
 ]

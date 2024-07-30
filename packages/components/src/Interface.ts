@@ -117,6 +117,7 @@ export interface INodeProperties {
     badge?: string
     deprecateMessage?: string
     hideOutput?: boolean
+    author?: string
 }
 
 export interface INode extends INodeProperties {
@@ -153,6 +154,8 @@ export interface INodeCredential {
 export interface IMessage {
     message: string
     type: MessageType
+    role?: MessageType
+    content?: string
 }
 
 export interface IUsedTool {
