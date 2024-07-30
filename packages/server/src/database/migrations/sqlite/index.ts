@@ -21,6 +21,8 @@ import { AddLeadToChatMessage1711537986113 } from './1711537986113-AddLeadToChat
 import { AddVectorStoreConfigToDocStore1715861032479 } from './1715861032479-AddVectorStoreConfigToDocStore'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
 import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
+import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
+import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -45,5 +47,7 @@ export const sqliteMigrations = [
     AddLeadToChatMessage1711537986113,
     AddAgentReasoningToChatMessage1714679514451,
     AddTypeToChatFlow1766759476232,
-    AddVectorStoreConfigToDocStore1715861032479
+    AddVectorStoreConfigToDocStore1715861032479,
+    AddApiKey1720230151480,
+    AddActionToChatMessage1721078251523
 ]

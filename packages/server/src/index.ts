@@ -137,7 +137,8 @@ export class App {
                 '/api/v1/feedback',
                 '/api/v1/leads',
                 '/api/v1/get-upload-file',
-                '/api/v1/ip'
+                '/api/v1/ip',
+                '/api/v1/ping'
             ]
             this.app.use((req, res, next) => {
                 if (/\/api\/v1\//i.test(req.url)) {
@@ -197,6 +198,7 @@ export async function getAllChatFlow(): Promise<IChatFlow[]> {
 export async function start(): Promise<void> {
     serverApp = new App()
 
+    const host = process.env.HOST
     const port = parseInt(process.env.PORT || '', 10) || 3000
     const server = http.createServer(serverApp.app)
 
@@ -207,8 +209,8 @@ export async function start(): Promise<void> {
     await serverApp.initDatabase()
     await serverApp.config(io)
 
-    server.listen(port, () => {
-        logger.info(`⚡️ [server]: Flowise Server is listening at ${port}`)
+    server.listen(port, host, () => {
+        logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)
     })
 }
 

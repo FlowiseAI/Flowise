@@ -1,6 +1,6 @@
 import { TextSplitter } from 'langchain/text_splitter'
 import { omit } from 'lodash'
-import { CheerioWebBaseLoader, WebBaseLoaderParams } from 'langchain/document_loaders/web/cheerio'
+import { CheerioWebBaseLoader, WebBaseLoaderParams } from '@langchain/community/document_loaders/web/cheerio'
 import { test } from 'linkifyjs'
 import { parse } from 'css-what'
 import { webCrawl, xmlScrape } from '../../../src'
@@ -131,16 +131,22 @@ class Cheerio_DocumentLoaders implements INode {
 
         async function cheerioLoader(url: string): Promise<any> {
             try {
-                let docs = []
+                let docs: IDocument[] = []
+                if (url.endsWith('.pdf')) {
+                    if (process.env.DEBUG === 'true') options.logger.info(`CheerioWebBaseLoader does not support PDF files: ${url}`)
+                    return docs
+                }
                 const loader = new CheerioWebBaseLoader(url, params)
                 if (textSplitter) {
-                    docs = await loader.loadAndSplit(textSplitter)
+                    docs = await loader.load()
+                    docs = await textSplitter.splitDocuments(docs)
                 } else {
                     docs = await loader.load()
                 }
                 return docs
             } catch (err) {
                 if (process.env.DEBUG === 'true') options.logger.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                return []
             }
         }
 

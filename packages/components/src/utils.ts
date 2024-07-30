@@ -48,6 +48,7 @@ export const availableDependencies = [
     'langchain',
     'langfuse',
     'langsmith',
+    'langwatch',
     'linkifyjs',
     'lunary',
     'mammoth',
@@ -207,20 +208,22 @@ export const getNodeModulesPackagePath = (packageName: string): string => {
  */
 export const getInputVariables = (paramValue: string): string[] => {
     if (typeof paramValue !== 'string') return []
-    let returnVal = paramValue
+    const returnVal = paramValue
     const variableStack = []
     const inputVariables = []
     let startIdx = 0
     const endIdx = returnVal.length
-
     while (startIdx < endIdx) {
         const substr = returnVal.substring(startIdx, startIdx + 1)
-
+        // Check for escaped curly brackets
+        if (substr === '\\' && (returnVal[startIdx + 1] === '{' || returnVal[startIdx + 1] === '}')) {
+            startIdx += 2 // Skip the escaped bracket
+            continue
+        }
         // Store the opening double curly bracket
         if (substr === '{') {
             variableStack.push({ substr, startIdx: startIdx + 1 })
         }
-
         // Found the complete variable
         if (substr === '}' && variableStack.length > 0 && variableStack[variableStack.length - 1].substr === '{') {
             const variableStartIdx = variableStack[variableStack.length - 1].startIdx
@@ -584,10 +587,10 @@ export const mapChatMessageToBaseMessage = (chatmessages: any[] = []): BaseMessa
     const chatHistory = []
 
     for (const message of chatmessages) {
-        if (message.role === 'apiMessage') {
-            chatHistory.push(new AIMessage(message.content))
-        } else if (message.role === 'userMessage') {
-            chatHistory.push(new HumanMessage(message.content))
+        if (message.role === 'apiMessage' || message.type === 'apiMessage') {
+            chatHistory.push(new AIMessage(message.content || ''))
+        } else if (message.role === 'userMessage' || message.role === 'userMessage') {
+            chatHistory.push(new HumanMessage(message.content || ''))
         }
     }
     return chatHistory
@@ -728,7 +731,7 @@ export const getVars = async (appDataSource: DataSource, databaseEntities: IData
     const variables = ((await appDataSource.getRepository(databaseEntities['Variable']).find()) as IVariable[]) ?? []
 
     // override variables defined in overrideConfig
-    // nodeData.inputs.variables is an Object, check each property and override the variable
+    // nodeData.inputs.vars is an Object, check each property and override the variable
     if (nodeData?.inputs?.vars) {
         for (const propertyName of Object.getOwnPropertyNames(nodeData.inputs.vars)) {
             const foundVar = variables.find((v) => v.name === propertyName)
@@ -770,4 +773,29 @@ export const prepareSandboxVars = (variables: IVariable[]) => {
         }
     }
     return vars
+}
+
+let version: string
+export const getVersion: () => Promise<{ version: string }> = async () => {
+    if (version != null) return { version }
+
+    const checkPaths = [
+        path.join(__dirname, '..', 'package.json'),
+        path.join(__dirname, '..', '..', 'package.json'),
+        path.join(__dirname, '..', '..', '..', 'package.json'),
+        path.join(__dirname, '..', '..', '..', '..', 'package.json'),
+        path.join(__dirname, '..', '..', '..', '..', '..', 'package.json')
+    ]
+    for (const checkPath of checkPaths) {
+        try {
+            const content = await fs.promises.readFile(checkPath, 'utf8')
+            const parsedContent = JSON.parse(content)
+            version = parsedContent.version
+            return { version }
+        } catch {
+            continue
+        }
+    }
+
+    throw new Error('None of the package.json paths could be parsed')
 }
