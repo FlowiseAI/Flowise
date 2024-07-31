@@ -5,22 +5,15 @@ import PropTypes from 'prop-types'
 import { styled, alpha } from '@mui/material/styles'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
-import Divider from '@mui/material/Divider'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FileDownloadIcon from '@mui/icons-material/Downloading'
-import FileDeleteIcon from '@mui/icons-material/Delete'
 import SettingsIcon from '@mui/icons-material/Settings'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { IconX } from '@tabler/icons-react'
 
-import chatflowsApi from '@/api/chatflows'
-
-import useApi from '@/hooks/useApi'
-import useConfirm from '@/hooks/useConfirm'
 import { uiBaseURL } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
-import SaveChatflowDialog from '@/ui-component/dialog/SaveChatflowDialog'
 import ChatflowConfigurationDialog from '../dialog/ChatflowConfigurationDialog'
 import { generateExportFlowData } from '@/utils/genericHelper'
 
@@ -60,10 +53,8 @@ const StyledMenu = styled((props) => (
     }
 }))
 
-export default function FlowListMenu({ chatflow, isAgentCanvas, setError, updateFlowsApi }) {
-    const { confirm } = useConfirm()
+export default function FlowListMenu({ chatflow, isAgentCanvas }) {
     const dispatch = useDispatch()
-    const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -87,33 +78,14 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         setAnchorEl(null)
         setChatflowConfigurationDialogProps({
             title: `${title} Configuration`,
-            chatflow: chatflow
-        })
-        setChatflowConfigurationDialogOpen(true)
-    }
-
-    const handleDelete = async () => {
-        setAnchorEl(null)
-        const confirmPayload = {
-            title: `Delete`,
-            description: `Delete ${title} ${chatflow.name}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
-
-        if (isConfirmed) {
-            try {
-                await chatflowsApi.deleteChatflow(chatflow.id)
-                await updateFlowsApi.request()
-            } catch (error) {
-                setError(error)
+            chatflow: chatflow,
+            onSave: (updatedChatflow) => {
+                onUpdateChatflow(updatedChatflow)
                 enqueueSnackbar({
-                    message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
+                    message: 'Chatflow Configuration Saved',
                     options: {
                         key: new Date().getTime() + Math.random(),
-                        variant: 'error',
-                        persist: true,
+                        variant: 'success',
                         action: (key) => (
                             <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
                                 <IconX />
@@ -122,13 +94,16 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                     }
                 })
             }
-        }
+        })
+        setChatflowConfigurationDialogOpen(true)
     }
 
     const handleDuplicate = () => {
         setAnchorEl(null)
         try {
-            localStorage.setItem('duplicatedFlowData', chatflow.flowData)
+            const duplicatedFlow = generateExportFlowData(chatflow)
+            delete duplicatedFlow.id
+            localStorage.setItem('duplicatedFlowData', JSON.stringify(duplicatedFlow))
             window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
         } catch (e) {
             console.error(e)
@@ -138,8 +113,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     const handleExport = () => {
         setAnchorEl(null)
         try {
-            const flowData = JSON.parse(chatflow.flowData)
-            let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
+            let dataStr = JSON.stringify(generateExportFlowData(chatflow), null, 2)
             let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
             let exportFileDefaultName = `${chatflow.name} ${title}.json`
@@ -186,11 +160,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                 <MenuItem onClick={handleExport} disableRipple>
                     <FileDownloadIcon />
                     Export
-                </MenuItem>
-                <Divider sx={{ my: 0.5 }} />
-                <MenuItem onClick={handleDelete} disableRipple>
-                    <FileDeleteIcon />
-                    Delete
                 </MenuItem>
             </StyledMenu>
             <ChatflowConfigurationDialog
