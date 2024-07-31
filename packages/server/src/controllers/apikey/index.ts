@@ -41,6 +41,19 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
+// Import Keys from JSON file
+const importKeys = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined' || !req.body.jsonFile) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.importKeys - body not provided!`)
+        }
+        const apiResponse = await apikeyService.importKeys(req.body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 // Delete api key
 const deleteApiKey = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -72,5 +85,6 @@ export default {
     deleteApiKey,
     getAllApiKeys,
     updateApiKey,
-    verifyApiKey
+    verifyApiKey,
+    importKeys
 }

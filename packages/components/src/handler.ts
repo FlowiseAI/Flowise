@@ -58,7 +58,9 @@ export class ConsoleCallbackHandler extends BaseTracer {
     constructor(logger: Logger) {
         super()
         this.logger = logger
-        logger.level = getEnvironmentVariable('LOG_LEVEL') ?? 'info'
+        if (getEnvironmentVariable('DEBUG') === 'true') {
+            logger.level = getEnvironmentVariable('LOG_LEVEL') ?? 'info'
+        }
     }
 
     getParents(run: Run) {

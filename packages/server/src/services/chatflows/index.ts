@@ -1,19 +1,18 @@
-import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { ChatflowType, IChatFlow } from '../../Interface'
-import { ChatFlow } from '../../database/entities/ChatFlow'
-import { getAppVersion, getTelemetryFlowObj, isFlowValidForStream, constructGraphs, getEndingNodes } from '../../utils'
-import logger from '../../utils/logger'
 import { removeFolderFromStorage } from 'flowise-components'
-import { IReactFlowObject } from '../../Interface'
-import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
+import { StatusCodes } from 'http-status-codes'
+import { ChatflowType, IChatFlow, IReactFlowObject } from '../../Interface'
+import { ChatFlow } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
-import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
+import { constructGraphs, getAppVersion, getEndingNodes, getTelemetryFlowObj, isFlowValidForStream } from '../../utils'
+import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
+import logger from '../../utils/logger'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -47,8 +46,8 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
             isStreaming = isFlowValidForStream(nodes, endingNodeData)
         }
 
-        // If it is a Multi Agents, always enable streaming
-        if (endingNodes.filter((node) => node.data.category === 'Multi Agents').length > 0) {
+        // If it is a Multi/Sequential Agents, always enable streaming
+        if (endingNodes.filter((node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents').length > 0) {
             return { isStreaming: true }
         }
 
@@ -198,6 +197,60 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     }
 }
 
+const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // step 1 - check whether file chatflows array is zero
+        if (newChatflows.length == 0) throw new Error('No chatflows in this file.')
+
+        // step 2 - check whether ids are duplicate in database
+        let ids = '('
+        let count: number = 0
+        const lastCount = newChatflows.length - 1
+        newChatflows.forEach((newChatflow) => {
+            ids += `'${newChatflow.id}'`
+            if (lastCount != count) ids += ','
+            if (lastCount == count) ids += ')'
+            count += 1
+        })
+
+        const selectResponse = await appServer.AppDataSource.getRepository(ChatFlow)
+            .createQueryBuilder('cf')
+            .select('cf.id')
+            .where(`cf.id IN ${ids}`)
+            .getMany()
+        const foundIds = selectResponse.map((response) => {
+            return response.id
+        })
+
+        // step 3 - remove ids that are only duplicate
+        const prepChatflows: Partial<ChatFlow>[] = newChatflows.map((newChatflow) => {
+            let id: string = ''
+            if (newChatflow.id) id = newChatflow.id
+            let flowData: string = ''
+            if (newChatflow.flowData) flowData = newChatflow.flowData
+            if (foundIds.includes(id)) {
+                newChatflow.id = undefined
+                newChatflow.name += ' with new id'
+            }
+            newChatflow.type = 'CHATFLOW'
+            newChatflow.flowData = JSON.stringify(JSON.parse(flowData))
+            return newChatflow
+        })
+
+        // step 4 - transactional insert array of entities
+        const insertResponse = await appServer.AppDataSource.getRepository(ChatFlow).insert(prepChatflows)
+
+        return insertResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.saveChatflows - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
@@ -299,6 +352,7 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
+    importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig

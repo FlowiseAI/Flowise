@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { CSVLoader } from 'langchain/document_loaders/fs/csv'
+import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
 import { getFileFromStorage, handleEscapeCharacters } from '../../../src'
 
 class Csv_DocumentLoaders implements INode {
@@ -113,7 +113,8 @@ class Csv_DocumentLoaders implements INode {
                 const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    docs = await loader.load()
+                    docs = await textSplitter.splitDocuments(docs)
                 } else {
                     docs.push(...(await loader.load()))
                 }
@@ -133,7 +134,8 @@ class Csv_DocumentLoaders implements INode {
                 const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    docs = await loader.load()
+                    docs = await textSplitter.splitDocuments(docs)
                 } else {
                     docs.push(...(await loader.load()))
                 }

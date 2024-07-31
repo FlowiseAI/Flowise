@@ -4,6 +4,7 @@ import { RunnableConfig } from '@langchain/core/runnables'
 import { StructuredTool, ToolParams } from '@langchain/core/tools'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
 import { availableDependencies, defaultAllowBuiltInDep, prepareSandboxVars } from '../../../src/utils'
+import { ICommonObject } from '../../../src/Interface'
 
 class ToolInputParsingException extends Error {
     output?: string
@@ -41,6 +42,7 @@ export class DynamicStructuredTool<
 
     func: DynamicStructuredToolInput['func']
 
+    // @ts-ignore
     schema: T
     private variables: any[]
     private flowObj: any
@@ -59,7 +61,7 @@ export class DynamicStructuredTool<
         arg: z.output<T>,
         configArg?: RunnableConfig | Callbacks,
         tags?: string[],
-        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string; state?: ICommonObject }
     ): Promise<string> {
         const config = parseCallbackConfigArg(configArg)
         if (config.runName === undefined) {
@@ -107,7 +109,7 @@ export class DynamicStructuredTool<
     protected async _call(
         arg: z.output<T>,
         _?: CallbackManagerForToolRun,
-        flowConfig?: { sessionId?: string; chatId?: string; input?: string }
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string; state?: ICommonObject }
     ): Promise<string> {
         let sandbox: any = {}
         if (typeof arg === 'object' && Object.keys(arg).length) {

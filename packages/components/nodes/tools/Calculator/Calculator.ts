@@ -1,6 +1,6 @@
 import { INode } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { Calculator } from 'langchain/tools/calculator'
+import { Calculator } from '@langchain/community/tools/calculator'
 
 class Calculator_Tools implements INode {
     label: string

@@ -1,6 +1,6 @@
 import { TextSplitter } from 'langchain/text_splitter'
 import { omit } from 'lodash'
-import { CheerioWebBaseLoader, WebBaseLoaderParams } from 'langchain/document_loaders/web/cheerio'
+import { CheerioWebBaseLoader, WebBaseLoaderParams } from '@langchain/community/document_loaders/web/cheerio'
 import { test } from 'linkifyjs'
 import { parse } from 'css-what'
 import { webCrawl, xmlScrape } from '../../../src'
@@ -138,7 +138,8 @@ class Cheerio_DocumentLoaders implements INode {
                 }
                 const loader = new CheerioWebBaseLoader(url, params)
                 if (textSplitter) {
-                    docs = await loader.loadAndSplit(textSplitter)
+                    docs = await loader.load()
+                    docs = await textSplitter.splitDocuments(docs)
                 } else {
                     docs = await loader.load()
                 }

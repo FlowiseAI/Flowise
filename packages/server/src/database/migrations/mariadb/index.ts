@@ -20,6 +20,9 @@ import { AddLead1710832127079 } from './1710832127079-AddLead'
 import { AddLeadToChatMessage1711538023578 } from './1711538023578-AddLeadToChatMessage'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
 import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
+import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
+import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
+import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
 
 export const mariadbMigrations = [
     Init1693840429259,
@@ -43,5 +46,8 @@ export const mariadbMigrations = [
     AddLead1710832127079,
     AddLeadToChatMessage1711538023578,
     AddAgentReasoningToChatMessage1714679514451,
-    AddTypeToChatFlow1766759476232
+    AddTypeToChatFlow1766759476232,
+    AddApiKey1720230151480,
+    AddActionToChatMessage1721078251523,
+    LongTextColumn1722301395521
 ]
