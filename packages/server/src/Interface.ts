@@ -209,6 +209,8 @@ export interface IDepthQueue {
 export interface IMessage {
     message: string
     type: MessageType
+    role?: MessageType
+    content?: string
 }
 
 export interface IncomingInput {

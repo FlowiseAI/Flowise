@@ -121,7 +121,7 @@ Flowise has 3 different modules in a single mono repository.
 Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
 
 | Variable                     | Description                                                                                     | Type                                             | Default                             |
-| ---------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------ |-------------------------------------| 
+| ---------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
 | PORT                         | The HTTP port Flowise runs on                                                                   | Number                                           | 3000                                |
 | CORS_ORIGINS                 | The allowed origins for all cross-origin HTTP calls                                             | String                                           |                                     |
 | IFRAME_ORIGINS               | The allowed origins for iframe src embedding                                                    | String                                           |                                     |
@@ -133,7 +133,7 @@ Flowise support different environment variables to configure your instance. You 
 | LOG_PATH                     | Location where log files are stored                                                             | String                                           | `your-path/Flowise/logs`            |
 | LOG_LEVEL                    | Different levels of logs                                                                        | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
 | LOG_JSON_SPACES              | Spaces to beautify JSON logs                                                                    |                                                  | 2                                   |
-| APIKEY_STORAGE_TYPE          | To store api keys on a JSON file or database. Default is `json`                                 | Enum String: `json`, `db`                        | `json`                              | 
+| APIKEY_STORAGE_TYPE          | To store api keys on a JSON file or database. Default is `json`                                 | Enum String: `json`, `db`                        | `json`                              |
 | APIKEY_PATH                  | Location where api keys are saved when `APIKEY_STORAGE_TYPE` is `json`                          | String                                           | `your-path/Flowise/packages/server` |
 | TOOL_FUNCTION_BUILTIN_DEP    | NodeJS built-in modules to be used for Tool Function                                            | String                                           |                                     |
 | TOOL_FUNCTION_EXTERNAL_DEP   | External modules to be used for Tool Function                                                   | String                                           |                                     |
@@ -157,6 +157,7 @@ Flowise support different environment variables to configure your instance. You 
 | S3_STORAGE_SECRET_ACCESS_KEY | AWS Secret Key                                                                                  | String                                           |                                     |
 | S3_STORAGE_REGION            | Region for S3 bucket                                                                            | String                                           |                                     |
 | S3_ENDPOINT_URL              | Custom Endpoint for S3                                                                          | String                                           |                                     |
+| SHOW_COMMUNITY_NODES         | Show nodes created by community                                                                 | Boolean                                          |                                     |
 
 You can also specify the env variables when using `npx`. For example:
 
