@@ -1,3 +1,4 @@
+import { omit } from 'lodash'
 import { TextSplitter } from 'langchain/text_splitter'
 import { Document, DocumentInterface } from '@langchain/core/documents'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
@@ -148,6 +149,17 @@ class Spider_DocumentLoaders implements INode {
                 placeholder: '{ "anti_bot": true }',
                 type: 'json',
                 optional: true
+            },
+            {
+                label: 'Omit Metadata Keys',
+                name: 'omitMetadataKeys',
+                type: 'string',
+                rows: 4,
+                description:
+                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field',
+                placeholder: 'key1, key2, key3.nestedKey1',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.credential = {
@@ -167,6 +179,12 @@ class Spider_DocumentLoaders implements INode {
         let params = nodeData.inputs?.params || {}
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const spiderApiKey = getCredentialParam('spiderApiKey', credentialData, nodeData)
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+
+        let omitMetadataKeys: string[] = []
+        if (_omitMetadataKeys) {
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
 
         if (typeof params === 'string') {
             try {
@@ -211,6 +229,20 @@ class Spider_DocumentLoaders implements INode {
         } else {
             docs = await loader.load()
         }
+
+        docs = docs.map((doc: DocumentInterface) => ({
+            ...doc,
+            metadata:
+                _omitMetadataKeys === '*'
+                    ? additionalMetadata
+                    : omit(
+                        {
+                            ...doc.metadata,
+                            ...additionalMetadata
+                        },
+                        omitMetadataKeys
+                    )
+        }))
 
         return docs
     }
