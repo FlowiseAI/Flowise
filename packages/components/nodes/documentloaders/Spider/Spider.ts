@@ -236,12 +236,12 @@ class Spider_DocumentLoaders implements INode {
                 _omitMetadataKeys === '*'
                     ? additionalMetadata
                     : omit(
-                        {
-                            ...doc.metadata,
-                            ...additionalMetadata
-                        },
-                        omitMetadataKeys
-                    )
+                          {
+                              ...doc.metadata,
+                              ...additionalMetadata
+                          },
+                          omitMetadataKeys
+                      )
         }))
 
         return docs
