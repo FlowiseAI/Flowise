@@ -172,7 +172,7 @@ class Spider_DocumentLoaders implements INode {
             try {
                 params = JSON.parse(params)
             } catch (e) {
-                throw new Error('Invalid JSON string provided for params')
+                console.error('Invalid JSON string provided for params')
             }
         }
 
@@ -181,10 +181,10 @@ class Spider_DocumentLoaders implements INode {
                 try {
                     additionalMetadata = JSON.parse(additionalMetadata)
                 } catch (e) {
-                    throw new Error('Invalid JSON string provided for additional metadata')
+                    console.error('Invalid JSON string provided for additional metadata')
                 }
             } else if (typeof additionalMetadata !== 'object') {
-                throw new Error('Additional metadata must be a valid JSON object')
+                console.error('Additional metadata must be a valid JSON object')
             }
         } else {
             additionalMetadata = {}
