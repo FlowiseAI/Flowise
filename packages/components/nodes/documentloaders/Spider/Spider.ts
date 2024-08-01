@@ -10,6 +10,7 @@ interface SpiderLoaderParameters {
     apiKey?: string
     mode?: 'crawl' | 'scrape'
     limit?: number
+    additionalMetadata?: Record<string, unknown>
     params?: Record<string, unknown>
 }
 
@@ -18,11 +19,12 @@ class SpiderLoader extends BaseDocumentLoader {
     private url: string
     private mode: 'crawl' | 'scrape'
     private limit?: number
+    private additionalMetadata?: Record<string, unknown>
     private params?: Record<string, unknown>
 
     constructor(loaderParams: SpiderLoaderParameters) {
         super()
-        const { apiKey, url, mode = 'crawl', limit, params } = loaderParams
+        const { apiKey, url, mode = 'crawl', limit, additionalMetadata, params } = loaderParams
         if (!apiKey) {
             throw new Error('Spider API key not set. You can set it as SPIDER_API_KEY in your .env file, or pass it to Spider.')
         }
@@ -31,6 +33,7 @@ class SpiderLoader extends BaseDocumentLoader {
         this.url = url
         this.mode = mode
         this.limit = Number(limit)
+        this.additionalMetadata = additionalMetadata
         this.params = params
     }
 
@@ -61,7 +64,10 @@ class SpiderLoader extends BaseDocumentLoader {
             (doc) =>
                 new Document({
                     pageContent: doc.content || '',
-                    metadata: { source: doc.url }
+                    metadata: {
+                        ...(this.additionalMetadata || {}),
+                        source: doc.url
+                    }
                 })
         )
     }
@@ -126,6 +132,14 @@ class Spider_DocumentLoaders implements INode {
                 default: 25
             },
             {
+                label: 'Additional Metadata',
+                name: 'additional_metadata',
+                type: 'json',
+                description: 'Additional metadata to be added to the extracted documents',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Additional Parameters',
                 name: 'params',
                 description:
@@ -149,6 +163,7 @@ class Spider_DocumentLoaders implements INode {
         const url = nodeData.inputs?.url as string
         const mode = nodeData.inputs?.mode as 'crawl' | 'scrape'
         const limit = nodeData.inputs?.limit as number
+        let additionalMetadata = nodeData.inputs?.additional_metadata
         let params = nodeData.inputs?.params || {}
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const spiderApiKey = getCredentialParam('spiderApiKey', credentialData, nodeData)
@@ -161,6 +176,20 @@ class Spider_DocumentLoaders implements INode {
             }
         }
 
+        if (additionalMetadata) {
+            if (typeof additionalMetadata === 'string') {
+                try {
+                    additionalMetadata = JSON.parse(additionalMetadata)
+                } catch (e) {
+                    throw new Error('Invalid JSON string provided for additional metadata')
+                }
+            } else if (typeof additionalMetadata !== 'object') {
+                throw new Error('Additional metadata must be a valid JSON object')
+            }
+        } else {
+            additionalMetadata = {}
+        }
+
         // Ensure return_format is set to markdown
         params.return_format = 'markdown'
 
@@ -169,6 +198,7 @@ class Spider_DocumentLoaders implements INode {
             mode: mode as 'crawl' | 'scrape',
             apiKey: spiderApiKey,
             limit: limit as number,
+            additionalMetadata: additionalMetadata as Record<string, unknown>,
             params: params as Record<string, unknown>
         }
 
