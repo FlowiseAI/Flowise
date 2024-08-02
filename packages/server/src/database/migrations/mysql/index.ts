@@ -22,9 +22,9 @@ import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-Add
 import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 import { AddEncryption1721308320215 } from './1721309779046-AddEncryption'
+import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
 import { AddIsEncryptionKeyLostToCredential1722473901281 } from './1722473901281-AddIsEncryptionKeyLostToCredential'
 import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
-import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -50,9 +50,8 @@ export const mysqlMigrations = [
     AddAgentReasoningToChatMessage1714679514451,
     AddTypeToChatFlow1766759476232,
     AddEncryption1721308320215,
-    AddActionToChatMessage1721078251523,
     AddApiKey1720230151480,
-    AddIsEncryptionKeyLostToCredential1722473901281,
     AddActionToChatMessage1721078251523,
+    AddIsEncryptionKeyLostToCredential1722473901281,
     LongTextColumn1722301395521
 ]
