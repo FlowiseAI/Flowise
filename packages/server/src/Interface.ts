@@ -1,5 +1,4 @@
-import { IAction } from 'flowise-components'
-import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import { IAction, ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
@@ -90,6 +89,7 @@ export interface ICredential {
     encryptedData: string
     updatedDate: Date
     createdDate: Date
+    isEncryptionKeyLost: boolean
 }
 
 export interface IEncryption {

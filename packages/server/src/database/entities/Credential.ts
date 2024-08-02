@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 import { ICredential } from '../../Interface'
 
 @Entity()
@@ -23,4 +23,7 @@ export class Credential implements ICredential {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Column()
+    isEncryptionKeyLost: boolean
 }
