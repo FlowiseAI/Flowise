@@ -58,7 +58,8 @@
             "sqlite3"
         ],
         "overrides": {
-            "@langchain/core": "0.2.18"
+            "@langchain/core": "0.2.18",
+            "@langchain/aws": "^0.0.6"
         }
     },
     "engines": {
