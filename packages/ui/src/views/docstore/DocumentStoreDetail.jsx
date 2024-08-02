@@ -42,7 +42,16 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // icons
-import { IconPlus, IconRefresh, IconScissors, IconTrash, IconX, IconVectorBezier2, IconRowInsertTop } from '@tabler/icons-react'
+import {
+    IconPlus,
+    IconRefresh,
+    IconListDetails,
+    IconTrash,
+    IconX,
+    IconVectorBezier2,
+    IconRowInsertTop,
+    IconZoomScan
+} from '@tabler/icons-react'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileEditIcon from '@mui/icons-material/Edit'
@@ -344,29 +353,43 @@ const DocumentStoreDetails = () => {
                                     <Button
                                         variant='outlined'
                                         sx={{ borderRadius: 2, height: '100%' }}
-                                        startIcon={<IconScissors />}
+                                        startIcon={<IconListDetails />}
                                         onClick={() => showStoredChunks('all')}
                                     >
                                         View Chunks
                                     </Button>
                                     <Button
-                                        variant='outlined'
-                                        sx={{ borderRadius: 2, height: '100%' }}
+                                        variant='contained'
+                                        sx={{
+                                            borderRadius: 2,
+                                            height: '100%',
+                                            backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
+                                            '&:hover': {
+                                                backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
+                                            }
+                                        }}
                                         startIcon={<IconRowInsertTop />}
                                         onClick={() => showVectorStore(documentStore.id)}
                                     >
-                                        Vector Store - Upsert
+                                        Upsert Config
                                     </Button>
                                 </>
                             )}
                             {documentStore?.totalChunks > 0 && documentStore?.status === 'VS_SYNC' && (
                                 <Button
-                                    variant='outlined'
-                                    sx={{ borderRadius: 2, height: '100%' }}
-                                    startIcon={<IconRowInsertTop />}
+                                    variant='contained'
+                                    sx={{
+                                        borderRadius: 2,
+                                        height: '100%',
+                                        backgroundImage: `linear-gradient(to right, #3f5efb, #fc466b)`,
+                                        '&:hover': {
+                                            backgroundImage: `linear-gradient(to right, #2b4efb, #fe2752)`
+                                        }
+                                    }}
+                                    startIcon={<IconZoomScan />}
                                     onClick={() => showVectorStoreQuery(documentStore.id)}
                                 >
-                                    Retrieval Playground
+                                    Retrieval Query
                                 </Button>
                             )}
                             <StyledButton

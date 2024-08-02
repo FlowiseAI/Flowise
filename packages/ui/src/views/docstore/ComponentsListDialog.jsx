@@ -7,7 +7,6 @@ import { useTheme } from '@mui/material/styles'
 import { IconSearch, IconX } from '@tabler/icons-react'
 
 // API
-import documentStoreApi from '@/api/documentstore'
 
 // const
 import { baseURL } from '@/store/constant'

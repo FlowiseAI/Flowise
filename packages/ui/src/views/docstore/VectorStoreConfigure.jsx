@@ -1,16 +1,24 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { cloneDeep } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
+import moment from 'moment/moment'
 
 // material-ui
-import { Stack, Grid, Box, Divider, Typography, IconButton } from '@mui/material'
-import Button from '@mui/material/Button'
+import { Button, Stack, Grid, Box, Typography, IconButton, Stepper, Step, StepLabel } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import ComponentsListDialog from '@/views/docstore/ComponentsListDialog'
+import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
+import ErrorBoundary from '@/ErrorBoundary'
+import UpsertResultDialog from '@/views/vectorstore/UpsertResultDialog'
+import UpsertHistorySideDrawer from './UpsertHistorySideDrawer'
+import UpsertHistoryDetailsDialog from './UpsertHistoryDetailsDialog'
 
 // API
 import documentsApi from '@/api/documentstore'
@@ -18,29 +26,29 @@ import nodesApi from '@/api/nodes'
 
 // Hooks
 import useApi from '@/hooks/useApi'
-import { useNavigate } from 'react-router-dom'
-import useNotifier from '@/utils/useNotifier'
+
+// Store
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import { baseURL } from '@/store/constant'
 
 // icons
-import ErrorBoundary from '@/ErrorBoundary'
-import { IconX, IconEdit } from '@tabler/icons-react'
+import { IconX, IconEdit, IconRowInsertTop, IconDeviceFloppy, IconRefresh, IconClock } from '@tabler/icons-react'
 import Embeddings from '@mui/icons-material/DynamicFeed'
 import Storage from '@mui/icons-material/Storage'
 import DynamicFeed from '@mui/icons-material/Filter1'
 
+// utils
 import { initNode } from '@/utils/genericHelper'
-import ComponentsListDialog from '@/views/docstore/ComponentsListDialog'
-import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
-import { baseURL } from '@/store/constant'
+import useNotifier from '@/utils/useNotifier'
 
 // const
+const steps = ['Embeddings', 'Vector Store', 'Record Manager']
 
 const VectorStoreConfigure = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     useNotifier()
+    const customization = useSelector((state) => state.customization)
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -66,12 +74,22 @@ const VectorStoreConfigure = () => {
 
     const [showRecordManagerListDialog, setShowRecordManagerListDialog] = useState(false)
     const [selectedRecordManagerProvider, setSelectedRecordManagerProvider] = useState({})
+    const [isRecordManagerUnavailable, setRecordManagerUnavailable] = useState(false)
+
+    const [showUpsertHistoryDialog, setShowUpsertHistoryDialog] = useState(false)
+    const [upsertResultDialogProps, setUpsertResultDialogProps] = useState({})
+
+    const [showUpsertHistorySideDrawer, setShowUpsertHistorySideDrawer] = useState(false)
+    const [upsertHistoryDrawerDialogProps, setUpsertHistoryDrawerDialogProps] = useState({})
+
+    const [showUpsertHistoryDetailsDialog, setShowUpsertHistoryDetailsDialog] = useState(false)
+    const [upsertDetailsDialogProps, setUpsertDetailsDialogProps] = useState({})
 
     const onEmbeddingsSelected = (component) => {
         const nodeData = cloneDeep(initNode(component, uuidv4()))
         if (!showEmbeddingsListDialog && documentStore.embeddingConfig) {
             nodeData.inputs = documentStore.embeddingConfig.config
-            /* TODO set the credential id */
+            nodeData.credential = documentStore.embeddingConfig.config.credential
         }
         setSelectedEmbeddingsProvider(nodeData)
         setShowEmbeddingsListDialog(false)
@@ -87,10 +105,15 @@ const VectorStoreConfigure = () => {
 
     const onVectorStoreSelected = (component) => {
         const nodeData = cloneDeep(initNode(component, uuidv4()))
+        if (!nodeData.inputAnchors.find((anchor) => anchor.name === 'recordManager')) {
+            setRecordManagerUnavailable(true)
+            setSelectedRecordManagerProvider({})
+        } else {
+            setRecordManagerUnavailable(false)
+        }
         if (!showVectorStoreListDialog && documentStore.vectorStoreConfig) {
             nodeData.inputs = documentStore.vectorStoreConfig.config
-            /* TODO set the credential id */
-            //nodeData.credentialId = documentStore.vectorStoreConfig.credential
+            nodeData.credential = documentStore.vectorStoreConfig.config.credential
         }
         setSelectedVectorStoreProvider(nodeData)
         setShowVectorStoreListDialog(false)
@@ -108,8 +131,7 @@ const VectorStoreConfigure = () => {
         const nodeData = cloneDeep(initNode(component, uuidv4()))
         if (!showRecordManagerListDialog && documentStore.recordManagerConfig) {
             nodeData.inputs = documentStore.recordManagerConfig.config
-            /* TODO set the credential id */
-            //nodeData.credentialId = documentStore.recordManagerConfig.credential
+            nodeData.credential = documentStore.recordManagerConfig.config.credential
         }
         setSelectedRecordManagerProvider(nodeData)
         setShowRecordManagerListDialog(false)
@@ -121,6 +143,27 @@ const VectorStoreConfigure = () => {
         }
         setDialogProps(dialogProp)
         setShowRecordManagerListDialog(true)
+    }
+
+    const showUpsertHistoryDrawer = () => {
+        const dialogProp = {
+            id: storeId
+        }
+        setUpsertHistoryDrawerDialogProps(dialogProp)
+        setShowUpsertHistorySideDrawer(true)
+    }
+
+    const onSelectHistoryDetails = (history) => {
+        const props = {
+            title: moment(history.date).format('DD-MMM-YYYY, hh:mm:ss A'),
+            numAdded: history.result.numAdded,
+            numUpdated: history.result.numUpdated,
+            numSkipped: history.result.numSkipped,
+            numDeleted: history.result.numDeleted,
+            flowData: history.flowData
+        }
+        setUpsertDetailsDialogProps(props)
+        setShowUpsertHistoryDetailsDialog(true)
     }
 
     const checkMandatoryFields = () => {
@@ -183,7 +226,12 @@ const VectorStoreConfigure = () => {
                     data.embeddingConfig[key] = selectedEmbeddingsProvider.inputs[key]
                 }
             })
+        } else {
+            data.embeddingConfig = null
+            data.embeddingName = ''
         }
+
+        // Set vector store config
         if (selectedVectorStoreProvider.inputs) {
             data.vectorStoreConfig = {}
             data.vectorStoreName = selectedVectorStoreProvider.name
@@ -194,7 +242,12 @@ const VectorStoreConfigure = () => {
                     data.vectorStoreConfig[key] = selectedVectorStoreProvider.inputs[key]
                 }
             })
+        } else {
+            data.vectorStoreConfig = null
+            data.vectorStoreName = ''
         }
+
+        // Set record manager config
         if (selectedRecordManagerProvider.inputs) {
             data.recordManagerConfig = {}
             data.recordManagerName = selectedRecordManagerProvider.name
@@ -205,7 +258,11 @@ const VectorStoreConfigure = () => {
                     data.recordManagerConfig[key] = selectedRecordManagerProvider.inputs[key]
                 }
             })
+        } else {
+            data.recordManagerConfig = null
+            data.recordManagerName = ''
         }
+
         return data
     }
 
@@ -214,20 +271,6 @@ const VectorStoreConfigure = () => {
             setLoading(true)
             const data = prepareConfigData()
             insertIntoVectorStoreApi.request(data)
-            setLoading(false)
-            enqueueSnackbar({
-                message: 'Docs submitted for Upsert. Redirecting to Document Store..',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'success',
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-            navigate('/document-stores/' + storeId)
         }
     }
 
@@ -235,14 +278,54 @@ const VectorStoreConfigure = () => {
         setLoading(true)
         const data = prepareConfigData()
         saveVectorStoreConfigApi.request(data)
-        setLoading(false)
+    }
+
+    const resetVectorStoreConfig = () => {
+        setSelectedEmbeddingsProvider({})
+        setSelectedVectorStoreProvider({})
+        setSelectedRecordManagerProvider({})
+    }
+
+    const getActiveStep = () => {
+        if (selectedRecordManagerProvider && Object.keys(selectedRecordManagerProvider).length > 0) {
+            return 3
+        }
+        if (selectedVectorStoreProvider && Object.keys(selectedVectorStoreProvider).length > 0) {
+            return 2
+        }
+        if (selectedEmbeddingsProvider && Object.keys(selectedEmbeddingsProvider).length > 0) {
+            return 1
+        }
+        return 0
+    }
+
+    const Steps = () => {
+        return (
+            <Box sx={{ width: '100%' }}>
+                <Stepper activeStep={getActiveStep()} alternativeLabel>
+                    {steps.map((label) => (
+                        <Step key={label}>
+                            <StepLabel>{label}</StepLabel>
+                        </Step>
+                    ))}
+                </Stepper>
+            </Box>
+        )
+    }
+
+    const isRecordManagerDisabled = () => {
+        return Object.keys(selectedVectorStoreProvider).length === 0 || isRecordManagerUnavailable
+    }
+
+    const isVectorStoreDisabled = () => {
+        return Object.keys(selectedEmbeddingsProvider).length === 0
     }
 
     useEffect(() => {
         if (saveVectorStoreConfigApi.data) {
             setLoading(false)
             enqueueSnackbar({
-                message: 'Configuration Saved Successfully.',
+                message: 'Configuration saved successfully',
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -260,6 +343,8 @@ const VectorStoreConfigure = () => {
     useEffect(() => {
         if (insertIntoVectorStoreApi.data) {
             setLoading(false)
+            setShowUpsertHistoryDialog(true)
+            setUpsertResultDialogProps({ ...insertIntoVectorStoreApi.data, goToRetrievalQuery: true })
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [insertIntoVectorStoreApi.data])
@@ -352,19 +437,82 @@ const VectorStoreConfigure = () => {
                             isBackButton={true}
                             search={false}
                             title={getSpecificDocumentStoreApi.data?.name}
-                            description='Configure your Vector Store and Upsert your data.'
+                            description='Configure Embeddings, Vector Store and Record Manager'
                             onBack={() => navigate(-1)}
-                        ></ViewHeader>
-                        <Grid container spacing={1} style={{ textAlign: 'center' }}>
+                        >
+                            {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
+                                Object.keys(selectedVectorStoreProvider).length > 0) && (
+                                <Button
+                                    variant='outlined'
+                                    color='error'
+                                    sx={{
+                                        borderRadius: 2,
+                                        height: '100%'
+                                    }}
+                                    startIcon={<IconRefresh />}
+                                    onClick={() => resetVectorStoreConfig()}
+                                >
+                                    Reset
+                                </Button>
+                            )}
+                            {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
+                                Object.keys(selectedVectorStoreProvider).length > 0) && (
+                                <Button
+                                    variant='outlined'
+                                    color='secondary'
+                                    sx={{
+                                        borderRadius: 2,
+                                        height: '100%'
+                                    }}
+                                    startIcon={<IconDeviceFloppy />}
+                                    onClick={() => saveVectorStoreConfig()}
+                                >
+                                    Save Config
+                                </Button>
+                            )}
+                            {Object.keys(selectedEmbeddingsProvider).length > 0 && Object.keys(selectedVectorStoreProvider).length > 0 && (
+                                <Button
+                                    variant='contained'
+                                    sx={{
+                                        borderRadius: 2,
+                                        height: '100%',
+                                        backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
+                                        '&:hover': {
+                                            backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
+                                        }
+                                    }}
+                                    startIcon={<IconRowInsertTop />}
+                                    onClick={() => tryAndInsertIntoStore()}
+                                >
+                                    Upsert
+                                </Button>
+                            )}
+                            <IconButton onClick={showUpsertHistoryDrawer} size='small' color='inherit' title='Upsert History'>
+                                <IconClock />
+                            </IconButton>
+                        </ViewHeader>
+                        <Steps />
+                        <Grid container spacing={1}>
                             <Grid item xs={12} sm={4} md={4}>
                                 {Object.keys(selectedEmbeddingsProvider).length === 0 ? (
                                     <Button
-                                        color='error'
                                         onClick={showEmbeddingsList}
-                                        variant='outlined'
                                         fullWidth={true}
-                                        startIcon={<Embeddings style={{ height: 32, width: 32 }} />}
-                                        style={{ minHeight: '200px' }}
+                                        startIcon={<Embeddings style={{ background: 'transparent', height: 32, width: 32 }} />}
+                                        sx={{
+                                            color: customization?.isDarkMode ? 'white' : 'inherit',
+                                            borderRadius: '10px',
+                                            minHeight: '200px',
+                                            boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)',
+                                            backgroundImage: customization?.isDarkMode
+                                                ? `linear-gradient(to right, #e654bc, #4b86e7)`
+                                                : `linear-gradient(to right, #fadef2, #cfdcf1)`,
+                                            '&:hover': {
+                                                backgroundImage: customization?.isDarkMode
+                                                    ? `linear-gradient(to right, #de32ac, #2d73e7)`
+                                                    : `linear-gradient(to right, #f6c2e7, #b4cbf1)`
+                                            }
+                                        }}
                                     >
                                         Select Embeddings
                                     </Button>
@@ -394,8 +542,6 @@ const VectorStoreConfigure = () => {
                                                                 borderRadius: '50%',
                                                                 backgroundColor: 'white',
                                                                 display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
                                                                 boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
                                                             }}
                                                         >
@@ -418,6 +564,7 @@ const VectorStoreConfigure = () => {
                                                         <Typography sx={{ ml: 2 }} variant='h3'>
                                                             {selectedEmbeddingsProvider.label}
                                                         </Typography>
+                                                        <div style={{ flex: 1 }}></div>
                                                         <div
                                                             style={{
                                                                 display: 'flex',
@@ -426,9 +573,16 @@ const VectorStoreConfigure = () => {
                                                             }}
                                                         >
                                                             {Object.keys(selectedEmbeddingsProvider).length > 0 && (
-                                                                <IconButton variant='outlined' sx={{ ml: 4 }} onClick={showEmbeddingsList}>
-                                                                    <IconEdit />
-                                                                </IconButton>
+                                                                <>
+                                                                    <IconButton
+                                                                        variant='outlined'
+                                                                        sx={{ ml: 1 }}
+                                                                        color='primary'
+                                                                        onClick={showEmbeddingsList}
+                                                                    >
+                                                                        <IconEdit />
+                                                                    </IconButton>
+                                                                </>
                                                             )}
                                                         </div>
                                                     </Box>
@@ -453,12 +607,25 @@ const VectorStoreConfigure = () => {
                             <Grid item xs={12} sm={4} md={4}>
                                 {Object.keys(selectedVectorStoreProvider).length === 0 ? (
                                     <Button
-                                        color='error'
-                                        variant='outlined'
                                         onClick={showVectorStoreList}
                                         fullWidth={true}
-                                        startIcon={<Storage style={{ height: 32, width: 32 }} />}
-                                        style={{ minHeight: '200px' }}
+                                        startIcon={<Storage style={{ background: 'transparent', height: 32, width: 32 }} />}
+                                        sx={{
+                                            color: customization?.isDarkMode ? 'white' : 'inherit',
+                                            borderRadius: '10px',
+                                            minHeight: '200px',
+                                            opacity: isVectorStoreDisabled() ? 0.7 : 1,
+                                            boxShadow: isVectorStoreDisabled() ? 'none' : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+                                            backgroundImage: customization?.isDarkMode
+                                                ? `linear-gradient(to right, #4d8ef1, #f1de5c)`
+                                                : `linear-gradient(to right, #b9d0f4, #fef9d7)`,
+                                            '&:hover': {
+                                                backgroundImage: customization?.isDarkMode
+                                                    ? `linear-gradient(to right, #2576f2, #f0d72e)`
+                                                    : `linear-gradient(to right, #9cbdf2, #fcf3b6)`
+                                            }
+                                        }}
+                                        disabled={isVectorStoreDisabled()}
                                     >
                                         Select Vector Store
                                     </Button>
@@ -512,6 +679,7 @@ const VectorStoreConfigure = () => {
                                                         <Typography sx={{ ml: 2 }} variant='h3'>
                                                             {selectedVectorStoreProvider.label}
                                                         </Typography>
+                                                        <div style={{ flex: 1 }}></div>
                                                         <div
                                                             style={{
                                                                 display: 'flex',
@@ -520,9 +688,16 @@ const VectorStoreConfigure = () => {
                                                             }}
                                                         >
                                                             {Object.keys(selectedVectorStoreProvider).length > 0 && (
-                                                                <IconButton variant='outlined' sx={{ ml: 4 }} onClick={showVectorStoreList}>
-                                                                    <IconEdit />
-                                                                </IconButton>
+                                                                <>
+                                                                    <IconButton
+                                                                        variant='outlined'
+                                                                        sx={{ ml: 1 }}
+                                                                        color='primary'
+                                                                        onClick={showVectorStoreList}
+                                                                    >
+                                                                        <IconEdit />
+                                                                    </IconButton>
+                                                                </>
                                                             )}
                                                         </div>
                                                     </Box>
@@ -547,14 +722,35 @@ const VectorStoreConfigure = () => {
                             <Grid item xs={12} sm={4} md={4}>
                                 {Object.keys(selectedRecordManagerProvider).length === 0 ? (
                                     <Button
-                                        color='error'
-                                        variant='outlined'
                                         onClick={showRecordManagerList}
                                         fullWidth={true}
-                                        startIcon={<DynamicFeed style={{ height: 32, width: 32 }} />}
-                                        style={{ minHeight: '200px' }}
+                                        startIcon={
+                                            isRecordManagerUnavailable ? (
+                                                <></>
+                                            ) : (
+                                                <DynamicFeed style={{ background: 'transparent', height: 32, width: 32 }} />
+                                            )
+                                        }
+                                        sx={{
+                                            color: customization?.isDarkMode ? 'white' : 'inherit',
+                                            borderRadius: '10px',
+                                            minHeight: '200px',
+                                            opacity: isRecordManagerDisabled() ? 0.7 : 1,
+                                            boxShadow: isRecordManagerDisabled() ? 'none' : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+                                            backgroundImage: customization?.isDarkMode
+                                                ? `linear-gradient(to right, #f5db3f, #42daa7)`
+                                                : `linear-gradient(to right, #f9f1c0, #c7f1e3)`,
+                                            '&:hover': {
+                                                backgroundImage: customization?.isDarkMode
+                                                    ? `linear-gradient(to right, #d9c238, #3dc295)`
+                                                    : `linear-gradient(to right, #f6e99b, #a0f2d7)`
+                                            }
+                                        }}
+                                        disabled={isRecordManagerDisabled()}
                                     >
-                                        Select Record Manager
+                                        {isRecordManagerUnavailable
+                                            ? 'Record Manager is not applicable for selected Vector Store'
+                                            : 'Select Record Manager'}
                                     </Button>
                                 ) : (
                                     <Box>
@@ -606,6 +802,7 @@ const VectorStoreConfigure = () => {
                                                         <Typography sx={{ ml: 2 }} variant='h3'>
                                                             {selectedRecordManagerProvider.label}
                                                         </Typography>
+                                                        <div style={{ flex: 1 }}></div>
                                                         <div
                                                             style={{
                                                                 display: 'flex',
@@ -614,13 +811,16 @@ const VectorStoreConfigure = () => {
                                                             }}
                                                         >
                                                             {Object.keys(selectedRecordManagerProvider).length > 0 && (
-                                                                <IconButton
-                                                                    variant='outlined'
-                                                                    sx={{ ml: 4 }}
-                                                                    onClick={showRecordManagerList}
-                                                                >
-                                                                    <IconEdit />
-                                                                </IconButton>
+                                                                <>
+                                                                    <IconButton
+                                                                        variant='outlined'
+                                                                        sx={{ ml: 1 }}
+                                                                        color='primary'
+                                                                        onClick={showRecordManagerList}
+                                                                    >
+                                                                        <IconEdit />
+                                                                    </IconButton>
+                                                                </>
                                                             )}
                                                         </div>
                                                     </Box>
@@ -643,37 +843,6 @@ const VectorStoreConfigure = () => {
                                         </Grid>
                                     </Box>
                                 )}
-                            </Grid>
-                            <Grid item xs={12} sm={12} md={12}>
-                                <Divider />
-                            </Grid>
-                            {/*<Grid item xs={8} sm={8} md={8} style={{ textAlign: 'left' }}>*/}
-                            {/*    {Object.keys(selectedEmbeddingsProvider).length > 0 && (*/}
-                            {/*        <Button variant='outlined' sx={{ mr: 2 }} onClick={showEmbeddingsList}>*/}
-                            {/*            Change Embeddings*/}
-                            {/*        </Button>*/}
-                            {/*    )}*/}
-                            {/*    {Object.keys(selectedVectorStoreProvider).length > 0 && (*/}
-                            {/*        <Button variant='outlined' sx={{ mr: 2 }} onClick={showVectorStoreList}>*/}
-                            {/*            Change Vector Store*/}
-                            {/*        </Button>*/}
-                            {/*    )}*/}
-                            {/*    {Object.keys(selectedRecordManagerProvider).length > 0 && (*/}
-                            {/*        <Button variant='outlined' sx={{ mr: 2 }} onClick={showRecordManagerList}>*/}
-                            {/*            Change Record Manager*/}
-                            {/*        </Button>*/}
-                            {/*    )}*/}
-                            {/*</Grid>*/}
-                            <Grid item xs={12} sm={12} md={12} style={{ textAlign: 'right' }}>
-                                {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
-                                    Object.keys(selectedVectorStoreProvider).length > 0) && (
-                                    <Button color='primary' variant='contained' sx={{ mr: 2 }} onClick={() => saveVectorStoreConfig()}>
-                                        Save Configuration
-                                    </Button>
-                                )}
-                                <Button color='primary' variant='contained' onClick={() => tryAndInsertIntoStore()}>
-                                    Save & Upsert
-                                </Button>
                             </Grid>
                         </Grid>
                     </Stack>
@@ -705,6 +874,31 @@ const VectorStoreConfigure = () => {
                     onCancel={() => setShowRecordManagerListDialog(false)}
                     apiCall={documentsApi.getRecordManagerProviders}
                     onSelected={onRecordManagerSelected}
+                />
+            )}
+            {showUpsertHistoryDialog && (
+                <UpsertResultDialog
+                    show={showUpsertHistoryDialog}
+                    dialogProps={upsertResultDialogProps}
+                    onCancel={() => {
+                        setShowUpsertHistoryDialog(false)
+                    }}
+                    onGoToRetrievalQuery={() => navigate('/document-stores/query/' + storeId)}
+                ></UpsertResultDialog>
+            )}
+            {showUpsertHistorySideDrawer && (
+                <UpsertHistorySideDrawer
+                    show={showUpsertHistorySideDrawer}
+                    dialogProps={upsertHistoryDrawerDialogProps}
+                    onClickFunction={() => setShowUpsertHistorySideDrawer(false)}
+                    onSelectHistoryDetails={onSelectHistoryDetails}
+                />
+            )}
+            {showUpsertHistoryDetailsDialog && (
+                <UpsertHistoryDetailsDialog
+                    show={showUpsertHistoryDetailsDialog}
+                    dialogProps={upsertDetailsDialogProps}
+                    onCancel={() => setShowUpsertHistoryDetailsDialog(false)}
                 />
             )}
             <ConfirmDialog />

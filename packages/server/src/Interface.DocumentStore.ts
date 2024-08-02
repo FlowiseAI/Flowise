@@ -20,9 +20,9 @@ export interface IDocumentStore {
     updatedDate: Date
     createdDate: Date
     status: DocumentStoreStatus
-    vectorStoreConfig: string // JSON string
-    embeddingConfig: string // JSON string
-    recordManagerConfig: string // JSON string
+    vectorStoreConfig: string | null // JSON string
+    embeddingConfig: string | null // JSON string
+    recordManagerConfig: string | null // JSON string
 }
 
 export interface IDocumentStoreFileChunk {

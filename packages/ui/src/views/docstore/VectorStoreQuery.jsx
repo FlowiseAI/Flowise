@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import ReactJson from 'flowise-react-json-view'
 
@@ -16,19 +16,15 @@ import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ExpandedChunkDialog from './ExpandedChunkDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import { Dropdown } from '@/ui-component/dropdown/Dropdown'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // API
 import documentsApi from '@/api/documentstore'
 
 // Hooks
 import useApi from '@/hooks/useApi'
-import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
-
-// store
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
-import { Dropdown } from '@/ui-component/dropdown/Dropdown'
-import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 const searchOptions = [
     {
@@ -63,13 +59,9 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 const VectorStoreQuery = () => {
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
-    const dispatch = useDispatch()
     const theme = useTheme()
-    const { confirm } = useConfirm()
 
     useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const URLpath = document.location.pathname.toString().split('/')
     const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]

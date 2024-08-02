@@ -30,11 +30,11 @@ export class DocumentStore implements IDocumentStore {
     status: DocumentStoreStatus
 
     @Column({ nullable: true, type: 'text' })
-    vectorStoreConfig: string
+    vectorStoreConfig: string | null
 
     @Column({ nullable: true, type: 'text' })
-    embeddingConfig: string
+    embeddingConfig: string | null
 
     @Column({ nullable: true, type: 'text' })
-    recordManagerConfig: string
+    recordManagerConfig: string | null
 }
