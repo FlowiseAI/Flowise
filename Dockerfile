@@ -18,6 +18,8 @@ RUN npm install -g pnpm
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
+ENV NODE_OPTIONS=--max-old-space-size=8192
+
 WORKDIR /usr/src
 
 # Copy app source
