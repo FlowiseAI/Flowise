@@ -9,8 +9,16 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { ICredentialDataDecrypted } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import credentials from '../credentials'
 import encryptionCredential from '../encryptionCredential'
 
+/**
+ * It generate encryption key into database then match with existing available credentials.
+ *
+ * @returns void
+ *
+ * @remarks This will call `generate` and `resync` function.
+ */
 const init = async () => {
     try {
         // Step 1 - Create encryption in database's encryption table
@@ -23,6 +31,12 @@ const init = async () => {
     }
 }
 
+/**
+ * It will try match existing encryption keys and credentials to the correct one.
+ *
+ * @returns void
+ *
+ */
 const resync = async (): Promise<void> => {
     try {
         const appServer = getRunningExpressApp()
@@ -32,25 +46,38 @@ const resync = async (): Promise<void> => {
         const allCredential: Credential[] = await appServer.AppDataSource.getRepository(Credential).find()
 
         // step 2 - loop credential then loop each encryption to find the correct 1 to perform insert/update into encryption_credential table
-        await allCredential.map(async (credential) => {
-            await allEncryption.map(async (encryption) => {
-                // step 2a - try decrypt encryptedData with encryptionKey
+        for (const credential of allCredential) {
+            for (const encryption of allEncryption) {
+                // step 3 - try decrypt encryptedData with encryptionKey
                 const decryptResult = await decrypt(credential.encryptedData, encryption.encryptionKey)
-                if (decryptResult) {
-                    console.info(`credential ${credential.encryptedData} and encryption ${encryption.encryptionKey} are a match.`)
 
-                    // step 2b - check whether to inesrt or update into DB
+                // step 4 - decryptResult is not void means decrypt successful
+                if (decryptResult) {
+                    console.info(`credential.id: ${credential.id} and encryption.id: ${encryption.id} are a match.`)
+                    // step 5a - get all rows in encryptCrednetial table for a specific credentialId
                     const dbResponse = await encryptionCredential.findByCredentialId(credential.id)
+
                     if (dbResponse.length == 0) {
-                        // insert
-                        return await encryptionCredential.create(encryption.id, credential.id)
+                        // step 5b - insert new encryption credential row when credentialId is not found
+                        await encryptionCredential.create(encryption.id, credential.id)
                     } else if (dbResponse.length == 1) {
-                        // update
-                        return await encryptionCredential.updateEncryptionId(encryption.id, credential.id)
+                        // step 5b - update existing encryption credential rows when credentialId is found
+                        await encryptionCredential.updateEncryptionId(encryption.id, credential.id)
                     }
+                    // step 5c - update credential isEncryptionKeyLost to false
+                    await credentials.updateIsEncryptionKeyLost(credential.id, false)
+
+                    break
+                } else {
+                    console.info(`credential.id: ${credential.id} and encryption.id: ${encryption.id} are a not match.`)
+                    // step 5a - update credential isEncryptionKeyLost to true
+                    await credentials.updateIsEncryptionKeyLost(credential.id, true)
+
+                    // step 5b - delete relationship of encryptioncredential that are not relatvant anymore
+                    await encryptionCredential.deleteByEncryptionId(encryption.id, credential.id)
                 }
-            })
-        })
+            }
+        }
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.resync - ${getErrorMessage(error)}`)
     }
@@ -222,6 +249,5 @@ export default {
     encrypt,
     get,
     init,
-    // reason to export resync is because user can resync when they found encryption and credential does not match
-    resync
+    resync // reason to export resync is because user can resync when they found encryption and credential does not match
 }

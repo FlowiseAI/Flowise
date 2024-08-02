@@ -1,11 +1,11 @@
-import { omit } from 'lodash'
 import { StatusCodes } from 'http-status-codes'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Credential } from '../../database/entities/Credential'
-import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
+import { omit } from 'lodash'
 import { ICredentialReturnResponse } from '../../Interface'
+import { Credential } from '../../database/entities/Credential'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { decryptCredentialData, transformToCredentialEntity } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const createCredential = async (requestBody: any) => {
     try {
@@ -125,10 +125,38 @@ const updateCredential = async (credentialId: string, requestBody: any): Promise
     }
 }
 
+/**
+ * Update `[isEncryptionKeyLost, updatedDate]` columns in `credential` table for a specific `credentialId`.
+ *
+ * @param credentialId - Id from Credential entity
+ * @param isEncryptionKeyLost - isEncryptionKeyLost from Credential entity
+ * @returns void
+ *
+ */
+const updateIsEncryptionKeyLost = async (credentialId: string, isEncryptionKeyLost: boolean): Promise<void> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // step 1 - update [isEncryptionKeyLost, updatedDate] columns in database's credential table for a specific credentialId
+        await appServer.AppDataSource.getRepository(Credential)
+            .createQueryBuilder()
+            .update(Credential)
+            .set({ isEncryptionKeyLost: isEncryptionKeyLost, updatedDate: () => 'CURRENT_TIMESTAMP' })
+            .where('id = :credentialId', { credentialId })
+            .execute()
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: credentialsService.updateIsEncryptionKeyLost - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     createCredential,
     deleteCredentials,
     getAllCredentials,
     getCredentialById,
-    updateCredential
+    updateCredential,
+    updateIsEncryptionKeyLost
 }

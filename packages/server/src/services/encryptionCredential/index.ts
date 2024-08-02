@@ -84,12 +84,38 @@ const updateEncryptionId = async (newEncryptionId: string, credentialId: string)
             .where('credentialId = :credentialId', { credentialId })
             .execute()
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionCredential.update - ${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: encryptionCredentialService.updateEncryptionId - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+/**
+ * Delete rows in the `encryption_credential` table for a specific `encryptionId` and `credentialId`.
+ *
+ * @param encryptionId - Id from Encryption entity
+ * @param credentialId - Id from Credential entity
+ * @returns void
+ *
+ */
+const deleteByEncryptionId = async (encryptionId: string, credentialId: string): Promise<void> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // step 1 - delete rows in the encryption_credential table for a specific encryptionId and credentialId
+        await appServer.AppDataSource.getRepository(EncryptionCredential).delete({ encryptionId, credentialId })
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: encryptionCredentialService.deleteByEncryptionId - ${getErrorMessage(error)}`
+        )
     }
 }
 
 export default {
     create,
+    deleteByEncryptionId,
     findByCredentialId,
     updateEncryptionId
 }
