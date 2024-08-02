@@ -4,10 +4,10 @@ export class AddIsEncryptionKeyLostToCredential1722473901281 implements Migratio
     name = 'AddIsEncryptionKeyLostToCredential1722473901281'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "Credential" ADD COLUMN "isEncryptionKeyLost" BOOLEAN NOT NULL DEFAULT FALSE;`)
+        await queryRunner.query(`ALTER TABLE "credential" ADD COLUMN "isEncryptionKeyLost" BOOLEAN NOT NULL DEFAULT FALSE;`)
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "Credential" DROP COLUMN "isEncryptionKeyLost";`)
+        await queryRunner.query(`ALTER TABLE "credential" DROP COLUMN "isEncryptionKeyLost";`)
     }
 }
