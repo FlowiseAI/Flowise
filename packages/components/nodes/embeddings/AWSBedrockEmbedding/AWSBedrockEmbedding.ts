@@ -162,7 +162,6 @@ class AWSBedrockEmbedding_Embeddings implements INode {
             if (iModel.startsWith('cohere')) {
                 return await embedTextCohere(documents, client, iModel, inputType)
             } else {
-                // return Promise.all(documents.map((document) => embedTextTitan(document, client, iModel)))
                 const batchSize = nodeData.inputs?.batchSize as number
                 const maxRetries = nodeData.inputs?.maxRetries as number
                 return processInBatches(documents, batchSize, maxRetries, (document) => embedTextTitan(document, client, iModel))
