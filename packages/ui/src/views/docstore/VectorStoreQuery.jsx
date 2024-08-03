@@ -31,17 +31,6 @@ import Embeddings from '@mui/icons-material/DynamicFeed'
 import { baseURL } from '@/store/constant'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 
-const searchOptions = [
-    {
-        label: 'Similarity',
-        name: 'similarity'
-    },
-    {
-        label: 'Max Marginal Relevance',
-        name: 'mmr'
-    }
-]
-
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
