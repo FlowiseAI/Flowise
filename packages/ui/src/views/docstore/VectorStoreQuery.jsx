@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import ReactJson from 'flowise-react-json-view'
+import { cloneDeep } from 'lodash'
+import { v4 as uuidv4 } from 'uuid'
 
 // material-ui
-import { Box, Card, Grid, Stack, Typography, OutlinedInput, IconButton, Button } from '@mui/material'
+import { Box, Card, Grid, Stack, Typography, OutlinedInput, IconButton } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
 import chunks_emptySVG from '@/assets/images/chunks_empty.svg'
-import { IconSearch } from '@tabler/icons-react'
+import { IconSearch, IconFileStack } from '@tabler/icons-react'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -16,15 +18,18 @@ import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ExpandedChunkDialog from './ExpandedChunkDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import { Dropdown } from '@/ui-component/dropdown/Dropdown'
-import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+import { initNode } from '@/utils/genericHelper'
 
 // API
 import documentsApi from '@/api/documentstore'
+import nodesApi from '@/api/nodes'
 
 // Hooks
 import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
+import Embeddings from '@mui/icons-material/DynamicFeed'
+import { baseURL } from '@/store/constant'
+import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 
 const searchOptions = [
     {
@@ -73,15 +78,14 @@ const VectorStoreQuery = () => {
     const [documentStore, setDocumentStore] = useState({})
     const [query, setQuery] = useState('')
 
-    const [topK, setTopK] = useState(0)
-    const [allowSearchType, setAllowSearchType] = useState(true)
-    const [searchType, setSearchType] = useState('')
-    const [lambda, setLambda] = useState(0)
-    const [fetchK, setFetchK] = useState(0)
     const [timeTaken, setTimeTaken] = useState(-1)
+    const [retrievalError, setRetrievalError] = useState(undefined)
 
     const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
     const queryVectorStoreApi = useApi(documentsApi.queryVectorStore)
+
+    const getVectorStoreNodeDetailsApi = useApi(nodesApi.getSpecificNode)
+    const [selectedVectorStoreProvider, setSelectedVectorStoreProvider] = useState({})
 
     const chunkSelected = (chunkId, selectedChunkNumber) => {
         const selectedChunk = documentChunks.find((chunk) => chunk.id === chunkId)
@@ -100,10 +104,7 @@ const VectorStoreQuery = () => {
         const data = {
             query: query,
             storeId: storeId,
-            topK: topK,
-            searchType: searchType,
-            lambda: lambda,
-            fetchK: fetchK
+            inputs: selectedVectorStoreProvider.inputs
         }
         queryVectorStoreApi.request(data)
     }
@@ -112,11 +113,45 @@ const VectorStoreQuery = () => {
         if (queryVectorStoreApi.data) {
             setDocumentChunks(queryVectorStoreApi.data.docs)
             setTimeTaken(queryVectorStoreApi.data.timeTaken)
+            setRetrievalError(undefined)
             setLoading(false)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [queryVectorStoreApi.data])
+
+    useEffect(() => {
+        if (queryVectorStoreApi.error) {
+            if (queryVectorStoreApi.error.response?.data?.message) {
+                const message = queryVectorStoreApi.error.response.data.message
+                // remove the text 'documentStoreServices.queryVectorStore - ' from the error message to make it readable
+                setRetrievalError(message.replace('documentStoreServices.queryVectorStore - ', ''))
+                setDocumentChunks([])
+                setTimeTaken(-1)
+            }
+            setLoading(false)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [queryVectorStoreApi.error])
+
+    useEffect(() => {
+        if (getVectorStoreNodeDetailsApi.data) {
+            const node = getVectorStoreNodeDetailsApi.data
+            fetchVectorStoreDetails(node)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getVectorStoreNodeDetailsApi.data])
+
+    const fetchVectorStoreDetails = (component) => {
+        const nodeData = cloneDeep(initNode(component, uuidv4()))
+        if (documentStore.vectorStoreConfig) {
+            nodeData.inputs = documentStore.vectorStoreConfig.config
+            nodeData.credential = documentStore.vectorStoreConfig.config.credential
+        }
+        setSelectedVectorStoreProvider(nodeData)
+    }
 
     useEffect(() => {
         getSpecificDocumentStoreApi.request(storeId)
@@ -128,19 +163,9 @@ const VectorStoreQuery = () => {
         if (getSpecificDocumentStoreApi.data) {
             setDocumentStore(getSpecificDocumentStoreApi.data)
             const vectorStoreConfig = getSpecificDocumentStoreApi.data.vectorStoreConfig
-
-            const topKValue = parseInt(vectorStoreConfig?.config?.topK)
-            setTopK(isNaN(topKValue) ? 4 : topKValue)
-
-            setAllowSearchType(vectorStoreConfig?.config?.searchType !== undefined)
-            if (vectorStoreConfig?.config?.searchType !== undefined) {
-                setSearchType(vectorStoreConfig.config.searchType)
-                const lambdaValue = parseFloat(vectorStoreConfig.config.lambda)
-                setLambda(isNaN(lambdaValue) ? 0.5 : lambdaValue)
-                const fetchKValue = parseInt(vectorStoreConfig.config.fetchK)
-                setFetchK(isNaN(fetchKValue) ? 20 : fetchKValue)
+            if (vectorStoreConfig) {
+                getVectorStoreNodeDetailsApi.request(vectorStoreConfig.name)
             }
-
             setLoading(false)
         }
 
@@ -188,142 +213,179 @@ const VectorStoreQuery = () => {
                                     />
                                 </Box>
                             </Grid>
-                            <Grid item xs={12} sm={12} md={12} lg={12}>
-                                {/*<Box sx={{ p: 1 }}>*/}
-                                {/*    <Typography variant='h3' sx={{ pb: 1 }}>*/}
-                                {/*        Settings*/}
-                                {/*        <TooltipWithParser*/}
-                                {/*            title='These values are not persisted till you click on Save. Feel free to change and test your retrieved*/}
-                                {/*        documents.'*/}
-                                {/*        />*/}
-                                {/*    </Typography>*/}
-                                {/*</Box>*/}
-                                <Stack direction='row' spacing={1}>
-                                    <Box style={{ width: '25%' }}>
-                                        <Typography variant='overline'>
-                                            Top K<TooltipWithParser title='Number of top results to fetch' />
-                                        </Typography>
-                                        <OutlinedInput
-                                            sx={{ mt: 1 }}
-                                            id='topk'
-                                            size='small'
-                                            type='number'
-                                            fullWidth
-                                            value={topK}
-                                            onChange={(e) => setTopK(e.target.value)}
-                                        />
+                            <Grid container spacing={1}>
+                                <Grid item xs={12} sm={4} md={4}>
+                                    <Box>
+                                        <Grid container spacing='2'>
+                                            <Grid item xs={12} md={12} lg={12} sm={12}>
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        paddingRight: 15,
+                                                        paddingTop: 5
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            flexDirection: 'row',
+                                                            p: 1
+                                                        }}
+                                                    >
+                                                        <div
+                                                            style={{
+                                                                width: 40,
+                                                                height: 40,
+                                                                borderRadius: '50%',
+                                                                backgroundColor: 'white',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
+                                                            }}
+                                                        >
+                                                            {selectedVectorStoreProvider.label ? (
+                                                                <img
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        height: '100%',
+                                                                        padding: 7,
+                                                                        borderRadius: '50%',
+                                                                        objectFit: 'contain'
+                                                                    }}
+                                                                    alt={selectedVectorStoreProvider.label ?? 'embeddings'}
+                                                                    src={`${baseURL}/api/v1/node-icon/${selectedVectorStoreProvider?.name}`}
+                                                                />
+                                                            ) : (
+                                                                <Embeddings color='black' />
+                                                            )}
+                                                        </div>
+                                                        <Typography sx={{ ml: 2 }} variant='h3'>
+                                                            {selectedVectorStoreProvider.label}
+                                                        </Typography>
+                                                        <div style={{ flex: 1 }}></div>
+                                                    </Box>
+                                                    {selectedVectorStoreProvider &&
+                                                        Object.keys(selectedVectorStoreProvider).length > 0 &&
+                                                        (selectedVectorStoreProvider.inputParams ?? [])
+                                                            .filter((inputParam) => !inputParam.hidden)
+                                                            .map((inputParam, index) => (
+                                                                <DocStoreInputHandler
+                                                                    key={index}
+                                                                    data={selectedVectorStoreProvider}
+                                                                    inputParam={inputParam}
+                                                                    isAdditionalParams={inputParam.additionalParams}
+                                                                />
+                                                            ))}
+                                                </div>
+                                            </Grid>
+                                        </Grid>
                                     </Box>
-                                    {allowSearchType && (
-                                        <>
-                                            <Box style={{ width: '25%' }}>
-                                                <Typography variant='overline'>Search Type</Typography>
-                                                <Dropdown
-                                                    key={searchType}
-                                                    name='searchType'
-                                                    options={searchOptions}
-                                                    onSelect={(newValue) => setSearchType(newValue)}
-                                                    value={searchType ?? 'choose an option'}
-                                                />
-                                            </Box>
-                                            <Box style={{ width: '20%' }}>
-                                                <Typography variant='overline'>
-                                                    Lambda (for MMR Search)
-                                                    <TooltipWithParser title='Number between 0 and 1 that determines the degree of diversity among the results, where 0 corresponds to maximum diversity and 1 to minimum diversity. Used only when the search type is MMR' />
-                                                </Typography>
-                                                <OutlinedInput
-                                                    sx={{ mt: 1 }}
-                                                    id='lambdaId'
-                                                    size='small'
-                                                    type='number'
-                                                    disabled={searchType === 'similarity'}
-                                                    value={lambda}
-                                                    onChange={(e) => setLambda(e.target.value)}
-                                                />
-                                            </Box>
-                                            <Box style={{ width: '20%' }}>
-                                                <Typography variant='overline'>
-                                                    Fetch K (for MMR Search)
-                                                    <TooltipWithParser title='Number of initial documents to fetch for MMR reranking. Default to 20. Used only when the search type is MMR' />
-                                                </Typography>
-                                                <OutlinedInput
-                                                    disabled={searchType === 'similarity'}
-                                                    sx={{ mt: 1 }}
-                                                    value={fetchK}
-                                                    onChange={(e) => setFetchK(e.target.value)}
-                                                    id='fetchId'
-                                                    size='small'
-                                                    type='number'
-                                                />
-                                            </Box>
-                                        </>
-                                    )}
-                                    <Box style={{ verticalAlign: 'middle', width: '10%' }}>
-                                        <Button sx={{ mt: 5 }} variant='outlined'>
-                                            Save
-                                        </Button>
-                                    </Box>
-                                </Stack>
-                            </Grid>
-                            <Grid item xs={12} sm={12} md={12} lg={12}>
-                                <Box sx={{ p: 1 }}>
-                                    <Typography variant='h3'>Retrieved Documents</Typography>
-                                    {timeTaken > -1 && (
-                                        <Typography variant='body2' sx={{ color: 'gray' }}>
-                                            Time taken: {timeTaken} millis.
-                                        </Typography>
-                                    )}
-                                </Box>
-                                {!documentChunks.length && (
-                                    <div
-                                        style={{
+                                </Grid>
+                                <Grid item xs={12} sm={8} md={8}>
+                                    <Box
+                                        sx={{
                                             display: 'flex',
-                                            flexDirection: 'column',
                                             alignItems: 'center',
-                                            width: '100%'
+                                            flexDirection: 'row',
+                                            p: 1,
+                                            paddingTop: 2,
+                                            marginBottom: 4
                                         }}
                                     >
-                                        <Box sx={{ mt: 5, p: 2, height: 'auto' }}>
-                                            <img
-                                                style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
-                                                src={chunks_emptySVG}
-                                                alt='chunks_emptySVG'
-                                            />
-                                        </Box>
-                                        <div>No Documents Retrieved</div>
-                                    </div>
-                                )}
-                            </Grid>
-                            {documentChunks?.length > 0 &&
-                                documentChunks.map((row, index) => (
-                                    <Grid item lg={4} md={4} sm={6} xs={6} key={index}>
-                                        <CardWrapper
-                                            content={false}
-                                            onClick={() => chunkSelected(row.id, index + 1)}
-                                            sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                        <div
+                                            style={{
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: '50%',
+                                                backgroundColor: 'white',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
+                                            }}
                                         >
-                                            <Card>
-                                                <CardContent sx={{ p: 2 }}>
-                                                    <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                        {`#${index + 1}. Characters: ${row.pageContent.length}`}
-                                                    </Typography>
-                                                    <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
-                                                        {row.pageContent}
-                                                    </Typography>
-                                                    <ReactJson
-                                                        theme={customization.isDarkMode ? 'ocean' : 'rjv-default'}
-                                                        style={{ paddingTop: 10 }}
-                                                        src={row.metadata || {}}
-                                                        name={null}
-                                                        quotesOnKeys={false}
-                                                        enableClipboard={false}
-                                                        displayDataTypes={false}
-                                                        collapsed={1}
-                                                    />
-                                                </CardContent>
-                                            </Card>
-                                        </CardWrapper>
+                                            <IconFileStack
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    padding: 7,
+                                                    borderRadius: '50%',
+                                                    objectFit: 'contain'
+                                                }}
+                                            />
+                                        </div>
+                                        <Typography sx={{ ml: 2 }} variant='h3'>
+                                            Retrieved Documents
+                                            {timeTaken > -1 && (
+                                                <Typography variant='body2' sx={{ color: 'gray' }}>
+                                                    Count: {documentChunks.length}. Time taken: {timeTaken} millis.
+                                                </Typography>
+                                            )}
+                                            {retrievalError && (
+                                                <Typography variant='body2' sx={{ color: 'gray' }}>
+                                                    {retrievalError}
+                                                </Typography>
+                                            )}
+                                        </Typography>
+                                        <div style={{ flex: 1 }}></div>
+                                    </Box>
+                                    {!documentChunks.length && (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                width: '100%'
+                                            }}
+                                        >
+                                            <Box sx={{ mt: 5, p: 2, height: 'auto' }}>
+                                                <img
+                                                    style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                                    src={chunks_emptySVG}
+                                                    alt='chunks_emptySVG'
+                                                />
+                                            </Box>
+                                            <div>No Documents Retrieved</div>
+                                        </div>
+                                    )}
+                                    <Grid container spacing={2}>
+                                        {documentChunks?.length > 0 &&
+                                            documentChunks.map((row, index) => (
+                                                <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
+                                                    <CardWrapper
+                                                        content={false}
+                                                        onClick={() => chunkSelected(row.id, index + 1)}
+                                                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                                    >
+                                                        <Card>
+                                                            <CardContent sx={{ p: 2 }}>
+                                                                <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
+                                                                    {`#${index + 1}. Characters: ${row.pageContent.length}`}
+                                                                </Typography>
+                                                                <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
+                                                                    {row.pageContent}
+                                                                </Typography>
+                                                                <ReactJson
+                                                                    theme={customization.isDarkMode ? 'ocean' : 'rjv-default'}
+                                                                    style={{ paddingTop: 10 }}
+                                                                    src={row.metadata || {}}
+                                                                    name={null}
+                                                                    quotesOnKeys={false}
+                                                                    enableClipboard={false}
+                                                                    displayDataTypes={false}
+                                                                    collapsed={true}
+                                                                />
+                                                            </CardContent>
+                                                        </Card>
+                                                    </CardWrapper>
+                                                </Grid>
+                                            ))}
                                     </Grid>
-                                ))}
+                                </Grid>
+                            </Grid>
                         </Grid>
                     </div>
                 </Stack>

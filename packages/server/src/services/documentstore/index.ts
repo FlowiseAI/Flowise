@@ -962,20 +962,11 @@ const queryVectorStore = async (data: any) => {
         const vsConfig = JSON.parse(entity.vectorStoreConfig)
         data.vectorStoreName = vsConfig.name
         data.vectorStoreConfig = vsConfig.config
+        if (data.inputs) {
+            data.vectorStoreConfig = { ...vsConfig.config, ...data.inputs }
+        }
 
         const vStoreNodeData = _createVectorStoreNodeData(appServer, data, embeddingObj, undefined)
-        if (data.topK && data.topK > 0) {
-            vStoreNodeData.inputs.topK = parseInt(data.topK)
-        }
-        if (data.searchType && vStoreNodeData.inputs.searchType) {
-            // check if vStoreNodeData.inputs.searchType key is present, then set it to data.searchType
-            // if not, ignore the searchType
-            vStoreNodeData.inputs.searchType = data.searchType
-            if (data.searchType === 'mmr') {
-                vStoreNodeData.inputs.fetchK = parseInt(data.fetchK)
-                vStoreNodeData.inputs.lambda = parseFloat(data.lambda)
-            }
-        }
 
         const vStoreNodeInstanceFilePath = appServer.nodesPool.componentNodes[data.vectorStoreName].filePath as string
         const vStoreNodeModule = await import(vStoreNodeInstanceFilePath)
