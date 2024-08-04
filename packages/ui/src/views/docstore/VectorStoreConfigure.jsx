@@ -32,7 +32,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 import { baseURL } from '@/store/constant'
 
 // icons
-import { IconX, IconEdit, IconRowInsertTop, IconDeviceFloppy, IconRefresh, IconClock } from '@tabler/icons-react'
+import { IconX, IconEditCircle, IconRowInsertTop, IconDeviceFloppy, IconRefresh, IconClock } from '@tabler/icons-react'
 import Embeddings from '@mui/icons-material/DynamicFeed'
 import Storage from '@mui/icons-material/Storage'
 import DynamicFeed from '@mui/icons-material/Filter1'
@@ -577,10 +577,10 @@ const VectorStoreConfigure = () => {
                                                                     <IconButton
                                                                         variant='outlined'
                                                                         sx={{ ml: 1 }}
-                                                                        color='primary'
+                                                                        color='secondary'
                                                                         onClick={showEmbeddingsList}
                                                                     >
-                                                                        <IconEdit />
+                                                                        <IconEditCircle />
                                                                     </IconButton>
                                                                 </>
                                                             )}
@@ -692,10 +692,10 @@ const VectorStoreConfigure = () => {
                                                                     <IconButton
                                                                         variant='outlined'
                                                                         sx={{ ml: 1 }}
-                                                                        color='primary'
+                                                                        color='secondary'
                                                                         onClick={showVectorStoreList}
                                                                     >
-                                                                        <IconEdit />
+                                                                        <IconEditCircle />
                                                                     </IconButton>
                                                                 </>
                                                             )}
@@ -815,10 +815,10 @@ const VectorStoreConfigure = () => {
                                                                     <IconButton
                                                                         variant='outlined'
                                                                         sx={{ ml: 1 }}
-                                                                        color='primary'
+                                                                        color='secondary'
                                                                         onClick={showRecordManagerList}
                                                                     >
-                                                                        <IconEdit />
+                                                                        <IconEditCircle />
                                                                     </IconButton>
                                                                 </>
                                                             )}

@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 // material-ui
 import { Box, Card, Grid, Stack, Typography, OutlinedInput, IconButton } from '@mui/material'
+import Embeddings from '@mui/icons-material/DynamicFeed'
 import { useTheme, styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
 import chunks_emptySVG from '@/assets/images/chunks_empty.svg'
@@ -18,7 +19,7 @@ import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ExpandedChunkDialog from './ExpandedChunkDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import { initNode } from '@/utils/genericHelper'
+import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 
 // API
 import documentsApi from '@/api/documentstore'
@@ -27,9 +28,8 @@ import nodesApi from '@/api/nodes'
 // Hooks
 import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
-import Embeddings from '@mui/icons-material/DynamicFeed'
 import { baseURL } from '@/store/constant'
-import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
+import { initNode } from '@/utils/genericHelper'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -175,7 +175,7 @@ const VectorStoreQuery = () => {
                     <div style={{ width: '100%' }}></div>
                     <div>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} sm={12} md={12} lg={12}>
+                            <Grid sx={{ ml: 1, mr: 1 }} item xs={12} sm={12} md={12} lg={12}>
                                 <Box>
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                                         <Typography variant='overline'>
@@ -202,7 +202,7 @@ const VectorStoreQuery = () => {
                                     />
                                 </Box>
                             </Grid>
-                            <Grid container spacing={1}>
+                            <Grid sx={{ ml: 1, mr: 1, mt: 1 }} container spacing={1}>
                                 <Grid item xs={12} sm={4} md={4}>
                                     <Box>
                                         <Grid container spacing='2'>
