@@ -274,6 +274,21 @@ const queryVectorStore = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+const deleteVectorStoreFromStore = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.storeId === 'undefined' || req.params.storeId === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.deleteVectorStoreFromStore - storeId not provided!`
+            )
+        }
+        const apiResponse = await documentStoreService.deleteVectorStoreFromStore(req.params.storeId)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const saveVectorStoreConfig = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.body === 'undefined') {
@@ -332,5 +347,6 @@ export default {
     getVectorStoreProviders,
     getRecordManagerProviders,
     saveVectorStoreConfig,
-    queryVectorStore
+    queryVectorStore,
+    deleteVectorStoreFromStore
 }

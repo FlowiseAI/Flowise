@@ -37,6 +37,8 @@ router.get('/chunks/:storeId/:fileId/:pageNo', documentStoreController.getDocume
 router.post('/vectorstore/insert', documentStoreController.insertIntoVectorStore)
 // save the selected vector store
 router.post('/vectorstore/save', documentStoreController.saveVectorStoreConfig)
+// delete data from the selected vector store
+router.delete('/vectorstore/:storeId', documentStoreController.deleteVectorStoreFromStore)
 // query the vector store
 router.post('/vectorstore/query', documentStoreController.queryVectorStore)
 // Get all embedding providers
