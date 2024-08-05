@@ -24,6 +24,6 @@ export class Credential implements ICredential {
     @UpdateDateColumn()
     updatedDate: Date
 
-    @Column()
+    @Column({ type: 'boolean', default: false })
     isEncryptionKeyLost: boolean
 }
