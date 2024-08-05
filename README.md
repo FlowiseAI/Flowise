@@ -82,25 +82,25 @@ Flowise has 3 different modules in a single mono repository.
 
 ### Setup
 
-1. Clone the repository
+1.  Clone the repository
 
     ```bash
     git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
-2. Go into repository folder
+2.  Go into repository folder
 
     ```bash
     cd Flowise
     ```
 
-3. Install all dependencies of all modules:
+3.  Install all dependencies of all modules:
 
     ```bash
     pnpm install
     ```
 
-4. Build all the code:
+4.  Build all the code:
 
     ```bash
     pnpm build
@@ -109,12 +109,13 @@ Flowise has 3 different modules in a single mono repository.
     <details>
     <summary>Exit code 134 (JavaScript heap out of memory)</summary>  
       If you get this error when running the above `build` script, try increasing the Node.js heap size and run the script again:
-    
+
         export NODE_OPTIONS="--max-old-space-size=4096"
         pnpm build
+
     </details>
 
-5. Start the app:
+5.  Start the app:
 
     ```bash
     pnpm start
@@ -122,7 +123,7 @@ Flowise has 3 different modules in a single mono repository.
 
     You can now access the app on [http://localhost:3000](http://localhost:3000)
 
-6. For development build:
+6.  For development build:
 
     - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
     - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
