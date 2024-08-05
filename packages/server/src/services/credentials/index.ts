@@ -1,6 +1,7 @@
 import { ICommonObject } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { omit } from 'lodash'
+import { DeleteResult } from 'typeorm'
 import { ICredentialReqBody, ICredentialReturnResponse } from '../../Interface'
 import { Credential } from '../../database/entities/Credential'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
@@ -11,13 +12,13 @@ import encryption from '../encryption'
 import encryptionCredential from '../encryptionCredential'
 
 /**
- * Create a new record into encryption_credential and credential table.
+ * Create a new record into `encryption_credential` and `credential` table.
  *
  * @param requestBody - ICredentialReqBody interface
  * @returns `Credential`
  *
  */
-const createCredential = async (requestBody: any) => {
+const createCredential = async (requestBody: any): Promise<Credential> => {
     try {
         const appServer = getRunningExpressApp()
         const queryRunner = appServer.AppDataSource.createQueryRunner()
@@ -38,7 +39,7 @@ const createCredential = async (requestBody: any) => {
             // step 5 - commit transaction
             await queryRunner.commitTransaction()
 
-            // step 6 - return db response
+            // step 6 - return credential
             return dbResponse
         } catch (error) {
             // step 6 - rollback transaction when error occur
@@ -55,15 +56,39 @@ const createCredential = async (requestBody: any) => {
     }
 }
 
-// Delete all credentials from chatflowid
-const deleteCredentials = async (credentialId: string): Promise<any> => {
+/**
+ * Delete rows in the `encryption_credential` and `credential` table for a specific `credentialId`.
+ *
+ * @param credentialId - string
+ * @returns `DeleteResult`
+ *
+ */
+const deleteCredentials = async (credentialId: string): Promise<DeleteResult> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(Credential).delete({ id: credentialId })
-        if (!dbResponse) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
+        const queryRunner = appServer.AppDataSource.createQueryRunner()
+        try {
+            // step 1 - start transaction
+            queryRunner.startTransaction()
+
+            // step 2 - delete rows in encryption_credential table with credential id
+            await encryptionCredential.deleteByCredentialId(credentialId)
+
+            // step 3 - delete rows in credential table with credential id
+            const deleteResult = await appServer.AppDataSource.getRepository(Credential).delete({ id: credentialId })
+
+            // step 4 - commit transaction
+            queryRunner.commitTransaction()
+
+            // step 5 - return delete result
+            return deleteResult
+        } catch (error) {
+            // step 5 - rollback transaction when error occur
+            queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            queryRunner.release()
         }
-        return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

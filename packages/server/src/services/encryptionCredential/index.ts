@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
+import { DeleteResult } from 'typeorm'
 import { EncryptionCredential } from '../../database/entities/EncryptionCredential'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -96,15 +97,15 @@ const updateEncryptionId = async (newEncryptionId: string, credentialId: string)
  *
  * @param encryptionId - Id from Encryption entity
  * @param credentialId - Id from Credential entity
- * @returns void
+ * @returns DeleteResult
  *
  */
-const deleteByEncryptionId = async (encryptionId: string, credentialId: string): Promise<void> => {
+const deleteByEncryptionId = async (encryptionId: string, credentialId: string): Promise<DeleteResult> => {
     try {
         const appServer = getRunningExpressApp()
 
         // step 1 - delete rows in the encryption_credential table for a specific encryptionId and credentialId
-        await appServer.AppDataSource.getRepository(EncryptionCredential).delete({ encryptionId, credentialId })
+        return await appServer.AppDataSource.getRepository(EncryptionCredential).delete({ encryptionId, credentialId })
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -113,8 +114,30 @@ const deleteByEncryptionId = async (encryptionId: string, credentialId: string):
     }
 }
 
+/**
+ * Delete rows in the `encryption_credential` table for a specific `credentialId`.
+ *
+ * @param credentialId - Id from Credential entity
+ * @returns DeleteResult
+ *
+ */
+const deleteByCredentialId = async (credentialId: string): Promise<DeleteResult> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // step 1 - delete rows in the encryption_credential table for a specific encryptionId and credentialId
+        return await appServer.AppDataSource.getRepository(EncryptionCredential).delete({ credentialId })
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: encryptionCredentialService.deleteByCredentialId - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     create,
+    deleteByCredentialId,
     deleteByEncryptionId,
     findByCredentialId,
     updateEncryptionId
