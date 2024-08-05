@@ -296,6 +296,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                             <Typography variant='h4'>Add Nodes</Typography>
                                         </Stack>
                                         <OutlinedInput
+                                            // eslint-disable-next-line
+                                            autoFocus
                                             sx={{ width: '100%', pr: 2, pl: 2, my: 2 }}
                                             id='input-search-node'
                                             value={searchValue}
@@ -489,35 +491,49 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                                                 <ListItemText
                                                                                     sx={{ ml: 1 }}
                                                                                     primary={
-                                                                                        <div
-                                                                                            style={{
-                                                                                                display: 'flex',
-                                                                                                flexDirection: 'row',
-                                                                                                alignItems: 'center'
-                                                                                            }}
-                                                                                        >
-                                                                                            <span>{node.label}</span>
-                                                                                            &nbsp;
-                                                                                            {node.badge && (
-                                                                                                <Chip
-                                                                                                    sx={{
-                                                                                                        width: 'max-content',
-                                                                                                        fontWeight: 700,
+                                                                                        <>
+                                                                                            <div
+                                                                                                style={{
+                                                                                                    display: 'flex',
+                                                                                                    flexDirection: 'row',
+                                                                                                    alignItems: 'center'
+                                                                                                }}
+                                                                                            >
+                                                                                                <span>{node.label}</span>
+                                                                                                &nbsp;
+                                                                                                {node.badge && (
+                                                                                                    <Chip
+                                                                                                        sx={{
+                                                                                                            width: 'max-content',
+                                                                                                            fontWeight: 700,
+                                                                                                            fontSize: '0.65rem',
+                                                                                                            background:
+                                                                                                                node.badge === 'DEPRECATING'
+                                                                                                                    ? theme.palette.warning
+                                                                                                                          .main
+                                                                                                                    : theme.palette.teal
+                                                                                                                          .main,
+                                                                                                            color:
+                                                                                                                node.badge !== 'DEPRECATING'
+                                                                                                                    ? 'white'
+                                                                                                                    : 'inherit'
+                                                                                                        }}
+                                                                                                        size='small'
+                                                                                                        label={node.badge}
+                                                                                                    />
+                                                                                                )}
+                                                                                            </div>
+                                                                                            {node.author && (
+                                                                                                <span
+                                                                                                    style={{
                                                                                                         fontSize: '0.65rem',
-                                                                                                        background:
-                                                                                                            node.badge === 'DEPRECATING'
-                                                                                                                ? theme.palette.warning.main
-                                                                                                                : theme.palette.teal.main,
-                                                                                                        color:
-                                                                                                            node.badge !== 'DEPRECATING'
-                                                                                                                ? 'white'
-                                                                                                                : 'inherit'
+                                                                                                        fontWeight: 700
                                                                                                     }}
-                                                                                                    size='small'
-                                                                                                    label={node.badge}
-                                                                                                />
+                                                                                                >
+                                                                                                    By {node.author}
+                                                                                                </span>
                                                                                             )}
-                                                                                        </div>
+                                                                                        </>
                                                                                     }
                                                                                     secondary={node.description}
                                                                                 />
