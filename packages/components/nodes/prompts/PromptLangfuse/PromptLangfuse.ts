@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
 import { PromptTemplateInput } from '@langchain/core/prompts'
-import { Langfuse } from "langfuse";
+import { Langfuse } from 'langfuse';
 
 class PromptLangfuse_Prompts implements INode {
     label: string
@@ -11,6 +11,7 @@ class PromptLangfuse_Prompts implements INode {
     type: string
     icon: string
     category: string
+    author: string
     baseClasses: string[]
     inputs: INodeParams[]
 
@@ -21,6 +22,7 @@ class PromptLangfuse_Prompts implements INode {
         this.type = 'PromptTemplate'
         this.icon = 'prompt.svg'
         this.category = 'Prompts'
+        this.author = 'Lucas Cruz'
         this.description = 'Fetch schema from LangFuse to represent a prompt for an LLM'
         this.baseClasses = [...getBaseClasses(PromptTemplate)]
         this.inputs = [
@@ -42,10 +44,10 @@ class PromptLangfuse_Prompts implements INode {
     }
 
     async init(nodeData: INodeData): Promise<any> {
-        const langfuse = new Langfuse();
- 
+        const langfuse = new Langfuse()
+        
         const langfusePrompt = await langfuse.getPrompt(nodeData.inputs?.template as string)
-        const template = langfusePrompt.getLangchainPrompt();
+        const template = langfusePrompt.getLangchainPrompt()
 
         const promptValuesStr = nodeData.inputs?.promptValues
 
