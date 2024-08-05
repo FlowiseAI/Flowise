@@ -4,6 +4,7 @@ const router = express.Router()
 
 // CREATE
 router.post('/', apikeyController.createApiKey)
+router.post('/import', apikeyController.importKeys)
 
 // READ
 router.get('/', apikeyController.getAllApiKeys)
