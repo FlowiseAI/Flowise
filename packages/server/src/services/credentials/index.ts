@@ -1,19 +1,52 @@
+import { ICommonObject } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { omit } from 'lodash'
-import { ICredentialReturnResponse } from '../../Interface'
+import { ICredentialReqBody, ICredentialReturnResponse } from '../../Interface'
 import { Credential } from '../../database/entities/Credential'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { decryptCredentialData, transformToCredentialEntity } from '../../utils'
+import { decryptCredentialData } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import encryption from '../encryption'
+import encryptionCredential from '../encryptionCredential'
 
+/**
+ * Create a new record into encryption_credential and credential table.
+ *
+ * @param requestBody - ICredentialReqBody interface
+ * @returns `Credential`
+ *
+ */
 const createCredential = async (requestBody: any) => {
     try {
         const appServer = getRunningExpressApp()
-        const newCredential = await transformToCredentialEntity(requestBody)
-        const credential = await appServer.AppDataSource.getRepository(Credential).create(newCredential)
-        const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
-        return dbResponse
+        const queryRunner = appServer.AppDataSource.createQueryRunner()
+        try {
+            // step 1 - start transaction
+            await queryRunner.startTransaction()
+
+            // step 2 - transform requestBody to Credential entity and get encryptionId if any
+            const credentialEntity = await transformToCredentialEntity(requestBody)
+
+            // step 3 - create new record for credential table
+            const credential = await appServer.AppDataSource.getRepository(Credential).create(credentialEntity.newCredential)
+            const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
+
+            // step 4 - create new record for encryptionCredential table
+            if (credentialEntity.encryptionId) await encryptionCredential.create(credentialEntity.encryptionId, credential.id)
+
+            // step 5 - commit transaction
+            await queryRunner.commitTransaction()
+
+            // step 6 - return db response
+            return dbResponse
+        } catch (error) {
+            // step 6 - rollback transaction when error occur
+            await queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            queryRunner.release()
+        }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -113,8 +146,8 @@ const updateCredential = async (credentialId: string, requestBody: any): Promise
         }
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         requestBody.plainDataObj = { ...decryptedCredentialData, ...requestBody.plainDataObj }
-        const updateCredential = await transformToCredentialEntity(requestBody)
-        await appServer.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
+        const credentialEntity = await transformToCredentialEntity(requestBody)
+        await appServer.AppDataSource.getRepository(Credential).merge(credential, credentialEntity.newCredential)
         const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
         return dbResponse
     } catch (error) {
@@ -148,6 +181,45 @@ const updateIsEncryptionKeyLost = async (credentialId: string, isEncryptionKeyLo
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: credentialsService.updateIsEncryptionKeyLost - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+/**
+ * Transform ICredentialBody from req to Credential entity and return encryptionId if any.
+ *
+ * @param body - ICredentialReqBody interface
+ * @returns Credential | {encryptionId: string, newCredential: credential}
+ *
+ * @remarks if `encryptionId` might be `null`
+ */
+const transformToCredentialEntity = async (body: ICredentialReqBody) => {
+    try {
+        // step 1 - initialize name and credentialName
+        const credentialBody: ICommonObject = {
+            name: body.name,
+            credentialName: body.credentialName
+        }
+
+        // step 2 - initialize encryptionId as null
+        let encryptionId: null | string = null
+        if (body.plainDataObj) {
+            // step 2 - get information of encryption result and encryptionId
+            const encryptionResult = await encryption.encrypt(body.plainDataObj)
+            credentialBody.encryptedData = encryptionResult.encryptedData
+            encryptionId = encryptionResult.encryptionId
+        }
+
+        // step 3 - assign credentialBody to newCredential object
+        const newCredential = new Credential()
+        Object.assign(newCredential, credentialBody)
+
+        // step 4 - return newCredential and encryptionId if any
+        return { encryptionId, newCredential }
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: credentialsService.transformToCredentialEntity - ${getErrorMessage(error)}`
         )
     }
 }

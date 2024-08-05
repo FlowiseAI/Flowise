@@ -17,7 +17,6 @@ import {
     IComponentCredentials,
     IComponentNodes,
     ICredentialDataDecrypted,
-    ICredentialReqBody,
     IDepthQueue,
     IExploredNode,
     IncomingInput,
@@ -1207,28 +1206,6 @@ export const decryptCredentialData = async (
         console.error(e)
         return {}
     }
-}
-
-/**
- * Transform ICredentialBody from req to Credential entity
- * @param {ICredentialReqBody} body
- * @returns {Credential}
- */
-export const transformToCredentialEntity = async (body: ICredentialReqBody): Promise<Credential> => {
-    const credentialBody: ICommonObject = {
-        name: body.name,
-        credentialName: body.credentialName
-    }
-
-    if (body.plainDataObj) {
-        const encryptedData = await encryption.encrypt(body.plainDataObj)
-        credentialBody.encryptedData = encryptedData
-    }
-
-    const newCredential = new Credential()
-    Object.assign(newCredential, credentialBody)
-
-    return newCredential
 }
 
 /**

@@ -205,15 +205,21 @@ const get = async (credential?: Credential): Promise<Encryption> => {
 }
 
 /**
- * Encrypt credential data
- * @param {ICredentialDataDecrypted} plainDataObj
- * @param {Encryption} encryption
- * @returns {Promise<string>}
+ * Encrypt encrypted data.
+ *
+ * @param plainDataObj - ICredentialDataDecrypted interface
+ * @param encryption - Encryption entity
+ * @returns `{ encryptionId: string; encryptedData: string }`
+ *
  */
-const encrypt = async (plainDataObj: ICredentialDataDecrypted, encryption?: Encryption): Promise<string> => {
+const encrypt = async (
+    plainDataObj: ICredentialDataDecrypted,
+    encryption?: Encryption
+): Promise<{ encryptionId: string; encryptedData: string }> => {
     try {
         if (!encryption) encryption = await get()
-        return AES.encrypt(JSON.stringify(plainDataObj), encryption.encryptionKey).toString()
+        const encryptedData: string = AES.encrypt(JSON.stringify(plainDataObj), encryption.encryptionKey).toString()
+        return { encryptionId: encryption.id, encryptedData }
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.encrypt - ${getErrorMessage(error)}`)
     }
