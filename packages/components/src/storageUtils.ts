@@ -318,6 +318,8 @@ export const getS3Config = () => {
     const secretAccessKey = process.env.S3_STORAGE_SECRET_ACCESS_KEY
     const region = process.env.S3_STORAGE_REGION
     const Bucket = process.env.S3_STORAGE_BUCKET_NAME
+    const customURL = process.env.S3_ENDPOINT_URL
+
     if (!region || !Bucket) {
         throw new Error('S3 storage configuration is missing')
     }
@@ -332,7 +334,8 @@ export const getS3Config = () => {
 
     const s3Client = new S3Client({
         credentials,
-        region
+        region,
+        endpoint: customURL
     })
     return { s3Client, Bucket }
 }

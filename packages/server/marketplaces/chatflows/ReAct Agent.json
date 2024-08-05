@@ -1,15 +1,15 @@
 {
-    "description": "An agent that uses ReAct logic to decide what action to take",
-    "categories": "Calculator Tool,SerpAPI,ChatOpenAI,ReAct Agent,Langchain",
-    "framework": "Langchain",
+    "description": "An agent that uses ReAct (Reason + Act) logic to decide what action to take",
+    "usecases": ["Agent"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
-            "height": 142,
+            "height": 143,
             "id": "calculator_1",
             "position": {
                 "x": 466.86432329033937,
-                "y": 230.0825123205457
+                "y": 235.98158789908442
             },
             "type": "customNode",
             "data": {
@@ -37,181 +37,9 @@
             },
             "positionAbsolute": {
                 "x": 466.86432329033937,
-                "y": 230.0825123205457
+                "y": 235.98158789908442
             },
             "selected": false,
-            "dragging": false
-        },
-        {
-            "id": "reactAgentChat_0",
-            "position": {
-                "x": 905.8535326018256,
-                "y": 388.58312223652564
-            },
-            "type": "customNode",
-            "data": {
-                "id": "reactAgentChat_0",
-                "label": "ReAct Agent for Chat Models",
-                "version": 4,
-                "name": "reactAgentChat",
-                "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
-                "category": "Agents",
-                "description": "Agent that uses the ReAct logic to decide what action to take, optimized to be used with Chat Models",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Allowed Tools",
-                        "name": "tools",
-                        "type": "Tool",
-                        "list": true,
-                        "id": "reactAgentChat_0-input-tools-Tool"
-                    },
-                    {
-                        "label": "Chat Model",
-                        "name": "model",
-                        "type": "BaseChatModel",
-                        "id": "reactAgentChat_0-input-model-BaseChatModel"
-                    },
-                    {
-                        "label": "Memory",
-                        "name": "memory",
-                        "type": "BaseChatMemory",
-                        "id": "reactAgentChat_0-input-memory-BaseChatMemory"
-                    },
-                    {
-                        "label": "Input Moderation",
-                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
-                        "name": "inputModeration",
-                        "type": "Moderation",
-                        "optional": true,
-                        "list": true,
-                        "id": "reactAgentChat_0-input-inputModeration-Moderation"
-                    },
-                    {
-                        "label": "Max Iterations",
-                        "name": "maxIterations",
-                        "type": "number",
-                        "optional": true,
-                        "additionalParams": true,
-                        "id": "reactAgentChat_0-input-maxIterations-number"
-                    }
-                ],
-                "inputs": {
-                    "inputModeration": "",
-                    "tools": ["{{calculator_1.data.instance}}", "{{serper_0.data.instance}}"],
-                    "model": "{{chatOpenAI_0.data.instance}}",
-                    "memory": "{{RedisBackedChatMemory_0.data.instance}}"
-                },
-                "outputAnchors": [
-                    {
-                        "id": "reactAgentChat_0-output-reactAgentChat-AgentExecutor|BaseChain|Runnable",
-                        "name": "reactAgentChat",
-                        "label": "AgentExecutor",
-                        "description": "Agent that uses the ReAct logic to decide what action to take, optimized to be used with Chat Models",
-                        "type": "AgentExecutor | BaseChain | Runnable"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "width": 300,
-            "height": 330,
-            "selected": false,
-            "positionAbsolute": {
-                "x": 905.8535326018256,
-                "y": 388.58312223652564
-            },
-            "dragging": false
-        },
-        {
-            "id": "RedisBackedChatMemory_0",
-            "position": {
-                "x": 473.108799702029,
-                "y": 401.8098683245926
-            },
-            "type": "customNode",
-            "data": {
-                "id": "RedisBackedChatMemory_0",
-                "label": "Redis-Backed Chat Memory",
-                "version": 2,
-                "name": "RedisBackedChatMemory",
-                "type": "RedisBackedChatMemory",
-                "baseClasses": ["RedisBackedChatMemory", "BaseChatMemory", "BaseMemory"],
-                "category": "Memory",
-                "description": "Summarizes the conversation and stores the memory in Redis server",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "optional": true,
-                        "credentialNames": ["redisCacheApi", "redisCacheUrlApi"],
-                        "id": "RedisBackedChatMemory_0-input-credential-credential"
-                    },
-                    {
-                        "label": "Session Id",
-                        "name": "sessionId",
-                        "type": "string",
-                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat\">more</a>",
-                        "default": "",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "RedisBackedChatMemory_0-input-sessionId-string"
-                    },
-                    {
-                        "label": "Session Timeouts",
-                        "name": "sessionTTL",
-                        "type": "number",
-                        "description": "Omit this parameter to make sessions never expire",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "RedisBackedChatMemory_0-input-sessionTTL-number"
-                    },
-                    {
-                        "label": "Memory Key",
-                        "name": "memoryKey",
-                        "type": "string",
-                        "default": "chat_history",
-                        "additionalParams": true,
-                        "id": "RedisBackedChatMemory_0-input-memoryKey-string"
-                    },
-                    {
-                        "label": "Window Size",
-                        "name": "windowSize",
-                        "type": "number",
-                        "description": "Window of size k to surface the last k back-and-forth to use as memory.",
-                        "additionalParams": true,
-                        "optional": true,
-                        "id": "RedisBackedChatMemory_0-input-windowSize-number"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "sessionId": "",
-                    "sessionTTL": "",
-                    "memoryKey": "chat_history",
-                    "windowSize": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
-                        "name": "RedisBackedChatMemory",
-                        "label": "RedisBackedChatMemory",
-                        "description": "Summarizes the conversation and stores the memory in Redis server",
-                        "type": "RedisBackedChatMemory | BaseChatMemory | BaseMemory"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "width": 300,
-            "height": 328,
-            "selected": false,
-            "positionAbsolute": {
-                "x": 473.108799702029,
-                "y": 401.8098683245926
-            },
             "dragging": false
         },
         {
@@ -224,7 +52,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -386,7 +214,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 573,
+            "height": 670,
             "selected": false,
             "positionAbsolute": {
                 "x": 81.2222202723384,
@@ -395,39 +223,101 @@
             "dragging": false
         },
         {
-            "id": "serper_0",
+            "id": "bufferMemory_0",
             "position": {
-                "x": 466.4499611299051,
-                "y": -67.74721119468873
+                "x": 467.5487883440105,
+                "y": 425.5853290438628
             },
             "type": "customNode",
             "data": {
-                "id": "serper_0",
-                "label": "Serper",
+                "id": "bufferMemory_0",
+                "label": "Buffer Memory",
+                "version": 2,
+                "name": "bufferMemory",
+                "type": "BufferMemory",
+                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Retrieve chat messages stored in database",
+                "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "bufferMemory_0-input-memoryKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+                        "name": "bufferMemory",
+                        "label": "BufferMemory",
+                        "description": "Retrieve chat messages stored in database",
+                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 253,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 467.5487883440105,
+                "y": 425.5853290438628
+            },
+            "dragging": false
+        },
+        {
+            "id": "googleCustomSearch_0",
+            "position": {
+                "x": 468.5319676071002,
+                "y": -72.88655734265808
+            },
+            "type": "customNode",
+            "data": {
+                "id": "googleCustomSearch_0",
+                "label": "Google Custom Search",
                 "version": 1,
-                "name": "serper",
-                "type": "Serper",
-                "baseClasses": ["Serper", "Tool", "StructuredTool", "Runnable"],
+                "name": "googleCustomSearch",
+                "type": "GoogleCustomSearchAPI",
+                "baseClasses": ["GoogleCustomSearchAPI", "Tool", "StructuredTool", "Runnable"],
                 "category": "Tools",
-                "description": "Wrapper around Serper.dev - Google Search API",
+                "description": "Wrapper around Google Custom Search API - a real-time API to access Google search results",
                 "inputParams": [
                     {
                         "label": "Connect Credential",
                         "name": "credential",
                         "type": "credential",
-                        "credentialNames": ["serperApi"],
-                        "id": "serper_0-input-credential-credential"
+                        "credentialNames": ["googleCustomSearchApi"],
+                        "id": "googleCustomSearch_0-input-credential-credential"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {},
                 "outputAnchors": [
                     {
-                        "id": "serper_0-output-serper-Serper|Tool|StructuredTool|Runnable",
-                        "name": "serper",
-                        "label": "Serper",
-                        "description": "Wrapper around Serper.dev - Google Search API",
-                        "type": "Serper | Tool | StructuredTool | Runnable"
+                        "id": "googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable",
+                        "name": "googleCustomSearch",
+                        "label": "GoogleCustomSearchAPI",
+                        "description": "Wrapper around Google Custom Search API - a real-time API to access Google search results",
+                        "type": "GoogleCustomSearchAPI | Tool | StructuredTool | Runnable"
                     }
                 ],
                 "outputs": {},
@@ -437,13 +327,105 @@
             "height": 276,
             "selected": false,
             "positionAbsolute": {
-                "x": 466.4499611299051,
-                "y": -67.74721119468873
+                "x": 468.5319676071002,
+                "y": -72.88655734265808
+            },
+            "dragging": false
+        },
+        {
+            "id": "reactAgentChat_0",
+            "position": {
+                "x": 880.48407884172,
+                "y": 237.79808979371387
+            },
+            "type": "customNode",
+            "data": {
+                "id": "reactAgentChat_0",
+                "label": "ReAct Agent for Chat Models",
+                "version": 4,
+                "name": "reactAgentChat",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "category": "Agents",
+                "description": "Agent that uses the ReAct logic to decide what action to take, optimized to be used with Chat Models",
+                "inputParams": [
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "reactAgentChat_0-input-maxIterations-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Allowed Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "reactAgentChat_0-input-tools-Tool"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "reactAgentChat_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "reactAgentChat_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "reactAgentChat_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{googleCustomSearch_0.data.instance}}", "{{calculator_1.data.instance}}"],
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "inputModeration": "",
+                    "maxIterations": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "reactAgentChat_0-output-reactAgentChat-AgentExecutor|BaseChain|Runnable",
+                        "name": "reactAgentChat",
+                        "label": "AgentExecutor",
+                        "description": "Agent that uses the ReAct logic to decide what action to take, optimized to be used with Chat Models",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 435,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 880.48407884172,
+                "y": 237.79808979371387
             },
             "dragging": false
         }
     ],
     "edges": [
+        {
+            "source": "googleCustomSearch_0",
+            "sourceHandle": "googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable",
+            "target": "reactAgentChat_0",
+            "targetHandle": "reactAgentChat_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "googleCustomSearch_0-googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable-reactAgentChat_0-reactAgentChat_0-input-tools-Tool"
+        },
         {
             "source": "calculator_1",
             "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
@@ -453,12 +435,12 @@
             "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-reactAgentChat_0-reactAgentChat_0-input-tools-Tool"
         },
         {
-            "source": "RedisBackedChatMemory_0",
-            "sourceHandle": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+            "source": "bufferMemory_0",
+            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
             "target": "reactAgentChat_0",
             "targetHandle": "reactAgentChat_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
-            "id": "RedisBackedChatMemory_0-RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory-reactAgentChat_0-reactAgentChat_0-input-memory-BaseChatMemory"
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-reactAgentChat_0-reactAgentChat_0-input-memory-BaseChatMemory"
         },
         {
             "source": "chatOpenAI_0",
@@ -467,14 +449,6 @@
             "targetHandle": "reactAgentChat_0-input-model-BaseChatModel",
             "type": "buttonedge",
             "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-reactAgentChat_0-reactAgentChat_0-input-model-BaseChatModel"
-        },
-        {
-            "source": "serper_0",
-            "sourceHandle": "serper_0-output-serper-Serper|Tool|StructuredTool|Runnable",
-            "target": "reactAgentChat_0",
-            "targetHandle": "reactAgentChat_0-input-tools-Tool",
-            "type": "buttonedge",
-            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool|Runnable-reactAgentChat_0-reactAgentChat_0-input-tools-Tool"
         }
     ]
 }

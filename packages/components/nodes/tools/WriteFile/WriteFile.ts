@@ -64,7 +64,7 @@ export class WriteFileTool extends StructuredTool {
     schema = z.object({
         file_path: z.string().describe('name of file'),
         text: z.string().describe('text to write to file')
-    })
+    }) as any
 
     name = 'write_file'
 

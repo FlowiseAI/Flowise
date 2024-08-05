@@ -4,9 +4,9 @@ import { TextSplitter } from 'langchain/text_splitter'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
-import { CSVLoader } from 'langchain/document_loaders/fs/csv'
-import { PDFLoader } from 'langchain/document_loaders/fs/pdf'
-import { DocxLoader } from 'langchain/document_loaders/fs/docx'
+import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
+import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 
 class Folder_DocumentLoaders implements INode {
     label: string
@@ -153,7 +153,8 @@ class Folder_DocumentLoaders implements INode {
         let docs = []
 
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
         } else {
             docs = await loader.load()
         }

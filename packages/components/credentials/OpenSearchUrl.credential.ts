@@ -10,12 +10,26 @@ class OpenSearchUrl implements INodeCredential {
     constructor() {
         this.label = 'OpenSearch'
         this.name = 'openSearchUrl'
-        this.version = 1.0
+        this.version = 2.0
         this.inputs = [
             {
                 label: 'OpenSearch Url',
                 name: 'openSearchUrl',
                 type: 'string'
+            },
+            {
+                label: 'User',
+                name: 'user',
+                type: 'string',
+                placeholder: '<OPENSEARCH_USERNAME>',
+                optional: true
+            },
+            {
+                label: 'Password',
+                name: 'password',
+                type: 'password',
+                placeholder: '<OPENSEARCH_PASSWORD>',
+                optional: true
             }
         ]
     }

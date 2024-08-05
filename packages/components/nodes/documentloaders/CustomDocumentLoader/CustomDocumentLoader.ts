@@ -23,7 +23,6 @@ class CustomDocumentLoader_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 'customDocLoader.svg'
         this.category = 'Document Loaders'
-        this.badge = 'NEW'
         this.description = `Custom function for loading documents`
         this.baseClasses = [this.type]
         this.inputs = [
