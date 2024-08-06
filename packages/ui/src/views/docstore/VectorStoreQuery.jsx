@@ -77,7 +77,6 @@ const VectorStoreQuery = () => {
 
     const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
     const queryVectorStoreApi = useApi(documentsApi.queryVectorStore)
-    const updateVectorStoreConfigApi = useApi(documentsApi.updateVectorStoreConfig)
 
     const getVectorStoreNodeDetailsApi = useApi(nodesApi.getSpecificNode)
     const [selectedVectorStoreProvider, setSelectedVectorStoreProvider] = useState({})
@@ -416,13 +415,13 @@ const VectorStoreQuery = () => {
                                                 <Grid item lg={6} md={6} sm={6} xs={6} key={index}>
                                                     <CardWrapper
                                                         content={false}
-                                                        onClick={() => chunkSelected(row.id, index + 1)}
+                                                        onClick={() => chunkSelected(row.id, row.chunkNo)}
                                                         sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
                                                     >
                                                         <Card>
                                                             <CardContent sx={{ p: 2 }}>
                                                                 <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                                    {`#${index + 1}. Characters: ${row.pageContent.length}`}
+                                                                    {`#${row.chunkNo}. Characters: ${row.pageContent.length}`}
                                                                 </Typography>
                                                                 <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
                                                                     {row.pageContent}

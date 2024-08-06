@@ -32,6 +32,7 @@ import { App } from '../../index'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { cloneDeep, omit } from 'lodash'
 import telemetryService from '../telemetry'
+import { In } from 'typeorm'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
@@ -1058,13 +1059,30 @@ const queryVectorStore = async (data: ICommonObject) => {
         }
         const endMillis = Date.now()
         const timeTaken = endMillis - startMillis
-        const docs: IDocument[] = results.map((result: IDocument) => {
+        const docs: any = results.map((result: IDocument) => {
             return {
                 pageContent: result.pageContent,
                 metadata: result.metadata,
                 id: uuidv4()
             }
         })
+        // query our document store chunk with the storeId and pageContent
+        for (const doc of docs) {
+            const documentStoreChunk = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).findOneBy({
+                storeId: data.storeId,
+                pageContent: doc.pageContent
+            })
+            if (documentStoreChunk) {
+                doc.id = documentStoreChunk.id
+                doc.chunkNo = documentStoreChunk.chunkNo
+            } else {
+                // this should not happen, only possible if the vector store has more content
+                // than our document store
+                doc.id = uuidv4()
+                doc.chunkNo = -1
+            }
+        }
+
         return {
             timeTaken: timeTaken,
             docs: docs
