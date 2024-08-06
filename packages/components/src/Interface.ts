@@ -118,6 +118,7 @@ export interface INodeProperties {
     deprecateMessage?: string
     hideOutput?: boolean
     author?: string
+    documentation?: string
 }
 
 export interface INode extends INodeProperties {

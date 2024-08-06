@@ -136,18 +136,20 @@ class ToolNode_SeqAgents implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    documentation?: string
     credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Tool Node'
         this.name = 'seqToolNode'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ToolNode'
         this.icon = 'toolNode.svg'
         this.category = 'Sequential Agents'
         this.description = `Execute tool and return tool's output`
         this.baseClasses = [this.type]
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-6.-tool-node'
         this.inputs = [
             {
                 label: 'Tools',

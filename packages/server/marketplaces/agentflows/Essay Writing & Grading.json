@@ -13,7 +13,7 @@
             "data": {
                 "id": "seqStart_0",
                 "label": "Start",
-                "version": 1,
+                "version": 2,
                 "name": "seqStart",
                 "type": "Start",
                 "baseClasses": ["Start"],
@@ -91,7 +91,7 @@
             "data": {
                 "id": "seqCondition_0",
                 "label": "Condition",
-                "version": 1,
+                "version": 2,
                 "name": "seqCondition",
                 "type": "Condition",
                 "baseClasses": ["Condition"],
@@ -215,30 +215,32 @@
                     "conditionName": "If loop > 3 times",
                     "sequentialNode": ["{{seqLLMNode_0.data.instance}}"],
                     "condition": "",
-                    "conditionUI": "[{\"variable\":\"$flow.state.messages.length\",\"operation\":\"Less Than or Equal To\",\"value\":\"6\",\"output\":\"Grading\",\"actions\":\"\",\"id\":0}]",
-                    "selectedConditionFunctionTab_seqCondition_0": "conditionUI"
+                    "selectedConditionFunctionTab_seqCondition_0": "conditionUI",
+                    "conditionUI": "[{\"variable\":\"$flow.state.messages.length\",\"operation\":\"Less Than or Equal To\",\"value\":\"6\",\"output\":\"Grading\",\"actions\":\"\",\"id\":0}]"
                 },
                 "outputAnchors": [
                     {
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
-                                "id": "seqCondition_0-output-end-Agent|LLMNode|ToolNode",
+                                "id": "seqCondition_0-output-end-Condition",
                                 "name": "end",
                                 "label": "End",
-                                "type": "Agent | LLMNode | ToolNode",
+                                "type": "Condition",
                                 "isAnchor": true
                             },
                             {
-                                "id": "seqCondition_0-output-grading-Agent|LLMNode|ToolNode",
+                                "id": "seqCondition_0-output-grading-Condition",
                                 "name": "grading",
                                 "label": "Grading",
-                                "type": "Agent | LLMNode | ToolNode",
+                                "type": "Condition",
                                 "isAnchor": true
                             }
-                        ]
+                        ],
+                        "default": "next"
                     }
                 ],
                 "outputs": {
@@ -265,7 +267,7 @@
             "data": {
                 "id": "seqLLMNode_0",
                 "label": "LLM Node",
-                "version": 1,
+                "version": 2,
                 "name": "seqLLMNode",
                 "type": "LLMNode",
                 "baseClasses": ["LLMNode"],
@@ -430,11 +432,11 @@
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqLLMNode_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqLLMNode_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -449,9 +451,10 @@
                     "llmNodeName": "Writer",
                     "systemMessagePrompt": "You are an essay assistant tasked with writing excellent 3-paragraph essays.\nGenerate the best essay possible for the user's request.  \nIf the user provides critique, respond with a revised version of your previous attempts.",
                     "humanMessagePrompt": "",
-                    "sequentialNode": ["{{seqStart_0.data.instance}}"],
+                    "sequentialNode": ["{{seqStart_0.data.instance}}", "{{seqStart_0.data.instance}}"],
                     "model": "",
                     "promptValues": "",
+                    "llmStructuredOutput": "",
                     "updateStateMemory": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
@@ -467,7 +470,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 431,
+            "height": 450,
             "selected": false,
             "positionAbsolute": {
                 "x": 603.8430617050778,
@@ -485,7 +488,7 @@
             "data": {
                 "id": "seqLLMNode_1",
                 "label": "LLM Node",
-                "version": 1,
+                "version": 2,
                 "name": "seqLLMNode",
                 "type": "LLMNode",
                 "baseClasses": ["LLMNode"],
@@ -650,11 +653,11 @@
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqLLMNode_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqLLMNode_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -669,9 +672,10 @@
                     "llmNodeName": "Teacher",
                     "systemMessagePrompt": "You are a teacher grading an essay submission.\nGenerate critique and recommendations for the user's submission.\nProvide detailed recommendations, including requests for length, depth, style, etc.",
                     "humanMessagePrompt": "",
-                    "sequentialNode": ["{{seqCondition_0.data.instance}}"],
+                    "sequentialNode": ["{{seqCondition_0.data.instance}}", "{{seqCondition_0.data.instance}}"],
                     "model": "",
                     "promptValues": "",
+                    "llmStructuredOutput": "",
                     "updateStateMemory": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
@@ -687,7 +691,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 431,
+            "height": 450,
             "selected": false,
             "positionAbsolute": {
                 "x": 1353.990019049842,
@@ -705,7 +709,7 @@
             "data": {
                 "id": "seqEnd_0",
                 "label": "End",
-                "version": 1,
+                "version": 2,
                 "name": "seqEnd",
                 "type": "End",
                 "baseClasses": ["End"],
@@ -714,10 +718,10 @@
                 "inputParams": [],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
-                        "id": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "type": "Agent | Condition | LLMNode | ToolNode",
+                        "id": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
                     }
                 ],
                 "inputs": {
@@ -739,14 +743,14 @@
         {
             "id": "seqLoop_0",
             "position": {
-                "x": 1696.8250975937838,
-                "y": 653.0299300609207
+                "x": 1730.9768550888484,
+                "y": 654.3960003607233
             },
             "type": "customNode",
             "data": {
                 "id": "seqLoop_0",
                 "label": "Loop",
-                "version": 1,
+                "version": 2,
                 "name": "seqLoop",
                 "type": "Loop",
                 "baseClasses": ["Loop"],
@@ -756,19 +760,19 @@
                     {
                         "label": "Loop To",
                         "name": "loopToName",
-                        "description": "Name of the agent to loop back to",
+                        "description": "Name of the agent/llm to loop back to",
                         "type": "string",
-                        "placeholder": "agent1",
+                        "placeholder": "Agent",
                         "id": "seqLoop_0-input-loopToName-string"
                     }
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqLoop_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
                     }
                 ],
                 "inputs": {
@@ -784,8 +788,8 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 1696.8250975937838,
-                "y": 653.0299300609207
+                "x": 1730.9768550888484,
+                "y": 654.3960003607233
             }
         },
         {
@@ -1054,10 +1058,11 @@
             "data": {
                 "id": "stickyNote_0",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1106,10 +1111,11 @@
             "data": {
                 "id": "stickyNote_1",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1167,14 +1173,6 @@
             "id": "agentMemory_0-agentMemory_0-output-agentMemory-AgentMemory|BaseCheckpointSaver-seqStart_0-seqStart_0-input-agentMemory-BaseCheckpointSaver"
         },
         {
-            "source": "seqStart_0",
-            "sourceHandle": "seqStart_0-output-seqStart-Start",
-            "target": "seqLLMNode_0",
-            "targetHandle": "seqLLMNode_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqStart_0-seqStart_0-output-seqStart-Start-seqLLMNode_0-seqLLMNode_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
             "source": "seqLLMNode_0",
             "sourceHandle": "seqLLMNode_0-output-seqLLMNode-LLMNode",
             "target": "seqCondition_0",
@@ -1184,27 +1182,35 @@
         },
         {
             "source": "seqCondition_0",
-            "sourceHandle": "seqCondition_0-output-end-Agent|LLMNode|ToolNode",
+            "sourceHandle": "seqCondition_0-output-end-Condition",
             "target": "seqEnd_0",
-            "targetHandle": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqCondition_0-seqCondition_0-output-end-Agent|LLMNode|ToolNode-seqEnd_0-seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqCondition_0-seqCondition_0-output-end-Condition-seqEnd_0-seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
         },
         {
             "source": "seqCondition_0",
-            "sourceHandle": "seqCondition_0-output-grading-Agent|LLMNode|ToolNode",
+            "sourceHandle": "seqCondition_0-output-grading-Condition",
             "target": "seqLLMNode_1",
-            "targetHandle": "seqLLMNode_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqLLMNode_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqCondition_0-seqCondition_0-output-grading-Agent|LLMNode|ToolNode-seqLLMNode_1-seqLLMNode_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqCondition_0-seqCondition_0-output-grading-Condition-seqLLMNode_1-seqLLMNode_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqStart_0",
+            "sourceHandle": "seqStart_0-output-seqStart-Start",
+            "target": "seqLLMNode_0",
+            "targetHandle": "seqLLMNode_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqStart_0-seqStart_0-output-seqStart-Start-seqLLMNode_0-seqLLMNode_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
         },
         {
             "source": "seqLLMNode_1",
             "sourceHandle": "seqLLMNode_1-output-seqLLMNode-LLMNode",
             "target": "seqLoop_0",
-            "targetHandle": "seqLoop_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqLLMNode_1-seqLLMNode_1-output-seqLLMNode-LLMNode-seqLoop_0-seqLoop_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqLLMNode_1-seqLLMNode_1-output-seqLLMNode-LLMNode-seqLoop_0-seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
         }
     ]
 }

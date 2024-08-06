@@ -207,6 +207,15 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
             }
         }
     }
+    // Check for tabs
+    const inputParamsWithTabIdentifiers = initNewComponentNodeData.inputParams.filter((param) => param.tabIdentifier) || []
+
+    for (const inputParam of inputParamsWithTabIdentifiers) {
+        const tabIdentifier = `${inputParam.tabIdentifier}_${existingComponentNodeData.id}`
+        let selectedTabValue = existingComponentNodeData.inputs[tabIdentifier] || inputParam.default
+        initNewComponentNodeData.inputs[tabIdentifier] = selectedTabValue
+        initNewComponentNodeData.inputs[selectedTabValue] = existingComponentNodeData.inputs[selectedTabValue]
+    }
 
     // Update outputs with existing outputs
     if (existingComponentNodeData.outputs) {
@@ -215,6 +224,24 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
                 initNewComponentNodeData.outputs[key] = existingComponentNodeData.outputs[key]
             }
         }
+    }
+
+    // Special case for Condition node to update outputAnchors
+    if (initNewComponentNodeData.name.includes('seqCondition')) {
+        const options = existingComponentNodeData.outputAnchors[0].options || []
+
+        const newOptions = []
+        for (let i = 0; i < options.length; i += 1) {
+            if (options[i].isAnchor) {
+                newOptions.push({
+                    ...options[i],
+                    id: `${initNewComponentNodeData.id}-output-${options[i].name}-Condition`,
+                    type: 'Condition'
+                })
+            }
+        }
+
+        initNewComponentNodeData.outputAnchors[0].options = newOptions
     }
 
     return initNewComponentNodeData
@@ -831,7 +858,7 @@ const createJsonArray = (labels) => {
         return {
             label: label,
             name: toCamelCase(label),
-            baseClasses: ['Agent', 'LLMNode', 'ToolNode'],
+            baseClasses: ['Condition'],
             isAnchor: true
         }
     })

@@ -143,17 +143,19 @@ class ConditionAgent_SeqAgents implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    documentation?: string
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Condition Agent'
         this.name = 'seqConditionAgent'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ConditionAgent'
         this.icon = 'condition.svg'
         this.category = 'Sequential Agents'
         this.description = 'Uses an agent to determine which route to take next'
         this.baseClasses = [this.type]
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-8.-conditional-agent-node'
         this.inputs = [
             {
                 label: 'Name',
@@ -330,13 +332,13 @@ class ConditionAgent_SeqAgents implements INode {
             {
                 label: 'Next',
                 name: 'next',
-                baseClasses: ['Agent', 'LLMNode', 'ToolNode'],
+                baseClasses: ['Condition'],
                 isAnchor: true
             },
             {
                 label: 'End',
                 name: 'end',
-                baseClasses: ['Agent', 'LLMNode', 'ToolNode'],
+                baseClasses: ['Condition'],
                 isAnchor: true
             }
         ]
