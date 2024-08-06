@@ -46,7 +46,7 @@ const createCredential = async (requestBody: any): Promise<Credential> => {
             await queryRunner.rollbackTransaction()
             throw error
         } finally {
-            queryRunner.release()
+            await queryRunner.release()
         }
     } catch (error) {
         throw new InternalFlowiseError(
@@ -69,7 +69,7 @@ const deleteCredentials = async (credentialId: string): Promise<DeleteResult> =>
         const queryRunner = appServer.AppDataSource.createQueryRunner()
         try {
             // step 1 - start transaction
-            queryRunner.startTransaction()
+            await queryRunner.startTransaction()
 
             // step 2 - delete rows in encryption_credential table with credential id
             await encryptionCredential.deleteByCredentialId(credentialId)
@@ -79,16 +79,16 @@ const deleteCredentials = async (credentialId: string): Promise<DeleteResult> =>
             if (!deleteResult) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
 
             // step 4 - commit transaction
-            queryRunner.commitTransaction()
+            await queryRunner.commitTransaction()
 
             // step 5 - return delete result
             return deleteResult
         } catch (error) {
             // step 5 - rollback transaction when error occur
-            queryRunner.rollbackTransaction()
+            await queryRunner.rollbackTransaction()
             throw error
         } finally {
-            queryRunner.release()
+            await queryRunner.release()
         }
     } catch (error) {
         throw new InternalFlowiseError(
@@ -193,7 +193,7 @@ const updateCredential = async (credentialId: string, requestBody: any): Promise
         const appServer = getRunningExpressApp()
         const queryRunner = appServer.AppDataSource.createQueryRunner()
         try {
-            queryRunner.startTransaction()
+            await queryRunner.startTransaction()
             // step 1 - check whether credential id exist
             const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({ id: credentialId })
             if (!credential) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
@@ -210,16 +210,16 @@ const updateCredential = async (credentialId: string, requestBody: any): Promise
             const updatedCredential = await appServer.AppDataSource.getRepository(Credential).save(credential)
 
             // step 5 - commit transaction
-            queryRunner.commitTransaction()
+            await queryRunner.commitTransaction()
 
             // step 6 - return updated credential
             return updatedCredential
         } catch (error) {
             // step 5 - rollback transaction
-            queryRunner.rollbackTransaction()
+            await queryRunner.rollbackTransaction()
             throw error
         } finally {
-            queryRunner.release()
+            await queryRunner.release()
         }
     } catch (error) {
         throw new InternalFlowiseError(
