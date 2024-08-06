@@ -141,17 +141,19 @@ class LLMNode_SeqAgents implements INode {
     baseClasses: string[]
     inputs?: INodeParams[]
     badge?: string
+    documentation?: string
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'LLM Node'
         this.name = 'seqLLMNode'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'LLMNode'
         this.icon = 'llmNode.svg'
         this.category = 'Sequential Agents'
         this.description = 'Run Chat Model and return the output'
         this.baseClasses = [this.type]
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-5.-llm-node'
         this.inputs = [
             {
                 label: 'Name',
@@ -177,9 +179,9 @@ class LLMNode_SeqAgents implements INode {
                 additionalParams: true
             },
             {
-                label: 'Start | Agent | LLM | Tool Node',
+                label: 'Start | Agent | Condition | LLM | Tool Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | LLMNode | ToolNode',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode',
                 list: true
             },
             {

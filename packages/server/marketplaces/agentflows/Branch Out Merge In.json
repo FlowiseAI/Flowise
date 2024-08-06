@@ -13,7 +13,7 @@
             "data": {
                 "id": "seqStart_0",
                 "label": "Start",
-                "version": 1,
+                "version": 2,
                 "name": "seqStart",
                 "type": "Start",
                 "baseClasses": ["Start"],
@@ -91,7 +91,7 @@
             "data": {
                 "id": "seqAgent_0",
                 "label": "Agent",
-                "version": 1,
+                "version": 2,
                 "name": "seqAgent",
                 "type": "Agent",
                 "baseClasses": ["Agent"],
@@ -125,6 +125,14 @@
                         "id": "seqAgent_0-input-humanMessagePrompt-string"
                     },
                     {
+                        "label": "Require Approval",
+                        "name": "interrupt",
+                        "description": "Require approval before executing tools. Will proceed when tools are not called",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "seqAgent_0-input-interrupt-boolean"
+                    },
+                    {
                         "label": "Format Prompt Values",
                         "name": "promptValues",
                         "description": "Assign values to the prompt variables. You can also use $flow.state.<variable-name> to get the state value",
@@ -133,6 +141,37 @@
                         "acceptVariable": true,
                         "list": true,
                         "id": "seqAgent_0-input-promptValues-json"
+                    },
+                    {
+                        "label": "Approval Prompt",
+                        "name": "approvalPrompt",
+                        "description": "Prompt for approval. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_0-input-approvalPrompt-string"
+                    },
+                    {
+                        "label": "Approve Button Text",
+                        "name": "approveButtonText",
+                        "description": "Text for approve button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "Yes",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_0-input-approveButtonText-string"
+                    },
+                    {
+                        "label": "Reject Button Text",
+                        "name": "rejectButtonText",
+                        "description": "Text for reject button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "No",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_0-input-rejectButtonText-string"
                     },
                     {
                         "label": "Update State",
@@ -241,14 +280,15 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
+                        "optional": true,
                         "id": "seqAgent_0-input-tools-Tool"
                     },
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqAgent_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqAgent_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -264,9 +304,13 @@
                     "systemMessagePrompt": "Only reply \"I am A\"",
                     "humanMessagePrompt": "",
                     "tools": "",
-                    "sequentialNode": ["{{seqStart_0.data.instance}}"],
+                    "sequentialNode": ["{{seqStart_0.data.instance}}", "{{seqStart_0.data.instance}}"],
                     "model": "",
+                    "interrupt": "",
                     "promptValues": "",
+                    "approvalPrompt": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                    "approveButtonText": "Yes",
+                    "rejectButtonText": "No",
                     "updateStateMemory": "updateStateMemoryUI",
                     "maxIterations": ""
                 },
@@ -283,7 +327,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 762,
+            "height": 877,
             "selected": false,
             "positionAbsolute": {
                 "x": 534.6891175301298,
@@ -294,14 +338,14 @@
         {
             "id": "seqAgent_1",
             "position": {
-                "x": 983.41414631527,
-                "y": -302.8933510311883
+                "x": 995.5938931003413,
+                "y": -373.94187394410403
             },
             "type": "customNode",
             "data": {
                 "id": "seqAgent_1",
                 "label": "Agent",
-                "version": 1,
+                "version": 2,
                 "name": "seqAgent",
                 "type": "Agent",
                 "baseClasses": ["Agent"],
@@ -335,6 +379,14 @@
                         "id": "seqAgent_1-input-humanMessagePrompt-string"
                     },
                     {
+                        "label": "Require Approval",
+                        "name": "interrupt",
+                        "description": "Require approval before executing tools. Will proceed when tools are not called",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "seqAgent_1-input-interrupt-boolean"
+                    },
+                    {
                         "label": "Format Prompt Values",
                         "name": "promptValues",
                         "description": "Assign values to the prompt variables. You can also use $flow.state.<variable-name> to get the state value",
@@ -343,6 +395,37 @@
                         "acceptVariable": true,
                         "list": true,
                         "id": "seqAgent_1-input-promptValues-json"
+                    },
+                    {
+                        "label": "Approval Prompt",
+                        "name": "approvalPrompt",
+                        "description": "Prompt for approval. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_1-input-approvalPrompt-string"
+                    },
+                    {
+                        "label": "Approve Button Text",
+                        "name": "approveButtonText",
+                        "description": "Text for approve button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "Yes",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_1-input-approveButtonText-string"
+                    },
+                    {
+                        "label": "Reject Button Text",
+                        "name": "rejectButtonText",
+                        "description": "Text for reject button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "No",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_1-input-rejectButtonText-string"
                     },
                     {
                         "label": "Update State",
@@ -451,14 +534,15 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
+                        "optional": true,
                         "id": "seqAgent_1-input-tools-Tool"
                     },
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqAgent_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqAgent_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -474,9 +558,13 @@
                     "systemMessagePrompt": "Only reply \"I am B\"",
                     "humanMessagePrompt": "",
                     "tools": "",
-                    "sequentialNode": ["{{seqAgent_0.data.instance}}"],
+                    "sequentialNode": ["{{seqAgent_0.data.instance}}", "{{seqAgent_0.data.instance}}"],
                     "model": "",
+                    "interrupt": "",
                     "promptValues": "",
+                    "approvalPrompt": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                    "approveButtonText": "Yes",
+                    "rejectButtonText": "No",
                     "updateStateMemory": "updateStateMemoryUI",
                     "maxIterations": ""
                 },
@@ -493,11 +581,11 @@
                 "selected": false
             },
             "width": 300,
-            "height": 762,
+            "height": 877,
             "selected": false,
             "positionAbsolute": {
-                "x": 983.41414631527,
-                "y": -302.8933510311883
+                "x": 995.5938931003413,
+                "y": -373.94187394410403
             },
             "dragging": false
         },
@@ -511,7 +599,7 @@
             "data": {
                 "id": "seqAgent_2",
                 "label": "Agent",
-                "version": 1,
+                "version": 2,
                 "name": "seqAgent",
                 "type": "Agent",
                 "baseClasses": ["Agent"],
@@ -545,6 +633,14 @@
                         "id": "seqAgent_2-input-humanMessagePrompt-string"
                     },
                     {
+                        "label": "Require Approval",
+                        "name": "interrupt",
+                        "description": "Require approval before executing tools. Will proceed when tools are not called",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "seqAgent_2-input-interrupt-boolean"
+                    },
+                    {
                         "label": "Format Prompt Values",
                         "name": "promptValues",
                         "description": "Assign values to the prompt variables. You can also use $flow.state.<variable-name> to get the state value",
@@ -553,6 +649,37 @@
                         "acceptVariable": true,
                         "list": true,
                         "id": "seqAgent_2-input-promptValues-json"
+                    },
+                    {
+                        "label": "Approval Prompt",
+                        "name": "approvalPrompt",
+                        "description": "Prompt for approval. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_2-input-approvalPrompt-string"
+                    },
+                    {
+                        "label": "Approve Button Text",
+                        "name": "approveButtonText",
+                        "description": "Text for approve button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "Yes",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_2-input-approveButtonText-string"
+                    },
+                    {
+                        "label": "Reject Button Text",
+                        "name": "rejectButtonText",
+                        "description": "Text for reject button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "No",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_2-input-rejectButtonText-string"
                     },
                     {
                         "label": "Update State",
@@ -661,14 +788,15 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
+                        "optional": true,
                         "id": "seqAgent_2-input-tools-Tool"
                     },
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqAgent_2-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqAgent_2-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -684,9 +812,13 @@
                     "systemMessagePrompt": "Only reply \"I am C\"",
                     "humanMessagePrompt": "",
                     "tools": "",
-                    "sequentialNode": ["{{seqAgent_0.data.instance}}"],
+                    "sequentialNode": ["{{seqAgent_0.data.instance}}", "{{seqAgent_0.data.instance}}"],
                     "model": "",
+                    "interrupt": "",
                     "promptValues": "",
+                    "approvalPrompt": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                    "approveButtonText": "Yes",
+                    "rejectButtonText": "No",
                     "updateStateMemory": "updateStateMemoryUI",
                     "maxIterations": ""
                 },
@@ -703,7 +835,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 762,
+            "height": 877,
             "selected": false,
             "positionAbsolute": {
                 "x": 1002.0147830660676,
@@ -721,7 +853,7 @@
             "data": {
                 "id": "seqAgent_3",
                 "label": "Agent",
-                "version": 1,
+                "version": 2,
                 "name": "seqAgent",
                 "type": "Agent",
                 "baseClasses": ["Agent"],
@@ -755,6 +887,14 @@
                         "id": "seqAgent_3-input-humanMessagePrompt-string"
                     },
                     {
+                        "label": "Require Approval",
+                        "name": "interrupt",
+                        "description": "Require approval before executing tools. Will proceed when tools are not called",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "seqAgent_3-input-interrupt-boolean"
+                    },
+                    {
                         "label": "Format Prompt Values",
                         "name": "promptValues",
                         "description": "Assign values to the prompt variables. You can also use $flow.state.<variable-name> to get the state value",
@@ -763,6 +903,37 @@
                         "acceptVariable": true,
                         "list": true,
                         "id": "seqAgent_3-input-promptValues-json"
+                    },
+                    {
+                        "label": "Approval Prompt",
+                        "name": "approvalPrompt",
+                        "description": "Prompt for approval. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_3-input-approvalPrompt-string"
+                    },
+                    {
+                        "label": "Approve Button Text",
+                        "name": "approveButtonText",
+                        "description": "Text for approve button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "Yes",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_3-input-approveButtonText-string"
+                    },
+                    {
+                        "label": "Reject Button Text",
+                        "name": "rejectButtonText",
+                        "description": "Text for reject button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "No",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_3-input-rejectButtonText-string"
                     },
                     {
                         "label": "Update State",
@@ -871,14 +1042,15 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
+                        "optional": true,
                         "id": "seqAgent_3-input-tools-Tool"
                     },
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqAgent_3-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqAgent_3-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -894,9 +1066,18 @@
                     "systemMessagePrompt": "Only reply \"I am D\"",
                     "humanMessagePrompt": "",
                     "tools": "",
-                    "sequentialNode": ["{{seqAgent_2.data.instance}}", "{{seqAgent_1.data.instance}}"],
+                    "sequentialNode": [
+                        "{{seqAgent_2.data.instance}}",
+                        "{{seqAgent_1.data.instance}}",
+                        "{{seqAgent_2.data.instance}}",
+                        "{{seqAgent_1.data.instance}}"
+                    ],
                     "model": "",
+                    "interrupt": "",
                     "promptValues": "",
+                    "approvalPrompt": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                    "approveButtonText": "Yes",
+                    "rejectButtonText": "No",
                     "updateStateMemory": "updateStateMemoryUI",
                     "maxIterations": ""
                 },
@@ -913,7 +1094,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 762,
+            "height": 877,
             "selected": false,
             "positionAbsolute": {
                 "x": 1388.5733958149945,
@@ -1048,7 +1229,7 @@
             "data": {
                 "id": "seqEnd_0",
                 "label": "End",
-                "version": 1,
+                "version": 2,
                 "name": "seqEnd",
                 "type": "End",
                 "baseClasses": ["End"],
@@ -1057,10 +1238,10 @@
                 "inputParams": [],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
-                        "id": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "type": "Agent | Condition | LLMNode | ToolNode",
+                        "id": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
                     }
                 ],
                 "inputs": {
@@ -1093,49 +1274,49 @@
             "source": "seqStart_0",
             "sourceHandle": "seqStart_0-output-seqStart-Start",
             "target": "seqAgent_0",
-            "targetHandle": "seqAgent_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqAgent_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqStart_0-seqStart_0-output-seqStart-Start-seqAgent_0-seqAgent_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
-            "source": "seqAgent_0",
-            "sourceHandle": "seqAgent_0-output-seqAgent-Agent",
-            "target": "seqAgent_2",
-            "targetHandle": "seqAgent_2-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqAgent_0-seqAgent_0-output-seqAgent-Agent-seqAgent_2-seqAgent_2-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqStart_0-seqStart_0-output-seqStart-Start-seqAgent_0-seqAgent_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
         },
         {
             "source": "seqAgent_0",
             "sourceHandle": "seqAgent_0-output-seqAgent-Agent",
             "target": "seqAgent_1",
-            "targetHandle": "seqAgent_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqAgent_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqAgent_0-seqAgent_0-output-seqAgent-Agent-seqAgent_1-seqAgent_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqAgent_0-seqAgent_0-output-seqAgent-Agent-seqAgent_1-seqAgent_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqAgent_0",
+            "sourceHandle": "seqAgent_0-output-seqAgent-Agent",
+            "target": "seqAgent_2",
+            "targetHandle": "seqAgent_2-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqAgent_0-seqAgent_0-output-seqAgent-Agent-seqAgent_2-seqAgent_2-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
         },
         {
             "source": "seqAgent_2",
             "sourceHandle": "seqAgent_2-output-seqAgent-Agent",
             "target": "seqAgent_3",
-            "targetHandle": "seqAgent_3-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqAgent_3-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqAgent_2-seqAgent_2-output-seqAgent-Agent-seqAgent_3-seqAgent_3-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqAgent_2-seqAgent_2-output-seqAgent-Agent-seqAgent_3-seqAgent_3-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
         },
         {
             "source": "seqAgent_1",
             "sourceHandle": "seqAgent_1-output-seqAgent-Agent",
             "target": "seqAgent_3",
-            "targetHandle": "seqAgent_3-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqAgent_3-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqAgent_1-seqAgent_1-output-seqAgent-Agent-seqAgent_3-seqAgent_3-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqAgent_1-seqAgent_1-output-seqAgent-Agent-seqAgent_3-seqAgent_3-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
         },
         {
             "source": "seqAgent_3",
             "sourceHandle": "seqAgent_3-output-seqAgent-Agent",
             "target": "seqEnd_0",
-            "targetHandle": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqAgent_3-seqAgent_3-output-seqAgent-Agent-seqEnd_0-seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqAgent_3-seqAgent_3-output-seqAgent-Agent-seqEnd_0-seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
         }
     ]
 }
