@@ -791,6 +791,33 @@ const updateDocumentStoreUsage = async (chatId: string, storeId: string | undefi
     }
 }
 
+const updateVectorStoreConfigOnly = async (data: ICommonObject) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+            id: data.storeId
+        })
+        if (!entity) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${data.storeId} not found`)
+        }
+
+        if (data.vectorStoreName) {
+            entity.vectorStoreConfig = JSON.stringify({
+                config: data.vectorStoreConfig,
+                name: data.vectorStoreName
+            })
+
+            const updatedEntity = await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+            return updatedEntity
+        }
+        return {}
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.updateVectorStoreConfig - ${getErrorMessage(error)}`
+        )
+    }
+}
 const saveVectorStoreConfig = async (data: ICommonObject) => {
     try {
         const appServer = getRunningExpressApp()
@@ -1182,5 +1209,6 @@ export default {
     getRecordManagerProviders,
     saveVectorStoreConfig,
     queryVectorStore,
-    deleteVectorStoreFromStore
+    deleteVectorStoreFromStore,
+    updateVectorStoreConfigOnly
 }

@@ -302,6 +302,19 @@ const saveVectorStoreConfig = async (req: Request, res: Response, next: NextFunc
     }
 }
 
+const updateVectorStoreConfigOnly = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.updateVectorStoreConfigOnly - body not provided!')
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.updateVectorStoreConfigOnly(body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const getEmbeddingProviders = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const apiResponse = await documentStoreService.getEmbeddingProviders()
@@ -348,5 +361,6 @@ export default {
     getRecordManagerProviders,
     saveVectorStoreConfig,
     queryVectorStore,
-    deleteVectorStoreFromStore
+    deleteVectorStoreFromStore,
+    updateVectorStoreConfigOnly
 }

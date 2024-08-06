@@ -18,6 +18,7 @@ const processChunks = (body) => client.post(`/document-store/loader/process`, bo
 
 const insertIntoVectorStore = (body) => client.post(`/document-store/vectorstore/insert`, body)
 const saveVectorStoreConfig = (body) => client.post(`/document-store/vectorstore/save`, body)
+const updateVectorStoreConfig = (body) => client.post(`/document-store/vectorstore/update`, body)
 const deleteVectorStoreDataFromStore = (storeId) => client.delete(`/document-store/vectorstore/${storeId}`)
 const queryVectorStore = (body) => client.post(`/document-store/vectorstore/query`, body)
 const getVectorStoreProviders = () => client.get('/document-store/components/vectorstore')
@@ -43,5 +44,6 @@ export default {
     getRecordManagerProviders,
     saveVectorStoreConfig,
     queryVectorStore,
-    deleteVectorStoreDataFromStore
+    deleteVectorStoreDataFromStore,
+    updateVectorStoreConfig
 }

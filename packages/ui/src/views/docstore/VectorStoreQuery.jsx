@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import ReactJson from 'flowise-react-json-view'
 import { cloneDeep } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 
 // material-ui
-import { Box, Card, Grid, Stack, Typography, OutlinedInput, IconButton } from '@mui/material'
+import { Box, Card, Grid, Stack, Typography, OutlinedInput, IconButton, Button } from '@mui/material'
 import Embeddings from '@mui/icons-material/DynamicFeed'
 import { useTheme, styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
 import chunks_emptySVG from '@/assets/images/chunks_empty.svg'
-import { IconSearch, IconFileStack } from '@tabler/icons-react'
+import { IconSearch, IconFileStack, IconDeviceFloppy, IconX } from '@tabler/icons-react'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -30,6 +30,7 @@ import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
 import { baseURL } from '@/store/constant'
 import { initNode } from '@/utils/genericHelper'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -54,8 +55,12 @@ const VectorStoreQuery = () => {
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
     const theme = useTheme()
+    const dispatch = useDispatch()
 
     useNotifier()
+
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const URLpath = document.location.pathname.toString().split('/')
     const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
@@ -72,6 +77,7 @@ const VectorStoreQuery = () => {
 
     const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
     const queryVectorStoreApi = useApi(documentsApi.queryVectorStore)
+    const updateVectorStoreConfigApi = useApi(documentsApi.updateVectorStoreConfig)
 
     const getVectorStoreNodeDetailsApi = useApi(nodesApi.getSpecificNode)
     const [selectedVectorStoreProvider, setSelectedVectorStoreProvider] = useState({})
@@ -96,6 +102,60 @@ const VectorStoreQuery = () => {
             inputs: selectedVectorStoreProvider.inputs
         }
         queryVectorStoreApi.request(data)
+    }
+
+    const saveConfig = async () => {
+        setLoading(true)
+        const data = {
+            storeId: storeId
+        }
+
+        if (selectedVectorStoreProvider.inputs) {
+            data.vectorStoreConfig = {}
+            data.vectorStoreName = selectedVectorStoreProvider.name
+            Object.keys(selectedVectorStoreProvider.inputs).map((key) => {
+                if (key === 'FLOWISE_CREDENTIAL_ID') {
+                    data.vectorStoreConfig['credential'] = selectedVectorStoreProvider.inputs[key]
+                } else {
+                    data.vectorStoreConfig[key] = selectedVectorStoreProvider.inputs[key]
+                }
+            })
+        }
+
+        try {
+            const updateResp = await documentsApi.updateVectorStoreConfig(data)
+            setLoading(false)
+            if (updateResp.data) {
+                enqueueSnackbar({
+                    message: 'Vector Store Config Successfully Updated',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        } catch (error) {
+            setLoading(false)
+            const errorData = error.response?.data || `${error.response?.status}: ${error.response?.statusText}`
+            enqueueSnackbar({
+                message: `Failed to update vector store config: ${errorData}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
     }
 
     useEffect(() => {
@@ -171,7 +231,17 @@ const VectorStoreQuery = () => {
                         title={documentStore?.name || 'Document Store'}
                         description='Retrieval Playground - Test your vector store retrieval settings'
                         onBack={() => navigate(-1)}
-                    ></ViewHeader>
+                    >
+                        <Button
+                            variant='outlined'
+                            color='secondary'
+                            sx={{ borderRadius: 2, height: '100%' }}
+                            startIcon={<IconDeviceFloppy />}
+                            onClick={saveConfig}
+                        >
+                            Save Config
+                        </Button>
+                    </ViewHeader>
                     <div style={{ width: '100%' }}></div>
                     <div>
                         <Grid container spacing={2}>

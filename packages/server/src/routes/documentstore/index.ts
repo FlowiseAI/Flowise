@@ -48,4 +48,7 @@ router.get('/components/vectorstore', documentStoreController.getVectorStoreProv
 // Get all Record Manager providers
 router.get('/components/recordmanager', documentStoreController.getRecordManagerProviders)
 
+// update the selected vector store from the playground
+router.post('/vectorstore/update', documentStoreController.updateVectorStoreConfigOnly)
+
 export default router
