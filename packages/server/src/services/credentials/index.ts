@@ -6,7 +6,7 @@ import { ICredentialReqBody, ICredentialReturnResponse } from '../../Interface'
 import { Credential } from '../../database/entities/Credential'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { decryptCredentialData } from '../../utils'
+import { redactCredentialWithPasswordType } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import encryption from '../encryption'
 import encryptionCredential from '../encryptionCredential'
@@ -93,7 +93,7 @@ const deleteCredentials = async (credentialId: string): Promise<DeleteResult> =>
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: credentialsService.deleteCredential - ${getErrorMessage(error)}`
+            `Error: credentialsService.deleteCredentials - ${getErrorMessage(error)}`
         )
     }
 }
@@ -132,38 +132,56 @@ const getAllCredentials = async (paramCredentialName: any) => {
     }
 }
 
-const getCredentialById = async (credentialId: string): Promise<any> => {
+/**
+ * Get a row for a specific credential id.
+ *
+ * @param credentialId - Id from Credential entity
+ * @returns `Omit<ICredentialReturnResponse, 'encryptedData'>`
+ *
+ */
+const getCredentialById = async (credentialId: string): Promise<Omit<ICredentialReturnResponse, 'encryptedData'>> => {
     try {
         const appServer = getRunningExpressApp()
+
+        // step 1 - get credential with id
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
             id: credentialId
         })
         if (!credential) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
         }
-        // Decrpyt credentialData
-        const decryptedCredentialData = await decryptCredentialData(
-            credential.encryptedData,
-            credential.credentialName,
-            appServer.nodesPool.componentCredentials
-        )
+
+        // step 2 - decrypt
+        let plainDataObj = (await encryption.decrypt(credential)).plainDataObj
+
+        // step 3 - prep data
+        if (credential.credentialName && appServer.nodesPool.componentCredentials) {
+            plainDataObj = redactCredentialWithPasswordType(
+                credential.credentialName,
+                plainDataObj,
+                appServer.nodesPool.componentCredentials
+            )
+        }
         const returnCredential: ICredentialReturnResponse = {
             ...credential,
-            plainDataObj: decryptedCredentialData
+            plainDataObj: plainDataObj
         }
+
+        // step 4 - remove encryptedData
         const dbResponse = omit(returnCredential, ['encryptedData'])
+
+        // step 5 - return Omit<ICredentialReturnResponse, 'encryptedData'>
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: credentialsService.createCredential - ${getErrorMessage(error)}`
+            `Error: credentialsService.getCredentialById - ${getErrorMessage(error)}`
         )
     }
 }
 
 /**
- * Delete rows in the `encryption_credential` and `credential` table for a specific `credentialId`.
- * Update a row for a specific credentialId.
+ * Update a row for a specific credential id.
  *
  * @param credentialId - Id from Credential entity
  * @param requestBody - ICredentialReqBody interface
