@@ -59,7 +59,7 @@ const createCredential = async (requestBody: any): Promise<Credential> => {
 /**
  * Delete rows in the `encryption_credential` and `credential` table for a specific `credentialId`.
  *
- * @param credentialId - string
+ * @param credentialId - Id from Credential entity
  * @returns `DeleteResult`
  *
  */
@@ -76,6 +76,7 @@ const deleteCredentials = async (credentialId: string): Promise<DeleteResult> =>
 
             // step 3 - delete rows in credential table with credential id
             const deleteResult = await appServer.AppDataSource.getRepository(Credential).delete({ id: credentialId })
+            if (!deleteResult) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
 
             // step 4 - commit transaction
             queryRunner.commitTransaction()
@@ -160,21 +161,48 @@ const getCredentialById = async (credentialId: string): Promise<any> => {
     }
 }
 
-const updateCredential = async (credentialId: string, requestBody: any): Promise<any> => {
+/**
+ * Delete rows in the `encryption_credential` and `credential` table for a specific `credentialId`.
+ * Update a row for a specific credentialId.
+ *
+ * @param credentialId - Id from Credential entity
+ * @param requestBody - ICredentialReqBody interface
+ * @returns `DeleteResult`
+ *
+ */
+const updateCredential = async (credentialId: string, requestBody: any): Promise<Credential> => {
     try {
         const appServer = getRunningExpressApp()
-        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
-        })
-        if (!credential) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
+        const queryRunner = appServer.AppDataSource.createQueryRunner()
+        try {
+            queryRunner.startTransaction()
+            // step 1 - check whether credential id exist
+            const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({ id: credentialId })
+            if (!credential) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
+
+            // step 2 - decrypt encrypted data
+            const decryptedCredentialData = await encryption.decrypt(credential)
+
+            // step 3 - Prep requestBody to acceptable format for update
+            requestBody.plainDataObj = { ...decryptedCredentialData.plainDataObj, ...requestBody.plainDataObj }
+            const credentialEntity = await transformToCredentialEntity(requestBody)
+
+            // step 4 - Update credential
+            await appServer.AppDataSource.getRepository(Credential).merge(credential, credentialEntity.newCredential)
+            const updatedCredential = await appServer.AppDataSource.getRepository(Credential).save(credential)
+
+            // step 5 - commit transaction
+            queryRunner.commitTransaction()
+
+            // step 6 - return updated credential
+            return updatedCredential
+        } catch (error) {
+            // step 5 - rollback transaction
+            queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            queryRunner.release()
         }
-        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
-        requestBody.plainDataObj = { ...decryptedCredentialData, ...requestBody.plainDataObj }
-        const credentialEntity = await transformToCredentialEntity(requestBody)
-        await appServer.AppDataSource.getRepository(Credential).merge(credential, credentialEntity.newCredential)
-        const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
-        return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -232,7 +260,7 @@ const transformToCredentialEntity = async (body: ICredentialReqBody) => {
             // step 2 - get information of encryption result and encryptionId
             const encryptionResult = await encryption.encrypt(body.plainDataObj)
             credentialBody.encryptedData = encryptionResult.encryptedData
-            encryptionId = encryptionResult.encryptionId
+            encryptionId = encryptionResult.encryption.id
         }
 
         // step 3 - assign credentialBody to newCredential object

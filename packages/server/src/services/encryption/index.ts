@@ -48,32 +48,34 @@ const resync = async (): Promise<void> => {
         // step 2 - loop credential then loop each encryption to find the correct 1 to perform insert/update into encryption_credential table
         for (const credential of allCredential) {
             for (const encryption of allEncryption) {
-                // step 3 - try decrypt encryptedData with encryptionKey
-                const decryptResult = await decrypt(credential.encryptedData, encryption.encryptionKey)
-
-                // step 4 - decryptResult is not void means decrypt successful
-                if (decryptResult) {
-                    console.info(`credential.id: ${credential.id} and encryption.id: ${encryption.id} are a match.`)
-                    // step 5a - get all rows in encryptCrednetial table for a specific credentialId
+                let decrypted = true
+                try {
+                    // step 3 - try decrypt credential with encryptionKey
+                    await decrypt(credential, encryption)
+                } catch (error) {
+                    decrypted = false
+                }
+                if (decrypted) {
+                    // step 4a - get all rows in encryptCrednetial table for a specific credentialId
                     const dbResponse = await encryptionCredential.findByCredentialId(credential.id)
 
                     if (dbResponse.length == 0) {
-                        // step 5b - insert new encryption credential row when credentialId is not found
+                        // step 4b - insert new encryption credential row when credentialId is not found
                         await encryptionCredential.create(encryption.id, credential.id)
                     } else if (dbResponse.length == 1) {
-                        // step 5b - update existing encryption credential rows when credentialId is found
+                        // step 4b - update existing encryption credential rows when credentialId is found
                         await encryptionCredential.updateEncryptionId(encryption.id, credential.id)
                     }
-                    // step 5c - update credential isEncryptionKeyLost to false
+                    // step 4c - update credential isEncryptionKeyLost to false
                     await credentials.updateIsEncryptionKeyLost(credential.id, false)
 
+                    // step 4d - go to next credential because already found the correct encryption
                     break
                 } else {
-                    console.info(`credential.id: ${credential.id} and encryption.id: ${encryption.id} are a not match.`)
-                    // step 5a - update credential isEncryptionKeyLost to true
+                    // step 4a - update credential isEncryptionKeyLost to true
                     await credentials.updateIsEncryptionKeyLost(credential.id, true)
 
-                    // step 5b - delete relationship of encryptioncredential that are not relatvant anymore
+                    // step 4b - delete relationship of encryptioncredential that are not relatvant anymore
                     await encryptionCredential.deleteByEncryptionId(encryption.id, credential.id)
                 }
             }
@@ -165,40 +167,45 @@ const create = async (encryption: Partial<Encryption>): Promise<Encryption> => {
 }
 
 /**
- * Return correct encryption based on database's encryption_credential table
- * @param {Credential} credential
+ * If `credential` is provided it will return `corresponding encryption` else it will return `latest encryption`.
+ *
+ * @param credential - Credential entity
  * @returns {Promise<Encryption>}
+ *
  */
 const get = async (credential?: Credential): Promise<Encryption> => {
     try {
         const appServer = getRunningExpressApp()
 
-        // step 1 - if credentialId have input find it's own encryption through database's encryption_credential, encryption and credentialId tables
-        if (credential) {
-            const credentialId: string = credential.id
-            const dbResponse: Encryption[] = await appServer.AppDataSource.createQueryBuilder()
-                .leftJoinAndSelect('encryption_credential', 'ec', 'ec.credentialId = c.id')
-                .leftJoinAndSelect('encryption', 'e', 'e.id = ec.encryptionId')
-                .where('c.id = :credentialId', { credentialId })
-                .select(['e'])
-                .getRawMany()
-            if (dbResponse.length == 1) return dbResponse[0]
-            // if found multiple encryption key then probably need to loop through and check which encryption key is the correct for this credential?
-            // I don't think it will return multiple encryption key as it will only return 1 encryption key
-            else if (dbResponse.length > 1) console.error(`credentialId: ${credential.id} have multiple encryptionKey`)
+        // step 1 - check whether credential is pass into this function
+        if (!credential) {
+            // step 2 - return latest encryption based on updatedDate descending
+            const dbResponse = await appServer.AppDataSource.getRepository(Encryption).find({
+                select: { id: true, encryptionKey: true },
+                order: { updatedDate: 'DESC' }
+            })
+
+            // step 2a - return the first encryption key
+            if (dbResponse.length != 0) return dbResponse[0]
+            // step 2b - throw error when there are no encryption key available
+            else throw new Error('No encryption key available')
         }
 
-        // step 2 - return latest latest encryption based on updatedDate descending
-        const dbResponse = await appServer.AppDataSource.getRepository(Encryption).find({
-            select: { id: true, encryptionKey: true },
-            order: { updatedDate: 'DESC' }
-        })
-        if (dbResponse.length != 0) {
-            return dbResponse[0]
-        }
+        // step 2 - find corresponding encryptions for a specific credential id
+        const credentialId: string = credential.id
+        const dbResponse: Encryption[] = await appServer.AppDataSource.getRepository(Encryption)
+            .createQueryBuilder('e')
+            .leftJoinAndSelect('encryption_credential', 'ec', 'ec.encryptionId = e.id')
+            .leftJoinAndSelect('credential', 'c', 'ec.credentialId = c.id')
+            .where('c.id = :credentialId', { credentialId })
+            .getMany()
 
-        // step 3 - not able to find encryption key
-        throw new Error('No encryption key available')
+        // step 2a - return the first encryption key
+        if (dbResponse.length == 1) return dbResponse[0]
+        // step 2b - throw error when crendential have multiple encryptions
+        else if (dbResponse.length > 1) throw new Error(`credentialId: ${credential.id} have multiple encryptions`)
+        // step 2c - throw error when credential do not have
+        throw new Error(`credentialId: ${credential.id}'s encryption is lost`)
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.get - ${getErrorMessage(error)}`)
     }
@@ -208,18 +215,19 @@ const get = async (credential?: Credential): Promise<Encryption> => {
  * Encrypt encrypted data.
  *
  * @param plainDataObj - ICredentialDataDecrypted interface
- * @param encryption - Encryption entity
- * @returns `{ encryptionId: string; encryptedData: string }`
+ * @returns `{ encryption: Encryption; encryptedData: string }`
  *
+ * @remarks Returned `encryption` is the encryption used during encryption
  */
-const encrypt = async (
-    plainDataObj: ICredentialDataDecrypted,
-    encryption?: Encryption
-): Promise<{ encryptionId: string; encryptedData: string }> => {
+const encrypt = async (plainDataObj: ICredentialDataDecrypted): Promise<{ encryption: Encryption; encryptedData: string }> => {
     try {
-        if (!encryption) encryption = await get()
+        // step 1 - always get the latest encryption key
+        const encryption: Encryption = await get()
+
+        // step 2 - encrypt plainDataObj
         const encryptedData: string = AES.encrypt(JSON.stringify(plainDataObj), encryption.encryptionKey).toString()
-        return { encryptionId: encryption.id, encryptedData }
+
+        return { encryption, encryptedData }
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.encrypt - ${getErrorMessage(error)}`)
     }
@@ -228,24 +236,26 @@ const encrypt = async (
 /**
  * Decrypt encrypted data.
  *
- * @param encryptedData - encryptedData from Credential entity
- * @param encryptionKey - encryptionKey from Encryption entity
- * @returns string | void
+ * @param credential - Credential entity
+ * @param encryptionKey - Encryption entity
+ * @returns `{ encryption: Encryption; plainDataObj: ICredentialDataDecrypted }`
  *
- * @remarks `void` means `encryptedData` is  not decryptable
+ * @remarks Returned `encryption` is the encryption used during decryption
  */
-const decrypt = async (encryptedData: string, encryptionKey?: string): Promise<string | void> => {
+const decrypt = async (
+    credential: Credential,
+    encryption?: Encryption
+): Promise<{ encryption: Encryption; plainDataObj: ICredentialDataDecrypted }> => {
     try {
         // step 1 - find correct encryption if not provided
-        if (!encryptionKey) encryptionKey = (await get()).encryptionKey
+        if (!encryption) encryption = await get(credential)
 
         // step 2 - decrypt encryptedData with encryption available
-        return AES.decrypt(encryptedData, encryptionKey).toString(enc.Utf8)
+        const plainDataObj = JSON.parse(AES.decrypt(credential.encryptedData, encryption.encryptionKey).toString(enc.Utf8))
+
+        return { encryption, plainDataObj }
     } catch (error) {
-        // step 3 - return void when failed decryption
-        console.error(`Error: encryptionService.decrypt - encryptedData: ${encryptedData} not able to decrypt`)
-        console.error(`Error: encryptionService.decrypt - ${getErrorMessage(error)}`)
-        return
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionService.decrypt - ${getErrorMessage(error)}`)
     }
 }
 
