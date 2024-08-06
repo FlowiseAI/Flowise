@@ -8,7 +8,7 @@ overrides:
     '@qdrant/openapi-typescript-fetch': 1.2.6
     '@google/generative-ai': ^0.15.0
     openai: 4.51.0
-    '@langchain/aws': ^0.0.6
+    '@langchain/aws': 0.0.6
 
 importers:
     .:
@@ -128,7 +128,7 @@ importers:
                 specifier: ^0.2.1
                 version: 0.2.12(encoding@0.1.13)(langchain@0.2.12)(openai@4.51.0(encoding@0.1.13))
             '@langchain/aws':
-                specifier: ^0.0.6
+                specifier: 0.0.6
                 version: 0.0.6(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0))(@aws-sdk/client-sts@3.624.0)(langchain@0.2.12)(openai@4.51.0(encoding@0.1.13))(zod@3.23.8)
             '@langchain/cohere':
                 specifier: ^0.0.7
@@ -10192,7 +10192,7 @@ packages:
             '@gomomento/sdk-core': '*'
             '@gomomento/sdk-web': ^1.51.1
             '@langchain/anthropic': '*'
-            '@langchain/aws': ^0.0.6
+            '@langchain/aws': 0.0.6
             '@langchain/cohere': '*'
             '@langchain/community': '*'
             '@langchain/google-genai': '*'
@@ -16287,7 +16287,7 @@ snapshots:
     '@aws-crypto/crc32@3.0.0':
         dependencies:
             '@aws-crypto/util': 3.0.0
-            '@aws-sdk/types': 3.418.0
+            '@aws-sdk/types': 3.609.0
             tslib: 1.14.1
 
     '@aws-crypto/crc32@5.2.0':
@@ -16358,7 +16358,7 @@ snapshots:
 
     '@aws-crypto/util@3.0.0':
         dependencies:
-            '@aws-sdk/types': 3.418.0
+            '@aws-sdk/types': 3.609.0
             '@aws-sdk/util-utf8-browser': 3.259.0
             tslib: 1.14.1
 
