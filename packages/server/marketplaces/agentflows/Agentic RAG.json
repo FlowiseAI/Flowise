@@ -201,7 +201,8 @@
                     "model": "",
                     "promptValues": "{\"text\":\"{{question}}\"}",
                     "llmStructuredOutput": "",
-                    "updateStateMemory": "updateStateMemoryUI"
+                    "updateStateMemory": "updateStateMemoryUI",
+                    "selectedUpdateStateMemoryTab_seqLLMNode_0": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
                     {
@@ -227,8 +228,8 @@
         {
             "id": "seqStart_0",
             "position": {
-                "x": 429.0188107292025,
-                "y": 277.11423822901907
+                "x": 438.8554922368403,
+                "y": 259.0803221316833
             },
             "type": "customNode",
             "data": {
@@ -296,8 +297,8 @@
             "width": 300,
             "height": 382,
             "positionAbsolute": {
-                "x": 429.0188107292025,
-                "y": 277.11423822901907
+                "x": 438.8554922368403,
+                "y": 259.0803221316833
             },
             "selected": false,
             "dragging": false
@@ -769,7 +770,8 @@
                     "model": "",
                     "promptValues": "{\"question\":\"{{question}}\"}",
                     "llmStructuredOutput": "",
-                    "updateStateMemory": "updateStateMemoryUI"
+                    "updateStateMemory": "updateStateMemoryUI",
+                    "selectedUpdateStateMemoryTab_seqLLMNode_1": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
                     {
@@ -795,8 +797,8 @@
         {
             "id": "seqLLMNode_2",
             "position": {
-                "x": 2205.875202632436,
-                "y": 209.03456469283117
+                "x": 2227.3672008899293,
+                "y": 202.42164215206395
             },
             "type": "customNode",
             "data": {
@@ -990,7 +992,8 @@
                     "model": "",
                     "promptValues": "{\"question\":\"{{question}}\",\"context\":\"$flow.state.sources\"}",
                     "llmStructuredOutput": "",
-                    "updateStateMemory": "updateStateMemoryUI"
+                    "updateStateMemory": "updateStateMemoryUI",
+                    "selectedUpdateStateMemoryTab_seqLLMNode_2": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
                     {
@@ -1008,16 +1011,16 @@
             "height": 450,
             "selected": false,
             "positionAbsolute": {
-                "x": 2205.875202632436,
-                "y": 209.03456469283117
+                "x": 2227.3672008899293,
+                "y": 202.42164215206395
             },
             "dragging": false
         },
         {
             "id": "seqLoop_0",
             "position": {
-                "x": 2559.3078506376914,
-                "y": 827.739264836123
+                "x": 2557.3813854226105,
+                "y": 836.5518871718609
             },
             "type": "customNode",
             "data": {
@@ -1060,16 +1063,16 @@
             "height": 241,
             "selected": false,
             "positionAbsolute": {
-                "x": 2559.3078506376914,
-                "y": 827.739264836123
+                "x": 2557.3813854226105,
+                "y": 836.5518871718609
             },
             "dragging": false
         },
         {
             "id": "seqEnd_0",
             "position": {
-                "x": 2552.677329133902,
-                "y": 439.10969421030416
+                "x": 2566.2338203424747,
+                "y": 472.1743069141402
             },
             "type": "customNode",
             "data": {
@@ -1101,8 +1104,8 @@
             "height": 143,
             "selected": false,
             "positionAbsolute": {
-                "x": 2552.677329133902,
-                "y": 439.10969421030416
+                "x": 2566.2338203424747,
+                "y": 472.1743069141402
             },
             "dragging": false
         },
@@ -1582,7 +1585,9 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "stateMemory": "stateMemoryUI"
+                    "stateMemory": "stateMemoryUI",
+                    "selectedStateTab_seqState_0": "stateMemoryUI",
+                    "stateMemoryUI": "[{\"key\":\"sources\",\"type\":\"Replace\",\"defaultValue\":\"\",\"actions\":\"\",\"id\":0}]"
                 },
                 "outputAnchors": [
                     {
@@ -1608,8 +1613,8 @@
         {
             "id": "seqLLMNode_3",
             "position": {
-                "x": 1477.8265021173233,
-                "y": 184.8087848768496
+                "x": 1484.4394246580907,
+                "y": 133.55863518590365
             },
             "type": "customNode",
             "data": {
@@ -1803,7 +1808,8 @@
                     "model": "",
                     "promptValues": "",
                     "llmStructuredOutput": "",
-                    "updateStateMemory": "updateStateMemoryUI"
+                    "updateStateMemory": "updateStateMemoryUI",
+                    "selectedUpdateStateMemoryTab_seqLLMNode_3": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
                     {
@@ -1821,8 +1827,8 @@
             "height": 450,
             "selected": false,
             "positionAbsolute": {
-                "x": 1477.8265021173233,
-                "y": 184.8087848768496
+                "x": 1484.4394246580907,
+                "y": 133.55863518590365
             },
             "dragging": false
         },
@@ -2424,8 +2430,8 @@
         {
             "id": "stickyNote_1",
             "position": {
-                "x": -259.34389200648127,
-                "y": 190.60834640491902
+                "x": -239.50512438417962,
+                "y": 177.3825013233846
             },
             "type": "stickyNote",
             "data": {
@@ -2470,8 +2476,8 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": -259.34389200648127,
-                "y": 190.60834640491902
+                "x": -239.50512438417962,
+                "y": 177.3825013233846
             }
         },
         {
@@ -2530,8 +2536,8 @@
         {
             "id": "seqToolNode_0",
             "position": {
-                "x": 1125.4209936219386,
-                "y": 74.65954911972659
+                "x": 1145.2597612442403,
+                "y": 82.9257022956856
             },
             "type": "customNode",
             "data": {
@@ -2727,8 +2733,8 @@
             "height": 528,
             "selected": false,
             "positionAbsolute": {
-                "x": 1125.4209936219386,
-                "y": 74.65954911972659
+                "x": 1145.2597612442403,
+                "y": 82.9257022956856
             },
             "dragging": false
         },
@@ -2939,20 +2945,20 @@
             "id": "seqConditionAgent_0-seqConditionAgent_0-output-rewrite-Condition-seqLLMNode_1-seqLLMNode_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
         },
         {
-            "source": "seqLLMNode_1",
-            "sourceHandle": "seqLLMNode_1-output-seqLLMNode-LLMNode",
-            "target": "seqLoop_0",
-            "targetHandle": "seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqLLMNode_1-seqLLMNode_1-output-seqLLMNode-LLMNode-seqLoop_0-seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
-        },
-        {
             "source": "seqLLMNode_2",
             "sourceHandle": "seqLLMNode_2-output-seqLLMNode-LLMNode",
             "target": "seqEnd_0",
             "targetHandle": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
             "id": "seqLLMNode_2-seqLLMNode_2-output-seqLLMNode-LLMNode-seqEnd_0-seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqLLMNode_1",
+            "sourceHandle": "seqLLMNode_1-output-seqLLMNode-LLMNode",
+            "target": "seqLoop_0",
+            "targetHandle": "seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqLLMNode_1-seqLLMNode_1-output-seqLLMNode-LLMNode-seqLoop_0-seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
         }
     ]
 }
