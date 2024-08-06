@@ -12,18 +12,20 @@ class Start_SeqAgents implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    documentation?: string
     credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Start'
         this.name = 'seqStart'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Start'
         this.icon = 'start.svg'
         this.category = 'Sequential Agents'
         this.description = 'Starting point of the conversation'
         this.baseClasses = [this.type]
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-1.-start-node'
         this.inputs = [
             {
                 label: 'Chat Model',

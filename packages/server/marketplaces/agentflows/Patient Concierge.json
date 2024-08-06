@@ -7,13 +7,13 @@
             "id": "seqAgent_0",
             "position": {
                 "x": 775.8784674767973,
-                "y": -100.09604051672113
+                "y": -222.95218911189113
             },
             "type": "customNode",
             "data": {
                 "id": "seqAgent_0",
                 "label": "Agent",
-                "version": 1,
+                "version": 2,
                 "name": "seqAgent",
                 "type": "Agent",
                 "baseClasses": ["Agent"],
@@ -47,6 +47,14 @@
                         "id": "seqAgent_0-input-humanMessagePrompt-string"
                     },
                     {
+                        "label": "Require Approval",
+                        "name": "interrupt",
+                        "description": "Require approval before executing tools. Will proceed when tools are not called",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "seqAgent_0-input-interrupt-boolean"
+                    },
+                    {
                         "label": "Format Prompt Values",
                         "name": "promptValues",
                         "description": "Assign values to the prompt variables. You can also use $flow.state.<variable-name> to get the state value",
@@ -55,6 +63,37 @@
                         "acceptVariable": true,
                         "list": true,
                         "id": "seqAgent_0-input-promptValues-json"
+                    },
+                    {
+                        "label": "Approval Prompt",
+                        "name": "approvalPrompt",
+                        "description": "Prompt for approval. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_0-input-approvalPrompt-string"
+                    },
+                    {
+                        "label": "Approve Button Text",
+                        "name": "approveButtonText",
+                        "description": "Text for approve button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "Yes",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_0-input-approveButtonText-string"
+                    },
+                    {
+                        "label": "Reject Button Text",
+                        "name": "rejectButtonText",
+                        "description": "Text for reject button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "No",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_0-input-rejectButtonText-string"
                     },
                     {
                         "label": "Update State",
@@ -163,14 +202,15 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
+                        "optional": true,
                         "id": "seqAgent_0-input-tools-Tool"
                     },
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqAgent_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqAgent_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -186,9 +226,13 @@
                     "systemMessagePrompt": "You are the Assistant in our Patient Concierge system. The patient has verified their identity and is now allowed access to only their information. \n\nUse the function tool \"patient_information_database\" to look up patient procedures that match the Patient's name and ID with \"patient_name\" and \"user_id\" in that database. \n\nDo not make up information if it is not represented in the function tool database calls. Use this date format when to referring to dates in the databases: MM-DD-YYYY\n\nDO NOT ALLOW PATIENTS TO PROCEDE TO ACCESS OTHER PATIENT INFORMATION OR IT MAY RESULT IN A PHI VIOLATION.",
                     "humanMessagePrompt": "",
                     "tools": ["{{customTool_1.data.instance}}"],
-                    "sequentialNode": ["{{seqCondition_0.data.instance}}"],
+                    "sequentialNode": ["{{seqCondition_0.data.instance}}", "{{seqCondition_0.data.instance}}"],
                     "model": "",
+                    "interrupt": "",
                     "promptValues": "",
+                    "approvalPrompt": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                    "approveButtonText": "Yes",
+                    "rejectButtonText": "No",
                     "updateStateMemory": "updateStateMemoryUI",
                     "maxIterations": "",
                     "selectedUpdateStateMemoryTab_seqAgent_0": "updateStateMemoryUI"
@@ -206,11 +250,11 @@
                 "selected": false
             },
             "width": 300,
-            "height": 764,
+            "height": 877,
             "selected": false,
             "positionAbsolute": {
                 "x": 775.8784674767973,
-                "y": -100.09604051672113
+                "y": -222.95218911189113
             },
             "dragging": false
         },
@@ -224,7 +268,7 @@
             "data": {
                 "id": "seqEnd_0",
                 "label": "End",
-                "version": 1,
+                "version": 2,
                 "name": "seqEnd",
                 "type": "End",
                 "baseClasses": ["End"],
@@ -233,10 +277,10 @@
                 "inputParams": [],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
-                        "id": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "type": "Agent | Condition | LLMNode | ToolNode",
+                        "id": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
                     }
                 ],
                 "inputs": {
@@ -265,7 +309,7 @@
             "data": {
                 "id": "seqState_0",
                 "label": "State",
-                "version": 1,
+                "version": 2,
                 "name": "seqState",
                 "type": "State",
                 "baseClasses": ["State"],
@@ -273,7 +317,7 @@
                 "description": "A centralized state object, updated by nodes in the graph, passing from one node to another",
                 "inputParams": [
                     {
-                        "label": "State",
+                        "label": "Custom State",
                         "name": "stateMemory",
                         "type": "tabs",
                         "tabIdentifier": "selectedStateTab",
@@ -281,7 +325,7 @@
                         "default": "stateMemoryUI",
                         "tabs": [
                             {
-                                "label": "State (Table)",
+                                "label": "Custom State (Table)",
                                 "name": "stateMemoryUI",
                                 "type": "datagrid",
                                 "description": "Structure for state. By default, state contains \"messages\" that got updated with each message sent and received.",
@@ -313,7 +357,7 @@
                                 "additionalParams": true
                             },
                             {
-                                "label": "State (Code)",
+                                "label": "Custom State (Code)",
                                 "name": "stateMemoryCode",
                                 "type": "code",
                                 "description": "JSON object representing the state",
@@ -329,6 +373,7 @@
                 "inputAnchors": [],
                 "inputs": {
                     "stateMemory": "stateMemoryUI",
+                    "selectedStateTab_seqState_0": "stateMemoryUI",
                     "stateMemoryUI": "[{\"key\":\"userInfo\",\"type\":\"Replace\",\"defaultValue\":\"\",\"actions\":\"\",\"id\":1}]"
                 },
                 "outputAnchors": [
@@ -344,7 +389,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 253,
+            "height": 251,
             "selected": false,
             "positionAbsolute": {
                 "x": -339.5104253267711,
@@ -362,7 +407,7 @@
             "data": {
                 "id": "seqStart_0",
                 "label": "Start",
-                "version": 1,
+                "version": 2,
                 "name": "seqStart",
                 "type": "Start",
                 "baseClasses": ["Start"],
@@ -422,7 +467,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 383,
+            "height": 382,
             "selected": false,
             "positionAbsolute": {
                 "x": 60.339339995889304,
@@ -440,7 +485,7 @@
             "data": {
                 "id": "seqCondition_0",
                 "label": "Condition",
-                "version": 1,
+                "version": 2,
                 "name": "seqCondition",
                 "type": "Condition",
                 "baseClasses": ["Condition"],
@@ -564,31 +609,32 @@
                     "conditionName": "If user has been verified",
                     "sequentialNode": ["{{seqStart_0.data.instance}}"],
                     "condition": "",
-                    "conditionUI": "[{\"variable\":\"$flow.state.userInfo\",\"operation\":\"Is Not Empty\",\"value\":\"\",\"output\":\"Concierge\",\"actions\":\"\",\"id\":0}]",
                     "selectedConditionFunctionTab_seqCondition_0": "conditionUI",
-                    "conditionFunction": ""
+                    "conditionUI": "[{\"variable\":\"$flow.state.userInfo\",\"operation\":\"Is Not Empty\",\"value\":\"\",\"output\":\"Concierge\",\"actions\":\"\",\"id\":0}]"
                 },
                 "outputAnchors": [
                     {
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
-                                "id": "seqCondition_0-output-concierge-Agent|LLMNode|ToolNode",
+                                "id": "seqCondition_0-output-concierge-Condition",
                                 "name": "concierge",
                                 "label": "Concierge",
-                                "type": "Agent | LLMNode | ToolNode",
+                                "type": "Condition",
                                 "isAnchor": true
                             },
                             {
-                                "id": "seqCondition_0-output-end-Agent|LLMNode|ToolNode",
+                                "id": "seqCondition_0-output-end-Condition",
                                 "name": "end",
                                 "label": "End",
-                                "type": "Agent | LLMNode | ToolNode",
+                                "type": "Condition",
                                 "isAnchor": true
                             }
-                        ]
+                        ],
+                        "default": "next"
                     }
                 ],
                 "outputs": {
@@ -597,7 +643,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 475,
+            "height": 474,
             "selected": false,
             "positionAbsolute": {
                 "x": 418.50150866955073,
@@ -777,7 +823,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 670,
+            "height": 669,
             "selected": false,
             "positionAbsolute": {
                 "x": -316.6467912940658,
@@ -795,7 +841,7 @@
             "data": {
                 "id": "seqAgent_1",
                 "label": "Agent",
-                "version": 1,
+                "version": 2,
                 "name": "seqAgent",
                 "type": "Agent",
                 "baseClasses": ["Agent"],
@@ -829,6 +875,14 @@
                         "id": "seqAgent_1-input-humanMessagePrompt-string"
                     },
                     {
+                        "label": "Require Approval",
+                        "name": "interrupt",
+                        "description": "Require approval before executing tools. Will proceed when tools are not called",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "seqAgent_1-input-interrupt-boolean"
+                    },
+                    {
                         "label": "Format Prompt Values",
                         "name": "promptValues",
                         "description": "Assign values to the prompt variables. You can also use $flow.state.<variable-name> to get the state value",
@@ -837,6 +891,37 @@
                         "acceptVariable": true,
                         "list": true,
                         "id": "seqAgent_1-input-promptValues-json"
+                    },
+                    {
+                        "label": "Approval Prompt",
+                        "name": "approvalPrompt",
+                        "description": "Prompt for approval. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_1-input-approvalPrompt-string"
+                    },
+                    {
+                        "label": "Approve Button Text",
+                        "name": "approveButtonText",
+                        "description": "Text for approve button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "Yes",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_1-input-approveButtonText-string"
+                    },
+                    {
+                        "label": "Reject Button Text",
+                        "name": "rejectButtonText",
+                        "description": "Text for reject button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "No",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_1-input-rejectButtonText-string"
                     },
                     {
                         "label": "Update State",
@@ -945,14 +1030,15 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
+                        "optional": true,
                         "id": "seqAgent_1-input-tools-Tool"
                     },
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqAgent_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqAgent_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -968,12 +1054,15 @@
                     "systemMessagePrompt": "You are an Identity Verfication Specialist in the Patient Concierge system. You job is to verify the identity of the patient before any questions about their upcoming procedure can be addressed.\n\nBegin by greeting the patient and informing them that they need to verify their identity before proceeding. If verification is successful, allow the patient to ask questions about their procedure. If verification fails, kindly inform the patient and offer assistance for re-verification. Make sure both the patient name and date of birth matches records in the patient identity database before proceeding (\"patient_name\", \"date_of_birth\")\n\nSteps:\n1. Greet the patient.\n2. Inform them about the need for identity verification.\n3. Request the patient's full name and date of birth.\n4. Verify the information against the records.\n5. If verification is successful, handle any questions about the upcoming procedure.\n6. If verification fails, provide appropriate instructions or assistance.\n\nExample Interaction:\n1. “To verify your identity, please provide your full name and date of birth.”\n2. If verification is successful:\n    - “Thank you for verifying your identity. How can I assist you with your upcoming procedure?”\n3. If verification fails:\n    - “I’m sorry, but your identity could not be verified. Please try again or contact support for assistance.”\n\nUse the function tool \"patient_identity_database\" to verify identity. User might give date of birth in different format, be smart and convert it into MM-DD-YYYY format. When verifying identity, if the information does not match, reply with \"Sorry your information is not in our database.\"",
                     "humanMessagePrompt": "",
                     "tools": ["{{customTool_0.data.instance}}"],
-                    "sequentialNode": ["{{seqCondition_0.data.instance}}"],
+                    "sequentialNode": ["{{seqCondition_0.data.instance}}", "{{seqCondition_0.data.instance}}"],
                     "model": "",
+                    "interrupt": "",
                     "promptValues": "",
+                    "approvalPrompt": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                    "approveButtonText": "Yes",
+                    "rejectButtonText": "No",
                     "updateStateMemory": "updateStateMemoryUI",
                     "maxIterations": "",
-                    "updateStateMemoryUI": "[]",
                     "selectedUpdateStateMemoryTab_seqAgent_1": "updateStateMemoryCode",
                     "updateStateMemoryCode": "const result = $flow.output;\nconst usedTools = result.usedTools ?? [];\n\n// Check if correct tool is being used\nconst calledTool =  usedTools.find((usedTool) => usedTool.tool === \"patient_identity_database\");\nif (!calledTool) return {};\n\n\ntry {\n  const parsedToolOutput = JSON.parse(calledTool.toolOutput);\n  return {\n    userInfo: parsedToolOutput // parsing tool output since its always string\n  };\n} catch (e) {\n  return {};\n}\n"
                 },
@@ -990,7 +1079,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 764,
+            "height": 877,
             "selected": false,
             "positionAbsolute": {
                 "x": 773.440353076265,
@@ -1066,7 +1155,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 328,
+            "height": 327,
             "selected": false,
             "positionAbsolute": {
                 "x": -664.9588570520918,
@@ -1116,7 +1205,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 286,
+            "height": 285,
             "selected": false,
             "positionAbsolute": {
                 "x": 416.23687182130743,
@@ -1166,7 +1255,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 286,
+            "height": 285,
             "selected": false,
             "positionAbsolute": {
                 "x": 406.451652299109,
@@ -1177,14 +1266,14 @@
         {
             "id": "seqEnd_1",
             "position": {
-                "x": 1126.4753085175494,
-                "y": 1297.921087662632
+                "x": 1141.757749450836,
+                "y": 1414.623363880458
             },
             "type": "customNode",
             "data": {
                 "id": "seqEnd_1",
                 "label": "End",
-                "version": 1,
+                "version": 2,
                 "name": "seqEnd",
                 "type": "End",
                 "baseClasses": ["End"],
@@ -1193,10 +1282,10 @@
                 "inputParams": [],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
-                        "id": "seqEnd_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "type": "Agent | Condition | LLMNode | ToolNode",
+                        "id": "seqEnd_1-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
                     }
                 ],
                 "inputs": {
@@ -1209,8 +1298,8 @@
             "width": 300,
             "height": 143,
             "positionAbsolute": {
-                "x": 1126.4753085175494,
-                "y": 1297.921087662632
+                "x": 1141.757749450836,
+                "y": 1414.623363880458
             },
             "selected": false,
             "dragging": false
@@ -1225,10 +1314,11 @@
             "data": {
                 "id": "stickyNote_0",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1277,10 +1367,11 @@
             "data": {
                 "id": "stickyNote_1",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1329,10 +1420,11 @@
             "data": {
                 "id": "stickyNote_2",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1381,10 +1473,11 @@
             "data": {
                 "id": "stickyNote_3",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1433,10 +1526,11 @@
             "data": {
                 "id": "stickyNote_4",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1485,10 +1579,11 @@
             "data": {
                 "id": "stickyNote_5",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1537,10 +1632,11 @@
             "data": {
                 "id": "stickyNote_6",
                 "label": "Sticky Note",
-                "version": 1,
+                "version": 2,
                 "name": "stickyNote",
                 "type": "StickyNote",
                 "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
                 "category": "Utilities",
                 "description": "Add a sticky note",
                 "inputParams": [
@@ -1614,14 +1710,6 @@
             "id": "seqStart_0-seqStart_0-output-seqStart-Start-seqCondition_0-seqCondition_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
         },
         {
-            "source": "seqCondition_0",
-            "sourceHandle": "seqCondition_0-output-end-Agent|LLMNode|ToolNode",
-            "target": "seqAgent_1",
-            "targetHandle": "seqAgent_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqCondition_0-seqCondition_0-output-end-Agent|LLMNode|ToolNode-seqAgent_1-seqAgent_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
             "source": "customTool_0",
             "sourceHandle": "customTool_0-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
             "target": "seqAgent_1",
@@ -1641,25 +1729,33 @@
             "source": "seqAgent_0",
             "sourceHandle": "seqAgent_0-output-seqAgent-Agent",
             "target": "seqEnd_0",
-            "targetHandle": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqAgent_0-seqAgent_0-output-seqAgent-Agent-seqEnd_0-seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqAgent_0-seqAgent_0-output-seqAgent-Agent-seqEnd_0-seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
         },
         {
             "source": "seqAgent_1",
             "sourceHandle": "seqAgent_1-output-seqAgent-Agent",
             "target": "seqEnd_1",
-            "targetHandle": "seqEnd_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqEnd_1-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqAgent_1-seqAgent_1-output-seqAgent-Agent-seqEnd_1-seqEnd_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqAgent_1-seqAgent_1-output-seqAgent-Agent-seqEnd_1-seqEnd_1-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
         },
         {
             "source": "seqCondition_0",
-            "sourceHandle": "seqCondition_0-output-concierge-Agent|LLMNode|ToolNode",
+            "sourceHandle": "seqCondition_0-output-concierge-Condition",
             "target": "seqAgent_0",
-            "targetHandle": "seqAgent_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqAgent_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqCondition_0-seqCondition_0-output-concierge-Agent|LLMNode|ToolNode-seqAgent_0-seqAgent_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqCondition_0-seqCondition_0-output-concierge-Condition-seqAgent_0-seqAgent_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqCondition_0",
+            "sourceHandle": "seqCondition_0-output-end-Condition",
+            "target": "seqAgent_1",
+            "targetHandle": "seqAgent_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqCondition_0-seqCondition_0-output-end-Condition-seqAgent_1-seqAgent_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
         }
     ]
 }
