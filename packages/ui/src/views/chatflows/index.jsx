@@ -80,6 +80,8 @@ const Chatflows = () => {
         if (getAllChatflowsApi.error) {
             if (getAllChatflowsApi.error?.response?.status === 401) {
                 setNoAccessDialogOpenOpen(true)
+            } else {
+                setError(getAllChatflowsApi.error)
             }
         }
     }, [getAllChatflowsApi.error])

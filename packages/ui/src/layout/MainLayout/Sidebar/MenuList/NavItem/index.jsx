@@ -199,7 +199,11 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile, trigger }) => {
                 </ListItemIcon>
                 <ListItemText
                     primary={
-                        <Typography variant='body2' color='inherit'>
+                        <Typography
+                            variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'}
+                            color='inherit'
+                            sx={{ my: 0.5 }}
+                        >
                             {item.title}
                         </Typography>
                     }
@@ -209,7 +213,8 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile, trigger }) => {
                                 variant='caption'
                                 color='#027D45'
                                 sx={{
-                                    ...theme.typography.subMenuCaption
+                                    ...theme.typography.subMenuCaption,
+                                    mt: -0.6
                                 }}
                                 display='block'
                                 gutterBottom
@@ -218,10 +223,12 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile, trigger }) => {
                             </Typography>
                         )
                     }
+                    sx={{ my: 'auto' }}
                 />
                 {item.isBeta && (
                     <Chip
                         sx={{
+                            my: 'auto',
                             width: 'max-content',
                             fontWeight: 700,
                             fontSize: '0.65rem',
