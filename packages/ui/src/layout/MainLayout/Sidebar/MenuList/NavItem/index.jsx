@@ -143,6 +143,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
             {item.isBeta && (
                 <Chip
                     sx={{
+                        my: 'auto',
                         width: 'max-content',
                         fontWeight: 700,
                         fontSize: '0.65rem',
