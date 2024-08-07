@@ -547,7 +547,8 @@ export const buildFlow = async ({
                     uploads,
                     baseURL,
                     socketIO,
-                    socketIOClientId
+                    socketIOClientId,
+                    componentNodes: componentNodes as ICommonObject
                 })
 
                 // Save dynamic variables

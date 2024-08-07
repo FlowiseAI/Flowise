@@ -32,7 +32,6 @@ import { App } from '../../index'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { cloneDeep, omit } from 'lodash'
 import telemetryService from '../telemetry'
-import { In } from 'typeorm'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
