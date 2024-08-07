@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
-import { getBaseClasses, getInputVariables } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, getInputVariables } from '../../../src/utils'
 import { PromptTemplateInput } from '@langchain/core/prompts'
 import { Langfuse } from 'langfuse';
 
@@ -13,6 +13,7 @@ class PromptLangfuse_Prompts implements INode {
     category: string
     author: string
     baseClasses: string[]
+    credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
@@ -25,6 +26,12 @@ class PromptLangfuse_Prompts implements INode {
         this.author = 'Lucas Cruz'
         this.description = 'Fetch schema from LangFuse to represent a prompt for an LLM'
         this.baseClasses = [...getBaseClasses(PromptTemplate)]
+        this.credential = {
+            label: 'Langfuse Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['langfuseApi'],
+        }
         this.inputs = [
             {
                 label: 'Prompt Name',
@@ -43,8 +50,18 @@ class PromptLangfuse_Prompts implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const langfuse = new Langfuse()
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const langFuseSecretKey = getCredentialParam('langFuseSecretKey', credentialData, nodeData)
+        const langFusePublicKey = getCredentialParam('langFusePublicKey', credentialData, nodeData)
+        const langFuseEndpoint = getCredentialParam('langFuseEndpoint', credentialData, nodeData)
+
+        const langfuse = new Langfuse({
+            secretKey: langFuseSecretKey,
+            publicKey: langFusePublicKey,
+            baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com',
+            sdkIntegration: 'Flowise',
+        })
         
         const langfusePrompt = await langfuse.getPrompt(nodeData.inputs?.template as string)
         const template = langfusePrompt.getLangchainPrompt()
