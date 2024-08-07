@@ -626,10 +626,10 @@ importers:
                 version: 16.4.5
             flowise-embed:
                 specifier: latest
-                version: 1.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+                version: 1.3.10(bufferutil@4.0.8)(utf-8-validate@6.0.4)
             flowise-embed-react:
                 specifier: latest
-                version: 1.0.2(@types/node@22.1.0)(flowise-embed@1.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.8)(terser@5.31.3)(typescript@5.5.4)
+                version: 1.0.2(@types/node@22.1.0)(flowise-embed@1.3.10(bufferutil@4.0.8)(utf-8-validate@6.0.4))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.8)(terser@5.31.3)(typescript@5.5.4)
             flowise-react-json-view:
                 specifier: '*'
                 version: 1.21.7(@types/react@18.3.3)(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -8279,8 +8279,8 @@ packages:
             flowise-embed: '*'
             react: 18.x
 
-    flowise-embed@1.3.9:
-        resolution: { integrity: sha512-kxUGqIXCDSWCKUQQq6q4qfFwIZdcNFCs+bJrEnixK1RNTyMYo6wNB2eXhE1Amk9psi26erK00X30l/5uk+ZVJQ== }
+    flowise-embed@1.3.10:
+        resolution: { integrity: sha512-YJrq16nXdoF9lh5yR2JvYvs3ouL08lFZduJ/wmaL3K/EjdG3av0p6TkyEgRut4j7RQBiUGv+FWJEFM2jp1kRJA== }
 
     flowise-react-json-view@1.21.7:
         resolution: { integrity: sha512-oFjwtSLJkUWk6waLh8heCQ4o9b60FJRA2X8LefaZp5WaJvj/Rr2HILjk+ocf1JkfTcq8jc6t2jfIybg4leWsaQ== }
@@ -26292,7 +26292,7 @@ snapshots:
 
     extract-zip@2.0.1:
         dependencies:
-            debug: 4.3.4
+            debug: 4.3.6(supports-color@5.5.0)
             get-stream: 5.2.0
             yauzl: 2.10.0
         optionalDependencies:
@@ -26608,10 +26608,10 @@ snapshots:
 
     flatted@3.3.1: {}
 
-    flowise-embed-react@1.0.2(@types/node@22.1.0)(flowise-embed@1.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.8)(terser@5.31.3)(typescript@5.5.4):
+    flowise-embed-react@1.0.2(@types/node@22.1.0)(flowise-embed@1.3.10(bufferutil@4.0.8)(utf-8-validate@6.0.4))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.8)(terser@5.31.3)(typescript@5.5.4):
         dependencies:
             '@ladle/react': 2.5.1(@types/node@22.1.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.77.8)(terser@5.31.3)(typescript@5.5.4)
-            flowise-embed: 1.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+            flowise-embed: 1.3.10(bufferutil@4.0.8)(utf-8-validate@6.0.4)
             react: 18.3.1
         transitivePeerDependencies:
             - '@types/node'
@@ -26625,7 +26625,7 @@ snapshots:
             - terser
             - typescript
 
-    flowise-embed@1.3.9(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    flowise-embed@1.3.10(bufferutil@4.0.8)(utf-8-validate@6.0.4):
         dependencies:
             '@babel/core': 7.25.2
             '@ts-stack/markdown': 1.5.0
@@ -26979,7 +26979,7 @@ snapshots:
         dependencies:
             basic-ftp: 5.0.5
             data-uri-to-buffer: 6.0.2
-            debug: 4.3.4
+            debug: 4.3.6(supports-color@5.5.0)
             fs-extra: 11.2.0
         transitivePeerDependencies:
             - supports-color
@@ -27735,7 +27735,7 @@ snapshots:
     http-proxy-agent@7.0.2:
         dependencies:
             agent-base: 7.1.1
-            debug: 4.3.4
+            debug: 4.3.6(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -31433,7 +31433,7 @@ snapshots:
         dependencies:
             '@tootallnate/quickjs-emscripten': 0.23.0
             agent-base: 7.1.1
-            debug: 4.3.4
+            debug: 4.3.6(supports-color@5.5.0)
             get-uri: 6.0.3
             http-proxy-agent: 7.0.2
             https-proxy-agent: 7.0.5
@@ -32490,7 +32490,7 @@ snapshots:
     proxy-agent@6.3.0:
         dependencies:
             agent-base: 7.1.1
-            debug: 4.3.4
+            debug: 4.3.6(supports-color@5.5.0)
             http-proxy-agent: 7.0.2
             https-proxy-agent: 7.0.5
             lru-cache: 7.18.3
@@ -34058,7 +34058,7 @@ snapshots:
     socks-proxy-agent@8.0.4:
         dependencies:
             agent-base: 7.1.1
-            debug: 4.3.4
+            debug: 4.3.6(supports-color@5.5.0)
             socks: 2.8.3
         transitivePeerDependencies:
             - supports-color
