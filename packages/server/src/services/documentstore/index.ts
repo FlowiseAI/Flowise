@@ -855,13 +855,10 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
             entity.recordManagerConfig = null
         }
 
-        if (
-            entity.status !== DocumentStoreStatus.VECTOR_STORE_SYNC &&
-            (data.vectorStoreName || data.recordManagerName || data.embeddingName)
-        ) {
-            // if the store is not already in sync, mark it as configured
+        if (entity.status !== DocumentStoreStatus.UPSERTED && (data.vectorStoreName || data.recordManagerName || data.embeddingName)) {
+            // if the store is not already in sync, mark it as sync
             // this also means that the store is not yet sync'ed to vector store
-            entity.status = DocumentStoreStatus.VECTOR_STORE_CONFIGURED
+            entity.status = DocumentStoreStatus.SYNC
         }
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
         return entity
@@ -877,7 +874,7 @@ const insertIntoVectorStore = async (data: ICommonObject) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await saveVectorStoreConfig(data)
-        entity.status = DocumentStoreStatus.VECTOR_STORE_SYNCING
+        entity.status = DocumentStoreStatus.UPSERTING
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
 
         // TODO: to be moved into a worker thread...
@@ -957,7 +954,7 @@ const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject) => {
             }
         })
 
-        entity.status = DocumentStoreStatus.VECTOR_STORE_SYNC
+        entity.status = DocumentStoreStatus.UPSERTED
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
 
         return indexResult ?? { result: 'Successfully Upserted' }
@@ -986,7 +983,7 @@ const getEmbeddingProviders = async () => {
 const getVectorStoreProviders = async () => {
     try {
         const dbResponse = await nodesService.getAllNodesForCategory('Vector Stores')
-        return dbResponse.filter((node) => !node.tags?.includes('LlamaIndex'))
+        return dbResponse.filter((node) => !node.tags?.includes('LlamaIndex') && node.name !== 'documentStoreVS')
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

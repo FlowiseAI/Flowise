@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import ReactJson from 'flowise-react-json-view'
@@ -56,6 +56,7 @@ const VectorStoreQuery = () => {
     const navigate = useNavigate()
     const theme = useTheme()
     const dispatch = useDispatch()
+    const inputRef = useRef(null)
 
     useNotifier()
 
@@ -91,6 +92,21 @@ const VectorStoreQuery = () => {
         }
         setExpandedChunkDialogProps(dialogProps)
         setShowExpandedChunkDialog(true)
+    }
+
+    const handleEnter = (e) => {
+        // Check if IME composition is in progress
+        const isIMEComposition = e.isComposing || e.keyCode === 229
+        if (e.key === 'Enter' && query && !isIMEComposition) {
+            if (!e.shiftKey && query) {
+                if (inputRef.current) {
+                    inputRef.current.blur()
+                }
+                doQuery()
+            }
+        } else if (e.key === 'Enter') {
+            e.preventDefault()
+        }
     }
 
     const doQuery = () => {
@@ -163,6 +179,9 @@ const VectorStoreQuery = () => {
             setTimeTaken(queryVectorStoreApi.data.timeTaken)
             setRetrievalError(undefined)
             setLoading(false)
+            if (inputRef.current) {
+                inputRef.current.focus()
+            }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -256,12 +275,13 @@ const VectorStoreQuery = () => {
                                     <OutlinedInput
                                         size='small'
                                         multiline={true}
-                                        rows={2}
+                                        rows={4}
                                         sx={{ mt: 1 }}
                                         type='string'
                                         fullWidth
-                                        key='query'
+                                        inputRef={inputRef}
                                         onChange={(e) => setQuery(e.target.value)}
+                                        onKeyDown={handleEnter}
                                         value={query ?? ''}
                                         endAdornment={
                                             <IconButton variant='contained' onClick={doQuery}>

@@ -365,24 +365,36 @@ const DocumentStoreDetails = () => {
                             >
                                 <IconTrash />
                             </IconButton>
-                            {(documentStore?.status === 'STALE' || documentStore?.status === 'VS_SYNCING') && (
+                            <StyledButton
+                                variant='contained'
+                                sx={{ borderRadius: 2, height: '100%', color: 'white' }}
+                                startIcon={<IconPlus />}
+                                onClick={listLoaders}
+                            >
+                                Add Document Loader
+                            </StyledButton>
+                            {(documentStore?.status === 'STALE' || documentStore?.status === 'UPSERTING') && (
                                 <Button variant='outlined' sx={{ mr: 2 }} startIcon={<IconRefresh />} onClick={onConfirm}>
                                     Refresh
                                 </Button>
                             )}
-                            {documentStore?.status === 'VS_SYNCING' && (
+                            {documentStore?.status === 'UPSERTING' && (
                                 <Chip
                                     variant='raised'
-                                    label='Syncing to Vector Store'
+                                    label='Upserting to Vector Store'
                                     color='warning'
                                     sx={{ borderRadius: 2, height: '100%' }}
                                 />
                             )}
-                            {documentStore?.totalChunks > 0 && documentStore?.status !== 'VS_SYNCING' && (
+                            {documentStore?.totalChunks > 0 && documentStore?.status !== 'UPSERTING' && (
                                 <>
                                     <Button
-                                        variant='outlined'
-                                        sx={{ borderRadius: 2, height: '100%' }}
+                                        variant='contained'
+                                        sx={{
+                                            borderRadius: 2,
+                                            height: '100%'
+                                        }}
+                                        color='secondary'
                                         startIcon={<IconListDetails />}
                                         onClick={() => showStoredChunks('all')}
                                     >
@@ -405,7 +417,7 @@ const DocumentStoreDetails = () => {
                                     </Button>
                                 </>
                             )}
-                            {documentStore?.totalChunks > 0 && documentStore?.status === 'VS_SYNC' && (
+                            {documentStore?.totalChunks > 0 && documentStore?.status === 'UPSERTED' && (
                                 <Button
                                     variant='contained'
                                     sx={{
@@ -422,14 +434,6 @@ const DocumentStoreDetails = () => {
                                     Retrieval Query
                                 </Button>
                             )}
-                            <StyledButton
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%', color: 'white' }}
-                                startIcon={<IconPlus />}
-                                onClick={listLoaders}
-                            >
-                                Add Document Loader
-                            </StyledButton>
                         </ViewHeader>
                         {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
                             <Stack flexDirection='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>

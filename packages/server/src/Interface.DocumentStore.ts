@@ -6,9 +6,8 @@ export enum DocumentStoreStatus {
     SYNCING = 'SYNCING',
     STALE = 'STALE',
     NEW = 'NEW',
-    VECTOR_STORE_CONFIGURED = 'VS_CONFIGURED',
-    VECTOR_STORE_SYNCING = 'VS_SYNCING',
-    VECTOR_STORE_SYNC = 'VS_SYNC'
+    UPSERTING = 'UPSERTING',
+    UPSERTED = 'UPSERTED'
 }
 
 export interface IDocumentStore {

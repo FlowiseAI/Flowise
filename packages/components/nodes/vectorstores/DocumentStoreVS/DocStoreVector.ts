@@ -1,7 +1,7 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { DataSource } from 'typeorm'
 
-class DocStore_DocumentLoaders implements INode {
+class DocStore_VectorStores implements INode {
     label: string
     name: string
     version: number
@@ -15,14 +15,14 @@ class DocStore_DocumentLoaders implements INode {
     badge: string
 
     constructor() {
-        this.label = 'Document Store VS'
+        this.label = 'Document Store (Vector)'
         this.name = 'documentStoreVS'
         this.version = 1.0
         this.type = 'DocumentStoreVS'
         this.icon = 'dstore.svg'
         this.badge = 'New'
         this.category = 'Vector Stores'
-        this.description = `Search and Retrieve documents from Document Store`
+        this.description = `Search and retrieve documents from Document Store`
         this.baseClasses = [this.type]
         this.inputs = [
             {
@@ -60,7 +60,7 @@ class DocStore_DocumentLoaders implements INode {
 
             const stores = await appDataSource.getRepository(databaseEntities['DocumentStore']).find()
             for (const store of stores) {
-                if (store.status === 'VS_SYNC') {
+                if (store.status === 'UPSERTED') {
                     const obj = {
                         name: store.id,
                         label: store.name,
@@ -106,7 +106,7 @@ class DocStore_DocumentLoaders implements INode {
         // Prepare Vector Store Node Data
         const vStoreNodeData = _createVectorStoreNodeData(options.componentNodes, data, embeddingObj)
 
-        // finally create the Vector Store or Retriever object (data.output)
+        // Finally create the Vector Store or Retriever object (data.output)
         const vectorStoreObj = await _createVectorStoreObject(options.componentNodes, data)
         const retrieverOrVectorStore = await vectorStoreObj.init(vStoreNodeData, '', options)
         if (!retrieverOrVectorStore) {
@@ -171,4 +171,4 @@ const _createVectorStoreObject = async (componentNodes: ICommonObject, data: ICo
     return vStoreNodeInstance
 }
 
-module.exports = { nodeClass: DocStore_DocumentLoaders }
+module.exports = { nodeClass: DocStore_VectorStores }
