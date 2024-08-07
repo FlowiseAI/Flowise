@@ -16,7 +16,7 @@ const CopyToClipboardButton = (props) => {
         >
             <IconClipboard
                 style={{ width: '20px', height: '20px' }}
-                color={props.isLoading ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                color={props.isLoading ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#278838'}
             />
         </IconButton>
     )

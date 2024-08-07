@@ -15,7 +15,7 @@ const ThumbsDownButton = (props) => {
         >
             <IconThumbDown
                 style={{ width: '20px', height: '20px' }}
-                color={props.rating === 'THUMBS_DOWN' ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#1e88e5'}
+                color={props.rating === 'THUMBS_DOWN' ? '#9e9e9e' : customization.isDarkMode ? 'white' : '#278838'}
             />
         </IconButton>
     )
