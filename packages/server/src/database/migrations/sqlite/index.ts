@@ -17,6 +17,7 @@ import { AddFeedback1707213619308 } from './1707213619308-AddFeedback'
 import { AddUpsertHistoryEntity1709814301358 } from './1709814301358-AddUpsertHistoryEntity'
 import { AddLead1710832117612 } from './1710832117612-AddLead'
 import { AddLeadToChatMessage1711537986113 } from './1711537986113-AddLeadToChatMessage'
+import { AddVectorStoreConfigToDocStore1715861032479 } from './1715861032479-AddVectorStoreConfigToDocStore'
 import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
 import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlow'
@@ -46,6 +47,7 @@ export const sqliteMigrations = [
     AddLeadToChatMessage1711537986113,
     AddAgentReasoningToChatMessage1714679514451,
     AddTypeToChatFlow1716300000000,
+    AddVectorStoreConfigToDocStore1715861032479,
     AddApiKey1720230151480,
     AddActionToChatMessage1721078251523
 ]

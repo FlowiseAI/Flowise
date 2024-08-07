@@ -201,6 +201,58 @@ class Postgres_VectorStores implements INode {
             } catch (e) {
                 throw new Error(e)
             }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const user = getCredentialParam('user', credentialData, nodeData)
+            const password = getCredentialParam('password', credentialData, nodeData)
+            const _tableName = nodeData.inputs?.tableName as string
+            const tableName = _tableName ? _tableName : 'documents'
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const additionalConfig = nodeData.inputs?.additionalConfig as string
+            const recordManager = nodeData.inputs?.recordManager
+
+            let additionalConfiguration = {}
+            if (additionalConfig) {
+                try {
+                    additionalConfiguration = typeof additionalConfig === 'object' ? additionalConfig : JSON.parse(additionalConfig)
+                } catch (exception) {
+                    throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
+                }
+            }
+
+            const postgresConnectionOptions = {
+                ...additionalConfiguration,
+                type: 'postgres',
+                host: nodeData.inputs?.host as string,
+                port: nodeData.inputs?.port as number,
+                username: user,
+                password: password,
+                database: nodeData.inputs?.database as string
+            }
+
+            const args = {
+                postgresConnectionOptions: postgresConnectionOptions as DataSourceOptions,
+                tableName: tableName
+            }
+
+            const vectorStore = await TypeORMVectorStore.fromDataSource(embeddings, args)
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = tableName
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await vectorStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    await vectorStore.delete({ ids })
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
         }
     }
 
