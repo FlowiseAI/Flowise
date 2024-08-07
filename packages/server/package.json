@@ -70,6 +70,7 @@
         "flowise-ui": "workspace:^",
         "http-errors": "^2.0.0",
         "http-status-codes": "^2.3.0",
+        "langchainhub": "^0.0.11",
         "lodash": "^4.17.21",
         "moment": "^2.29.3",
         "moment-timezone": "^0.5.34",
