@@ -484,7 +484,7 @@
                 {
                     "label": "gpt-4o-mini-2024-07-18",
                     "name": "gpt-4o-mini-2024-07-18"
-                },                
+                },
                 {
                     "label": "gpt-4o (latest)",
                     "name": "gpt-4o"
@@ -492,11 +492,11 @@
                 {
                     "label": "gpt-4o-2024-08-06",
                     "name": "gpt-4o-2024-08-06"
-                },                      
+                },
                 {
                     "label": "gpt-4o-2024-05-13",
                     "name": "gpt-4o-2024-05-13"
-                },                
+                },
                 {
                     "label": "gpt-4 (latest)",
                     "name": "gpt-4"
