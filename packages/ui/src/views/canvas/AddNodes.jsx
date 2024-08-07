@@ -178,6 +178,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             setNodes(filteredResult)
             accordianCategories['Multi Agents'] = true
             accordianCategories['Sequential Agents'] = true
+            accordianCategories['Memory'] = true
             setCategoryExpanded(accordianCategories)
         } else {
             const taggedNodes = groupByTags(nodes, newTabValue)

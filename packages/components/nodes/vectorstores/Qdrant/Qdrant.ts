@@ -291,6 +291,69 @@ class Qdrant_VectorStores implements INode {
             } catch (e) {
                 throw new Error(e)
             }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const qdrantServerUrl = nodeData.inputs?.qdrantServerUrl as string
+            const collectionName = nodeData.inputs?.qdrantCollection as string
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
+            const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
+
+            const port = Qdrant_VectorStores.determinePortByUrl(qdrantServerUrl)
+
+            const client = new QdrantClient({
+                url: qdrantServerUrl,
+                apiKey: qdrantApiKey,
+                port: port
+            })
+
+            const dbConfig: QdrantLibArgs = {
+                client,
+                url: qdrantServerUrl,
+                collectionName,
+                collectionConfig: {
+                    vectors: {
+                        size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                        distance: qdrantSimilarity ?? 'Cosine'
+                    }
+                }
+            }
+
+            const vectorStore = new QdrantVectorStore(embeddings, dbConfig)
+
+            vectorStore.delete = async (params: { ids: string[] }): Promise<void> => {
+                const { ids } = params
+
+                if (ids?.length) {
+                    try {
+                        client.delete(collectionName, {
+                            points: ids
+                        })
+                    } catch (e) {
+                        console.error('Failed to delete')
+                    }
+                }
+            }
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = collectionName
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await vectorStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    await vectorStore.delete({ ids })
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
         }
     }
 
