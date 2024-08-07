@@ -124,7 +124,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                 }
                 secondary={
                     item.caption && (
-                        <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption }} display='block' gutterBottom>
+                        <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption, mt: -0.6 }} display='block' gutterBottom>
                             {item.caption}
                         </Typography>
                     )
