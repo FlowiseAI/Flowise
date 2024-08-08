@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { baseURL } from '@/store/constant'
+import * as Constants from '@/store/constant'
 
 const apiClient = axios.create({
-    baseURL: `${baseURL}/api/v1`,
+    baseURL: `${Constants.baseURL}/api/v1`,
     withCredentials: true,
     headers: {
         'Content-type': 'application/json'
@@ -10,6 +10,9 @@ const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use(async function (config) {
+    const baseURL = sessionStorage.getItem('baseURL') || Constants.baseURL // Fallback URL
+    config.baseURL = `${baseURL}/api/v1`
+
     const username = localStorage.getItem('username')
     const password = localStorage.getItem('password')
 

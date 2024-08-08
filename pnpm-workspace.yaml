@@ -1,4 +1,7 @@
 packages:
+    - 'apps/web'
+    - 'apps/desktop'
+    - 'packages-answers/*'
     - 'packages/components'
     - 'packages/server'
     - 'packages/ui'

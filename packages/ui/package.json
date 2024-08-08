@@ -62,8 +62,8 @@
         "yup": "^0.32.9"
     },
     "scripts": {
-        "dev": "vite",
-        "build": "vite build",
+        "not:dev": "vite",
+        "not:build": "vite build",
         "clean": "rimraf build",
         "nuke": "rimraf build node_modules .turbo"
     },

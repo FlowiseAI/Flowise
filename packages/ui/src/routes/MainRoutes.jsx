@@ -43,7 +43,7 @@ const MainRoutes = {
     element: <MainLayout />,
     children: [
         {
-            path: '/',
+            path: '',
             element: <Chatflows />
         },
         {

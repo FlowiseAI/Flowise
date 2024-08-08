@@ -7,10 +7,10 @@ const ErrorBoundary = ({ error }) => {
     const theme = useTheme()
 
     const copyToClipboard = () => {
-        const errorMessage = `Status: ${error.response.status}\n${error.response.data.message}`
+        const errorMessage = `Status: ${error.response?.status || error.code}\n${error.response?.data?.message || error.message}`
         navigator.clipboard.writeText(errorMessage)
     }
-
+    console.log('Error', error)
     return (
         <Box sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2, padding: '20px', maxWidth: '1280px' }}>
             <Stack flexDirection='column' sx={{ alignItems: 'center', gap: 3 }}>
@@ -28,9 +28,9 @@ const ErrorBoundary = ({ error }) => {
                             <IconCopy />
                         </IconButton>
                         <pre style={{ margin: 0 }}>
-                            <code>{`Status: ${error.response.status}`}</code>
+                            <code>{`Status: ${error.response?.status || error.code}`}</code>
                             <br />
-                            <code>{error.response.data.message}</code>
+                            <code>{error.response?.data?.message || error.message}</code>
                         </pre>
                     </Box>
                 </Card>

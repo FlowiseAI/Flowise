@@ -1,0 +1,21 @@
+{
+    "extends": "tsconfig/nextjs.json",
+    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+    "exclude": ["node_modules"],
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "baseUrl": ".",
+        "paths": {
+            "@utils/*": ["../../packages-answers/utils/src/*"],
+            "@ui/*": ["../../packages-answers/ui/src/*"],
+            "@db/*": ["../../packages-answers/db/src/*"],
+            "@/*": ["../../packages/ui/src/*"]
+        },
+        "plugins": [
+            {
+                "name": "next"
+            }
+        ],
+        "strictNullChecks": true
+    }
+}

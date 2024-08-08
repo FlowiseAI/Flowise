@@ -19,6 +19,7 @@ const jwtCheckPublic = auth({
     issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
     tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG
 })
+
 export const authenticationHandlerMiddleware =
     ({ whitelistURLs, AppDataSource }: { whitelistURLs: string[]; AppDataSource: DataSource }) =>
     async (req: Request, res: Response, next: NextFunction) => {
@@ -34,7 +35,6 @@ export const authenticationHandlerMiddleware =
             if (jwtError) {
                 return next(jwtError) // Handle JWT error
             }
-
             // Proceed with user synchronization if user is authenticated
             if (!req.auth?.payload) {
                 return next() // Skip if no authentication info is present

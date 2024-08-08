@@ -20,9 +20,9 @@ const container = document.getElementById('root')
 const root = createRoot(container)
 
 const authorizationParams = {
-    organization: import.meta.env.VITE_AUTH_ORGANIZATION_ID !== '' ? import.meta.env.VITE_AUTH_ORGANIZATION_ID : undefined,
+    organization: process.env.VITE_AUTH_ORGANIZATION_ID !== '' ? process.env.VITE_AUTH_ORGANIZATION_ID : undefined,
     redirect_uri: window.location.origin,
-    audience: import.meta.env.VITE_AUTH_AUDIENCE,
+    audience: process.env.VITE_AUTH_AUDIENCE,
     scope: 'openid profile email'
 }
 
@@ -35,8 +35,8 @@ root.render(
             flagsmith={flagsmith}
         >
             <Auth0Provider
-                domain={import.meta.env.VITE_AUTH_DOMAIN}
-                clientId={import.meta.env.VITE_AUTH_CLIENT_ID}
+                domain={process.env.VITE_AUTH_DOMAIN}
+                clientId={process.env.VITE_AUTH_CLIENT_ID}
                 authorizationParams={authorizationParams}
             >
                 <Provider store={store}>

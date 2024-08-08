@@ -1,3 +1,4 @@
+'use client'
 import React from 'react'
 import { useSelector } from 'react-redux'
 
@@ -35,6 +36,8 @@ const App = () => {
                         : ''
                 }`
             )
+            // TODO: remove replace
+            sessionStorage.setItem('baseURL', user.chatflowDomain?.replace('8080', '4000'))
         }
     }, [user, flagsmith])
     React.useEffect(() => {

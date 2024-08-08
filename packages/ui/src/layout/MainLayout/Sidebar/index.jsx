@@ -74,6 +74,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window, isInIframe }) => {
                         width: drawerWidth,
                         background: theme.palette.background.default,
                         color: theme.palette.text.primary,
+                        position: 'absolute',
                         ...(!isInIframe
                             ? {
                                   [theme.breakpoints.up('md')]: {

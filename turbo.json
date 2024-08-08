@@ -1,16 +1,114 @@
 {
     "$schema": "https://turbo.build/schema.json",
-
+    "globalEnv": [
+        "ANALYZE",
+        "ATLASSIAN_CLIENT_ID",
+        "ATLASSIAN_CLIENT_SECRET",
+        "AUTH0_AUDIENCE",
+        "AUTH0_BASE_URL",
+        "AUTH0_CLIENT_ID",
+        "AUTH0_CLIENT_SECRET",
+        "AUTH0_ISSUER_BASE_URL",
+        "AUTH0_JWKS_URI",
+        "AUTH0_SCOPE",
+        "AUTH0_SECRET",
+        "AUTH0_TOKEN_SIGN_ALG",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_S3_BUCKET",
+        "AWS_S3_REGION",
+        "AWS_SECRET_ACCESS_KEY",
+        "DATABASE_PORT",
+        "DATABASE_URL",
+        "DATABASE_URL",
+        "DB_STUDIO_SERVER_URL",
+        "DEBUG_LEVEL",
+        "DISABLE_SENTRY",
+        "FLAGSMITH_ENVIRONMENT_ID",
+        "FLOWISE_DOMAIN",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "GOOGLE_CLIENT_SECRET",
+        "INNGEST_EVENT_KEY",
+        "INNGEST_SERVER_URL",
+        "INNGEST_SIGNING_KEY",
+        "LANGCHAIN_HANDLER",
+        "NEXT_PUBLIC_DOMAIN",
+        "NEXTAUTH_URL",
+        "OPENAI_API_KEY",
+        "PERCY_TOKEN",
+        "PINECONE_API_KEY",
+        "PINECONE_ENVIRONMENT",
+        "PINECONE_INDEX",
+        "PROMPT_LAYER_API_KEY",
+        "REDIS_URL",
+        "SLACK_CLIENT_ID",
+        "SLACK_CLIENT_SECRET",
+        "VITE_API_URL",
+        "VITE_APP_URL"
+    ],
     "pipeline": {
-        "build": {
-            "outputMode": "new-only",
-            "dependsOn": ["^build"],
-            "outputs": ["dist/**", "build/**"]
-        },
-        "test": {},
-        "dev": {
+        "//#dev-docker": {
             "cache": false
         },
+        "//#dev-inngest": {
+            "cache": false
+        },
+        "//#dev-langchain": {
+            "cache": false
+        },
+        "//#db:healthcheck": {
+            "cache": false
+        },
+        "//#db:studio": {
+            "cache": false
+        },
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**", "build/**", ".next/**"],
+            "outputLogs": "new-only"
+        },
+        "db:generate": {
+            "cache": false,
+            "dependsOn": ["db:deploy"],
+            "outputs": ["dist/**"]
+        },
+        "db:migrate": {
+            "cache": false,
+            "dependsOn": [],
+            "outputs": []
+        },
+        "db:deploy": {
+            "cache": false,
+            "dependsOn": [],
+            "outputs": ["dist/**"]
+        },
+        "db#build": {
+            "dependsOn": [],
+            "outputs": ["dist/**", "generated/**"],
+            "outputLogs": "new-only"
+        },
+        "db#dev": {
+            "dependsOn": ["//#db:healthcheck", "build"],
+            "cache": false,
+            "outputs": ["dist/**"]
+        },
+        "web#build": {
+            "dependsOn": ["^build", "db#build"],
+            "outputs": ["dist/**", ".next/**"]
+        },
+        "lint": {
+            "outputs": []
+        },
+        "start": {
+            "dependsOn": ["^build", "build"],
+            "outputs": ["dist/**", ".next/**"],
+            "cache": false
+        },
+        "dev": {
+            "dependsOn": ["^build"],
+            "cache": false
+        },
+        "test": {},
         "typeorm:migration-run": {
             "cache": false
         },

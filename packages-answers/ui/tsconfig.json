@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "ES2015"],
+    "baseUrl": ".",
+    "paths": {
+      "@utils/*": ["../../packages/utils/src/*"],
+      "@ui/*": ["../../packages/ui/src/*"],
+      "@db/*": ["../../packages/db/src/*"]
+    }
+  },
+  "extends": "tsconfig/react-library.json",
+  "include": [".", "../utils/src/pinecone/pineconeQuery.ts", "../utils/src/llm/fetchContext.ts"],
+  "exclude": ["dist", "build", "node_modules"]
+}

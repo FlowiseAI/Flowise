@@ -1,0 +1,462 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider             = "prisma-client-js"
+  output               = "../generated/prisma-client"
+  referentialIntegrity = "prisma"
+}
+generator json {
+  provider = "prisma-json-types-generator"
+  // namespace = "PrismaJson"
+  // clientOutput = "<finds it automatically>"
+  // (./ -> relative to schema, or an importable path to require() it)
+}
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+model ChatApp {
+  id             Int           @id @default(autoincrement())
+  apiKey         String        @unique
+  name           String?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  role          String    @default("user")
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  invited       DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  currentOrganization Organization? @relation("UserOrganzationsSelected", fields: [organizationId], references: [id])
+
+  organizations Organization[] @relation("UserOrganzations")
+
+  appSettings  Json?
+  chats        Chat[]
+  chatsCreated Chat[] @relation("UserChatsCreated")
+
+  messages Message[]
+
+  prompts Prompt[]
+
+  journeys Journey[]
+
+  feedbacks MessageFeedback[]
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @default(now()) @updatedAt
+  ChatApp            ChatApp[]
+  organizationId     String?
+  apiKeys            ApiKey[]
+  aiRequests         AiRequest[]
+  favoritedSidekicks Sidekick[]        @relation("SidekickFavoritedBy")
+  Sidekick           Sidekick[]
+  contextFields      ContextField[]
+  activeUserPlan     ActiveUserPlan?
+  userPlanHistories  UserPlanHistory[]
+}
+
+enum ApiKeyType {
+  USER
+  ORGANIZATION
+}
+
+model ApiKey {
+  id             String        @id @default(cuid())
+  userId         String?
+  organizationId String?
+  type           ApiKeyType    @default(USER)
+  user           User?         @relation(fields: [userId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  key            String        @unique
+}
+
+model Organization {
+  id                  String               @id @default(cuid())
+  name                String?
+  image               String?
+  users               User[]               @relation("UserOrganzations")
+  usersSelected       User[]               @relation("UserOrganzationsSelected")
+  documentPermissions DocumentPermission[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @default(now()) @updatedAt
+  ChatApp             ChatApp[]
+  contextFields       ContextField[]
+  journeys            Journey[]
+  chats               Chat[]
+  appSettings         Json?
+  apiKeys             ApiKey[]
+  sidekicks           Sidekick[]
+}
+
+model ContextField {
+  id             String        @id @default(cuid())
+  fieldId        String
+  helpText       String?
+  fieldType      String?
+  fieldTextValue String
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  User           User?         @relation(fields: [userId], references: [id])
+  userId         String?
+}
+
+model Sidekick {
+  id                  String   @id @default(cuid())
+  isGlobal            Boolean? @default(false)
+  isSystem            Boolean? @default(false)
+  isSharedWithOrg     Boolean? @default(false)
+  isFavoriteByDefault Boolean? @default(false)
+  /// [Chatflow]
+  chatflow       Json?
+  chatflowApiKey String?
+  chatflowDomain String?
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  organizationId       String?
+
+  label         String
+  tags          String[]
+  userId        String
+  favoritedBy   User[]   @relation("SidekickFavoritedBy")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  createdByUser User     @relation(fields: [userId], references: [id])
+
+  // TO BE REMOVED
+  temperature          Float   @default(1)
+  frequency            Float   @default(0)
+  presence             Float   @default(0)
+  maxCompletionTokens  Int     @default(500)
+  aiModel              String?
+  systemPromptTemplate String?
+  userPromptTemplate   String?
+  contextStringRender  String?
+  placeholder          String?
+  Tasks                Tasks[]
+}
+
+model WebDocument {
+  id                String    @id @default(cuid())
+  url               String    @unique
+  domain            String
+  content           String?
+  pageTitle         String?
+  pageLastUpdatedAt DateTime? @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
+}
+
+model Document {
+  id     String  @id @default(cuid())
+  source String
+  title  String?
+  domain String?
+  url    String  @unique
+
+  content  String @default("")
+  metadata Json   @default("{}")
+
+  usedInMessages Message[]
+  permissions    DocumentPermission[]
+
+  status       String    @default("pending")
+  lastSyncedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model DocumentPermission {
+  id String @id @default(cuid())
+
+  document   Document @relation(fields: [documentId], references: [id])
+  documentId String
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Account {
+  id                       String   @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?  @db.Text
+  refresh_token_expires_in Int?
+  access_token             String?  @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?  @db.Text
+  session_state            String?
+  state                    String?
+  ok                       Boolean?
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Chat {
+  id       String  @id @default(uuid())
+  title    String?
+  prompt   Prompt? @relation(fields: promptId, references: id)
+  promptId String?
+
+  journey   Journey? @relation(fields: journeyId, references: id)
+  journeyId String?
+
+  owner   User?   @relation("UserChatsCreated", fields: [ownerId], references: [id])
+  ownerId String?
+
+  chatflowChatId String?
+
+  users    User[]
+  messages Message[]
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  filters Json
+
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Journey {
+  id          String    @id @default(uuid())
+  title       String?
+  goal        String?
+  completedAt DateTime?
+  filters     Json
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  chats Chat[]
+
+  users     User[]
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Prompt {
+  id          String  @id @default(uuid())
+  title       String?
+  description String?
+
+  content String @unique
+
+  chat Chat[]
+
+  usages   Int @default(0)
+  likes    Int @default(0)
+  dislikes Int @default(0)
+
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  answers Message[]
+
+  users User[]
+
+  tags String[]
+}
+
+model Message {
+  id                     String   @id @default(uuid())
+  role                   String   @default("assistant")
+  content                String
+  contextSourceFilesUsed String[]
+
+  context          String     @default("")
+  contextDocuments Document[]
+
+  sidekickJson Json @default("{}")
+
+  prompt   Prompt? @relation(fields: promptId, references: id)
+  promptId String?
+
+  user   User?   @relation(fields: userId, references: id)
+  userId String?
+
+  chat   Chat   @relation(fields: chatId, references: id)
+  chatId String
+
+  feedbacks MessageFeedback[]
+
+  likes    Int @default(0)
+  dislikes Int @default(0)
+
+  deleted     Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt
+  aiRequest   AiRequest? @relation(fields: [aiRequestId], references: [id])
+  aiRequestId String?    @unique
+}
+
+enum Rating {
+  thumbsUp
+  thumbsDown
+}
+
+model MessageFeedback {
+  id String @id @default(uuid())
+
+  rating  Rating   @default(thumbsUp)
+  content String
+  tags    String[] @default([])
+  user    User     @relation(fields: [userId], references: [id])
+  userId  String
+
+  message   Message @relation(fields: [messageId], references: [id])
+  messageId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([userId, messageId])
+}
+
+model AppSettings {
+  id String @id @default(uuid())
+
+  services       AppService[]
+  jiraSettings   JiraSettings @relation(fields: [jiraSettingsId], references: [id])
+  // User           User[]
+  jiraSettingsId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
+}
+
+model AppService {
+  id String @id @default(uuid())
+
+  name          String
+  enabled       Boolean
+  AppSettings   AppSettings? @relation(fields: [appSettingsId], references: [id])
+  appSettingsId String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now()) @updatedAt
+}
+
+model JiraSettings {
+  id String @id @default(uuid())
+
+  projects    JiraProjectSetting[]
+  AppSettings AppSettings[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @default(now()) @updatedAt
+}
+
+model JiraProjectSetting {
+  id String @id @default(uuid())
+
+  key            String
+  enabled        Boolean
+  JiraSettings   JiraSettings? @relation(fields: [jiraSettingsId], references: [id])
+  jiraSettingsId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model AiRequest {
+  id               String   @id @default(uuid())
+  type             String
+  method           String
+  model            String
+  tokensUsed       Int
+  tokensUsedUser   Int
+  costUsdTotal     Decimal
+  costUsdTotalUser Decimal
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+  message          Message?
+  request          Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+}
+
+model Plan {
+  id                Int               @id @default(autoincrement())
+  name              String
+  description       String
+  tokenLimit        Int
+  userPlanHistories UserPlanHistory[]
+  activeUserPlans   ActiveUserPlan[]
+}
+
+model UserPlanHistory {
+  id                   String   @id @default(uuid())
+  userId               String
+  planId               Int
+  renewalDate          DateTime
+  tokensLeft           Int
+  startDate            DateTime
+  endDate              DateTime
+  gpt3RequestCount     Int
+  gpt4RequestCount     Int
+  stripeSubscriptionId String?
+  user                 User     @relation(fields: [userId], references: [id])
+  plan                 Plan     @relation(fields: [planId], references: [id])
+}
+
+model ActiveUserPlan {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  planId               Int
+  renewalDate          DateTime
+  tokensLeft           Int
+  startDate            DateTime @default(now())
+  gpt3RequestCount     Int      @default(0)
+  gpt4RequestCount     Int      @default(0)
+  stripeSubscriptionId String?
+  shouldRenew          Boolean  @default(true)
+  user                 User     @relation(fields: [userId], references: [id])
+  plan                 Plan     @relation(fields: [planId], references: [id])
+}
+
+model Tasks {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  sidekicks   Sidekick[]
+  completed   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt
+}

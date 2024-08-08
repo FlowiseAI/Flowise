@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "es2021"],
+    "outDir": "./dist",
+    "allowJs": true,
+    "isolatedModules": false,
+    "paths": {
+      "@utils/*": ["../../packages/utils/src/*"],
+      "@ui/*": ["../../packages/ui/src/*"],
+      "@db/*": ["../../packages/db/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "../../packages/utils/src/sidekicks/*"],
+  "extends": "tsconfig/node.json",
+  "include": ["src"],
+  "types": ["node", "types"]
+}

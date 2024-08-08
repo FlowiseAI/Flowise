@@ -13,7 +13,7 @@ import { drawerWidth, headerHeight } from '@/store/constant'
 import { SET_MENU } from '@/store/actions'
 
 // styles
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open, isInIframe }) => ({
+const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' && prop !== 'isInIframe' })(({ theme, open, isInIframe }) => ({
     ...theme.typography.mainContent,
     ...(!isInIframe && { marginTop: '75px' }),
     ...(!open && {
@@ -60,7 +60,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 const MainLayout = () => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
-    const [isInIframe, setIsInIframe] = useState(window?.parent !== window)
+    const [isInIframe, setIsInIframe] = useState(false)
 
     // Handle left drawer
     const leftDrawerOpened = useSelector((state) => (isInIframe ? true : state.customization.opened))
@@ -71,7 +71,7 @@ const MainLayout = () => {
 
     useEffect(() => {
         // Detect if loaded inside an iframe
-        setIsInIframe(window.parent !== window)
+        // setIsInIframe(window.parent !== window)
 
         setTimeout(() => dispatch({ type: SET_MENU, opened: !matchDownMd }), 0)
     }, [matchDownMd, dispatch])
@@ -84,7 +84,7 @@ const MainLayout = () => {
                 {!isInIframe && (
                     <AppBar
                         enableColorOnDark
-                        position='fixed'
+                        position='absolute'
                         color='inherit'
                         elevation={0}
                         sx={{
