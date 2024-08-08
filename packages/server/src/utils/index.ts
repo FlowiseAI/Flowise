@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import logger from './logger'
+import { Server } from 'socket.io'
 import {
     IComponentCredentials,
     IComponentNodes,
@@ -267,9 +268,11 @@ export const getEndingNodes = (
                 endingNodeData &&
                 endingNodeData.category !== 'Chains' &&
                 endingNodeData.category !== 'Agents' &&
-                endingNodeData.category !== 'Engine'
+                endingNodeData.category !== 'Engine' &&
+                endingNodeData.category !== 'Multi Agents' &&
+                endingNodeData.category !== 'Sequential Agents'
             ) {
-                error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent`)
+                error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent or Engine`)
                 continue
             }
         }
@@ -377,6 +380,7 @@ export const saveUpsertFlowData = (nodeData: INodeData, upsertHistory: Record<st
 /**
  * Check if doc loader should be bypassed, ONLY if doc loader is connected to a vector store
  * Reason being we dont want to load the doc loader again whenever we are building the flow, because it was already done during upserting
+ * EXCEPT if the vector store is a memory vector store
  * TODO: Remove this logic when we remove doc loader nodes from the canvas
  * @param {IReactFlowNode} reactFlowNode
  * @param {IReactFlowNode[]} reactFlowNodes
@@ -404,7 +408,8 @@ const checkIfDocLoaderShouldBeIgnored = (
 
     if (targetNodeId) {
         const targetNodeCategory = reactFlowNodes.find((nd) => nd.id === targetNodeId)?.data.category || ''
-        if (targetNodeCategory === 'Vector Stores') {
+        const targetNodeName = reactFlowNodes.find((nd) => nd.id === targetNodeId)?.data.name || ''
+        if (targetNodeCategory === 'Vector Stores' && targetNodeName !== 'memoryVectorStore') {
             return true
         }
     }
@@ -412,39 +417,55 @@ const checkIfDocLoaderShouldBeIgnored = (
     return false
 }
 
-/**
- * Build langchain from start to end
- * @param {string[]} startingNodeIds
- * @param {IReactFlowNode[]} reactFlowNodes
- * @param {INodeDirectedGraph} graph
- * @param {IDepthQueue} depthQueue
- * @param {IComponentNodes} componentNodes
- * @param {string} question
- * @param {string} chatId
- * @param {string} chatflowid
- * @param {DataSource} appDataSource
- * @param {ICommonObject} overrideConfig
- * @param {CachePool} cachePool
- */
-export const buildFlow = async (
-    startingNodeIds: string[],
-    reactFlowNodes: IReactFlowNode[],
-    reactFlowEdges: IReactFlowEdge[],
-    graph: INodeDirectedGraph,
-    depthQueue: IDepthQueue,
-    componentNodes: IComponentNodes,
-    question: string,
-    chatHistory: IMessage[],
-    chatId: string,
-    sessionId: string,
-    chatflowid: string,
-    appDataSource: DataSource,
-    overrideConfig?: ICommonObject,
-    cachePool?: CachePool,
-    isUpsert?: boolean,
-    stopNodeId?: string,
+type BuildFlowParams = {
+    startingNodeIds: string[]
+    reactFlowNodes: IReactFlowNode[]
+    reactFlowEdges: IReactFlowEdge[]
+    graph: INodeDirectedGraph
+    depthQueue: IDepthQueue
+    componentNodes: IComponentNodes
+    question: string
+    chatHistory: IMessage[]
+    chatId: string
+    sessionId: string
+    chatflowid: string
+    appDataSource: DataSource
+    overrideConfig?: ICommonObject
+    cachePool?: CachePool
+    isUpsert?: boolean
+    stopNodeId?: string
     uploads?: IFileUpload[]
-) => {
+    baseURL?: string
+    socketIO?: Server
+    socketIOClientId?: string
+}
+
+/**
+ * Build flow from start to end
+ * @param {BuildFlowParams} params
+ */
+export const buildFlow = async ({
+    startingNodeIds,
+    reactFlowNodes,
+    reactFlowEdges,
+    graph,
+    depthQueue,
+    componentNodes,
+    question,
+    chatHistory,
+    chatId,
+    sessionId,
+    chatflowid,
+    appDataSource,
+    overrideConfig,
+    cachePool,
+    isUpsert,
+    stopNodeId,
+    uploads,
+    baseURL,
+    socketIO,
+    socketIOClientId
+}: BuildFlowParams) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
     let upsertHistory: Record<string, any> = {}
@@ -496,7 +517,10 @@ export const buildFlow = async (
                     databaseEntities,
                     cachePool,
                     dynamicVariables,
-                    uploads
+                    uploads,
+                    baseURL,
+                    socketIO,
+                    socketIOClientId
                 })
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
@@ -520,7 +544,11 @@ export const buildFlow = async (
                     cachePool,
                     isUpsert,
                     dynamicVariables,
-                    uploads
+                    uploads,
+                    baseURL,
+                    socketIO,
+                    socketIOClientId,
+                    componentNodes: componentNodes as ICommonObject
                 })
 
                 // Save dynamic variables
@@ -766,10 +794,22 @@ export const getVariableValue = (
         const variablePaths = Object.keys(variableDict)
         variablePaths.sort() // Sort by length of variable path because longer path could possibly contains nested variable
         variablePaths.forEach((path) => {
-            const variableValue = variableDict[path]
+            let variableValue: object | string = variableDict[path]
             // Replace all occurrence
             if (typeof variableValue === 'object') {
-                returnVal = returnVal.split(path).join(JSON.stringify(variableValue).replace(/"/g, '\\"'))
+                // Just get the id of variableValue object if it is agentflow node, to avoid circular JSON error
+                if (Object.prototype.hasOwnProperty.call(variableValue, 'predecessorAgents')) {
+                    const nodeId = variableValue['id']
+                    variableValue = { id: nodeId }
+                }
+
+                const stringifiedValue = JSON.stringify(JSON.stringify(variableValue))
+                if (stringifiedValue.startsWith('"') && stringifiedValue.endsWith('"')) {
+                    // get rid of the double quotes
+                    returnVal = returnVal.split(path).join(stringifiedValue.substring(1, stringifiedValue.length - 1))
+                } else {
+                    returnVal = returnVal.split(path).join(JSON.stringify(variableValue).replace(/"/g, '\\"'))
+                }
             } else {
                 returnVal = returnVal.split(path).join(variableValue)
             }
@@ -1048,7 +1088,6 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
             }
         }
     }
-
     return configs
 }
 
@@ -1068,12 +1107,18 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'chatAnthropic',
             'chatAnthropic_LlamaIndex',
             'chatOllama',
+            'chatOllama_LlamaIndex',
             'awsChatBedrock',
             'chatMistralAI',
+            'chatMistral_LlamaIndex',
             'groqChat',
+            'chatGroq_LlamaIndex',
             'chatCohere',
             'chatGoogleGenerativeAI',
-            'chatTogetherAI'
+            'chatTogetherAI',
+            'chatTogetherAI_LlamaIndex',
+            'chatFireworks',
+            'chatBaiduWenxin'
         ],
         LLMs: ['azureOpenAI', 'openAI', 'ollama']
     }
@@ -1103,7 +1148,8 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'conversationalRetrievalAgent',
             'openAIToolAgent',
             'toolAgent',
-            'conversationalRetrievalToolAgent'
+            'conversationalRetrievalToolAgent',
+            'openAIToolAgentLlamaIndex'
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
 
@@ -1307,7 +1353,8 @@ export const getSessionChatHistory = async (
     componentNodes: IComponentNodes,
     appDataSource: DataSource,
     databaseEntities: IDatabaseEntity,
-    logger: any
+    logger: any,
+    prependMessages?: IMessage[]
 ): Promise<IMessage[]> => {
     const nodeInstanceFilePath = componentNodes[memoryNode.data.name].filePath as string
     const nodeModule = await import(nodeInstanceFilePath)
@@ -1325,7 +1372,7 @@ export const getSessionChatHistory = async (
         logger
     })
 
-    return (await initializedInstance.getChatMessages(sessionId)) as IMessage[]
+    return (await initializedInstance.getChatMessages(sessionId, undefined, prependMessages)) as IMessage[]
 }
 
 /**

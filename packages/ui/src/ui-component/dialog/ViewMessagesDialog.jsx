@@ -23,7 +23,8 @@ import {
     ListItemText,
     Chip,
     Card,
-    CardMedia
+    CardMedia,
+    CardContent
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import DatePicker from 'react-datepicker'
@@ -31,7 +32,9 @@ import DatePicker from 'react-datepicker'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
 import msgEmptySVG from '@/assets/images/message_empty.svg'
-import { IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons-react'
+import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
+import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
+import { IconTool, IconDeviceSdCard, IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons-react'
 
 // Project import
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
@@ -100,6 +103,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
     const [chatTypeFilter, setChatTypeFilter] = useState([])
+    const [feedbackTypeFilter, setFeedbackTypeFilter] = useState([])
     const [startDate, setStartDate] = useState(new Date().setMonth(new Date().getMonth() - 1))
     const [endDate, setEndDate] = useState(new Date())
     const [leadEmail, setLeadEmail] = useState('')
@@ -152,6 +156,24 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         })
     }
 
+    const onFeedbackTypeSelected = (feedbackTypes) => {
+        setFeedbackTypeFilter(feedbackTypes)
+
+        getChatmessageApi.request(dialogProps.chatflow.id, {
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypes.length ? feedbackTypes : undefined,
+            startDate: startDate,
+            endDate: endDate,
+            order: 'ASC'
+        })
+        getStatsApi.request(dialogProps.chatflow.id, {
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypes.length ? feedbackTypes : undefined,
+            startDate: startDate,
+            endDate: endDate
+        })
+    }
+
     const exportMessages = async () => {
         if (!storagePath && getStoragePathFromServer.data) {
             storagePath = getStoragePathFromServer.data.storagePath
@@ -185,6 +207,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.usedTools) msg.usedTools = JSON.parse(chatmsg.usedTools)
             if (chatmsg.fileAnnotations) msg.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
             if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
+            if (chatmsg.agentReasoning) msg.agentReasoning = JSON.parse(chatmsg.agentReasoning)
 
             if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
                 obj[chatPK] = {
@@ -192,7 +215,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     source: chatmsg.chatType === 'INTERNAL' ? 'UI' : 'API/Embed',
                     sessionId: chatmsg.sessionId ?? null,
                     memoryType: chatmsg.memoryType ?? null,
-                    email: leadEmail ?? null,
+                    email: chatmsg.leadEmail ?? null,
                     messages: [msg]
                 }
             } else if (Object.prototype.hasOwnProperty.call(obj, chatPK)) {
@@ -319,6 +342,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.sourceDocuments) obj.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
             if (chatmsg.usedTools) obj.usedTools = JSON.parse(chatmsg.usedTools)
             if (chatmsg.fileAnnotations) obj.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
+            if (chatmsg.agentReasoning) obj.agentReasoning = JSON.parse(chatmsg.agentReasoning)
 
             loadedMessages.push(obj)
         }
@@ -377,7 +401,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     const handleItemClick = (idx, chatmsg) => {
         setSelectedMessageIndex(idx)
-        getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(getChatPK(chatmsg)))
+        if (feedbackTypeFilter.length > 0) {
+            getChatmessageFromPKApi.request(dialogProps.chatflow.id, {
+                ...transformChatPKToParams(getChatPK(chatmsg)),
+                feedbackType: feedbackTypeFilter
+            })
+        } else {
+            getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(getChatPK(chatmsg)))
+        }
     }
 
     const onURLClick = (data) => {
@@ -431,7 +462,16 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setAllChatLogs(getChatmessageApi.data)
             const chatPK = processChatLogs(getChatmessageApi.data)
             setSelectedMessageIndex(0)
-            if (chatPK) getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(chatPK))
+            if (chatPK) {
+                if (feedbackTypeFilter.length > 0) {
+                    getChatmessageFromPKApi.request(dialogProps.chatflow.id, {
+                        ...transformChatPKToParams(chatPK),
+                        feedbackType: feedbackTypeFilter
+                    })
+                } else {
+                    getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(chatPK))
+                }
+            }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -454,6 +494,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setAllChatLogs([])
             setChatMessages([])
             setChatTypeFilter([])
+            setFeedbackTypeFilter([])
             setSelectedMessageIndex(0)
             setSelectedChatId('')
             setStartDate(new Date().setMonth(new Date().getMonth() - 1))
@@ -470,6 +511,17 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         else dispatch({ type: HIDE_CANVAS_DIALOG })
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
+
+    useEffect(() => {
+        if (dialogProps.chatflow) {
+            // when the filter is cleared fetch all messages
+            if (feedbackTypeFilter.length === 0) {
+                getChatmessageApi.request(dialogProps.chatflow.id)
+                getStatsApi.request(dialogProps.chatflow.id)
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [feedbackTypeFilter])
 
     const component = show ? (
         <Dialog
@@ -525,7 +577,15 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 customInput={<DatePickerCustomInput />}
                             />
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', minWidth: '200px', marginRight: 10 }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                minWidth: '200px',
+                                marginRight: 10
+                            }}
+                        >
                             <b style={{ marginRight: 10 }}>Source</b>
                             <MultiDropdown
                                 key={JSON.stringify(chatTypeFilter)}
@@ -542,6 +602,34 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 ]}
                                 onSelect={(newValue) => onChatTypeSelected(newValue)}
                                 value={chatTypeFilter}
+                                formControlSx={{ mt: 0 }}
+                            />
+                        </div>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                minWidth: '200px',
+                                marginRight: 10
+                            }}
+                        >
+                            <b style={{ marginRight: 10 }}>Feedback</b>
+                            <MultiDropdown
+                                key={JSON.stringify(feedbackTypeFilter)}
+                                name='chatType'
+                                options={[
+                                    {
+                                        label: 'Positive',
+                                        name: 'THUMBS_UP'
+                                    },
+                                    {
+                                        label: 'Negative',
+                                        name: 'THUMBS_DOWN'
+                                    }
+                                ]}
+                                onSelect={(newValue) => onFeedbackTypeSelected(newValue)}
+                                value={feedbackTypeFilter}
                                 formControlSx={{ mt: 0 }}
                             />
                         </div>
@@ -799,6 +887,216 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                         </audio>
                                                                                     )}
                                                                                 </>
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
+                                                                {message.agentReasoning && (
+                                                                    <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                                        {message.agentReasoning.map((agent, index) => {
+                                                                            return (
+                                                                                <Card
+                                                                                    key={index}
+                                                                                    sx={{
+                                                                                        border: '1px solid #e0e0e0',
+                                                                                        borderRadius: `${customization.borderRadius}px`,
+                                                                                        mb: 1
+                                                                                    }}
+                                                                                >
+                                                                                    <CardContent>
+                                                                                        <Stack
+                                                                                            sx={{
+                                                                                                alignItems: 'center',
+                                                                                                justifyContent: 'flex-start',
+                                                                                                width: '100%'
+                                                                                            }}
+                                                                                            flexDirection='row'
+                                                                                        >
+                                                                                            <Box sx={{ height: 'auto', pr: 1 }}>
+                                                                                                <img
+                                                                                                    style={{
+                                                                                                        objectFit: 'cover',
+                                                                                                        height: '25px',
+                                                                                                        width: 'auto'
+                                                                                                    }}
+                                                                                                    src={
+                                                                                                        agent.instructions
+                                                                                                            ? multiagent_supervisorPNG
+                                                                                                            : multiagent_workerPNG
+                                                                                                    }
+                                                                                                    alt='agentPNG'
+                                                                                                />
+                                                                                            </Box>
+                                                                                            <div>{agent.agentName}</div>
+                                                                                        </Stack>
+                                                                                        {agent.usedTools && agent.usedTools.length > 0 && (
+                                                                                            <div
+                                                                                                style={{
+                                                                                                    display: 'block',
+                                                                                                    flexDirection: 'row',
+                                                                                                    width: '100%'
+                                                                                                }}
+                                                                                            >
+                                                                                                {agent.usedTools.map((tool, index) => {
+                                                                                                    return tool !== null ? (
+                                                                                                        <Chip
+                                                                                                            size='small'
+                                                                                                            key={index}
+                                                                                                            label={tool.tool}
+                                                                                                            component='a'
+                                                                                                            sx={{ mr: 1, mt: 1 }}
+                                                                                                            variant='outlined'
+                                                                                                            clickable
+                                                                                                            icon={<IconTool size={15} />}
+                                                                                                            onClick={() =>
+                                                                                                                onSourceDialogClick(
+                                                                                                                    tool,
+                                                                                                                    'Used Tools'
+                                                                                                                )
+                                                                                                            }
+                                                                                                        />
+                                                                                                    ) : null
+                                                                                                })}
+                                                                                            </div>
+                                                                                        )}
+                                                                                        {agent.state &&
+                                                                                            Object.keys(agent.state).length > 0 && (
+                                                                                                <div
+                                                                                                    style={{
+                                                                                                        display: 'block',
+                                                                                                        flexDirection: 'row',
+                                                                                                        width: '100%'
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <Chip
+                                                                                                        size='small'
+                                                                                                        label={'State'}
+                                                                                                        component='a'
+                                                                                                        sx={{ mr: 1, mt: 1 }}
+                                                                                                        variant='outlined'
+                                                                                                        clickable
+                                                                                                        icon={
+                                                                                                            <IconDeviceSdCard size={15} />
+                                                                                                        }
+                                                                                                        onClick={() =>
+                                                                                                            onSourceDialogClick(
+                                                                                                                agent.state,
+                                                                                                                'State'
+                                                                                                            )
+                                                                                                        }
+                                                                                                    />
+                                                                                                </div>
+                                                                                            )}
+                                                                                        {agent.messages.length > 0 && (
+                                                                                            <MemoizedReactMarkdown
+                                                                                                remarkPlugins={[remarkGfm, remarkMath]}
+                                                                                                rehypePlugins={[rehypeMathjax, rehypeRaw]}
+                                                                                                components={{
+                                                                                                    code({
+                                                                                                        inline,
+                                                                                                        className,
+                                                                                                        children,
+                                                                                                        ...props
+                                                                                                    }) {
+                                                                                                        const match = /language-(\w+)/.exec(
+                                                                                                            className || ''
+                                                                                                        )
+                                                                                                        return !inline ? (
+                                                                                                            <CodeBlock
+                                                                                                                key={Math.random()}
+                                                                                                                chatflowid={chatflowid}
+                                                                                                                isDialog={isDialog}
+                                                                                                                language={
+                                                                                                                    (match && match[1]) ||
+                                                                                                                    ''
+                                                                                                                }
+                                                                                                                value={String(
+                                                                                                                    children
+                                                                                                                ).replace(/\n$/, '')}
+                                                                                                                {...props}
+                                                                                                            />
+                                                                                                        ) : (
+                                                                                                            <code
+                                                                                                                className={className}
+                                                                                                                {...props}
+                                                                                                            >
+                                                                                                                {children}
+                                                                                                            </code>
+                                                                                                        )
+                                                                                                    }
+                                                                                                }}
+                                                                                            >
+                                                                                                {agent.messages.length > 1
+                                                                                                    ? agent.messages.join('\\n')
+                                                                                                    : agent.messages[0]}
+                                                                                            </MemoizedReactMarkdown>
+                                                                                        )}
+                                                                                        {agent.instructions && <p>{agent.instructions}</p>}
+                                                                                        {agent.messages.length === 0 &&
+                                                                                            !agent.instructions && <p>Finished</p>}
+                                                                                        {agent.sourceDocuments &&
+                                                                                            agent.sourceDocuments.length > 0 && (
+                                                                                                <div
+                                                                                                    style={{
+                                                                                                        display: 'block',
+                                                                                                        flexDirection: 'row',
+                                                                                                        width: '100%'
+                                                                                                    }}
+                                                                                                >
+                                                                                                    {removeDuplicateURL(agent).map(
+                                                                                                        (source, index) => {
+                                                                                                            const URL =
+                                                                                                                source &&
+                                                                                                                source.metadata &&
+                                                                                                                source.metadata.source
+                                                                                                                    ? isValidURL(
+                                                                                                                          source.metadata
+                                                                                                                              .source
+                                                                                                                      )
+                                                                                                                    : undefined
+                                                                                                            return (
+                                                                                                                <Chip
+                                                                                                                    size='small'
+                                                                                                                    key={index}
+                                                                                                                    label={
+                                                                                                                        URL
+                                                                                                                            ? URL.pathname.substring(
+                                                                                                                                  0,
+                                                                                                                                  15
+                                                                                                                              ) === '/'
+                                                                                                                                ? URL.host
+                                                                                                                                : `${URL.pathname.substring(
+                                                                                                                                      0,
+                                                                                                                                      15
+                                                                                                                                  )}...`
+                                                                                                                            : `${source.pageContent.substring(
+                                                                                                                                  0,
+                                                                                                                                  15
+                                                                                                                              )}...`
+                                                                                                                    }
+                                                                                                                    component='a'
+                                                                                                                    sx={{ mr: 1, mb: 1 }}
+                                                                                                                    variant='outlined'
+                                                                                                                    clickable
+                                                                                                                    onClick={() =>
+                                                                                                                        URL
+                                                                                                                            ? onURLClick(
+                                                                                                                                  source
+                                                                                                                                      .metadata
+                                                                                                                                      .source
+                                                                                                                              )
+                                                                                                                            : onSourceDialogClick(
+                                                                                                                                  source
+                                                                                                                              )
+                                                                                                                    }
+                                                                                                                />
+                                                                                                            )
+                                                                                                        }
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            )}
+                                                                                    </CardContent>
+                                                                                </Card>
                                                                             )
                                                                         })}
                                                                     </div>

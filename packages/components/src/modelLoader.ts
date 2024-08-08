@@ -21,27 +21,58 @@ const getModelsJSONPath = (): string => {
     return ''
 }
 
+const isValidUrl = (urlString: string) => {
+    let url
+    try {
+        url = new URL(urlString)
+    } catch (e) {
+        return false
+    }
+    return url.protocol === 'http:' || url.protocol === 'https:'
+}
+
 const getModelConfig = async (category: MODEL_TYPE, name: string) => {
     const modelFile = process.env.MODEL_LIST_CONFIG_JSON || MASTER_MODEL_LIST
+
     if (!modelFile) {
         throw new Error('MODEL_LIST_CONFIG_JSON not set')
     }
-    try {
-        const resp = await axios.get(modelFile)
-        if (resp.status === 200 && resp.data) {
-            const models = resp.data
-            const categoryModels = models[category]
-            return categoryModels.find((model: INodeOptionsValue) => model.name === name)
-        } else {
-            throw new Error('Error fetching model list')
+    if (isValidUrl(modelFile)) {
+        try {
+            const resp = await axios.get(modelFile)
+            if (resp.status === 200 && resp.data) {
+                const models = resp.data
+                const categoryModels = models[category]
+                return categoryModels.find((model: INodeOptionsValue) => model.name === name)
+            } else {
+                throw new Error('Error fetching model list')
+            }
+        } catch (e) {
+            const models = await fs.promises.readFile(getModelsJSONPath(), 'utf8')
+            if (models) {
+                const categoryModels = JSON.parse(models)[category]
+                return categoryModels.find((model: INodeOptionsValue) => model.name === name)
+            }
+            return {}
         }
-    } catch (e) {
-        const models = await fs.promises.readFile(getModelsJSONPath(), 'utf8')
-        if (models) {
-            const categoryModels = JSON.parse(models)[category]
-            return categoryModels.find((model: INodeOptionsValue) => model.name === name)
+    } else {
+        try {
+            if (fs.existsSync(modelFile)) {
+                const models = await fs.promises.readFile(modelFile, 'utf8')
+                if (models) {
+                    const categoryModels = JSON.parse(models)[category]
+                    return categoryModels.find((model: INodeOptionsValue) => model.name === name)
+                }
+            }
+            return {}
+        } catch (e) {
+            const models = await fs.promises.readFile(getModelsJSONPath(), 'utf8')
+            if (models) {
+                const categoryModels = JSON.parse(models)[category]
+                return categoryModels.find((model: INodeOptionsValue) => model.name === name)
+            }
+            return {}
         }
-        return {}
     }
 }
 

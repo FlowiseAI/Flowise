@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid'
 import { QdrantClient } from '@qdrant/js-client-rest'
 import { VectorStoreRetrieverInput } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
-import { QdrantVectorStore, QdrantLibArgs } from '@langchain/community/vectorstores/qdrant'
+import { QdrantVectorStore, QdrantLibArgs } from '@langchain/qdrant'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
@@ -39,7 +39,6 @@ class Qdrant_VectorStores implements INode {
         this.description =
             'Upsert embedded data and perform similarity search upon query using Qdrant, a scalable open source vector database written in Rust'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -288,6 +287,69 @@ class Qdrant_VectorStores implements INode {
                         await QdrantVectorStore.fromDocuments(finalDocs, embeddings, dbConfig)
                     }
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const qdrantServerUrl = nodeData.inputs?.qdrantServerUrl as string
+            const collectionName = nodeData.inputs?.qdrantCollection as string
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
+            const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
+
+            const port = Qdrant_VectorStores.determinePortByUrl(qdrantServerUrl)
+
+            const client = new QdrantClient({
+                url: qdrantServerUrl,
+                apiKey: qdrantApiKey,
+                port: port
+            })
+
+            const dbConfig: QdrantLibArgs = {
+                client,
+                url: qdrantServerUrl,
+                collectionName,
+                collectionConfig: {
+                    vectors: {
+                        size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                        distance: qdrantSimilarity ?? 'Cosine'
+                    }
+                }
+            }
+
+            const vectorStore = new QdrantVectorStore(embeddings, dbConfig)
+
+            vectorStore.delete = async (params: { ids: string[] }): Promise<void> => {
+                const { ids } = params
+
+                if (ids?.length) {
+                    try {
+                        client.delete(collectionName, {
+                            points: ids
+                        })
+                    } catch (e) {
+                        console.error('Failed to delete')
+                    }
+                }
+            }
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = collectionName
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await vectorStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    await vectorStore.delete({ ids })
                 }
             } catch (e) {
                 throw new Error(e)

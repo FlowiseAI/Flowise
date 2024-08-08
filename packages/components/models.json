@@ -9,6 +9,11 @@
                     "description": "Image to text, conversation, chat optimized"
                 },
                 {
+                    "label": "anthropic.claude-3.5-sonnet",
+                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    "description": "3.5 version of Claude Sonnet model"
+                },
+                {
                     "label": "anthropic.claude-3-sonnet",
                     "name": "anthropic.claude-3-sonnet-20240229-v1:0",
                     "description": "Image to text and code, multilingual conversation, complex reasoning and analysis"
@@ -216,6 +221,10 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o"
+                },
+                {
                     "label": "gpt-4",
                     "name": "gpt-4"
                 },
@@ -241,24 +250,36 @@
             "name": "azureChatOpenAI_LlamaIndex",
             "models": [
                 {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o"
+                },
+                {
                     "label": "gpt-4",
                     "name": "gpt-4"
+                },
+                {
+                    "label": "gpt-4-turbo",
+                    "name": "gpt-4-turbo"
                 },
                 {
                     "label": "gpt-4-32k",
                     "name": "gpt-4-32k"
                 },
                 {
-                    "label": "gpt-35-turbo",
-                    "name": "gpt-35-turbo"
+                    "label": "gpt-3.5-turbo",
+                    "name": "gpt-3.5-turbo"
                 },
                 {
-                    "label": "gpt-35-turbo-16k",
-                    "name": "gpt-35-turbo-16k"
+                    "label": "gpt-3.5-turbo-16k",
+                    "name": "gpt-3.5-turbo-16k"
                 },
                 {
                     "label": "gpt-4-vision-preview",
                     "name": "gpt-4-vision-preview"
+                },
+                {
+                    "label": "gpt-4-1106-preview",
+                    "name": "gpt-4-1106-preview"
                 }
             ]
         },
@@ -274,6 +295,11 @@
                     "label": "claude-3-opus",
                     "name": "claude-3-opus-20240229",
                     "description": "Most powerful model for highly complex tasks"
+                },
+                {
+                    "label": "claude-3.5-sonnet",
+                    "name": "claude-3-5-sonnet-20240620",
+                    "description": "3.5 version of Claude Sonnet model"
                 },
                 {
                     "label": "claude-3-sonnet",
@@ -398,6 +424,26 @@
             "name": "groqChat",
             "models": [
                 {
+                    "label": "llama-3.1-405b-reasoning",
+                    "name": "llama-3.1-405b-reasoning"
+                },
+                {
+                    "label": "llama-3.1-70b-versatile",
+                    "name": "llama-3.1-70b-versatile"
+                },
+                {
+                    "label": "llama-3.1-8b-instant",
+                    "name": "llama-3.1-8b-instant"
+                },
+                {
+                    "label": "llama3-groq-70b-8192-tool-use-preview",
+                    "name": "llama3-groq-70b-8192-tool-use-preview"
+                },
+                {
+                    "label": "llama3-groq-8b-8192-tool-use-preview",
+                    "name": "llama3-groq-8b-8192-tool-use-preview"
+                },
+                {
                     "label": "gemma-7b-it",
                     "name": "gemma-7b-it"
                 },
@@ -432,15 +478,31 @@
             "name": "chatOpenAI",
             "models": [
                 {
-                    "label": "gpt-4o",
+                    "label": "gpt-4o-mini (latest)",
+                    "name": "gpt-4o-mini"
+                },
+                {
+                    "label": "gpt-4o-mini-2024-07-18",
+                    "name": "gpt-4o-mini-2024-07-18"
+                },
+                {
+                    "label": "gpt-4o (latest)",
                     "name": "gpt-4o"
                 },
                 {
-                    "label": "gpt-4",
+                    "label": "gpt-4o-2024-08-06",
+                    "name": "gpt-4o-2024-08-06"
+                },
+                {
+                    "label": "gpt-4o-2024-05-13",
+                    "name": "gpt-4o-2024-05-13"
+                },
+                {
+                    "label": "gpt-4 (latest)",
                     "name": "gpt-4"
                 },
                 {
-                    "label": "gpt-4-turbo",
+                    "label": "gpt-4-turbo (latest)",
                     "name": "gpt-4-turbo"
                 },
                 {
@@ -505,6 +567,10 @@
             "name": "chatOpenAI_LlamaIndex",
             "models": [
                 {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o"
+                },
+                {
                     "label": "gpt-4",
                     "name": "gpt-4"
                 },
@@ -566,6 +632,10 @@
             "name": "chatMistralAI",
             "models": [
                 {
+                    "label": "open-mistral-nemo",
+                    "name": "open-mistral-nemo"
+                },
+                {
                     "label": "open-mistral-7b",
                     "name": "open-mistral-7b"
                 },
@@ -620,6 +690,23 @@
                 {
                     "label": "mistral-large-2402",
                     "name": "mistral-large-2402"
+                }
+            ]
+        },
+        {
+            "name": "chatMistral_LlamaIndex",
+            "models": [
+                {
+                    "label": "mistral-tiny",
+                    "name": "mistral-tiny"
+                },
+                {
+                    "label": "mistral-small",
+                    "name": "mistral-small"
+                },
+                {
+                    "label": "mistral-medium",
+                    "name": "mistral-medium"
                 }
             ]
         }
@@ -1000,22 +1087,42 @@
                 {
                     "label": "voyage-2",
                     "name": "voyage-2",
-                    "description": "Base generalist embedding model optimized for both latency and quality"
+                    "description": "General-purpose embedding model optimized for a balance between cost, latency, and retrieval quality."
                 },
                 {
                     "label": "voyage-code-2",
                     "name": "voyage-code-2",
-                    "description": "Optimized for code retrieval"
+                    "description": "Optimized for code retrieval."
+                },
+                {
+                    "label": "voyage-finance-2",
+                    "name": "voyage-finance-2",
+                    "description": "Optimized for finance retrieval and RAG."
                 },
                 {
                     "label": "voyage-large-2",
                     "name": "voyage-large-2",
-                    "description": "Powerful generalist embedding model"
+                    "description": "General-purpose embedding model that is optimized for retrieval quality."
+                },
+                {
+                    "label": "voyage-large-2-instruct",
+                    "name": "voyage-large-2-instruct",
+                    "description": "Instruction-tuned general-purpose embedding model optimized for clustering, classification, and retrieval."
+                },
+                {
+                    "label": "voyage-law-2",
+                    "name": "voyage-law-2",
+                    "description": "Optimized for legal and long-context retrieval and RAG. Also improved performance across all domains."
                 },
                 {
                     "label": "voyage-lite-02-instruct",
                     "name": "voyage-lite-02-instruct",
                     "description": "Instruction-tuned for classification, clustering, and sentence textual similarity tasks"
+                },
+                {
+                    "label": "voyage-multilingual-2",
+                    "name": "voyage-multilingual-2",
+                    "description": "Optimized for multilingual retrieval and RAG."
                 }
             ]
         },

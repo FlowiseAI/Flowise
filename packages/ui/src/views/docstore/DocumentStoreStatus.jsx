@@ -15,8 +15,10 @@ const DocumentStoreStatus = ({ status, isTableView }) => {
             case 'EMPTY':
                 return ['#673ab7', '#673ab7', '#673ab7']
             case 'SYNCING':
+            case 'UPSERTING':
                 return ['#fff8e1', '#ffe57f', '#ffc107']
             case 'SYNC':
+            case 'UPSERTED':
                 return ['#cdf5d8', '#00e676', '#00c853']
             case 'NEW':
                 return ['#e3f2fd', '#2196f3', '#1e88e5']

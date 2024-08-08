@@ -6,8 +6,9 @@ import ReactJson from 'flowise-react-json-view'
 import { Typography, Card, CardContent, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import StatsCard from '@/ui-component/cards/StatsCard'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import { IconZoomScan } from '@tabler/icons-react'
 
-const UpsertResultDialog = ({ show, dialogProps, onCancel }) => {
+const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
@@ -76,7 +77,31 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel }) => {
                 </>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>Close</Button>
+                {dialogProps.goToRetrievalQuery && (
+                    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginLeft: '15px', marginRight: '15px' }}>
+                        <Button
+                            variant='contained'
+                            fullWidth
+                            sx={{
+                                borderRadius: 2,
+                                height: '100%',
+                                backgroundImage: `linear-gradient(to right, #3f5efb, #fc466b)`,
+                                '&:hover': {
+                                    backgroundImage: `linear-gradient(to right, #2b4efb, #fe2752)`
+                                },
+                                mb: 2
+                            }}
+                            startIcon={<IconZoomScan />}
+                            onClick={onGoToRetrievalQuery}
+                        >
+                            Test Retrieval
+                        </Button>
+                        <Button fullWidth onClick={onCancel}>
+                            Close
+                        </Button>
+                    </div>
+                )}
+                {!dialogProps.goToRetrievalQuery && <Button onClick={onCancel}>Close</Button>}
             </DialogActions>
         </Dialog>
     ) : null
@@ -88,7 +113,7 @@ UpsertResultDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onSave: PropTypes.func
+    onGoToRetrievalQuery: PropTypes.func
 }
 
 export default UpsertResultDialog

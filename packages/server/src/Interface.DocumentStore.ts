@@ -5,7 +5,9 @@ export enum DocumentStoreStatus {
     SYNC = 'SYNC',
     SYNCING = 'SYNCING',
     STALE = 'STALE',
-    NEW = 'NEW'
+    NEW = 'NEW',
+    UPSERTING = 'UPSERTING',
+    UPSERTED = 'UPSERTED'
 }
 
 export interface IDocumentStore {
@@ -17,6 +19,9 @@ export interface IDocumentStore {
     updatedDate: Date
     createdDate: Date
     status: DocumentStoreStatus
+    vectorStoreConfig: string | null // JSON string
+    embeddingConfig: string | null // JSON string
+    recordManagerConfig: string | null // JSON string
 }
 
 export interface IDocumentStoreFileChunk {
@@ -89,6 +94,9 @@ export class DocumentStoreDTO {
     totalChars: number
     chunkSize: number
     loaders: IDocumentStoreLoader[]
+    vectorStoreConfig: any
+    embeddingConfig: any
+    recordManagerConfig: any
 
     constructor() {}
 
@@ -109,6 +117,16 @@ export class DocumentStoreDTO {
             documentStoreDTO.whereUsed = []
         }
 
+        if (entity.vectorStoreConfig) {
+            documentStoreDTO.vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)
+        }
+        if (entity.embeddingConfig) {
+            documentStoreDTO.embeddingConfig = JSON.parse(entity.embeddingConfig)
+        }
+        if (entity.recordManagerConfig) {
+            documentStoreDTO.recordManagerConfig = JSON.parse(entity.recordManagerConfig)
+        }
+
         if (entity.loaders) {
             documentStoreDTO.loaders = JSON.parse(entity.loaders)
             documentStoreDTO.loaders.map((loader) => {
@@ -122,6 +140,12 @@ export class DocumentStoreDTO {
                         loader.source = loader.loaderConfig.url + ' (' + loader.loaderConfig.method + ')'
                         break
                     case 'cheerioWebScraper':
+                        loader.source = loader.loaderConfig.url
+                        break
+                    case 'playwrightWebScraper':
+                        loader.source = loader.loaderConfig.url
+                        break
+                    case 'puppeteerWebScraper':
                         loader.source = loader.loaderConfig.url
                         break
                     case 'jsonFile':

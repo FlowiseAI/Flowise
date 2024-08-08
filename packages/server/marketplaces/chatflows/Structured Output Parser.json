@@ -1,8 +1,7 @@
 {
     "description": "Return response as a specified JSON structure instead of a string/text",
-    "categories": "Structured Output Parser,ChatOpenAI,LLM Chain,Langchain",
-    "framework": "Langchain",
-    "badge": "NEW",
+    "framework": ["Langchain"],
+    "usecases": ["Extraction"],
     "nodes": [
         {
             "width": 300,

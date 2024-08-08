@@ -36,7 +36,6 @@ class Upstash_VectorStores implements INode {
         this.description =
             'Upsert data as embedding or string and perform similarity search with Upstash, the leading serverless data platform'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -142,6 +141,41 @@ class Upstash_VectorStores implements INode {
                 } else {
                     await UpstashVectorStore.fromDocuments(finalDocs, embeddings, obj)
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const UPSTASH_VECTOR_REST_URL = getCredentialParam('UPSTASH_VECTOR_REST_URL', credentialData, nodeData)
+            const UPSTASH_VECTOR_REST_TOKEN = getCredentialParam('UPSTASH_VECTOR_REST_TOKEN', credentialData, nodeData)
+
+            const upstashIndex = new UpstashIndex({
+                url: UPSTASH_VECTOR_REST_URL,
+                token: UPSTASH_VECTOR_REST_TOKEN
+            })
+
+            const obj = {
+                index: upstashIndex
+            }
+
+            const upstashStore = new UpstashVectorStore(embeddings, obj)
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = UPSTASH_VECTOR_REST_URL
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await upstashStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    await upstashStore.delete({ ids })
                 }
             } catch (e) {
                 throw new Error(e)

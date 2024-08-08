@@ -40,6 +40,7 @@ import { StyledFab } from '@/ui-component/button/StyledFab'
 import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons-react'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 import LangChainPNG from '@/assets/images/langchain.png'
+import utilNodesPNG from '@/assets/images/utilNodes.png'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -53,7 +54,13 @@ function a11yProps(index) {
     }
 }
 
-const AddNodes = ({ nodesData, node }) => {
+const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager']
+const allowedAgentModel = {}
+const exceptions = {
+    Memory: ['agentMemory']
+}
+
+const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -68,28 +75,6 @@ const AddNodes = ({ nodesData, node }) => {
     const prevOpen = useRef(open)
     const ps = useRef()
 
-    // Temporary method to handle Deprecating Vector Store and New ones
-    const categorizeVectorStores = (nodes, accordianCategories, isFilter) => {
-        const obj = { ...nodes }
-        const vsNodes = obj['Vector Stores'] ?? []
-        const deprecatingNodes = []
-        const newNodes = []
-        for (const vsNode of vsNodes) {
-            if (vsNode.badge === 'DEPRECATING') deprecatingNodes.push(vsNode)
-            else newNodes.push(vsNode)
-        }
-        delete obj['Vector Stores']
-        if (deprecatingNodes.length) {
-            obj['Vector Stores;DEPRECATING'] = deprecatingNodes
-            accordianCategories['Vector Stores;DEPRECATING'] = isFilter ? true : false
-        }
-        if (newNodes.length) {
-            obj['Vector Stores;NEW'] = newNodes
-            accordianCategories['Vector Stores;NEW'] = isFilter ? true : false
-        }
-        setNodes(obj)
-    }
-
     const scrollTop = () => {
         const curr = ps.current
         if (curr) {
@@ -102,8 +87,28 @@ const AddNodes = ({ nodesData, node }) => {
         filterSearch(searchValue, newValue)
     }
 
+    const addException = () => {
+        let nodes = []
+        for (const category in exceptions) {
+            const nodeNames = exceptions[category]
+            nodes.push(...nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name)))
+        }
+        return nodes
+    }
+
     const getSearchedNodes = (value) => {
-        const passed = nodesData.filter((nd) => {
+        if (isAgentCanvas) {
+            const nodes = nodesData.filter((nd) => !blacklistCategoriesForAgentCanvas.includes(nd.category))
+            nodes.push(...addException())
+            const passed = nodes.filter((nd) => {
+                const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
+                const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
+                return passesQuery || passesCategory
+            })
+            return passed
+        }
+        const nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents' && nd.category !== 'Sequential Agents')
+        const passed = nodes.filter((nd) => {
             const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
             const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
             return passesQuery || passesCategory
@@ -128,25 +133,73 @@ const AddNodes = ({ nodesData, node }) => {
     const groupByTags = (nodes, newTabValue = 0) => {
         const langchainNodes = nodes.filter((nd) => !nd.tags)
         const llmaindexNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('LlamaIndex'))
+        const utilitiesNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('Utilities'))
         if (newTabValue === 0) {
             return langchainNodes
-        } else {
+        } else if (newTabValue === 1) {
             return llmaindexNodes
+        } else {
+            return utilitiesNodes
         }
     }
 
     const groupByCategory = (nodes, newTabValue, isFilter) => {
-        const taggedNodes = groupByTags(nodes, newTabValue)
-        const accordianCategories = {}
-        const result = taggedNodes.reduce(function (r, a) {
-            r[a.category] = r[a.category] || []
-            r[a.category].push(a)
-            accordianCategories[a.category] = isFilter ? true : false
-            return r
-        }, Object.create(null))
-        setNodes(result)
-        categorizeVectorStores(result, accordianCategories, isFilter)
-        setCategoryExpanded(accordianCategories)
+        if (isAgentCanvas) {
+            const accordianCategories = {}
+            const result = nodes.reduce(function (r, a) {
+                r[a.category] = r[a.category] || []
+                r[a.category].push(a)
+                accordianCategories[a.category] = isFilter ? true : false
+                return r
+            }, Object.create(null))
+
+            const filteredResult = {}
+            for (const category in result) {
+                // Filter out blacklisted categories
+                if (!blacklistCategoriesForAgentCanvas.includes(category)) {
+                    // Filter out LlamaIndex nodes
+                    const nodes = result[category].filter((nd) => !nd.tags || !nd.tags.includes('LlamaIndex'))
+                    if (!nodes.length) continue
+
+                    // Only allow specific models for specific categories
+                    if (Object.keys(allowedAgentModel).includes(category)) {
+                        const allowedModels = allowedAgentModel[category]
+                        filteredResult[category] = nodes.filter((nd) => allowedModels.includes(nd.name))
+                    } else {
+                        filteredResult[category] = nodes
+                    }
+                }
+
+                // Allow exceptions
+                if (Object.keys(exceptions).includes(category)) {
+                    filteredResult[category] = addException()
+                }
+            }
+            setNodes(filteredResult)
+            accordianCategories['Multi Agents'] = true
+            accordianCategories['Sequential Agents'] = true
+            accordianCategories['Memory'] = true
+            setCategoryExpanded(accordianCategories)
+        } else {
+            const taggedNodes = groupByTags(nodes, newTabValue)
+            const accordianCategories = {}
+            const result = taggedNodes.reduce(function (r, a) {
+                r[a.category] = r[a.category] || []
+                r[a.category].push(a)
+                accordianCategories[a.category] = isFilter ? true : false
+                return r
+            }, Object.create(null))
+
+            const filteredResult = {}
+            for (const category in result) {
+                if (category === 'Multi Agents' || category === 'Sequential Agents') {
+                    continue
+                }
+                filteredResult[category] = result[category]
+            }
+            setNodes(filteredResult)
+            setCategoryExpanded(accordianCategories)
+        }
     }
 
     const handleAccordionChange = (category) => (event, isExpanded) => {
@@ -169,6 +222,16 @@ const AddNodes = ({ nodesData, node }) => {
     const onDragStart = (event, node) => {
         event.dataTransfer.setData('application/reactflow', JSON.stringify(node))
         event.dataTransfer.effectAllowed = 'move'
+    }
+
+    const getImage = (tabValue) => {
+        if (tabValue === 0) {
+            return LangChainPNG
+        } else if (tabValue === 1) {
+            return LlamaindexPNG
+        } else {
+            return utilNodesPNG
+        }
     }
 
     useEffect(() => {
@@ -234,6 +297,8 @@ const AddNodes = ({ nodesData, node }) => {
                                             <Typography variant='h4'>Add Nodes</Typography>
                                         </Stack>
                                         <OutlinedInput
+                                            // eslint-disable-next-line
+                                            autoFocus
                                             sx={{ width: '100%', pr: 2, pl: 2, my: 2 }}
                                             id='input-search-node'
                                             value={searchValue}
@@ -271,62 +336,43 @@ const AddNodes = ({ nodesData, node }) => {
                                                 'aria-label': 'weight'
                                             }}
                                         />
-                                        <Tabs
-                                            sx={{ position: 'relative', minHeight: '50px', height: '50px' }}
-                                            variant='fullWidth'
-                                            value={tabValue}
-                                            onChange={handleTabChange}
-                                            aria-label='tabs'
-                                        >
-                                            {['LangChain', 'LlamaIndex'].map((item, index) => (
-                                                <Tab
-                                                    icon={
-                                                        <div
-                                                            style={{
-                                                                borderRadius: '50%'
-                                                            }}
-                                                        >
-                                                            <img
-                                                                style={{
-                                                                    width: '25px',
-                                                                    height: '25px',
-                                                                    borderRadius: '50%',
-                                                                    objectFit: 'contain'
-                                                                }}
-                                                                src={index === 0 ? LangChainPNG : LlamaindexPNG}
-                                                                alt={item}
-                                                            />
-                                                        </div>
-                                                    }
-                                                    iconPosition='start'
-                                                    sx={{ minHeight: '50px', height: '50px' }}
-                                                    key={index}
-                                                    label={item}
-                                                    {...a11yProps(index)}
-                                                ></Tab>
-                                            ))}
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row',
-                                                    alignItems: 'center',
-                                                    borderRadius: 10,
-                                                    background: 'rgb(254,252,191)',
-                                                    paddingLeft: 6,
-                                                    paddingRight: 6,
-                                                    paddingTop: 1,
-                                                    paddingBottom: 1,
-                                                    width: 'max-content',
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    right: 0,
-                                                    fontSize: '0.65rem',
-                                                    fontWeight: 700
-                                                }}
+                                        {!isAgentCanvas && (
+                                            <Tabs
+                                                sx={{ position: 'relative', minHeight: '50px', height: '50px' }}
+                                                variant='fullWidth'
+                                                value={tabValue}
+                                                onChange={handleTabChange}
+                                                aria-label='tabs'
                                             >
-                                                <span style={{ color: 'rgb(116,66,16)' }}>BETA</span>
-                                            </div>
-                                        </Tabs>
+                                                {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
+                                                    <Tab
+                                                        icon={
+                                                            <div
+                                                                style={{
+                                                                    borderRadius: '50%'
+                                                                }}
+                                                            >
+                                                                <img
+                                                                    style={{
+                                                                        width: '20px',
+                                                                        height: '20px',
+                                                                        borderRadius: '50%',
+                                                                        objectFit: 'contain'
+                                                                    }}
+                                                                    src={getImage(index)}
+                                                                    alt={item}
+                                                                />
+                                                            </div>
+                                                        }
+                                                        iconPosition='start'
+                                                        sx={{ minHeight: '50px', height: '50px' }}
+                                                        key={index}
+                                                        label={item}
+                                                        {...a11yProps(index)}
+                                                    ></Tab>
+                                                ))}
+                                            </Tabs>
+                                        )}
 
                                         <Divider />
                                     </Box>
@@ -334,7 +380,11 @@ const AddNodes = ({ nodesData, node }) => {
                                         containerRef={(el) => {
                                             ps.current = el
                                         }}
-                                        style={{ height: '100%', maxHeight: 'calc(100vh - 380px)', overflowX: 'hidden' }}
+                                        style={{
+                                            height: '100%',
+                                            maxHeight: `calc(100vh - ${isAgentCanvas ? '300' : '380'}px)`,
+                                            overflowX: 'hidden'
+                                        }}
                                     >
                                         <Box sx={{ p: 2, pt: 0 }}>
                                             <List
@@ -359,92 +409,90 @@ const AddNodes = ({ nodesData, node }) => {
                                             >
                                                 {Object.keys(nodes)
                                                     .sort()
-                                                    .map((category) =>
-                                                        category === 'Vector Stores' ? (
-                                                            <></>
-                                                        ) : (
-                                                            <Accordion
-                                                                expanded={categoryExpanded[category] || false}
-                                                                onChange={handleAccordionChange(category)}
-                                                                key={category}
-                                                                disableGutters
+                                                    .map((category) => (
+                                                        <Accordion
+                                                            expanded={categoryExpanded[category] || false}
+                                                            onChange={handleAccordionChange(category)}
+                                                            key={category}
+                                                            disableGutters
+                                                        >
+                                                            <AccordionSummary
+                                                                expandIcon={<ExpandMoreIcon />}
+                                                                aria-controls={`nodes-accordian-${category}`}
+                                                                id={`nodes-accordian-header-${category}`}
                                                             >
-                                                                <AccordionSummary
-                                                                    expandIcon={<ExpandMoreIcon />}
-                                                                    aria-controls={`nodes-accordian-${category}`}
-                                                                    id={`nodes-accordian-header-${category}`}
-                                                                >
-                                                                    {category.split(';').length > 1 ? (
-                                                                        <div
-                                                                            style={{
-                                                                                display: 'flex',
-                                                                                flexDirection: 'row',
-                                                                                alignItems: 'center'
+                                                                {category.split(';').length > 1 ? (
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            flexDirection: 'row',
+                                                                            alignItems: 'center'
+                                                                        }}
+                                                                    >
+                                                                        <Typography variant='h5'>{category.split(';')[0]}</Typography>
+                                                                        &nbsp;
+                                                                        <Chip
+                                                                            sx={{
+                                                                                width: 'max-content',
+                                                                                fontWeight: 700,
+                                                                                fontSize: '0.65rem',
+                                                                                background:
+                                                                                    category.split(';')[1] === 'DEPRECATING'
+                                                                                        ? theme.palette.warning.main
+                                                                                        : theme.palette.teal.main,
+                                                                                color:
+                                                                                    category.split(';')[1] !== 'DEPRECATING'
+                                                                                        ? 'white'
+                                                                                        : 'inherit'
+                                                                            }}
+                                                                            size='small'
+                                                                            label={category.split(';')[1]}
+                                                                        />
+                                                                    </div>
+                                                                ) : (
+                                                                    <Typography variant='h5'>{category}</Typography>
+                                                                )}
+                                                            </AccordionSummary>
+                                                            <AccordionDetails>
+                                                                {nodes[category].map((node, index) => (
+                                                                    <div
+                                                                        key={node.name}
+                                                                        onDragStart={(event) => onDragStart(event, node)}
+                                                                        draggable
+                                                                    >
+                                                                        <ListItemButton
+                                                                            sx={{
+                                                                                p: 0,
+                                                                                borderRadius: `${customization.borderRadius}px`,
+                                                                                cursor: 'move'
                                                                             }}
                                                                         >
-                                                                            <Typography variant='h5'>{category.split(';')[0]}</Typography>
-                                                                            &nbsp;
-                                                                            <Chip
-                                                                                sx={{
-                                                                                    width: 'max-content',
-                                                                                    fontWeight: 700,
-                                                                                    fontSize: '0.65rem',
-                                                                                    background:
-                                                                                        category.split(';')[1] === 'DEPRECATING'
-                                                                                            ? theme.palette.warning.main
-                                                                                            : theme.palette.teal.main,
-                                                                                    color:
-                                                                                        category.split(';')[1] !== 'DEPRECATING'
-                                                                                            ? 'white'
-                                                                                            : 'inherit'
-                                                                                }}
-                                                                                size='small'
-                                                                                label={category.split(';')[1]}
-                                                                            />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <Typography variant='h5'>{category}</Typography>
-                                                                    )}
-                                                                </AccordionSummary>
-                                                                <AccordionDetails>
-                                                                    {nodes[category].map((node, index) => (
-                                                                        <div
-                                                                            key={node.name}
-                                                                            onDragStart={(event) => onDragStart(event, node)}
-                                                                            draggable
-                                                                        >
-                                                                            <ListItemButton
-                                                                                sx={{
-                                                                                    p: 0,
-                                                                                    borderRadius: `${customization.borderRadius}px`,
-                                                                                    cursor: 'move'
-                                                                                }}
-                                                                            >
-                                                                                <ListItem alignItems='center'>
-                                                                                    <ListItemAvatar>
-                                                                                        <div
+                                                                            <ListItem alignItems='center'>
+                                                                                <ListItemAvatar>
+                                                                                    <div
+                                                                                        style={{
+                                                                                            width: 50,
+                                                                                            height: 50,
+                                                                                            borderRadius: '50%',
+                                                                                            backgroundColor: 'white'
+                                                                                        }}
+                                                                                    >
+                                                                                        <img
                                                                                             style={{
-                                                                                                width: 50,
-                                                                                                height: 50,
-                                                                                                borderRadius: '50%',
-                                                                                                backgroundColor: 'white'
+                                                                                                width: '100%',
+                                                                                                height: '100%',
+                                                                                                padding: 10,
+                                                                                                objectFit: 'contain'
                                                                                             }}
-                                                                                        >
-                                                                                            <img
-                                                                                                style={{
-                                                                                                    width: '100%',
-                                                                                                    height: '100%',
-                                                                                                    padding: 10,
-                                                                                                    objectFit: 'contain'
-                                                                                                }}
-                                                                                                alt={node.name}
-                                                                                                src={`${baseURL}/api/v1/node-icon/${node.name}`}
-                                                                                            />
-                                                                                        </div>
-                                                                                    </ListItemAvatar>
-                                                                                    <ListItemText
-                                                                                        sx={{ ml: 1 }}
-                                                                                        primary={
+                                                                                            alt={node.name}
+                                                                                            src={`${baseURL}/api/v1/node-icon/${node.name}`}
+                                                                                        />
+                                                                                    </div>
+                                                                                </ListItemAvatar>
+                                                                                <ListItemText
+                                                                                    sx={{ ml: 1 }}
+                                                                                    primary={
+                                                                                        <>
                                                                                             <div
                                                                                                 style={{
                                                                                                     display: 'flex',
@@ -476,18 +524,28 @@ const AddNodes = ({ nodesData, node }) => {
                                                                                                     />
                                                                                                 )}
                                                                                             </div>
-                                                                                        }
-                                                                                        secondary={node.description}
-                                                                                    />
-                                                                                </ListItem>
-                                                                            </ListItemButton>
-                                                                            {index === nodes[category].length - 1 ? null : <Divider />}
-                                                                        </div>
-                                                                    ))}
-                                                                </AccordionDetails>
-                                                            </Accordion>
-                                                        )
-                                                    )}
+                                                                                            {node.author && (
+                                                                                                <span
+                                                                                                    style={{
+                                                                                                        fontSize: '0.65rem',
+                                                                                                        fontWeight: 700
+                                                                                                    }}
+                                                                                                >
+                                                                                                    By {node.author}
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </>
+                                                                                    }
+                                                                                    secondary={node.description}
+                                                                                />
+                                                                            </ListItem>
+                                                                        </ListItemButton>
+                                                                        {index === nodes[category].length - 1 ? null : <Divider />}
+                                                                    </div>
+                                                                ))}
+                                                            </AccordionDetails>
+                                                        </Accordion>
+                                                    ))}
                                             </List>
                                         </Box>
                                     </PerfectScrollbar>
@@ -503,7 +561,8 @@ const AddNodes = ({ nodesData, node }) => {
 
 AddNodes.propTypes = {
     nodesData: PropTypes.array,
-    node: PropTypes.object
+    node: PropTypes.object,
+    isAgentCanvas: PropTypes.bool
 }
 
 export default AddNodes

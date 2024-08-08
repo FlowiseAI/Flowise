@@ -94,7 +94,11 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         this.chatflowid = fields.chatflowid
     }
 
-    async getChatMessages(overrideSessionId = '', returnBaseMessages = false): Promise<IMessage[] | BaseMessage[]> {
+    async getChatMessages(
+        overrideSessionId = '',
+        returnBaseMessages = false,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]> {
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         if (!id) return []
 
@@ -108,6 +112,10 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
             }
         })
 
+        if (prependMessages?.length) {
+            chatMessage.unshift(...prependMessages)
+        }
+
         if (returnBaseMessages) {
             return mapChatMessageToBaseMessage(chatMessage)
         }
@@ -119,6 +127,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
                 type: m.role
             })
         }
+
         return returnIMessages
     }
 

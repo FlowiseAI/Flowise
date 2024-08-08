@@ -46,8 +46,11 @@ const MarketplaceCanvas = () => {
     }, [flowData])
 
     const onChatflowCopy = (flowData) => {
+        const isAgentCanvas = (flowData?.nodes || []).some(
+            (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
+        )
         const templateFlowData = JSON.stringify(flowData)
-        navigate(`/canvas`, { state: { templateFlowData } })
+        navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, { state: { templateFlowData } })
     }
 
     return (

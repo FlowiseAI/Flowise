@@ -1,3 +1,7 @@
+import { BaseMessage } from '@langchain/core/messages'
+import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
+import { Moderation } from '../nodes/moderation/Moderation'
+
 /**
  * Types
  */
@@ -16,6 +20,7 @@ export type NodeParamsType =
     | 'date'
     | 'file'
     | 'folder'
+    | 'tabs'
 
 export type CommonType = string | number | boolean | undefined | null
 
@@ -59,6 +64,8 @@ export interface INodeOutputsValue {
     name: string
     baseClasses: string[]
     description?: string
+    hidden?: boolean
+    isAnchor?: boolean
 }
 
 export interface INodeParams {
@@ -81,7 +88,11 @@ export interface INodeParams {
     additionalParams?: boolean
     loadMethod?: string
     hidden?: boolean
-    variables?: ICommonObject[]
+    hideCodeExecute?: boolean
+    codeExample?: string
+    hint?: Record<string, string>
+    tabIdentifier?: string
+    tabs?: Array<INodeParams>
 }
 
 export interface INodeExecutionData {
@@ -105,6 +116,9 @@ export interface INodeProperties {
     filePath?: string
     badge?: string
     deprecateMessage?: string
+    hideOutput?: boolean
+    author?: string
+    documentation?: string
 }
 
 export interface INode extends INodeProperties {
@@ -116,7 +130,7 @@ export interface INode extends INodeProperties {
     vectorStoreMethods?: {
         upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<IndexingResult | void>
         search: (nodeData: INodeData, options?: ICommonObject) => Promise<any>
-        delete: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
+        delete: (nodeData: INodeData, ids: string[], options?: ICommonObject) => Promise<void>
     }
     init?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<any>
     run?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<string | ICommonObject>
@@ -141,12 +155,86 @@ export interface INodeCredential {
 export interface IMessage {
     message: string
     type: MessageType
+    role?: MessageType
+    content?: string
 }
 
 export interface IUsedTool {
     tool: string
     toolInput: object
     toolOutput: string | object
+    sourceDocuments?: ICommonObject[]
+}
+
+export interface IMultiAgentNode {
+    node: any
+    name: string
+    label: string
+    type: 'supervisor' | 'worker'
+    llm?: any
+    parentSupervisorName?: string
+    workers?: string[]
+    workerPrompt?: string
+    workerInputVariables?: string[]
+    recursionLimit?: number
+    moderations?: Moderation[]
+    multiModalMessageContent?: MessageContentImageUrl[]
+    checkpointMemory?: any
+}
+
+type SeqAgentType = 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state' | 'llm'
+
+export interface ISeqAgentNode {
+    id: string
+    node: any
+    name: string
+    label: string
+    type: SeqAgentType
+    output: string
+    llm?: any
+    startLLM?: any
+    predecessorAgents?: ISeqAgentNode[]
+    recursionLimit?: number
+    moderations?: Moderation[]
+    multiModalMessageContent?: MessageContentImageUrl[]
+    checkpointMemory?: any
+    agentInterruptToolNode?: any
+    agentInterruptToolFunc?: any
+}
+
+export interface ITeamState {
+    messages: {
+        value: (x: BaseMessage[], y: BaseMessage[]) => BaseMessage[]
+        default: () => BaseMessage[]
+    }
+    team_members: string[]
+    next: string
+    instructions: string
+    summarization?: string
+}
+
+export interface ISeqAgentsState {
+    messages: {
+        value: (x: BaseMessage[], y: BaseMessage[]) => BaseMessage[]
+        default: () => BaseMessage[]
+    }
+}
+
+export interface IAgentReasoning {
+    agentName: string
+    messages: string[]
+    next?: string
+    instructions?: string
+    usedTools?: IUsedTool[]
+    sourceDocuments?: ICommonObject[]
+    state?: ICommonObject
+    nodeName?: string
+}
+
+export interface IAction {
+    id?: string
+    elements?: Array<{ type: string; label: string }>
+    mapping?: { approve: string; reject: string; toolCalls: any[] }
 }
 
 export interface IFileUpload {
@@ -239,35 +327,53 @@ export class VectorStoreRetriever {
 /**
  * Implement abstract classes and interface for memory
  */
-import { BaseMessage } from '@langchain/core/messages'
-import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
 
 export interface MemoryMethods {
-    getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
+    getChatMessages(
+        overrideSessionId?: string,
+        returnBaseMessages?: boolean,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]>
     addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     clearChatMessages(overrideSessionId?: string): Promise<void>
 }
 
 export abstract class FlowiseMemory extends BufferMemory implements MemoryMethods {
-    abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
+    abstract getChatMessages(
+        overrideSessionId?: string,
+        returnBaseMessages?: boolean,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
 
 export abstract class FlowiseWindowMemory extends BufferWindowMemory implements MemoryMethods {
-    abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
+    abstract getChatMessages(
+        overrideSessionId?: string,
+        returnBaseMessages?: boolean,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
 
 export abstract class FlowiseSummaryMemory extends ConversationSummaryMemory implements MemoryMethods {
-    abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
+    abstract getChatMessages(
+        overrideSessionId?: string,
+        returnBaseMessages?: boolean,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
 
 export abstract class FlowiseSummaryBufferMemory extends ConversationSummaryBufferMemory implements MemoryMethods {
-    abstract getChatMessages(overrideSessionId?: string, returnBaseMessages?: boolean): Promise<IMessage[] | BaseMessage[]>
+    abstract getChatMessages(
+        overrideSessionId?: string,
+        returnBaseMessages?: boolean,
+        prependMessages?: IMessage[]
+    ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>
 }
