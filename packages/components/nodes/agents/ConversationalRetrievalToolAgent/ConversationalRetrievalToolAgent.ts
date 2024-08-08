@@ -20,6 +20,7 @@ import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalU
 class ConversationalRetrievalToolAgent_Agents implements INode {
     label: string
     name: string
+    author: string
     version: number
     description: string
     type: string
@@ -33,6 +34,7 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Conversational Retrieval Tool Agent'
         this.name = 'conversationalRetrievalToolAgent'
+        this.author = 'niztal(falkor)'
         this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
