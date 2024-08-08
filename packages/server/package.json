@@ -54,7 +54,13 @@
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
+        "@arizeai/openinference-instrumentation-langchain": "^0.0.9",
         "@oclif/core": "^1.13.10",
+        "@opentelemetry/exporter-trace-otlp-proto": "^0.52.1",
+        "@opentelemetry/resources": "^1.25.1",
+        "@opentelemetry/sdk-trace-base": "^1.25.1",
+        "@opentelemetry/sdk-trace-node": "^1.25.1",
+        "@opentelemetry/semantic-conventions": "^1.25.1",
         "@types/lodash": "^4.14.202",
         "@types/uuid": "^9.0.7",
         "async-mutex": "^0.4.0",
@@ -104,5 +110,10 @@
         "ts-node": "^10.7.0",
         "tsc-watch": "^6.0.4",
         "typescript": "^5.4.5"
+    },
+    "pnpm": {
+        "overrides": {
+            "@langchain/core": "^0.1.0"
+        }
     }
 }
