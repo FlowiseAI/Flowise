@@ -166,6 +166,8 @@ json.dumps(my_dict)`
             }
             const res = await chain.call(inputs, [loggerHandler, ...callbacks])
             pythonCode = res?.text
+            // Regex to get rid of markdown code blocks syntax
+            pythonCode = pythonCode.replace(/^```[a-z]+\n|\n```$/gm, '')
         }
 
         // Then run the code using Pyodide
@@ -173,6 +175,7 @@ json.dumps(my_dict)`
         if (pythonCode) {
             try {
                 const code = `import pandas as pd\n${pythonCode}`
+                // TODO: get print console output
                 finalResult = await pyodide.runPythonAsync(code)
             } catch (error) {
                 throw new Error(`Sorry, I'm unable to find answer for question: "${input}" using follwoing code: "${pythonCode}"`)
