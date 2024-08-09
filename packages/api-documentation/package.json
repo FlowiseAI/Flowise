@@ -1,0 +1,14 @@
+{
+    "name": "api-documentation",
+    "version": "1.0.0",
+    "description": "Flowise API documentation server",
+    "scripts": {
+        "dev": "concurrently \"yarn watch\" \"nodemon\"",
+        "watch": "tsc --watch"
+    },
+    "license": "SEE LICENSE IN LICENSE.md",
+    "dependencies": {
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.0"
+    }
+}

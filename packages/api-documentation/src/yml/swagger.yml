@@ -1,0 +1,380 @@
+tags:
+    - name: apikey
+    - name: assistants
+    - name: chatmessage
+    - name: chatflows-streaming
+    - name: chatflows
+    - name: components-credentials-icon
+    - name: components-credentials
+    - name: credentials
+    - name: fetch-links
+    - name: flow-config
+    - name: internal-chatmessage
+    - name: internal-prediction
+    - name: ip
+    - name: load-prompt
+    - name: marketplaces
+    - name: node-config
+    - name: node-custom-function
+    - name: node-icon
+    - name: node-load-method
+    - name: nodes
+    - name: openai-assistants
+    - name: openai-assistants-file
+    - name: prediction
+    - name: prompts-list
+    - name: public-chatbotConfig
+    - name: public-chatflows
+    - name: tools
+    - name: variables
+    - name: vector
+    - name: verify
+    - name: version
+paths:
+    /apikey:
+        post:
+            tags:
+                - apikey
+            operationId: createApiKey
+            summary: Add new api key
+            description: Add new api key
+            requestBody:
+                description: Add new api key
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/apiKey'
+                required: true
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/apiKey'
+                        application/xml:
+                            schema:
+                                $ref: '#/components/schemas/apiKey'
+                '400':
+                    description: Invalid keyName provided
+                '404':
+                    description: Api key not found
+                '422':
+                    description: Validation exception
+        get:
+            tags:
+                - apikey
+            summary: Get API keys
+            description: Multiple API keys values can be retrieved
+            operationId: listApiKey
+            responses:
+                '200':
+                  description: successful operation
+                  content:
+                    application/json:
+                      schema:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/apiKey'
+                '400':
+                  description: Invalid status value
+        put:
+            tags:
+                - apikey
+        delete:
+            tags:
+                - apikey
+    /assistants:
+        post:
+            tags:
+                - assistants
+        get:
+            tags:
+                - assistants
+        put:
+            tags:
+                - assistants
+        delete:
+            tags:
+                - assistants
+    /assistants/{id}:
+        get:
+            tags:
+                - assistants
+    /chatmessage/{chatflowId}:
+        post:
+            tags:
+                - chatmessage
+        get:
+            tags:
+                - chatmessage
+        delete:
+            tags:
+                - chatmessage
+    /chatflows-streaming/{id}:
+        get:
+            tags:
+                - chatflows-streaming
+    /chatflows:
+        post:
+            tags:
+                - chatflows
+        get:
+            tags:
+                - chatflows
+    /chatflows/{id}:
+        get:
+            tags:
+                - chatflows
+        put:
+            tags:
+                - chatflows
+        delete:
+            tags:
+                - chatflows
+    /chatflows/apikey/{apiKey}:
+        get:
+            tags:
+                - chatflows
+    /components-credentials-icon/{name}:
+        get:
+            tags:
+                - components-credentials-icon
+    /components-credentials:
+        get:
+            tags:
+                - components-credentials
+    /components-credentials/{name}:
+        get:
+            tags:
+                - components-credentials
+    /credentials/:
+        post:
+            tags:
+                - credentials
+        get:
+            tags:
+                - credentials
+        put:
+            tags:
+                - credentials
+    /credentials/{id}:
+        get:
+            tags:
+                - credentials
+        delete:
+            tags:
+                - credentials
+    /fetch-links/:
+        get:
+            tags:
+                - fetch-links
+    /flow-config/{id}:
+        get:
+            tags:
+                - flow-config
+    /internal-chatmessage/{id}:
+        get:
+            tags:
+                - internal-chatmessage
+    /internal-prediction/{id}:
+        post:
+            tags:
+                - internal-prediction
+    /ip:
+        get:
+            tags:
+                - ip
+    /load-prompt:
+        post:
+            tags:
+                - load-prompt
+    /marketplaces/templates:
+        get:
+            tags:
+                - marketplaces
+    /node-config:
+        post:
+            tags:
+                - node-config
+    /node-custom-function:
+        post:
+            tags:
+                - node-custom-function
+    /node-icon/{name}:
+        get:
+            tags:
+                - node-icon
+    /node-load-method/{name}:
+        get:
+            tags:
+                - node-load-method
+    /nodes:
+        get:
+            tags:
+                - nodes
+    /nodes/{name}:
+        get:
+            tags:
+                - nodes
+    /openai-assistants:
+        get:
+            tags:
+                - openai-assistants
+    /openai-assistants/{id}:
+        get:
+            tags:
+                - openai-assistants
+    /openai-assistants-file:
+        post:
+            tags:
+                - openai-assistants-file
+    /prediction/{id}:
+        post:
+            tags:
+                - prediction
+    /prompts-list:
+        post:
+            tags:
+                - prompts-list
+    /public-chatbotConfig/{id}:
+        get:
+            tags:
+                - public-chatbotConfig
+    /public-chatflows/{id}:
+        get:
+            tags:
+                - public-chatflows
+    /tools:
+        post:
+            tags:
+                - tools
+        get:
+            tags:
+                - tools
+    /tools/{id}:
+        get:
+            tags:
+                - tools
+        put:
+            tags:
+                - tools
+        delete:
+            tags:
+                - tools
+    /variables:
+        get:
+            tags:
+                - variables
+        post:
+            tags:
+                - variables
+    /variables/{id}:
+        put:
+            tags:
+                - variables
+        delete:
+            tags:
+                - variables
+    /vector/upsert/{id}:
+        post:
+            tags:
+                - vector
+    /vector/internal-upsert/{id}:
+        post:
+            tags:
+                - vector
+    /verify/apikey/{apikey}:
+        get:
+            tags:
+                - verify
+    /version:
+        get:
+            tags:
+                - version
+components:
+    responses:
+        UnauthorizedError:
+            description: Access token is missing or invalid
+    schemas:
+        apiKey:
+            description: Description for what api key is used for
+            type: object
+            properties:
+                apiKey:
+                    type: string
+                    example: "vYV8OdUMRzRQbzpp2JzY5DvriBnuVHo3pYpPQ7IJWyw="
+                apiSecret:
+                    type: string
+                    example: "50e19a35ee1df775c09628dade1c00f0f680c6e15256e34a6eab350b38b31352df35c4db7925a3e5dd41cc773a0e2529e6c6da18408a8bbeeb0ae4b0f0ab9486.a96478a9225ed6ab"
+                chatFlows:
+                    type: array
+                    example: []
+                createdAt:
+                    type: string
+                    example: "10-Mar-24"
+                id:
+                    type: string
+                    example: "525e4daa2104f06ffdea5c1af37009be"
+                keyName:
+                    type: string
+                    example: "someKeyName"
+        Chatflow:
+            description: Retrieval for all chatflows associated to a user id have succeded
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    example: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+                name:
+                    type: string
+                    format: varchar
+                    description: About public.chatflows.name column
+                flowData:
+                    type: string
+                    format: text
+                deployed:
+                    type: boolean
+                isPublic:
+                    type: boolean
+                apikeyid:
+                    type: string
+                    format: varcar
+                chatbotConfig:
+                    type: string
+                    format: text
+                createdDate:
+                    type: string
+                    format: date-time
+                updatedDate:
+                    type: string
+                    format: date-time
+                apiConfig:
+                    type: string
+                    format: text
+                analytic:
+                    type: string
+                    format: text
+                category:
+                    type: string
+                    format: text
+    requestBodies:
+        apiKey:
+            description: Request body content for adding a new api key
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/apiKey'
+        Chatflow:
+            description:
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Chatflow'
+    # 1) Define the security scheme type (HTTP bearer)
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT # optional, for documentation purposes only
