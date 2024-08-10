@@ -135,7 +135,12 @@ class ToolAgent_Agents implements INode {
             }
         }
 
-        let output = res?.output as string
+        let output = res?.output
+        if (Array.isArray(output)) {
+            output = output[0]?.text || ''
+        } else if (typeof output === 'object') {
+            output = output?.text || ''
+        }
 
         // Claude 3 Opus tends to spit out <thinking>..</thinking> as well, discard that in final output
         const regexPattern: RegExp = /<thinking>[\s\S]*?<\/thinking>/
