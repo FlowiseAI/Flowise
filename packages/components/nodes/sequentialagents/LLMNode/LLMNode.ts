@@ -141,17 +141,19 @@ class LLMNode_SeqAgents implements INode {
     baseClasses: string[]
     inputs?: INodeParams[]
     badge?: string
+    documentation?: string
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'LLM Node'
         this.name = 'seqLLMNode'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'LLMNode'
         this.icon = 'llmNode.svg'
         this.category = 'Sequential Agents'
         this.description = 'Run Chat Model and return the output'
         this.baseClasses = [this.type]
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-5.-llm-node'
         this.inputs = [
             {
                 label: 'Name',
@@ -177,9 +179,9 @@ class LLMNode_SeqAgents implements INode {
                 additionalParams: true
             },
             {
-                label: 'Start | Agent | LLM | Tool Node',
+                label: 'Start | Agent | Condition | LLM | Tool Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | LLMNode | ToolNode',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode',
                 list: true
             },
             {
@@ -557,6 +559,7 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
     const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`] as string
     const updateStateMemoryUI = nodeData.inputs?.updateStateMemoryUI as string
     const updateStateMemoryCode = nodeData.inputs?.updateStateMemoryCode as string
+    const updateStateMemory = nodeData.inputs?.updateStateMemory as string
 
     const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'updateStateMemoryUI'
     const variables = await getVars(appDataSource, databaseEntities, nodeData)
@@ -569,6 +572,27 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
         output,
         state,
         vars: prepareSandboxVars(variables)
+    }
+
+    if (updateStateMemory && updateStateMemory !== 'updateStateMemoryUI' && updateStateMemory !== 'updateStateMemoryCode') {
+        try {
+            const parsedSchema = typeof updateStateMemory === 'string' ? JSON.parse(updateStateMemory) : updateStateMemory
+            const obj: ICommonObject = {}
+            for (const sch of parsedSchema) {
+                const key = sch.Key
+                if (!key) throw new Error(`Key is required`)
+                let value = sch.Value as string
+                if (value.startsWith('$flow')) {
+                    value = customGet(flow, sch.Value.replace('$flow.', ''))
+                } else if (value.startsWith('$vars')) {
+                    value = customGet(flow, sch.Value.replace('$', ''))
+                }
+                obj[key] = value
+            }
+            return obj
+        } catch (e) {
+            throw new Error(e)
+        }
     }
 
     if (selectedTab === 'updateStateMemoryUI' && updateStateMemoryUI) {

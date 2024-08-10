@@ -34,21 +34,23 @@ class State_SeqAgents implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    documentation?: string
     credential: INodeParams
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'State'
         this.name = 'seqState'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'State'
         this.icon = 'state.svg'
         this.category = 'Sequential Agents'
         this.description = 'A centralized state object, updated by nodes in the graph, passing from one node to another'
         this.baseClasses = [this.type]
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-3.-state-node'
         this.inputs = [
             {
-                label: 'State',
+                label: 'Custom State',
                 name: 'stateMemory',
                 type: 'tabs',
                 tabIdentifier: TAB_IDENTIFIER,
@@ -56,7 +58,7 @@ class State_SeqAgents implements INode {
                 default: 'stateMemoryUI',
                 tabs: [
                     {
-                        label: 'State (Table)',
+                        label: 'Custom State (Table)',
                         name: 'stateMemoryUI',
                         type: 'datagrid',
                         description:
@@ -80,7 +82,7 @@ class State_SeqAgents implements INode {
                         additionalParams: true
                     },
                     {
-                        label: 'State (Code)',
+                        label: 'Custom State (Code)',
                         name: 'stateMemoryCode',
                         type: 'code',
                         description: `JSON object representing the state`,
@@ -101,6 +103,43 @@ class State_SeqAgents implements INode {
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'stateMemoryUI'
+        const stateMemory = nodeData.inputs?.stateMemory as string
+
+        if (stateMemory && stateMemory !== 'stateMemoryUI' && stateMemory !== 'stateMemoryCode') {
+            try {
+                const parsedSchema = typeof stateMemory === 'string' ? JSON.parse(stateMemory) : stateMemory
+                const obj: ICommonObject = {}
+                for (const sch of parsedSchema) {
+                    const key = sch.Key
+                    if (!key) throw new Error(`Key is required`)
+                    const type = sch.Operation
+                    const defaultValue = sch['Default Value']
+
+                    if (type === 'Append') {
+                        obj[key] = {
+                            value: (x: any, y: any) => (Array.isArray(y) ? x.concat(y) : x.concat([y])),
+                            default: () => (defaultValue ? JSON.parse(defaultValue) : [])
+                        }
+                    } else {
+                        obj[key] = {
+                            value: (x: any, y: any) => y ?? x,
+                            default: () => defaultValue
+                        }
+                    }
+                }
+                const returnOutput: ISeqAgentNode = {
+                    id: nodeData.id,
+                    node: obj,
+                    name: 'state',
+                    label: 'state',
+                    type: 'state',
+                    output: START
+                }
+                return returnOutput
+            } catch (e) {
+                throw new Error(e)
+            }
+        }
 
         if (!stateMemoryUI && !stateMemoryCode) {
             const returnOutput: ISeqAgentNode = {

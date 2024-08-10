@@ -587,10 +587,10 @@ export const mapChatMessageToBaseMessage = (chatmessages: any[] = []): BaseMessa
     const chatHistory = []
 
     for (const message of chatmessages) {
-        if (message.role === 'apiMessage') {
-            chatHistory.push(new AIMessage(message.content))
-        } else if (message.role === 'userMessage') {
-            chatHistory.push(new HumanMessage(message.content))
+        if (message.role === 'apiMessage' || message.type === 'apiMessage') {
+            chatHistory.push(new AIMessage(message.content || ''))
+        } else if (message.role === 'userMessage' || message.role === 'userMessage') {
+            chatHistory.push(new HumanMessage(message.content || ''))
         }
     }
     return chatHistory

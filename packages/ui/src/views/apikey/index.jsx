@@ -44,8 +44,20 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconCopy, IconChevronsUp, IconChevronsDown, IconX, IconPlus, IconEye, IconEyeOff } from '@tabler/icons-react'
+import {
+    IconTrash,
+    IconEdit,
+    IconCopy,
+    IconChevronsUp,
+    IconChevronsDown,
+    IconX,
+    IconPlus,
+    IconEye,
+    IconEyeOff,
+    IconFileUpload
+} from '@tabler/icons-react'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
+import UploadJSONFileDialog from '@/views/apikey/UploadJSONFileDialog'
 
 // ==============================|| APIKey ||============================== //
 
@@ -200,6 +212,9 @@ const APIKey = () => {
     const [showApiKeys, setShowApiKeys] = useState([])
     const openPopOver = Boolean(anchorEl)
 
+    const [showUploadDialog, setShowUploadDialog] = useState(false)
+    const [uploadDialogProps, setUploadDialogProps] = useState({})
+
     const [search, setSearch] = useState('')
     const onSearchChange = (event) => {
         setSearch(event.target.value)
@@ -252,6 +267,17 @@ const APIKey = () => {
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
+    }
+
+    const uploadDialog = () => {
+        const dialogProp = {
+            type: 'ADD',
+            cancelButtonName: 'Cancel',
+            confirmButtonName: 'Upload',
+            data: {}
+        }
+        setUploadDialogProps(dialogProp)
+        setShowUploadDialog(true)
     }
 
     const deleteKey = async (key) => {
@@ -308,6 +334,7 @@ const APIKey = () => {
 
     const onConfirm = () => {
         setShowDialog(false)
+        setShowUploadDialog(false)
         getAllAPIKeysApi.request()
     }
 
@@ -341,6 +368,15 @@ const APIKey = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search API Keys' title='API Keys'>
+                            <Button
+                                variant='outlined'
+                                sx={{ borderRadius: 2, height: '100%' }}
+                                onClick={uploadDialog}
+                                startIcon={<IconFileUpload />}
+                                id='btn_importApiKeys'
+                            >
+                                Import
+                            </Button>
                             <StyledButton
                                 variant='contained'
                                 sx={{ borderRadius: 2, height: '100%' }}
@@ -468,6 +504,14 @@ const APIKey = () => {
                 onConfirm={onConfirm}
                 setError={setError}
             ></APIKeyDialog>
+            {showUploadDialog && (
+                <UploadJSONFileDialog
+                    show={showUploadDialog}
+                    dialogProps={uploadDialogProps}
+                    onCancel={() => setShowUploadDialog(false)}
+                    onConfirm={onConfirm}
+                ></UploadJSONFileDialog>
+            )}
             <ConfirmDialog />
         </>
     )

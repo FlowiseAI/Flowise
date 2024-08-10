@@ -174,7 +174,7 @@ class ChatflowTool extends StructuredTool {
 
     schema = z.object({
         input: z.string().describe('input question')
-    })
+    }) as any
 
     constructor({
         name,

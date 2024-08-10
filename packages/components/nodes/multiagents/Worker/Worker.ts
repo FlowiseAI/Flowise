@@ -283,7 +283,7 @@ async function agentNode(
         }
 
         const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
-        const additional_kwargs: ICommonObject = { nodeId }
+        const additional_kwargs: ICommonObject = { nodeId, type: 'worker' }
         if (result.usedTools) {
             additional_kwargs.usedTools = result.usedTools
         }

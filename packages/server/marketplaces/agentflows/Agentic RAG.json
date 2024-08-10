@@ -13,7 +13,7 @@
             "data": {
                 "id": "seqLLMNode_0",
                 "label": "LLM Node",
-                "version": 1,
+                "version": 2,
                 "name": "seqLLMNode",
                 "type": "LLMNode",
                 "baseClasses": ["LLMNode"],
@@ -58,6 +58,40 @@
                         "id": "seqLLMNode_0-input-promptValues-json"
                     },
                     {
+                        "label": "JSON Structured Output",
+                        "name": "llmStructuredOutput",
+                        "type": "datagrid",
+                        "description": "Instruct the LLM to give output in a JSON structured schema",
+                        "datagrid": [
+                            {
+                                "field": "key",
+                                "headerName": "Key",
+                                "editable": true
+                            },
+                            {
+                                "field": "type",
+                                "headerName": "Type",
+                                "type": "singleSelect",
+                                "valueOptions": ["String", "String Array", "Number", "Boolean", "Enum"],
+                                "editable": true
+                            },
+                            {
+                                "field": "enumValues",
+                                "headerName": "Enum Values",
+                                "editable": true
+                            },
+                            {
+                                "field": "description",
+                                "headerName": "Description",
+                                "flex": 1,
+                                "editable": true
+                            }
+                        ],
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqLLMNode_0-input-llmStructuredOutput-datagrid"
+                    },
+                    {
                         "label": "Update State",
                         "name": "updateStateMemory",
                         "type": "tabs",
@@ -91,6 +125,10 @@
                                             {
                                                 "label": "LLM Node Output (string)",
                                                 "value": "$flow.output.content"
+                                            },
+                                            {
+                                                "label": "LLM JSON Output Key (string)",
+                                                "value": "$flow.output.<replace-with-key>"
                                             },
                                             {
                                                 "label": "Global variable (string)",
@@ -140,11 +178,11 @@
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqLLMNode_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqLLMNode_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -159,10 +197,12 @@
                     "llmNodeName": "Agent",
                     "systemMessagePrompt": "You are an expert financial analyst that always answers questions with the most relevant information using the tools at your disposal.\n\nThe tools available are:\n- search_apple\n- search_tesla\n\nThe current date is: 2024-07-10",
                     "humanMessagePrompt": "{text}",
-                    "sequentialNode": ["{{seqStart_0.data.instance}}"],
+                    "sequentialNode": ["{{seqStart_0.data.instance}}", "{{seqStart_0.data.instance}}"],
                     "model": "",
                     "promptValues": "{\"text\":\"{{question}}\"}",
-                    "updateStateMemory": "updateStateMemoryUI"
+                    "llmStructuredOutput": "",
+                    "updateStateMemory": "updateStateMemoryUI",
+                    "selectedUpdateStateMemoryTab_seqLLMNode_0": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
                     {
@@ -177,7 +217,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 431,
+            "height": 450,
             "selected": false,
             "positionAbsolute": {
                 "x": 777.3229608822006,
@@ -188,14 +228,14 @@
         {
             "id": "seqStart_0",
             "position": {
-                "x": 429.0188107292025,
-                "y": 277.11423822901907
+                "x": 438.8554922368403,
+                "y": 259.0803221316833
             },
             "type": "customNode",
             "data": {
                 "id": "seqStart_0",
                 "label": "Start",
-                "version": 1,
+                "version": 2,
                 "name": "seqStart",
                 "type": "Start",
                 "baseClasses": ["Start"],
@@ -222,7 +262,7 @@
                         "label": "State",
                         "name": "state",
                         "type": "State",
-                        "description": "State is an object that is updated by nodes in the graph, passing from one node to another. Agent Memory must be connected when using State. By default, state contains \"messages\" that got updated with each message sent and received.",
+                        "description": "State is an object that is updated by nodes in the graph, passing from one node to another. By default, state contains \"messages\" that got updated with each message sent and received.",
                         "optional": true,
                         "id": "seqStart_0-input-state-State"
                     },
@@ -257,8 +297,8 @@
             "width": 300,
             "height": 382,
             "positionAbsolute": {
-                "x": 429.0188107292025,
-                "y": 277.11423822901907
+                "x": 438.8554922368403,
+                "y": 259.0803221316833
             },
             "selected": false,
             "dragging": false
@@ -273,7 +313,7 @@
             "data": {
                 "id": "seqConditionAgent_0",
                 "label": "Condition Agent",
-                "version": 1,
+                "version": 2,
                 "name": "seqConditionAgent",
                 "type": "ConditionAgent",
                 "baseClasses": ["ConditionAgent"],
@@ -334,7 +374,7 @@
                                 "field": "type",
                                 "headerName": "Type",
                                 "type": "singleSelect",
-                                "valueOptions": ["String", "Number", "Boolean", "Enum"],
+                                "valueOptions": ["String", "String Array", "Number", "Boolean", "Enum"],
                                 "editable": true
                             },
                             {
@@ -483,37 +523,39 @@
                     "promptValues": "{\"context\":\"{{seqToolNode_0.data.instance}}\",\"question\":\"{{question}}\"}",
                     "conditionAgentStructuredOutput": "[{\"key\":\"score\",\"type\":\"Enum\",\"enumValues\":\"yes, no\",\"description\":\"grading score\",\"actions\":\"\",\"id\":1}]",
                     "condition": "",
-                    "conditionUI": "[{\"variable\":\"$flow.output.score\",\"operation\":\"Is\",\"value\":\"yes\",\"output\":\"Generate\",\"actions\":\"\",\"id\":1},{\"variable\":\"$flow.output.score\",\"operation\":\"Is\",\"value\":\"no\",\"output\":\"Rewrite\",\"actions\":\"\",\"id\":2}]",
-                    "selectedConditionFunctionTab_seqConditionAgent_0": "conditionUI"
+                    "selectedConditionFunctionTab_seqConditionAgent_0": "conditionUI",
+                    "conditionUI": "[{\"variable\":\"$flow.output.score\",\"operation\":\"Is\",\"value\":\"yes\",\"output\":\"Generate\",\"actions\":\"\",\"id\":1},{\"variable\":\"$flow.output.score\",\"operation\":\"Is\",\"value\":\"no\",\"output\":\"Rewrite\",\"actions\":\"\",\"id\":2}]"
                 },
                 "outputAnchors": [
                     {
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
-                                "id": "seqConditionAgent_0-output-end-Agent|LLMNode|ToolNode",
+                                "id": "seqConditionAgent_0-output-end-Condition",
                                 "name": "end",
                                 "label": "End",
-                                "type": "Agent | LLMNode | ToolNode",
+                                "type": "Condition",
                                 "isAnchor": true
                             },
                             {
-                                "id": "seqConditionAgent_0-output-generate-Agent|LLMNode|ToolNode",
+                                "id": "seqConditionAgent_0-output-generate-Condition",
                                 "name": "generate",
                                 "label": "Generate",
-                                "type": "Agent | LLMNode | ToolNode",
+                                "type": "Condition",
                                 "isAnchor": true
                             },
                             {
-                                "id": "seqConditionAgent_0-output-rewrite-Agent|LLMNode|ToolNode",
+                                "id": "seqConditionAgent_0-output-rewrite-Condition",
                                 "name": "rewrite",
                                 "label": "Rewrite",
-                                "type": "Agent | LLMNode | ToolNode",
+                                "type": "Condition",
                                 "isAnchor": true
                             }
-                        ]
+                        ],
+                        "default": "next"
                     }
                 ],
                 "outputs": {
@@ -540,7 +582,7 @@
             "data": {
                 "id": "seqLLMNode_1",
                 "label": "LLM Node",
-                "version": 1,
+                "version": 2,
                 "name": "seqLLMNode",
                 "type": "LLMNode",
                 "baseClasses": ["LLMNode"],
@@ -585,6 +627,40 @@
                         "id": "seqLLMNode_1-input-promptValues-json"
                     },
                     {
+                        "label": "JSON Structured Output",
+                        "name": "llmStructuredOutput",
+                        "type": "datagrid",
+                        "description": "Instruct the LLM to give output in a JSON structured schema",
+                        "datagrid": [
+                            {
+                                "field": "key",
+                                "headerName": "Key",
+                                "editable": true
+                            },
+                            {
+                                "field": "type",
+                                "headerName": "Type",
+                                "type": "singleSelect",
+                                "valueOptions": ["String", "String Array", "Number", "Boolean", "Enum"],
+                                "editable": true
+                            },
+                            {
+                                "field": "enumValues",
+                                "headerName": "Enum Values",
+                                "editable": true
+                            },
+                            {
+                                "field": "description",
+                                "headerName": "Description",
+                                "flex": 1,
+                                "editable": true
+                            }
+                        ],
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqLLMNode_1-input-llmStructuredOutput-datagrid"
+                    },
+                    {
                         "label": "Update State",
                         "name": "updateStateMemory",
                         "type": "tabs",
@@ -618,6 +694,10 @@
                                             {
                                                 "label": "LLM Node Output (string)",
                                                 "value": "$flow.output.content"
+                                            },
+                                            {
+                                                "label": "LLM JSON Output Key (string)",
+                                                "value": "$flow.output.<replace-with-key>"
                                             },
                                             {
                                                 "label": "Global variable (string)",
@@ -667,11 +747,11 @@
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqLLMNode_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqLLMNode_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -686,10 +766,12 @@
                     "llmNodeName": "Rewrite",
                     "systemMessagePrompt": "You are a helpful assistant that can Transform the query to produce a better question.",
                     "humanMessagePrompt": "Look at the input and try to reason about the underlying semantic intent / meaning.\n\nHere is the initial question:\n{question} \n  \nFormulate an improved question:\n",
-                    "sequentialNode": ["{{seqConditionAgent_0.data.instance}}"],
+                    "sequentialNode": ["{{seqConditionAgent_0.data.instance}}", "{{seqConditionAgent_0.data.instance}}"],
                     "model": "",
                     "promptValues": "{\"question\":\"{{question}}\"}",
-                    "updateStateMemory": "updateStateMemoryUI"
+                    "llmStructuredOutput": "",
+                    "updateStateMemory": "updateStateMemoryUI",
+                    "selectedUpdateStateMemoryTab_seqLLMNode_1": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
                     {
@@ -704,7 +786,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 431,
+            "height": 450,
             "selected": false,
             "positionAbsolute": {
                 "x": 2214.7883262686187,
@@ -715,14 +797,14 @@
         {
             "id": "seqLLMNode_2",
             "position": {
-                "x": 2205.875202632436,
-                "y": 209.03456469283117
+                "x": 2227.3672008899293,
+                "y": 202.42164215206395
             },
             "type": "customNode",
             "data": {
                 "id": "seqLLMNode_2",
                 "label": "LLM Node",
-                "version": 1,
+                "version": 2,
                 "name": "seqLLMNode",
                 "type": "LLMNode",
                 "baseClasses": ["LLMNode"],
@@ -767,6 +849,40 @@
                         "id": "seqLLMNode_2-input-promptValues-json"
                     },
                     {
+                        "label": "JSON Structured Output",
+                        "name": "llmStructuredOutput",
+                        "type": "datagrid",
+                        "description": "Instruct the LLM to give output in a JSON structured schema",
+                        "datagrid": [
+                            {
+                                "field": "key",
+                                "headerName": "Key",
+                                "editable": true
+                            },
+                            {
+                                "field": "type",
+                                "headerName": "Type",
+                                "type": "singleSelect",
+                                "valueOptions": ["String", "String Array", "Number", "Boolean", "Enum"],
+                                "editable": true
+                            },
+                            {
+                                "field": "enumValues",
+                                "headerName": "Enum Values",
+                                "editable": true
+                            },
+                            {
+                                "field": "description",
+                                "headerName": "Description",
+                                "flex": 1,
+                                "editable": true
+                            }
+                        ],
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqLLMNode_2-input-llmStructuredOutput-datagrid"
+                    },
+                    {
                         "label": "Update State",
                         "name": "updateStateMemory",
                         "type": "tabs",
@@ -800,6 +916,10 @@
                                             {
                                                 "label": "LLM Node Output (string)",
                                                 "value": "$flow.output.content"
+                                            },
+                                            {
+                                                "label": "LLM JSON Output Key (string)",
+                                                "value": "$flow.output.<replace-with-key>"
                                             },
                                             {
                                                 "label": "Global variable (string)",
@@ -849,11 +969,11 @@
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqLLMNode_2-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqLLMNode_2-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -868,10 +988,12 @@
                     "llmNodeName": "Generate",
                     "systemMessagePrompt": "You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Remember to include sources and citations.\n\nQuestion: {question} \n\nContext: {context}\n\nAnswer:",
                     "humanMessagePrompt": "Given the user question and context, answer user query. Remember to includes sources and citations",
-                    "sequentialNode": ["{{seqConditionAgent_0.data.instance}}"],
+                    "sequentialNode": ["{{seqConditionAgent_0.data.instance}}", "{{seqConditionAgent_0.data.instance}}"],
                     "model": "",
                     "promptValues": "{\"question\":\"{{question}}\",\"context\":\"$flow.state.sources\"}",
-                    "updateStateMemory": "updateStateMemoryUI"
+                    "llmStructuredOutput": "",
+                    "updateStateMemory": "updateStateMemoryUI",
+                    "selectedUpdateStateMemoryTab_seqLLMNode_2": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
                     {
@@ -886,25 +1008,25 @@
                 "selected": false
             },
             "width": 300,
-            "height": 431,
+            "height": 450,
             "selected": false,
             "positionAbsolute": {
-                "x": 2205.875202632436,
-                "y": 209.03456469283117
+                "x": 2227.3672008899293,
+                "y": 202.42164215206395
             },
             "dragging": false
         },
         {
             "id": "seqLoop_0",
             "position": {
-                "x": 2570.607230504145,
-                "y": 805.1405051032167
+                "x": 2557.3813854226105,
+                "y": 836.5518871718609
             },
             "type": "customNode",
             "data": {
                 "id": "seqLoop_0",
                 "label": "Loop",
-                "version": 1,
+                "version": 2,
                 "name": "seqLoop",
                 "type": "Loop",
                 "baseClasses": ["Loop"],
@@ -914,23 +1036,23 @@
                     {
                         "label": "Loop To",
                         "name": "loopToName",
-                        "description": "Name of the agent to loop back to",
+                        "description": "Name of the agent/llm to loop back to",
                         "type": "string",
-                        "placeholder": "agent1",
+                        "placeholder": "Agent",
                         "id": "seqLoop_0-input-loopToName-string"
                     }
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqLoop_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
                     }
                 ],
                 "inputs": {
-                    "sequentialNode": ["{{seqLLMNode_1.data.instance}}"],
+                    "sequentialNode": ["{{seqLLMNode_1.data.instance}}", "{{seqLLMNode_1.data.instance}}"],
                     "loopToName": "Agent"
                 },
                 "outputAnchors": [],
@@ -941,22 +1063,22 @@
             "height": 241,
             "selected": false,
             "positionAbsolute": {
-                "x": 2570.607230504145,
-                "y": 805.1405051032167
+                "x": 2557.3813854226105,
+                "y": 836.5518871718609
             },
             "dragging": false
         },
         {
             "id": "seqEnd_0",
             "position": {
-                "x": 2552.677329133902,
-                "y": 439.10969421030416
+                "x": 2566.2338203424747,
+                "y": 472.1743069141402
             },
             "type": "customNode",
             "data": {
                 "id": "seqEnd_0",
                 "label": "End",
-                "version": 1,
+                "version": 2,
                 "name": "seqEnd",
                 "type": "End",
                 "baseClasses": ["End"],
@@ -965,10 +1087,10 @@
                 "inputParams": [],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
-                        "id": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "type": "Agent | Condition | LLMNode | ToolNode",
+                        "id": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
                     }
                 ],
                 "inputs": {
@@ -982,8 +1104,8 @@
             "height": 143,
             "selected": false,
             "positionAbsolute": {
-                "x": 2552.677329133902,
-                "y": 439.10969421030416
+                "x": 2566.2338203424747,
+                "y": 472.1743069141402
             },
             "dragging": false
         },
@@ -1073,7 +1195,7 @@
             "data": {
                 "id": "seqEnd_1",
                 "label": "End",
-                "version": 1,
+                "version": 2,
                 "name": "seqEnd",
                 "type": "End",
                 "baseClasses": ["End"],
@@ -1082,10 +1204,10 @@
                 "inputParams": [],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
-                        "id": "seqEnd_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "type": "Agent | Condition | LLMNode | ToolNode",
+                        "id": "seqEnd_1-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
                     }
                 ],
                 "inputs": {
@@ -1400,7 +1522,7 @@
             "data": {
                 "id": "seqState_0",
                 "label": "State",
-                "version": 1,
+                "version": 2,
                 "name": "seqState",
                 "type": "State",
                 "baseClasses": ["State"],
@@ -1408,7 +1530,7 @@
                 "description": "A centralized state object, updated by nodes in the graph, passing from one node to another",
                 "inputParams": [
                     {
-                        "label": "State",
+                        "label": "Custom State",
                         "name": "stateMemory",
                         "type": "tabs",
                         "tabIdentifier": "selectedStateTab",
@@ -1416,7 +1538,7 @@
                         "default": "stateMemoryUI",
                         "tabs": [
                             {
-                                "label": "State (Table)",
+                                "label": "Custom State (Table)",
                                 "name": "stateMemoryUI",
                                 "type": "datagrid",
                                 "description": "Structure for state. By default, state contains \"messages\" that got updated with each message sent and received.",
@@ -1448,7 +1570,7 @@
                                 "additionalParams": true
                             },
                             {
-                                "label": "State (Code)",
+                                "label": "Custom State (Code)",
                                 "name": "stateMemoryCode",
                                 "type": "code",
                                 "description": "JSON object representing the state",
@@ -1464,6 +1586,7 @@
                 "inputAnchors": [],
                 "inputs": {
                     "stateMemory": "stateMemoryUI",
+                    "selectedStateTab_seqState_0": "stateMemoryUI",
                     "stateMemoryUI": "[{\"key\":\"sources\",\"type\":\"Replace\",\"defaultValue\":\"\",\"actions\":\"\",\"id\":0}]"
                 },
                 "outputAnchors": [
@@ -1490,14 +1613,14 @@
         {
             "id": "seqLLMNode_3",
             "position": {
-                "x": 1477.8265021173233,
-                "y": 184.8087848768496
+                "x": 1484.4394246580907,
+                "y": 133.55863518590365
             },
             "type": "customNode",
             "data": {
                 "id": "seqLLMNode_3",
                 "label": "LLM Node",
-                "version": 1,
+                "version": 2,
                 "name": "seqLLMNode",
                 "type": "LLMNode",
                 "baseClasses": ["LLMNode"],
@@ -1542,6 +1665,40 @@
                         "id": "seqLLMNode_3-input-promptValues-json"
                     },
                     {
+                        "label": "JSON Structured Output",
+                        "name": "llmStructuredOutput",
+                        "type": "datagrid",
+                        "description": "Instruct the LLM to give output in a JSON structured schema",
+                        "datagrid": [
+                            {
+                                "field": "key",
+                                "headerName": "Key",
+                                "editable": true
+                            },
+                            {
+                                "field": "type",
+                                "headerName": "Type",
+                                "type": "singleSelect",
+                                "valueOptions": ["String", "String Array", "Number", "Boolean", "Enum"],
+                                "editable": true
+                            },
+                            {
+                                "field": "enumValues",
+                                "headerName": "Enum Values",
+                                "editable": true
+                            },
+                            {
+                                "field": "description",
+                                "headerName": "Description",
+                                "flex": 1,
+                                "editable": true
+                            }
+                        ],
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqLLMNode_3-input-llmStructuredOutput-datagrid"
+                    },
+                    {
                         "label": "Update State",
                         "name": "updateStateMemory",
                         "type": "tabs",
@@ -1575,6 +1732,10 @@
                                             {
                                                 "label": "LLM Node Output (string)",
                                                 "value": "$flow.output.content"
+                                            },
+                                            {
+                                                "label": "LLM JSON Output Key (string)",
+                                                "value": "$flow.output.<replace-with-key>"
                                             },
                                             {
                                                 "label": "Global variable (string)",
@@ -1624,11 +1785,11 @@
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqLLMNode_3-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqLLMNode_3-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -1643,10 +1804,12 @@
                     "llmNodeName": "Return Agent",
                     "systemMessagePrompt": "",
                     "humanMessagePrompt": "",
-                    "sequentialNode": ["{{seqToolNode_0.data.instance}}"],
+                    "sequentialNode": ["{{seqToolNode_0.data.instance}}", "{{seqToolNode_0.data.instance}}"],
                     "model": "",
                     "promptValues": "",
-                    "updateStateMemory": "updateStateMemoryUI"
+                    "llmStructuredOutput": "",
+                    "updateStateMemory": "updateStateMemoryUI",
+                    "selectedUpdateStateMemoryTab_seqLLMNode_3": "updateStateMemoryUI"
                 },
                 "outputAnchors": [
                     {
@@ -1661,11 +1824,11 @@
                 "selected": false
             },
             "width": 300,
-            "height": 431,
+            "height": 450,
             "selected": false,
             "positionAbsolute": {
-                "x": 1477.8265021173233,
-                "y": 184.8087848768496
+                "x": 1484.4394246580907,
+                "y": 133.55863518590365
             },
             "dragging": false
         },
@@ -2267,8 +2430,8 @@
         {
             "id": "stickyNote_1",
             "position": {
-                "x": -259.34389200648127,
-                "y": 190.60834640491902
+                "x": -239.50512438417962,
+                "y": 177.3825013233846
             },
             "type": "stickyNote",
             "data": {
@@ -2313,8 +2476,8 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": -259.34389200648127,
-                "y": 190.60834640491902
+                "x": -239.50512438417962,
+                "y": 177.3825013233846
             }
         },
         {
@@ -2373,14 +2536,14 @@
         {
             "id": "seqToolNode_0",
             "position": {
-                "x": 1125.4209936219386,
-                "y": 74.65954911972659
+                "x": 1145.2597612442403,
+                "y": 82.9257022956856
             },
             "type": "customNode",
             "data": {
                 "id": "seqToolNode_0",
                 "label": "Tool Node",
-                "version": 1,
+                "version": 2,
                 "name": "seqToolNode",
                 "type": "ToolNode",
                 "baseClasses": ["ToolNode"],
@@ -2570,8 +2733,8 @@
             "height": 528,
             "selected": false,
             "positionAbsolute": {
-                "x": 1125.4209936219386,
-                "y": 74.65954911972659
+                "x": 1145.2597612442403,
+                "y": 82.9257022956856
             },
             "dragging": false
         },
@@ -2654,54 +2817,6 @@
     ],
     "edges": [
         {
-            "source": "seqStart_0",
-            "sourceHandle": "seqStart_0-output-seqStart-Start",
-            "target": "seqLLMNode_0",
-            "targetHandle": "seqLLMNode_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqStart_0-seqStart_0-output-seqStart-Start-seqLLMNode_0-seqLLMNode_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
-            "source": "seqConditionAgent_0",
-            "sourceHandle": "seqConditionAgent_0-output-end-Agent|LLMNode|ToolNode",
-            "target": "seqEnd_1",
-            "targetHandle": "seqEnd_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqConditionAgent_0-seqConditionAgent_0-output-end-Agent|LLMNode|ToolNode-seqEnd_1-seqEnd_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
-            "source": "seqConditionAgent_0",
-            "sourceHandle": "seqConditionAgent_0-output-generate-Agent|LLMNode|ToolNode",
-            "target": "seqLLMNode_2",
-            "targetHandle": "seqLLMNode_2-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqConditionAgent_0-seqConditionAgent_0-output-generate-Agent|LLMNode|ToolNode-seqLLMNode_2-seqLLMNode_2-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
-            "source": "seqConditionAgent_0",
-            "sourceHandle": "seqConditionAgent_0-output-rewrite-Agent|LLMNode|ToolNode",
-            "target": "seqLLMNode_1",
-            "targetHandle": "seqLLMNode_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqConditionAgent_0-seqConditionAgent_0-output-rewrite-Agent|LLMNode|ToolNode-seqLLMNode_1-seqLLMNode_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
-            "source": "seqLLMNode_2",
-            "sourceHandle": "seqLLMNode_2-output-seqLLMNode-LLMNode",
-            "target": "seqEnd_0",
-            "targetHandle": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqLLMNode_2-seqLLMNode_2-output-seqLLMNode-LLMNode-seqEnd_0-seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
-            "source": "seqLLMNode_1",
-            "sourceHandle": "seqLLMNode_1-output-seqLLMNode-LLMNode",
-            "target": "seqLoop_0",
-            "targetHandle": "seqLoop_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqLLMNode_1-seqLLMNode_1-output-seqLLMNode-LLMNode-seqLoop_0-seqLoop_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
             "source": "pinecone_0",
             "sourceHandle": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
             "target": "retrieverTool_0",
@@ -2774,14 +2889,6 @@
             "id": "seqLLMNode_0-seqLLMNode_0-output-seqLLMNode-LLMNode-seqToolNode_0-seqToolNode_0-input-llmNode-LLMNode"
         },
         {
-            "source": "seqToolNode_0",
-            "sourceHandle": "seqToolNode_0-output-seqToolNode-ToolNode",
-            "target": "seqLLMNode_3",
-            "targetHandle": "seqLLMNode_3-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqToolNode_0-seqToolNode_0-output-seqToolNode-ToolNode-seqLLMNode_3-seqLLMNode_3-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
             "source": "retrieverTool_1",
             "sourceHandle": "retrieverTool_1-output-retrieverTool-RetrieverTool|DynamicTool|Tool|StructuredTool|Runnable",
             "target": "seqToolNode_0",
@@ -2796,6 +2903,62 @@
             "targetHandle": "seqStart_0-input-agentMemory-BaseCheckpointSaver",
             "type": "buttonedge",
             "id": "agentMemory_0-agentMemory_0-output-agentMemory-AgentMemory|BaseCheckpointSaver-seqStart_0-seqStart_0-input-agentMemory-BaseCheckpointSaver"
+        },
+        {
+            "source": "seqStart_0",
+            "sourceHandle": "seqStart_0-output-seqStart-Start",
+            "target": "seqLLMNode_0",
+            "targetHandle": "seqLLMNode_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqStart_0-seqStart_0-output-seqStart-Start-seqLLMNode_0-seqLLMNode_0-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqToolNode_0",
+            "sourceHandle": "seqToolNode_0-output-seqToolNode-ToolNode",
+            "target": "seqLLMNode_3",
+            "targetHandle": "seqLLMNode_3-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqToolNode_0-seqToolNode_0-output-seqToolNode-ToolNode-seqLLMNode_3-seqLLMNode_3-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqConditionAgent_0",
+            "sourceHandle": "seqConditionAgent_0-output-end-Condition",
+            "target": "seqEnd_1",
+            "targetHandle": "seqEnd_1-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqConditionAgent_0-seqConditionAgent_0-output-end-Condition-seqEnd_1-seqEnd_1-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqConditionAgent_0",
+            "sourceHandle": "seqConditionAgent_0-output-generate-Condition",
+            "target": "seqLLMNode_2",
+            "targetHandle": "seqLLMNode_2-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqConditionAgent_0-seqConditionAgent_0-output-generate-Condition-seqLLMNode_2-seqLLMNode_2-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqConditionAgent_0",
+            "sourceHandle": "seqConditionAgent_0-output-rewrite-Condition",
+            "target": "seqLLMNode_1",
+            "targetHandle": "seqLLMNode_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqConditionAgent_0-seqConditionAgent_0-output-rewrite-Condition-seqLLMNode_1-seqLLMNode_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqLLMNode_2",
+            "sourceHandle": "seqLLMNode_2-output-seqLLMNode-LLMNode",
+            "target": "seqEnd_0",
+            "targetHandle": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqLLMNode_2-seqLLMNode_2-output-seqLLMNode-LLMNode-seqEnd_0-seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqLLMNode_1",
+            "sourceHandle": "seqLLMNode_1-output-seqLLMNode-LLMNode",
+            "target": "seqLoop_0",
+            "targetHandle": "seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqLLMNode_1-seqLLMNode_1-output-seqLLMNode-LLMNode-seqLoop_0-seqLoop_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
         }
     ]
 }
