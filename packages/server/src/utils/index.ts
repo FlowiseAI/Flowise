@@ -1235,10 +1235,10 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
 
-        // Anthropic & Groq Function Calling streaming is still not supported - https://docs.anthropic.com/claude/docs/tool-use
+        // Anthropic streaming has some bug where the log is being sent, temporarily disabled
         const model = endingNodeData.inputs?.model
         if (endingNodeData.name.includes('toolAgent')) {
-            if (typeof model === 'string' && (model.includes('chatAnthropic') || model.includes('groqChat'))) {
+            if (typeof model === 'string' && model.includes('chatAnthropic')) {
                 return false
             } else if (typeof model === 'object' && 'id' in model && model['id'].includes('chatAnthropic')) {
                 return false
