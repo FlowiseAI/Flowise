@@ -32,7 +32,7 @@ class Qdrant_VectorStores implements INode {
     constructor() {
         this.label = 'Qdrant'
         this.name = 'qdrant'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Qdrant'
         this.icon = 'qdrant.png'
         this.category = 'Vector Stores'
@@ -83,6 +83,24 @@ class Qdrant_VectorStores implements INode {
                 name: 'qdrantVectorDimension',
                 type: 'number',
                 default: 1536,
+                additionalParams: true
+            },
+            {
+                label: 'Content Key',
+                name: 'contentPayloadKey',
+                description: 'The key for storing text. Default to `content`',
+                type: 'string',
+                default: 'content',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Metadata Key',
+                name: 'metadataPayloadKey',
+                description: 'The key for storing metadata. Default to `metadata`',
+                type: 'string',
+                default: 'metadata',
+                optional: true,
                 additionalParams: true
             },
             {
@@ -168,6 +186,8 @@ class Qdrant_VectorStores implements INode {
             const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
             const recordManager = nodeData.inputs?.recordManager
             const _batchSize = nodeData.inputs?.batchSize
+            const contentPayloadKey = nodeData.inputs?.contentPayloadKey || 'content'
+            const metadataPayloadKey = nodeData.inputs?.metadataPayloadKey || 'metadata'
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
@@ -197,7 +217,9 @@ class Qdrant_VectorStores implements INode {
                         size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
                         distance: qdrantSimilarity ?? 'Cosine'
                     }
-                }
+                },
+                contentPayloadKey,
+                metadataPayloadKey
             }
 
             try {
@@ -220,8 +242,8 @@ class Qdrant_VectorStores implements INode {
                             id: documentOptions?.ids?.length ? documentOptions?.ids[idx] : uuid(),
                             vector: embedding,
                             payload: {
-                                content: documents[idx].pageContent,
-                                metadata: documents[idx].metadata,
+                                [contentPayloadKey]: documents[idx].pageContent,
+                                [metadataPayloadKey]: documents[idx].metadata,
                                 customPayload: documentOptions?.customPayload?.length ? documentOptions?.customPayload[idx] : undefined
                             }
                         }))
@@ -367,6 +389,8 @@ class Qdrant_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         let queryFilter = nodeData.inputs?.qdrantFilter
+        const contentPayloadKey = nodeData.inputs?.contentPayloadKey || 'content'
+        const metadataPayloadKey = nodeData.inputs?.metadataPayloadKey || 'metadata'
 
         const k = topK ? parseFloat(topK) : 4
 
@@ -383,7 +407,9 @@ class Qdrant_VectorStores implements INode {
 
         const dbConfig: QdrantLibArgs = {
             client,
-            collectionName
+            collectionName,
+            contentPayloadKey,
+            metadataPayloadKey
         }
 
         const retrieverConfig: RetrieverConfig = {
