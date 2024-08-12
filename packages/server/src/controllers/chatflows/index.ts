@@ -43,7 +43,7 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.deleteChatflow - id not provided!`)
         }
-        const apiResponse = await chatflowsService.deleteChatflow(req.params.id, req.user?.id)
+        const apiResponse = await chatflowsService.deleteChatflow(req.params.id, req.user?.id, req.user?.organizationId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

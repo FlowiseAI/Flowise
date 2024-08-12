@@ -80,7 +80,18 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
 const deleteChatflow = async (chatflowId: string, userId?: string, organizationId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
+
+        // First, try to find the chatflow
+        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+            where: { id: chatflowId, userId, organizationId }
+        })
+
+        if (!chatflow) {
+            return { affected: 0, message: 'Chatflow not found' }
+        }
+
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId, userId, organizationId })
+
         try {
             // Delete all uploads corresponding to this chatflow
             await removeFolderFromStorage(chatflowId)
@@ -226,6 +237,20 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         let dbResponse: ChatFlow
+
+        // Check if the chatflow already exists
+        if (newChatFlow.id) {
+            const existingChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+                where: { id: newChatFlow.id }
+            })
+
+            if (existingChatflow) {
+                // Check if the user has access to the existing chatflow
+                if (existingChatflow.userId !== newChatFlow.userId || existingChatflow.organizationId !== newChatFlow.organizationId) {
+                    throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to update this chatflow`)
+                }
+            }
+        }
         if (containsBase64File(newChatFlow)) {
             // we need a 2-step process, as we need to save the chatflow first and then update the file paths
             // this is because we need the chatflow id to create the file paths
