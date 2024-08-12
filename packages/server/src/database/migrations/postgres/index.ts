@@ -36,6 +36,7 @@ import { CredentialsVisibility1721247848452 } from './1721247848452-CredentialsV
 import { AddDescriptionToChatFlow1722099922876 } from './1722101786123-AddDescriptionToChatflow'
 import { AddSoftDeleteChatflows1724275570313 } from './1724275570313-AddSoftDeleteChatflows'
 import { VariablesVisibility1725494523908 } from './1725494523908-VariablesVisibility'
+import { AddPlans1722954481004 } from './1722954481003-AddPlans'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -75,5 +76,6 @@ export const postgresMigrations = [
     CredentialsVisibility1721247848452,
     AddDescriptionToChatFlow1722099922876,
     AddSoftDeleteChatflows1724275570313,
-    VariablesVisibility1725494523908
+    VariablesVisibility1725494523908,
+    AddPlans1722954481004
 ]

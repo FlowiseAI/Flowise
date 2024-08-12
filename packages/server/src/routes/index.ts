@@ -39,6 +39,8 @@ import variablesRouter from './variables'
 import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
+import upsertHistoryRouter from './upsert-history'
+import planRouter from './plan'
 
 const router = express.Router()
 
@@ -71,6 +73,7 @@ router.use('/nodes', nodesRouter)
 router.use('/openai-assistants', openaiAssistantsRouter)
 router.use('/openai-assistants-file', openaiAssistantsFileRouter)
 router.use('/openai-assistants-vector-store', openaiAssistantsVectorStoreRouter)
+router.use('/plan', planRouter)
 router.use('/prediction', predictionRouter)
 router.use('/prompts-list', promptListsRouter)
 router.use('/public-chatbotConfig', publicChatbotRouter)
