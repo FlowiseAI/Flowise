@@ -119,6 +119,7 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             endDate,
             messageId,
             feedback,
+            undefined,
             userId
         )
         return res.json(apiResponse)

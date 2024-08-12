@@ -90,7 +90,7 @@ const ItemCard = ({ data, images, nodeTypes, onClick, type, updateFlowsApi, setE
                                         flexShrink: 0,
                                         marginRight: 10,
                                         borderRadius: '50%',
-                                        backgroundImage: `url(${data.iconSrc})`,
+                                        background: `url(${data.iconSrc})`,
                                         backgroundSize: 'contain',
                                         backgroundRepeat: 'no-repeat',
                                         backgroundPosition: 'center center'

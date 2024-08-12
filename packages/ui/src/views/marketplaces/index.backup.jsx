@@ -16,25 +16,18 @@ import {
     Checkbox,
     ListItemText,
     Skeleton,
-    FormControlLabel,
-    ToggleButtonGroup,
-    MenuItem,
-    Button,
-    Typography,
     Tabs,
     Tab
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconLayoutGrid, IconList, IconX } from '@tabler/icons-react'
+import { IconLayoutGrid, IconList } from '@tabler/icons-react'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
+import { gridSpacing } from '@/store/constant'
 import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
 import ToolDialog from '@/views/tools/ToolDialog'
-import { MarketplaceTable } from '@/ui-component/table/MarketplaceTable'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
 
 // API
 import marketplacesApi from '@/api/marketplaces'
@@ -44,7 +37,11 @@ import useApi from '@/hooks/useApi'
 
 // const
 import { baseURL } from '@/store/constant'
-import { gridSpacing } from '@/store/constant'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import { MarketplaceTable } from '@/ui-component/table/MarketplaceTable'
+import MenuItem from '@mui/material/MenuItem'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -98,9 +95,6 @@ const Marketplace = () => {
     const [isLoading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [images, setImages] = useState({})
-    const [usecases, setUsecases] = useState([])
-    const [eligibleUsecases, setEligibleUsecases] = useState([])
-    const [selectedUsecases, setSelectedUsecases] = useState([])
 
     const [showToolDialog, setShowToolDialog] = useState(false)
     const [toolDialogProps, setToolDialogProps] = useState({})
@@ -151,12 +145,11 @@ const Marketplace = () => {
 
     const onSearchChange = (event) => {
         setSearch(event.target.value)
-        getEligibleUsecases({ typeFilter, badgeFilter, frameworkFilter, search: event.target.value })
     }
 
     function filterFlows(data) {
         return (
-            (data.categories ? data.categories.join(',') : '').toLowerCase().indexOf(search.toLowerCase()) > -1 ||
+            data.categories?.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             data.templateName.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             (data.description && data.description.toLowerCase().indexOf(search.toLowerCase()) > -1)
         )
@@ -167,37 +160,7 @@ const Marketplace = () => {
     }
 
     function filterByFramework(data) {
-        return frameworkFilter.length > 0 ? (data.framework || []).some((item) => frameworkFilter.includes(item)) : true
-    }
-
-    function filterByUsecases(data) {
-        return selectedUsecases.length > 0 ? (data.usecases || []).some((item) => selectedUsecases.includes(item)) : true
-    }
-
-    const getEligibleUsecases = (filter) => {
-        if (!getAllTemplatesMarketplacesApi.data) return
-
-        let filteredData = getAllTemplatesMarketplacesApi.data
-        if (filter.badgeFilter.length > 0) filteredData = filteredData.filter((data) => filter.badgeFilter.includes(data.badge))
-        if (filter.typeFilter.length > 0) filteredData = filteredData.filter((data) => filter.typeFilter.includes(data.type))
-        if (filter.frameworkFilter.length > 0)
-            filteredData = filteredData.filter((data) => (data.framework || []).some((item) => filter.frameworkFilter.includes(item)))
-        if (filter.search) {
-            filteredData = filteredData.filter(
-                (data) =>
-                    (data.categories ? data.categories.join(',') : '').toLowerCase().indexOf(filter.search.toLowerCase()) > -1 ||
-                    data.templateName.toLowerCase().indexOf(filter.search.toLowerCase()) > -1 ||
-                    (data.description && data.description.toLowerCase().indexOf(filter.search.toLowerCase()) > -1)
-            )
-        }
-
-        const usecases = []
-        for (let i = 0; i < filteredData.length; i += 1) {
-            if (filteredData[i].flowData) {
-                usecases.push(...filteredData[i].usecases)
-            }
-        }
-        setEligibleUsecases(Array.from(new Set(usecases)).sort())
+        return frameworkFilter.length > 0 ? frameworkFilter.includes(data.framework) : true
     }
 
     const onUseTemplate = (selectedTool) => {
@@ -242,13 +205,12 @@ const Marketplace = () => {
         if (getAllTemplatesMarketplacesApi.data) {
             try {
                 const flows = getAllTemplatesMarketplacesApi.data
-                const usecases = []
+
                 const images = {}
                 for (let i = 0; i < flows.length; i += 1) {
                     if (flows[i].flowData) {
                         const flowDataStr = flows[i].flowData
                         const flowData = JSON.parse(flowDataStr)
-                        usecases.push(...flows[i].usecases)
                         const nodes = flowData.nodes || []
                         images[flows[i].id] = []
                         for (let j = 0; j < nodes.length; j += 1) {
@@ -260,8 +222,6 @@ const Marketplace = () => {
                     }
                 }
                 setImages(images)
-                setUsecases(Array.from(new Set(usecases)).sort())
-                setEligibleUsecases(Array.from(new Set(usecases)).sort())
             } catch (e) {
                 console.error(e)
             }
@@ -409,7 +369,7 @@ const Marketplace = () => {
                             onSearchChange={onSearchChange}
                             search={true}
                             searchPlaceholder='Search Name/Description/Node'
-                            title='Marketplace'
+                            title='Marketplaces'
                         >
                             <ToggleButtonGroup
                                 sx={{ borderRadius: 2, height: '100%' }}

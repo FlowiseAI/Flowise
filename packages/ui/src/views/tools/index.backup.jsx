@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { Box, Stack, Tabs, Tab, FormControl, InputLabel, Select, MenuItem, Button } from '@mui/material'
 import MainCard from '@/ui-component/cards/MainCard'
@@ -24,6 +25,12 @@ function TabPanel(props) {
             {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
         </div>
     )
+}
+
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired
 }
 
 const Tools = () => {
@@ -163,26 +170,33 @@ const Tools = () => {
         }
     }, [getAllToolsApi.data, getMarketplaceToolsApi.data])
 
-    const filteredMyTools = useMemo(() => {
-        return myTools.filter((tool) => {
-            const matchesSearch =
-                tool.name.toLowerCase().includes(search.toLowerCase()) ||
-                (tool.description && tool.description.toLowerCase().includes(search.toLowerCase()))
-            const matchesCategory = categoryFilter === 'All' || (tool.category && tool.category.includes(categoryFilter))
-            return matchesSearch && matchesCategory
-        })
-    }, [myTools, search, categoryFilter])
+    const filterTools = (tools, search, categoryFilter) => {
+        const searchRegex = new RegExp(search, 'i') // 'i' flag for case-insensitive search
 
-    const filteredMarketplaceTools = useMemo(() => {
-        return marketplaceTools.filter((tool) => {
-            const matchesSearch =
-                tool.templateName.toLowerCase().includes(search.toLowerCase()) ||
-                (tool.description && tool.description.toLowerCase().includes(search.toLowerCase()))
-            const matchesCategory = categoryFilter === 'All' || (tool.category && tool.category.includes(categoryFilter))
-            return matchesSearch && matchesCategory
-        })
-    }, [marketplaceTools, search, categoryFilter])
+        return tools.filter((tool) => {
+            if (!tool) return false
 
+            // Check category first
+            const category = tool.category || ''
+            if (categoryFilter !== 'All' && !category.includes(categoryFilter)) {
+                return false
+            }
+
+            // If category matches, then check search
+            const name = tool.name || tool.templateName || ''
+            const description = tool.description || ''
+            const searchText = `${name} ${description}`
+
+            return searchRegex.test(searchText)
+        })
+    }
+
+    const filteredMyTools = useMemo(() => filterTools(myTools, search, categoryFilter), [myTools, search, categoryFilter])
+
+    const filteredMarketplaceTools = useMemo(
+        () => filterTools(marketplaceTools, search, categoryFilter),
+        [marketplaceTools, search, categoryFilter]
+    )
     return (
         <>
             <MainCard>

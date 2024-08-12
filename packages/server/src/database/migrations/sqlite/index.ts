@@ -61,7 +61,7 @@ export const sqliteMigrations = [
     AddTypeToChatFlow1716300000000,
     AddVectorStoreConfigToDocStore1715861032479,
     AddApiKey1720230151480,
-    AddActionToChatMessage1721078251523
+    AddActionToChatMessage1721078251523,
     AddOrganizationId1717629010538,
     AddOrganization1717632419096,
     UpdateDefaultVisibility1717684633931,
