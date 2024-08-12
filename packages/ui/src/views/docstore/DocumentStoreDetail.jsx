@@ -184,8 +184,9 @@ const DocumentStoreDetails = () => {
         }
     }
 
-    const onDocStoreDelete = async (type, removeFromVectorStore) => {
+    const onDocStoreDelete = async (type, file, removeFromVectorStore) => {
         setBackdropLoading(true)
+        setShowDeleteDocStoreDialog(false)
         if (type === 'STORE') {
             if (removeFromVectorStore) {
                 await deleteVectorStoreDataFromStore(storeId)
@@ -272,7 +273,8 @@ const DocumentStoreDetails = () => {
             description: `Delete Loader ${file.loaderName} ? This will delete all the associated document chunks.`,
             vectorStoreConfig,
             recordManagerConfig,
-            type: 'LOADER'
+            type: 'LOADER',
+            file
         }
 
         setDeleteDocStoreDialogProps(props)
