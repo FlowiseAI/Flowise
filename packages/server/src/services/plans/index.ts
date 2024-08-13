@@ -6,8 +6,11 @@ import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { PaidPlan } from '../../database/entities/PaidPlan'
 import { MoreThan } from 'typeorm'
+import { v4 as uuidv4 } from 'uuid'
+import { IUser } from '../../Interface'
 
 const DEFAULT_AVAILABLE_EXECUTIONS = 200
+const PUBLIC_ORG_ID = process.env.PUBLIC_ORG_ID!
 
 async function getCurrentPlan(userId: string, orgId: string): Promise<PaidPlan | TrialPlan | null> {
     try {
@@ -18,8 +21,7 @@ async function getCurrentPlan(userId: string, orgId: string): Promise<PaidPlan |
         if (!org) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Organization ${orgId} not found`)
         }
-
-        return org.name === 'public' ? getOrCreateTrialPlanForUser(userId) : getPaidPlanForOrg(orgId)
+        return org.auth0Id === PUBLIC_ORG_ID ? getOrCreateTrialPlanForUser(userId) : getPaidPlanForOrg(orgId)
     } catch (error) {
         console.error('Error in getCurrentPlan:', error)
         if (error instanceof InternalFlowiseError) {
@@ -75,9 +77,14 @@ async function getOrCreateTrialPlanForUser(userId: string): Promise<TrialPlan> {
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Trial plan ${user.trialPlanId} not found`)
             }
         } else {
-            trialPlan = new TrialPlan()
-            trialPlan.availableExecutions = DEFAULT_AVAILABLE_EXECUTIONS
-            trialPlan.usedExecutions = 0
+            const newTrialPlan = new TrialPlan()
+            Object.assign(newTrialPlan, {
+                id: uuidv4(),
+                availableExecutions: DEFAULT_AVAILABLE_EXECUTIONS,
+                usedExecutions: 0,
+                userId: user.id
+            })
+            trialPlan = appServer.AppDataSource.getRepository(TrialPlan).create(newTrialPlan)
             await appServer.AppDataSource.getRepository(TrialPlan).save(trialPlan)
             user.trialPlanId = trialPlan.id
             await appServer.AppDataSource.getRepository(User).save(user)
@@ -152,7 +159,7 @@ async function incrementUsedExecutionCount(userId: string, orgId: string): Promi
         if (!org) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Organization ${orgId} not found`)
         }
-        if (org.name === 'public') {
+        if (org.auth0Id === PUBLIC_ORG_ID) {
             const trialPlan = await getOrCreateTrialPlanForUser(userId)
             trialPlan.usedExecutions++
             await appServer.AppDataSource.getRepository(TrialPlan).save(trialPlan)
@@ -174,8 +181,9 @@ async function incrementUsedExecutionCount(userId: string, orgId: string): Promi
     }
 }
 
-async function getPlanHistory(orgId: string): Promise<PaidPlan[]> {
+async function getPlanHistory(user: IUser): Promise<(PaidPlan | TrialPlan)[]> {
     try {
+        const orgId = user.organizationId
         const appServer = getRunningExpressApp()
         const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
             id: orgId
@@ -183,8 +191,8 @@ async function getPlanHistory(orgId: string): Promise<PaidPlan[]> {
         if (!org) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Organization ${orgId} not found`)
         }
-        if (org.name === 'public') {
-            return []
+        if (org.auth0Id === PUBLIC_ORG_ID) {
+            return [await getOrCreateTrialPlanForUser(user.id)]
         }
         const paidPlans = await appServer.AppDataSource.getRepository(PaidPlan).find({
             where: {

@@ -39,7 +39,6 @@ import variablesRouter from './variables'
 import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
-import upsertHistoryRouter from './upsert-history'
 import planRouter from './plan'
 
 const router = express.Router()

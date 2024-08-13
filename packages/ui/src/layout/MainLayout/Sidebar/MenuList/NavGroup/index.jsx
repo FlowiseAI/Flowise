@@ -15,8 +15,6 @@ const NavGroup = ({ item }) => {
     const theme = useTheme()
     const flags = useFlags(['org:manage', 'chatflow:manage', 'chatflow:use'])
     const MEMBER_ACTIONS = ['chatflows', 'marketplaces', 'document-stores']
-    // TODO: admin should be available to members in public org
-    // and builder or admin in other orgs
     const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'admin']
 
     // menu list collapse & items

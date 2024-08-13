@@ -32,7 +32,7 @@ const getPlanHistory = async (req: Request, res: Response, next: NextFunction) =
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Organization not found')
         }
 
-        const apiResponse = await plansService.getPlanHistory(req.user.organizationId)
+        const apiResponse = await plansService.getPlanHistory(req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

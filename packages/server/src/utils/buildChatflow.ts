@@ -479,10 +479,10 @@ const utilBuildAgentResponse = async (
     baseURL?: string
 ) => {
     try {
-        if (!chatflow.userId || !chatflow.organizationId) {
+        if (!agentflow.userId || !agentflow.organizationId) {
             throw new InternalFlowiseError(
                 StatusCodes.INTERNAL_SERVER_ERROR,
-                `User ID and Organization ID are required on the chatflow: ${chatflow.id}`
+                `User ID and Organization ID are required on the agentflow: ${agentflow.id}`
             )
         }
         const appServer = getRunningExpressApp()
@@ -567,7 +567,7 @@ const utilBuildAgentResponse = async (
             if (agentReasoning.length) result.agentReasoning = agentReasoning
             if (Object.keys(finalAction).length) result.action = finalAction
 
-            PlansService.incrementUsedExecutionCount(chatflow.userId, chatflow.organizationId)
+            PlansService.incrementUsedExecutionCount(agentflow.userId, agentflow.organizationId)
 
             return result
         }

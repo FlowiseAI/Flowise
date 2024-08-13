@@ -212,16 +212,15 @@ const Admin = () => {
                                     >
                                         <TableRow>
                                             <StyledTableCell>Plan created date</StyledTableCell>
-                                            <StyledTableCell>Paid</StyledTableCell>
-                                            <StyledTableCell>Exectutions bought</StyledTableCell>
-                                            <StyledTableCell>Exectutions used</StyledTableCell>
+                                            <StyledTableCell>Available Executions</StyledTableCell>
+                                            <StyledTableCell>Used Executions</StyledTableCell>
                                         </TableRow>
                                     </TableHead>
+
                                     <TableBody>
                                         {planHistory.map((plan, index) => (
                                             <StyledTableRow key={index}>
                                                 <StyledTableCell>{new Date(plan.createdDate).toLocaleDateString()}</StyledTableCell>
-                                                <StyledTableCell>{formatCurrency(plan.amount, plan.currency)}</StyledTableCell>
                                                 <StyledTableCell>{formatAmount(plan.availableExecutions)}</StyledTableCell>
                                                 <StyledTableCell>{formatAmount(plan.usedExecutions)}</StyledTableCell>
                                             </StyledTableRow>
