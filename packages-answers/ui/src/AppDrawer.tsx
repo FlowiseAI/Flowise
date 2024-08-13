@@ -7,23 +7,27 @@ import Box from '@mui/material/Box'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
-
 import MuiDrawer from '@mui/material/Drawer'
 import ListItemIcon from '@mui/material/ListItemIcon'
-
+import RateReviewIcon from '@mui/icons-material/RateReview'
+import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined'
+import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import Collapse from '@mui/material/Collapse'
 import { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
-
-import SettingsIcon from '@mui/icons-material/Settings'
-import ExitToAppIcon from '@mui/icons-material/ExitToApp'
-import SmartToy from '@mui/icons-material/SmartToy'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import AIIcon from '@mui/icons-material/SmartButton'
 import { usePathname } from 'next/navigation'
 import { Menu, MenuItem } from '@mui/material'
 import { useFlags } from 'flagsmith/react'
+import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined'
+import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined'
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
+import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined'
+import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
+import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/IntegrationInstructionsOutlined'
+import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined'
+import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 
 const drawerWidth = 240
 
@@ -34,15 +38,11 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     whiteSpace: 'nowrap',
     overflowX: 'hidden',
     transition: '.3s',
-    // 'transition': theme.transitions.create('width', {
-    //   easing: theme.transitions.easing.sharp,
-    //   duration: theme.transitions.duration.enteringScreen
-    // }),
     ' .MuiDrawer-paper': {
         transition: '.3s',
         overflowY: 'hidden',
         overflowX: 'hidden',
-        padding: 0,
+        padding: 0, // Remove padding here
         width: drawerWidth
     },
     p: {
@@ -52,8 +52,6 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
         '& .MuiDrawer-paper': {
             transition: '.3s',
             maxWidth: drawerWidth
-            // onMouseEnter: () => setDrawerOpen(true),
-            // onMouseLeave: () => setDrawerOpen(false)
         }
     }),
     ...(!open && {
@@ -63,8 +61,6 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
             p: {
                 opacity: 0
             }
-            // onMouseEnter: () => setDrawerOpen(true),
-            // onMouseLeave: () => setDrawerOpen(false)
         }
     })
 }))
@@ -76,79 +72,64 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const pathname = usePathname()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
-    const MEMBER_ACTIONS = ['chatflows', 'marketplaces', 'document-stores']
+    const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores']
     const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores']
     const menuConfig = [
-        // {
-        //   text: 'New Chat',
-        //   link: '/chat',
-        //   icon: <MessageIcon />
-        //   // subMenu: [
-        //   //   { text: 'Dashboard', link: '/' },
-        //   //   { text: 'New Chat', link: '/chat' },
-        //   //   { text: 'New Project', link: '/journey/new' }
-        //   // ]
-        // },
         {
             ...(flags['chatflow:use'].enabled
                 ? {
                       text: 'Sidekick Studio',
                       link: '/sidekick-studio',
-                      icon: <SmartToy />,
+                      icon: <ConstructionOutlinedIcon color='primary' />,
                       subMenu: [
-                          { id: 'chatflows', text: 'Chatflows', link: '/sidekick-studio/chatflows' },
-                          { id: 'agentflows', text: 'Agentflows', link: '/sidekick-studio/agentflows' },
-                          { id: 'tools', text: 'Tools', link: '/sidekick-studio/tools' },
-                          { id: 'assistants', text: 'Assistants', link: '/sidekick-studio/assistants' },
-                          { id: 'credentials', text: 'Credentials', link: '/sidekick-studio/credentials' },
-                          { id: 'variables', text: 'Variables', link: '/sidekick-studio/variables' },
-                          { id: 'apikey', text: 'API Keys', link: '/sidekick-studio/apikey' },
+                          {
+                              id: 'chatflows',
+                              text: 'Sidekicks',
+                              link: '/sidekick-studio/chatflows',
+                              icon: <SmartToyOutlinedIcon color='primary' />
+                          },
+                          {
+                              id: 'agentflows',
+                              text: 'Sidekick Teams',
+                              link: '/sidekick-studio/agentflows',
+                              icon: <GroupsOutlinedIcon color='primary' />
+                          },
                           {
                               id: 'documentstores',
-                              text: 'Document Stores',
-                              link: '/sidekick-studio/document-stores'
+                              text: 'Knowledge Bases',
+                              link: '/sidekick-studio/document-stores',
+                              icon: <MenuBookOutlinedIcon color='primary' />
+                          },
+                          {
+                              id: 'tools',
+                              text: 'Tools',
+                              link: '/sidekick-studio/tools',
+                              icon: <BuildOutlinedIcon color='primary' />
+                          },
+                          {
+                              id: 'credentials',
+                              text: 'Integrations',
+                              link: '/sidekick-studio/credentials',
+                              icon: <IntegrationInstructionsOutlinedIcon color='primary' />
+                          },
+                          {
+                              id: 'variables',
+                              text: 'Global Variables',
+                              link: '/sidekick-studio/variables',
+                              icon: <LanguageOutlinedIcon color='primary' />
+                          },
+                          {
+                              id: 'apikey',
+                              text: 'API Keys',
+                              link: '/sidekick-studio/apikey',
+                              icon: <VpnKeyOutlinedIcon color='primary' />
                           }
-                      ]?.filter(
-                          (item) =>
-                              // menu list collapse & items
-                              (MEMBER_ACTIONS?.includes(item.id) && flags['chatflow:use']?.enabled) ||
-                              (BUILDER_ACTIONS?.includes(item.id) && flags['chatflow:manage']?.enabled)
-                      )
+                      ]
                   }
                 : {})
         }
-        // { text: 'Knowledge Base', link: '/knowledge-base', icon: <AIIcon /> },
-        // {
-        //   text: 'Settings',
-        //   // link: '/settings',
-        //   icon: <SettingsIcon />,
-        //   subMenu: [
-        //     { text: 'Organization', link: '/settings/organization' },
-        //     { text: 'User', link: '/settings/user' }
-        //   ]
-        // }
-        // { text: 'Knowledge Base', link: '/knowledge-base', icon: <AIIcon /> },
-        // {
-        //   text: 'Settings',
-        //   // link: '/settings',
-        //   icon: <SettingsIcon />,
-        //   subMenu: [
-        //     { text: 'Organization', link: '/settings/organization' },
-        //     { text: 'User', link: '/settings/user' }
-        //   ]
-        // }
-        // {
-        //   text: 'Developer',
-        //   // link: '#',
-        //   icon: <StorageIcon />,
-        //   subMenu: [
-        //     { text: 'Ingest', link: '/developer/ingest' },
-        //     { text: 'Prisma', link: '/developer/prisma' },
-        //     { text: 'Tracing', link: '/developer/tracing' },
-        //     { text: 'API Keys', link: '/developer/apikey' }
-        //   ]
-        // }
     ]
+
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget)
     }
@@ -156,39 +137,70 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const handleClose = () => {
         setAnchorEl(null)
     }
-    // Drawer style based on open state
-    const drawerStyle = {
-        width: drawerOpen ? drawerWidth : 0, // Adjust width based on state
-        flexShrink: 0,
-        whiteSpace: 'nowrap',
-        boxSizing: 'border-box',
-        transition: 'width 0.5s ease'
+
+    const toggleDrawer = () => {
+        setDrawerOpen(!drawerOpen)
     }
 
-    // Updated Drawer component to include onMouseEnter and onMouseLeave
+    const handleNewChat = () => {
+        setDrawerOpen(false)
+    }
 
     return (
-        <Drawer
-            open={drawerOpen}
-            variant='permanent'
-            onMouseEnter={() => setDrawerOpen(!!session && true)}
-            onMouseLeave={() => setDrawerOpen(false)}
-            className={drawerOpen ? 'MuiDrawer-open' : 'MuiDrawer-closed'}
-            sx={{}}
-        >
-            {/* <DrawerHeader sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <NextLink href="/">
-          <Avatar sx={{ objectFit: 'contain' }}>AI</Avatar>
-        </NextLink>
-      </DrawerHeader> */}
+        <Drawer open={drawerOpen} variant='permanent' className={drawerOpen ? 'MuiDrawer-open' : 'MuiDrawer-closed'} sx={{}}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: drawerOpen ? 'space-between' : 'center',
+                    flexDirection: drawerOpen ? 'row' : 'column',
+                    p: 1
+                }}
+            >
+                <IconButton onClick={toggleDrawer}>
+                    <ViewSidebarOutlinedIcon
+                        sx={{
+                            transform: drawerOpen ? 'scaleX(-1)' : 'none',
+                            color: 'primary.main'
+                        }}
+                    />
+                </IconButton>
+                <Button
+                    href='/chat'
+                    variant='outlined'
+                    onClick={handleNewChat}
+                    component={NextLink}
+                    endIcon={<RateReviewIcon />}
+                    fullWidth
+                    sx={{
+                        minWidth: 0,
+                        textTransform: 'capitalize',
+                        justifyContent: 'space-between',
+                        '.MuiDrawer-closed & .MuiButton-endIcon': {
+                            margin: 0
+                        }
+                    }}
+                >
+                    <Box
+                        component='span'
+                        sx={{
+                            overflow: 'hidden',
+                            transition: '.2s',
+                            maxWidth: '240px',
+                            '.MuiDrawer-closed &': {
+                                maxWidth: '0',
+                                opacity: 0
+                            }
+                        }}
+                    >
+                        New chat
+                    </Box>
+                </Button>
+            </Box>
             <Box
                 sx={{
                     flex: 1,
-                    // 'overflowY': drawerOpen ? 'auto' : 'hidden',
                     overflowY: 'auto',
                     overflowX: 'hidden',
-
-                    //Make the scrollbar animate to hidden when drawerOpen is false
                     '&::-webkit-scrollbar': {
                         transition: 'opacity 0.5s ease',
                         opacity: drawerOpen ? 1 : 0
@@ -206,16 +218,16 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
 
             <List sx={{ display: 'flex', flexDirection: 'column' }} disablePadding>
                 {menuConfig.map((item) => (
-                    <Box key={item.text} onMouseEnter={() => setSubmenuOpen(item.text)} onMouseLeave={() => setSubmenuOpen('')}>
+                    <Box key={item.text}>
                         <ListItem disablePadding>
                             <ListItemButton
                                 selected={!!item.link && pathname.startsWith(item.link)}
                                 href={item.link}
                                 component={item.link ? NextLink : 'button'}
                                 sx={{ flex: 1, display: 'flex', width: '100%' }}
-                                onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : item.text)}
+                                onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : item.text ?? '')}
                             >
-                                <ListItemIcon>{item.icon}</ListItemIcon>
+                                <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
                                 <Typography
                                     sx={{
                                         overflow: 'hidden',
@@ -232,14 +244,11 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                             </ListItemButton>
                         </ListItem>
 
-                        <Collapse
-                            in={drawerOpen && (submenuOpen === item?.text || item?.subMenu?.some((subItem) => pathname === subItem.link))}
-                            timeout='auto'
-                            sx={{ transition: '.2s', opacity: drawerOpen ? 1 : 0 }}
-                        >
-                            {item?.subMenu?.map((subItem) => (
-                                <ListItem key={subItem.text} disablePadding sx={{ pl: 4, transition: '.2s', opacity: drawerOpen ? 1 : 0 }}>
+                        <Collapse in={drawerOpen || (pathname && item.link ? pathname.includes(item.link) : false)} timeout='auto'>
+                            {item.subMenu?.map((subItem) => (
+                                <ListItem key={subItem.text} disablePadding>
                                     <ListItemButton component={NextLink} href={subItem.link} selected={pathname === subItem.link}>
+                                        <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
                                         <Typography>{subItem.text}</Typography>
                                     </ListItemButton>
                                 </ListItem>
@@ -273,7 +282,6 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                                 overflow: 'hidden',
                                 alignItems: 'center',
                                 width: '100%',
-                                // gap: 2,
                                 maxWidth: 124
                             }}
                         >
@@ -292,7 +300,6 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                                 <Typography
                                     variant='caption'
                                     sx={{
-                                        // opacity: 0.9,
                                         width: '100%',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -313,8 +320,9 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                             <MoreVertIcon />
                         </IconButton>
                         <Menu id='simple-menu' anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
-                            <MenuItem variant='caption' disabled>
+                            <MenuItem disabled>
                                 <Typography
+                                    variant='caption'
                                     sx={{
                                         opacity: 0.9,
                                         width: '100%',

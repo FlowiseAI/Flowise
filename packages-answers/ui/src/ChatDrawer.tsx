@@ -3,23 +3,18 @@ import * as React from 'react'
 import useSWR from 'swr'
 import NextLink from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { styled, Theme, CSSObject } from '@mui/material/styles'
+import { styled } from '@mui/material/styles'
 import MuiDrawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
-import IconButton from '@mui/material/IconButton'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
-
-import Add from '@mui/icons-material/Add'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
 import closedMixin from './theme/closedMixin'
 import openedMixin from './theme/openedMixin'
 
 import { Chat, Journey } from 'types'
-import { Box, Button } from '@mui/material'
+import { Box } from '@mui/material'
 
 const drawerWidth = 400
 
@@ -110,52 +105,6 @@ export default function ChatDrawer({ journeys, chats, defaultOpen }: ChatDrawerP
     return (
         <>
             <List disablePadding>
-                <ListItem
-                    disablePadding
-                    sx={(theme) => ({
-                        flexDirection: 'row',
-                        px: 0,
-                        py: 1,
-                        position: 'sticky',
-                        top: 0,
-                        zIndex: 2,
-                        bgcolor: 'background.paper'
-                    })}
-                >
-                    <Button
-                        href={`/chat`}
-                        variant='outlined'
-                        onClick={handleDrawerClose}
-                        component={NextLink}
-                        endIcon={<Add />}
-                        fullWidth
-                        sx={{
-                            minWidth: 0,
-                            textTransform: 'capitalize',
-                            justifyContent: 'space-between',
-                            '.MuiDrawer-closed & .MuiButton-endIcon': {
-                                margin: 0
-                            }
-                        }}
-                    >
-                        <Box
-                            component='span'
-                            sx={{
-                                overflow: 'hidden',
-                                transition: '.2s',
-                                maxWidth: '240px',
-
-                                '.MuiDrawer-closed &': {
-                                    maxWidth: '0',
-                                    opacity: 0
-                                    // display: 'none'
-                                }
-                            }}
-                        >
-                            New chat
-                        </Box>
-                    </Button>
-                </ListItem>
                 {Object.entries(chatsByDate || {}).map(([date, chats]) => (
                     <Box key={date} sx={{ mb: 1 }}>
                         <ListItem
