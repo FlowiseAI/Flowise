@@ -90,7 +90,14 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             )
         }
 
-        PlansService.checkForAvailableExecutions(chatflow.userId, chatflow.organizationId)
+        const canContinue = await PlansService.hasAvailableExecutions(chatflow.userId, chatflow.organizationId)
+
+        if (!canContinue) {
+            throw new InternalFlowiseError(
+                StatusCodes.PAYMENT_REQUIRED,
+                'Insufficient executions. Please purchase more to continue using this service.'
+            )
+        }
 
         let fileUploads: IFileUpload[] = []
         if (incomingInput.uploads) {

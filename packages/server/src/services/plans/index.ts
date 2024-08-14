@@ -9,7 +9,7 @@ import { MoreThan } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
 import { IUser } from '../../Interface'
 
-const DEFAULT_AVAILABLE_EXECUTIONS = 200
+const DEFAULT_AVAILABLE_EXECUTIONS = Number(process.env.TRIAL_PLAN_EXECUTIONS)
 const PUBLIC_ORG_ID = process.env.PUBLIC_ORG_ID!
 
 async function getCurrentPlan(userId: string, orgId: string): Promise<PaidPlan | TrialPlan | null> {
@@ -32,7 +32,7 @@ async function getCurrentPlan(userId: string, orgId: string): Promise<PaidPlan |
     }
 }
 
-async function checkForAvailableExecutions(userId: string, orgId: string): Promise<void> {
+async function hasAvailableExecutions(userId: string, orgId: string): Promise<boolean> {
     try {
         const appServer = getRunningExpressApp()
         const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
@@ -44,13 +44,10 @@ async function checkForAvailableExecutions(userId: string, orgId: string): Promi
         const currentPlan = await getCurrentPlan(userId, orgId)
 
         if (!currentPlan || currentPlan.availableExecutions <= currentPlan.usedExecutions) {
-            throw new InternalFlowiseError(
-                StatusCodes.PAYMENT_REQUIRED,
-                'Insufficient executions. Please purchase more to continue using this service.'
-            )
+            return false
         }
+        return true
     } catch (error) {
-        console.error('Error in checkForAvailableExecutions:', error)
         if (error instanceof InternalFlowiseError) {
             throw error
         }
@@ -215,8 +212,8 @@ async function getPlanHistory(user: IUser): Promise<(PaidPlan | TrialPlan)[]> {
 
 export default {
     getCurrentPlan,
-    checkForAvailableExecutions,
-    getPaidPlanForOrg: getPaidPlanForOrg,
+    hasAvailableExecutions,
+    getPaidPlanForOrg,
     getOrCreateTrialPlanForUser,
     incrementUsedExecutionCount,
     getPlanHistory
