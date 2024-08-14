@@ -1,6 +1,5 @@
 import AppWidgetLayout from '@ui/AppWidgetLayout'
 import React from 'react'
-import flagsmith from 'flagsmith/isomorphic'
 import getCachedSession from '@ui/getCachedSession'
 import { Session } from '@auth0/nextjs-auth0'
 

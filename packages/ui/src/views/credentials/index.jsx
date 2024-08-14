@@ -1,3 +1,4 @@
+'use client'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
@@ -25,9 +26,11 @@ import {
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import { StyledButton } from '@/ui-component/button/StyledButton'
-import CredentialListDialog from './CredentialListDialog'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import AddEditCredentialDialog from './AddEditCredentialDialog'
+import dynamic from 'next/dynamic'
+
+const CredentialListDialog = dynamic(() => import('./CredentialListDialog'), { ssr: false })
+const ConfirmDialog = dynamic(() => import('@/ui-component/dialog/ConfirmDialog'), { ssr: false })
+const AddEditCredentialDialog = dynamic(() => import('./AddEditCredentialDialog'), { ssr: false })
 
 // API
 import credentialsApi from '@/api/credentials'

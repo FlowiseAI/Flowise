@@ -25,7 +25,7 @@ import StatsCard from '@/ui-component/cards/StatsCard'
 import { baseURL } from '@/store/constant'
 
 const UpsertHistoryDetailsDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
 
     const handleAccordionChange = (nodeLabel) => (event, isExpanded) => {
@@ -144,7 +144,7 @@ const UpsertHistoryDetailsDialog = ({ show, dialogProps, onCancel }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 UpsertHistoryDetailsDialog.propTypes = {

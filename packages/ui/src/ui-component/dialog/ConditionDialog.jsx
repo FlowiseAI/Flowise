@@ -18,7 +18,7 @@ import NodeInputHandler from '@/views/canvas/NodeInputHandler'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const ConditionDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const dispatch = useDispatch()
 
@@ -82,7 +82,7 @@ const ConditionDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 ConditionDialog.propTypes = {

@@ -186,7 +186,7 @@ UpsertHistoryRow.propTypes = {
 }
 
 const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
@@ -445,7 +445,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 UpsertHistoryDialog.propTypes = {

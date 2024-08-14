@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/utils/navigation'
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
@@ -80,7 +80,7 @@ function a11yProps(index) {
 }
 
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
@@ -748,7 +748,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 APICodeDialog.propTypes = {

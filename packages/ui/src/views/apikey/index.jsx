@@ -1,3 +1,4 @@
+'use client'
 import * as PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import { useEffect, useState } from 'react'

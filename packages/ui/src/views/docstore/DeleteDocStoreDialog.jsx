@@ -35,7 +35,7 @@ import useApi from '@/hooks/useApi'
 import { initNode } from '@/utils/genericHelper'
 
 const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
     const [removeFromVS, setRemoveFromVS] = useState(false)
     const [vsFlowData, setVSFlowData] = useState([])
@@ -233,7 +233,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 DeleteDocStoreDialog.propTypes = {

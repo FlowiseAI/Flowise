@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from '@/utils/navigation'
 
 // material-ui
 import { ButtonBase } from '@mui/material'

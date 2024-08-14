@@ -1,11 +1,5 @@
-import { Outlet } from 'react-router-dom'
-
 // ==============================|| MINIMAL LAYOUT ||============================== //
 
-const MinimalLayout = () => (
-    <>
-        <Outlet />
-    </>
-)
+const MinimalLayout = ({ children }) => <>{children}</>
 
 export default MinimalLayout

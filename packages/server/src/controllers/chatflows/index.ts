@@ -210,7 +210,7 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
                 `Error: chatflowsRouter.getSinglePublicChatflow - id not provided!`
             )
         }
-        const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id)
+        const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id, req.user?.id, req.user?.organizationId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

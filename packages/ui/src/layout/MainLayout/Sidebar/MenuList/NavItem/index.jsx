@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { forwardRef, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '@/utils/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui

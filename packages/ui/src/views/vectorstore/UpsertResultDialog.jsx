@@ -9,7 +9,7 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { IconZoomScan } from '@tabler/icons-react'
 
 const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
 
@@ -106,7 +106,7 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery 
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 UpsertResultDialog.propTypes = {

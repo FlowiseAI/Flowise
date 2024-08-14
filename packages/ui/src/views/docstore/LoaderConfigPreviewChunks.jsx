@@ -1,8 +1,9 @@
+'use client'
 import { cloneDeep } from 'lodash'
 import { useEffect, useState } from 'react'
 import { validate as uuidValidate, v4 as uuidv4 } from 'uuid'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/utils/navigation'
 import ReactJson from 'flowise-react-json-view'
 
 // Hooks

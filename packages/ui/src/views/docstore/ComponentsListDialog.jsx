@@ -14,7 +14,7 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import useApi from '@/hooks/useApi'
 
 const ComponentsListDialog = ({ show, dialogProps, onCancel, apiCall, onSelected }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
     const theme = useTheme()
@@ -176,7 +176,7 @@ const ComponentsListDialog = ({ show, dialogProps, onCancel, apiCall, onSelected
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 ComponentsListDialog.propTypes = {

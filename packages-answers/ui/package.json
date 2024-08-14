@@ -46,7 +46,7 @@
         "clsx": "^1.2.1",
         "cors": "^2.8.5",
         "encoding": "^0.1.13",
-        "flagsmith": "^3.19.1",
+       "flagsmith": "^4.0.3",
         "framer-motion": "^10.13.0",
         "handlebars": "^4.7.7",
         "jose": "^5.2.3",

@@ -14,7 +14,7 @@ const LoginDialog = ({ show, dialogProps, onConfirm }) => {
             loginWithRedirect()
         }
     }, [show, isLoading, isAuthenticated, loginWithRedirect])
-    // const portalElement = document.getElementById('portal')
+    // const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     // const usernameInput = {
     //     label: 'Username',
     //     name: 'username',
@@ -65,7 +65,7 @@ const LoginDialog = ({ show, dialogProps, onConfirm }) => {
     //     </Dialog>
     // ) : null
 
-    // return createPortal(component, portalElement)
+    // return portalElement ? createPortal(component, portalElement) : null
 }
 
 LoginDialog.propTypes = {

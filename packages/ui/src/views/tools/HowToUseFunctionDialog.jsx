@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Dialog, DialogContent, DialogTitle } from '@mui/material'
 
 const HowToUseFunctionDialog = ({ show, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const component = show ? (
         <Dialog
@@ -60,7 +60,7 @@ const HowToUseFunctionDialog = ({ show, onCancel }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 HowToUseFunctionDialog.propTypes = {

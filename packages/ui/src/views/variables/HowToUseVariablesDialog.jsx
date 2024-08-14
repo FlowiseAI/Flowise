@@ -12,7 +12,7 @@ const overrideConfig = `{
 }`
 
 const HowToUseVariablesDialog = ({ show, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const component = show ? (
         <Dialog
@@ -74,7 +74,7 @@ const HowToUseVariablesDialog = ({ show, onCancel }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 HowToUseVariablesDialog.propTypes = {

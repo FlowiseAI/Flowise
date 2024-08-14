@@ -14,7 +14,7 @@ import useNotifier from '@/utils/useNotifier'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
 
 const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const dispatch = useDispatch()
 
     useNotifier()
@@ -43,7 +43,7 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 SpeechToTextDialog.propTypes = {

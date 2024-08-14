@@ -49,7 +49,7 @@ const importModes = [
 ]
 
 const UploadJSONFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const dispatch = useDispatch()
 
@@ -173,7 +173,7 @@ const UploadJSONFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 UploadJSONFileDialog.propTypes = {

@@ -22,7 +22,7 @@ import {
 } from '@mui/material'
 import { tableCellClasses } from '@mui/material/TableCell'
 import FlowListMenu from '../button/FlowListMenu'
-import { Link } from 'react-router-dom'
+import { Link } from '@/utils/navigation'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,

@@ -1,5 +1,6 @@
+'use client'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/utils/navigation'
 import { useSelector } from 'react-redux'
 
 // material-ui

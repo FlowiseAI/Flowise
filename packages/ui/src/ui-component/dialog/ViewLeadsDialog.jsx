@@ -50,7 +50,7 @@ DatePickerCustomInput.propTypes = {
 }
 
 const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const dispatch = useDispatch()
     const theme = useTheme()
 
@@ -196,7 +196,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 ViewLeadsDialog.propTypes = {

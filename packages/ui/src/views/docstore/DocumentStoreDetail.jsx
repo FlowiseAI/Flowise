@@ -1,7 +1,8 @@
+'use client'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as PropTypes from 'prop-types'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/utils/navigation'
 
 // material-ui
 import {

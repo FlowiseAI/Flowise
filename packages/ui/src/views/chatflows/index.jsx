@@ -1,6 +1,7 @@
+'use client'
 import PropTypes from 'prop-types'
 import { useEffect, useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/utils/navigation'
 import { Box, Tabs, Tab, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
 import FlowListView from '@/ui-component/lists/FlowListView'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -41,7 +42,6 @@ TabPanel.propTypes = {
 
 const Chatflows = () => {
     const navigate = useNavigate()
-
     const [tabValue, setTabValue] = useState(0)
     const [isLoading, setLoading] = useState(true)
     const [error, setError] = useState(null)

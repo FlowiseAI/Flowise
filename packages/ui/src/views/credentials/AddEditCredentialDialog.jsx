@@ -47,7 +47,7 @@ import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { useFlags } from 'flagsmith/react'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const dispatch = useDispatch()
     const flags = useFlags(['org:manage', 'chatflow:share:internal'])
@@ -358,7 +358,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 AddEditCredentialDialog.propTypes = {

@@ -1,6 +1,7 @@
+'use client'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/utils/navigation'
 import ReactJson from 'flowise-react-json-view'
 
 // material-ui
