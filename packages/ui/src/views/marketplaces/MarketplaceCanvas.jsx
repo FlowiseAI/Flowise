@@ -58,7 +58,7 @@ const MarketplaceCanvas = () => {
             <Box>
                 <AppBar
                     enableColorOnDark
-                    position='fixed'
+                    position='absolute'
                     color='inherit'
                     elevation={1}
                     sx={{
