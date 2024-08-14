@@ -1,8 +1,7 @@
 {
     "description": "Breaks down query into sub questions for each relevant data source, then combine into final response",
-    "categories": "Sub Question Query Engine,Sticky Note,QueryEngine Tool,Compact and Refine,ChatOpenAI,Pinecone,LlamaIndex",
-    "framework": "LlamaIndex",
-    "badge": "NEW",
+    "usecases": ["SQL"],
+    "framework": ["LlamaIndex"],
     "nodes": [
         {
             "width": 300,
@@ -707,7 +706,7 @@
                         "label": "Response Synthesizer",
                         "name": "responseSynthesizer",
                         "type": "ResponseSynthesizer",
-                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/low_level/response_synthesizer\">more</a>",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/response_synthesizer\">more</a>",
                         "optional": true,
                         "id": "queryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
                     }
@@ -909,7 +908,7 @@
                         "label": "Response Synthesizer",
                         "name": "responseSynthesizer",
                         "type": "ResponseSynthesizer",
-                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/low_level/response_synthesizer\">more</a>",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/response_synthesizer\">more</a>",
                         "optional": true,
                         "id": "queryEngine_1-input-responseSynthesizer-ResponseSynthesizer"
                     }
@@ -990,7 +989,7 @@
                         "label": "Response Synthesizer",
                         "name": "responseSynthesizer",
                         "type": "ResponseSynthesizer",
-                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/low_level/response_synthesizer\">more</a>",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/response_synthesizer\">more</a>",
                         "optional": true,
                         "id": "subQuestionQueryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
                     }

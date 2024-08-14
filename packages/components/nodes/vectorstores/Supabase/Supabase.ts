@@ -32,7 +32,6 @@ class Supabase_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upsert embedded data and perform similarity or mmr search upon query using Supabase via pgvector extension'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -168,6 +167,40 @@ class Supabase_VectorStores implements INode {
                         queryName: queryName
                     })
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const supabaseProjUrl = nodeData.inputs?.supabaseProjUrl as string
+            const tableName = nodeData.inputs?.tableName as string
+            const queryName = nodeData.inputs?.queryName as string
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const supabaseApiKey = getCredentialParam('supabaseApiKey', credentialData, nodeData)
+
+            const client = createClient(supabaseProjUrl, supabaseApiKey)
+
+            const supabaseStore = new SupabaseVectorStore(embeddings, {
+                client,
+                tableName: tableName,
+                queryName: queryName
+            })
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = tableName + '_' + queryName
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await supabaseStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    await supabaseStore.delete({ ids })
                 }
             } catch (e) {
                 throw new Error(e)

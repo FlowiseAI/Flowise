@@ -21,17 +21,19 @@ class Worker_MultiAgents implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    hideOutput: boolean
     inputs?: INodeParams[]
     badge?: string
 
     constructor() {
         this.label = 'Worker'
         this.name = 'worker'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Worker'
         this.icon = 'worker.svg'
         this.category = 'Multi Agents'
         this.baseClasses = [this.type]
+        this.hideOutput = true
         this.inputs = [
             {
                 label: 'Worker Name',
@@ -137,6 +139,7 @@ class Worker_MultiAgents implements INode {
                     state,
                     agent: agent,
                     name: workerName,
+                    nodeId: nodeData.id,
                     abortControllerSignal
                 },
                 config
@@ -269,8 +272,9 @@ async function agentNode(
         state,
         agent,
         name,
+        nodeId,
         abortControllerSignal
-    }: { state: ITeamState; agent: AgentExecutor | RunnableSequence; name: string; abortControllerSignal: AbortController },
+    }: { state: ITeamState; agent: AgentExecutor | RunnableSequence; name: string; nodeId: string; abortControllerSignal: AbortController },
     config: RunnableConfig
 ) {
     try {
@@ -279,7 +283,7 @@ async function agentNode(
         }
 
         const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
-        const additional_kwargs: ICommonObject = {}
+        const additional_kwargs: ICommonObject = { nodeId, type: 'worker' }
         if (result.usedTools) {
             additional_kwargs.usedTools = result.usedTools
         }

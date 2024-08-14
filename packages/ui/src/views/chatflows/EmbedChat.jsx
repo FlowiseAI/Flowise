@@ -104,12 +104,31 @@ const buttonConfig = (isReact = false) => {
             }`
 }
 
+const tooltipConfig = (isReact = false) => {
+    return isReact
+        ? `tooltip: {
+                    showTooltip: true,
+                    tooltipMessage: 'Hi There 👋!',
+                    tooltipBackgroundColor: 'black',
+                    tooltipTextColor: 'white',
+                    tooltipFontSize: 16,
+                }`
+        : `tooltip: {
+                showTooltip: true,
+                tooltipMessage: 'Hi There 👋!',
+                tooltipBackgroundColor: 'black',
+                tooltipTextColor: 'white',
+                tooltipFontSize: 16,
+            }`
+}
+
 const chatwindowConfig = (isReact = false) => {
     return isReact
         ? `chatWindow: {
                     showTitle: true,
                     title: 'Flowise Bot',
                     titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                    showAgentMessages: true,
                     welcomeMessage: 'Hello! This is custom welcome message',
                     errorMessage: 'This is a custom error message',
                     backgroundColor: "#ffffff",
@@ -136,6 +155,11 @@ const chatwindowConfig = (isReact = false) => {
                         sendButtonColor: '#3B81F6',
                         maxChars: 50,
                         maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
+                        autoFocus: true, // If not used, autofocus is disabled on mobile and enabled on desktop. true enables it on both, false disables it on both.
+                        sendMessageSound: true,
+                        // sendSoundLocation: "send_message.mp3", // If this is not used, the default sound effect will be played if sendSoundMessage is true.
+                        receiveMessageSound: true,
+                        // receiveSoundLocation: "receive_message.mp3", // If this is not used, the default sound effect will be played if receiveSoundMessage is true.
                     },
                     feedback: {
                         color: '#303235',
@@ -151,6 +175,7 @@ const chatwindowConfig = (isReact = false) => {
                 showTitle: true,
                 title: 'Flowise Bot',
                 titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                showAgentMessages: true,
                 welcomeMessage: 'Hello! This is custom welcome message',
                 errorMessage: 'This is a custom error message',
                 backgroundColor: "#ffffff",
@@ -177,6 +202,11 @@ const chatwindowConfig = (isReact = false) => {
                     sendButtonColor: '#3B81F6',
                     maxChars: 50,
                     maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
+                    autoFocus: true, // If not used, autofocus is disabled on mobile and enabled on desktop. true enables it on both, false disables it on both.
+                    sendMessageSound: true,
+                    // sendSoundLocation: "send_message.mp3", // If this is not used, the default sound effect will be played if sendSoundMessage is true.
+                    receiveMessageSound: true,
+                    // receiveSoundLocation: "receive_message.mp3", // If this is not used, the default sound effect will be played if receiveSoundMessage is true. 
                 },
                 feedback: {
                     color: '#303235',
@@ -201,6 +231,7 @@ const embedPopupHtmlCodeCustomization = (chatflowid) => {
         },
         theme: {
             ${buttonConfig()},
+            ${tooltipConfig()},
             ${chatwindowConfig()}
         }
     })
@@ -217,6 +248,7 @@ const App = () => {
             apiHost="${baseURL}"
             theme={{
                 ${buttonConfig(true)},
+                ${tooltipConfig(true)},
                 ${chatwindowConfig(true)}
             }}
         />

@@ -27,10 +27,23 @@ const HowToUseVariablesDialog = ({ show, onCancel }) => {
                 How To Use Variables
             </DialogTitle>
             <DialogContent>
-                <p style={{ marginBottom: '10px' }}>Variables can be used in Custom Tool Function with the $ prefix.</p>
+                <p style={{ marginBottom: '10px' }}>
+                    Variables can be used in Custom Tool, Custom Function, Custom Loader, If Else Function with the $ prefix.
+                </p>
                 <CodeEditor
                     disabled={true}
                     value={`$vars.<variable-name>`}
+                    height={'50px'}
+                    theme={'dark'}
+                    lang={'js'}
+                    basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
+                />
+                <p style={{ marginBottom: '10px' }}>
+                    Variables can also be used in Text Field parameter of any node. For example, in System Message of Agent:
+                </p>
+                <CodeEditor
+                    disabled={true}
+                    value={`You are a {{$vars.personality}} AI assistant`}
                     height={'50px'}
                     theme={'dark'}
                     lang={'js'}

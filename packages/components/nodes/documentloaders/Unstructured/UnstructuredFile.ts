@@ -6,7 +6,7 @@ import {
     SkipInferTableTypes,
     HiResModelName,
     UnstructuredLoader as LCUnstructuredLoader
-} from 'langchain/document_loaders/fs/unstructured'
+} from '@langchain/community/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { getFileFromStorage } from '../../../src'
 import { UnstructuredLoader } from './Unstructured'
