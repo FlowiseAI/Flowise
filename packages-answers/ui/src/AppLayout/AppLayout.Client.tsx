@@ -1,5 +1,4 @@
 'use client'
-import React from 'react'
 import { FlagsmithProvider } from 'flagsmith/react'
 import flagsmith from 'flagsmith/isomorphic'
 import { Session } from '@auth0/nextjs-auth0'
@@ -12,6 +11,7 @@ import { darkModeTheme } from '../theme'
 import GlobalStyles from '../GlobalStyles'
 
 import { AppSettings } from 'types'
+import { Auth0Provider } from '@auth0/auth0-react'
 
 export default function AppLayout({
     session,
@@ -30,6 +30,12 @@ export default function AppLayout({
     }
     flagsmithState: any
 }) {
+    const authorizationParams = {
+        organization: session?.user.organizationId,
+        redirect_uri: typeof window !== 'undefined' ? window?.location?.origin : '',
+        audience: process.env.VITE_AUTH_AUDIENCE,
+        scope: 'openid profile email'
+    }
     return (
         <FlagsmithProvider
             serverState={flagsmithState}
@@ -38,31 +44,37 @@ export default function AppLayout({
             }}
             flagsmith={flagsmith}
         >
-            <ThemeProvider theme={darkModeTheme}>
-                <CssBaseline enableColorScheme />
-                <GlobalStyles />
-                <>
-                    <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
-                    <div
-                        style={{
-                            flex: 1,
-                            width: 'calc(100% - 65px)',
-                            height: '100vh',
-                            position: 'relative'
-                        }}
-                    >
+            <Auth0Provider
+                domain={process.env.VITE_AUTH_DOMAIN}
+                clientId={process.env.VITE_AUTH_CLIENT_ID}
+                authorizationParams={authorizationParams}
+            >
+                <ThemeProvider theme={darkModeTheme}>
+                    <CssBaseline enableColorScheme />
+                    <GlobalStyles />
+                    <>
+                        <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
                         <div
                             style={{
-                                width: '100%',
+                                flex: 1,
+                                width: 'calc(100% - 65px)',
                                 height: '100vh',
                                 position: 'relative'
                             }}
                         >
-                            {children}
+                            <div
+                                style={{
+                                    width: '100%',
+                                    height: '100vh',
+                                    position: 'relative'
+                                }}
+                            >
+                                {children}
+                            </div>
                         </div>
-                    </div>
-                </>
-            </ThemeProvider>
+                    </>
+                </ThemeProvider>
+            </Auth0Provider>
         </FlagsmithProvider>
     )
 }

@@ -1,9 +1,10 @@
+'use client'
 import { useEffect, useRef, useState, useCallback, useContext } from 'react'
 import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, usePathname } from '@/utils/navigation'
 import {
     REMOVE_DIRTY,
     SET_DIRTY,
@@ -67,11 +68,13 @@ const Canvas = () => {
     const templateFlowData = state ? state.templateFlowData : ''
     const templateName = state ? state.templateName : ''
     const parentChatflowId = state && isNaN(state.parentChatflowId) ? state.parentChatflowId : undefined
-    const URLpath = document.location.pathname.toString().split('/')
+
+    const pathname = usePathname()
+    const URLpath = pathname.split('/')
     const chatflowId =
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
-    const isAgentCanvas = URLpath.includes('agentcanvas') ? true : false
-    const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
+    const isAgentCanvas = pathname.includes('agentcanvas')
+    const canvasTitle = isAgentCanvas ? 'Agent' : 'Chatflow'
 
     const { confirm } = useConfirm()
 
@@ -540,7 +543,7 @@ const Canvas = () => {
                         />
                     </Toolbar>
                 </AppBar>
-                <Box sx={{ pt: '70px', height: '100vh', width: '100%' }}>
+                <Box sx={{ height: '100vh', width: '100%' }}>
                     <div className='reactflow-parent-wrapper'>
                         <div className='reactflow-wrapper' ref={reactFlowWrapper}>
                             <ReactFlow

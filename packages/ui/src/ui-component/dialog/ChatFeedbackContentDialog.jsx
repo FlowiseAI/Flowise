@@ -13,7 +13,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const dispatch = useDispatch()
 
     const [feedbackContent, setFeedbackContent] = useState('')
@@ -70,7 +70,7 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 export default ChatFeedbackContentDialog

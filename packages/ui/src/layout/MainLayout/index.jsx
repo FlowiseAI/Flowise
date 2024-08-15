@@ -1,6 +1,6 @@
+'use client'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Outlet } from 'react-router-dom'
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles'
@@ -51,19 +51,20 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' && pr
         marginRight: 0,
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
-        width: `calc(100% - ${drawerWidth}px)`
+        // width: `calc(100% - ${drawerWidth}px)`
+        width: `calc(100%)`
     })
 }))
 
 // ==============================|| MAIN LAYOUT ||============================== //
 
-const MainLayout = () => {
+const MainLayout = ({ children }) => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
     const [isInIframe, setIsInIframe] = useState(false)
 
     // Handle left drawer
-    const leftDrawerOpened = useSelector((state) => (isInIframe ? true : state.customization.opened))
+    const leftDrawerOpened = true
     const dispatch = useDispatch()
     const handleLeftDrawerToggle = () => {
         dispatch({ type: SET_MENU, opened: !leftDrawerOpened })
@@ -97,11 +98,11 @@ const MainLayout = () => {
                         </Toolbar>
                     </AppBar>
                 )}
-                <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} isInIframe={isInIframe} />
+                {/* <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} isInIframe={isInIframe} /> */}
             </>
             {/* main content */}
             <Main theme={theme} open={leftDrawerOpened} isInIframe={isInIframe}>
-                <Outlet />
+                {children}
             </Main>
         </Box>
     )

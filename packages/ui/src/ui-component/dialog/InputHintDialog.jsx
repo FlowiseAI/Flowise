@@ -9,7 +9,7 @@ import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
 import { Dialog, DialogContent, DialogTitle } from '@mui/material'
 
 const InputHintDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const component = show ? (
         <Dialog
@@ -51,7 +51,7 @@ const InputHintDialog = ({ show, dialogProps, onCancel }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 InputHintDialog.propTypes = {

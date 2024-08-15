@@ -8,7 +8,7 @@ import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const FormatPromptValuesDialog = ({ show, dialogProps, onChange, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
 
@@ -53,7 +53,7 @@ const FormatPromptValuesDialog = ({ show, dialogProps, onChange, onCancel }) => 
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 FormatPromptValuesDialog.propTypes = {

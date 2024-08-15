@@ -7,11 +7,15 @@ import { Box, Typography, IconButton } from '@mui/material'
 import { IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons-react'
 
 // project import
-import { Dropdown } from '@/ui-component/dropdown/Dropdown'
-import { Input } from '@/ui-component/input/Input'
-import { SwitchInput } from '@/ui-component/switch/Switch'
-import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
-import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+import dynamic from 'next/dynamic'
+
+const Dropdown = dynamic(() => import('@/ui-component/dropdown/Dropdown').then((mod) => mod.Dropdown), { ssr: true })
+const Input = dynamic(() => import('@/ui-component/input/Input').then((mod) => mod.Input), { ssr: true })
+const SwitchInput = dynamic(() => import('@/ui-component/switch/Switch').then((mod) => mod.SwitchInput), { ssr: true })
+const JsonEditorInput = dynamic(() => import('@/ui-component/json/JsonEditor').then((mod) => mod.JsonEditorInput), { ssr: false })
+const TooltipWithParser = dynamic(() => import('@/ui-component/tooltip/TooltipWithParser').then((mod) => mod.TooltipWithParser), {
+    ssr: true
+})
 
 // ===========================|| NodeInputHandler ||=========================== //
 

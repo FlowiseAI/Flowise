@@ -23,7 +23,7 @@ import useApi from '@/hooks/useApi'
 import './ExpandTextDialog.css'
 
 const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicked, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const theme = useTheme()
     const dispatch = useDispatch()
@@ -193,7 +193,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 ExpandTextDialog.propTypes = {

@@ -5,7 +5,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 
 const ConfirmDialog = () => {
     const { onConfirm, onCancel, confirmState } = useConfirm()
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const component = confirmState.show ? (
         <Dialog
@@ -31,7 +31,7 @@ const ConfirmDialog = () => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 export default ConfirmDialog

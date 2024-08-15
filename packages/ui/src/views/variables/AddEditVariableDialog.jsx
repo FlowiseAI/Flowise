@@ -40,7 +40,7 @@ const variableTypes = [
 ]
 
 const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const dispatch = useDispatch()
 
@@ -262,7 +262,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 AddEditVariableDialog.propTypes = {

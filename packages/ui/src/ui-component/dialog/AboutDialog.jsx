@@ -1,3 +1,4 @@
+'use client'
 import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
@@ -7,7 +8,7 @@ import axios from 'axios'
 import { baseURL } from '@/store/constant'
 
 const AboutDialog = ({ show, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof window !== 'undefined' ? document.getElementById('portal') : null
 
     const [data, setData] = useState({})
 
@@ -85,7 +86,7 @@ const AboutDialog = ({ show, onCancel }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 AboutDialog.propTypes = {

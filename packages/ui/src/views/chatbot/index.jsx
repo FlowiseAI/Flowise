@@ -1,6 +1,7 @@
+'use client'
 import { useEffect, useState } from 'react'
 import { FullPageChat } from 'aai-embed-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from '@/utils/navigation'
 
 // Project import
 import LoginDialog from '@/ui-component/dialog/LoginDialog'

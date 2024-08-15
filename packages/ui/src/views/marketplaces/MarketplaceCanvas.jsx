@@ -1,9 +1,10 @@
+'use client'
 import { useEffect, useRef } from 'react'
 import ReactFlow, { Controls, Background, useNodesState, useEdgesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 import '@/views/canvas/index.css'
 
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from '@/utils/navigation'
 
 // material-ui
 import { Toolbar, Box, AppBar } from '@mui/material'
@@ -34,7 +35,6 @@ const MarketplaceCanvas = () => {
     const reactFlowWrapper = useRef(null)
 
     // ==============================|| useEffect ||============================== //
-
     useEffect(() => {
         if (flowData) {
             const initialFlow = JSON.parse(flowData)
@@ -52,7 +52,7 @@ const MarketplaceCanvas = () => {
         const templateFlowData = JSON.stringify(flowData)
         navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, { state: { templateFlowData, templateName, parentChatflowId: id } })
     }
-
+    if (!flowData) return null
     return (
         <>
             <Box>
@@ -73,7 +73,7 @@ const MarketplaceCanvas = () => {
                         />
                     </Toolbar>
                 </AppBar>
-                <Box sx={{ pt: '70px', height: '100vh', width: '100%' }}>
+                <Box sx={{ height: '100vh', width: '100%' }}>
                     <div className='reactflow-parent-wrapper'>
                         <div className='reactflow-wrapper' ref={reactFlowWrapper}>
                             <ReactFlow

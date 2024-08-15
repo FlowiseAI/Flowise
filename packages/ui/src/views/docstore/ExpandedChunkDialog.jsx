@@ -13,7 +13,7 @@ import { IconEdit, IconTrash, IconX, IconLanguage } from '@tabler/icons-react'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 
 const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDeleteChunk, isReadOnly }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -221,7 +221,7 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 ExpandedChunkDialog.propTypes = {

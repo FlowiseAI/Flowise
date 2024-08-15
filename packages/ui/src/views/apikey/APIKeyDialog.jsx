@@ -30,7 +30,7 @@ import apikeyApi from '@/api/apikey'
 import useNotifier from '@/utils/useNotifier'
 
 const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const theme = useTheme()
     const dispatch = useDispatch()
@@ -226,7 +226,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 APIKeyDialog.propTypes = {

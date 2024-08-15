@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, MENU_OPEN, REMOVE_DIRTY } from '@/store/actions'
 import { sanitizeChatflows } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
@@ -27,7 +28,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import AboutDialog from '@/ui-component/dialog/AboutDialog'
+const AboutDialog = dynamic(() => import('@/ui-component/dialog/AboutDialog'), { ssr: false })
 import Transitions from '@/ui-component/extended/Transitions'
 
 // assets
@@ -40,7 +41,7 @@ import chatFlowsApi from '@/api/chatflows'
 
 // Hooks
 import useApi from '@/hooks/useApi'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from '@/utils/navigation'
 
 // ==============================|| PROFILE MENU ||============================== //
 

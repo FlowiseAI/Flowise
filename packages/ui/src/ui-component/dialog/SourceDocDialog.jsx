@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from '@mui/material'
 import ReactJson from 'flowise-react-json-view'
 
 const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
+    const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const customization = useSelector((state) => state.customization)
 
     const [data, setData] = useState({})
@@ -45,7 +45,7 @@ const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
         </Dialog>
     ) : null
 
-    return createPortal(component, portalElement)
+    return portalElement ? createPortal(component, portalElement) : null
 }
 
 SourceDocDialog.propTypes = {

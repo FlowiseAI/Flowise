@@ -22,7 +22,10 @@ export default async function RootLayout({
 
     return (
         <html className={poppins.className} lang='en' style={{ height: '100%', width: '100%', flex: 1, display: 'flex' }}>
-            <body style={{ height: '100%', width: '100%', flex: 1, display: 'flex' }}>{children}</body>
+            <body style={{ height: '100%', width: '100%', flex: 1, display: 'flex' }}>
+                <div id='portal' />
+                {children}
+            </body>
         </html>
     )
 }
