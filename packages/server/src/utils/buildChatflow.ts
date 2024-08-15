@@ -328,7 +328,14 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
             }
 
-            const reactFlowNodeData: INodeData = resolveVariables(nodeToExecute.data, reactFlowNodes, incomingInput.question, chatHistory)
+            const reactFlowNodeData: INodeData = await resolveVariables(
+                appServer.AppDataSource,
+                nodeToExecute.data,
+                reactFlowNodes,
+                incomingInput.question,
+                chatHistory,
+                incomingInput.overrideConfig
+            )
             nodeToExecuteData = reactFlowNodeData
 
             appServer.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
