@@ -523,10 +523,10 @@ const Canvas = () => {
 
     return (
         <>
-            <Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
                 <AppBar
                     enableColorOnDark
-                    position='absolute'
+                    position='relative'
                     color='inherit'
                     elevation={1}
                     sx={{
