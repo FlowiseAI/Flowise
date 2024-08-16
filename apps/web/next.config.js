@@ -10,23 +10,38 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
  */
 let nextConfig = withBundleAnalyzer({
     experimental: {
-        serverComponentsExternalPackages: ['@aws-sdk/client-s3', '@aws-sdk/signature-v4-crt', '@aws-sdk/s3-request-presigner']
+        turbo: {
+            resolveAlias: {
+                '@db/*': '../../packages-answers/db/src/*',
+                '@utils/*': '../../packages-answers/utils/src/*',
+                '@ui/*': '../../packages-answers/ui/src/*',
+                '@types/*': '../../packages-answers/types/src/*',
+                '@tsconfig/*': '../../packages-answers/tsconfig/src/*',
+                '@/views/*': '../../packages/ui/src/views/*',
+                '@/utils/*': '../../packages/ui/src/utils/*',
+                '@/assets/*': '../../packages/ui/src/assets/*',
+                '@/hooks/*': '../../packages/ui/src/hooks/*',
+                '@/menu-items/*': '../../packages/ui/src/menu-items/*',
+                '@/store/*': '../../packages/ui/src/store/*',
+                '@/themes/*': '../../packages/ui/src/themes/*'
+            }
+        },
+        serverComponentsExternalPackages: ['canvas', '@aws-sdk/client-s3', '@aws-sdk/signature-v4-crt', '@aws-sdk/s3-request-presigner']
     },
-
     typescript: {
         ignoreBuildErrors: true
     },
 
     reactStrictMode: true,
     transpilePackages: ['ui', 'db', 'utils'],
-    modularizeImports: {
-        // '@mui/material/?(((\\w*)?/?)*)': {
-        //   transform: '@mui/material/{{ matches.[1] }}/{{member}}'
-        // },
-        '@mui/icons-material/?(((\\w*)?/?)*)': {
-            transform: '@mui/icons-material/{{ matches.[1] }}/{{member}}'
-        }
-    },
+    // modularizeImports: {
+    //     '@mui/material': {
+    //         transform: '@mui/material/{{member}}'
+    //     },
+    //     '@mui/icons-material': {
+    //         transform: '@mui/icons-material/{{member}}'
+    //     }
+    // },
     images: {
         remotePatterns: [
             {

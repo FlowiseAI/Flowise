@@ -1,5 +1,7 @@
 import React from 'react'
-import View from '@/views/marketplaces/MarketplaceCanvas'
+import dynamic from 'next/dynamic'
+
+const View = dynamic(() => import('@/views/marketplaces/MarketplaceCanvas'), { ssr: false })
 
 const Page = () => {
     return (

@@ -1,5 +1,4 @@
 const checkOwnership = async (entryOrArray: any | Array<any>, userId?: string, organizationId?: string) => {
-    console.log('checkOwnership', { entryOrArray, userId, organizationId })
     const checkEntry = (entry?: any) => {
         if (entry?.isPublic || entry?.userId === userId) {
             return true
