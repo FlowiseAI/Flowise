@@ -162,17 +162,19 @@ class Agent_SeqAgents implements INode {
     baseClasses: string[]
     inputs?: INodeParams[]
     badge?: string
+    documentation?: string
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Agent'
         this.name = 'seqAgent'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Agent'
         this.icon = 'seqAgent.png'
         this.category = 'Sequential Agents'
         this.description = 'Agent that can execute tools'
         this.baseClasses = [this.type]
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-4.-agent-node'
         this.inputs = [
             {
                 label: 'Agent Name',
@@ -201,12 +203,13 @@ class Agent_SeqAgents implements INode {
                 label: 'Tools',
                 name: 'tools',
                 type: 'Tool',
-                list: true
+                list: true,
+                optional: true
             },
             {
-                label: 'Start | Agent | LLM | Tool Node',
+                label: 'Start | Agent | Condition | LLM | Tool Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | LLMNode | ToolNode',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode',
                 list: true
             },
             {

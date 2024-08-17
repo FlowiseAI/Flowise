@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "2.0.1",
+    "version": "2.0.5",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -35,8 +35,10 @@
         "@google/generative-ai": "^0.15.0",
         "@huggingface/inference": "^2.6.1",
         "@langchain/anthropic": "^0.2.1",
+        "@langchain/aws": "^0.0.9",
         "@langchain/cohere": "^0.0.7",
         "@langchain/community": "^0.2.17",
+        "@langchain/core": "0.2.18",
         "@langchain/exa": "^0.0.5",
         "@langchain/google-genai": "^0.0.22",
         "@langchain/google-vertexai": "^0.0.19",

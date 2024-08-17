@@ -184,6 +184,45 @@ class Pinecone_VectorStores implements INode {
             } catch (e) {
                 throw new Error(e)
             }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const _index = nodeData.inputs?.pineconeIndex as string
+            const pineconeNamespace = nodeData.inputs?.pineconeNamespace as string
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const pineconeTextKey = nodeData.inputs?.pineconeTextKey as string
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
+
+            const client = getPineconeClient({ apiKey: pineconeApiKey })
+
+            const pineconeIndex = client.Index(_index)
+
+            const obj: PineconeStoreParams = {
+                pineconeIndex,
+                textKey: pineconeTextKey || 'text'
+            }
+
+            if (pineconeNamespace) obj.namespace = pineconeNamespace
+            const pineconeStore = new PineconeStore(embeddings, obj)
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = pineconeNamespace
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await pineconeStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    const pineconeStore = new PineconeStore(embeddings, obj)
+                    await pineconeStore.delete({ ids })
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
         }
     }
 
