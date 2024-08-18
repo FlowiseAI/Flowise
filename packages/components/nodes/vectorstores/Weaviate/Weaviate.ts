@@ -200,6 +200,53 @@ class Weaviate_VectorStores implements INode {
             } catch (e) {
                 throw new Error(e)
             }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const weaviateScheme = nodeData.inputs?.weaviateScheme as string
+            const weaviateHost = nodeData.inputs?.weaviateHost as string
+            const weaviateIndex = nodeData.inputs?.weaviateIndex as string
+            const weaviateTextKey = nodeData.inputs?.weaviateTextKey as string
+            const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
+
+            const clientConfig: any = {
+                scheme: weaviateScheme,
+                host: weaviateHost
+            }
+            if (weaviateApiKey) clientConfig.apiKey = new ApiKey(weaviateApiKey)
+
+            const client: WeaviateClient = weaviate.client(clientConfig)
+
+            const obj: WeaviateLibArgs = {
+                //@ts-ignore
+                client,
+                indexName: weaviateIndex
+            }
+
+            if (weaviateTextKey) obj.textKey = weaviateTextKey
+            if (weaviateMetadataKeys) obj.metadataKeys = JSON.parse(weaviateMetadataKeys.replace(/\s/g, ''))
+
+            const weaviateStore = new WeaviateStore(embeddings, obj)
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = weaviateTextKey ? weaviateIndex + '_' + weaviateTextKey : weaviateIndex
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await weaviateStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    await weaviateStore.delete({ ids })
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
         }
     }
 

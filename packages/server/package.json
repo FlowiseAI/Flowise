@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.0.1",
+    "version": "2.0.5",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -70,6 +70,7 @@
         "flowise-ui": "workspace:^",
         "http-errors": "^2.0.0",
         "http-status-codes": "^2.3.0",
+        "langchainhub": "^0.0.11",
         "lodash": "^4.17.21",
         "moment": "^2.29.3",
         "moment-timezone": "^0.5.34",

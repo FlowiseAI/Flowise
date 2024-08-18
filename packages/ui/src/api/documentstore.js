@@ -1,7 +1,7 @@
 import client from './client'
 
 const getAllDocumentStores = () => client.get('/document-store/stores')
-const getDocumentLoaders = () => client.get('/document-store/loaders')
+const getDocumentLoaders = () => client.get('/document-store/components/loaders')
 const getSpecificDocumentStore = (id) => client.get(`/document-store/store/${id}`)
 const createDocumentStore = (body) => client.post(`/document-store/store`, body)
 const updateDocumentStore = (id, body) => client.put(`/document-store/store/${id}`, body)
@@ -16,6 +16,15 @@ const getFileChunks = (storeId, fileId, pageNo) => client.get(`/document-store/c
 const previewChunks = (body) => client.post('/document-store/loader/preview', body)
 const processChunks = (body) => client.post(`/document-store/loader/process`, body)
 
+const insertIntoVectorStore = (body) => client.post(`/document-store/vectorstore/insert`, body)
+const saveVectorStoreConfig = (body) => client.post(`/document-store/vectorstore/save`, body)
+const updateVectorStoreConfig = (body) => client.post(`/document-store/vectorstore/update`, body)
+const deleteVectorStoreDataFromStore = (storeId) => client.delete(`/document-store/vectorstore/${storeId}`)
+const queryVectorStore = (body) => client.post(`/document-store/vectorstore/query`, body)
+const getVectorStoreProviders = () => client.get('/document-store/components/vectorstore')
+const getEmbeddingProviders = () => client.get('/document-store/components/embeddings')
+const getRecordManagerProviders = () => client.get('/document-store/components/recordmanager')
+
 export default {
     getAllDocumentStores,
     getSpecificDocumentStore,
@@ -28,5 +37,13 @@ export default {
     getDocumentLoaders,
     deleteChunkFromStore,
     editChunkFromStore,
-    deleteDocumentStore
+    deleteDocumentStore,
+    insertIntoVectorStore,
+    getVectorStoreProviders,
+    getEmbeddingProviders,
+    getRecordManagerProviders,
+    saveVectorStoreConfig,
+    queryVectorStore,
+    deleteVectorStoreDataFromStore,
+    updateVectorStoreConfig
 }
