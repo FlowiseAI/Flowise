@@ -94,6 +94,7 @@
         "lodash": "^4.17.21",
         "lunary": "^0.6.16",
         "mammoth": "^1.5.1",
+        "meilisearch": "^0.41.0",
         "moment": "^2.29.3",
         "mongodb": "6.3.0",
         "mysql2": "^3.9.2",
