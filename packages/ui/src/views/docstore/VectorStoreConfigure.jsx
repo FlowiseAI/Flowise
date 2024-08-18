@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from '@/utils/navigation'
+import { useNavigate, usePathname } from '@/utils/navigation'
 import { cloneDeep } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
@@ -366,7 +366,8 @@ const VectorStoreConfigure = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [saveVectorStoreConfigApi.error])
 
-    const URLpath = document.location.pathname.toString().split('/')
+    const pathname = usePathname()
+    const URLpath = pathname.split('/')
     const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
     useEffect(() => {
         getSpecificDocumentStoreApi.request(storeId)

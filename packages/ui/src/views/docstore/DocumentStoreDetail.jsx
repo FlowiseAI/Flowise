@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as PropTypes from 'prop-types'
-import { useNavigate } from '@/utils/navigation'
+import { useNavigate, usePathname } from '@/utils/navigation'
 
 // material-ui
 import {
@@ -145,7 +145,8 @@ const DocumentStoreDetails = () => {
     const [showDeleteDocStoreDialog, setShowDeleteDocStoreDialog] = useState(false)
     const [deleteDocStoreDialogProps, setDeleteDocStoreDialogProps] = useState({})
 
-    const URLpath = document.location.pathname.toString().split('/')
+    const pathname = usePathname()
+    const URLpath = pathname.split('/')
     const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
 
     const openPreviewSettings = (id) => {

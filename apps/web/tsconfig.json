@@ -21,7 +21,8 @@
             "@/store": ["../../packages/ui/src/store"],
             "@/themes": ["../../packages/ui/src/themes"],
             "@/config": ["../../packages/ui/src/config"],
-            "@/ui-component/*": ["../../packages/ui/src/ui-component/*"]
+            "@/ui-component/*": ["../../packages/ui/src/ui-component/*"],
+            "@/*": ["../../packages/ui/src/*"]
         },
         "plugins": [
             {

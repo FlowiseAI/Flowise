@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { FullPageChat } from 'aai-embed-react'
-import { useNavigate } from '@/utils/navigation'
+import { useNavigate, usePathname } from '@/utils/navigation'
 
 // Project import
 import LoginDialog from '@/ui-component/dialog/LoginDialog'
@@ -18,7 +18,8 @@ import { baseURL } from '@/store/constant'
 // ==============================|| Chatbot ||============================== //
 
 const ChatbotFull = () => {
-    const URLpath = document.location.pathname.toString().split('/')
+    const pathname = usePathname()
+    const URLpath = pathname.split('/')
     const chatflowId = URLpath[URLpath.length - 1] === 'chatbot' ? '' : URLpath[URLpath.length - 1]
     const navigate = useNavigate()
 
