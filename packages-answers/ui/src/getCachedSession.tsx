@@ -1,4 +1,4 @@
-import React, { cache } from 'react'
+import { cache } from 'react'
 import { prisma } from '@db/client'
 import auth0 from '@utils/auth/auth0'
 import * as jose from 'jose'
@@ -14,15 +14,18 @@ const getCachedSession = cache(async (req?: any, res: any = new Response()): Pro
     }
     if (!session) {
         try {
-            let token = req ? req.headers.get('authorization')?.split(' ')[1] : ''
+            let token = req && req.headers ? req.headers.get('authorization')?.split(' ')[1] : ''
             if (!req) {
                 const { headers } = require('next/headers')
-                token = headers?.get('authorization')?.split(' ')[1] ?? token
+                if (headers?.get) token = headers?.get('authorization')?.split(' ')[1] ?? token
             }
-            const jwks = jose.createRemoteJWKSet(new URL(process.env.AUTH0_JWKS_URI!))
 
-            const result = await jose.jwtVerify(token.replace('Bearer ', ''), jwks)
-            session = { user: result.payload }
+            if (token) {
+                const jwks = jose.createRemoteJWKSet(new URL(process.env.AUTH0_JWKS_URI!))
+
+                const result = await jose.jwtVerify(token.replace('Bearer ', ''), jwks)
+                session = { user: result.payload }
+            }
         } catch (err: any) {
             console.debug('next/headers->Error', err.message)
         }

@@ -1,11 +1,9 @@
-import getCachedSession from '@ui/getCachedSession'
 import AppProvider from 'flowise-ui/src/AppProvider'
 import MinimalLayout from 'flowise-ui/src/layout/MinimalLayout'
 
-const StudioLayout = async ({ children }) => {
-    const { user } = await getCachedSession()
+const StudioLayout = ({ children }: { children: React.ReactElement }) => {
     return (
-        <AppProvider user={user}>
+        <AppProvider>
             <MinimalLayout>{children}</MinimalLayout>
         </AppProvider>
     )
