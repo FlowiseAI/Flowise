@@ -84,6 +84,14 @@ class MeilisearchRetriever_node implements INode {
                 description: 'percentage of sematic reasoning in meilisearch hybrid search, default is 0.75',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Search Filter',
+                name: 'searchFilter',
+                type: 'string',
+                description: 'search filter to apply on searchable attributes',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -218,6 +226,7 @@ class MeilisearchRetriever_node implements INode {
         const K = nodeData.inputs?.K as string
         const semanticRatio = nodeData.inputs?.semanticRatio as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const searchFilter = nodeData.inputs?.searchFilter as string
 
         const experimentalEndpoint = host + '/experimental-features/'
         const token = meilisearchAdminApiKey
@@ -252,11 +261,11 @@ class MeilisearchRetriever_node implements INode {
         const hybridsearchretriever = new MeilisearchRetriever(
             host,
             meilisearchSearchApiKey,
-            meilisearchAdminApiKey,
             indexUid,
             K,
             semanticRatio,
-            embeddings
+            embeddings,
+            searchFilter
         )
         return hybridsearchretriever
     }

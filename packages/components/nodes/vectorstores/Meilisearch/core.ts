@@ -8,28 +8,28 @@ export interface CustomRetrieverInput extends BaseRetrieverInput {}
 export class MeilisearchRetriever extends BaseRetriever {
     lc_namespace = ['langchain', 'retrievers']
     private readonly meilisearchSearchApiKey: any
-    private readonly meilisearchAdminApiKey: any
     private readonly host: any
     private indexUid: string
     private K: string
     private semanticRatio: string
     private embeddings: Embeddings
+    private searchFilter: string
     constructor(
         host: string,
         meilisearchSearchApiKey: any,
-        meilisearchAdminApiKey: any,
         indexUid: string,
         K: string,
         semanticRatio: string,
         embeddings: Embeddings,
+        searchFilter: string,
         fields?: CustomRetrieverInput
     ) {
         super(fields)
         this.meilisearchSearchApiKey = meilisearchSearchApiKey
-        this.meilisearchAdminApiKey = meilisearchAdminApiKey
         this.host = host
         this.indexUid = indexUid
         this.embeddings = embeddings
+        this.searchFilter = searchFilter
 
         if (semanticRatio == '') {
             this.semanticRatio = '0.75'
@@ -62,6 +62,7 @@ export class MeilisearchRetriever extends BaseRetriever {
         const questionEmbedding = await this.embeddings.embedQuery(query)
         // Perform the search
         const searchResults = await index.search(query, {
+            filter: this.searchFilter,
             vector: questionEmbedding,
             limit: parseInt(this.K), // Optional: Limit the number of results
             attributesToRetrieve: ['*'], // Optional: Specify which fields to retrieve
