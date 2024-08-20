@@ -8,6 +8,7 @@ export interface CustomRetrieverInput extends BaseRetrieverInput {}
 export class MeilisearchRetriever extends BaseRetriever {
     lc_namespace = ['langchain', 'retrievers']
     private readonly meilisearchSearchApiKey: any
+    private readonly meilisearchAdminApiKey: any
     private readonly host: any
     private indexUid: string
     private K: string
@@ -16,6 +17,7 @@ export class MeilisearchRetriever extends BaseRetriever {
     constructor(
         host: string,
         meilisearchSearchApiKey: any,
+        meilisearchAdminApiKey: any,
         indexUid: string,
         K: string,
         semanticRatio: string,
@@ -24,12 +26,13 @@ export class MeilisearchRetriever extends BaseRetriever {
     ) {
         super(fields)
         this.meilisearchSearchApiKey = meilisearchSearchApiKey
+        this.meilisearchAdminApiKey = meilisearchAdminApiKey
         this.host = host
         this.indexUid = indexUid
         this.embeddings = embeddings
 
         if (semanticRatio == '') {
-            this.semanticRatio = '0.5'
+            this.semanticRatio = '0.75'
         } else {
             let semanticRatio_Float = parseFloat(semanticRatio)
             if (semanticRatio_Float > 1.0) {
@@ -80,7 +83,8 @@ export class MeilisearchRetriever extends BaseRetriever {
                     new Document({
                         pageContent: hit.pageContent,
                         metadata: {
-                            objectID: hit.objectID
+                            objectID: hit.objectID,
+                            ...hit.metadata
                         }
                     })
             )
