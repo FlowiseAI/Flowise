@@ -64,6 +64,12 @@ class MeilisearchRetriever_node implements INode {
                 description: 'UID for the index to answer from'
             },
             {
+                label: 'Delete Index if exists',
+                name: 'deleteIndex',
+                type: 'boolean',
+                optional: true
+            },
+            {
                 label: 'Top K',
                 name: 'K',
                 type: 'number',
@@ -104,6 +110,7 @@ class MeilisearchRetriever_node implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const host = nodeData.inputs?.host as string
             const indexUid = nodeData.inputs?.indexUid as string
+            const deleteIndex = nodeData.inputs?.deleteIndex as boolean
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             let embeddingDimension: number = 384
             const client = new Meilisearch({
@@ -132,8 +139,27 @@ class MeilisearchRetriever_node implements INode {
                     finalDocs.push(documentForIndexing)
                 }
             }
-            let index: any
             let taskUid_created: number = 0
+
+            if (deleteIndex) {
+                try {
+                    const deleteResponse = await client.deleteIndex(indexUid)
+                    taskUid_created = deleteResponse.taskUid
+                    let deleteTaskStatus = await client.getTask(taskUid_created)
+
+                    while (deleteTaskStatus.status !== 'succeeded') {
+                        deleteTaskStatus = await client.getTask(taskUid_created)
+                        if (deleteTaskStatus.error !== null || deleteTaskStatus.status === 'failed') {
+                            throw new Error('Error during index deletion task: ' + deleteTaskStatus.error)
+                        }
+                    }
+                } catch (error) {
+                    console.error(error)
+                    console.warn('Error occured when deleting your index, if it did not exist, we will create one for you... ')
+                }
+            }
+
+            let index: any
 
             try {
                 index = await client.getIndex(indexUid)
@@ -147,7 +173,6 @@ class MeilisearchRetriever_node implements INode {
 
                     while (createTaskStatus.status !== 'succeeded') {
                         createTaskStatus = await client.getTask(taskUid_created)
-                        console.log('create index status ', createTaskStatus)
                         if (createTaskStatus.error !== null || createTaskStatus.status === 'failed') {
                             throw new Error('Error during index creation task: ' + createTaskStatus.error)
                         }
@@ -173,9 +198,8 @@ class MeilisearchRetriever_node implements INode {
                 let AddTaskStatus = await client.getTask(taskUid_created)
                 while (AddTaskStatus.status !== 'succeeded') {
                     AddTaskStatus = await client.getTask(taskUid_created)
-                    console.log('add documents status ', AddTaskStatus)
                     if (AddTaskStatus.error !== null || AddTaskStatus.status === 'failed') {
-                        throw new Error('Error during index creation task: ' + AddTaskStatus.error)
+                        throw new Error('Error during documents adding task: ' + AddTaskStatus.error)
                     }
                 }
                 index = await client.getIndex(indexUid)
