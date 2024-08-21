@@ -66,7 +66,7 @@ class SqlDatabaseChain_Chains implements INode {
                 label: 'Connection string or file path (sqlite only)',
                 name: 'url',
                 type: 'string',
-                placeholder: '1270.0.0.1:5432/chinook'
+                placeholder: '127.0.0.1:5432/chinook'
             },
             {
                 label: 'Include Tables',
