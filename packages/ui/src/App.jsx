@@ -33,7 +33,10 @@ const App = () => {
                               return a & a
                           }, 0)
                         : ''
-                }`
+                }`,
+                {
+                    roles: user['https://theanswer.ai/roles']?.join(',')
+                }
             )
         }
     }, [user, flagsmith])
