@@ -25,6 +25,7 @@ export interface IUser {
     organizationId?: string
     updatedDate: Date
     createdDate: Date
+    permissions?: string[]
 }
 export interface IOrganization {
     id: string

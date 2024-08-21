@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Entity, Column, Index, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, Index, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm'
 import { ChatflowType, IChatFlow } from '../../Interface'
 
 export enum ChatflowVisibility {
@@ -80,4 +80,7 @@ export class ChatFlow implements IChatFlow {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+ @DeleteDateColumn()
+  deletedDate: Date
 }

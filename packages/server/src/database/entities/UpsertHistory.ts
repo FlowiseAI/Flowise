@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, DeleteDateColumn } from 'typeorm'
 import { IUpsertHistory } from '../../Interface'
 
 @Entity()
@@ -19,4 +19,7 @@ export class UpsertHistory implements IUpsertHistory {
 
     @CreateDateColumn()
     date: Date
+
+    @DeleteDateColumn()
+    deletedDate: Date
 }

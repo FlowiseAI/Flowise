@@ -83,7 +83,7 @@ export const authenticationHandlerMiddleware =
 
             await userRepo.save(user)
 
-            req.user = user // Attach user entity to request for downstream use
+            req.user = { ...authUser, ...user } // Attach user entity to request for downstream use
             return next()
         })
     }

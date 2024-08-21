@@ -17,6 +17,8 @@ import useApi from '@/hooks/useApi'
 
 // const
 import { baseURL } from '@/store/constant'
+import { useAuth0 } from '@auth0/auth0-react'
+import { useFlags } from 'flagsmith/react'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -41,7 +43,8 @@ TabPanel.propTypes = {
 
 const Chatflows = () => {
     const navigate = useNavigate()
-
+    const { user } = useAuth0()
+    const flags = useFlags(['org:manage'])
     const [tabValue, setTabValue] = useState(0)
     const [isLoading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -50,6 +53,7 @@ const Chatflows = () => {
     const [myChatflows, setMyChatflows] = useState([])
     const [answerAIChatflows, setAnswerAIChatflows] = useState([])
     const [communityChatflows, setCommunityChatflows] = useState([])
+    const [organizationChatflows, setOrganizationChatflows] = useState([])
 
     const [search, setSearch] = useState('')
     const [categoryFilter, setCategoryFilter] = useState('All')
@@ -126,8 +130,9 @@ const Chatflows = () => {
 
             const myChatflowsData = getAllChatflowsApi.data
             const { processedImages: myImages, processedNodeTypes: myNodeTypes } = processFlowData(myChatflowsData)
-            setMyChatflows(myChatflowsData)
-
+            console.log('User', { myChatflowsData, user, flags })
+            setMyChatflows(myChatflowsData?.filter((flow) => flow.isOwner))
+            setOrganizationChatflows(myChatflowsData?.filter((flow) => !flow.isOwner))
             const marketplaceChatflows = getMarketplaceChatflowsApi.data
             const answerAIFlows = marketplaceChatflows.filter((flow) => flow.type === 'Chatflow')
             const communityFlows = marketplaceChatflows.filter((flow) => flow.type === 'Chatflow Community')
@@ -145,7 +150,7 @@ const Chatflows = () => {
             const uniqueCategories = ['All', ...new Set(allFlows.flatMap((item) => (item?.category ? item.category.split(';') : [])))]
             setCategories(uniqueCategories)
         }
-    }, [getAllChatflowsApi.data, getMarketplaceChatflowsApi.data])
+    }, [flags, user, getAllChatflowsApi.data, getMarketplaceChatflowsApi.data])
 
     const filterChatflows = (flows, search, categoryFilter) => {
         const searchRegex = new RegExp(search, 'i') // 'i' flag for case-insensitive search
@@ -209,6 +214,7 @@ const Chatflows = () => {
                         <Tab label='My Chatflows' />
                         <Tab label='AnswerAI Supported' />
                         <Tab label='Community' />
+                        {flags?.['org:manage']?.enabled ? <Tab label='All Chatflows' /> : null}
                     </Tabs>
                 </Box>
                 <TabPanel value={tabValue} index={0}>
@@ -245,6 +251,18 @@ const Chatflows = () => {
                         setError={setError}
                         type='marketplace'
                         onItemClick={goToMarketplaceCanvas}
+                    />
+                </TabPanel>
+                <TabPanel value={tabValue} index={3}>
+                    <FlowListView
+                        data={organizationChatflows}
+                        images={images}
+                        nodeTypes={nodeTypes}
+                        isLoading={isLoading}
+                        updateFlowsApi={getMarketplaceChatflowsApi}
+                        setError={setError}
+                        type='chatflows'
+                        onItemClick={goToCanvas}
                     />
                 </TabPanel>
             </Box>
