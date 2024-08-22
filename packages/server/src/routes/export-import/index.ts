@@ -3,6 +3,6 @@ import exportImportController from '../../controllers/export-import'
 const router = express.Router()
 
 // READ
-router.get('/', exportImportController.exportAll)
+router.get('/export/all', exportImportController.exportAll)
 
 export default router
