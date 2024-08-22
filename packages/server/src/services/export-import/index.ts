@@ -3,21 +3,19 @@ import { ChatFlow } from '../../database/entities/ChatFlow'
 import { Tool } from '../../database/entities/Tool'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import chatflowService from '../chatflows'
+import toolsService from '../tools'
 
 const exportAll = async (): Promise<{ Tool: Tool[]; ChatFlow: ChatFlow[]; MultiAgent: ChatFlow[] }> => {
     try {
-        const MULTIAGENT = 'MULTIAGENT'
-        const appServer = getRunningExpressApp()
         // step 1 - get all tool
-        const allTool = await appServer.AppDataSource.getRepository(Tool).find()
+        const allTool: Tool[] = await toolsService.getAllTools()
 
-        // step 2 - get all chatflow
-        const chatFlows = await appServer.AppDataSource.getRepository(ChatFlow).find()
-        const allChatflow = chatFlows.filter((chatflow) => chatflow.type != MULTIAGENT)
+        // step 2 - get all chatFlow
+        const allChatflow: ChatFlow[] = await chatflowService.getAllChatflows()
 
         // step 3 - get all multiAgent
-        const allMultiAgent = chatFlows.filter((chatflow) => chatflow.type === MULTIAGENT)
+        const allMultiAgent: ChatFlow[] = await chatflowService.getAllChatflows('MULTIAGENT')
 
         return { Tool: allTool, ChatFlow: allChatflow, MultiAgent: allMultiAgent }
     } catch (error) {
