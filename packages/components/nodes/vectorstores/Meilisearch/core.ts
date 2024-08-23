@@ -13,6 +13,7 @@ export class MeilisearchRetriever extends BaseRetriever {
     private K: string
     private semanticRatio: string
     private embeddings: Embeddings
+    private searchFilter: string
     constructor(
         host: string,
         meilisearchSearchApiKey: any,
@@ -20,6 +21,7 @@ export class MeilisearchRetriever extends BaseRetriever {
         K: string,
         semanticRatio: string,
         embeddings: Embeddings,
+        searchFilter: string,
         fields?: CustomRetrieverInput
     ) {
         super(fields)
@@ -27,9 +29,10 @@ export class MeilisearchRetriever extends BaseRetriever {
         this.host = host
         this.indexUid = indexUid
         this.embeddings = embeddings
+        this.searchFilter = searchFilter
 
         if (semanticRatio == '') {
-            this.semanticRatio = '0.5'
+            this.semanticRatio = '0.75'
         } else {
             let semanticRatio_Float = parseFloat(semanticRatio)
             if (semanticRatio_Float > 1.0) {
@@ -59,6 +62,7 @@ export class MeilisearchRetriever extends BaseRetriever {
         const questionEmbedding = await this.embeddings.embedQuery(query)
         // Perform the search
         const searchResults = await index.search(query, {
+            filter: this.searchFilter,
             vector: questionEmbedding,
             limit: parseInt(this.K), // Optional: Limit the number of results
             attributesToRetrieve: ['*'], // Optional: Specify which fields to retrieve
@@ -80,7 +84,8 @@ export class MeilisearchRetriever extends BaseRetriever {
                     new Document({
                         pageContent: hit.pageContent,
                         metadata: {
-                            objectID: hit.objectID
+                            objectID: hit.objectID,
+                            ...hit.metadata
                         }
                     })
             )
