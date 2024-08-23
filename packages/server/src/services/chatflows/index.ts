@@ -109,6 +109,8 @@ const getAllChatflows = async (type?: ChatflowType): Promise<IChatFlow[]> => {
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
         if (type === 'MULTIAGENT') {
             return dbResponse.filter((chatflow) => chatflow.type === type)
+        } else if (type === 'ALL') {
+            return dbResponse
         }
         return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
     } catch (error) {

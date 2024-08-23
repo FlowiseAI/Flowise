@@ -6,18 +6,15 @@ import { getErrorMessage } from '../../errors/utils'
 import chatflowService from '../chatflows'
 import toolsService from '../tools'
 
-const exportAll = async (): Promise<{ Tool: Tool[]; ChatFlow: ChatFlow[]; MultiAgent: ChatFlow[] }> => {
+const exportAll = async (): Promise<{ FileDefaultName: string; Tool: Tool[]; ChatFlow: ChatFlow[] }> => {
     try {
         // step 1 - get all tool
         const allTool: Tool[] = await toolsService.getAllTools()
 
-        // step 2 - get all chatFlow
-        const allChatflow: ChatFlow[] = await chatflowService.getAllChatflows()
+        // step 2 - get all ChatFlow and MultiAgent
+        const allChatflow: ChatFlow[] = await chatflowService.getAllChatflows('ALL')
 
-        // step 3 - get all multiAgent
-        const allMultiAgent: ChatFlow[] = await chatflowService.getAllChatflows('MULTIAGENT')
-
-        return { Tool: allTool, ChatFlow: allChatflow, MultiAgent: allMultiAgent }
+        return { FileDefaultName: 'AllData.json', Tool: allTool, ChatFlow: allChatflow }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

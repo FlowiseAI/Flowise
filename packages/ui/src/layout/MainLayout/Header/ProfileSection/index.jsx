@@ -1,9 +1,10 @@
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, MENU_OPEN, REMOVE_DIRTY } from '@/store/actions'
-import { sanitizeChatflows } from '@/utils/genericHelper'
+import { exportData, stringify } from '@/utils/exportImport'
 import useNotifier from '@/utils/useNotifier'
 import PropTypes from 'prop-types'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+
 // material-ui
 import {
     Avatar,
@@ -36,6 +37,7 @@ import './index.css'
 
 //API
 import chatFlowsApi from '@/api/chatflows'
+import exportImportApi from '@/api/exportimport'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -139,12 +141,11 @@ const ProfileSection = ({ username, handleLogout }) => {
     const importAllChatflows = () => {
         inputRef.current.click()
     }
-    const getAllChatflowsApi = useApi(chatFlowsApi.getAllChatflows)
-
-    const exportChatflowsSuccess = () => {
+    const exportAll = useApi(exportImportApi.exportAll)
+    const exportAllSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: `Export chatflows successful`,
+            message: `Export All successful`,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -156,24 +157,24 @@ const ProfileSection = ({ username, handleLogout }) => {
             }
         })
     }
-
     useEffect(() => {
-        if (getAllChatflowsApi.error) errorFailed(`Failed to export Chatflows: ${getAllChatflowsApi.error.response.data.message}`)
-        if (getAllChatflowsApi.data) {
-            const sanitizedChatflows = sanitizeChatflows(getAllChatflowsApi.data)
-            const dataStr = JSON.stringify({ Chatflows: sanitizedChatflows }, null, 2)
-            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+        if (exportAll.error) errorFailed(`Failed to export all: ${exportAll.error.response.data.message}`)
+        if (exportAll.data) {
+            try {
+                const dataStr = stringify(exportData(exportAll.data))
+                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
-            const exportFileDefaultName = 'AllChatflows.json'
-
-            const linkElement = document.createElement('a')
-            linkElement.setAttribute('href', dataUri)
-            linkElement.setAttribute('download', exportFileDefaultName)
-            linkElement.click()
-            exportChatflowsSuccess()
+                const linkElement = document.createElement('a')
+                linkElement.setAttribute('href', dataUri)
+                linkElement.setAttribute('download', exportAll.data.FileDefaultName)
+                linkElement.click()
+                exportAllSuccess()
+            } catch (error) {
+                errorFailed(`Failed to export all: ${error}`)
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getAllChatflowsApi.error, getAllChatflowsApi.data])
+    }, [exportAll.error, exportAll.data])
 
     const prevOpen = useRef(open)
     useEffect(() => {
@@ -258,13 +259,13 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
-                                                        getAllChatflowsApi.request()
+                                                        exportAll.request()
                                                     }}
                                                 >
                                                     <ListItemIcon>
                                                         <IconFileExport stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Export Chatflows</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>Export All</Typography>} />
                                                 </ListItemButton>
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
