@@ -111,7 +111,10 @@ class ChatPromptTemplate_Prompts implements INode {
             HumanMessagePromptTemplate.fromTemplate(humanMessagePrompt)
         ])
 
-        if ((messageHistory && messageHistory === 'messageHistoryCode') || (selectedTab === 'messageHistoryCode' && messageHistoryCode)) {
+        if (
+            (messageHistory && messageHistory === 'messageHistoryCode' && messageHistoryCode) ||
+            (selectedTab === 'messageHistoryCode' && messageHistoryCode)
+        ) {
             const appDataSource = options.appDataSource as DataSource
             const databaseEntities = options.databaseEntities as IDatabaseEntity
             const vm = await getVM(appDataSource, databaseEntities, nodeData, {})
