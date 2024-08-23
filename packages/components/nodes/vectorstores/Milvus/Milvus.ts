@@ -1,45 +1,45 @@
-import { flatten } from 'lodash'
-import { DataType, ErrorCode, MetricType, IndexType } from '@zilliz/milvus2-sdk-node'
-import { Document } from '@langchain/core/documents'
-import { MilvusLibArgs, Milvus } from '@langchain/community/vectorstores/milvus'
-import { Embeddings } from '@langchain/core/embeddings'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { flatten } from 'lodash';
+import { DataType, ErrorCode, MetricType, IndexType } from '@zilliz/milvus2-sdk-node';
+import { Document } from '@langchain/core/documents';
+import { MilvusLibArgs, Milvus } from '@langchain/community/vectorstores/milvus';
+import { Embeddings } from '@langchain/core/embeddings';
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface';
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
 
 interface InsertRow {
-    [x: string]: string | number[]
+    [x: string]: string | number[];
 }
 
 class Milvus_VectorStores implements INode {
-    label: string
-    name: string
-    version: number
-    description: string
-    type: string
-    icon: string
-    category: string
-    badge: string
-    baseClasses: string[]
-    inputs: INodeParams[]
-    credential: INodeParams
-    outputs: INodeOutputsValue[]
+    label: string;
+    name: string;
+    version: number;
+    description: string;
+    type: string;
+    icon: string;
+    category: string;
+    badge: string;
+    baseClasses: string[];
+    inputs: INodeParams[];
+    credential: INodeParams;
+    outputs: INodeOutputsValue[];
 
     constructor() {
-        this.label = 'Milvus'
-        this.name = 'milvus'
-        this.version = 1.0
-        this.type = 'Milvus'
-        this.icon = 'milvus.svg'
-        this.category = 'Vector Stores'
-        this.description = `Upsert embedded data and perform similarity search upon query using Milvus, world's most advanced open-source vector database`
-        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
+        this.label = 'Milvus';
+        this.name = 'milvus';
+        this.version = 1.0;
+        this.type = 'Milvus';
+        this.icon = 'milvus.svg';
+        this.category = 'Vector Stores';
+        this.description = `Upsert embedded data and perform similarity search upon query using Milvus, world's most advanced open-source vector database`;
+        this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever'];
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             optional: true,
             credentialNames: ['milvusAuth']
-        }
+        };
         this.inputs = [
             {
                 label: 'Document',
@@ -90,8 +90,49 @@ class Milvus_VectorStores implements INode {
                 type: 'number',
                 additionalParams: true,
                 optional: true
-            }
-        ]
+            },
+            {
+                label: 'Secure',
+                name: 'secure',
+                type: 'boolean',
+                optional: true,
+                description: 'Enable secure connection to Milvus server',
+                additionalParams: true
+            },
+            {
+                label: 'Client PEM Path',
+                name: 'clientPemPath',
+                type: 'string',
+                optional: true,
+                description: 'Path to the client PEM file',
+                additionalParams: true
+            },
+            {
+                label: 'Client Key Path',
+                name: 'clientKeyPath',
+                type: 'string',
+                optional: true,
+                description: 'Path to the client key file',
+                additionalParams: true
+            },
+            {
+                label: 'CA PEM Path',
+                name: 'caPemPath',
+                type: 'string',
+                optional: true,
+                description: 'Path to the root PEM file',
+                additionalParams: true
+            },
+            {
+                label: 'Server Name',
+                name: 'serverName',
+                type: 'string',
+                optional: true,
+                description: 'Server name for the secure connection',
+                additionalParams: true
+            },
+
+        ];
         this.outputs = [
             {
                 label: 'Milvus Retriever',
@@ -103,150 +144,167 @@ class Milvus_VectorStores implements INode {
                 name: 'vectorStore',
                 baseClasses: [this.type, ...getBaseClasses(Milvus)]
             }
-        ]
+        ];
     }
 
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             // server setup
-            const address = nodeData.inputs?.milvusServerUrl as string
-            const collectionName = nodeData.inputs?.milvusCollection as string
+            const address = nodeData.inputs?.milvusServerUrl as string;
+            const collectionName = nodeData.inputs?.milvusCollection as string;
 
             // embeddings
-            const docs = nodeData.inputs?.document as Document[]
-            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const docs = nodeData.inputs?.document as Document[];
+            const embeddings = nodeData.inputs?.embeddings as Embeddings;
 
             // credential
-            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-            const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData)
-            const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData)
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+            const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData);
+            const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData);
+
+            // tls
+            const secure = nodeData.inputs?.secure as boolean;
+            const clientPemPath = nodeData.inputs?.clientPemPath as string;
+            const clientKeyPath = nodeData.inputs?.clientKeyPath as string;
+            const caPemPath = nodeData.inputs?.caPemPath as string;
+            const serverName = nodeData.inputs?.serverName as string;
 
             // init MilvusLibArgs
             const milVusArgs: MilvusLibArgs = {
                 url: address,
-                collectionName: collectionName
-            }
+                collectionName: collectionName,
+                clientConfig: {
+                    address: address,
+                    ssl: secure,
+                    tls: {
+                        rootCertPath: caPemPath,
+                        privateKeyPath: clientKeyPath,
+                        certChainPath: clientPemPath,
+                        serverName: serverName
+                    }
+                }
+            };
 
-            if (milvusUser) milVusArgs.username = milvusUser
-            if (milvusPassword) milVusArgs.password = milvusPassword
+            if (milvusUser) milVusArgs.username = milvusUser;
+            if (milvusPassword) milVusArgs.password = milvusPassword;
 
-            const flattenDocs = docs && docs.length ? flatten(docs) : []
-            const finalDocs = []
+            const flattenDocs = docs && docs.length ? flatten(docs) : [];
+            const finalDocs = [];
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                    finalDocs.push(new Document(flattenDocs[i]))
+                    finalDocs.push(new Document(flattenDocs[i]));
                 }
             }
 
             try {
-                const vectorStore = await MilvusUpsert.fromDocuments(finalDocs, embeddings, milVusArgs)
+                const vectorStore = await MilvusUpsert.fromDocuments(finalDocs, embeddings, milVusArgs);
 
                 // Avoid Illegal Invocation
                 vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: string) => {
-                    return await similaritySearchVectorWithScore(query, k, vectorStore, undefined, filter)
-                }
+                    return await similaritySearchVectorWithScore(query, k, vectorStore, undefined, filter);
+                };
 
-                return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                return { numAdded: finalDocs.length, addedDocs: finalDocs };
             } catch (e) {
-                throw new Error(e)
+                throw new Error(e);
             }
         }
-    }
+    };
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         // server setup
-        const address = nodeData.inputs?.milvusServerUrl as string
-        const collectionName = nodeData.inputs?.milvusCollection as string
-        const milvusFilter = nodeData.inputs?.milvusFilter as string
-        const textField = nodeData.inputs?.milvusTextField as string
+        const address = nodeData.inputs?.milvusServerUrl as string;
+        const collectionName = nodeData.inputs?.milvusCollection as string;
+        const milvusFilter = nodeData.inputs?.milvusFilter as string;
+        const textField = nodeData.inputs?.milvusTextField as string;
 
         // embeddings
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const topK = nodeData.inputs?.topK as string
+        const embeddings = nodeData.inputs?.embeddings as Embeddings;
+        const topK = nodeData.inputs?.topK as string;
 
         // output
-        const output = nodeData.outputs?.output as string
+        const output = nodeData.outputs?.output as string;
 
         // format data
-        const k = topK ? parseFloat(topK) : 4
+        const k = topK ? parseFloat(topK) : 4;
 
         // credential
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData)
-        const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData)
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options);
+        const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData);
+        const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData);
 
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
             url: address,
             collectionName: collectionName,
             textField: textField
-        }
+        };
 
-        if (milvusUser) milVusArgs.username = milvusUser
-        if (milvusPassword) milVusArgs.password = milvusPassword
+        if (milvusUser) milVusArgs.username = milvusUser;
+        if (milvusPassword) milVusArgs.password = milvusPassword;
 
-        const vectorStore = await Milvus.fromExistingCollection(embeddings, milVusArgs)
+        const vectorStore = await Milvus.fromExistingCollection(embeddings, milVusArgs);
 
         // Avoid Illegal Invocation
         vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: string) => {
-            return await similaritySearchVectorWithScore(query, k, vectorStore, milvusFilter, filter)
-        }
+            return await similaritySearchVectorWithScore(query, k, vectorStore, milvusFilter, filter);
+        };
 
         if (output === 'retriever') {
-            const retriever = vectorStore.asRetriever(k)
-            return retriever
+            const retriever = vectorStore.asRetriever(k);
+            return retriever;
         } else if (output === 'vectorStore') {
-            ;(vectorStore as any).k = k
+            ; (vectorStore as any).k = k;
             if (milvusFilter) {
-                ;(vectorStore as any).filter = milvusFilter
+                ; (vectorStore as any).filter = milvusFilter;
             }
-            return vectorStore
+            return vectorStore;
         }
-        return vectorStore
+        return vectorStore;
     }
 }
 
-const checkJsonString = (value: string): { isJson: boolean; obj: any } => {
+const checkJsonString = (value: string): { isJson: boolean; obj: any; } => {
     try {
-        const result = JSON.parse(value)
-        return { isJson: true, obj: result }
+        const result = JSON.parse(value);
+        return { isJson: true, obj: result };
     } catch (e) {
-        return { isJson: false, obj: null }
+        return { isJson: false, obj: null };
     }
-}
+};
 
 const similaritySearchVectorWithScore = async (query: number[], k: number, vectorStore: Milvus, milvusFilter?: string, filter?: string) => {
     const hasColResp = await vectorStore.client.hasCollection({
         collection_name: vectorStore.collectionName
-    })
+    });
     if (hasColResp.status.error_code !== ErrorCode.SUCCESS) {
-        throw new Error(`Error checking collection: ${hasColResp}`)
+        throw new Error(`Error checking collection: ${hasColResp}`);
     }
     if (hasColResp.value === false) {
-        throw new Error(`Collection not found: ${vectorStore.collectionName}, please create collection before search.`)
+        throw new Error(`Collection not found: ${vectorStore.collectionName}, please create collection before search.`);
     }
 
-    const filterStr = milvusFilter ?? filter ?? ''
+    const filterStr = milvusFilter ?? filter ?? '';
 
-    await vectorStore.grabCollectionFields()
+    await vectorStore.grabCollectionFields();
 
     const loadResp = await vectorStore.client.loadCollectionSync({
         collection_name: vectorStore.collectionName
-    })
+    });
 
     if (loadResp.error_code !== ErrorCode.SUCCESS) {
-        throw new Error(`Error loading collection: ${loadResp}`)
+        throw new Error(`Error loading collection: ${loadResp}`);
     }
 
-    const outputFields = vectorStore.fields.filter((field) => field !== vectorStore.vectorField)
+    const outputFields = vectorStore.fields.filter((field) => field !== vectorStore.vectorField);
 
     const search_params: any = {
         anns_field: vectorStore.vectorField,
         topk: k.toString(),
         metric_type: vectorStore.indexCreateParams.metric_type,
         params: vectorStore.indexSearchParams
-    }
+    };
     const searchResp = await vectorStore.client.search({
         collection_name: vectorStore.collectionName,
         search_params,
@@ -254,49 +312,49 @@ const similaritySearchVectorWithScore = async (query: number[], k: number, vecto
         vector_type: DataType.FloatVector,
         vectors: [query],
         filter: filterStr
-    })
+    });
     if (searchResp.status.error_code !== ErrorCode.SUCCESS) {
-        throw new Error(`Error searching data: ${JSON.stringify(searchResp)}`)
+        throw new Error(`Error searching data: ${JSON.stringify(searchResp)}`);
     }
-    const results: [Document, number][] = []
+    const results: [Document, number][] = [];
     searchResp.results.forEach((result) => {
         const fields = {
             pageContent: '',
             metadata: {} as Record<string, any>
-        }
+        };
         Object.keys(result).forEach((key) => {
             if (key === vectorStore.textField) {
-                fields.pageContent = result[key]
+                fields.pageContent = result[key];
             } else if (vectorStore.fields.includes(key) || key === vectorStore.primaryField) {
                 if (typeof result[key] === 'string') {
-                    const { isJson, obj } = checkJsonString(result[key])
-                    fields.metadata[key] = isJson ? obj : result[key]
+                    const { isJson, obj } = checkJsonString(result[key]);
+                    fields.metadata[key] = isJson ? obj : result[key];
                 } else {
-                    fields.metadata[key] = result[key]
+                    fields.metadata[key] = result[key];
                 }
             }
-        })
-        results.push([new Document(fields), result.score])
-    })
-    return results
-}
+        });
+        results.push([new Document(fields), result.score]);
+    });
+    return results;
+};
 
 class MilvusUpsert extends Milvus {
     async addVectors(vectors: number[][], documents: Document[]): Promise<void> {
         if (vectors.length === 0) {
-            return
+            return;
         }
-        await this.ensureCollection(vectors, documents)
+        await this.ensureCollection(vectors, documents);
 
-        const insertDatas: InsertRow[] = []
+        const insertDatas: InsertRow[] = [];
 
         for (let index = 0; index < vectors.length; index++) {
-            const vec = vectors[index]
-            const doc = documents[index]
+            const vec = vectors[index];
+            const doc = documents[index];
             const data: InsertRow = {
                 [this.textField]: doc.pageContent,
                 [this.vectorField]: vec
-            }
+            };
             this.fields.forEach((field) => {
                 switch (field) {
                     case this.primaryField:
@@ -304,35 +362,35 @@ class MilvusUpsert extends Milvus {
                             if (doc.metadata[this.primaryField] === undefined) {
                                 throw new Error(
                                     `The Collection's primaryField is configured with autoId=false, thus its value must be provided through metadata.`
-                                )
+                                );
                             }
-                            data[field] = doc.metadata[this.primaryField]
+                            data[field] = doc.metadata[this.primaryField];
                         }
-                        break
+                        break;
                     case this.textField:
-                        data[field] = doc.pageContent
-                        break
+                        data[field] = doc.pageContent;
+                        break;
                     case this.vectorField:
-                        data[field] = vec
-                        break
+                        data[field] = vec;
+                        break;
                     default: // metadata fields
                         if (doc.metadata[field] === undefined) {
-                            throw new Error(`The field "${field}" is not provided in documents[${index}].metadata.`)
+                            throw new Error(`The field "${field}" is not provided in documents[${index}].metadata.`);
                         } else if (typeof doc.metadata[field] === 'object') {
-                            data[field] = JSON.stringify(doc.metadata[field])
+                            data[field] = JSON.stringify(doc.metadata[field]);
                         } else {
-                            data[field] = doc.metadata[field]
+                            data[field] = doc.metadata[field];
                         }
-                        break
+                        break;
                 }
-            })
+            });
 
-            insertDatas.push(data)
+            insertDatas.push(data);
         }
 
         const descIndexResp = await this.client.describeIndex({
             collection_name: this.collectionName
-        })
+        });
 
         if (descIndexResp.status.error_code === ErrorCode.IndexNotExist) {
             const resp = await this.client.createIndex({
@@ -341,23 +399,23 @@ class MilvusUpsert extends Milvus {
                 index_name: `myindex_${Date.now().toString()}`,
                 index_type: IndexType.AUTOINDEX,
                 metric_type: MetricType.L2
-            })
+            });
             if (resp.error_code !== ErrorCode.SUCCESS) {
-                throw new Error(`Error creating index`)
+                throw new Error(`Error creating index`);
             }
         }
 
         const insertResp = await this.client.insert({
             collection_name: this.collectionName,
             fields_data: insertDatas
-        })
+        });
 
         if (insertResp.status.error_code !== ErrorCode.SUCCESS) {
-            throw new Error(`Error inserting data: ${JSON.stringify(insertResp)}`)
+            throw new Error(`Error inserting data: ${JSON.stringify(insertResp)}`);
         }
 
-        await this.client.flushSync({ collection_names: [this.collectionName] })
+        await this.client.flushSync({ collection_names: [this.collectionName] });
     }
 }
 
-module.exports = { nodeClass: Milvus_VectorStores }
+module.exports = { nodeClass: Milvus_VectorStores };
