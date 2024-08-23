@@ -304,6 +304,9 @@ importers:
             mammoth:
                 specifier: ^1.5.1
                 version: 1.7.0
+            meilisearch:
+                specifier: ^0.41.0
+                version: 0.41.0(encoding@0.1.13)
             moment:
                 specifier: ^2.29.3
                 version: 2.30.1
@@ -11697,6 +11700,9 @@ packages:
     media-typer@0.3.0:
         resolution: { integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ== }
         engines: { node: '>= 0.6' }
+
+    meilisearch@0.41.0:
+        resolution: { integrity: sha512-5KcGLxEXD7E+uNO7R68rCbGSHgCqeM3Q3RFFLSsN7ZrIgr8HPDXVAIlP4LHggAZfk0FkSzo8VSXifHCwa2k80g== }
 
     mem-fs-editor@9.7.0:
         resolution: { integrity: sha512-ReB3YD24GNykmu4WeUL/FDIQtkoyGB6zfJv60yfCo3QjKeimNcTqv2FT83bP0ccs6uu+sm5zyoBlspAzigmsdg== }
@@ -31753,6 +31759,12 @@ snapshots:
     mdn-data@2.0.4: {}
 
     media-typer@0.3.0: {}
+
+    meilisearch@0.41.0(encoding@0.1.13):
+        dependencies:
+            cross-fetch: 3.1.8(encoding@0.1.13)
+        transitivePeerDependencies:
+            - encoding
 
     mem-fs-editor@9.7.0(mem-fs@2.3.0):
         dependencies:
