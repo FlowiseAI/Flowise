@@ -10,7 +10,7 @@ interface InsertRow {
     [x: string]: string | number[];
 }
 
-class Milvus_VectorStores implements INode {
+export class Milvus_VectorStores implements INode {
     label: string;
     name: string;
     version: number;
@@ -234,11 +234,29 @@ class Milvus_VectorStores implements INode {
         const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData);
         const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData);
 
+        // tls
+        const secure = nodeData.inputs?.secure as boolean;
+        const clientPemPath = nodeData.inputs?.clientPemPath as string;
+        const clientKeyPath = nodeData.inputs?.clientKeyPath as string;
+        const caPemPath = nodeData.inputs?.caPemPath as string;
+        const serverName = nodeData.inputs?.serverName as string;
+
+
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
             url: address,
             collectionName: collectionName,
-            textField: textField
+            textField: textField,
+            clientConfig: {
+                address: address,
+                ssl: secure,
+                tls: {
+                    rootCertPath: caPemPath,
+                    privateKeyPath: clientKeyPath,
+                    certChainPath: clientPemPath,
+                    serverName: serverName
+                }
+            }
         };
 
         if (milvusUser) milVusArgs.username = milvusUser;
