@@ -41,6 +41,7 @@ import exportImportApi from '@/api/exportimport'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { getErrorMessage } from '@/utils/errorHandler'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 // ==============================|| PROFILE MENU ||============================== //
@@ -170,7 +171,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                 linkElement.click()
                 exportAllSuccess()
             } catch (error) {
-                errorFailed(`Failed to export all: ${error}`)
+                errorFailed(`Failed to export all: ${getErrorMessage(error)}`)
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,3 +1,4 @@
+import { getErrorMessage } from './errorHandler'
 import { generateExportFlowData } from './genericHelper'
 
 const sanitizeTool = (Tool) => {
@@ -14,7 +15,7 @@ const sanitizeTool = (Tool) => {
             }
         })
     } catch (error) {
-        console.error(`exportImport.js sanitizeTool error: ${error}`)
+        throw new Error(`exportImport.sanitizeTool ${getErrorMessage(error)}`)
     }
 }
 
@@ -30,7 +31,7 @@ const sanitizeChatflow = (ChatFlow) => {
             }
         })
     } catch (error) {
-        console.error(`exportImport.js sanitizeChatflow error: ${error}`)
+        throw new Error(`exportImport.sanitizeChatflow ${getErrorMessage(error)}`)
     }
 }
 
@@ -38,7 +39,7 @@ export const stringify = (object) => {
     try {
         return JSON.stringify(object, null, 2)
     } catch (error) {
-        console.error(`exportImport.js stringify error: ${error}`)
+        throw new Error(`exportImport.stringify ${getErrorMessage(error)}`)
     }
 }
 
@@ -46,6 +47,6 @@ export const exportData = (exportAllData) => {
     try {
         return { Tool: sanitizeTool(exportAllData.Tool), ChatFlow: sanitizeChatflow(exportAllData.ChatFlow) }
     } catch (error) {
-        console.error(`exportImport.js exportData error: ${error}`)
+        throw new Error(`exportImport.exportData ${getErrorMessage(error)}`)
     }
 }
