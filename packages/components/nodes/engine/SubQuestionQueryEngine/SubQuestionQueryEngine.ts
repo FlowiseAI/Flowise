@@ -10,9 +10,9 @@ import {
     QueryEngineTool,
     LLMQuestionGenerator,
     SubQuestionQueryEngine,
-    BaseNode,
     Metadata,
-    serviceContextFromDefaults
+    serviceContextFromDefaults,
+    NodeWithScore
 } from 'llamaindex'
 import { reformatSourceDocuments } from '../EngineUtils'
 
@@ -63,7 +63,7 @@ class SubQuestionQueryEngine_LlamaIndex implements INode {
                 name: 'responseSynthesizer',
                 type: 'ResponseSynthesizer',
                 description:
-                    'ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target="_blank" href="https://ts.llamaindex.ai/modules/low_level/response_synthesizer">more</a>',
+                    'ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target="_blank" href="https://ts.llamaindex.ai/modules/response_synthesizer">more</a>',
                 optional: true
             },
             {
@@ -86,7 +86,7 @@ class SubQuestionQueryEngine_LlamaIndex implements INode {
 
         let text = ''
         let sourceDocuments: ICommonObject[] = []
-        let sourceNodes: BaseNode<Metadata>[] = []
+        let sourceNodes: NodeWithScore<Metadata>[] = []
         let isStreamingStarted = false
         const isStreamingEnabled = options.socketIO && options.socketIOClientId
 

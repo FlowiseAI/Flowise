@@ -9,7 +9,7 @@ import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from 'langchain/agents'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { IVisionChatModal, FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { IVisionChatModal, FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
@@ -86,13 +86,20 @@ class ConversationalAgent_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
@@ -109,23 +116,45 @@ class ConversationalAgent_Agents implements INode {
                 return formatResponse(e.message)
             }
         }
-        const executor = await prepareAgent(
-            nodeData,
-            options,
-            { sessionId: this.sessionId, chatId: options.chatId, input },
-            options.chatHistory
-        )
+        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
         let res: ChainValues = {}
+        let sourceDocuments: ICommonObject[] = []
+        let usedTools: IUsedTool[] = []
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
+            if (res.sourceDocuments) {
+                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
+                sourceDocuments = res.sourceDocuments
+            }
+            if (res.usedTools) {
+                options.socketIO.to(options.socketIOClientId).emit('usedTools', res.usedTools)
+                usedTools = res.usedTools
+            }
+            // If the tool is set to returnDirect, stream the output to the client
+            if (res.usedTools && res.usedTools.length) {
+                let inputTools = nodeData.inputs?.tools
+                inputTools = flatten(inputTools)
+                for (const tool of res.usedTools) {
+                    const inputTool = inputTools.find((inputTool: Tool) => inputTool.name === tool.tool)
+                    if (inputTool && inputTool.returnDirect) {
+                        options.socketIO.to(options.socketIOClientId).emit('token', tool.toolOutput)
+                    }
+                }
+            }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+            if (res.sourceDocuments) {
+                sourceDocuments = res.sourceDocuments
+            }
+            if (res.usedTools) {
+                usedTools = res.usedTools
+            }
         }
 
         await memory.addChatMessages(
@@ -142,23 +171,37 @@ class ConversationalAgent_Agents implements INode {
             this.sessionId
         )
 
-        return res?.output
+        let finalRes = res?.output
+
+        if (sourceDocuments.length || usedTools.length) {
+            finalRes = { text: res?.output }
+            if (sourceDocuments.length) {
+                finalRes.sourceDocuments = flatten(sourceDocuments)
+            }
+            if (usedTools.length) {
+                finalRes.usedTools = usedTools
+            }
+            return finalRes
+        }
+
+        return finalRes
     }
 }
 
 const prepareAgent = async (
     nodeData: INodeData,
     options: ICommonObject,
-    flowObj: { sessionId?: string; chatId?: string; input?: string },
-    chatHistory: IMessage[] = []
+    flowObj: { sessionId?: string; chatId?: string; input?: string }
 ) => {
     const model = nodeData.inputs?.model as BaseChatModel
+    const maxIterations = nodeData.inputs?.maxIterations as string
     let tools = nodeData.inputs?.tools as Tool[]
     tools = flatten(tools)
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
+    const prependMessages = options?.prependMessages
 
     const outputParser = ChatConversationalAgent.getDefaultOutputParser({
         llm: model,
@@ -172,7 +215,7 @@ const prepareAgent = async (
 
     if (llmSupportsVision(model)) {
         const visionChatModel = model as IVisionChatModal
-        const messageContent = addImagesToMessages(nodeData, options, model.multiModalOption)
+        const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
 
         if (messageContent?.length) {
             visionChatModel.setVisionModel()
@@ -209,7 +252,7 @@ const prepareAgent = async (
             [inputKey]: (i: { input: string; steps: AgentStep[] }) => i.input,
             agent_scratchpad: async (i: { input: string; steps: AgentStep[] }) => await constructScratchPad(i.steps),
             [memoryKey]: async (_: { input: string; steps: AgentStep[] }) => {
-                const messages = (await memory.getChatMessages(flowObj?.sessionId, true, chatHistory)) as BaseMessage[]
+                const messages = (await memory.getChatMessages(flowObj?.sessionId, true, prependMessages)) as BaseMessage[]
                 return messages ?? []
             }
         },
@@ -224,7 +267,8 @@ const prepareAgent = async (
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
-        verbose: process.env.DEBUG === 'true'
+        verbose: process.env.DEBUG === 'true',
+        maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
 
     return executor

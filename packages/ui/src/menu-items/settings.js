@@ -4,12 +4,11 @@ import {
     IconFileUpload,
     IconFileExport,
     IconCopy,
-    IconSearch,
     IconMessage,
-    IconPictureInPictureOff,
-    IconLink,
-    IconMicrophone
-} from '@tabler/icons'
+    IconDatabaseExport,
+    IconAdjustmentsHorizontal,
+    IconUsers
+} from '@tabler/icons-react'
 
 // constant
 const icons = {
@@ -17,11 +16,10 @@ const icons = {
     IconFileUpload,
     IconFileExport,
     IconCopy,
-    IconSearch,
     IconMessage,
-    IconPictureInPictureOff,
-    IconLink,
-    IconMicrophone
+    IconDatabaseExport,
+    IconAdjustmentsHorizontal,
+    IconUsers
 }
 
 // ==============================|| SETTINGS MENU ITEMS ||============================== //
@@ -32,13 +30,6 @@ const settings = {
     type: 'group',
     children: [
         {
-            id: 'conversationStarters',
-            title: 'Starter Prompts',
-            type: 'item',
-            url: '',
-            icon: icons.IconPictureInPictureOff
-        },
-        {
             id: 'viewMessages',
             title: 'View Messages',
             type: 'item',
@@ -46,18 +37,25 @@ const settings = {
             icon: icons.IconMessage
         },
         {
-            id: 'allowedDomains',
-            title: 'Allowed Domains',
+            id: 'viewLeads',
+            title: 'View Leads',
             type: 'item',
             url: '',
-            icon: icons.IconLink
+            icon: icons.IconUsers
         },
         {
-            id: 'enableSpeechToText',
-            title: 'Speech to Text',
+            id: 'viewUpsertHistory',
+            title: 'Upsert History',
             type: 'item',
             url: '',
-            icon: icons.IconMicrophone
+            icon: icons.IconDatabaseExport
+        },
+        {
+            id: 'chatflowConfiguration',
+            title: 'Configuration',
+            type: 'item',
+            url: '',
+            icon: icons.IconAdjustmentsHorizontal
         },
         {
             id: 'duplicateChatflow',
@@ -79,13 +77,6 @@ const settings = {
             type: 'item',
             url: '',
             icon: icons.IconFileExport
-        },
-        {
-            id: 'analyseChatflow',
-            title: 'Analyse Chatflow',
-            type: 'item',
-            url: '',
-            icon: icons.IconSearch
         },
         {
             id: 'deleteChatflow',

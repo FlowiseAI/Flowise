@@ -28,8 +28,9 @@ services:
             - LOG_PATH=${LOG_PATH}
             - BLOB_STORAGE_PATH=${BLOB_STORAGE_PATH}
             - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
+            - MODEL_LIST_CONFIG_JSON=${MODEL_LIST_CONFIG_JSON}
         ports:
             - '${PORT}:${PORT}'
         volumes:
             - ~/.flowise:/root/.flowise
-        command: /bin/sh -c "sleep 3; flowise start"
+        entrypoint: /bin/sh -c "sleep 3; flowise start"

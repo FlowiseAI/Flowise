@@ -70,12 +70,19 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
         const output = nodeData.outputs?.output as string
 
         const topK = (vectorStore as any)?.k ?? 4
+        const _filter = (vectorStore as any)?.filter
 
-        const docs = await vectorStore.similaritySearchWithScore(query ?? input, topK)
+        // If it is already pre-defined in lc_kwargs, then don't pass it again
+        const filter = vectorStore.lc_kwargs.filter ? undefined : _filter
+        if (vectorStore.lc_kwargs.filter) {
+            ;(vectorStore as any).filter = vectorStore.lc_kwargs.filter
+        }
+
+        const docs = await vectorStore.similaritySearchWithScore(query ?? input, topK, filter)
         // eslint-disable-next-line no-console
         console.log('\x1b[94m\x1b[1m\n*****VectorStore Documents*****\n\x1b[0m\x1b[0m')
         // eslint-disable-next-line no-console
-        console.log(docs)
+        console.log(JSON.stringify(docs, null, 2))
 
         if (output === 'document') {
             let finaldocs = []

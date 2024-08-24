@@ -1,7 +1,8 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ChatMistralAI, ChatMistralAIInput } from '@langchain/mistralai'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatMistral_ChatModels implements INode {
     label: string
@@ -18,7 +19,7 @@ class ChatMistral_ChatModels implements INode {
     constructor() {
         this.label = 'ChatMistralAI'
         this.name = 'chatMistralAI'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatMistralAI'
         this.icon = 'MistralAI.svg'
         this.category = 'Chat Models'
@@ -40,9 +41,8 @@ class ChatMistral_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'string',
-                description:
-                    'Refer to <a target="_blank" href="https://docs.mistral.ai/guides/model-selection/">Model Selection</a> for more available models',
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'mistral-tiny'
             },
             {
@@ -99,6 +99,13 @@ class ChatMistral_ChatModels implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatMistralAI')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

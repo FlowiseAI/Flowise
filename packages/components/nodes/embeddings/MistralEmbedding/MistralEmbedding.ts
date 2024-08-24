@@ -1,6 +1,7 @@
 import { MistralAIEmbeddings, MistralAIEmbeddingsParams } from '@langchain/mistralai'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
 class MistralEmbedding_Embeddings implements INode {
     label: string
@@ -16,8 +17,8 @@ class MistralEmbedding_Embeddings implements INode {
 
     constructor() {
         this.label = 'MistralAI Embeddings'
-        this.name = 'mistralAI Embeddings'
-        this.version = 1.0
+        this.name = 'mistralAIEmbeddings'
+        this.version = 2.0
         this.type = 'MistralAIEmbeddings'
         this.icon = 'MistralAI.svg'
         this.category = 'Embeddings'
@@ -33,13 +34,8 @@ class MistralEmbedding_Embeddings implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'mistral-embed',
-                        name: 'mistral-embed'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'mistral-embed'
             },
             {
@@ -67,6 +63,13 @@ class MistralEmbedding_Embeddings implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.EMBEDDING, 'mistralAIEmbeddings')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

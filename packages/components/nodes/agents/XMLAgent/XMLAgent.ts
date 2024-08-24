@@ -5,12 +5,11 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { Tool } from '@langchain/core/tools'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { XMLAgentOutputParser } from 'langchain/agents/xml/output_parser'
 import { formatLogToMessage } from 'langchain/agents/format_scratchpad/log_to_message'
 import { getBaseClasses } from '../../../src/utils'
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { AgentExecutor } from '../../../src/agents'
+import { AgentExecutor, XMLAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
@@ -49,6 +48,7 @@ class XMLAgent_Agents implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
+    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'XML Agent'
@@ -92,6 +92,13 @@ class XMLAgent_Agents implements INode {
                 type: 'Moderation',
                 optional: true,
                 list: true
+            },
+            {
+                label: 'Max Iterations',
+                name: 'maxIterations',
+                type: 'number',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -115,13 +122,14 @@ class XMLAgent_Agents implements INode {
                 return formatResponse(e.message)
             }
         }
-        const executor = await prepareAgent(nodeData, { sessionId: this.sessionId, chatId: options.chatId, input }, options.chatHistory)
+        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
         let res: ChainValues = {}
         let sourceDocuments: ICommonObject[] = []
+        let usedTools: IUsedTool[] = []
 
         if (options.socketIO && options.socketIOClientId) {
             const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
@@ -130,10 +138,28 @@ class XMLAgent_Agents implements INode {
                 options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
                 sourceDocuments = res.sourceDocuments
             }
+            if (res.usedTools) {
+                options.socketIO.to(options.socketIOClientId).emit('usedTools', res.usedTools)
+                usedTools = res.usedTools
+            }
+            // If the tool is set to returnDirect, stream the output to the client
+            if (res.usedTools && res.usedTools.length) {
+                let inputTools = nodeData.inputs?.tools
+                inputTools = flatten(inputTools)
+                for (const tool of res.usedTools) {
+                    const inputTool = inputTools.find((inputTool: Tool) => inputTool.name === tool.tool)
+                    if (inputTool && inputTool.returnDirect) {
+                        options.socketIO.to(options.socketIOClientId).emit('token', tool.toolOutput)
+                    }
+                }
+            }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
             if (res.sourceDocuments) {
                 sourceDocuments = res.sourceDocuments
+            }
+            if (res.usedTools) {
+                usedTools = res.usedTools
             }
         }
 
@@ -151,22 +177,37 @@ class XMLAgent_Agents implements INode {
             this.sessionId
         )
 
-        return sourceDocuments.length ? { text: res?.output, sourceDocuments: flatten(sourceDocuments) } : res?.output
+        let finalRes = res?.output
+
+        if (sourceDocuments.length || usedTools.length) {
+            finalRes = { text: res?.output }
+            if (sourceDocuments.length) {
+                finalRes.sourceDocuments = flatten(sourceDocuments)
+            }
+            if (usedTools.length) {
+                finalRes.usedTools = usedTools
+            }
+            return finalRes
+        }
+
+        return finalRes
     }
 }
 
 const prepareAgent = async (
     nodeData: INodeData,
-    flowObj: { sessionId?: string; chatId?: string; input?: string },
-    chatHistory: IMessage[] = []
+    options: ICommonObject,
+    flowObj: { sessionId?: string; chatId?: string; input?: string }
 ) => {
     const model = nodeData.inputs?.model as BaseChatModel
+    const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
+    const prependMessages = options?.prependMessages
 
     let promptMessage = systemMessage ? systemMessage : defaultSystemMessage
     if (memory.memoryKey) promptMessage = promptMessage.replaceAll('{chat_history}', `{${memory.memoryKey}}`)
@@ -185,7 +226,7 @@ const prepareAgent = async (
 
     const llmWithStop = model.bind({ stop: ['</tool_input>', '</final_answer>'] })
 
-    const messages = (await memory.getChatMessages(flowObj.sessionId, false, chatHistory)) as IMessage[]
+    const messages = (await memory.getChatMessages(flowObj.sessionId, false, prependMessages)) as IMessage[]
     let chatHistoryMsgTxt = ''
     for (const message of messages) {
         if (message.type === 'apiMessage') {
@@ -215,7 +256,8 @@ const prepareAgent = async (
         chatId: flowObj?.chatId,
         input: flowObj?.input,
         isXML: true,
-        verbose: process.env.DEBUG === 'true' ? true : false
+        verbose: process.env.DEBUG === 'true' ? true : false,
+        maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
 
     return executor

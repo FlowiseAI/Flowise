@@ -63,7 +63,7 @@ export class ReadFileTool extends StructuredTool {
 
     schema = z.object({
         file_path: z.string().describe('name of file')
-    })
+    }) as any
 
     name = 'read_file'
 

@@ -71,7 +71,8 @@ class StructuredOutputParser implements INode {
         const autoFix = nodeData.inputs?.autofixParser as boolean
 
         try {
-            const structuredOutputParser = LangchainStructuredOutputParser.fromZodSchema(z.object(convertSchemaToZod(jsonStructure)))
+            const zodSchema = z.object(convertSchemaToZod(jsonStructure)) as any
+            const structuredOutputParser = LangchainStructuredOutputParser.fromZodSchema(zodSchema)
 
             // NOTE: When we change Flowise to return a json response, the following has to be changed to: JsonStructuredOutputParser
             Object.defineProperty(structuredOutputParser, 'autoFix', {
