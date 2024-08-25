@@ -1074,35 +1074,16 @@ export const isSameOverrideConfig = (
 }
 
 /**
- * Map MimeType to InputField
- * @param {string} mimeType
- * @returns {Promise<string>}
+ * @param {string} existingChatId
+ * @param {string} newChatId
+ * @returns {boolean}
  */
-export const mapMimeTypeToInputField = (mimeType: string) => {
-    switch (mimeType) {
-        case 'text/plain':
-            return 'txtFile'
-        case 'application/pdf':
-            return 'pdfFile'
-        case 'application/json':
-            return 'jsonFile'
-        case 'text/csv':
-            return 'csvFile'
-        case 'application/json-lines':
-        case 'application/jsonl':
-        case 'text/jsonl':
-            return 'jsonlinesFile'
-        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            return 'docxFile'
-        case 'application/vnd.yaml':
-        case 'application/x-yaml':
-        case 'text/vnd.yaml':
-        case 'text/x-yaml':
-        case 'text/yaml':
-            return 'yamlFile'
-        default:
-            return 'txtFile'
+export const isSameChatId = (existingChatId?: string, newChatId?: string): boolean => {
+    if (isEqual(existingChatId, newChatId)) {
+        return true
     }
+    if (!existingChatId && !newChatId) return true
+    return false
 }
 
 /**

@@ -112,6 +112,7 @@ class CSV_Agents implements INode {
             const chatflowid = options.chatflowid
 
             for (const file of files) {
+                if (!file) continue
                 const fileData = await getFileFromStorage(file, chatflowid)
                 base64String += fileData.toString('base64')
             }
@@ -123,6 +124,7 @@ class CSV_Agents implements INode {
             }
 
             for (const file of files) {
+                if (!file) continue
                 const splitDataURI = file.split(',')
                 splitDataURI.pop()
                 base64String += splitDataURI.pop() ?? ''

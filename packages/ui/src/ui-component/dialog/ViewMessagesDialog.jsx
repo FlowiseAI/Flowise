@@ -34,7 +34,7 @@ import userPNG from '@/assets/images/account.png'
 import msgEmptySVG from '@/assets/images/message_empty.svg'
 import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
 import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
-import { IconTool, IconDeviceSdCard, IconFileExport, IconEraser, IconX, IconDownload } from '@tabler/icons-react'
+import { IconTool, IconDeviceSdCard, IconFileExport, IconEraser, IconX, IconDownload, IconPaperclip } from '@tabler/icons-react'
 
 // Project import
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
@@ -436,6 +436,59 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const onSourceDialogClick = (data, title) => {
         setSourceDialogProps({ data, title })
         setSourceDialogOpen(true)
+    }
+
+    const renderFileUploads = (item, index) => {
+        if (item?.mime?.startsWith('image/')) {
+            return (
+                <Card
+                    key={index}
+                    sx={{
+                        p: 0,
+                        m: 0,
+                        maxWidth: 128,
+                        marginRight: '10px',
+                        flex: '0 0 auto'
+                    }}
+                >
+                    <CardMedia component='img' image={item.data} sx={{ height: 64 }} alt={'preview'} style={messageImageStyle} />
+                </Card>
+            )
+        } else if (item?.mime?.startsWith('audio/')) {
+            return (
+                /* eslint-disable jsx-a11y/media-has-caption */
+                <audio controls='controls'>
+                    Your browser does not support the &lt;audio&gt; tag.
+                    <source src={item.data} type={item.mime} />
+                </audio>
+            )
+        } else {
+            return (
+                <Card
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        height: '48px',
+                        width: 'max-content',
+                        p: 2,
+                        mr: 1,
+                        flex: '0 0 auto',
+                        backgroundColor: customization.isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'transparent'
+                    }}
+                    variant='outlined'
+                >
+                    <IconPaperclip size={20} />
+                    <span
+                        style={{
+                            marginLeft: '5px',
+                            color: customization.isDarkMode ? 'white' : 'inherit'
+                        }}
+                    >
+                        {item.name}
+                    </span>
+                </Card>
+            )
+        }
     }
 
     useEffect(() => {
@@ -855,37 +908,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                         }}
                                                                     >
                                                                         {message.fileUploads.map((item, index) => {
-                                                                            return (
-                                                                                <>
-                                                                                    {item.mime.startsWith('image/') ? (
-                                                                                        <Card
-                                                                                            key={index}
-                                                                                            sx={{
-                                                                                                p: 0,
-                                                                                                m: 0,
-                                                                                                maxWidth: 128,
-                                                                                                marginRight: '10px',
-                                                                                                flex: '0 0 auto'
-                                                                                            }}
-                                                                                        >
-                                                                                            <CardMedia
-                                                                                                component='img'
-                                                                                                image={item.data}
-                                                                                                sx={{ height: 64 }}
-                                                                                                alt={'preview'}
-                                                                                                style={messageImageStyle}
-                                                                                            />
-                                                                                        </Card>
-                                                                                    ) : (
-                                                                                        // eslint-disable-next-line jsx-a11y/media-has-caption
-                                                                                        <audio controls='controls'>
-                                                                                            Your browser does not support the &lt;audio&gt;
-                                                                                            tag.
-                                                                                            <source src={item.data} type={item.mime} />
-                                                                                        </audio>
-                                                                                    )}
-                                                                                </>
-                                                                            )
+                                                                            return <>{renderFileUploads(item, index)}</>
                                                                         })}
                                                                     </div>
                                                                 )}
