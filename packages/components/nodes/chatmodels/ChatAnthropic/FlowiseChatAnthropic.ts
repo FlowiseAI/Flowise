@@ -1,5 +1,5 @@
 import { AnthropicInput, ChatAnthropic as LangchainChatAnthropic } from '@langchain/anthropic'
-import { BaseLLMParams } from '@langchain/core/language_models/llms'
+import { type BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 import { IVisionChatModal, IMultiModalOption } from '../../../src'
 
 export class ChatAnthropic extends LangchainChatAnthropic implements IVisionChatModal {
@@ -8,8 +8,9 @@ export class ChatAnthropic extends LangchainChatAnthropic implements IVisionChat
     multiModalOption: IMultiModalOption
     id: string
 
-    constructor(id: string, fields: Partial<AnthropicInput> & BaseLLMParams & { anthropicApiKey?: string }) {
-        super(fields)
+    constructor(id: string, fields?: Partial<AnthropicInput> & BaseChatModelParams) {
+        // @ts-ignore
+        super(fields ?? {})
         this.id = id
         this.configuredModel = fields?.modelName || ''
         this.configuredMaxToken = fields?.maxTokens ?? 2048
