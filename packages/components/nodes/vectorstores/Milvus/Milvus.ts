@@ -65,6 +65,12 @@ export class Milvus_VectorStores implements INode {
                 type: 'string'
             },
             {
+                label: 'Milvus Partition Name',
+                name: 'milvusPartition',
+                type: 'string',
+                optional: true
+            },
+            {
                 label: 'Milvus Text Field',
                 name: 'milvusTextField',
                 type: 'string',
@@ -130,8 +136,7 @@ export class Milvus_VectorStores implements INode {
                 optional: true,
                 description: 'Server name for the secure connection',
                 additionalParams: true
-            },
-
+            }
         ];
         this.outputs = [
             {
@@ -170,10 +175,14 @@ export class Milvus_VectorStores implements INode {
             const caPemPath = nodeData.inputs?.caPemPath as string;
             const serverName = nodeData.inputs?.serverName as string;
 
+            // partition
+            const partitionName = nodeData.inputs?.milvusPartition as string;
+
             // init MilvusLibArgs
             const milVusArgs: MilvusLibArgs = {
                 url: address,
                 collectionName: collectionName,
+                partitionName: partitionName,
                 clientConfig: {
                     address: address,
                     ssl: secure,
@@ -240,7 +249,6 @@ export class Milvus_VectorStores implements INode {
         const clientKeyPath = nodeData.inputs?.clientKeyPath as string;
         const caPemPath = nodeData.inputs?.caPemPath as string;
         const serverName = nodeData.inputs?.serverName as string;
-
 
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
@@ -356,12 +364,12 @@ const similaritySearchVectorWithScore = async (query: number[], k: number, vecto
     });
     return results;
 };
-
 class MilvusUpsert extends Milvus {
     async addVectors(vectors: number[][], documents: Document[]): Promise<void> {
         if (vectors.length === 0) {
             return;
         }
+
         await this.ensureCollection(vectors, documents);
 
         const insertDatas: InsertRow[] = [];
@@ -369,10 +377,17 @@ class MilvusUpsert extends Milvus {
         for (let index = 0; index < vectors.length; index++) {
             const vec = vectors[index];
             const doc = documents[index];
+
+            console.log(`Vector Dimension: ${vec.length}`);
+            console.log(`Document ${index} structure:`, JSON.stringify(doc, null, 2));
+
             const data: InsertRow = {
                 [this.textField]: doc.pageContent,
                 [this.vectorField]: vec
             };
+
+            console.log(`Keyof: textField: ${this.textField}, vectorField: ${this.vectorField}`);
+
             this.fields.forEach((field) => {
                 switch (field) {
                     case this.primaryField:
@@ -405,6 +420,28 @@ class MilvusUpsert extends Milvus {
 
             insertDatas.push(data);
         }
+        const partitionName = this.partitionName ?? '_default';
+        // Ensure the partition exists before inserting data
+        const partitionResp = await this.client.hasPartition({
+            collection_name: this.collectionName,
+            partition_name: partitionName
+        });
+
+        if (partitionResp.status.error_code !== ErrorCode.SUCCESS) {
+            throw new Error(`Error checking partition: ${JSON.stringify(partitionResp)}`);
+        }
+
+        if (!partitionResp.value) {
+            // Create the partition if it doesn't exist
+            const createPartitionResp = await this.client.createPartition({
+                collection_name: this.collectionName,
+                partition_name: partitionName
+            });
+
+            if (createPartitionResp.error_code !== ErrorCode.SUCCESS) {
+                throw new Error(`Error creating partition: ${createPartitionResp}`);
+            }
+        }
 
         const descIndexResp = await this.client.describeIndex({
             collection_name: this.collectionName
@@ -425,6 +462,7 @@ class MilvusUpsert extends Milvus {
 
         const insertResp = await this.client.insert({
             collection_name: this.collectionName,
+            partition_name: partitionName, // Use the partition name here
             fields_data: insertDatas
         });
 
@@ -435,5 +473,6 @@ class MilvusUpsert extends Milvus {
         await this.client.flushSync({ collection_names: [this.collectionName] });
     }
 }
+
 
 module.exports = { nodeClass: Milvus_VectorStores };
