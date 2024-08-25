@@ -280,17 +280,17 @@ paths:
                         schema:
                             $ref: '#/components/schemas/Assistant'
                 required: true
-        responses:
-            '200':
-                description: Assistant created successfully
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/Assistant'
-            '400':
-                description: Invalid input provided
-            '422':
-                description: Validation exception
+            responses:
+                '200':
+                    description: Assistant created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Assistant'
+                '400':
+                    description: Invalid input provided
+                '422':
+                    description: Validation exception
         get:
             tags:
                 - assistants
