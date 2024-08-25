@@ -548,6 +548,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
             if (action) params.action = action
 
+            setupSSE(chatId)
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
 
             if (response.data) {
@@ -606,6 +607,41 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         } catch (error) {
             handleError(error.response.data.message)
             return
+        }
+    }
+
+    const setupSSE = (chatId) => {
+        // Establish the SSE connection to receive the streamed response
+        const eventSource = new EventSource(`${baseURL}/api/v1/events/${chatId}`)
+
+        eventSource.addEventListener('start', (event) => {
+            console.log('onStart', event.data)
+            setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+        })
+
+        eventSource.addEventListener('token', (event) => {
+            console.log('onToken', event.data)
+            updateLastMessage(event.data)
+        })
+
+        eventSource.addEventListener('sourceDocuments', (event) => {
+            updateLastMessageSourceDocuments(JSON.parse(event.data))
+        })
+
+        eventSource.addEventListener('end', () => {
+            console.log('onEnd : ' + event.data)
+            eventSource.close() // Close the connection when stream ends
+        })
+
+        eventSource.onmessage = (event) => {
+            if (event.data === '[END]') {
+                eventSource.close() // Close the connection when stream ends
+            }
+        }
+
+        eventSource.onerror = (err) => {
+            console.error('EventSource failed:', err)
+            eventSource.close()
         }
     }
 
@@ -800,16 +836,16 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             })
 
             socket.on('start', () => {
-                setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+                // setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
             })
 
-            socket.on('sourceDocuments', updateLastMessageSourceDocuments)
+            //socket.on('sourceDocuments', updateLastMessageSourceDocuments)
 
             socket.on('usedTools', updateLastMessageUsedTools)
 
             socket.on('fileAnnotations', updateLastMessageFileAnnotations)
 
-            socket.on('token', updateLastMessage)
+            //socket.on('token', updateLastMessage)
 
             socket.on('agentReasoning', updateLastMessageAgentReasoning)
 

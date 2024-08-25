@@ -167,6 +167,9 @@ const runPrediction = async (
     const socketIOClientId = isStreaming ? options.socketIOClientId : ''
     const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
+    const sseStreamer = options.sseStreamer
+    const chatId = options.chatId
+
     if (moderations && moderations.length > 0) {
         try {
             // Use the output of the moderation chain as input for the LLM chain
@@ -247,6 +250,10 @@ const runPrediction = async (
             const options = { ...promptValues }
             if (isStreaming) {
                 const handler = new CustomChainHandler(socketIO, socketIOClientId)
+                if (sseStreamer) {
+                    handler.chatId = chatId
+                    handler.sseStreamer = sseStreamer
+                }
                 const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
                 return formatResponse(res?.text)
             } else {
@@ -263,6 +270,10 @@ const runPrediction = async (
             }
             if (isStreaming) {
                 const handler = new CustomChainHandler(socketIO, socketIOClientId)
+                if (options.sseStreamer) {
+                    handler.chatId = options.chatId
+                    handler.sseStreamer = options.sseStreamer
+                }
                 const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
                 return formatResponse(res?.text)
             } else {
@@ -275,6 +286,11 @@ const runPrediction = async (
     } else {
         if (isStreaming) {
             const handler = new CustomChainHandler(socketIO, socketIOClientId)
+            if (options.sseStreamer) {
+                handler.chatId = options.chatId
+                handler.sseStreamer = options.sseStreamer
+            }
+
             const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
             return formatResponse(res)
         } else {

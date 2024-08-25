@@ -168,6 +168,8 @@ export class CustomChainHandler extends BaseCallbackHandler {
     skipK = 0 // Skip streaming for first K numbers of handleLLMStart
     returnSourceDocuments = false
     cachedResponse = true
+    chatId: string = ''
+    sseStreamer: any
 
     constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean) {
         super()
@@ -187,13 +189,22 @@ export class CustomChainHandler extends BaseCallbackHandler {
             if (!this.isLLMStarted) {
                 this.isLLMStarted = true
                 this.socketIO.to(this.socketIOClientId).emit('start', token)
+                if (this.sseStreamer) {
+                    this.sseStreamer.streamEvent(this.chatId, 'event: start\ndata: ' + token + '\n\n')
+                }
             }
             this.socketIO.to(this.socketIOClientId).emit('token', token)
+            if (this.sseStreamer) {
+                this.sseStreamer.streamEvent(this.chatId, 'event: token\ndata: ' + token + '\n\n')
+            }
         }
     }
 
     handleLLMEnd() {
         this.socketIO.to(this.socketIOClientId).emit('end')
+        if (this.sseStreamer) {
+            this.sseStreamer.streamEvent(this.chatId, 'event: end\ndata: [END]\n\n')
+        }
     }
 
     handleChainEnd(outputs: ChainValues, _: string, parentRunId?: string): void | Promise<void> {
@@ -209,16 +220,28 @@ export class CustomChainHandler extends BaseCallbackHandler {
             result.forEach((token: string, index: number) => {
                 if (index === 0) {
                     this.socketIO.to(this.socketIOClientId).emit('start', token)
+                    if (this.sseStreamer) {
+                        this.sseStreamer.streamEvent(this.chatId, 'event: start\ndata: ' + token + '\n\n')
+                    }
+                }
+                if (this.sseStreamer) {
+                    this.sseStreamer.streamEvent(this.chatId, 'event: token\ndata: ' + token + '\n\n')
                 }
                 this.socketIO.to(this.socketIOClientId).emit('token', token)
             })
             if (this.returnSourceDocuments) {
                 this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+                if (this.sseStreamer) {
+                    this.sseStreamer.streamEvent(this.chatId, 'event: sourceDocuments\ndata: ' + outputs?.sourceDocuments + '\n\n')
+                }
             }
             this.socketIO.to(this.socketIOClientId).emit('end')
         } else {
             if (this.returnSourceDocuments) {
                 this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+                if (this.sseStreamer) {
+                    this.sseStreamer.streamEvent(this.chatId, 'event: sourceDocuments\ndata: ' + outputs?.sourceDocuments + '\n\n')
+                }
             }
         }
     }

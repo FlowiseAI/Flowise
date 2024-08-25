@@ -20,6 +20,8 @@ import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './u
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
+import { SSEStreamer } from "./utils/SSEStreamer";
+import { getRunningExpressApp } from "./utils/getRunningExpressApp";
 
 declare global {
     namespace Express {
@@ -36,6 +38,7 @@ export class App {
     cachePool: CachePool
     telemetry: Telemetry
     AppDataSource: DataSource = getDataSource()
+    sseStreamer: SSEStreamer
 
     constructor() {
         this.app = express()
@@ -148,6 +151,8 @@ export class App {
         }
 
         this.app.use('/api/v1', flowiseApiV1Router)
+        this.sseStreamer = new SSEStreamer(this.app)
+        this.sseStreamer.setupSSEEndpoint()
 
         // ----------------------------------------
         // Configure number of proxies in Host Environment

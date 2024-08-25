@@ -71,7 +71,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
         const userMessageDateTime = new Date()
-
         if (!isInternal) {
             const isKeyValidated = await utilValidateKey(req, chatflow)
             if (!isKeyValidated) {
@@ -358,7 +357,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                   uploads: incomingInput.uploads,
                   socketIO,
                   socketIOClientId: incomingInput.socketIOClientId,
-                  prependMessages
+                  prependMessages,
+                  sseStreamer: appServer.sseStreamer
               })
             : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,

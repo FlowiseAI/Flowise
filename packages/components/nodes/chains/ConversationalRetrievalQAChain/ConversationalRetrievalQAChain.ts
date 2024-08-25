@@ -181,6 +181,9 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const chatflowid = options.chatflowid as string
 
+        const sseStreamer = options.sseStreamer
+        const chatId = options.chatId
+
         let customResponsePrompt = responsePrompt
         // If the deprecated systemMessagePrompt is still exists
         if (systemMessagePrompt) {
@@ -241,11 +244,20 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
             if (streamedResponse.final_output) {
                 text = streamedResponse.final_output?.output
-                if (isStreamingEnabled) options.socketIO.to(options.socketIOClientId).emit('end')
+                if (isStreamingEnabled) {
+                    options.socketIO.to(options.socketIOClientId).emit('end')
+                }
                 if (Array.isArray(streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output)) {
                     sourceDocuments = streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output
-                    if (isStreamingEnabled && returnSourceDocuments)
+                    if (isStreamingEnabled && returnSourceDocuments) {
                         options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', sourceDocuments)
+                        if (sseStreamer) {
+                            sseStreamer.streamEvent(chatId, 'event: sourceDocuments\ndata: ' + JSON.stringify(sourceDocuments) + '\n\n')
+                        }
+                    }
+                }
+                if (isStreamingEnabled && sseStreamer) {
+                    sseStreamer.streamEvent(chatId, 'event: end\ndata: [END]\n\n')
                 }
             }
 
@@ -258,9 +270,19 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
                 if (!isStreamingStarted) {
                     isStreamingStarted = true
-                    if (isStreamingEnabled) options.socketIO.to(options.socketIOClientId).emit('start', token)
+                    if (isStreamingEnabled) {
+                        options.socketIO.to(options.socketIOClientId).emit('start', token)
+                        if (sseStreamer) {
+                            sseStreamer.streamEvent(chatId, 'event: start\ndata: ' + token + '\n\n')
+                        }
+                    }
                 }
-                if (isStreamingEnabled) options.socketIO.to(options.socketIOClientId).emit('token', token)
+                if (isStreamingEnabled) {
+                    options.socketIO.to(options.socketIOClientId).emit('token', token)
+                    if (sseStreamer) {
+                        sseStreamer.streamEvent(chatId, 'event: token\ndata: ' + token + '\n\n')
+                    }
+                }
             }
         }
 

@@ -39,6 +39,7 @@ import variablesRouter from './variables'
 import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
+import { getRunningExpressApp } from "../utils/getRunningExpressApp";
 
 const router = express.Router()
 
