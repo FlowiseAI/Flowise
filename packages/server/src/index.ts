@@ -20,8 +20,7 @@ import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './u
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
-import { SSEStreamer } from "./utils/SSEStreamer";
-import { getRunningExpressApp } from "./utils/getRunningExpressApp";
+import { SSEStreamer } from './utils/SSEStreamer'
 
 declare global {
     namespace Express {
