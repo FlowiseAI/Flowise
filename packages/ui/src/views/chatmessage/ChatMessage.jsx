@@ -684,13 +684,13 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     feedback: message.feedback,
                     type: message.role
                 }
-                if (message.sourceDocuments) obj.sourceDocuments = JSON.parse(message.sourceDocuments)
-                if (message.usedTools) obj.usedTools = JSON.parse(message.usedTools)
-                if (message.fileAnnotations) obj.fileAnnotations = JSON.parse(message.fileAnnotations)
-                if (message.agentReasoning) obj.agentReasoning = JSON.parse(message.agentReasoning)
-                if (message.action) obj.action = JSON.parse(message.action)
+                if (message.sourceDocuments) obj.sourceDocuments = message.sourceDocuments
+                if (message.usedTools) obj.usedTools = message.usedTools
+                if (message.fileAnnotations) obj.fileAnnotations = message.fileAnnotations
+                if (message.agentReasoning) obj.agentReasoning = message.agentReasoning
+                if (message.action) obj.action = message.action
                 if (message.fileUploads) {
-                    obj.fileUploads = JSON.parse(message.fileUploads)
+                    obj.fileUploads = message.fileUploads
                     obj.fileUploads.forEach((file) => {
                         if (file.type === 'stored-file') {
                             file.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${file.name}`
@@ -1390,44 +1390,13 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 </>
                                             )}
                                         </div>
-                                        {message.type === 'apiMessage' && message.id && chatFeedbackStatus ? (
-                                            <>
-                                                <Box
-                                                    sx={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'start',
-                                                        gap: 1
-                                                    }}
-                                                >
-                                                    <CopyToClipboardButton onClick={() => copyMessageToClipboard(message.message)} />
-                                                    {!message.feedback ||
-                                                    message.feedback.rating === '' ||
-                                                    message.feedback.rating === 'THUMBS_UP' ? (
-                                                        <ThumbsUpButton
-                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_UP'}
-                                                            rating={message.feedback ? message.feedback.rating : ''}
-                                                            onClick={() => onThumbsUpClick(message.id)}
-                                                        />
-                                                    ) : null}
-                                                    {!message.feedback ||
-                                                    message.feedback.rating === '' ||
-                                                    message.feedback.rating === 'THUMBS_DOWN' ? (
-                                                        <ThumbsDownButton
-                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_DOWN'}
-                                                            rating={message.feedback ? message.feedback.rating : ''}
-                                                            onClick={() => onThumbsDownClick(message.id)}
-                                                        />
-                                                    ) : null}
-                                                </Box>
-                                            </>
-                                        ) : null}
                                         {message.fileAnnotations && (
                                             <div
                                                 style={{
                                                     display: 'block',
                                                     flexDirection: 'row',
-                                                    width: '100%'
+                                                    width: '100%',
+                                                    marginBottom: '8px'
                                                 }}
                                             >
                                                 {message.fileAnnotations.map((fileAnnotation, index) => {
@@ -1454,7 +1423,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 style={{
                                                     display: 'block',
                                                     flexDirection: 'row',
-                                                    width: '100%'
+                                                    width: '100%',
+                                                    marginBottom: '8px'
                                                 }}
                                             >
                                                 {removeDuplicateURL(message).map((source, index) => {
@@ -1486,7 +1456,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                     flexWrap: 'wrap',
                                                     flexDirection: 'row',
                                                     width: '100%',
-                                                    gap: '8px'
+                                                    gap: '8px',
+                                                    marginBottom: '8px'
                                                 }}
                                             >
                                                 {(message.action.elements || []).map((elem, index) => {
@@ -1537,6 +1508,38 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 })}
                                             </div>
                                         )}
+                                        {message.type === 'apiMessage' && message.id && chatFeedbackStatus ? (
+                                            <>
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'start',
+                                                        gap: 1
+                                                    }}
+                                                >
+                                                    <CopyToClipboardButton onClick={() => copyMessageToClipboard(message.message)} />
+                                                    {!message.feedback ||
+                                                    message.feedback.rating === '' ||
+                                                    message.feedback.rating === 'THUMBS_UP' ? (
+                                                        <ThumbsUpButton
+                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_UP'}
+                                                            rating={message.feedback ? message.feedback.rating : ''}
+                                                            onClick={() => onThumbsUpClick(message.id)}
+                                                        />
+                                                    ) : null}
+                                                    {!message.feedback ||
+                                                    message.feedback.rating === '' ||
+                                                    message.feedback.rating === 'THUMBS_DOWN' ? (
+                                                        <ThumbsDownButton
+                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_DOWN'}
+                                                            rating={message.feedback ? message.feedback.rating : ''}
+                                                            onClick={() => onThumbsDownClick(message.id)}
+                                                        />
+                                                    ) : null}
+                                                </Box>
+                                            </>
+                                        ) : null}
                                     </div>
                                 </Box>
                             )

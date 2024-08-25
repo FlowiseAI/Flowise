@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express'
-//@ts-ignore
 import swaggerUi from 'swagger-ui-express'
 import { swaggerDocs, swaggerExplorerOptions } from './configs/swagger.config'
 

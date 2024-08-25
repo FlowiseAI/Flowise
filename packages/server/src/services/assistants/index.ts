@@ -7,8 +7,9 @@ import { Credential } from '../../database/entities/Credential'
 import { decryptCredentialData, getAppVersion } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { DeleteResult } from 'typeorm'
 
-const createAssistant = async (requestBody: any): Promise<any> => {
+const createAssistant = async (requestBody: any): Promise<Assistant> => {
     try {
         const appServer = getRunningExpressApp()
         if (!requestBody.details) {
@@ -119,7 +120,7 @@ const createAssistant = async (requestBody: any): Promise<any> => {
     }
 }
 
-const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<any> => {
+const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<DeleteResult> => {
     try {
         const appServer = getRunningExpressApp()
         const assistant = await appServer.AppDataSource.getRepository(Assistant).findOneBy({
@@ -150,11 +151,7 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
             if (isDeleteBoth) await openai.beta.assistants.del(assistantDetails.id)
             return dbResponse
         } catch (error: any) {
-            if (error.status === 404 && error.type === 'invalid_request_error') {
-                return 'OK'
-            } else {
-                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error deleting assistant - ${getErrorMessage(error)}`)
-            }
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error deleting assistant - ${getErrorMessage(error)}`)
         }
     } catch (error) {
         throw new InternalFlowiseError(
@@ -164,7 +161,7 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
     }
 }
 
-const getAllAssistants = async (): Promise<any> => {
+const getAllAssistants = async (): Promise<Assistant[]> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).find()
@@ -177,7 +174,7 @@ const getAllAssistants = async (): Promise<any> => {
     }
 }
 
-const getAssistantById = async (assistantId: string): Promise<any> => {
+const getAssistantById = async (assistantId: string): Promise<Assistant> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).findOneBy({
@@ -195,7 +192,7 @@ const getAssistantById = async (assistantId: string): Promise<any> => {
     }
 }
 
-const updateAssistant = async (assistantId: string, requestBody: any): Promise<any> => {
+const updateAssistant = async (assistantId: string, requestBody: any): Promise<Assistant> => {
     try {
         const appServer = getRunningExpressApp()
         const assistant = await appServer.AppDataSource.getRepository(Assistant).findOneBy({

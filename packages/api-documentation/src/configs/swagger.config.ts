@@ -1,4 +1,3 @@
-//@ts-ignore
 import swaggerJSDoc from 'swagger-jsdoc'
 
 const swaggerUiOptions = {
@@ -12,21 +11,21 @@ const swaggerUiOptions = {
             summary: 'Interactive swagger-ui auto-generated API docs from express, based on a swagger.yml file',
             version: '1.0.0',
             description:
-                'This module serves auto-generated swagger-ui generated API docs from express, based on a swagger.yml file. \n\n This module works only when running Flowise in dev mode. \n\n The result is living documentation for Flowise API served via http://localhost:6655/api-docs route.',
+                'This module serves auto-generated swagger-ui generated API docs from Flowise express backend, based on a swagger.yml file. Document is served via http://localhost:6655/api-docs route.',
             termsOfService: 'https://flowiseai.com',
             license: {
                 name: 'FlowiseAI',
                 url: 'https://github.com/FlowiseAI/Flowise/blob/main/LICENSE.md'
             },
             contact: {
-                name: 'Octavian FlowiseAI',
-                email: 'octavian.selardi@flowiseai.com'
+                name: 'FlowiseAI',
+                email: 'support@flowiseai.com'
             }
         },
         servers: [
             {
                 url: 'http://localhost:3000/api/v1',
-                description: 'Flowise Server Dev Mode'
+                description: 'Flowise Server'
             }
         ]
     },

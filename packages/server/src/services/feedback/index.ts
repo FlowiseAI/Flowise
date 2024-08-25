@@ -25,7 +25,7 @@ const getAllChatMessageFeedback = async (
     }
 }
 
-// Add chatmessage feedback for chatflowid
+// Add chatmessage feedback
 const createChatMessageFeedbackForChatflow = async (requestBody: Partial<IChatMessageFeedback>): Promise<any> => {
     try {
         const dbResponse = await utilAddChatMessageFeedback(requestBody)
@@ -38,10 +38,10 @@ const createChatMessageFeedbackForChatflow = async (requestBody: Partial<IChatMe
     }
 }
 
-// Add chatmessage feedback for chatflowid
-const updateChatMessageFeedbackForChatflow = async (chatflowId: string, requestBody: Partial<IChatMessageFeedback>): Promise<any> => {
+// Add chatmessage feedback
+const updateChatMessageFeedbackForChatflow = async (feedbackId: string, requestBody: Partial<IChatMessageFeedback>): Promise<any> => {
     try {
-        const dbResponse = await utilUpdateChatMessageFeedback(chatflowId, requestBody)
+        const dbResponse = await utilUpdateChatMessageFeedback(feedbackId, requestBody)
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
