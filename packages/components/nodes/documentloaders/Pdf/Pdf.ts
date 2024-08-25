@@ -109,6 +109,7 @@ class Pdf_DocumentLoaders implements INode {
             const chatflowid = options.chatflowid
 
             for (const file of files) {
+                if (!file) continue
                 const fileData = await getFileFromStorage(file, chatflowid)
                 const bf = Buffer.from(fileData)
                 await this.extractDocs(usage, bf, legacyBuild, textSplitter, docs)
@@ -121,6 +122,7 @@ class Pdf_DocumentLoaders implements INode {
             }
 
             for (const file of files) {
+                if (!file) continue
                 const splitDataURI = file.split(',')
                 splitDataURI.pop()
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')

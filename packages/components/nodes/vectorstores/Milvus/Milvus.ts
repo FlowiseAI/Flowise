@@ -4,13 +4,14 @@ import { Document } from '@langchain/core/documents';
 import { MilvusLibArgs, Milvus } from '@langchain/community/vectorstores/milvus';
 import { Embeddings } from '@langchain/core/embeddings';
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface';
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils';
+import { howToUseFileUpload } from '../VectorStoreUtils';
 
 interface InsertRow {
     [x: string]: string | number[];
 }
 
-export class Milvus_VectorStores implements INode {
+class Milvus_VectorStores implements INode {
     label: string;
     name: string;
     version: number;
@@ -27,7 +28,7 @@ export class Milvus_VectorStores implements INode {
     constructor() {
         this.label = 'Milvus';
         this.name = 'milvus';
-        this.version = 1.0;
+        this.version = 2.0;
         this.type = 'Milvus';
         this.icon = 'milvus.svg';
         this.category = 'Vector Stores';
@@ -67,7 +68,20 @@ export class Milvus_VectorStores implements INode {
             {
                 label: 'Milvus Partition Name',
                 name: 'milvusPartition',
+                default: '_default',
                 type: 'string',
+                optional: true
+            },
+            {
+                label: 'File Upload',
+                name: 'fileUpload',
+                description: 'Allow file upload on the chat',
+                hint: {
+                    label: 'How to use',
+                    value: howToUseFileUpload
+                },
+                type: 'boolean',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -162,37 +176,17 @@ export class Milvus_VectorStores implements INode {
             // embeddings
             const docs = nodeData.inputs?.document as Document[];
             const embeddings = nodeData.inputs?.embeddings as Embeddings;
+            const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean;
 
             // credential
             const credentialData = await getCredentialData(nodeData.credential ?? '', options);
             const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData);
             const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData);
 
-            // tls
-            const secure = nodeData.inputs?.secure as boolean;
-            const clientPemPath = nodeData.inputs?.clientPemPath as string;
-            const clientKeyPath = nodeData.inputs?.clientKeyPath as string;
-            const caPemPath = nodeData.inputs?.caPemPath as string;
-            const serverName = nodeData.inputs?.serverName as string;
-
-            // partition
-            const partitionName = nodeData.inputs?.milvusPartition as string;
-
             // init MilvusLibArgs
             const milVusArgs: MilvusLibArgs = {
                 url: address,
-                collectionName: collectionName,
-                partitionName: partitionName,
-                clientConfig: {
-                    address: address,
-                    ssl: secure,
-                    tls: {
-                        rootCertPath: caPemPath,
-                        privateKeyPath: clientKeyPath,
-                        certChainPath: clientPemPath,
-                        serverName: serverName
-                    }
-                }
+                collectionName: collectionName
             };
 
             if (milvusUser) milVusArgs.username = milvusUser;
@@ -202,6 +196,9 @@ export class Milvus_VectorStores implements INode {
             const finalDocs = [];
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                    if (isFileUploadEnabled && options.chatId) {
+                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId };
+                    }
                     finalDocs.push(new Document(flattenDocs[i]));
                 }
             }
@@ -225,8 +222,9 @@ export class Milvus_VectorStores implements INode {
         // server setup
         const address = nodeData.inputs?.milvusServerUrl as string;
         const collectionName = nodeData.inputs?.milvusCollection as string;
-        const milvusFilter = nodeData.inputs?.milvusFilter as string;
+        const _milvusFilter = nodeData.inputs?.milvusFilter as string;
         const textField = nodeData.inputs?.milvusTextField as string;
+        const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean;
 
         // embeddings
         const embeddings = nodeData.inputs?.embeddings as Embeddings;
@@ -250,25 +248,34 @@ export class Milvus_VectorStores implements INode {
         const caPemPath = nodeData.inputs?.caPemPath as string;
         const serverName = nodeData.inputs?.serverName as string;
 
+        // partition
+        const partitionName = nodeData.inputs?.milvusPartition ?? '_default';
+
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
             url: address,
             collectionName: collectionName,
-            textField: textField,
+            partitionName: partitionName,
+            ssl: secure,
             clientConfig: {
                 address: address,
-                ssl: secure,
                 tls: {
-                    rootCertPath: caPemPath,
-                    privateKeyPath: clientKeyPath,
                     certChainPath: clientPemPath,
-                    serverName: serverName
+                    privateKeyPath: clientKeyPath,
+                    rootCertPath: caPemPath,
                 }
-            }
+            },
+            textField: textField
         };
 
         if (milvusUser) milVusArgs.username = milvusUser;
         if (milvusPassword) milVusArgs.password = milvusPassword;
+
+        let milvusFilter = _milvusFilter;
+        if (isFileUploadEnabled && options.chatId) {
+            if (milvusFilter) milvusFilter += ` OR ${FLOWISE_CHATID} == "${options.chatId}" OR NOT EXISTS(${FLOWISE_CHATID})`;
+            else milvusFilter = `${FLOWISE_CHATID} == "${options.chatId}" OR NOT EXISTS(${FLOWISE_CHATID})`;
+        }
 
         const vectorStore = await Milvus.fromExistingCollection(embeddings, milVusArgs);
 
@@ -364,12 +371,12 @@ const similaritySearchVectorWithScore = async (query: number[], k: number, vecto
     });
     return results;
 };
+
 class MilvusUpsert extends Milvus {
     async addVectors(vectors: number[][], documents: Document[]): Promise<void> {
         if (vectors.length === 0) {
             return;
         }
-
         await this.ensureCollection(vectors, documents);
 
         const insertDatas: InsertRow[] = [];
@@ -377,17 +384,10 @@ class MilvusUpsert extends Milvus {
         for (let index = 0; index < vectors.length; index++) {
             const vec = vectors[index];
             const doc = documents[index];
-
-            console.log(`Vector Dimension: ${vec.length}`);
-            console.log(`Document ${index} structure:`, JSON.stringify(doc, null, 2));
-
             const data: InsertRow = {
                 [this.textField]: doc.pageContent,
                 [this.vectorField]: vec
             };
-
-            console.log(`Keyof: textField: ${this.textField}, vectorField: ${this.vectorField}`);
-
             this.fields.forEach((field) => {
                 switch (field) {
                     case this.primaryField:
@@ -420,8 +420,9 @@ class MilvusUpsert extends Milvus {
 
             insertDatas.push(data);
         }
+
         const partitionName = this.partitionName ?? '_default';
-        // Ensure the partition exists before inserting data
+
         const partitionResp = await this.client.hasPartition({
             collection_name: this.collectionName,
             partition_name: partitionName
@@ -462,7 +463,6 @@ class MilvusUpsert extends Milvus {
 
         const insertResp = await this.client.insert({
             collection_name: this.collectionName,
-            partition_name: partitionName, // Use the partition name here
             fields_data: insertDatas
         });
 
@@ -473,6 +473,5 @@ class MilvusUpsert extends Milvus {
         await this.client.flushSync({ collection_names: [this.collectionName] });
     }
 }
-
 
 module.exports = { nodeClass: Milvus_VectorStores };

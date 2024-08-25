@@ -11,6 +11,8 @@ import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
+export const FLOWISE_CHATID = 'flowise_chatId'
+
 /*
  * List of dependencies allowed to be import in vm2
  */
@@ -814,4 +816,68 @@ export const getVersion: () => Promise<{ version: string }> = async () => {
     }
 
     throw new Error('None of the package.json paths could be parsed')
+}
+
+/**
+ * Map MimeType to InputField
+ * @param {string} mimeType
+ * @returns {string}
+ */
+export const mapMimeTypeToInputField = (mimeType: string) => {
+    switch (mimeType) {
+        case 'text/plain':
+            return 'txtFile'
+        case 'application/pdf':
+            return 'pdfFile'
+        case 'application/json':
+            return 'jsonFile'
+        case 'text/csv':
+            return 'csvFile'
+        case 'application/json-lines':
+        case 'application/jsonl':
+        case 'text/jsonl':
+            return 'jsonlinesFile'
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'docxFile'
+        case 'application/vnd.yaml':
+        case 'application/x-yaml':
+        case 'text/vnd.yaml':
+        case 'text/x-yaml':
+        case 'text/yaml':
+            return 'yamlFile'
+        default:
+            return 'txtFile'
+    }
+}
+
+/**
+ * Map MimeType to Extension
+ * @param {string} mimeType
+ * @returns {string}
+ */
+export const mapMimeTypeToExt = (mimeType: string) => {
+    switch (mimeType) {
+        case 'text/plain':
+            return 'txt'
+        case 'application/pdf':
+            return 'pdf'
+        case 'application/json':
+            return 'json'
+        case 'text/csv':
+            return 'csv'
+        case 'application/json-lines':
+        case 'application/jsonl':
+        case 'text/jsonl':
+            return 'jsonl'
+        case 'application/msword':
+            return 'doc'
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'docx'
+        case 'application/vnd.ms-excel':
+            return 'xls'
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            return 'xlsx'
+        default:
+            return ''
+    }
 }

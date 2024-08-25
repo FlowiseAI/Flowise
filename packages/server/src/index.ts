@@ -20,6 +20,7 @@ import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './u
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
+import { validateAPIKey } from './utils/validateKey'
 
 declare global {
     namespace Express {
@@ -140,10 +141,38 @@ export class App {
                 '/api/v1/ip',
                 '/api/v1/ping'
             ]
-            this.app.use((req, res, next) => {
+            this.app.use(async (req, res, next) => {
                 if (/\/api\/v1\//i.test(req.url)) {
-                    whitelistURLs.some((url) => new RegExp(url, 'i').test(req.url)) ? next() : basicAuthMiddleware(req, res, next)
-                } else next()
+                    if (whitelistURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
+                        next()
+                    } else if (req.headers['x-request-from'] === 'internal') {
+                        basicAuthMiddleware(req, res, next)
+                    } else {
+                        const isKeyValidated = await validateAPIKey(req)
+                        if (!isKeyValidated) {
+                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        }
+                        next()
+                    }
+                } else {
+                    next()
+                }
+            })
+        } else {
+            this.app.use(async (req, res, next) => {
+                if (/\/api\/v1\//i.test(req.url)) {
+                    if (req.headers['x-request-from'] === 'internal') {
+                        next()
+                    } else {
+                        const isKeyValidated = await validateAPIKey(req)
+                        if (!isKeyValidated) {
+                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        }
+                        next()
+                    }
+                } else {
+                    next()
+                }
             })
         }
 
