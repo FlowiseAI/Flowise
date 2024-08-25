@@ -187,8 +187,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             const chatmsg = allChatlogs[i]
             const chatPK = getChatPK(chatmsg)
             let filePaths = []
-            if (chatmsg.fileUploads) {
-                chatmsg.fileUploads = JSON.parse(chatmsg.fileUploads)
+            if (chatmsg.fileUploads && Array.isArray(chatmsg.fileUploads)) {
                 chatmsg.fileUploads.forEach((file) => {
                     if (file.type === 'stored-file') {
                         filePaths.push(
@@ -203,11 +202,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 time: chatmsg.createdDate
             }
             if (filePaths.length) msg.filePaths = filePaths
-            if (chatmsg.sourceDocuments) msg.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
-            if (chatmsg.usedTools) msg.usedTools = JSON.parse(chatmsg.usedTools)
-            if (chatmsg.fileAnnotations) msg.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
+            if (chatmsg.sourceDocuments) msg.sourceDocuments = chatmsg.sourceDocuments
+            if (chatmsg.usedTools) msg.usedTools = Jchatmsg.usedTools
+            if (chatmsg.fileAnnotations) msg.fileAnnotations = chatmsg.fileAnnotations
             if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
-            if (chatmsg.agentReasoning) msg.agentReasoning = JSON.parse(chatmsg.agentReasoning)
+            if (chatmsg.agentReasoning) msg.agentReasoning = chatmsg.agentReasoning
 
             if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
                 obj[chatPK] = {
@@ -326,8 +325,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     })
                 }
             }
-            if (chatmsg.fileUploads) {
-                chatmsg.fileUploads = JSON.parse(chatmsg.fileUploads)
+            if (chatmsg.fileUploads && Array.isArray(chatmsg.fileUploads)) {
                 chatmsg.fileUploads.forEach((file) => {
                     if (file.type === 'stored-file') {
                         file.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${chatmsg.chatId}&fileName=${file.name}`
@@ -339,10 +337,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 message: chatmsg.content,
                 type: chatmsg.role
             }
-            if (chatmsg.sourceDocuments) obj.sourceDocuments = JSON.parse(chatmsg.sourceDocuments)
-            if (chatmsg.usedTools) obj.usedTools = JSON.parse(chatmsg.usedTools)
-            if (chatmsg.fileAnnotations) obj.fileAnnotations = JSON.parse(chatmsg.fileAnnotations)
-            if (chatmsg.agentReasoning) obj.agentReasoning = JSON.parse(chatmsg.agentReasoning)
+            if (chatmsg.sourceDocuments) obj.sourceDocuments = chatmsg.sourceDocuments
+            if (chatmsg.usedTools) obj.usedTools = chatmsg.usedTools
+            if (chatmsg.fileAnnotations) obj.fileAnnotations = chatmsg.fileAnnotations
+            if (chatmsg.agentReasoning) obj.agentReasoning = chatmsg.agentReasoning
 
             loadedMessages.push(obj)
         }
