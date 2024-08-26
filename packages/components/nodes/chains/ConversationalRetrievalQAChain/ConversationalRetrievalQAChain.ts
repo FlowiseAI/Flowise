@@ -22,8 +22,9 @@ import {
     INodeData,
     INodeParams,
     IDatabaseEntity,
-    MemoryMethods, IServerSideEventStreamer
-} from "../../../src/Interface";
+    MemoryMethods,
+    IServerSideEventStreamer
+} from '../../../src/Interface'
 import { QA_TEMPLATE, REPHRASE_TEMPLATE, RESPONSE_TEMPLATE } from './prompts'
 
 type RetrievalChainInput = {
