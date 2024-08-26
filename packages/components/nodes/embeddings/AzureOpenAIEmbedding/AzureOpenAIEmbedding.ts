@@ -44,6 +44,13 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'BasePath',
+                name: 'basepath',
+                type: 'string',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -51,6 +58,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
+        const basePath = nodeData.inputs?.basepath as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
@@ -62,7 +70,8 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,
-            azureOpenAIApiVersion
+            azureOpenAIApiVersion,
+            azureOpenAIBasePath: basePath
         }
 
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
