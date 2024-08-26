@@ -396,3 +396,11 @@ export interface IVisionChatModal {
     revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
 }
+
+export interface IServerSideEventStreamer {
+    streamEvent(chatId: string, data: string): void
+    streamSourceDocumentsEvent(chatId: string, data: string): void
+    streamTokenEvent(chatId: string, data: string): void
+    streamStartEvent(chatId: string, data: string): void
+    streamEndEvent(chatId: string): void
+}

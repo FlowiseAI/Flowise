@@ -4,7 +4,15 @@ import { HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, FewShotPromptTemplate, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { OutputFixingParser } from 'langchain/output_parsers'
 import { LLMChain } from 'langchain/chains'
-import { IVisionChatModal, ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import {
+    IVisionChatModal,
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeOutputsValue,
+    INodeParams,
+    IServerSideEventStreamer
+} from '../../../src/Interface'
 import { additionalCallbacks, ConsoleCallbackHandler, CustomChainHandler } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
@@ -252,7 +260,7 @@ const runPrediction = async (
                 const handler = new CustomChainHandler(socketIO, socketIOClientId)
                 if (sseStreamer) {
                     handler.chatId = chatId
-                    handler.sseStreamer = sseStreamer
+                    handler.sseStreamer = sseStreamer as IServerSideEventStreamer
                 }
                 const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
                 return formatResponse(res?.text)
