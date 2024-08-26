@@ -117,30 +117,31 @@ export class App {
             next()
         })
 
+        const whitelistURLs = [
+            '/api/v1/verify/apikey/',
+            '/api/v1/chatflows/apikey/',
+            '/api/v1/public-chatflows',
+            '/api/v1/public-chatbotConfig',
+            '/api/v1/prediction/',
+            '/api/v1/vector/upsert/',
+            '/api/v1/node-icon/',
+            '/api/v1/components-credentials-icon/',
+            '/api/v1/chatflows-streaming',
+            '/api/v1/chatflows-uploads',
+            '/api/v1/openai-assistants-file/download',
+            '/api/v1/feedback',
+            '/api/v1/leads',
+            '/api/v1/get-upload-file',
+            '/api/v1/ip',
+            '/api/v1/ping'
+        ]
+
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
             const password = process.env.FLOWISE_PASSWORD
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
-            const whitelistURLs = [
-                '/api/v1/verify/apikey/',
-                '/api/v1/chatflows/apikey/',
-                '/api/v1/public-chatflows',
-                '/api/v1/public-chatbotConfig',
-                '/api/v1/prediction/',
-                '/api/v1/vector/upsert/',
-                '/api/v1/node-icon/',
-                '/api/v1/components-credentials-icon/',
-                '/api/v1/chatflows-streaming',
-                '/api/v1/chatflows-uploads',
-                '/api/v1/openai-assistants-file/download',
-                '/api/v1/feedback',
-                '/api/v1/leads',
-                '/api/v1/get-upload-file',
-                '/api/v1/ip',
-                '/api/v1/ping'
-            ]
             this.app.use(async (req, res, next) => {
                 if (/\/api\/v1\//i.test(req.url)) {
                     if (whitelistURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
@@ -161,7 +162,9 @@ export class App {
         } else {
             this.app.use(async (req, res, next) => {
                 if (/\/api\/v1\//i.test(req.url)) {
-                    if (req.headers['x-request-from'] === 'internal') {
+                    if (whitelistURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
+                        next()
+                    } else if (req.headers['x-request-from'] === 'internal') {
                         next()
                     } else {
                         const isKeyValidated = await validateAPIKey(req)
