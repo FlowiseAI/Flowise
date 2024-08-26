@@ -236,7 +236,6 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
                 newChatflow.id = undefined
                 newChatflow.name += ' with new id'
             }
-            newChatflow.type = 'CHATFLOW'
             newChatflow.flowData = JSON.stringify(JSON.parse(flowData))
             return newChatflow
         })

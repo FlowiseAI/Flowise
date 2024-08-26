@@ -25,6 +25,19 @@ const exportAll = async (): Promise<{ FileDefaultName: string; Tool: Tool[]; Cha
     }
 }
 
+const importAll = async (importData: { Tool: Partial<Tool>[]; ChatFlow: Partial<ChatFlow>[] }) => {
+    try {
+        // step 1 - importchatflow
+        if (importData.ChatFlow.length > 0) await chatflowService.importChatflows(importData.ChatFlow)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: exportImportService.importAll - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
-    exportAll
+    exportAll,
+    importAll
 }

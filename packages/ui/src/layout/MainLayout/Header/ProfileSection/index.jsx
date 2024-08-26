@@ -36,7 +36,6 @@ import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSetting
 import './index.css'
 
 //API
-import chatFlowsApi from '@/api/chatflows'
 import exportImportApi from '@/api/exportimport'
 
 // Hooks
@@ -93,7 +92,7 @@ const ProfileSection = ({ username, handleLogout }) => {
             }
         })
     }
-    const importChatflowsApi = useApi(chatFlowsApi.importChatflows)
+    const importAllApi = useApi(exportImportApi.importAll)
     const fileChange = (e) => {
         if (!e.target.files) return
 
@@ -104,16 +103,16 @@ const ProfileSection = ({ username, handleLogout }) => {
             if (!evt?.target?.result) {
                 return
             }
-            const chatflows = JSON.parse(evt.target.result)
-            importChatflowsApi.request(chatflows)
+            const body = JSON.parse(evt.target.result)
+            importAllApi.request(body)
         }
         reader.readAsText(file)
     }
 
-    const importChatflowsSuccess = () => {
+    const importAllSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: `Import chatflows successful`,
+            message: `Import All successful`,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -126,9 +125,9 @@ const ProfileSection = ({ username, handleLogout }) => {
         })
     }
     useEffect(() => {
-        if (importChatflowsApi.error) errorFailed(`Failed to import chatflows: ${importChatflowsApi.error.response.data.message}`)
-        if (importChatflowsApi.data) {
-            importChatflowsSuccess()
+        if (importAllApi.error) errorFailed(`Failed to import all: ${importAllApi.error.response.data.message}`)
+        if (importAllApi.data) {
+            importAllSuccess()
             // if current location is /chatflows, refresh the page
             if (location.pathname === '/chatflows') navigate(0)
             else {
@@ -138,12 +137,12 @@ const ProfileSection = ({ username, handleLogout }) => {
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [importChatflowsApi.error, importChatflowsApi.data])
-    const importAllChatflows = () => {
+    }, [importAllApi.error, importAllApi.data])
+    const importAll = () => {
         inputRef.current.click()
     }
-    const exportAll = useApi(exportImportApi.exportAll)
-    const exportAllSuccess = () => {
+    const exportAllApi = useApi(exportImportApi.exportAll)
+    const exportAllApiSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
             message: `Export All successful`,
@@ -159,23 +158,23 @@ const ProfileSection = ({ username, handleLogout }) => {
         })
     }
     useEffect(() => {
-        if (exportAll.error) errorFailed(`Failed to export all: ${exportAll.error.response.data.message}`)
-        if (exportAll.data) {
+        if (exportAllApi.error) errorFailed(`Failed to export all: ${exportAllApi.error.response.data.message}`)
+        if (exportAllApi.data) {
             try {
-                const dataStr = stringify(exportData(exportAll.data))
+                const dataStr = stringify(exportData(exportAllApi.data))
                 const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
 
                 const linkElement = document.createElement('a')
                 linkElement.setAttribute('href', dataUri)
-                linkElement.setAttribute('download', exportAll.data.FileDefaultName)
+                linkElement.setAttribute('download', exportAllApi.data.FileDefaultName)
                 linkElement.click()
-                exportAllSuccess()
+                exportAllApiSuccess()
             } catch (error) {
                 errorFailed(`Failed to export all: ${getErrorMessage(error)}`)
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [exportAll.error, exportAll.data])
+    }, [exportAllApi.error, exportAllApi.data])
 
     const prevOpen = useRef(open)
     useEffect(() => {
@@ -260,7 +259,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
-                                                        exportAll.request()
+                                                        exportAllApi.request()
                                                     }}
                                                 >
                                                     <ListItemIcon>
@@ -271,13 +270,13 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
-                                                        importAllChatflows()
+                                                        importAll()
                                                     }}
                                                 >
                                                     <ListItemIcon>
                                                         <IconFileUpload stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Import Chatflows</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>Import All</Typography>} />
                                                 </ListItemButton>
                                                 <input ref={inputRef} type='file' hidden onChange={fileChange} />
                                                 <ListItemButton
