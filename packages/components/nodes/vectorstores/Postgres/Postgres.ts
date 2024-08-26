@@ -5,8 +5,9 @@ import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { TypeORMVectorStore, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { index } from '../../../src/indexing'
+import { howToUseFileUpload } from '../VectorStoreUtils'
 
 class Postgres_VectorStores implements INode {
     label: string
@@ -25,7 +26,7 @@ class Postgres_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres'
         this.name = 'postgres'
-        this.version = 5.0
+        this.version = 6.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
@@ -83,6 +84,18 @@ class Postgres_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'File Upload',
+                name: 'fileUpload',
+                description: 'Allow file upload on the chat',
+                hint: {
+                    label: 'How to use',
+                    value: howToUseFileUpload
+                },
+                type: 'boolean',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Additional Configuration',
                 name: 'additionalConfig',
                 type: 'json',
@@ -132,6 +145,7 @@ class Postgres_VectorStores implements INode {
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const additionalConfig = nodeData.inputs?.additionalConfig as string
             const recordManager = nodeData.inputs?.recordManager
+            const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
             let additionalConfiguration = {}
             if (additionalConfig) {
@@ -161,6 +175,9 @@ class Postgres_VectorStores implements INode {
             const finalDocs = []
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                    if (isFileUploadEnabled && options.chatId) {
+                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
+                    }
                     finalDocs.push(new Document(flattenDocs[i]))
                 }
             }
@@ -268,10 +285,19 @@ class Postgres_VectorStores implements INode {
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
         const _pgMetadataFilter = nodeData.inputs?.pgMetadataFilter
+        const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
         let pgMetadataFilter: any
         if (_pgMetadataFilter) {
             pgMetadataFilter = typeof _pgMetadataFilter === 'object' ? _pgMetadataFilter : JSON.parse(_pgMetadataFilter)
+        }
+        if (isFileUploadEnabled && options.chatId) {
+            pgMetadataFilter = pgMetadataFilter || {}
+            pgMetadataFilter = {
+                ...pgMetadataFilter,
+                [FLOWISE_CHATID]: options.chatId,
+                $notexists: FLOWISE_CHATID // special filter to check if the field does not exist
+            }
         }
 
         let additionalConfiguration = {}
@@ -334,12 +360,20 @@ const similaritySearchVectorWithScore = async (
 ) => {
     const embeddingString = `[${query.join(',')}]`
     let _filter = '{}'
-    if (filter && typeof filter === 'object') _filter = JSON.stringify(filter)
+    let notExists = ''
+    if (filter && typeof filter === 'object') {
+        if (filter.$notexists) {
+            notExists = `OR NOT (metadata ? '${filter.$notexists}')`
+            delete filter.$notexists
+        }
+        _filter = JSON.stringify(filter)
+    }
 
     const queryString = `
         SELECT *, embedding <=> $1 as "_distance"
         FROM ${tableName}
         WHERE metadata @> $2
+        ${notExists}
         ORDER BY "_distance" ASC
         LIMIT $3;`
 

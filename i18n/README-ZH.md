@@ -180,9 +180,9 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 
       </details>
 
-## 💻 云托管
+## ☁️ 云托管
 
-即将推出
+[开始使用云托管](https://flowiseai.com/)
 
 ## 🙋 支持
 
