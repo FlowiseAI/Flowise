@@ -328,7 +328,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
             }
 
-            const options: ICommonObject = {
+            const flowData: ICommonObject = {
                 chatflowid,
                 chatId,
                 sessionId,
@@ -342,8 +342,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 reactFlowNodes,
                 incomingInput.question,
                 chatHistory,
-                incomingInput.overrideConfig,
-                options
+                flowData
             )
             nodeToExecuteData = reactFlowNodeData
 
