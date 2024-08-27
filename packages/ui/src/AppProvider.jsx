@@ -17,6 +17,7 @@ import { CssBaseline, StyledEngineProvider } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import themes from '@/themes'
 import { setBaseURL } from './store/constant'
+import { BubbleChat } from 'aai-embed-react'
 
 const AppProvider = ({ children }) => {
     const { user, getAccessTokenSilently, isLoading, loginWithRedirect, isAuthenticated } = useAuth0()
@@ -50,6 +51,7 @@ const AppProvider = ({ children }) => {
                         <ConfirmContextProvider>
                             {/* Improve loading state when there is no user (currently all or nothing due to icons ) */}
                             <ReactFlowContext>{user ? children : null}</ReactFlowContext>
+                            <BubbleChat apiHost='https://lastrev.flowise.theanswer.ai' chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d' />
                         </ConfirmContextProvider>
                     </SnackbarProvider>
                 </Provider>
