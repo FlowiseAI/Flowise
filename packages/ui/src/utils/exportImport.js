@@ -11,7 +11,7 @@ const sanitizeTool = (Tool) => {
                 color: tool.color,
                 iconSrc: tool.iconSrc,
                 schema: tool.schema,
-                func: stringify(tool.func)
+                func: tool.func
             }
         })
     } catch (error) {

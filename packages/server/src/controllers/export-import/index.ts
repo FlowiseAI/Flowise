@@ -15,7 +15,7 @@ const exportAll = async (req: Request, res: Response, next: NextFunction) => {
 const importAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const importData: { Tool: Partial<Tool>[]; ChatFlow: Partial<ChatFlow>[] } = req.body
-        const apiResponse = await exportImportService.importAll(importData)
+        await exportImportService.importAll(importData)
         return res.json({ message: 'success' })
     } catch (error) {
         next(error)

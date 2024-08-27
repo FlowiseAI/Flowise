@@ -1,9 +1,10 @@
 import { StatusCodes } from 'http-status-codes'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { App } from '../..'
 import { Tool } from '../../database/entities/Tool'
-import { getAppVersion } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { getAppVersion } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const createTool = async (requestBody: any): Promise<any> => {
     try {
@@ -79,10 +80,58 @@ const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
     }
 }
 
+const importTools = async (newTools: Partial<Tool>[], appServer?: App) => {
+    try {
+        if (!appServer) appServer = getRunningExpressApp()
+
+        // step 1 - check whether file tools array is zero
+        if (newTools.length == 0) throw new Error('No tools in this file.')
+
+        // step 2 - check whether ids are duplicate in database
+        let ids = '('
+        let count: number = 0
+        const lastCount = newTools.length - 1
+        newTools.forEach((newTools) => {
+            ids += `'${newTools.id}'`
+            if (lastCount != count) ids += ','
+            if (lastCount == count) ids += ')'
+            count += 1
+        })
+
+        const selectResponse = await appServer.AppDataSource.getRepository(Tool)
+            .createQueryBuilder('t')
+            .select('t.id')
+            .where(`t.id IN ${ids}`)
+            .getMany()
+        const foundIds = selectResponse.map((response) => {
+            return response.id
+        })
+
+        // step 3 - remove ids that are only duplicate
+        const prepTools: Partial<Tool>[] = newTools.map((newTool) => {
+            let id: string = ''
+            if (newTool.id) id = newTool.id
+            if (foundIds.includes(id)) {
+                newTool.id = undefined
+                newTool.name += ' with new id'
+            }
+            return newTool
+        })
+
+        // step 4 - transactional insert array of entities
+        const insertResponse = await appServer.AppDataSource.getRepository(Tool).insert(prepTools)
+
+        return insertResponse
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.importTools - ${getErrorMessage(error)}`)
+    }
+}
+
 export default {
     createTool,
     deleteTool,
     getAllTools,
     getToolById,
-    updateTool
+    updateTool,
+    importTools
 }
