@@ -191,13 +191,13 @@ class Milvus_VectorStores implements INode {
             const serverName = nodeData.inputs?.serverName as string
 
             // partition
-            const partition = nodeData.inputs?.milvusPartition as string
+            const partitionName = nodeData.inputs?.milvusPartition ?? '_default'
 
             // init MilvusLibArgs
             const milVusArgs: MilvusLibArgs = {
                 url: address,
                 collectionName: collectionName,
-                partitionName: partition,
+                partitionName: partitionName,
                 clientConfig: {
                     address: address,
                     ssl: secure,
@@ -270,13 +270,13 @@ class Milvus_VectorStores implements INode {
         const serverName = nodeData.inputs?.serverName as string
 
         // partition
-        const partition = nodeData.inputs?.milvusPartition as string
+        const partitionName = nodeData.inputs?.milvusPartition ?? '_default'
 
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
             url: address,
             collectionName: collectionName,
-            partitionName: partition,
+            partitionName: partitionName,
             clientConfig: {
                 address: address,
                 ssl: secure,
