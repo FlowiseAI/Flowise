@@ -337,13 +337,21 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
             }
 
+            const flowData: ICommonObject = {
+                chatflowid,
+                chatId,
+                sessionId,
+                chatHistory,
+                ...incomingInput.overrideConfig
+            }
+
             const reactFlowNodeData: INodeData = await resolveVariables(
                 appServer.AppDataSource,
                 nodeToExecute.data,
                 reactFlowNodes,
                 incomingInput.question,
                 chatHistory,
-                incomingInput.overrideConfig
+                flowData
             )
             nodeToExecuteData = reactFlowNodeData
 
