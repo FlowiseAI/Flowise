@@ -14,6 +14,8 @@ declare global {
                     sub: string
                     email: string
                     name: string
+                    'https://theanswer.ai/roles'?: string[]
+                    permissions?: string[]
                 }
                 token: string
             }

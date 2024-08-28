@@ -18,7 +18,7 @@ const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, n
         }
         const apiResponse = await chatflowsService.checkIfChatflowIsValidForStreaming(req.params.id)
         return res.json(apiResponse)
-} catch (error) {
+    } catch (error) {
         next(error)
     }
 }
@@ -57,7 +57,11 @@ const getAllChatflows = async (req: Request, res: Response, next: NextFunction) 
             return res.status(401).send('Unauthorized')
         }
         const filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter as string)) : undefined
-        const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType, filter, req.user)
+        const apiResponse = await chatflowsService.getAllChatflows(
+            req.query?.type as ChatflowType,
+            { ...res.locals.filter, ...filter },
+            req.user
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)

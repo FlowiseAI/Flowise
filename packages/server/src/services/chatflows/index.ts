@@ -123,7 +123,6 @@ const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, us
     try {
         const appServer = getRunningExpressApp()
         const { id: userId, organizationId, permissions } = user ?? {}
-        console.log(user)
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
 

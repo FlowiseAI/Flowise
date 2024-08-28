@@ -214,7 +214,7 @@ const Chatflows = () => {
                         <Tab label='My Chatflows' />
                         <Tab label='AnswerAI Supported' />
                         <Tab label='Community' />
-                        {flags?.['org:manage']?.enabled ? <Tab label='All Chatflows' /> : null}
+                        {flags?.['org:manage']?.enabled ? <Tab label='Organization Chatflows' /> : null}
                     </Tabs>
                 </Box>
                 <TabPanel value={tabValue} index={0}>
