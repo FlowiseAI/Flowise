@@ -30,6 +30,17 @@ export const validateChatflowAPIKey = async (req: Request, chatflow: ChatFlow) =
  * @param {Request} req
  */
 export const validateAPIKey = async (req: Request) => {
+    // Logi Symphony authorization check.
+    // If false, check regular API keys.
+    if (process.env.LOGI_SYMPHONY_URL) {
+        const importPath = './LogiSymphony/logisymphony'
+        const logiSymphony = await import(importPath)
+        const symphonyCheck = await logiSymphony.checkAPIAuthorization(req)
+        if (symphonyCheck) {
+            return true
+        }
+    }
+
     const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
     if (!authorizationHeader) return false
 
