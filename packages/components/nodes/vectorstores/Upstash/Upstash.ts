@@ -1,12 +1,12 @@
 import { flatten } from 'lodash'
 import { IndexingResult, INode, INodeOutputsValue, INodeParams, INodeData, ICommonObject } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { UpstashVectorStore } from '@langchain/community/vectorstores/upstash'
 import { Index as UpstashIndex } from '@upstash/vector'
 import { index } from '../../../src/indexing'
-import { resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
+import { howToUseFileUpload, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 type UpstashVectorStoreParams = {
     index: UpstashIndex
@@ -29,7 +29,7 @@ class Upstash_VectorStores implements INode {
     constructor() {
         this.label = 'Upstash Vector'
         this.name = 'upstash'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Upstash'
         this.icon = 'upstash.svg'
         this.category = 'Vector Stores'
@@ -61,6 +61,18 @@ class Upstash_VectorStores implements INode {
                 name: 'recordManager',
                 type: 'RecordManager',
                 description: 'Keep track of the record to prevent duplication',
+                optional: true
+            },
+            {
+                label: 'File Upload',
+                name: 'fileUpload',
+                description: 'Allow file upload on the chat',
+                hint: {
+                    label: 'How to use',
+                    value: howToUseFileUpload
+                },
+                type: 'boolean',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -100,6 +112,7 @@ class Upstash_VectorStores implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const recordManager = nodeData.inputs?.recordManager
+            const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const UPSTASH_VECTOR_REST_URL = getCredentialParam('UPSTASH_VECTOR_REST_URL', credentialData, nodeData)
@@ -114,6 +127,9 @@ class Upstash_VectorStores implements INode {
             const finalDocs = []
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                    if (isFileUploadEnabled && options.chatId) {
+                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
+                    }
                     finalDocs.push(new Document(flattenDocs[i]))
                 }
             }
@@ -145,12 +161,48 @@ class Upstash_VectorStores implements INode {
             } catch (e) {
                 throw new Error(e)
             }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const UPSTASH_VECTOR_REST_URL = getCredentialParam('UPSTASH_VECTOR_REST_URL', credentialData, nodeData)
+            const UPSTASH_VECTOR_REST_TOKEN = getCredentialParam('UPSTASH_VECTOR_REST_TOKEN', credentialData, nodeData)
+
+            const upstashIndex = new UpstashIndex({
+                url: UPSTASH_VECTOR_REST_URL,
+                token: UPSTASH_VECTOR_REST_TOKEN
+            })
+
+            const obj = {
+                index: upstashIndex
+            }
+
+            const upstashStore = new UpstashVectorStore(embeddings, obj)
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = UPSTASH_VECTOR_REST_URL
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await upstashStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    await upstashStore.delete({ ids })
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
         }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const upstashMetadataFilter = nodeData.inputs?.upstashMetadataFilter
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const UPSTASH_VECTOR_REST_URL = getCredentialParam('UPSTASH_VECTOR_REST_URL', credentialData, nodeData)
@@ -167,6 +219,10 @@ class Upstash_VectorStores implements INode {
 
         if (upstashMetadataFilter) {
             obj.filter = upstashMetadataFilter
+        }
+        if (isFileUploadEnabled && options.chatId) {
+            if (upstashMetadataFilter) obj.filter += ` OR ${FLOWISE_CHATID} = "${options.chatId}" OR HAS NOT FIELD ${FLOWISE_CHATID}`
+            else obj.filter = `${FLOWISE_CHATID} = "${options.chatId}" OR HAS NOT FIELD ${FLOWISE_CHATID}`
         }
 
         const vectorStore = await UpstashVectorStore.fromExistingIndex(embeddings, obj)

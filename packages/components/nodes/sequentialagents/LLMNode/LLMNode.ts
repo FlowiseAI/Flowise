@@ -25,7 +25,8 @@ import {
     getVM,
     processImageMessage,
     transformObjectPropertyToFunction,
-    restructureMessages
+    restructureMessages,
+    checkMessageHistory
 } from '../commonUtils'
 import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
 
@@ -130,6 +131,31 @@ return {
   aggregate: [result.content]
 };`
 
+const messageHistoryExample = `const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');
+
+return [
+    new HumanMessage("What is 333382 🦜 1932?"),
+    new AIMessage({
+        content: "",
+        tool_calls: [
+        {
+            id: "12345",
+            name: "calulator",
+            args: {
+                number1: 333382,
+                number2: 1932,
+                operation: "divide",
+            },
+        },
+        ],
+    }),
+    new ToolMessage({
+        tool_call_id: "12345",
+        content: "The answer is 172.558.",
+    }),
+    new AIMessage("The answer is 172.558."),
+]`
+
 class LLMNode_SeqAgents implements INode {
     label: string
     name: string
@@ -141,17 +167,19 @@ class LLMNode_SeqAgents implements INode {
     baseClasses: string[]
     inputs?: INodeParams[]
     badge?: string
+    documentation?: string
     outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'LLM Node'
         this.name = 'seqLLMNode'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'LLMNode'
         this.icon = 'llmNode.svg'
         this.category = 'Sequential Agents'
         this.description = 'Run Chat Model and return the output'
         this.baseClasses = [this.type]
+        this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-5.-llm-node'
         this.inputs = [
             {
                 label: 'Name',
@@ -177,9 +205,20 @@ class LLMNode_SeqAgents implements INode {
                 additionalParams: true
             },
             {
-                label: 'Start | Agent | LLM | Tool Node',
+                label: 'Messages History',
+                name: 'messageHistory',
+                description:
+                    'Return a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
+                type: 'code',
+                hideCodeExecute: true,
+                codeExample: messageHistoryExample,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Start | Agent | Condition | LLM | Tool Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | LLMNode | ToolNode',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode',
                 list: true
             },
             {
@@ -353,6 +392,8 @@ class LLMNode_SeqAgents implements INode {
                     state,
                     llm,
                     agent: await createAgent(
+                        nodeData,
+                        options,
                         llmNodeName,
                         state,
                         bindModel || llm,
@@ -392,6 +433,8 @@ class LLMNode_SeqAgents implements INode {
 }
 
 async function createAgent(
+    nodeData: INodeData,
+    options: ICommonObject,
     llmNodeName: string,
     state: ISeqAgentsState,
     llm: BaseChatModel,
@@ -436,7 +479,9 @@ async function createAgent(
     if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
     if (humanPrompt) promptArrays.push(['human', humanPrompt])
 
-    const prompt = ChatPromptTemplate.fromMessages(promptArrays)
+    let prompt = ChatPromptTemplate.fromMessages(promptArrays)
+    prompt = await checkMessageHistory(nodeData, options, prompt, promptArrays, systemPrompt)
+
     if (multiModalMessageContent.length) {
         const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
         prompt.promptMessages.splice(1, 0, msg)

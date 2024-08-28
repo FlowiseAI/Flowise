@@ -26,13 +26,13 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${req.params.id} not found`)
         }
         let isDomainAllowed = true
-        logger.info(`[server]: Request originated from ${req.headers.origin}`)
+        logger.info(`[server]: Request originated from ${req.headers.origin || 'UNKNOWN ORIGIN'}`)
         if (chatflow.chatbotConfig) {
             const parsedConfig = JSON.parse(chatflow.chatbotConfig)
             // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.
             const isValidAllowedOrigins = parsedConfig.allowedOrigins?.length && parsedConfig.allowedOrigins[0] !== ''
-            if (isValidAllowedOrigins) {
-                const originHeader = req.headers.origin as string
+            if (isValidAllowedOrigins && req.headers.origin) {
+                const originHeader = req.headers.origin
                 const origin = new URL(originHeader).host
                 isDomainAllowed =
                     parsedConfig.allowedOrigins.filter((domain: string) => {

@@ -5,7 +5,7 @@
     "nodes": [
         {
             "width": 300,
-            "height": 513,
+            "height": 511,
             "id": "promptTemplate_0",
             "position": {
                 "x": 384.4880563109088,
@@ -65,7 +65,7 @@
         },
         {
             "width": 300,
-            "height": 508,
+            "height": 507,
             "id": "llmChain_0",
             "position": {
                 "x": 770.4559230968546,
@@ -164,7 +164,7 @@
         },
         {
             "width": 300,
-            "height": 670,
+            "height": 669,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 376.92707114970364,
@@ -343,7 +343,7 @@
         },
         {
             "width": 300,
-            "height": 670,
+            "height": 669,
             "id": "chatOpenAI_1",
             "position": {
                 "x": 2653.726672579251,
@@ -522,7 +522,7 @@
         },
         {
             "width": 300,
-            "height": 508,
+            "height": 507,
             "id": "llmChain_1",
             "position": {
                 "x": 3089.9937691022837,
@@ -621,7 +621,7 @@
         },
         {
             "width": 300,
-            "height": 670,
+            "height": 674,
             "id": "customFunction_2",
             "position": {
                 "x": -19.95227863012829,
@@ -709,7 +709,7 @@
         },
         {
             "width": 300,
-            "height": 670,
+            "height": 674,
             "id": "customFunction_1",
             "position": {
                 "x": 1887.4670208331604,
@@ -797,7 +797,7 @@
         },
         {
             "width": 300,
-            "height": 513,
+            "height": 511,
             "id": "promptTemplate_1",
             "position": {
                 "x": 2655.2632506040304,
@@ -857,7 +857,7 @@
         },
         {
             "width": 300,
-            "height": 305,
+            "height": 304,
             "id": "getVariable_1",
             "position": {
                 "x": 2272.8555266616872,
@@ -919,7 +919,7 @@
         },
         {
             "width": 300,
-            "height": 356,
+            "height": 355,
             "id": "setVariable_1",
             "position": {
                 "x": 1516.338224315744,
@@ -991,7 +991,7 @@
         },
         {
             "width": 300,
-            "height": 757,
+            "height": 765,
             "id": "ifElseFunction_0",
             "position": {
                 "x": 1147.8020838770517,
@@ -1050,7 +1050,7 @@
                 "inputs": {
                     "functionInputVariables": "{\"sqlQuery\":\"{{llmChain_0.data.instance}}\"}",
                     "functionName": "IF SQL Query contains SELECT and WHERE",
-                    "ifFunction": "const sqlQuery = $sqlQuery.trim();\n\nif (sqlQuery.includes(\"SELECT\") && sqlQuery.includes(\"WHERE\")) {\n    return sqlQuery;\n}",
+                    "ifFunction": "const sqlQuery = $sqlQuery.trim();\n\nconst regex = /SELECT\\s.*?(?:\\n|$)/gi;\n\n// Extracting the SQL part\nconst matches = sqlQuery.match(regex);\nconst cleanSql = matches ? matches[0].trim() : \"\";\n\nif (cleanSql.includes(\"SELECT\") && cleanSql.includes(\"WHERE\")) {\n    return cleanSql;\n}",
                     "elseFunction": "return $sqlQuery;"
                 },
                 "outputAnchors": [
@@ -1092,7 +1092,7 @@
         },
         {
             "width": 300,
-            "height": 513,
+            "height": 511,
             "id": "promptTemplate_2",
             "position": {
                 "x": 1193.7489579044463,
@@ -1152,7 +1152,7 @@
         },
         {
             "width": 300,
-            "height": 670,
+            "height": 669,
             "id": "chatOpenAI_2",
             "position": {
                 "x": 1545.1023725538003,
@@ -1331,7 +1331,7 @@
         },
         {
             "width": 300,
-            "height": 508,
+            "height": 507,
             "id": "llmChain_2",
             "position": {
                 "x": 1914.509823868027,

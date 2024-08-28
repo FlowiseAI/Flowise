@@ -209,11 +209,11 @@ class Supervisor_MultiAgents implements INode {
                 prompt = messages.prompt
                 multiModalMessageContent = messages.multiModalMessageContent
 
-                if (llm.bindTools === undefined) {
+                if ((llm as any).bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
                 }
 
-                const modelWithTool = llm.bindTools([tool])
+                const modelWithTool = (llm as any).bindTools([tool])
 
                 const outputParser = new ToolCallingAgentOutputParser()
 
@@ -464,11 +464,11 @@ class Supervisor_MultiAgents implements INode {
                 prompt = messages.prompt
                 multiModalMessageContent = messages.multiModalMessageContent
 
-                if (llm.bindTools === undefined) {
+                if ((llm as any).bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
                 }
 
-                const modelWithTool = llm.bindTools([tool])
+                const modelWithTool = (llm as any).bindTools([tool])
 
                 const outputParser = new ToolCallingAgentOutputParser()
 
