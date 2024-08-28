@@ -93,7 +93,12 @@ const getAllTemplates = async () => {
         }
 
         // Code to add Logi Symphony chatflows to the top of marketplace.
-        let SymphonyTemplate = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Logi Symphony Prompt Chaining')
+        let SymphonyTemplate = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Logi Symphony SQL')
+        if (SymphonyTemplate > 0) {
+            sortedTemplates.unshift(sortedTemplates.splice(SymphonyTemplate, 1)[0])
+        }
+
+        SymphonyTemplate = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Logi Symphony Prompt Chaining')
         if (SymphonyTemplate > 0) {
             sortedTemplates.unshift(sortedTemplates.splice(SymphonyTemplate, 1)[0])
         }
