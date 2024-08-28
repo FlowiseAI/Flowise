@@ -581,9 +581,15 @@ export const buildFlow = async ({
                 if (reactFlowNode.data.name === 'ifElseFunction' && typeof outputResult === 'object') {
                     let sourceHandle = ''
                     if (outputResult.type === true) {
-                        sourceHandle = `${nodeId}-output-returnFalse-string|number|boolean|json|array`
+                        // sourceHandle = `${nodeId}-output-returnFalse-string|number|boolean|json|array`
+                        sourceHandle = (
+                            reactFlowNode.data.outputAnchors.flatMap((n) => n.options).find((n) => n?.name === 'returnFalse') as any
+                        )?.id
                     } else if (outputResult.type === false) {
-                        sourceHandle = `${nodeId}-output-returnTrue-string|number|boolean|json|array`
+                        // sourceHandle = `${nodeId}-output-returnTrue-string|number|boolean|json|array`
+                        sourceHandle = (
+                            reactFlowNode.data.outputAnchors.flatMap((n) => n.options).find((n) => n?.name === 'returnTrue') as any
+                        )?.id
                     }
 
                     const ifElseEdge = reactFlowEdges.find((edg) => edg.source === nodeId && edg.sourceHandle === sourceHandle)
