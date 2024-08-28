@@ -3,10 +3,10 @@ import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Credential } from '../../database/entities/Credential'
 import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
-import { ICredentialReturnResponse } from '../../Interface'
+import { ICredentialReturnResponse, IUser } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { IsNull, Like } from 'typeorm'
+import { FindOptionsWhere, IsNull, Like } from 'typeorm'
 
 const createCredential = async (requestBody: any, userId?: string, organizationId?: string) => {
     try {
@@ -42,99 +42,69 @@ const deleteCredentials = async (credentialId: string, userId?: string): Promise
     }
 }
 
-const getAllCredentials = async (paramCredentialName: any, userId?: string, organizationId?: string) => {
+const getAllCredentials = async (paramCredentialName: any, user: IUser) => {
     try {
         const appServer = getRunningExpressApp()
-        let dbResponse = []
-        if (paramCredentialName) {
-            if (Array.isArray(paramCredentialName)) {
-                for (let i = 0; i < paramCredentialName.length; i += 1) {
-                    const name = paramCredentialName[i] as string
-                    const credentials = await appServer.AppDataSource.getRepository(Credential).find({
-                        where: [
-                            {
-                                credentialName: name,
-                                userId: userId
-                            },
-                            {
-                                credentialName: name,
-                                userId: IsNull()
-                            }
-                        ]
-                    })
+        const credentialRepo = appServer.AppDataSource.getRepository(Credential)
 
-                    const orgCondition = `
-                        Credential.organizationId = :organizationId AND
-                        Credential.credentialName = :name AND
-                        Credential.visibility LIKE '%Organization%'
-                    `
-                    const orgCredentials = await appServer.AppDataSource.getRepository(Credential)
-                        .createQueryBuilder('Credential')
-                        .where(orgCondition, { organizationId, name })
-                        .getMany()
-                    credentials.push(...orgCredentials)
-                    dbResponse.push(...credentials)
-                }
+        const isAdmin = user?.roles?.includes('Admin')
+
+        // This function fetches credentials based on different ownership levels:
+        // 1. User-specific credentials (linked to userId)
+        // 2. Global credentials (userId is null)
+        // 3. Organization-wide credentials (linked to organizationId)
+        // 4. All organization credentials if user is admin
+        const fetchCredentials = async (name?: string) => {
+            let baseConditions = []
+
+            if (isAdmin) {
+                // Admin can see all organization credentials
+                baseConditions = [{ organizationId: user.organizationId }]
             } else {
-                const credentials = await appServer.AppDataSource.getRepository(Credential).find({
-                    where: [
-                        {
-                            credentialName: paramCredentialName as string,
-                            userId: userId
-                        },
-                        {
-                            credentialName: paramCredentialName as string,
-                            userId: IsNull()
-                        }
-                    ]
-                })
-                const orgCondition = `
-                        Credential.organizationId = :organizationId AND
-                        Credential.credentialName = :name AND
-                        Credential.visibility LIKE '%Organization%'
-                    `
-                const orgCredentials = await appServer.AppDataSource.getRepository(Credential)
-                    .createQueryBuilder('Credential')
-                    .where(orgCondition, { organizationId, name: paramCredentialName as string })
-                    .getMany()
-                credentials.push(...orgCredentials)
-                dbResponse = [...credentials]
-            }
-        } else {
-            const credentials = await appServer.AppDataSource.getRepository(Credential).find({
-                where: [
+                baseConditions = [
+                    { userId: user.id },
+                    { userId: IsNull() },
                     {
-                        userId
-                    },
-                    {
-                        userId: IsNull()
+                        organizationId: user.organizationId,
+                        visibility: Like('%Organization%')
                     }
                 ]
-            })
-            const orgCondition = `
-                        Credential.organizationId = :organizationId AND
-                        Credential.visibility LIKE '%Organization%'
-            `
-            const orgCredentials = await appServer.AppDataSource.getRepository(Credential)
-                .createQueryBuilder('Credential')
-                .where(orgCondition, { organizationId })
-                .getMany()
-
-            dbResponse.push(...orgCredentials)
-
-            for (const credential of credentials) {
-                dbResponse.push(omit(credential, ['encryptedData']))
             }
-        }
-        // Deduplicate credentials based on id
-        const uniqueCredentials = Array.from(new Map(dbResponse.map((item) => [item.id, item])).values())
 
-        // Add editable property
-        const finalResponse = uniqueCredentials.map((credential) => ({
+            const conditions = name ? baseConditions.map((condition) => ({ ...condition, credentialName: name })) : baseConditions
+
+            return credentialRepo.find({
+                where: conditions as FindOptionsWhere<Credential> | FindOptionsWhere<Credential>[]
+            })
+        }
+
+        let credentials: Credential[] = []
+
+        // The paramCredentialName parameter affects the retrieval logic:
+        // - If provided as an array, it fetches credentials for each name in the array
+        // - If provided as a single string, it fetches credentials matching that specific name
+        // - If not provided (null/undefined), it fetches all accessible credentials
+        if (Array.isArray(paramCredentialName)) {
+            for (const name of paramCredentialName) {
+                credentials.push(...(await fetchCredentials(name)))
+            }
+        } else if (paramCredentialName) {
+            credentials = await fetchCredentials(paramCredentialName)
+        } else {
+            credentials = await fetchCredentials()
+        }
+
+        // Remove sensitive data from user-specific credentials
+        const sanitizedCredentials = credentials.map((credential) => (credential.userId ? omit(credential, ['encryptedData']) : credential))
+
+        // Deduplicate credentials based on id
+        const uniqueCredentials = Array.from(new Map(sanitizedCredentials.map((item) => [item.id, item])).values())
+
+        // Add isOwner property to indicate if the current user owns the credential
+        return uniqueCredentials.map((credential) => ({
             ...credential,
-            editable: credential.userId === userId
+            isOwner: credential.userId === user.id
         }))
-        return finalResponse
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

@@ -8,26 +8,38 @@ type BotProps = {
   observersConfig?: observersConfigType;
 };
 
-let elementUsed: Element | undefined;
+let fullElementUsed: Element | undefined;
+let chatbotElementUsed: Element | undefined;
 
 export const initFull = (props: BotProps & { id?: string }) => {
-  destroy();
-  const fullElement = props.id ? document.getElementById(props.id) : document.querySelector('flowise-fullchatbot');
-  if (!fullElement) throw new Error('<flowise-fullchatbot> element not found.');
+  destroyFull();
+  const fullElement = props.id ? document.getElementById(props.id) : document.querySelector('aai-fullchatbot');
+  if (!fullElement) throw new Error('<aai-fullchatbot> element not found.');
   Object.assign(fullElement, props);
-  elementUsed = fullElement;
+  fullElementUsed = fullElement;
 };
 
 export const init = (props: BotProps) => {
-  destroy();
-  const element = document.createElement('flowise-chatbot');
+  destroyChatbot();
+  const element = document.createElement('aai-chatbot');
   Object.assign(element, props);
   document.body.appendChild(element);
-  elementUsed = element;
+  chatbotElementUsed = element;
+};
+
+export const destroyFull = () => {
+  fullElementUsed?.remove();
+  fullElementUsed = undefined;
+};
+
+export const destroyChatbot = () => {
+  chatbotElementUsed?.remove();
+  chatbotElementUsed = undefined;
 };
 
 export const destroy = () => {
-  elementUsed?.remove();
+  destroyFull();
+  destroyChatbot();
 };
 
 type Chatbot = {

@@ -1,6 +1,6 @@
 {
   "name": "aai-embed",
-  "version": "1.2.1",
+  "version": "1.2.4",
   "description": "Javascript library to display flowise chatbot on your website",
   "type": "module",
   "main": "dist/index.js",

@@ -74,7 +74,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const userMessageDateTime = new Date()
 
         if (!isInternal && !chatflow?.isPublic) {
-            const isOwner = await checkOwnership(chatflow, req.user?.id, req.user?.organizationId)
+            const isOwner = await checkOwnership(chatflow, req.user)
             const isKeyValidated = await utilValidateKey(req, chatflow)
             if (!isOwner && !isKeyValidated) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)

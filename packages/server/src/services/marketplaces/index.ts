@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { IReactFlowEdge, IReactFlowNode } from '../../Interface'
+import { IReactFlowEdge, IReactFlowNode, IUser } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow, ChatflowVisibility } from '../../database/entities/ChatFlow'
 import checkOwnership from '../../utils/checkOwnership'
@@ -23,7 +23,7 @@ const getCategories = (fileDataObj: ITemplate) => {
 }
 
 // Get all templates for marketplaces
-const getAllTemplates = async (userId?: string, organizationId?: string) => {
+const getAllTemplates = async (user: IUser | undefined) => {
     try {
         // TODO: Pull from all chatflows and tools in the database that have visibility Marketplace
         let marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows')
@@ -39,7 +39,7 @@ const getAllTemplates = async (userId?: string, organizationId?: string) => {
         })
 
         chatflows = chatflows.filter((chatflow) => chatflow.visibility?.includes(ChatflowVisibility.MARKETPLACE))
-        chatflows = chatflows.filter((chatflow) => checkOwnership(chatflow, userId, organizationId))
+        chatflows = chatflows.filter((chatflow) => checkOwnership(chatflow, user))
 
         if (!chatflows) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflows not found`)
@@ -49,7 +49,7 @@ const getAllTemplates = async (userId?: string, organizationId?: string) => {
                 id: chatflow.id,
                 templateName: chatflow.name,
                 flowData: chatflow.flowData,
-                badge: chatflow.userId === userId ? `SHARED BY ME` : `SHARED BY OTHERS`,
+                badge: chatflow.userId === user?.id ? `SHARED BY ME` : `SHARED BY OTHERS`,
                 categories: chatflow.category,
                 type: chatflow.type === 'MULTIAGENT' ? 'Agent Community' : 'Chatflow Community',
                 description: chatflow.description

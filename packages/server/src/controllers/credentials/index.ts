@@ -35,7 +35,7 @@ const deleteCredentials = async (req: Request, res: Response, next: NextFunction
 
 const getAllCredentials = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await credentialsService.getAllCredentials(req.query.credentialName, req.user?.id, req.user?.organizationId)
+        const apiResponse = await credentialsService.getAllCredentials(req.query.credentialName, req.user!)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
