@@ -1191,7 +1191,6 @@ export const decryptCredentialData = async (
     componentCredentialName?: string,
     componentCredentials?: IComponentCredentials
 ): Promise<ICredentialDataDecrypted> => {
-    console.log('=========> Reach packages\\server\\src\\utilsencryptionKey.ts decryptCredentialData')
     const encyption = await encryption.get()
     const decryptedData = AES.decrypt(encryptedData, encyption.encryptionKey)
     const decryptedDataStr = decryptedData.toString(enc.Utf8)
