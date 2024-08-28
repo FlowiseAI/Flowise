@@ -19,13 +19,12 @@ import { AddLead1710832117612 } from './1710832117612-AddLead'
 import { AddLeadToChatMessage1711537986113 } from './1711537986113-AddLeadToChatMessage'
 import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
+import { AddVectorStoreConfigToDocStore1715861032479 } from './1715861032479-AddVectorStoreConfigToDocStore'
+import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlow'
 import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 import { AddEncryption1721308320215 } from './1721309779046-AddEncryption'
 import { AddIsEncryptionKeyLostToCredential1722473901281 } from './1722473901281-AddIsEncryptionKeyLostToCredential'
-import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
-import { AddVectorStoreConfigToDocStore1715861032479 } from './1715861032479-AddVectorStoreConfigToDocStore'
-import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlow'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -49,7 +48,6 @@ export const sqliteMigrations = [
     AddLead1710832117612,
     AddLeadToChatMessage1711537986113,
     AddAgentReasoningToChatMessage1714679514451,
-    AddTypeToChatFlow1766759476232,
     AddEncryption1721308320215,
     AddTypeToChatFlow1716300000000,
     AddVectorStoreConfigToDocStore1715861032479,

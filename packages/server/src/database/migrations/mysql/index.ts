@@ -26,7 +26,6 @@ import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionTo
 import { AddEncryption1721308320215 } from './1721309779046-AddEncryption'
 import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
 import { AddIsEncryptionKeyLostToCredential1722473901281 } from './1722473901281-AddIsEncryptionKeyLostToCredential'
-import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -50,7 +49,6 @@ export const mysqlMigrations = [
     AddLead1710832127079,
     AddLeadToChatMessage1711538023578,
     AddAgentReasoningToChatMessage1714679514451,
-    AddTypeToChatFlow1766759476232,
     AddEncryption1721308320215,
     AddTypeToChatFlow1716300000000,
     AddVectorStoreConfigToDocStore1715861032479,

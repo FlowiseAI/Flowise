@@ -20,6 +20,7 @@ import { getAPIKeys } from './utils/apiKey'
 import logger, { expressRequestLogger } from './utils/logger'
 import { initializeRateLimiter } from './utils/rateLimit'
 import { Telemetry } from './utils/telemetry'
+import { validateAPIKey } from './utils/validateKey'
 
 declare global {
     namespace Express {

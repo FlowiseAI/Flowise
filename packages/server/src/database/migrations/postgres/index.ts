@@ -26,7 +26,6 @@ import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 import { AddEncryption1721308320215 } from './1721309779046-AddEncryption'
 import { AddIsEncryptionKeyLostToCredential1722473901281 } from './1722473901281-AddIsEncryptionKeyLostToCredential'
-import { AddTypeToChatFlow1766759476232 } from './1766759476232-AddTypeToChatFlow'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -51,7 +50,6 @@ export const postgresMigrations = [
     AddLead1710832137905,
     AddLeadToChatMessage1711538016098,
     AddAgentReasoningToChatMessage1714679514451,
-    AddTypeToChatFlow1766759476232,
     AddEncryption1721308320215,
     AddTypeToChatFlow1716300000000,
     AddVectorStoreConfigToDocStore1715861032479,
