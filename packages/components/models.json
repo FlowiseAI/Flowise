@@ -221,6 +221,10 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-4o-mini",
+                    "name": "gpt-4o-mini"
+                },
+                {
                     "label": "gpt-4o",
                     "name": "gpt-4o"
                 },
@@ -249,6 +253,10 @@
         {
             "name": "azureChatOpenAI_LlamaIndex",
             "models": [
+                {
+                    "label": "gpt-4o-mini",
+                    "name": "gpt-4o-mini"
+                },
                 {
                     "label": "gpt-4o",
                     "name": "gpt-4o"
