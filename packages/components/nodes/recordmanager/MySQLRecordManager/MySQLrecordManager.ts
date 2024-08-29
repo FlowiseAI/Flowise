@@ -194,7 +194,7 @@ class MySQLRecordManager implements RecordManagerInterface {
                 \`key\` varchar(255) not null,
                 \`namespace\` varchar(255) not null,
                 \`updated_at\` DOUBLE precision not null,
-                \`group_id\` varchar(36),
+                \`group_id\` longtext,
                 unique key \`unique_key_namespace\` (\`key\`,
 \`namespace\`));`)
             const columns = [`updated_at`, `key`, `namespace`, `group_id`]

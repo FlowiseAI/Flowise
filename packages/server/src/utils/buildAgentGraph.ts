@@ -181,6 +181,7 @@ export const buildAgentGraph = async (
                     options,
                     startingNodeIds,
                     incomingInput.question,
+                    incomingInput.history,
                     chatHistory,
                     incomingInput?.overrideConfig,
                     sessionId || chatId,
@@ -196,6 +197,7 @@ export const buildAgentGraph = async (
                     appServer.nodesPool.componentNodes,
                     options,
                     incomingInput.question,
+                    incomingInput.history,
                     chatHistory,
                     incomingInput?.overrideConfig,
                     sessionId || chatId,
@@ -447,6 +449,7 @@ const compileMultiAgentsGraph = async (
     options: ICommonObject,
     startingNodeIds: string[],
     question: string,
+    prependHistoryMessages: IMessage[] = [],
     chatHistory: IMessage[] = [],
     overrideConfig?: ICommonObject,
     threadId?: string,
@@ -482,7 +485,7 @@ const compileMultiAgentsGraph = async (
 
         let flowNodeData = cloneDeep(workerNode.data)
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, chatHistory)
+        flowNodeData = await resolveVariables(appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
 
         try {
             const workerResult: IMultiAgentNode = await newNodeInstance.init(flowNodeData, question, options)
@@ -513,7 +516,7 @@ const compileMultiAgentsGraph = async (
         let flowNodeData = cloneDeep(supervisorNode.data)
 
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, chatHistory)
+        flowNodeData = await resolveVariables(appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
 
         if (flowNodeData.inputs) flowNodeData.inputs.workerNodes = supervisorWorkers[supervisor]
 
@@ -570,10 +573,22 @@ const compileMultiAgentsGraph = async (
             const callbacks = await additionalCallbacks(flowNodeData, options)
             const config = { configurable: { thread_id: threadId } }
 
+            let prependMessages = []
+            // Only append in the first message
+            if (prependHistoryMessages.length === chatHistory.length) {
+                for (const message of prependHistoryMessages) {
+                    if (message.role === 'apiMessage' || message.type === 'apiMessage') {
+                        prependMessages.push(new AIMessage({ content: message.message || message.content || '' }))
+                    } else if (message.role === 'userMessage' || message.type === 'userMessage') {
+                        prependMessages.push(new HumanMessage({ content: message.message || message.content || '' }))
+                    }
+                }
+            }
+
             // Return stream result as we should only have 1 supervisor
             return await graph.stream(
                 {
-                    messages: [new HumanMessage({ content: question })]
+                    messages: [...prependMessages, new HumanMessage({ content: question })]
                 },
                 { recursionLimit: supervisorResult?.recursionLimit ?? 100, callbacks: [loggerHandler, ...callbacks], configurable: config }
             )
@@ -605,6 +620,7 @@ const compileSeqAgentsGraph = async (
     componentNodes: IComponentNodes,
     options: ICommonObject,
     question: string,
+    prependHistoryMessages: IMessage[] = [],
     chatHistory: IMessage[] = [],
     overrideConfig?: ICommonObject,
     threadId?: string,
@@ -660,7 +676,7 @@ const compileSeqAgentsGraph = async (
 
         flowNodeData = cloneDeep(node.data)
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = resolveVariables(flowNodeData, reactflowNodes, question, chatHistory)
+        flowNodeData = await resolveVariables(appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
 
         const seqAgentNode: ISeqAgentNode = await newNodeInstance.init(flowNodeData, question, options)
         return seqAgentNode
@@ -952,8 +968,20 @@ const compileSeqAgentsGraph = async (
         const callbacks = await additionalCallbacks(flowNodeData as any, options)
         const config = { configurable: { thread_id: threadId }, bindModel }
 
+        let prependMessages = []
+        // Only append in the first message
+        if (prependHistoryMessages.length === chatHistory.length) {
+            for (const message of prependHistoryMessages) {
+                if (message.role === 'apiMessage' || message.type === 'apiMessage') {
+                    prependMessages.push(new AIMessage({ content: message.message || message.content || '' }))
+                } else if (message.role === 'userMessage' || message.type === 'userMessage') {
+                    prependMessages.push(new HumanMessage({ content: message.message || message.content || '' }))
+                }
+            }
+        }
+
         let humanMsg: { messages: HumanMessage[] | ToolMessage[] } | null = {
-            messages: [new HumanMessage({ content: question })]
+            messages: [...prependMessages, new HumanMessage({ content: question })]
         }
 
         if (action && action.mapping && question === action.mapping.approve) {

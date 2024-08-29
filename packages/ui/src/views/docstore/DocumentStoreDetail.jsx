@@ -29,20 +29,31 @@ import { tableCellClasses } from '@mui/material/TableCell'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DocumentLoaderListDialog from '@/views/docstore/DocumentLoaderListDialog'
 import ErrorBoundary from '@/ErrorBoundary'
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import DeleteDocStoreDialog from './DeleteDocStoreDialog'
 
 // API
 import documentsApi from '@/api/documentstore'
 
 // Hooks
 import useApi from '@/hooks/useApi'
-import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // icons
-import { IconPlus, IconRefresh, IconScissors, IconTrash, IconX, IconVectorBezier2 } from '@tabler/icons-react'
+import {
+    IconPlus,
+    IconRefresh,
+    IconListDetails,
+    IconTrash,
+    IconX,
+    IconVectorBezier2,
+    IconRowInsertTop,
+    IconZoomScan
+} from '@tabler/icons-react'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import FileEditIcon from '@mui/icons-material/Edit'
@@ -51,8 +62,6 @@ import doc_store_details_emptySVG from '@/assets/images/doc_store_details_empty.
 
 // store
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
-import { StyledButton } from '@/ui-component/button/StyledButton'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -121,17 +130,19 @@ const DocumentStoreDetails = () => {
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-    const { confirm } = useConfirm()
 
     const getSpecificDocumentStore = useApi(documentsApi.getSpecificDocumentStore)
 
     const [error, setError] = useState(null)
     const [isLoading, setLoading] = useState(true)
+    const [isBackdropLoading, setBackdropLoading] = useState(false)
     const [showDialog, setShowDialog] = useState(false)
     const [documentStore, setDocumentStore] = useState({})
     const [dialogProps, setDialogProps] = useState({})
     const [showDocumentLoaderListDialog, setShowDocumentLoaderListDialog] = useState(false)
     const [documentLoaderListDialogProps, setDocumentLoaderListDialogProps] = useState({})
+    const [showDeleteDocStoreDialog, setShowDeleteDocStoreDialog] = useState(false)
+    const [deleteDocStoreDialogProps, setDeleteDocStoreDialogProps] = useState({})
 
     const URLpath = document.location.pathname.toString().split('/')
     const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
@@ -144,9 +155,17 @@ const DocumentStoreDetails = () => {
         navigate('/document-stores/chunks/' + storeId + '/' + id)
     }
 
+    const showVectorStoreQuery = (id) => {
+        navigate('/document-stores/query/' + id)
+    }
+
     const onDocLoaderSelected = (docLoaderComponentName) => {
         setShowDocumentLoaderListDialog(false)
         navigate('/document-stores/' + storeId + '/' + docLoaderComponentName)
+    }
+
+    const showVectorStore = (id) => {
+        navigate('/document-stores/vector/' + id)
     }
 
     const listLoaders = () => {
@@ -157,18 +176,61 @@ const DocumentStoreDetails = () => {
         setShowDocumentLoaderListDialog(true)
     }
 
-    const onLoaderDelete = async (file) => {
-        const confirmPayload = {
-            title: `Delete`,
-            description: `Delete Loader ${file.loaderName} ? This will delete all the associated document chunks.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+    const deleteVectorStoreDataFromStore = async (storeId) => {
+        try {
+            await documentsApi.deleteVectorStoreDataFromStore(storeId)
+        } catch (error) {
+            console.error(error)
         }
-        const isConfirmed = await confirm(confirmPayload)
+    }
 
-        if (isConfirmed) {
+    const onDocStoreDelete = async (type, file, removeFromVectorStore) => {
+        setBackdropLoading(true)
+        setShowDeleteDocStoreDialog(false)
+        if (type === 'STORE') {
+            if (removeFromVectorStore) {
+                await deleteVectorStoreDataFromStore(storeId)
+            }
+            try {
+                const deleteResp = await documentsApi.deleteDocumentStore(storeId)
+                setBackdropLoading(false)
+                if (deleteResp.data) {
+                    enqueueSnackbar({
+                        message: 'Store, Loader and associated document chunks deleted',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'success',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                    navigate('/document-stores/')
+                }
+            } catch (error) {
+                setBackdropLoading(false)
+                setError(error)
+                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
+                enqueueSnackbar({
+                    message: `Failed to delete loader: ${errorData}`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        } else if (type === 'LOADER') {
             try {
                 const deleteResp = await documentsApi.deleteLoaderFromStore(storeId, file.id)
+                setBackdropLoading(false)
                 if (deleteResp.data) {
                     enqueueSnackbar({
                         message: 'Loader and associated document chunks deleted',
@@ -186,6 +248,7 @@ const DocumentStoreDetails = () => {
                 }
             } catch (error) {
                 setError(error)
+                setBackdropLoading(false)
                 const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
                 enqueueSnackbar({
                     message: `Failed to delete loader: ${errorData}`,
@@ -204,51 +267,31 @@ const DocumentStoreDetails = () => {
         }
     }
 
-    const onStoreDelete = async () => {
-        const confirmPayload = {
+    const onLoaderDelete = (file, vectorStoreConfig, recordManagerConfig) => {
+        const props = {
+            title: `Delete`,
+            description: `Delete Loader ${file.loaderName} ? This will delete all the associated document chunks.`,
+            vectorStoreConfig,
+            recordManagerConfig,
+            type: 'LOADER',
+            file
+        }
+
+        setDeleteDocStoreDialogProps(props)
+        setShowDeleteDocStoreDialog(true)
+    }
+
+    const onStoreDelete = (vectorStoreConfig, recordManagerConfig) => {
+        const props = {
             title: `Delete`,
             description: `Delete Store ${getSpecificDocumentStore.data?.name} ? This will delete all the associated loaders and document chunks.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            vectorStoreConfig,
+            recordManagerConfig,
+            type: 'STORE'
         }
-        const isConfirmed = await confirm(confirmPayload)
 
-        if (isConfirmed) {
-            try {
-                const deleteResp = await documentsApi.deleteDocumentStore(storeId)
-                if (deleteResp.data) {
-                    enqueueSnackbar({
-                        message: 'Store, Loader and associated document chunks deleted',
-                        options: {
-                            key: new Date().getTime() + Math.random(),
-                            variant: 'success',
-                            action: (key) => (
-                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                    <IconX />
-                                </Button>
-                            )
-                        }
-                    })
-                    navigate('/document-stores/')
-                }
-            } catch (error) {
-                setError(error)
-                const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
-                enqueueSnackbar({
-                    message: `Failed to delete loader: ${errorData}`,
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'error',
-                        persist: true,
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
-            }
-        }
+        setDeleteDocStoreDialogProps(props)
+        setShowDeleteDocStoreDialog(true)
     }
 
     const onEditClicked = () => {
@@ -315,24 +358,15 @@ const DocumentStoreDetails = () => {
                             onBack={() => navigate('/document-stores')}
                             onEdit={() => onEditClicked()}
                         >
-                            <IconButton onClick={onStoreDelete} size='small' color='error' title='Delete Document Store' sx={{ mr: 2 }}>
+                            <IconButton
+                                onClick={() => onStoreDelete(documentStore.vectorStoreConfig, documentStore.recordManagerConfig)}
+                                size='small'
+                                color='error'
+                                title='Delete Document Store'
+                                sx={{ mr: 2 }}
+                            >
                                 <IconTrash />
                             </IconButton>
-                            {documentStore?.status === 'STALE' && (
-                                <Button variant='outlined' sx={{ mr: 2 }} startIcon={<IconRefresh />} onClick={onConfirm}>
-                                    Refresh
-                                </Button>
-                            )}
-                            {documentStore?.totalChunks > 0 && (
-                                <Button
-                                    variant='outlined'
-                                    sx={{ borderRadius: 2, height: '100%' }}
-                                    startIcon={<IconScissors />}
-                                    onClick={() => showStoredChunks('all')}
-                                >
-                                    View Chunks
-                                </Button>
-                            )}
                             <StyledButton
                                 variant='contained'
                                 sx={{ borderRadius: 2, height: '100%', color: 'white' }}
@@ -341,6 +375,67 @@ const DocumentStoreDetails = () => {
                             >
                                 Add Document Loader
                             </StyledButton>
+                            {(documentStore?.status === 'STALE' || documentStore?.status === 'UPSERTING') && (
+                                <Button variant='outlined' sx={{ mr: 2 }} startIcon={<IconRefresh />} onClick={onConfirm}>
+                                    Refresh
+                                </Button>
+                            )}
+                            {documentStore?.status === 'UPSERTING' && (
+                                <Chip
+                                    variant='raised'
+                                    label='Upserting to Vector Store'
+                                    color='warning'
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                />
+                            )}
+                            {documentStore?.totalChunks > 0 && documentStore?.status !== 'UPSERTING' && (
+                                <>
+                                    <Button
+                                        variant='contained'
+                                        sx={{
+                                            borderRadius: 2,
+                                            height: '100%'
+                                        }}
+                                        color='secondary'
+                                        startIcon={<IconListDetails />}
+                                        onClick={() => showStoredChunks('all')}
+                                    >
+                                        View Chunks
+                                    </Button>
+                                    <Button
+                                        variant='contained'
+                                        sx={{
+                                            borderRadius: 2,
+                                            height: '100%',
+                                            backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
+                                            '&:hover': {
+                                                backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
+                                            }
+                                        }}
+                                        startIcon={<IconRowInsertTop />}
+                                        onClick={() => showVectorStore(documentStore.id)}
+                                    >
+                                        Upsert Config
+                                    </Button>
+                                </>
+                            )}
+                            {documentStore?.totalChunks > 0 && documentStore?.status === 'UPSERTED' && (
+                                <Button
+                                    variant='contained'
+                                    sx={{
+                                        borderRadius: 2,
+                                        height: '100%',
+                                        backgroundImage: `linear-gradient(to right, #3f5efb, #fc466b)`,
+                                        '&:hover': {
+                                            backgroundImage: `linear-gradient(to right, #2b4efb, #fe2752)`
+                                        }
+                                    }}
+                                    startIcon={<IconZoomScan />}
+                                    onClick={() => showVectorStoreQuery(documentStore.id)}
+                                >
+                                    Retrieval Query
+                                </Button>
+                            )}
                         </ViewHeader>
                         {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
                             <Stack flexDirection='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -482,7 +577,13 @@ const DocumentStoreDetails = () => {
                                                             theme={theme}
                                                             onEditClick={() => openPreviewSettings(loader.id)}
                                                             onViewChunksClick={() => showStoredChunks(loader.id)}
-                                                            onDeleteClick={() => onLoaderDelete(loader)}
+                                                            onDeleteClick={() =>
+                                                                onLoaderDelete(
+                                                                    loader,
+                                                                    documentStore?.vectorStoreConfig,
+                                                                    documentStore?.recordManagerConfig
+                                                                )
+                                                            }
                                                         />
                                                     ))}
                                             </>
@@ -520,7 +621,15 @@ const DocumentStoreDetails = () => {
                     onDocLoaderSelected={onDocLoaderSelected}
                 />
             )}
-            <ConfirmDialog />
+            {showDeleteDocStoreDialog && (
+                <DeleteDocStoreDialog
+                    show={showDeleteDocStoreDialog}
+                    dialogProps={deleteDocStoreDialogProps}
+                    onCancel={() => setShowDeleteDocStoreDialog(false)}
+                    onDelete={onDocStoreDelete}
+                />
+            )}
+            {isBackdropLoading && <BackdropLoader open={isBackdropLoading} />}
         </>
     )
 }

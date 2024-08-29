@@ -11,9 +11,11 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { addImagesToMessages, llmSupportsVision } from '../../src/multiModalUtils'
 import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, IVisionChatModal } from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
+import { ChatPromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 
 export const checkCondition = (input: string | number | undefined, condition: string, value: string | number = ''): boolean => {
-    if (!input) return false
+    if (!input && condition === 'Is Empty') return true
+    else if (!input) return false
 
     // Function to check if a string is a valid number
     const isNumericString = (str: string): boolean => /^-?\d*\.?\d+$/.test(str)
@@ -342,4 +344,35 @@ export class RunnableCallable<I = unknown, O = unknown> extends Runnable<I, O> {
 
         return returnValue
     }
+}
+
+export const checkMessageHistory = async (
+    nodeData: INodeData,
+    options: ICommonObject,
+    prompt: ChatPromptTemplate,
+    promptArrays: BaseMessagePromptTemplateLike[],
+    sysPrompt: string
+) => {
+    const messageHistory = nodeData.inputs?.messageHistory
+
+    if (messageHistory) {
+        const appDataSource = options.appDataSource as DataSource
+        const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const vm = await getVM(appDataSource, databaseEntities, nodeData, {})
+        try {
+            const response = await vm.run(`module.exports = async function() {${messageHistory}}()`, __dirname)
+            if (!Array.isArray(response)) throw new Error('Returned message history must be an array')
+            if (sysPrompt) {
+                // insert at index 1
+                promptArrays.splice(1, 0, ...response)
+            } else {
+                promptArrays.unshift(...response)
+            }
+            prompt = ChatPromptTemplate.fromMessages(promptArrays)
+        } catch (e) {
+            throw new Error(e)
+        }
+    }
+
+    return prompt
 }

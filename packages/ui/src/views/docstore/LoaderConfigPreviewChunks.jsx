@@ -279,7 +279,6 @@ const LoaderConfigPreviewChunks = () => {
     useEffect(() => {
         if (getNodeDetailsApi.data) {
             const nodeData = cloneDeep(initNode(getNodeDetailsApi.data, uuidv4()))
-
             // If this is a document store edit config, set the existing input values
             if (existingLoaderFromDocStoreTable && existingLoaderFromDocStoreTable.loaderConfig) {
                 nodeData.inputs = existingLoaderFromDocStoreTable.loaderConfig

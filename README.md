@@ -72,6 +72,7 @@ Flowise has 3 different modules in a single mono repository.
 -   `server`: Node backend to serve API logics
 -   `ui`: React frontend
 -   `components`: Third-party nodes integrations
+-   `api-documentation`: Auto-generated swagger-ui API docs from express
 
 ### Prerequisite
 
@@ -82,31 +83,40 @@ Flowise has 3 different modules in a single mono repository.
 
 ### Setup
 
-1. Clone the repository
+1.  Clone the repository
 
     ```bash
     git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
-2. Go into repository folder
+2.  Go into repository folder
 
     ```bash
     cd Flowise
     ```
 
-3. Install all dependencies of all modules:
+3.  Install all dependencies of all modules:
 
     ```bash
     pnpm install
     ```
 
-4. Build all the code:
+4.  Build all the code:
 
     ```bash
     pnpm build
     ```
 
-5. Start the app:
+    <details>
+    <summary>Exit code 134 (JavaScript heap out of memory)</summary>  
+      If you get this error when running the above `build` script, try increasing the Node.js heap size and run the script again:
+
+        export NODE_OPTIONS="--max-old-space-size=4096"
+        pnpm build
+
+    </details>
+
+5.  Start the app:
 
     ```bash
     pnpm start
@@ -114,11 +124,11 @@ Flowise has 3 different modules in a single mono repository.
 
     You can now access the app on [http://localhost:3000](http://localhost:3000)
 
-6. For development build:
+6.  For development build:
 
-    - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
-    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
-    - Run
+    -   Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
+    -   Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
+    -   Run
 
         ```bash
         pnpm dev
@@ -168,7 +178,7 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 
     -   [Elestio](https://elest.io/open-source/flowiseai)
 
-        [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
+        [![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/flowiseai)
 
     -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
 
@@ -180,9 +190,9 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 
       </details>
 
-## 💻 Cloud Hosted
+## ☁️ Flowise Cloud
 
-Coming soon
+[Get Started with Flowise Cloud](https://flowiseai.com/)
 
 ## 🙋 Support
 

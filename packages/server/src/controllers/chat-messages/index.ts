@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { chatType, IReactFlowObject } from '../../Interface'
+import { ChatMessageRatingType, chatType, IReactFlowObject } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
 import chatMessagesService from '../../services/chat-messages'
 import { clearSessionMemory } from '../../utils'
@@ -18,7 +18,7 @@ const createChatMessage = async (req: Request, res: Response, next: NextFunction
             )
         }
         const apiResponse = await chatMessagesService.createChatMessage(req.body)
-        return res.json(apiResponse)
+        return res.json(parseAPIResponse(apiResponse))
     } catch (error) {
         next(error)
     }
@@ -49,6 +49,26 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
+        let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
+        if (feedbackTypeFilters) {
+            try {
+                const feedbackTypeFilterArray = JSON.parse(JSON.stringify(feedbackTypeFilters))
+                if (
+                    feedbackTypeFilterArray.includes(ChatMessageRatingType.THUMBS_UP) &&
+                    feedbackTypeFilterArray.includes(ChatMessageRatingType.THUMBS_DOWN)
+                ) {
+                    feedbackTypeFilters = [ChatMessageRatingType.THUMBS_UP, ChatMessageRatingType.THUMBS_DOWN]
+                } else if (feedbackTypeFilterArray.includes(ChatMessageRatingType.THUMBS_UP)) {
+                    feedbackTypeFilters = [ChatMessageRatingType.THUMBS_UP]
+                } else if (feedbackTypeFilterArray.includes(ChatMessageRatingType.THUMBS_DOWN)) {
+                    feedbackTypeFilters = [ChatMessageRatingType.THUMBS_DOWN]
+                } else {
+                    feedbackTypeFilters = undefined
+                }
+            } catch (e) {
+                return res.status(500).send(e)
+            }
+        }
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
@@ -65,9 +85,11 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             startDate,
             endDate,
             messageId,
-            feedback
+            feedback,
+            feedbackTypeFilters
         )
-        return res.json(apiResponse)
+
+        return res.json(parseAPIResponse(apiResponse))
     } catch (error) {
         next(error)
     }
@@ -95,7 +117,7 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             messageId,
             feedback
         )
-        return res.json(apiResponse)
+        return res.json(parseAPIResponse(apiResponse))
     } catch (error) {
         next(error)
     }
@@ -162,6 +184,39 @@ const abortChatMessage = async (req: Request, res: Response, next: NextFunction)
         return res.json({ status: 200, message: 'Chat message aborted' })
     } catch (error) {
         next(error)
+    }
+}
+
+const parseAPIResponse = (apiResponse: ChatMessage | ChatMessage[]): ChatMessage | ChatMessage[] => {
+    const parseResponse = (response: ChatMessage): ChatMessage => {
+        const parsedResponse = { ...response }
+
+        if (parsedResponse.sourceDocuments) {
+            parsedResponse.sourceDocuments = JSON.parse(parsedResponse.sourceDocuments)
+        }
+        if (parsedResponse.usedTools) {
+            parsedResponse.usedTools = JSON.parse(parsedResponse.usedTools)
+        }
+        if (parsedResponse.fileAnnotations) {
+            parsedResponse.fileAnnotations = JSON.parse(parsedResponse.fileAnnotations)
+        }
+        if (parsedResponse.agentReasoning) {
+            parsedResponse.agentReasoning = JSON.parse(parsedResponse.agentReasoning)
+        }
+        if (parsedResponse.fileUploads) {
+            parsedResponse.fileUploads = JSON.parse(parsedResponse.fileUploads)
+        }
+        if (parsedResponse.action) {
+            parsedResponse.action = JSON.parse(parsedResponse.action)
+        }
+
+        return parsedResponse
+    }
+
+    if (Array.isArray(apiResponse)) {
+        return apiResponse.map(parseResponse)
+    } else {
+        return parseResponse(apiResponse)
     }
 }
 

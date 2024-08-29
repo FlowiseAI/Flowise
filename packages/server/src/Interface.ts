@@ -209,6 +209,8 @@ export interface IDepthQueue {
 export interface IMessage {
     message: string
     type: MessageType
+    role?: MessageType
+    content?: string
 }
 
 export interface IncomingInput {
@@ -229,6 +231,7 @@ export interface IActiveChatflows {
         endingNodeData?: INodeData
         inSync: boolean
         overrideConfig?: ICommonObject
+        chatId?: string
     }
 }
 
@@ -261,6 +264,14 @@ export interface ICredentialReturnResponse extends ICredential {
 export interface IUploadFileSizeAndTypes {
     fileTypes: string[]
     maxUploadSize: number
+}
+
+export interface IApiKey {
+    id: string
+    keyName: string
+    apiKey: string
+    apiSecret: string
+    updatedDate: Date
 }
 
 // DocumentStore related

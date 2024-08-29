@@ -6,14 +6,14 @@
         {
             "id": "seqStart_0",
             "position": {
-                "x": 792.8312685189314,
-                "y": 381.2371369608682
+                "x": 796.4546450224532,
+                "y": 359.4968779397379
             },
             "type": "customNode",
             "data": {
                 "id": "seqStart_0",
                 "label": "Start",
-                "version": 1,
+                "version": 2,
                 "name": "seqStart",
                 "type": "Start",
                 "baseClasses": ["Start"],
@@ -40,7 +40,7 @@
                         "label": "State",
                         "name": "state",
                         "type": "State",
-                        "description": "State is an object that is updated by nodes in the graph, passing from one node to another. Agent Memory must be connected when using State. By default, state contains \"messages\" that got updated with each message sent and received.",
+                        "description": "State is an object that is updated by nodes in the graph, passing from one node to another. By default, state contains \"messages\" that got updated with each message sent and received.",
                         "optional": true,
                         "id": "seqStart_0-input-state-State"
                     },
@@ -75,8 +75,8 @@
             "width": 300,
             "height": 382,
             "positionAbsolute": {
-                "x": 792.8312685189314,
-                "y": 381.2371369608682
+                "x": 796.4546450224532,
+                "y": 359.4968779397379
             },
             "selected": false,
             "dragging": false
@@ -85,7 +85,7 @@
             "id": "retrieverTool_0",
             "position": {
                 "x": 798.8003381613986,
-                "y": -266.40932507051906
+                "y": -353.8148242822555
             },
             "type": "customNode",
             "data": {
@@ -153,15 +153,15 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 798.8003381613986,
-                "y": -266.40932507051906
+                "y": -353.8148242822555
             },
             "dragging": false
         },
         {
             "id": "pinecone_0",
             "position": {
-                "x": 455.1155682452798,
-                "y": -240.7558023068499
+                "x": 457.1966515598449,
+                "y": -359.3775512370636
             },
             "type": "customNode",
             "data": {
@@ -335,16 +335,16 @@
             "height": 604,
             "selected": false,
             "positionAbsolute": {
-                "x": 455.1155682452798,
-                "y": -240.7558023068499
+                "x": 457.1966515598449,
+                "y": -359.3775512370636
             },
             "dragging": false
         },
         {
             "id": "openAIEmbeddings_0",
             "position": {
-                "x": 106.9045217190612,
-                "y": -160.72757403644664
+                "x": 121.47210492101726,
+                "y": -318.8899059433982
             },
             "type": "customNode",
             "data": {
@@ -438,22 +438,22 @@
             "height": 423,
             "selected": false,
             "positionAbsolute": {
-                "x": 106.9045217190612,
-                "y": -160.72757403644664
+                "x": 121.47210492101726,
+                "y": -318.8899059433982
             },
             "dragging": false
         },
         {
             "id": "seqState_0",
             "position": {
-                "x": -839.6942362755474,
-                "y": 338.4940899612586
+                "x": 423.5233356655001,
+                "y": 677.7106702353785
             },
             "type": "customNode",
             "data": {
                 "id": "seqState_0",
                 "label": "State",
-                "version": 1,
+                "version": 2,
                 "name": "seqState",
                 "type": "State",
                 "baseClasses": ["State"],
@@ -461,7 +461,7 @@
                 "description": "A centralized state object, updated by nodes in the graph, passing from one node to another",
                 "inputParams": [
                     {
-                        "label": "State",
+                        "label": "Custom State",
                         "name": "stateMemory",
                         "type": "tabs",
                         "tabIdentifier": "selectedStateTab",
@@ -469,7 +469,7 @@
                         "default": "stateMemoryUI",
                         "tabs": [
                             {
-                                "label": "State (Table)",
+                                "label": "Custom State (Table)",
                                 "name": "stateMemoryUI",
                                 "type": "datagrid",
                                 "description": "Structure for state. By default, state contains \"messages\" that got updated with each message sent and received.",
@@ -501,7 +501,7 @@
                                 "additionalParams": true
                             },
                             {
-                                "label": "State (Code)",
+                                "label": "Custom State (Code)",
                                 "name": "stateMemoryCode",
                                 "type": "code",
                                 "description": "JSON object representing the state",
@@ -516,8 +516,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "stateMemory": "stateMemoryUI",
-                    "stateMemoryUI": "[]"
+                    "stateMemory": "stateMemoryUI"
                 },
                 "outputAnchors": [
                     {
@@ -535,16 +534,16 @@
             "height": 251,
             "selected": false,
             "positionAbsolute": {
-                "x": -839.6942362755474,
-                "y": 338.4940899612586
+                "x": 423.5233356655001,
+                "y": 677.7106702353785
             },
             "dragging": false
         },
         {
             "id": "chatOpenAI_0",
             "position": {
-                "x": -526.4925710918774,
-                "y": -56.34309442732172
+                "x": 64.53509024462608,
+                "y": 287.03565247592854
             },
             "type": "customNode",
             "data": {
@@ -715,16 +714,16 @@
             "height": 669,
             "selected": false,
             "positionAbsolute": {
-                "x": -526.4925710918774,
-                "y": -56.34309442732172
+                "x": 64.53509024462608,
+                "y": 287.03565247592854
             },
             "dragging": false
         },
         {
             "id": "stickyNote_1",
             "position": {
-                "x": -975.271215894973,
-                "y": -136.01020442552294
+                "x": -296.8380553467333,
+                "y": 76.26029366012256
             },
             "type": "stickyNote",
             "data": {
@@ -769,15 +768,15 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": -975.271215894973,
-                "y": -136.01020442552294
+                "x": -296.8380553467333,
+                "y": 76.26029366012256
             }
         },
         {
             "id": "agentMemory_0",
             "position": {
-                "x": -1114.3250603348317,
-                "y": 9.945749373257343
+                "x": 425.6765924433811,
+                "y": 322.1082465580303
             },
             "type": "customNode",
             "data": {
@@ -844,8 +843,8 @@
             "height": 327,
             "selected": false,
             "positionAbsolute": {
-                "x": -1114.3250603348317,
-                "y": 9.945749373257343
+                "x": 425.6765924433811,
+                "y": 322.1082465580303
             },
             "dragging": false
         },
@@ -859,7 +858,7 @@
             "data": {
                 "id": "seqAgent_1",
                 "label": "Agent",
-                "version": 1,
+                "version": 2,
                 "name": "seqAgent",
                 "type": "Agent",
                 "baseClasses": ["Agent"],
@@ -895,7 +894,7 @@
                     {
                         "label": "Require Approval",
                         "name": "interrupt",
-                        "description": "Require approval before executing tools",
+                        "description": "Require approval before executing tools. Will proceed when tools are not called",
                         "type": "boolean",
                         "optional": true,
                         "id": "seqAgent_1-input-interrupt-boolean"
@@ -909,6 +908,37 @@
                         "acceptVariable": true,
                         "list": true,
                         "id": "seqAgent_1-input-promptValues-json"
+                    },
+                    {
+                        "label": "Approval Prompt",
+                        "name": "approvalPrompt",
+                        "description": "Prompt for approval. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_1-input-approvalPrompt-string"
+                    },
+                    {
+                        "label": "Approve Button Text",
+                        "name": "approveButtonText",
+                        "description": "Text for approve button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "Yes",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_1-input-approveButtonText-string"
+                    },
+                    {
+                        "label": "Reject Button Text",
+                        "name": "rejectButtonText",
+                        "description": "Text for reject button. Only applicable if \"Require Approval\" is enabled",
+                        "type": "string",
+                        "default": "No",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "seqAgent_1-input-rejectButtonText-string"
                     },
                     {
                         "label": "Update State",
@@ -1017,14 +1047,15 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
+                        "optional": true,
                         "id": "seqAgent_1-input-tools-Tool"
                     },
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqAgent_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqAgent_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -1040,10 +1071,13 @@
                     "systemMessagePrompt": "You are a research assistant who can search for up-to-date info using search engine.",
                     "humanMessagePrompt": "Given the conversation, respond to user with a more detailed answer. Use the tool provided to search for more information if necessary.\n\nAnswer:",
                     "tools": ["{{googleCustomSearch_0.data.instance}}"],
-                    "sequentialNode": ["{{seqAgent_2.data.instance}}"],
+                    "sequentialNode": ["{{seqAgent_2.data.instance}}", "{{seqAgent_2.data.instance}}"],
                     "model": "",
                     "interrupt": "",
                     "promptValues": "",
+                    "approvalPrompt": "You are about to execute tool: {tools}. Ask if user want to proceed",
+                    "approveButtonText": "Yes",
+                    "rejectButtonText": "No",
                     "updateStateMemory": "updateStateMemoryUI",
                     "maxIterations": ""
                 },
@@ -1060,7 +1094,7 @@
                 "selected": false
             },
             "width": 300,
-            "height": 858,
+            "height": 877,
             "selected": false,
             "positionAbsolute": {
                 "x": 1560.119237181011,
@@ -1071,8 +1105,8 @@
         {
             "id": "googleCustomSearch_0",
             "position": {
-                "x": 1915.3868978817745,
-                "y": -117.01148118277794
+                "x": 1192.5232854291921,
+                "y": -538.0478308920015
             },
             "type": "customNode",
             "data": {
@@ -1112,50 +1146,9 @@
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 1915.3868978817745,
-                "y": -117.01148118277794
+                "x": 1192.5232854291921,
+                "y": -538.0478308920015
             }
-        },
-        {
-            "id": "seqEnd_0",
-            "position": {
-                "x": 1923.7338499933962,
-                "y": 366.70082659938157
-            },
-            "type": "customNode",
-            "data": {
-                "id": "seqEnd_0",
-                "label": "End",
-                "version": 1,
-                "name": "seqEnd",
-                "type": "End",
-                "baseClasses": ["End"],
-                "category": "Sequential Agents",
-                "description": "End conversation",
-                "inputParams": [],
-                "inputAnchors": [
-                    {
-                        "label": "Start | Agent | LLM | Tool Node",
-                        "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
-                        "id": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-                    }
-                ],
-                "inputs": {
-                    "sequentialNode": "{{seqAgent_1.data.instance}}"
-                },
-                "outputAnchors": [],
-                "outputs": {},
-                "selected": false
-            },
-            "width": 300,
-            "height": 143,
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1923.7338499933962,
-                "y": 366.70082659938157
-            },
-            "dragging": false
         },
         {
             "id": "seqAgent_2",
@@ -1167,7 +1160,7 @@
             "data": {
                 "id": "seqAgent_2",
                 "label": "Agent",
-                "version": 1,
+                "version": 2,
                 "name": "seqAgent",
                 "type": "Agent",
                 "baseClasses": ["Agent"],
@@ -1356,14 +1349,15 @@
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
+                        "optional": true,
                         "id": "seqAgent_2-input-tools-Tool"
                     },
                     {
-                        "label": "Start | Agent | LLM | Tool Node",
+                        "label": "Start | Agent | Condition | LLM | Tool Node",
                         "name": "sequentialNode",
-                        "type": "Start | Agent | LLMNode | ToolNode",
+                        "type": "Start | Agent | Condition | LLMNode | ToolNode",
                         "list": true,
-                        "id": "seqAgent_2-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+                        "id": "seqAgent_2-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
                     },
                     {
                         "label": "Chat Model",
@@ -1379,7 +1373,7 @@
                     "systemMessagePrompt": "You are an expert financial analyst that always answers questions with the most relevant information using the tools at your disposal.\n\nThe tools available are:\n- search_apple\n\nThe current date is: 2024-07-10",
                     "humanMessagePrompt": "",
                     "tools": ["{{retrieverTool_0.data.instance}}"],
-                    "sequentialNode": ["{{seqStart_0.data.instance}}"],
+                    "sequentialNode": ["{{seqStart_0.data.instance}}", "{{seqStart_0.data.instance}}"],
                     "model": "",
                     "interrupt": true,
                     "promptValues": "",
@@ -1402,13 +1396,54 @@
                 "selected": false
             },
             "width": 300,
-            "height": 858,
+            "height": 877,
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
                 "x": 1187.4958721568407,
                 "y": -228.27663960439855
             }
+        },
+        {
+            "id": "seqEnd_0",
+            "position": {
+                "x": 1930.8094081845668,
+                "y": 438.7877647124094
+            },
+            "type": "customNode",
+            "data": {
+                "id": "seqEnd_0",
+                "label": "End",
+                "version": 2,
+                "name": "seqEnd",
+                "type": "End",
+                "baseClasses": ["End"],
+                "category": "Sequential Agents",
+                "description": "End conversation",
+                "inputParams": [],
+                "inputAnchors": [
+                    {
+                        "label": "Agent | Condition | LLM | Tool Node",
+                        "name": "sequentialNode",
+                        "type": "Agent | Condition | LLMNode | ToolNode",
+                        "id": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
+                    }
+                ],
+                "inputs": {
+                    "sequentialNode": "{{seqAgent_1.data.instance}}"
+                },
+                "outputAnchors": [],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 143,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1930.8094081845668,
+                "y": 438.7877647124094
+            },
+            "dragging": false
         }
     ],
     "edges": [
@@ -1461,14 +1496,6 @@
             "id": "googleCustomSearch_0-googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable-seqAgent_1-seqAgent_1-input-tools-Tool"
         },
         {
-            "source": "seqAgent_1",
-            "sourceHandle": "seqAgent_1-output-seqAgent-Agent",
-            "target": "seqEnd_0",
-            "targetHandle": "seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
-            "type": "buttonedge",
-            "id": "seqAgent_1-seqAgent_1-output-seqAgent-Agent-seqEnd_0-seqEnd_0-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
-        },
-        {
             "source": "retrieverTool_0",
             "sourceHandle": "retrieverTool_0-output-retrieverTool-RetrieverTool|DynamicTool|Tool|StructuredTool|Runnable",
             "target": "seqAgent_2",
@@ -1480,17 +1507,25 @@
             "source": "seqStart_0",
             "sourceHandle": "seqStart_0-output-seqStart-Start",
             "target": "seqAgent_2",
-            "targetHandle": "seqAgent_2-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqAgent_2-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqStart_0-seqStart_0-output-seqStart-Start-seqAgent_2-seqAgent_2-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqStart_0-seqStart_0-output-seqStart-Start-seqAgent_2-seqAgent_2-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
         },
         {
             "source": "seqAgent_2",
             "sourceHandle": "seqAgent_2-output-seqAgent-Agent",
             "target": "seqAgent_1",
-            "targetHandle": "seqAgent_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode",
+            "targetHandle": "seqAgent_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode",
             "type": "buttonedge",
-            "id": "seqAgent_2-seqAgent_2-output-seqAgent-Agent-seqAgent_1-seqAgent_1-input-sequentialNode-Start | Agent | LLMNode | ToolNode"
+            "id": "seqAgent_2-seqAgent_2-output-seqAgent-Agent-seqAgent_1-seqAgent_1-input-sequentialNode-Start | Agent | Condition | LLMNode | ToolNode"
+        },
+        {
+            "source": "seqAgent_1",
+            "sourceHandle": "seqAgent_1-output-seqAgent-Agent",
+            "target": "seqEnd_0",
+            "targetHandle": "seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode",
+            "type": "buttonedge",
+            "id": "seqAgent_1-seqAgent_1-output-seqAgent-Agent-seqEnd_0-seqEnd_0-input-sequentialNode-Agent | Condition | LLMNode | ToolNode"
         }
     ]
 }
