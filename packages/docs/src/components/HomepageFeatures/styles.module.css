@@ -1,0 +1,60 @@
+/* HomepageFeatures styles */
+
+.featureList {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -1rem;
+}
+
+.featureList > * {
+    flex-basis: calc(33.33% - 1rem);
+    margin: 1rem;
+}
+
+.featureCard {
+    padding: 2rem;
+    height: 100%;
+    background-color: var(--ifm-color-emphasis-100);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.featureCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.featureIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.featureCard:hover .featureIcon {
+    transform: scale(1.2);
+}
+
+.featureContent {
+    flex-grow: 1;
+}
+
+.fullWidthSection {
+    width: 100%;
+    padding: 2rem 0;
+    background-color: var(--ifm-color-emphasis-100);
+}
+
+.fullWidthSection h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.fullWidthSection p {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
