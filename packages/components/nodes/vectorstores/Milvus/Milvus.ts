@@ -28,7 +28,7 @@ class Milvus_VectorStores implements INode {
     constructor() {
         this.label = 'Milvus'
         this.name = 'milvus'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'Milvus'
         this.icon = 'milvus.svg'
         this.category = 'Vector Stores'
@@ -197,8 +197,11 @@ class Milvus_VectorStores implements INode {
             const milVusArgs: MilvusLibArgs = {
                 url: address,
                 collectionName: collectionName,
-                partitionName: partitionName,
-                clientConfig: {
+                partitionName: partitionName
+            }
+
+            if (secure) {
+                milVusArgs.clientConfig = {
                     address: address,
                     ssl: secure,
                     tls: {
@@ -277,7 +280,11 @@ class Milvus_VectorStores implements INode {
             url: address,
             collectionName: collectionName,
             partitionName: partitionName,
-            clientConfig: {
+            textField: textField
+        }
+
+        if (secure) {
+            milVusArgs.clientConfig = {
                 address: address,
                 ssl: secure,
                 tls: {
@@ -286,8 +293,7 @@ class Milvus_VectorStores implements INode {
                     privateKeyPath: clientKeyPath,
                     serverName: serverName
                 }
-            },
-            textField: textField
+            }
         }
 
         if (milvusUser) milVusArgs.username = milvusUser
