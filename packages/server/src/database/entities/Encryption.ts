@@ -1,9 +1,9 @@
 /* eslint-disable */
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
-import { ICredential } from '../../Interface'
+import { IEncryption } from '../../Interface'
 
 @Entity()
-export class Credential implements ICredential {
+export class Encryption implements IEncryption {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
@@ -11,10 +11,7 @@ export class Credential implements ICredential {
     name: string
 
     @Column()
-    credentialName: string
-
-    @Column({ type: 'text' })
-    encryptedData: string
+    encryptionKey: string
 
     @Column({ type: 'timestamp' })
     @CreateDateColumn()
@@ -23,7 +20,4 @@ export class Credential implements ICredential {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
-
-    @Column({ type: 'boolean', default: false })
-    isEncryptionKeyLost: boolean
 }

@@ -22,7 +22,9 @@ import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-Add
 import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlow'
 import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
+import { AddEncryption1721308320215 } from './1721309779046-AddEncryption'
 import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
+import { AddIsEncryptionKeyLostToCredential1722473901281 } from './1722473901281-AddIsEncryptionKeyLostToCredential'
 
 export const mariadbMigrations = [
     Init1693840429259,
@@ -46,8 +48,10 @@ export const mariadbMigrations = [
     AddLead1710832127079,
     AddLeadToChatMessage1711538023578,
     AddAgentReasoningToChatMessage1714679514451,
+    AddEncryption1721308320215,
     AddTypeToChatFlow1716300000000,
     AddApiKey1720230151480,
     AddActionToChatMessage1721078251523,
+    AddIsEncryptionKeyLostToCredential1722473901281,
     LongTextColumn1722301395521
 ]

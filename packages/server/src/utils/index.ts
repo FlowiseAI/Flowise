@@ -1,14 +1,25 @@
-import path from 'path'
+import { AES, enc } from 'crypto-js'
+import {
+    convertChatHistoryToText,
+    FlowiseMemory,
+    getInputVariables,
+    handleEscapeCharacters,
+    ICommonObject,
+    IDatabaseEntity,
+    IFileUpload,
+    IMessage
+} from 'flowise-components'
 import fs from 'fs'
-import logger from './logger'
+import { cloneDeep, get, isEqual } from 'lodash'
+import path from 'path'
 import { Server } from 'socket.io'
 import {
     IComponentCredentials,
     IComponentNodes,
     ICredentialDataDecrypted,
-    ICredentialReqBody,
     IDepthQueue,
     IExploredNode,
+    IncomingInput,
     INodeData,
     INodeDependencies,
     INodeDirectedGraph,
@@ -16,36 +27,23 @@ import {
     IOverrideConfig,
     IReactFlowEdge,
     IReactFlowNode,
-    IVariableDict,
-    IncomingInput
+    IVariableDict
 } from '../Interface'
-import { cloneDeep, get, isEqual } from 'lodash'
-import {
-    convertChatHistoryToText,
-    getInputVariables,
-    handleEscapeCharacters,
-    getEncryptionKeyPath,
-    ICommonObject,
-    IDatabaseEntity,
-    IMessage,
-    FlowiseMemory,
-    IFileUpload
-} from 'flowise-components'
-import { randomBytes } from 'crypto'
-import { AES, enc } from 'crypto-js'
+import logger from './logger'
 
+import { StatusCodes } from 'http-status-codes'
+import { DataSource } from 'typeorm'
+import { CachePool } from '../CachePool'
+import { Assistant } from '../database/entities/Assistant'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
-import { Tool } from '../database/entities/Tool'
-import { Assistant } from '../database/entities/Assistant'
-import { DataSource } from 'typeorm'
-import { CachePool } from '../CachePool'
-import { Variable } from '../database/entities/Variable'
 import { DocumentStore } from '../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
+import { Tool } from '../database/entities/Tool'
+import { Variable } from '../database/entities/Variable'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
+import encryption from '../services/encryption'
 
 const QUESTION_VAR_PREFIX = 'question'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -1270,44 +1268,6 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
 }
 
 /**
- * Generate an encryption key
- * @returns {string}
- */
-export const generateEncryptKey = (): string => {
-    return randomBytes(24).toString('base64')
-}
-
-/**
- * Returns the encryption key
- * @returns {Promise<string>}
- */
-export const getEncryptionKey = async (): Promise<string> => {
-    if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
-        return process.env.FLOWISE_SECRETKEY_OVERWRITE
-    }
-    try {
-        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
-    } catch (error) {
-        const encryptKey = generateEncryptKey()
-        const defaultLocation = process.env.SECRETKEY_PATH
-            ? path.join(process.env.SECRETKEY_PATH, 'encryption.key')
-            : path.join(getUserHome(), '.flowise', 'encryption.key')
-        await fs.promises.writeFile(defaultLocation, encryptKey)
-        return encryptKey
-    }
-}
-
-/**
- * Encrypt credential data
- * @param {ICredentialDataDecrypted} plainDataObj
- * @returns {Promise<string>}
- */
-export const encryptCredentialData = async (plainDataObj: ICredentialDataDecrypted): Promise<string> => {
-    const encryptKey = await getEncryptionKey()
-    return AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString()
-}
-
-/**
  * Decrypt credential data
  * @param {string} encryptedData
  * @param {string} componentCredentialName
@@ -1319,8 +1279,8 @@ export const decryptCredentialData = async (
     componentCredentialName?: string,
     componentCredentials?: IComponentCredentials
 ): Promise<ICredentialDataDecrypted> => {
-    const encryptKey = await getEncryptionKey()
-    const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    const encyption = await encryption.get()
+    const decryptedData = AES.decrypt(encryptedData, encyption.encryptionKey)
     const decryptedDataStr = decryptedData.toString(enc.Utf8)
     if (!decryptedDataStr) return {}
     try {
@@ -1333,28 +1293,6 @@ export const decryptCredentialData = async (
         console.error(e)
         return {}
     }
-}
-
-/**
- * Transform ICredentialBody from req to Credential entity
- * @param {ICredentialReqBody} body
- * @returns {Credential}
- */
-export const transformToCredentialEntity = async (body: ICredentialReqBody): Promise<Credential> => {
-    const credentialBody: ICommonObject = {
-        name: body.name,
-        credentialName: body.credentialName
-    }
-
-    if (body.plainDataObj) {
-        const encryptedData = await encryptCredentialData(body.plainDataObj)
-        credentialBody.encryptedData = encryptedData
-    }
-
-    const newCredential = new Credential()
-    Object.assign(newCredential, credentialBody)
-
-    return newCredential
 }
 
 /**
