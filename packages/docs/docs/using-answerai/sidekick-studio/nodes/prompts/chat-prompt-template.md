@@ -22,12 +22,12 @@ The Chat Prompt Template node allows you to create structured prompts for chat-b
     a. System Message:
 
     - Enter the instructions or context for the AI assistant.
-    - Use curly braces {} to denote variables (e.g., {input_language}).
+    - Use curly braces {} to denote variables (e.g., \{input_language\}).
 
     b. Human Message:
 
     - Enter the template for the user's input.
-    - Use curly braces {} to denote variables (e.g., {text}).
+    - Use curly braces {} to denote variables (e.g., \{text\}).
 
     c. Format Prompt Values (optional):
 
@@ -60,13 +60,13 @@ Here's an example of how to set up a Chat Prompt Template for a language transla
 System Message:
 
 ```
-You are a helpful assistant that translates {input_language} to {output_language}.
+You are a helpful assistant that translates \{input_language\} to \{output_language\}.
 ```
 
 Human Message:
 
 ```
-{text}
+\{text\}
 ```
 
 Format Prompt Values:

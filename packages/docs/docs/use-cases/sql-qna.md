@@ -137,14 +137,14 @@ Specify the following prompt in the Prompt Template:
 ```
 Based on the provided SQL table schema and question below, return a SQL SELECT ALL query that would answer the user's question. For example: SELECT * FROM table WHERE id = '1'.
 ------------
-SCHEMA: {schema}
+SCHEMA: \{schema\}
 ------------
-QUESTION: {question}
+QUESTION: \{question\}
 ------------
 SQL QUERY:
 ```
 
-Since we are using 2 variables: {schema} and {question}, specify their values in **Format Prompt Values**:
+Since we are using 2 variables: \{schema\} and \{question\}, specify their values in **Format Prompt Values**:
 
 <figure><img src="/.gitbook/assets/image (122).png" alt="" width="563" /><figcaption></figcaption></figure>
 
