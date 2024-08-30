@@ -27,7 +27,10 @@ const create = async (encryptionId: string, credentialId: string): Promise<void>
         const insertResponse = await appServer.AppDataSource.getRepository(EncryptionCredential).create(newEncryptionCredential)
         await appServer.AppDataSource.getRepository(EncryptionCredential).save(insertResponse)
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: encryptionCredential.create - ${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: encryptionCredentialService.create - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -60,7 +63,7 @@ const findByCredentialId = async (credentialId: string): Promise<EncryptionCrede
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: encryptionCredential.findByCredentialId - ${getErrorMessage(error)}`
+            `Error: encryptionCredentialService.findByCredentialId - ${getErrorMessage(error)}`
         )
     }
 }
