@@ -9,11 +9,11 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { ICredentialDataDecrypted } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import credentials from '../credentials'
-import encryptionCredential from '../encryptionCredential'
+import credentialsService from '../credentials'
+import encryptionCredentialService from '../encryptionCredential'
 
 /**
- * It generate encryption key into database then match with existing available credentials.
+ * It generate encryption key into database then match with existing available credentialsService.
  *
  * @returns void
  *
@@ -57,26 +57,26 @@ const resync = async (): Promise<void> => {
                 }
                 if (decrypted) {
                     // step 4a - get all rows in encryptCrednetial table for a specific credentialId
-                    const dbResponse = await encryptionCredential.findByCredentialId(credential.id)
+                    const dbResponse = await encryptionCredentialService.findByCredentialId(credential.id)
 
                     if (dbResponse.length == 0) {
                         // step 4b - insert new encryption credential row when credentialId is not found
-                        await encryptionCredential.create(encryption.id, credential.id)
+                        await encryptionCredentialService.create(encryption.id, credential.id)
                     } else if (dbResponse.length == 1) {
                         // step 4b - update existing encryption credential rows when credentialId is found
-                        await encryptionCredential.updateEncryptionId(encryption.id, credential.id)
+                        await encryptionCredentialService.updateEncryptionId(encryption.id, credential.id)
                     }
                     // step 4c - update credential isEncryptionKeyLost to false
-                    await credentials.updateIsEncryptionKeyLost(credential.id, false)
+                    await credentialsService.updateIsEncryptionKeyLost(credential.id, false)
 
                     // step 4d - go to next credential because already found the correct encryption
                     break
                 } else {
                     // step 4a - update credential isEncryptionKeyLost to true
-                    await credentials.updateIsEncryptionKeyLost(credential.id, true)
+                    await credentialsService.updateIsEncryptionKeyLost(credential.id, true)
 
                     // step 4b - delete relationship of encryptioncredential that are not relatvant anymore
-                    await encryptionCredential.deleteByEncryptionId(encryption.id, credential.id)
+                    await encryptionCredentialService.deleteByEncryptionId(encryption.id, credential.id)
                 }
             }
         }
