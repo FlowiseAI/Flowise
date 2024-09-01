@@ -10,7 +10,7 @@ import {
     INodeParams,
     IServerSideEventStreamer,
     IUsedTool
-} from "../../../../src/Interface";
+} from '../../../../src/Interface'
 
 class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
     label: string

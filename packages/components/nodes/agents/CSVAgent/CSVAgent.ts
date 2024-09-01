@@ -2,14 +2,7 @@ import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { AgentExecutor } from 'langchain/agents'
 import { LLMChain } from 'langchain/chains'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import {
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeParams,
-    IServerSideEventStreamer,
-    PromptTemplate
-} from "../../../src/Interface";
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
 import { checkInputs, Moderation } from '../../moderation/Moderation'

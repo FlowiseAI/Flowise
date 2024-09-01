@@ -1,11 +1,4 @@
-import {
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeOutputsValue,
-    INodeParams,
-    IServerSideEventStreamer
-} from "../../../src/Interface";
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import {
     RetrieverQueryEngine,
     ResponseSynthesizer,

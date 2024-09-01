@@ -4,7 +4,7 @@ import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { PromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
 import { SqlDatabaseChain, SqlDatabaseChainInput, DEFAULT_SQL_DATABASE_PROMPT } from 'langchain/chains/sql_db'
 import { SqlDatabase } from 'langchain/sql_db'
-import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from "../../../src/Interface";
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'

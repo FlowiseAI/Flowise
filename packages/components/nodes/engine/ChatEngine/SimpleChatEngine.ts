@@ -7,7 +7,7 @@ import {
     INodeOutputsValue,
     INodeParams,
     IServerSideEventStreamer
-} from "../../../src/Interface";
+} from '../../../src/Interface'
 import { LLM, ChatMessage, SimpleChatEngine } from 'llamaindex'
 
 class SimpleChatEngine_LlamaIndex implements INode {

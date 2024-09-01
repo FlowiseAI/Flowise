@@ -16,10 +16,10 @@ import {
     INodeParams,
     IServerSideEventStreamer,
     IUsedTool
-} from "../../../src/Interface";
+} from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, XMLAgentOutputParser } from '../../../src/agents'
-import { Moderation, checkInputs, streamResponse } from "../../moderation/Moderation";
+import { Moderation, checkInputs } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 const defaultSystemMessage = `You are a helpful assistant. Help the user answer any questions.

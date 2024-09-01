@@ -2,14 +2,7 @@ import axios from 'axios'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { AgentExecutor } from 'langchain/agents'
 import { LLMChain } from 'langchain/chains'
-import {
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeParams,
-    IServerSideEventStreamer,
-    PromptTemplate
-} from "../../../src/Interface";
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'

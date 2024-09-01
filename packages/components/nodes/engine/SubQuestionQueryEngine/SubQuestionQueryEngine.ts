@@ -1,12 +1,5 @@
 import { flatten } from 'lodash'
-import {
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeOutputsValue,
-    INodeParams,
-    IServerSideEventStreamer
-} from "../../../src/Interface";
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import {
     TreeSummarize,
     SimpleResponseBuilder,

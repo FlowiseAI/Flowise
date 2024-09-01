@@ -7,7 +7,7 @@ import {
     INodeParams,
     IServerSideEventStreamer,
     IUsedTool
-} from "../../../src/Interface";
+} from '../../../src/Interface'
 import OpenAI from 'openai'
 import { DataSource } from 'typeorm'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'

@@ -1,13 +1,9 @@
-import express, { NextFunction } from 'express'
+import express from 'express'
 import { Request, Response } from 'express'
 import { IServerSideEventStreamer } from 'flowise-components'
-import predictionsController from '../controllers/predictions'
-import chatflowsService from '../services/chatflows'
 
 import multer from 'multer'
 import path from 'path'
-
-const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
 
 // define a new type that has a client type (INTERNAL or EXTERNAL) and Response type
 type Client = {

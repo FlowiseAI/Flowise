@@ -23,8 +23,9 @@ import {
     INode,
     INodeData,
     INodeParams,
-    MessageContentImageUrl, IServerSideEventStreamer
-} from "../../../src/Interface";
+    MessageContentImageUrl,
+    IServerSideEventStreamer
+} from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
 

@@ -2,7 +2,7 @@ import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { APIChain } from 'langchain/chains'
 import { getBaseClasses } from '../../../src/utils'
-import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from "../../../src/Interface";
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 
 export const API_URL_RAW_PROMPT_TEMPLATE = `You are given the below API Documentation:

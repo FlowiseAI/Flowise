@@ -18,7 +18,7 @@ import {
     INodeParams,
     IUsedTool,
     IServerSideEventStreamer
-} from "../../../src/Interface";
+} from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { checkInputs, Moderation } from '../../moderation/Moderation'

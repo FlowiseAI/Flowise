@@ -17,7 +17,7 @@ import {
     IServerSideEventStreamer,
     IUsedTool,
     IVisionChatModal
-} from "../../../src/Interface";
+} from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
