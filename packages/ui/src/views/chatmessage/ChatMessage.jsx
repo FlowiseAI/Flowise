@@ -263,7 +263,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 }
                 const reader = new FileReader()
                 const { name } = file
-                uploadedFiles.push(file)
+                // Only add files
+                if (!imageUploadAllowedTypes.includes(file.type)) {
+                    uploadedFiles.push(file)
+                }
                 files.push(
                     new Promise((resolve) => {
                         reader.onload = (evt) => {
@@ -339,7 +342,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             if (isFileAllowedForUpload(file) === false) {
                 return
             }
-            uploadedFiles.push(file)
+            // Only add files
+            if (!imageUploadAllowedTypes.includes(file.type)) {
+                uploadedFiles.push(file)
+            }
             const reader = new FileReader()
             const { name } = file
             files.push(
@@ -1270,14 +1276,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     onDrop={handleDrop}
                 />
             )}
-            {isDragActive &&
-                (getAllowChatFlowUploads.data?.isImageUploadAllowed || getAllowChatFlowUploads.data?.isFileAllowedForUpload) && (
-                    <Box className='drop-overlay'>
-                        <Typography variant='h2'>Drop here to upload</Typography>
-                        {[
-                            ...getAllowChatFlowUploads.data.imgUploadSizeAndTypes,
-                            ...getAllowChatFlowUploads.data.fileUploadSizeAndTypes
-                        ].map((allowed) => {
+            {isDragActive && (getAllowChatFlowUploads.data?.isImageUploadAllowed || getAllowChatFlowUploads.data?.isFileUploadAllowed) && (
+                <Box className='drop-overlay'>
+                    <Typography variant='h2'>Drop here to upload</Typography>
+                    {[...getAllowChatFlowUploads.data.imgUploadSizeAndTypes, ...getAllowChatFlowUploads.data.fileUploadSizeAndTypes].map(
+                        (allowed) => {
                             return (
                                 <>
                                     <Typography variant='subtitle1'>{allowed.fileTypes?.join(', ')}</Typography>
@@ -1286,9 +1289,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                     )}
                                 </>
                             )
-                        })}
-                    </Box>
-                )}
+                        }
+                    )}
+                </Box>
+            )}
             <div ref={ps} className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
                 <div id='messagelist' className={'messagelist'}>
                     {messages &&

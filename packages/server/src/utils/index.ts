@@ -482,6 +482,14 @@ export const buildFlow = async ({
 
     const initializedNodes: Set<string> = new Set()
     const reversedGraph = constructGraphs(reactFlowNodes, reactFlowEdges, { isReversed: true }).graph
+
+    const flowData: ICommonObject = {
+        chatflowid,
+        chatId,
+        sessionId,
+        chatHistory,
+        ...overrideConfig
+    }
     while (nodeQueue.length) {
         const { nodeId, depth } = nodeQueue.shift() as INodeQueue
 
@@ -505,7 +513,7 @@ export const buildFlow = async ({
                 flowNodes,
                 question,
                 chatHistory,
-                overrideConfig
+                flowData
             )
 
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
@@ -565,9 +573,15 @@ export const buildFlow = async ({
                 if (reactFlowNode.data.name === 'ifElseFunction' && typeof outputResult === 'object') {
                     let sourceHandle = ''
                     if (outputResult.type === true) {
-                        sourceHandle = `${nodeId}-output-returnFalse-string|number|boolean|json|array`
+                        // sourceHandle = `${nodeId}-output-returnFalse-string|number|boolean|json|array`
+                        sourceHandle = (
+                            reactFlowNode.data.outputAnchors.flatMap((n) => n.options).find((n) => n?.name === 'returnFalse') as any
+                        )?.id
                     } else if (outputResult.type === false) {
-                        sourceHandle = `${nodeId}-output-returnTrue-string|number|boolean|json|array`
+                        // sourceHandle = `${nodeId}-output-returnTrue-string|number|boolean|json|array`
+                        sourceHandle = (
+                            reactFlowNode.data.outputAnchors.flatMap((n) => n.options).find((n) => n?.name === 'returnTrue') as any
+                        )?.id
                     }
 
                     const ifElseEdge = reactFlowEdges.find((edg) => edg.source === nodeId && edg.sourceHandle === sourceHandle)
@@ -752,7 +766,7 @@ export const getVariableValue = async (
     question: string,
     chatHistory: IMessage[],
     isAcceptVariable = false,
-    overrideConfig?: ICommonObject
+    flowData?: ICommonObject
 ) => {
     const isObject = typeof paramValue === 'object'
     let returnVal = (isObject ? JSON.stringify(paramValue) : paramValue) ?? ''
@@ -789,8 +803,16 @@ export const getVariableValue = async (
             }
 
             if (variableFullPath.startsWith('$vars.')) {
-                const vars = await getGlobalVariable(appDataSource, overrideConfig)
+                const vars = await getGlobalVariable(appDataSource, flowData)
                 const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
+                if (variableValue) {
+                    variableDict[`{{${variableFullPath}}}`] = variableValue
+                    returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
+                }
+            }
+
+            if (variableFullPath.startsWith('$flow.') && flowData) {
+                const variableValue = get(flowData, variableFullPath.replace('$flow.', ''))
                 if (variableValue) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
@@ -889,7 +911,7 @@ export const resolveVariables = async (
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
-    overrideConfig?: ICommonObject
+    flowData?: ICommonObject
 ): Promise<INodeData> => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
@@ -907,7 +929,7 @@ export const resolveVariables = async (
                         question,
                         chatHistory,
                         undefined,
-                        overrideConfig
+                        flowData
                     )
                     resolvedInstances.push(resolvedInstance)
                 }
@@ -921,7 +943,7 @@ export const resolveVariables = async (
                     question,
                     chatHistory,
                     isAcceptVariable,
-                    overrideConfig
+                    flowData
                 )
                 paramsObj[key] = resolvedInstance
             }
@@ -1204,6 +1226,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'conversationalRetrievalAgent',
             'openAIToolAgent',
             'toolAgent',
+            'conversationalRetrievalToolAgent',
             'openAIToolAgentLlamaIndex'
         ]
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
