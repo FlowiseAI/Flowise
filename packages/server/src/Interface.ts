@@ -216,7 +216,6 @@ export interface IMessage {
 export interface IncomingInput {
     question: string
     overrideConfig?: ICommonObject
-    socketIOClientId?: string
     chatId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]

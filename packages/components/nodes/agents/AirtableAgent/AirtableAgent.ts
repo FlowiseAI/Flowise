@@ -2,7 +2,14 @@ import axios from 'axios'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { AgentExecutor } from 'langchain/agents'
 import { LLMChain } from 'langchain/chains'
-import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
+import {
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeParams,
+    IServerSideEventStreamer,
+    PromptTemplate
+} from "../../../src/Interface";
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
@@ -104,10 +111,17 @@ class Airtable_Agents implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
+                // if (options.shouldStreamResponse) {
+                //     streamResponse(options.sseStreamer, options.chatId, e.message)
+                // }
                 //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
                 return formatResponse(e.message)
             }
         }
+
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
@@ -123,7 +137,6 @@ class Airtable_Agents implements INode {
         let base64String = Buffer.from(JSON.stringify(airtableData)).toString('base64')
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
-        const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
         const callbacks = await additionalCallbacks(nodeData, options)
 
         const pyodide = await LoadPyodide()
@@ -194,7 +207,8 @@ json.dumps(my_dict)`
                 answer: finalResult
             }
 
-            if (options.socketIO && options.socketIOClientId) {
+            if (options.shouldStreamResponse) {
+                const handler = new CustomChainHandler(shouldStreamResponse ? sseStreamer : undefined, chatId)
                 const result = await chain.call(inputs, [loggerHandler, handler, ...callbacks])
                 return result?.text
             } else {

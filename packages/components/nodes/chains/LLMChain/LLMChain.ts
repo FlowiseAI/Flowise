@@ -170,12 +170,11 @@ const runPrediction = async (
     const loggerHandler = new ConsoleCallbackHandler(options.logger)
     const callbacks = await additionalCallbacks(nodeData, options)
 
-    const isStreaming = !disableStreaming && options.socketIO && options.socketIOClientId
-    const socketIO = isStreaming ? options.socketIO : undefined
-    const socketIOClientId = isStreaming ? options.socketIOClientId : ''
     const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
-    const sseStreamer = options.sseStreamer
+    // this is true if the prediction is external and the client has requested streaming='true'
+    const shouldStreamResponse = !disableStreaming && options.shouldStreamResponse
+    const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
     const chatId = options.chatId
 
     if (moderations && moderations.length > 0) {
@@ -184,7 +183,9 @@ const runPrediction = async (
             input = await checkInputs(moderations, input)
         } catch (e) {
             await new Promise((resolve) => setTimeout(resolve, 500))
-            streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
+            if (shouldStreamResponse) {
+                streamResponse(sseStreamer, chatId, e.message)
+            }
             return formatResponse(e.message)
         }
     }
@@ -256,12 +257,8 @@ const runPrediction = async (
         if (seen.length === 0) {
             // All inputVariables have fixed values specified
             const options = { ...promptValues }
-            if (isStreaming) {
-                const handler = new CustomChainHandler(socketIO, socketIOClientId)
-                if (sseStreamer) {
-                    handler.chatId = chatId
-                    handler.sseStreamer = sseStreamer as IServerSideEventStreamer
-                }
+            if (shouldStreamResponse) {
+                const handler = new CustomChainHandler(sseStreamer, chatId)
                 const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
                 return formatResponse(res?.text)
             } else {
@@ -276,12 +273,8 @@ const runPrediction = async (
                 ...promptValues,
                 [lastValue]: input
             }
-            if (isStreaming) {
-                const handler = new CustomChainHandler(socketIO, socketIOClientId)
-                if (options.sseStreamer) {
-                    handler.chatId = options.chatId
-                    handler.sseStreamer = options.sseStreamer
-                }
+            if (shouldStreamResponse) {
+                const handler = new CustomChainHandler(sseStreamer, chatId)
                 const res = await chain.call(options, [loggerHandler, handler, ...callbacks])
                 return formatResponse(res?.text)
             } else {
@@ -292,12 +285,8 @@ const runPrediction = async (
             throw new Error(`Please provide Prompt Values for: ${seen.join(', ')}`)
         }
     } else {
-        if (isStreaming) {
-            const handler = new CustomChainHandler(socketIO, socketIOClientId)
-            if (options.sseStreamer) {
-                handler.chatId = options.chatId
-                handler.sseStreamer = options.sseStreamer
-            }
+        if (shouldStreamResponse) {
+            const handler = new CustomChainHandler(sseStreamer, chatId)
 
             const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
             return formatResponse(res)

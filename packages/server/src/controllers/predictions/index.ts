@@ -5,6 +5,7 @@ import logger from '../../utils/logger'
 import predictionsServices from '../../services/predictions'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
@@ -46,9 +47,42 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             }
         }
         if (isDomainAllowed) {
+            const streamable = await chatflowsService.checkIfChatflowIsValidForStreaming(req.params.id)
+            if (streamable?.isStreaming && req.body.streaming === 'true') {
+                res.setHeader('Content-Type', 'text/event-stream')
+                res.setHeader('Cache-Control', 'no-cache')
+                res.setHeader('Connection', 'keep-alive')
+                res.flushHeaders()
+                const chatId = req.body.chatId
+                getRunningExpressApp().sseStreamer.addExternalClient(chatId, res)
+            }
+
             //@ts-ignore
-            const apiResponse = await predictionsServices.buildChatflow(req, req?.io)
-            return res.json(apiResponse)
+            const apiResponse = await predictionsServices.buildChatflow(req)
+            if (streamable?.isStreaming && req.body.streaming === 'true') {
+                const sseStreamer = getRunningExpressApp().sseStreamer
+                if (apiResponse.chatId) {
+                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'chatId', apiResponse.chatId)
+                }
+                if (apiResponse.chatMessageId) {
+                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'chatMessageId', apiResponse.chatMessageId)
+                }
+                if (apiResponse.question) {
+                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'question', apiResponse.question)
+                }
+                if (apiResponse.sessionId) {
+                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'sessionId', apiResponse.sessionId)
+                }
+                if (apiResponse.memoryType) {
+                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'memoryType', apiResponse.memoryType)
+                }
+                sseStreamer.removeClient(apiResponse.chatId)
+            }
+            if (req.body.streaming === 'true') {
+                return
+            } else {
+                return res.json(apiResponse)
+            }
         } else {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `This site is not allowed to access this chatbot`)
         }

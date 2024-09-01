@@ -1,6 +1,5 @@
 import { Logger } from 'winston'
 import { v4 as uuidv4 } from 'uuid'
-import { Server } from 'socket.io'
 import { Client } from 'langsmith'
 import CallbackHandler from 'langfuse-langchain'
 import lunary from 'lunary'
@@ -163,18 +162,16 @@ export class ConsoleCallbackHandler extends BaseTracer {
 export class CustomChainHandler extends BaseCallbackHandler {
     name = 'custom_chain_handler'
     isLLMStarted = false
-    socketIO: Server
-    socketIOClientId = ''
     skipK = 0 // Skip streaming for first K numbers of handleLLMStart
     returnSourceDocuments = false
     cachedResponse = true
     chatId: string = ''
-    sseStreamer: IServerSideEventStreamer
+    sseStreamer: IServerSideEventStreamer | undefined
 
-    constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean) {
+    constructor(sseStreamer: IServerSideEventStreamer | undefined, chatId: string, skipK?: number, returnSourceDocuments?: boolean) {
         super()
-        this.socketIO = socketIO
-        this.socketIOClientId = socketIOClientId
+        this.sseStreamer = sseStreamer
+        this.chatId = chatId
         this.skipK = skipK ?? this.skipK
         this.returnSourceDocuments = returnSourceDocuments ?? this.returnSourceDocuments
     }
@@ -188,24 +185,18 @@ export class CustomChainHandler extends BaseCallbackHandler {
         if (this.skipK === 0) {
             if (!this.isLLMStarted) {
                 this.isLLMStarted = true
-                this.socketIO.to(this.socketIOClientId).emit('start', token)
                 if (this.sseStreamer) {
-                    //this.sseStreamer.streamEvent(this.chatId, 'event: start\ndata: ' + token + '\n\n')
                     this.sseStreamer.streamStartEvent(this.chatId, token)
                 }
             }
-            this.socketIO.to(this.socketIOClientId).emit('token', token)
             if (this.sseStreamer) {
-                //this.sseStreamer.streamEvent(this.chatId, 'event: token\ndata: ' + token + '\n\n')
                 this.sseStreamer.streamTokenEvent(this.chatId, token)
             }
         }
     }
 
     handleLLMEnd() {
-        this.socketIO.to(this.socketIOClientId).emit('end')
         if (this.sseStreamer) {
-            //this.sseStreamer.streamEvent(this.chatId, 'event: end\ndata: [END]\n\n')
             this.sseStreamer.streamEndEvent(this.chatId)
         }
     }
@@ -222,37 +213,24 @@ export class CustomChainHandler extends BaseCallbackHandler {
             const result = cachedValue.split(/(\s+)/)
             result.forEach((token: string, index: number) => {
                 if (index === 0) {
-                    this.socketIO.to(this.socketIOClientId).emit('start', token)
                     if (this.sseStreamer) {
                         //this.sseStreamer.streamEvent(this.chatId, 'event: start\ndata: ' + token + '\n\n')
                         this.sseStreamer.streamStartEvent(this.chatId, token)
                     }
                 }
                 if (this.sseStreamer) {
-                    //this.sseStreamer.streamEvent(this.chatId, 'event: token\ndata: ' + token + '\n\n')
                     this.sseStreamer.streamTokenEvent(this.chatId, token)
                 }
-                this.socketIO.to(this.socketIOClientId).emit('token', token)
             })
-            if (this.returnSourceDocuments) {
-                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
-                if (this.sseStreamer) {
-                    //this.sseStreamer.streamEvent(this.chatId, 'event: sourceDocuments\ndata: ' + outputs?.sourceDocuments + '\n\n')
-                    this.sseStreamer.streamSourceDocumentsEvent(this.chatId, JSON.stringify(outputs?.sourceDocuments))
-                }
+            if (this.returnSourceDocuments && this.sseStreamer) {
+                this.sseStreamer.streamSourceDocumentsEvent(this.chatId, JSON.stringify(outputs?.sourceDocuments))
             }
-            this.socketIO.to(this.socketIOClientId).emit('end')
             if (this.sseStreamer) {
-                //this.sseStreamer.streamEvent(this.chatId, 'event: token\ndata: ' + token + '\n\n')
                 this.sseStreamer.streamEndEvent(this.chatId)
             }
         } else {
-            if (this.returnSourceDocuments) {
-                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
-                if (this.sseStreamer) {
-                    //this.sseStreamer.streamEvent(this.chatId, 'event: sourceDocuments\ndata: ' + outputs?.sourceDocuments + '\n\n')
-                    this.sseStreamer.streamSourceDocumentsEvent(this.chatId, JSON.stringify(outputs?.sourceDocuments))
-                }
+            if (this.returnSourceDocuments && this.sseStreamer) {
+                this.sseStreamer.streamSourceDocumentsEvent(this.chatId, JSON.stringify(outputs?.sourceDocuments))
             }
         }
     }

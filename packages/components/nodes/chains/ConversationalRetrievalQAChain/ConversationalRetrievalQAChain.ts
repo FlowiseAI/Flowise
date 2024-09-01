@@ -182,7 +182,8 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const chatflowid = options.chatflowid as string
 
-        const sseStreamer = options.sseStreamer as IServerSideEventStreamer
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
         const chatId = options.chatId
 
         let customResponsePrompt = responsePrompt
@@ -209,7 +210,10 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (options.shouldStreamResponse) {
+                    streamResponse(options.sseStreamer, options.chatId, e.message)
+                }
+                // streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
                 return formatResponse(e.message)
             }
         }
@@ -238,28 +242,21 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         let sourceDocuments: ICommonObject[] = []
         let text = ''
         let isStreamingStarted = false
-        const isStreamingEnabled = options.socketIO && options.socketIOClientId
 
         for await (const chunk of stream) {
             streamedResponse = applyPatch(streamedResponse, chunk.ops).newDocument
 
             if (streamedResponse.final_output) {
                 text = streamedResponse.final_output?.output
-                if (isStreamingEnabled) {
-                    options.socketIO.to(options.socketIOClientId).emit('end')
-                }
                 if (Array.isArray(streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output)) {
                     sourceDocuments = streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output
-                    if (isStreamingEnabled && returnSourceDocuments) {
-                        options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', sourceDocuments)
+                    if (shouldStreamResponse && returnSourceDocuments) {
                         if (sseStreamer) {
-                            //sseStreamer.streamEvent(chatId, 'event: sourceDocuments\ndata: ' + JSON.stringify(sourceDocuments) + '\n\n')
                             sseStreamer.streamSourceDocumentsEvent(chatId, JSON.stringify(sourceDocuments))
                         }
                     }
                 }
-                if (isStreamingEnabled && sseStreamer) {
-                    //sseStreamer.streamEvent(chatId, 'event: end\ndata: [END]\n\n')
+                if (shouldStreamResponse && sseStreamer) {
                     sseStreamer.streamEndEvent(chatId)
                 }
             }
@@ -273,18 +270,14 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
                 if (!isStreamingStarted) {
                     isStreamingStarted = true
-                    if (isStreamingEnabled) {
-                        options.socketIO.to(options.socketIOClientId).emit('start', token)
+                    if (shouldStreamResponse) {
                         if (sseStreamer) {
-                            //sseStreamer.streamEvent(chatId, 'event: start\ndata: ' + token + '\n\n')
                             sseStreamer.streamStartEvent(chatId, token)
                         }
                     }
                 }
-                if (isStreamingEnabled) {
-                    options.socketIO.to(options.socketIOClientId).emit('token', token)
+                if (shouldStreamResponse) {
                     if (sseStreamer) {
-                        //sseStreamer.streamEvent(chatId, 'event: token\ndata: ' + token + '\n\n')
                         sseStreamer.streamTokenEvent(chatId, token)
                     }
                 }

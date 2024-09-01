@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback, Fragment } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
-import socketIOClient from 'socket.io-client'
 import { cloneDeep } from 'lodash'
 import rehypeMathjax from 'rehype-mathjax'
 import rehypeRaw from 'rehype-raw'
@@ -171,7 +170,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             type: 'apiMessage'
         }
     ])
-    const [socketIOClientId, setSocketIOClientId] = useState('')
+    //const [socketIOClientId, setSocketIOClientId] = useState('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
     const [isChatFlowAvailableForSpeech, setIsChatFlowAvailableForSpeech] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
@@ -643,7 +642,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             }
             if (uploads && uploads.length > 0) params.uploads = uploads
             if (leadEmail) params.leadEmail = leadEmail
-            if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
+
             if (action) params.action = action
 
             if (uploadedFiles.length > 0) {
@@ -665,80 +664,53 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 }
             }
 
-            setupSSE(chatId)
+            /* TODO: Make this one call, after we convert this to GET. */
+            setupSSE(chatflowid, params)
             const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
 
-            if (response.data) {
-                const data = response.data
-
-                setMessages((prevMessages) => {
-                    let allMessages = [...cloneDeep(prevMessages)]
-                    if (allMessages[allMessages.length - 1].type === 'apiMessage') {
-                        allMessages[allMessages.length - 1].id = data?.chatMessageId
-                    }
-                    return allMessages
-                })
-
-                setChatId(data.chatId)
-
-                if (input === '' && data.question) {
-                    // the response contains the question even if it was in an audio format
-                    // so if input is empty but the response contains the question, update the user message to show the question
-                    setMessages((prevMessages) => {
-                        let allMessages = [...cloneDeep(prevMessages)]
-                        if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
-                        allMessages[allMessages.length - 2].message = data.question
-                        return allMessages
-                    })
-                }
-
-                if (!isChatFlowAvailableToStream) {
-                    let text = ''
-                    if (data.text) text = data.text
-                    else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
-                    else text = JSON.stringify(data, null, 2)
-
-                    setMessages((prevMessages) => [
-                        ...prevMessages,
-                        {
-                            message: text,
-                            id: data?.chatMessageId,
-                            sourceDocuments: data?.sourceDocuments,
-                            usedTools: data?.usedTools,
-                            fileAnnotations: data?.fileAnnotations,
-                            agentReasoning: data?.agentReasoning,
-                            action: data?.action,
-                            type: 'apiMessage',
-                            feedback: null
-                        }
-                    ])
-                }
-                setLocalStorageChatflow(chatflowid, data.chatId)
-                setLoading(false)
-                setUserInput('')
-                setUploadedFiles([])
-                setTimeout(() => {
-                    inputRef.current?.focus()
-                    scrollToBottom()
-                }, 100)
-            }
+            // TBD: handle this part of the response
+            // if (response.data) {
+            //     const data = response.data
+            //     if (!isChatFlowAvailableToStream) {
+            //         let text = ''
+            //         if (data.text) text = data.text
+            //         else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
+            //         else text = JSON.stringify(data, null, 2)
+            //
+            //         setMessages((prevMessages) => [
+            //             ...prevMessages,
+            //             {
+            //                 message: text,
+            //                 id: data?.chatMessageId,
+            //                 sourceDocuments: data?.sourceDocuments,
+            //                 usedTools: data?.usedTools,
+            //                 fileAnnotations: data?.fileAnnotations,
+            //                 agentReasoning: data?.agentReasoning,
+            //                 action: data?.action,
+            //                 type: 'apiMessage',
+            //                 feedback: null
+            //             }
+            //         ])
+            //     }
+            // }
         } catch (error) {
             handleError(error.response.data.message)
             return
         }
     }
 
-    const setupSSE = (chatId) => {
+    const setupSSE = (chatflowid, params) => {
+        const chatId = params.chatId
+        const input = params.question
         // Establish the SSE connection to receive the streamed response
+        ///internal-prediction/${id}
         const eventSource = new EventSource(`${baseURL}/api/v1/events/${chatId}`)
 
         eventSource.addEventListener('start', (event) => {
-            console.log('onStart', event.data)
             setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
         })
 
         eventSource.addEventListener('token', (event) => {
-            console.log('onToken', event.data)
             updateLastMessage(event.data)
         })
 
@@ -747,12 +719,78 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         })
 
         eventSource.addEventListener('end', () => {
-            console.log('onEnd : ' + event.data)
+            setLocalStorageChatflow(chatflowid, chatId)
+            setLoading(false)
+            setUserInput('')
+            setUploadedFiles([])
+            setTimeout(() => {
+                inputRef.current?.focus()
+                scrollToBottom()
+            }, 100)
             eventSource.close() // Close the connection when stream ends
         })
 
+        eventSource.addEventListener('usedTools', (event) => {
+            updateLastMessageUsedTools(JSON.parse(event.data))
+        })
+
+        eventSource.addEventListener('fileAnnotations', (event) => {
+            updateLastMessageFileAnnotations(JSON.parse(event.data))
+        })
+
+        eventSource.addEventListener('agentReasoning', (event) => {
+            updateLastMessageAgentReasoning(JSON.parse(event.data))
+        })
+
+        eventSource.addEventListener('action', (event) => {
+            updateLastMessageAction(JSON.parse(event.data))
+        })
+
+        eventSource.addEventListener('nextAgent', (event) => {
+            updateLastMessageNextAgent(JSON.parse(event.data))
+        })
+
+        eventSource.addEventListener('chatId', (event) => {
+            setChatId(event.data)
+        })
+
+        eventSource.addEventListener('question', (event) => {
+            if (input === '' && event.data) {
+                // the response contains the question even if it was in an audio format
+                // so if input is empty but the response contains the question, update the user message to show the question
+                setMessages((prevMessages) => {
+                    let allMessages = [...cloneDeep(prevMessages)]
+                    if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
+                    allMessages[allMessages.length - 2].message = event.data
+                    return allMessages
+                })
+            }
+        })
+
+        eventSource.addEventListener('chatMessageId', (event) => {
+            setMessages((prevMessages) => {
+                let allMessages = [...cloneDeep(prevMessages)]
+                if (allMessages[allMessages.length - 1].type === 'apiMessage') {
+                    allMessages[allMessages.length - 1].id = event.data
+                }
+                return allMessages
+            })
+        })
+
+        eventSource.addEventListener('abort', (event) => {
+            abortMessage(event.data)
+        })
+
         eventSource.onmessage = (event) => {
-            if (event.data === '[END]') {
+            if (event.data === '[DONE]') {
+                setLocalStorageChatflow(chatflowid, chatId)
+                setLoading(false)
+                setUserInput('')
+                setUploadedFiles([])
+                setTimeout(() => {
+                    inputRef.current?.focus()
+                    scrollToBottom()
+                }, 100)
                 eventSource.close() // Close the connection when stream ends
             }
         }
@@ -929,7 +967,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     }, [isDialog, inputRef])
 
     useEffect(() => {
-        let socket
         if (open && chatflowid) {
             // API request
             getChatmessageApi.request(chatflowid)
@@ -950,31 +987,31 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             }
 
             // SocketIO
-            socket = socketIOClient(baseURL)
-
-            socket.on('connect', () => {
-                setSocketIOClientId(socket.id)
-            })
-
-            socket.on('start', () => {
-                // setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
-            })
-
-            //socket.on('sourceDocuments', updateLastMessageSourceDocuments)
-
-            socket.on('usedTools', updateLastMessageUsedTools)
-
-            socket.on('fileAnnotations', updateLastMessageFileAnnotations)
-
-            //socket.on('token', updateLastMessage)
-
-            socket.on('agentReasoning', updateLastMessageAgentReasoning)
-
-            socket.on('action', updateLastMessageAction)
-
-            socket.on('nextAgent', updateLastMessageNextAgent)
-
-            socket.on('abort', abortMessage)
+            // socket = socketIOClient(baseURL)
+            //
+            // socket.on('connect', () => {
+            //     setSocketIOClientId(socket.id)
+            // })
+            //
+            // socket.on('start', () => {
+            //     // setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+            // })
+            //
+            // //socket.on('sourceDocuments', updateLastMessageSourceDocuments)
+            //
+            // socket.on('usedTools', updateLastMessageUsedTools)
+            //
+            // socket.on('fileAnnotations', updateLastMessageFileAnnotations)
+            //
+            // //socket.on('token', updateLastMessage)
+            //
+            // socket.on('agentReasoning', updateLastMessageAgentReasoning)
+            //
+            // socket.on('action', updateLastMessageAction)
+            //
+            // socket.on('nextAgent', updateLastMessageNextAgent)
+            //
+            // socket.on('abort', abortMessage)
         }
 
         return () => {
@@ -987,10 +1024,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     type: 'apiMessage'
                 }
             ])
-            if (socket) {
-                socket.disconnect()
-                setSocketIOClientId('')
-            }
+            // if (socket) {
+            //     socket.disconnect()
+            //     setSocketIOClientId('')
+            // }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
