@@ -1,9 +1,6 @@
 import express from 'express'
-import { Request, Response } from 'express'
+import { Response } from 'express'
 import { IServerSideEventStreamer } from 'flowise-components'
-
-import multer from 'multer'
-import path from 'path'
 
 // define a new type that has a client type (INTERNAL or EXTERNAL) and Response type
 type Client = {
@@ -18,7 +15,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
 
     constructor(app: express.Application) {
         this.app = app
-        console.log('SSEStreamer constructor')
     }
 
     addExternalClient(chatId: string, res: Response) {
@@ -27,11 +23,12 @@ export class SSEStreamer implements IServerSideEventStreamer {
 
     addClient(chatId: string, res: Response) {
         this.clients[chatId] = { clientType: 'INTERNAL', response: res, abort: false }
+        // console.log('adding internal client', chatId)
     }
 
     removeClient(chatId: string) {
         const client = this.clients[chatId]
-        console.log('Removing client', chatId)
+        // console.log('Removing client', chatId)
         if (client) {
             if (client.clientType === 'INTERNAL') {
                 client.response.write(`event: end\ndata: [DONE]\n\n`)
@@ -48,49 +45,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
         }
     }
 
-    // TODO: remove the /api/v1 prefix from the endpoints
-    setupSSEEndpoint = () => {
-        // this.app.post(
-        //     '/api/v1/prediction/:id',
-        //     upload.array('files'),
-        //     predictionsController.getRateLimiterMiddleware,
-        //     async (req: Request, res: Response, next: NextFunction) => {
-        //         const streamable = await chatflowsService.checkIfChatflowIsValidForStreaming(req.params.id)
-        //         if (streamable?.isStreaming && req.body.streaming === 'true') {
-        //             res.setHeader('Content-Type', 'text/event-stream')
-        //             res.setHeader('Cache-Control', 'no-cache')
-        //             res.setHeader('Connection', 'keep-alive')
-        //             res.flushHeaders()
-        //             const chatId = req.body.chatId
-        //             this.clients[chatId] = { clientType: 'EXTERNAL', response: res }
-        //         }
-        //
-        //         await predictionsController.createPrediction(req, res, next)
-        //         if (streamable?.isStreaming && req.body.streaming === 'true') {
-        //             const chatId = req.body.chatId
-        //             req.on('close', () => {
-        //                 delete this.clients[chatId]
-        //             })
-        //         }
-        //     }
-        // )
-
-        this.app.get('/api/v1/events/:chatId', (req: Request, res: Response) => {
-            res.setHeader('Content-Type', 'text/event-stream')
-            res.setHeader('Cache-Control', 'no-cache')
-            res.setHeader('Connection', 'keep-alive')
-            res.flushHeaders()
-
-            const chatId = req.params.chatId
-            this.clients[chatId] = { clientType: 'INTERNAL', response: res, abort: false }
-
-            // req.on('close', () => {
-            //     console.log('req.onClose ', chatId, this.clients[chatId])
-            //     //delete this.clients[chatId]
-            // })
-        })
-    }
-
     // Send SSE message to a specific client
     streamEvent(chatId: string, data: string) {
         const client = this.clients[chatId]
@@ -104,13 +58,10 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
 
     streamCustomEvent(chatId: string, eventType: string, data: string) {
-        console.log('streamCustomEvent ', eventType, chatId)
+        // console.log('streamCustomEvent ', eventType, chatId)
         const client = this.clients[chatId]
         if (client && client.clientType === 'INTERNAL') {
             client.response.write(`event: ${eventType}\ndata: ${data}\n\n`)
@@ -125,7 +76,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     streamStartEvent(chatId: string, data: string) {
-        console.log('streamStartEvent ', chatId)
+        // console.log('streamStartEvent ', chatId)
         const client = this.clients[chatId]
         if (client && client.clientType === 'INTERNAL') {
             client.response.write(`event: start\ndata: ${data} \n\n'`)
@@ -137,13 +88,10 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
 
     streamTokenEvent(chatId: string, data: string) {
-        console.log('streamTokenEvent ', chatId)
+        // console.log('streamTokenEvent ', chatId)
         const client = this.clients[chatId]
         if (client && client.clientType === 'INTERNAL') {
             client.response.write(`event: token\ndata: ${data}\n\n`)
@@ -155,9 +103,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
 
     streamSourceDocumentsEvent(chatId: string, data: string) {
@@ -172,12 +117,9 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
     streamUsedToolsEvent(chatId: string, data: string): void {
-        console.log('streamUsedToolsEvent ', chatId)
+        // console.log('streamUsedToolsEvent ', chatId)
         const client = this.clients[chatId]
         if (client && client.clientType === 'INTERNAL') {
             client.response.write(`event: usedTools\ndata: ${data}\n\n`)
@@ -189,9 +131,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
     streamFileAnnotationsEvent(chatId: string, data: string): void {
         const client = this.clients[chatId]
@@ -205,9 +144,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
     streamToolEvent(chatId: string, data: string): void {
         const client = this.clients[chatId]
@@ -221,9 +157,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
     streamAgentReasoningEvent(chatId: string, data: string): void {
         const client = this.clients[chatId]
@@ -237,9 +170,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
     streamNextAgentEvent(chatId: string, data: string): void {
         const client = this.clients[chatId]
@@ -253,9 +183,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
     streamActionEvent(chatId: string, data: string): void {
         const client = this.clients[chatId]
@@ -269,13 +196,10 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        // if (data === '[DONE]') {
-        //     delete this.clients[chatId]
-        // }
     }
 
     streamAbortEvent(chatId: string): void {
-        console.log('streamAbortEvent ', chatId)
+        // console.log('streamAbortEvent ', chatId)
         const client = this.clients[chatId]
         if (client && client.clientType === 'INTERNAL') {
             client.response.write(`event: abort\ndata: [ABORT]\n\n`)

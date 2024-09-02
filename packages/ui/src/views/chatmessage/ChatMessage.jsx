@@ -8,6 +8,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
+import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
 
 import {
     Box,
@@ -671,140 +672,162 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             }
 
             /* TODO: Make this one call, after we convert this to GET. */
-            setupSSE(chatflowid, params)
-            const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
+            if (isChatFlowAvailableToStream) {
+                fetchResponseFromEventStream(chatflowid, params)
+            } else {
+                const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
+                if (response.data) {
+                    const data = response.data
 
-            // TBD: handle this part of the response
-            // if (response.data) {
-            //     const data = response.data
-            //     if (!isChatFlowAvailableToStream) {
-            //         let text = ''
-            //         if (data.text) text = data.text
-            //         else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
-            //         else text = JSON.stringify(data, null, 2)
-            //
-            //         setMessages((prevMessages) => [
-            //             ...prevMessages,
-            //             {
-            //                 message: text,
-            //                 id: data?.chatMessageId,
-            //                 sourceDocuments: data?.sourceDocuments,
-            //                 usedTools: data?.usedTools,
-            //                 fileAnnotations: data?.fileAnnotations,
-            //                 agentReasoning: data?.agentReasoning,
-            //                 action: data?.action,
-            //                 type: 'apiMessage',
-            //                 feedback: null
-            //             }
-            //         ])
-            //     }
-            // }
+                    setMessages((prevMessages) => {
+                        let allMessages = [...cloneDeep(prevMessages)]
+                        if (allMessages[allMessages.length - 1].type === 'apiMessage') {
+                            allMessages[allMessages.length - 1].id = data?.chatMessageId
+                        }
+                        return allMessages
+                    })
+
+                    setChatId(data.chatId)
+
+                    if (input === '' && data.question) {
+                        // the response contains the question even if it was in an audio format
+                        // so if input is empty but the response contains the question, update the user message to show the question
+                        setMessages((prevMessages) => {
+                            let allMessages = [...cloneDeep(prevMessages)]
+                            if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
+                            allMessages[allMessages.length - 2].message = data.question
+                            return allMessages
+                        })
+                    }
+
+                    if (!isChatFlowAvailableToStream) {
+                        let text = ''
+                        if (data.text) text = data.text
+                        else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
+                        else text = JSON.stringify(data, null, 2)
+
+                        setMessages((prevMessages) => [
+                            ...prevMessages,
+                            {
+                                message: text,
+                                id: data?.chatMessageId,
+                                sourceDocuments: data?.sourceDocuments,
+                                usedTools: data?.usedTools,
+                                fileAnnotations: data?.fileAnnotations,
+                                agentReasoning: data?.agentReasoning,
+                                action: data?.action,
+                                type: 'apiMessage',
+                                feedback: null
+                            }
+                        ])
+                    }
+                    setLocalStorageChatflow(chatflowid, data.chatId)
+                    setLoading(false)
+                    setUserInput('')
+                    setUploadedFiles([])
+                    setTimeout(() => {
+                        inputRef.current?.focus()
+                        scrollToBottom()
+                    }, 100)
+                }
+            }
         } catch (error) {
             handleError(error.response.data.message)
             return
         }
     }
 
-    const setupSSE = (chatflowid, params) => {
+    const fetchResponseFromEventStream = async (chatflowid, params) => {
         const chatId = params.chatId
         const input = params.question
-        // Establish the SSE connection to receive the streamed response
-        ///internal-prediction/${id}
-        const eventSource = new EventSource(`${baseURL}/api/v1/events/${chatId}`)
-
-        eventSource.addEventListener('start', (event) => {
-            setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
-        })
-
-        eventSource.addEventListener('token', (event) => {
-            updateLastMessage(event.data)
-        })
-
-        eventSource.addEventListener('sourceDocuments', (event) => {
-            updateLastMessageSourceDocuments(JSON.parse(event.data))
-        })
-
-        eventSource.addEventListener('end', () => {
-            setLocalStorageChatflow(chatflowid, chatId)
-            setLoading(false)
-            setUserInput('')
-            setUploadedFiles([])
-            setTimeout(() => {
-                inputRef.current?.focus()
-                scrollToBottom()
-            }, 100)
-            eventSource.close() // Close the connection when stream ends
-        })
-
-        eventSource.addEventListener('usedTools', (event) => {
-            updateLastMessageUsedTools(JSON.parse(event.data))
-        })
-
-        eventSource.addEventListener('fileAnnotations', (event) => {
-            updateLastMessageFileAnnotations(JSON.parse(event.data))
-        })
-
-        eventSource.addEventListener('agentReasoning', (event) => {
-            updateLastMessageAgentReasoning(JSON.parse(event.data))
-        })
-
-        eventSource.addEventListener('action', (event) => {
-            updateLastMessageAction(JSON.parse(event.data))
-        })
-
-        eventSource.addEventListener('nextAgent', (event) => {
-            updateLastMessageNextAgent(JSON.parse(event.data))
-        })
-
-        eventSource.addEventListener('chatId', (event) => {
-            setChatId(event.data)
-        })
-
-        eventSource.addEventListener('question', (event) => {
-            if (input === '' && event.data) {
-                // the response contains the question even if it was in an audio format
-                // so if input is empty but the response contains the question, update the user message to show the question
-                setMessages((prevMessages) => {
-                    let allMessages = [...cloneDeep(prevMessages)]
-                    if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
-                    allMessages[allMessages.length - 2].message = event.data
-                    return allMessages
-                })
-            }
-        })
-
-        eventSource.addEventListener('chatMessageId', (event) => {
-            setMessages((prevMessages) => {
-                let allMessages = [...cloneDeep(prevMessages)]
-                if (allMessages[allMessages.length - 1].type === 'apiMessage') {
-                    allMessages[allMessages.length - 1].id = event.data
+        const username = localStorage.getItem('username')
+        const password = localStorage.getItem('password')
+        let authString = `${username}:${password}`
+        await fetchEventSource(`${baseURL}/api/v1/internal-prediction/stream/${chatflowid}`, {
+            method: 'POST',
+            body: JSON.stringify(params),
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Basic ${btoa(authString)}`,
+                'x-request-from': 'internal'
+            },
+            async onopen(response) {
+                if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
+                    //console.log('EventSource Open')
                 }
-                return allMessages
-            })
-        })
-
-        eventSource.addEventListener('abort', (event) => {
-            abortMessage(event.data)
-        })
-
-        eventSource.onmessage = (event) => {
-            if (event.data === '[DONE]') {
-                setLocalStorageChatflow(chatflowid, chatId)
-                setLoading(false)
-                setUserInput('')
-                setUploadedFiles([])
-                setTimeout(() => {
-                    inputRef.current?.focus()
-                    scrollToBottom()
-                }, 100)
-                eventSource.close() // Close the connection when stream ends
+            },
+            async onmessage(ev) {
+                switch (ev.event) {
+                    case 'start':
+                        setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+                        break
+                    case 'token':
+                        updateLastMessage(ev.data)
+                        break
+                    case 'sourceDocuments':
+                        updateLastMessageSourceDocuments(JSON.parse(ev.data))
+                        break
+                    case 'usedTools':
+                        updateLastMessageUsedTools(JSON.parse(ev.data))
+                        break
+                    case 'fileAnnotations':
+                        updateLastMessageFileAnnotations(JSON.parse(ev.data))
+                        break
+                    case 'agentReasoning':
+                        updateLastMessageAgentReasoning(JSON.parse(ev.data))
+                        break
+                    case 'action':
+                        updateLastMessageAction(JSON.parse(ev.data))
+                        break
+                    case 'nextAgent':
+                        updateLastMessageNextAgent(JSON.parse(ev.data))
+                        break
+                    case 'chatId':
+                        setChatId(ev.data)
+                        break
+                    case 'chatMessageId':
+                        setMessages((prevMessages) => {
+                            let allMessages = [...cloneDeep(prevMessages)]
+                            if (allMessages[allMessages.length - 1].type === 'userMessage') {
+                                allMessages[allMessages.length - 1].id = ev.data
+                            }
+                            return allMessages
+                        })
+                        break
+                    case 'question':
+                        if (input === '' && ev.data) {
+                            // the response contains the question even if it was in an audio format
+                            // so if input is empty but the response contains the question, update the user message to show the question
+                            setMessages((prevMessages) => {
+                                let allMessages = [...cloneDeep(prevMessages)]
+                                if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
+                                allMessages[allMessages.length - 2].message = ev.data
+                                return allMessages
+                            })
+                        }
+                        break
+                    case 'abort':
+                        abortMessage(ev.data)
+                        break
+                    case 'end':
+                        setLocalStorageChatflow(chatflowid, chatId)
+                        setLoading(false)
+                        setUserInput('')
+                        setUploadedFiles([])
+                        setTimeout(() => {
+                            inputRef.current?.focus()
+                            scrollToBottom()
+                        }, 100)
+                        break
+                }
+            },
+            async onclose() {
+                console.log('EventSource Closed')
+            },
+            async onerror(err) {
+                console.error('EventSource failed:', err)
             }
-        }
-
-        eventSource.onerror = (err) => {
-            console.error('EventSource failed:', err)
-            eventSource.close()
-        }
+        })
     }
 
     // Prevent blank submissions and allow for multiline input

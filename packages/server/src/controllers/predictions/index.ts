@@ -61,28 +61,32 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             const apiResponse = await predictionsServices.buildChatflow(req)
             if (streamable?.isStreaming && req.body.streaming === 'true') {
                 const sseStreamer = getRunningExpressApp().sseStreamer
+                const metadataJson: any = {}
                 if (apiResponse.chatId) {
-                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'chatId', apiResponse.chatId)
+                    metadataJson['chatId'] = apiResponse.chatId
+                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'chatId', apiResponse.chatId)
                 }
                 if (apiResponse.chatMessageId) {
-                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'chatMessageId', apiResponse.chatMessageId)
+                    metadataJson['chatMessageId'] = apiResponse.chatMessageId
+                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'chatMessageId', apiResponse.chatMessageId)
                 }
                 if (apiResponse.question) {
-                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'question', apiResponse.question)
+                    metadataJson['question'] = apiResponse.question
+                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'question', apiResponse.question)
                 }
                 if (apiResponse.sessionId) {
-                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'sessionId', apiResponse.sessionId)
+                    metadataJson['sessionId'] = apiResponse.sessionId
+                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'sessionId', apiResponse.sessionId)
                 }
                 if (apiResponse.memoryType) {
-                    sseStreamer.streamCustomEvent(apiResponse.chatId, 'memoryType', apiResponse.memoryType)
+                    metadataJson['memoryType'] = apiResponse.memoryType
+                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'memoryType', apiResponse.memoryType)
                 }
+                sseStreamer.streamCustomEvent(apiResponse.chatId, 'metadata', JSON.stringify(metadataJson))
                 sseStreamer.removeClient(apiResponse.chatId)
-            }
-            if (req.body.streaming === 'true') {
                 return
-            } else {
-                return res.json(apiResponse)
             }
+            return res.json(apiResponse)
         } else {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `This site is not allowed to access this chatbot`)
         }
