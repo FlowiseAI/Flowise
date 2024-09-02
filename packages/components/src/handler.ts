@@ -633,7 +633,8 @@ export class AnalyticHandler {
         const returnIds: ICommonObject = {
             langSmith: {},
             langFuse: {},
-            lunary: {}
+            lunary: {},
+            langWatch: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -789,7 +790,8 @@ export class AnalyticHandler {
         const returnIds: ICommonObject = {
             langSmith: {},
             langFuse: {},
-            lunary: {}
+            lunary: {},
+            langWatch: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {

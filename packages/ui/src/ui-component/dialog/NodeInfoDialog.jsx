@@ -4,8 +4,9 @@ import { useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 // Material
-import { Dialog, DialogContent, DialogTitle } from '@mui/material'
+import { Button, Dialog, DialogContent, DialogTitle } from '@mui/material'
 import { TableViewOnly } from '@/ui-component/table/Table'
+import { IconBook2 } from '@tabler/icons-react'
 
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
@@ -163,6 +164,20 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                                     ))}
                             </div>
                         </div>
+                        <div style={{ flex: 1 }}></div>
+                        {dialogProps.data.documentation && (
+                            <Button
+                                variant='outlined'
+                                color='primary'
+                                title='Open Documentation'
+                                onClick={() => {
+                                    window.open(dialogProps.data.documentation, '_blank', 'noopener,noreferrer')
+                                }}
+                                startIcon={<IconBook2 />}
+                            >
+                                Documentation
+                            </Button>
+                        )}
                     </div>
                 )}
             </DialogTitle>

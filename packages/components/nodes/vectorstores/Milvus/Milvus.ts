@@ -4,7 +4,8 @@ import { Document } from '@langchain/core/documents'
 import { MilvusLibArgs, Milvus } from '@langchain/community/vectorstores/milvus'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { howToUseFileUpload } from '../VectorStoreUtils'
 
 interface InsertRow {
     [x: string]: string | number[]
@@ -27,7 +28,7 @@ class Milvus_VectorStores implements INode {
     constructor() {
         this.label = 'Milvus'
         this.name = 'milvus'
-        this.version = 1.0
+        this.version = 2.1
         this.type = 'Milvus'
         this.icon = 'milvus.svg'
         this.category = 'Vector Stores'
@@ -65,6 +66,25 @@ class Milvus_VectorStores implements INode {
                 type: 'string'
             },
             {
+                label: 'Milvus Partition Name',
+                name: 'milvusPartition',
+                default: '_default',
+                type: 'string',
+                optional: true
+            },
+            {
+                label: 'File Upload',
+                name: 'fileUpload',
+                description: 'Allow file upload on the chat',
+                hint: {
+                    label: 'How to use',
+                    value: howToUseFileUpload
+                },
+                type: 'boolean',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Milvus Text Field',
                 name: 'milvusTextField',
                 type: 'string',
@@ -90,6 +110,46 @@ class Milvus_VectorStores implements INode {
                 type: 'number',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Secure',
+                name: 'secure',
+                type: 'boolean',
+                optional: true,
+                description: 'Enable secure connection to Milvus server',
+                additionalParams: true
+            },
+            {
+                label: 'Client PEM Path',
+                name: 'clientPemPath',
+                type: 'string',
+                optional: true,
+                description: 'Path to the client PEM file',
+                additionalParams: true
+            },
+            {
+                label: 'Client Key Path',
+                name: 'clientKeyPath',
+                type: 'string',
+                optional: true,
+                description: 'Path to the client key file',
+                additionalParams: true
+            },
+            {
+                label: 'CA PEM Path',
+                name: 'caPemPath',
+                type: 'string',
+                optional: true,
+                description: 'Path to the root PEM file',
+                additionalParams: true
+            },
+            {
+                label: 'Server Name',
+                name: 'serverName',
+                type: 'string',
+                optional: true,
+                description: 'Server name for the secure connection',
+                additionalParams: true
             }
         ]
         this.outputs = [
@@ -116,16 +176,41 @@ class Milvus_VectorStores implements INode {
             // embeddings
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
             // credential
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData)
             const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData)
 
+            // tls
+            const secure = nodeData.inputs?.secure as boolean
+            const clientPemPath = nodeData.inputs?.clientPemPath as string
+            const clientKeyPath = nodeData.inputs?.clientKeyPath as string
+            const caPemPath = nodeData.inputs?.caPemPath as string
+            const serverName = nodeData.inputs?.serverName as string
+
+            // partition
+            const partitionName = nodeData.inputs?.milvusPartition ?? '_default'
+
             // init MilvusLibArgs
             const milVusArgs: MilvusLibArgs = {
                 url: address,
-                collectionName: collectionName
+                collectionName: collectionName,
+                partitionName: partitionName
+            }
+
+            if (secure) {
+                milVusArgs.clientConfig = {
+                    address: address,
+                    ssl: secure,
+                    tls: {
+                        rootCertPath: caPemPath,
+                        certChainPath: clientPemPath,
+                        privateKeyPath: clientKeyPath,
+                        serverName: serverName
+                    }
+                }
             }
 
             if (milvusUser) milVusArgs.username = milvusUser
@@ -135,6 +220,9 @@ class Milvus_VectorStores implements INode {
             const finalDocs = []
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
+                    if (isFileUploadEnabled && options.chatId) {
+                        flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
+                    }
                     finalDocs.push(new Document(flattenDocs[i]))
                 }
             }
@@ -158,8 +246,9 @@ class Milvus_VectorStores implements INode {
         // server setup
         const address = nodeData.inputs?.milvusServerUrl as string
         const collectionName = nodeData.inputs?.milvusCollection as string
-        const milvusFilter = nodeData.inputs?.milvusFilter as string
+        const _milvusFilter = nodeData.inputs?.milvusFilter as string
         const textField = nodeData.inputs?.milvusTextField as string
+        const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
         // embeddings
         const embeddings = nodeData.inputs?.embeddings as Embeddings
@@ -176,15 +265,45 @@ class Milvus_VectorStores implements INode {
         const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData)
         const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData)
 
+        // tls
+        const secure = nodeData.inputs?.secure as boolean
+        const clientPemPath = nodeData.inputs?.clientPemPath as string
+        const clientKeyPath = nodeData.inputs?.clientKeyPath as string
+        const caPemPath = nodeData.inputs?.caPemPath as string
+        const serverName = nodeData.inputs?.serverName as string
+
+        // partition
+        const partitionName = nodeData.inputs?.milvusPartition ?? '_default'
+
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
             url: address,
             collectionName: collectionName,
+            partitionName: partitionName,
             textField: textField
+        }
+
+        if (secure) {
+            milVusArgs.clientConfig = {
+                address: address,
+                ssl: secure,
+                tls: {
+                    rootCertPath: caPemPath,
+                    certChainPath: clientPemPath,
+                    privateKeyPath: clientKeyPath,
+                    serverName: serverName
+                }
+            }
         }
 
         if (milvusUser) milVusArgs.username = milvusUser
         if (milvusPassword) milVusArgs.password = milvusPassword
+
+        let milvusFilter = _milvusFilter
+        if (isFileUploadEnabled && options.chatId) {
+            if (milvusFilter) milvusFilter += ` OR ${FLOWISE_CHATID} == "${options.chatId}" OR NOT EXISTS(${FLOWISE_CHATID})`
+            else milvusFilter = `${FLOWISE_CHATID} == "${options.chatId}" OR NOT EXISTS(${FLOWISE_CHATID})`
+        }
 
         const vectorStore = await Milvus.fromExistingCollection(embeddings, milVusArgs)
 
@@ -241,14 +360,15 @@ const similaritySearchVectorWithScore = async (query: number[], k: number, vecto
 
     const outputFields = vectorStore.fields.filter((field) => field !== vectorStore.vectorField)
 
+    const search_params: any = {
+        anns_field: vectorStore.vectorField,
+        topk: k.toString(),
+        metric_type: vectorStore.indexCreateParams.metric_type,
+        params: vectorStore.indexSearchParams
+    }
     const searchResp = await vectorStore.client.search({
         collection_name: vectorStore.collectionName,
-        search_params: {
-            anns_field: vectorStore.vectorField,
-            topk: k.toString(),
-            metric_type: vectorStore.indexCreateParams.metric_type,
-            params: vectorStore.indexSearchParams
-        },
+        search_params,
         output_fields: outputFields,
         vector_type: DataType.FloatVector,
         vectors: [query],

@@ -1,13 +1,14 @@
 {
     "name": "flowise",
-    "version": "2.0.2",
+    "version": "2.0.7",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
         "packages/*",
         "flowise",
         "ui",
-        "components"
+        "components",
+        "api-documentation"
     ],
     "scripts": {
         "build": "turbo run build",
@@ -56,11 +57,7 @@
         "onlyBuiltDependencies": [
             "faiss-node",
             "sqlite3"
-        ],
-        "overrides": {
-            "@langchain/core": "0.2.18",
-            "@langchain/aws": "^0.0.6"
-        }
+        ]
     },
     "engines": {
         "node": ">=18.15.0 <19.0.0 || ^20",
@@ -69,7 +66,8 @@
     "resolutions": {
         "@qdrant/openapi-typescript-fetch": "1.2.6",
         "@google/generative-ai": "^0.15.0",
-        "openai": "4.51.0"
+        "openai": "4.51.0",
+        "@langchain/core": "0.2.18"
     },
     "eslintIgnore": [
         "**/dist",

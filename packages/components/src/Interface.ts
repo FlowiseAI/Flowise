@@ -118,6 +118,7 @@ export interface INodeProperties {
     deprecateMessage?: string
     hideOutput?: boolean
     author?: string
+    documentation?: string
 }
 
 export interface INode extends INodeProperties {
@@ -129,7 +130,7 @@ export interface INode extends INodeProperties {
     vectorStoreMethods?: {
         upsert: (nodeData: INodeData, options?: ICommonObject) => Promise<IndexingResult | void>
         search: (nodeData: INodeData, options?: ICommonObject) => Promise<any>
-        delete: (nodeData: INodeData, options?: ICommonObject) => Promise<void>
+        delete: (nodeData: INodeData, ids: string[], options?: ICommonObject) => Promise<void>
     }
     init?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<any>
     run?(nodeData: INodeData, input: string, options?: ICommonObject): Promise<string | ICommonObject>
@@ -394,4 +395,8 @@ export interface IVisionChatModal {
     setVisionModel(): void
     revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
+}
+export interface IStateWithMessages extends ICommonObject {
+    messages: BaseMessage[]
+    [key: string]: any
 }
