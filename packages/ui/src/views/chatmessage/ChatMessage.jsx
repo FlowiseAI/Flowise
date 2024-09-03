@@ -614,6 +614,34 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         handleSubmit(undefined, elem.label, action)
     }
 
+    const updateMetadata = (data, input) => {
+        // set message id that is needed for feedback
+        if (data.chatMessageId) {
+            setMessages((prevMessages) => {
+                let allMessages = [...cloneDeep(prevMessages)]
+                if (allMessages[allMessages.length - 1].type === 'apiMessage') {
+                    allMessages[allMessages.length - 1].id = data.chatMessageId
+                }
+                return allMessages
+            })
+        }
+
+        if (data.chatId) {
+            setChatId(data.chatId)
+        }
+
+        if (input === '' && data.question) {
+            // the response contains the question even if it was in an audio format
+            // so if input is empty but the response contains the question, update the user message to show the question
+            setMessages((prevMessages) => {
+                let allMessages = [...cloneDeep(prevMessages)]
+                if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
+                allMessages[allMessages.length - 2].message = data.question
+                return allMessages
+            })
+        }
+    }
+
     // Handle form submission
     const handleSubmit = async (e, selectedInput, action) => {
         if (e) e.preventDefault()
@@ -679,26 +707,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 if (response.data) {
                     const data = response.data
 
-                    setMessages((prevMessages) => {
-                        let allMessages = [...cloneDeep(prevMessages)]
-                        if (allMessages[allMessages.length - 1].type === 'apiMessage') {
-                            allMessages[allMessages.length - 1].id = data?.chatMessageId
-                        }
-                        return allMessages
-                    })
-
-                    setChatId(data.chatId)
-
-                    if (input === '' && data.question) {
-                        // the response contains the question even if it was in an audio format
-                        // so if input is empty but the response contains the question, update the user message to show the question
-                        setMessages((prevMessages) => {
-                            let allMessages = [...cloneDeep(prevMessages)]
-                            if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
-                            allMessages[allMessages.length - 2].message = data.question
-                            return allMessages
-                        })
-                    }
+                    updateMetadata(data, input)
 
                     let text = ''
                     if (data.text) text = data.text
@@ -741,14 +750,13 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         const input = params.question
         const username = localStorage.getItem('username')
         const password = localStorage.getItem('password')
-        let authString = `${username}:${password}`
         params.streaming = true
         await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
             method: 'POST',
             body: JSON.stringify(params),
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Basic ${btoa(authString)}`,
+                Authorization: username && password ? `Basic ${btoa(`${username}:${password}`)}` : undefined,
                 'x-request-from': 'internal'
             },
             async onopen(response) {
@@ -784,26 +792,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                         updateLastMessageNextAgent(payload.data)
                         break
                     case 'metadata':
-                        if (payload.data.chatId) setChatId(payload.data.chatId)
-                        if (payload.data.chatMessageId) {
-                            setMessages((prevMessages) => {
-                                let allMessages = [...cloneDeep(prevMessages)]
-                                if (allMessages[allMessages.length - 1].type === 'userMessage') {
-                                    allMessages[allMessages.length - 1].id = payload.data.chatMessageId
-                                }
-                                return allMessages
-                            })
-                        }
-                        if (input === '' && payload.data.question) {
-                            // the response contains the question even if it was in an audio format
-                            // so if input is empty but the response contains the question, update the user message to show the question
-                            setMessages((prevMessages) => {
-                                let allMessages = [...cloneDeep(prevMessages)]
-                                if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
-                                allMessages[allMessages.length - 2].message = payload.data.question
-                                return allMessages
-                            })
-                        }
+                        updateMetadata(payload.data, input)
                         break
                     case 'abort':
                         abortMessage(payload.data)

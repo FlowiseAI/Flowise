@@ -381,7 +381,7 @@ export const buildAgentGraph = async (
                             }
                             if (shouldStreamResponse && sseStreamer) {
                                 sseStreamer.streamTokenEvent(chatId, finalResult)
-                                sseStreamer.streamActionEvent(chatId, finalResult)
+                                sseStreamer.streamActionEvent(chatId, finalAction)
                             }
                         }
                         totalUsedTools.push(...mappedToolCalls)

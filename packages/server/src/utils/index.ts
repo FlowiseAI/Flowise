@@ -1,7 +1,6 @@
 import path from 'path'
 import fs from 'fs'
 import logger from './logger'
-import { Server } from 'socket.io'
 import {
     IComponentCredentials,
     IComponentNodes,
