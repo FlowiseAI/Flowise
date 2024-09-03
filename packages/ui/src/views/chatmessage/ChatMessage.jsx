@@ -700,27 +700,26 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                         })
                     }
 
-                    if (!isChatFlowAvailableToStream) {
-                        let text = ''
-                        if (data.text) text = data.text
-                        else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
-                        else text = JSON.stringify(data, null, 2)
+                    let text = ''
+                    if (data.text) text = data.text
+                    else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
+                    else text = JSON.stringify(data, null, 2)
 
-                        setMessages((prevMessages) => [
-                            ...prevMessages,
-                            {
-                                message: text,
-                                id: data?.chatMessageId,
-                                sourceDocuments: data?.sourceDocuments,
-                                usedTools: data?.usedTools,
-                                fileAnnotations: data?.fileAnnotations,
-                                agentReasoning: data?.agentReasoning,
-                                action: data?.action,
-                                type: 'apiMessage',
-                                feedback: null
-                            }
-                        ])
-                    }
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        {
+                            message: text,
+                            id: data?.chatMessageId,
+                            sourceDocuments: data?.sourceDocuments,
+                            usedTools: data?.usedTools,
+                            fileAnnotations: data?.fileAnnotations,
+                            agentReasoning: data?.agentReasoning,
+                            action: data?.action,
+                            type: 'apiMessage',
+                            feedback: null
+                        }
+                    ])
+
                     setLocalStorageChatflow(chatflowid, data.chatId)
                     setLoading(false)
                     setUserInput('')

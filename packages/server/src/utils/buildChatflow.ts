@@ -178,9 +178,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         const { graph, nodeDependencies } = constructGraphs(nodes, edges)
         const directedGraph = graph
         const endingNodes = getEndingNodes(nodeDependencies, directedGraph, nodes)
-        // if this is an external prediction call, and they have requested streaming
-        let streamResponse = isStreamValid ? !isInternal && req.body.streaming === 'true' : false
-        console.log('streamResponse', streamResponse)
         /*** If the graph is an agent graph, build the agent response ***/
         if (endingNodes.filter((node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents').length) {
             return await utilBuildAgentResponse(
@@ -196,7 +193,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 edges,
                 baseURL,
                 appServer.sseStreamer,
-                streamResponse
+                true
             )
         }
 
@@ -260,7 +257,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
             // Once custom function ending node exists, flow is always unavailable to stream
             isStreamValid = isCustomFunctionEndingNode ? false : isStreamValid
-            streamResponse = isStreamValid ? !isInternal && req.body.streaming === 'true' : false
 
             let chatHistory: IMessage[] = []
 
