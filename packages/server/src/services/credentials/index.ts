@@ -57,9 +57,10 @@ const getAllCredentials = async (paramCredentialName: any, user: IUser) => {
         const fetchCredentials = async (name?: string) => {
             let baseConditions = []
 
-            if (isAdmin) {
+            // If name is provided, only fetch owned credentials
+            if (!name && isAdmin) {
                 // Admin can see all organization credentials
-                baseConditions = [{ organizationId: user.organizationId }]
+                baseConditions = [{ organizationId: user.organizationId }, { userId: IsNull() }]
             } else {
                 baseConditions = [
                     { userId: user.id },
@@ -148,8 +149,7 @@ const updateCredential = async (credentialId: string, requestBody: any, userId?:
     try {
         const appServer = getRunningExpressApp()
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId,
-            userId
+            id: credentialId
         })
         if (!credential) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)

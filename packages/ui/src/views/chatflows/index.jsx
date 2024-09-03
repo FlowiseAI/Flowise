@@ -130,7 +130,6 @@ const Chatflows = () => {
 
             const myChatflowsData = getAllChatflowsApi.data
             const { processedImages: myImages, processedNodeTypes: myNodeTypes } = processFlowData(myChatflowsData)
-            console.log('User', { myChatflowsData, user, flags })
             setMyChatflows(myChatflowsData?.filter((flow) => flow.isOwner))
             setOrganizationChatflows(myChatflowsData?.filter((flow) => !flow.isOwner))
             const marketplaceChatflows = getMarketplaceChatflowsApi.data
@@ -183,6 +182,11 @@ const Chatflows = () => {
     const filteredCommunityChatflows = useMemo(
         () => filterChatflows(communityChatflows, search, categoryFilter),
         [communityChatflows, search, categoryFilter]
+    )
+
+    const filteredOrganizationChatflows = useMemo(
+        () => filterChatflows(organizationChatflows, search, categoryFilter),
+        [organizationChatflows, search, categoryFilter]
     )
 
     return (
@@ -255,7 +259,7 @@ const Chatflows = () => {
                 </TabPanel>
                 <TabPanel value={tabValue} index={3}>
                     <FlowListView
-                        data={organizationChatflows}
+                        data={filteredOrganizationChatflows}
                         images={images}
                         nodeTypes={nodeTypes}
                         isLoading={isLoading}
