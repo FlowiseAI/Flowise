@@ -619,8 +619,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         if (e) e.preventDefault()
 
         if (!selectedInput && userInput.trim() === '') {
-            const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
-            if (!(previews.length >= 1 && containsAudio)) {
+            const containsFile = previews.filter((item) => !item.mime.startsWith('image') && item.type !== 'audio').length > 0
+            if (!previews.length || (previews.length && containsFile)) {
                 return
             }
         }
