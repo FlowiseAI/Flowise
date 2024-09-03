@@ -104,3 +104,4 @@
 ## S/MIME message
 *.smime
 *.vsix
+.aider*
