@@ -671,7 +671,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 }
             }
 
-            /* TODO: Make this one call, after we convert this to GET. */
+            console.log('isChatFlowAvailableToStream::', isChatFlowAvailableToStream)
             if (isChatFlowAvailableToStream) {
                 fetchResponseFromEventStream(chatflowid, params)
             } else {
@@ -742,7 +742,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         const username = localStorage.getItem('username')
         const password = localStorage.getItem('password')
         let authString = `${username}:${password}`
-        await fetchEventSource(`${baseURL}/api/v1/internal-prediction/stream/${chatflowid}`, {
+        params.streaming = true
+        await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
             method: 'POST',
             body: JSON.stringify(params),
             headers: {
@@ -756,39 +757,40 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 }
             },
             async onmessage(ev) {
-                switch (ev.event) {
+                const payload = JSON.parse(ev.data)
+                switch (payload.event) {
                     case 'start':
                         setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
                         break
                     case 'token':
-                        updateLastMessage(ev.data)
+                        updateLastMessage(payload.data)
                         break
                     case 'sourceDocuments':
-                        updateLastMessageSourceDocuments(JSON.parse(ev.data))
+                        updateLastMessageSourceDocuments(payload.data)
                         break
                     case 'usedTools':
-                        updateLastMessageUsedTools(JSON.parse(ev.data))
+                        updateLastMessageUsedTools(payload.data)
                         break
                     case 'fileAnnotations':
-                        updateLastMessageFileAnnotations(JSON.parse(ev.data))
+                        updateLastMessageFileAnnotations(payload.data)
                         break
                     case 'agentReasoning':
-                        updateLastMessageAgentReasoning(JSON.parse(ev.data))
+                        updateLastMessageAgentReasoning(payload.data)
                         break
                     case 'action':
-                        updateLastMessageAction(JSON.parse(ev.data))
+                        updateLastMessageAction(payload.data)
                         break
                     case 'nextAgent':
-                        updateLastMessageNextAgent(JSON.parse(ev.data))
+                        updateLastMessageNextAgent(payload.data)
                         break
                     case 'chatId':
-                        setChatId(ev.data)
+                        setChatId(payload.data)
                         break
                     case 'chatMessageId':
                         setMessages((prevMessages) => {
                             let allMessages = [...cloneDeep(prevMessages)]
                             if (allMessages[allMessages.length - 1].type === 'userMessage') {
-                                allMessages[allMessages.length - 1].id = ev.data
+                                allMessages[allMessages.length - 1].id = payload.data
                             }
                             return allMessages
                         })
@@ -800,23 +802,18 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             setMessages((prevMessages) => {
                                 let allMessages = [...cloneDeep(prevMessages)]
                                 if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
-                                allMessages[allMessages.length - 2].message = ev.data
+                                allMessages[allMessages.length - 2].message = payload.data
                                 return allMessages
                             })
                         }
                         break
                     case 'abort':
-                        abortMessage(ev.data)
+                        abortMessage(payload.data)
+                        closeResponse()
                         break
                     case 'end':
                         setLocalStorageChatflow(chatflowid, chatId)
-                        setLoading(false)
-                        setUserInput('')
-                        setUploadedFiles([])
-                        setTimeout(() => {
-                            inputRef.current?.focus()
-                            scrollToBottom()
-                        }, 100)
+                        closeResponse()
                         break
                 }
             },
@@ -829,6 +826,15 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         })
     }
 
+    const closeResponse = () => {
+        setLoading(false)
+        setUserInput('')
+        setUploadedFiles([])
+        setTimeout(() => {
+            inputRef.current?.focus()
+            scrollToBottom()
+        }, 100)
+    }
     // Prevent blank submissions and allow for multiline input
     const handleEnter = (e) => {
         // Check if IME composition is in progress

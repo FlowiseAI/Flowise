@@ -139,7 +139,7 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
                             })
                         }
                         if (sseStreamer) {
-                            sseStreamer.streamUsedToolsEvent(chatId, JSON.stringify(usedTools))
+                            sseStreamer.streamUsedToolsEvent(chatId, usedTools)
                         }
                     }
                 }

@@ -4,6 +4,5 @@ const router = express.Router()
 
 // CREATE
 router.post(['/', '/:id'], internalPredictionsController.createInternalPrediction)
-router.post(['/', '/stream/:id'], internalPredictionsController.createAndStreamInternalPrediction)
 
 export default router

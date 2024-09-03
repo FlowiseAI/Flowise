@@ -403,17 +403,18 @@ export interface IStateWithMessages extends ICommonObject {
 
 export interface IServerSideEventStreamer {
     streamEvent(chatId: string, data: string): void
-    streamStartEvent(chatId: string, data: string): void
+    streamStartEvent(chatId: string, data: any): void
 
     streamTokenEvent(chatId: string, data: string): void
+    streamCustomEvent(chatId: string, eventType: string, data: any): void
 
-    streamSourceDocumentsEvent(chatId: string, data: string): void
-    streamUsedToolsEvent(chatId: string, data: string): void
-    streamFileAnnotationsEvent(chatId: string, data: string): void
-    streamToolEvent(chatId: string, data: string): void
-    streamAgentReasoningEvent(chatId: string, data: string): void
-    streamNextAgentEvent(chatId: string, data: string): void
-    streamActionEvent(chatId: string, data: string): void
+    streamSourceDocumentsEvent(chatId: string, data: any): void
+    streamUsedToolsEvent(chatId: string, data: any): void
+    streamFileAnnotationsEvent(chatId: string, data: any): void
+    streamToolEvent(chatId: string, data: any): void
+    streamAgentReasoningEvent(chatId: string, data: any): void
+    streamNextAgentEvent(chatId: string, data: any): void
+    streamActionEvent(chatId: string, data: any): void
 
     streamAbortEvent(chatId: string): void
     streamEndEvent(chatId: string): void

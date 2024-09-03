@@ -252,7 +252,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                     sourceDocuments = streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output
                     if (shouldStreamResponse && returnSourceDocuments) {
                         if (sseStreamer) {
-                            sseStreamer.streamSourceDocumentsEvent(chatId, JSON.stringify(sourceDocuments))
+                            sseStreamer.streamSourceDocumentsEvent(chatId, sourceDocuments)
                         }
                     }
                 }

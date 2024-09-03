@@ -506,9 +506,9 @@ const utilBuildAgentResponse = async (
                 memoryType,
                 sessionId
             }
-            if (sourceDocuments.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
-            if (usedTools.length) apiMessage.usedTools = JSON.stringify(usedTools)
-            if (agentReasoning.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
+            if (sourceDocuments?.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
+            if (usedTools?.length) apiMessage.usedTools = JSON.stringify(usedTools)
+            if (agentReasoning?.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
             if (Object.keys(finalAction).length) apiMessage.action = JSON.stringify(finalAction)
             const chatMessage = await utilAddChatMessage(apiMessage)
 
@@ -556,7 +556,7 @@ const utilBuildAgentResponse = async (
             result.chatMessageId = chatMessage?.id
             if (sessionId) result.sessionId = sessionId
             if (memoryType) result.memoryType = memoryType
-            if (agentReasoning.length) result.agentReasoning = agentReasoning
+            if (agentReasoning?.length) result.agentReasoning = agentReasoning
             if (Object.keys(finalAction).length) result.action = finalAction
 
             return result

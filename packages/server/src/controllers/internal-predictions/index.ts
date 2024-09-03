@@ -5,8 +5,13 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 // Send input message and get prediction result (Internal)
 const createInternalPrediction = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await utilBuildChatflow(req, true)
-        return res.json(apiResponse)
+        if (req.body.streaming || req.body.streaming === 'true') {
+            createAndStreamInternalPrediction(req, res, next)
+            return
+        } else {
+            const apiResponse = await utilBuildChatflow(req, true)
+            return res.json(apiResponse)
+        }
     } catch (error) {
         next(error)
     }
@@ -46,6 +51,5 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
     }
 }
 export default {
-    createInternalPrediction,
-    createAndStreamInternalPrediction
+    createInternalPrediction
 }

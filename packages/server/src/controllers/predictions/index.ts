@@ -6,6 +6,7 @@ import predictionsServices from '../../services/predictions'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { v4 as uuidv4 } from 'uuid'
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
@@ -48,18 +49,23 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
         }
         if (isDomainAllowed) {
             const streamable = await chatflowsService.checkIfChatflowIsValidForStreaming(req.params.id)
-            if (streamable?.isStreaming && req.body.streaming === 'true') {
+            const isStreamingRequested = req.body.streaming === 'true' || req.body.streaming === true
+            if (streamable?.isStreaming && isStreamingRequested) {
                 res.setHeader('Content-Type', 'text/event-stream')
                 res.setHeader('Cache-Control', 'no-cache')
                 res.setHeader('Connection', 'keep-alive')
                 res.flushHeaders()
-                const chatId = req.body.chatId
+                let chatId = req.body.chatId
+                if (!req.body.chatId) {
+                    chatId = req.body.chatId ?? req.body.overrideConfig?.sessionId ?? uuidv4()
+                    req.body.chatId = chatId
+                }
                 getRunningExpressApp().sseStreamer.addExternalClient(chatId, res)
             }
 
             //@ts-ignore
             const apiResponse = await predictionsServices.buildChatflow(req)
-            if (streamable?.isStreaming && req.body.streaming === 'true') {
+            if (streamable?.isStreaming && isStreamingRequested) {
                 const sseStreamer = getRunningExpressApp().sseStreamer
                 const metadataJson: any = {}
                 if (apiResponse.chatId) {
@@ -82,7 +88,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                     metadataJson['memoryType'] = apiResponse.memoryType
                     //sseStreamer.streamCustomEvent(apiResponse.chatId, 'memoryType', apiResponse.memoryType)
                 }
-                sseStreamer.streamCustomEvent(apiResponse.chatId, 'metadata', JSON.stringify(metadataJson))
+                sseStreamer.streamCustomEvent(apiResponse.chatId, 'metadata', metadataJson)
                 sseStreamer.removeClient(apiResponse.chatId)
                 return
             }

@@ -16,7 +16,7 @@ import {
     IServerSideEventStreamer,
     IUsedTool,
     IVisionChatModal
-} from "../../../src/Interface";
+} from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
@@ -143,11 +143,11 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
             const handler = new CustomChainHandler(sseStreamer, chatId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
-                sseStreamer.streamSourceDocumentsEvent(chatId, JSON.stringify(flatten(res.sourceDocuments)))
+                sseStreamer.streamSourceDocumentsEvent(chatId, flatten(res.sourceDocuments))
                 sourceDocuments = res.sourceDocuments
             }
             if (res.usedTools) {
-                sseStreamer.streamUsedToolsEvent(chatId, JSON.stringify(res.usedTools))
+                sseStreamer.streamUsedToolsEvent(chatId, res.usedTools)
                 usedTools = res.usedTools
             }
         } else {

@@ -418,7 +418,7 @@ class OpenAIAssistant_Agents implements INode {
                                         }
                                     }
                                     if (sseStreamer) {
-                                        sseStreamer.streamFileAnnotationsEvent(chatId, JSON.stringify(fileAnnotations))
+                                        sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
                                     }
                                 }
                             } else {
@@ -532,7 +532,7 @@ class OpenAIAssistant_Agents implements INode {
                                     }
                                 }
                                 if (sseStreamer) {
-                                    sseStreamer.streamUsedToolsEvent(chatId, JSON.stringify(usedTools))
+                                    sseStreamer.streamUsedToolsEvent(chatId, usedTools)
                                 }
                             } catch (error) {
                                 console.error('Error submitting tool outputs:', error)

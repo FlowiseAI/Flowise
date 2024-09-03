@@ -223,14 +223,14 @@ export class CustomChainHandler extends BaseCallbackHandler {
                 }
             })
             if (this.returnSourceDocuments && this.sseStreamer) {
-                this.sseStreamer.streamSourceDocumentsEvent(this.chatId, JSON.stringify(outputs?.sourceDocuments))
+                this.sseStreamer.streamSourceDocumentsEvent(this.chatId, outputs?.sourceDocuments)
             }
             if (this.sseStreamer) {
                 this.sseStreamer.streamEndEvent(this.chatId)
             }
         } else {
             if (this.returnSourceDocuments && this.sseStreamer) {
-                this.sseStreamer.streamSourceDocumentsEvent(this.chatId, JSON.stringify(outputs?.sourceDocuments))
+                this.sseStreamer.streamSourceDocumentsEvent(this.chatId, outputs?.sourceDocuments)
             }
         }
     }

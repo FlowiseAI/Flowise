@@ -145,12 +145,12 @@ class ConversationalAgent_Agents implements INode {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
                 if (options.sseStreamer) {
-                    sseStreamer.streamSourceDocumentsEvent(options.chatId, JSON.stringify(flatten(res.sourceDocuments)))
+                    sseStreamer.streamSourceDocumentsEvent(options.chatId, flatten(res.sourceDocuments))
                 }
                 sourceDocuments = res.sourceDocuments
             }
             if (res.usedTools) {
-                sseStreamer.streamUsedToolsEvent(options.chatId, JSON.stringify(res.usedTools))
+                sseStreamer.streamUsedToolsEvent(options.chatId, res.usedTools)
                 usedTools = res.usedTools
             }
             // If the tool is set to returnDirect, stream the output to the client

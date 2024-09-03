@@ -152,13 +152,13 @@ class XMLAgent_Agents implements INode {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
                 if (sseStreamer) {
-                    sseStreamer.streamSourceDocumentsEvent(chatId, JSON.stringify(flatten(res.sourceDocuments)))
+                    sseStreamer.streamSourceDocumentsEvent(chatId, flatten(res.sourceDocuments))
                 }
                 sourceDocuments = res.sourceDocuments
             }
             if (res.usedTools) {
                 if (sseStreamer) {
-                    sseStreamer.streamUsedToolsEvent(chatId, JSON.stringify(flatten(res.usedTools)))
+                    sseStreamer.streamUsedToolsEvent(chatId, flatten(res.usedTools))
                 }
                 usedTools = res.usedTools
             }

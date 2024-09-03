@@ -291,21 +291,18 @@ export const buildAgentGraph = async (
                                 if (!isStreamingStarted) {
                                     isStreamingStarted = true
                                     if (sseStreamer) {
-                                        sseStreamer.streamStartEvent(chatId, JSON.stringify(agentReasoning))
+                                        sseStreamer.streamStartEvent(chatId, agentReasoning)
                                     }
                                 }
 
                                 if (sseStreamer) {
-                                    sseStreamer.streamAgentReasoningEvent(chatId, JSON.stringify(agentReasoning))
+                                    sseStreamer.streamAgentReasoningEvent(chatId, agentReasoning)
                                 }
 
                                 // Send loading next agent indicator
                                 if (reasoning.next && reasoning.next !== 'FINISH' && reasoning.next !== 'END') {
                                     if (sseStreamer) {
-                                        sseStreamer.streamNextAgentEvent(
-                                            chatId,
-                                            mapNameToLabel[reasoning.next].label || JSON.stringify(reasoning.next)
-                                        )
+                                        sseStreamer.streamNextAgentEvent(chatId, mapNameToLabel[reasoning.next].label || reasoning.next)
                                     }
                                 }
                             }
@@ -400,8 +397,8 @@ export const buildAgentGraph = async (
                 totalUsedTools = uniq(flatten(totalUsedTools))
 
                 if (shouldStreamResponse && sseStreamer) {
-                    sseStreamer.streamUsedToolsEvent(chatId, JSON.stringify(totalUsedTools))
-                    sseStreamer.streamSourceDocumentsEvent(chatId, JSON.stringify(totalSourceDocuments))
+                    sseStreamer.streamUsedToolsEvent(chatId, totalUsedTools)
+                    sseStreamer.streamSourceDocumentsEvent(chatId, totalSourceDocuments)
                     sseStreamer.streamEndEvent(chatId)
                 }
 

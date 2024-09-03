@@ -95,7 +95,7 @@ class QueryEngine_LlamaIndex implements INode {
             if (returnSourceDocuments) {
                 sourceDocuments = reformatSourceDocuments(sourceNodes)
                 if (sseStreamer) {
-                    sseStreamer.streamSourceDocumentsEvent(chatId, JSON.stringify(sourceDocuments))
+                    sseStreamer.streamSourceDocumentsEvent(chatId, sourceDocuments)
                 }
             }
         } else {
