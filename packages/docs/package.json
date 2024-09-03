@@ -38,7 +38,7 @@
         "clear": "docusaurus clear",
         "deploy": "docusaurus deploy",
         "docusaurus": "docusaurus",
-        "dev": "docusaurus start",
+        "dev": "docusaurus start --port 4242",
         "serve": "docusaurus serve",
         "start": "docusaurus start --port 4242",
         "swizzle": "docusaurus swizzle",

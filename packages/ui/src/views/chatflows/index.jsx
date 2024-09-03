@@ -91,7 +91,7 @@ const Chatflows = () => {
     useEffect(() => {
         getAllChatflowsApi.request()
         getMarketplaceChatflowsApi.request()
-    }, [])
+    }, [user])
 
     useEffect(() => {
         if (getAllChatflowsApi.error || getMarketplaceChatflowsApi.error) {
