@@ -65,6 +65,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
     const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
     const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultConfig.fontSize)
     const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultConfig.poweredByTextColor)
+    const [showAgentMessages, setShowAgentMessages] = useState(chatbotConfig?.showAgentMessages || (isAgentCanvas ? true : undefined))
 
     const [botMessageBackgroundColor, setBotMessageBackgroundColor] = useState(
         chatbotConfig?.botMessage?.backgroundColor ?? defaultConfig.botMessage.backgroundColor
@@ -139,7 +140,14 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
 
         if (chatbotConfig?.starterPrompts) obj.starterPrompts = chatbotConfig.starterPrompts
 
-        if (isAgentCanvas) obj.showAgentMessages = true
+        if (isAgentCanvas) {
+            // if showAgentMessages is undefined, default to true
+            if (showAgentMessages === undefined || showAgentMessages === null) {
+                obj.showAgentMessages = true
+            } else {
+                obj.showAgentMessages = showAgentMessages
+            }
+        }
 
         return obj
     }
@@ -301,6 +309,9 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             case 'generateNewSession':
                 setGenerateNewSession(value)
                 break
+            case 'showAgentMessages':
+                setShowAgentMessages(value)
+                break
         }
     }
 
@@ -428,6 +439,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             {colorField(backgroundColor, 'backgroundColor', 'Background Color')}
             {textField(fontSize, 'fontSize', 'Font Size', 'number')}
             {colorField(poweredByTextColor, 'poweredByTextColor', 'PoweredBy TextColor')}
+            {booleanField(showAgentMessages, 'showAgentMessages', 'Show Agent Reasoning')}
 
             {/*BOT Message*/}
             <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
