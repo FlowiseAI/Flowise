@@ -783,26 +783,24 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     case 'nextAgent':
                         updateLastMessageNextAgent(payload.data)
                         break
-                    case 'chatId':
-                        setChatId(payload.data)
-                        break
-                    case 'chatMessageId':
-                        setMessages((prevMessages) => {
-                            let allMessages = [...cloneDeep(prevMessages)]
-                            if (allMessages[allMessages.length - 1].type === 'userMessage') {
-                                allMessages[allMessages.length - 1].id = payload.data
-                            }
-                            return allMessages
-                        })
-                        break
-                    case 'question':
-                        if (input === '' && ev.data) {
+                    case 'metadata':
+                        if (payload.data.chatId) setChatId(payload.data.chatId)
+                        if (payload.data.chatMessageId) {
+                            setMessages((prevMessages) => {
+                                let allMessages = [...cloneDeep(prevMessages)]
+                                if (allMessages[allMessages.length - 1].type === 'userMessage') {
+                                    allMessages[allMessages.length - 1].id = payload.data.chatMessageId
+                                }
+                                return allMessages
+                            })
+                        }
+                        if (input === '' && payload.data.question) {
                             // the response contains the question even if it was in an audio format
                             // so if input is empty but the response contains the question, update the user message to show the question
                             setMessages((prevMessages) => {
                                 let allMessages = [...cloneDeep(prevMessages)]
                                 if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
-                                allMessages[allMessages.length - 2].message = payload.data
+                                allMessages[allMessages.length - 2].message = payload.data.question
                                 return allMessages
                             })
                         }
@@ -818,10 +816,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 }
             },
             async onclose() {
-                console.log('EventSource Closed')
+                closeResponse()
             },
             async onerror(err) {
-                console.error('EventSource failed:', err)
+                closeResponse()
             }
         })
     }

@@ -70,23 +70,18 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                 const metadataJson: any = {}
                 if (apiResponse.chatId) {
                     metadataJson['chatId'] = apiResponse.chatId
-                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'chatId', apiResponse.chatId)
                 }
                 if (apiResponse.chatMessageId) {
                     metadataJson['chatMessageId'] = apiResponse.chatMessageId
-                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'chatMessageId', apiResponse.chatMessageId)
                 }
                 if (apiResponse.question) {
                     metadataJson['question'] = apiResponse.question
-                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'question', apiResponse.question)
                 }
                 if (apiResponse.sessionId) {
                     metadataJson['sessionId'] = apiResponse.sessionId
-                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'sessionId', apiResponse.sessionId)
                 }
                 if (apiResponse.memoryType) {
                     metadataJson['memoryType'] = apiResponse.memoryType
-                    //sseStreamer.streamCustomEvent(apiResponse.chatId, 'memoryType', apiResponse.memoryType)
                 }
                 sseStreamer.streamCustomEvent(apiResponse.chatId, 'metadata', metadataJson)
                 sseStreamer.removeClient(apiResponse.chatId)
