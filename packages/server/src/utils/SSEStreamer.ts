@@ -169,7 +169,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
         }
     }
 
-    streamEndEvent(chatId: string) {
+    streamEndEvent(_: string) {
         // placeholder for future use
     }
 

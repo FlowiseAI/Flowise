@@ -698,7 +698,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 }
             }
 
-            console.log('isChatFlowAvailableToStream::', isChatFlowAvailableToStream)
             if (isChatFlowAvailableToStream) {
                 fetchResponseFromEventStream(chatflowid, params)
             } else {
@@ -807,6 +806,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 closeResponse()
             },
             async onerror(err) {
+                console.error('EventSource Error: ', err)
                 closeResponse()
             }
         })
