@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes'
-import { App } from '../..'
 import { Tool } from '../../database/entities/Tool'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -80,9 +79,9 @@ const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
     }
 }
 
-const importTools = async (newTools: Partial<Tool>[], appServer?: App) => {
+const importTools = async (newTools: Partial<Tool>[]) => {
     try {
-        if (!appServer) appServer = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
 
         // step 1 - check whether file tools array is zero
         if (newTools.length == 0) throw new Error('No tools in this file.')

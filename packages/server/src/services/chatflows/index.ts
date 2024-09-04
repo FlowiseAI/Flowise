@@ -1,6 +1,5 @@
 import { removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { App } from '../..'
 import { ChatflowType, IChatFlow, IReactFlowObject } from '../../Interface'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
@@ -200,9 +199,9 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     }
 }
 
-const importChatflows = async (newChatflows: Partial<ChatFlow>[], appServer?: App): Promise<any> => {
+const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> => {
     try {
-        if (!appServer) appServer = getRunningExpressApp()
+        const appServer = getRunningExpressApp()
 
         // step 1 - check whether file chatflows array is zero
         if (newChatflows.length == 0) throw new Error('No chatflows in this file.')

@@ -34,9 +34,9 @@ const importAll = async (importData: { Tool: Partial<Tool>[]; ChatFlow: Partial<
         try {
             queryRunner.startTransaction()
             // step 1 - importTools
-            if (importData.Tool.length > 0) await toolsService.importTools(importData.Tool, appServer)
+            if (importData.Tool.length > 0) await toolsService.importTools(importData.Tool)
             // step 2 - importChatflows
-            if (importData.ChatFlow.length > 0) await chatflowService.importChatflows(importData.ChatFlow, appServer)
+            if (importData.ChatFlow.length > 0) await chatflowService.importChatflows(importData.ChatFlow)
             queryRunner.commitTransaction()
         } catch (error) {
             queryRunner.rollbackTransaction()
