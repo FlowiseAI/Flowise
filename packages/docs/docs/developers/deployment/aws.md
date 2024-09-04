@@ -2,7 +2,7 @@
 description: Learn how to deploy AnswerAI on AWS using Copilot
 ---
 
-# Deploying AnswerAI to AWS with Copilot
+# AWS
 
 ## Overview
 

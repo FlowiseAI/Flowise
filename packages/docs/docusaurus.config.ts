@@ -67,7 +67,6 @@ const config: Config = {
         // Replace with your project's social card
         image: 'img/docusaurus-social-card.jpg',
         navbar: {
-            title: 'AnswerAI',
             logo: {
                 alt: 'AnswerAI Logo',
                 src: 'img/logo.svg',
@@ -75,18 +74,18 @@ const config: Config = {
             },
             items: [
                 {
-                    to: '/docs/using-answerai',
-                    label: 'Using AnswerAI',
+                    to: '/docs/intro',
+                    label: 'Getting Started',
+                    position: 'left'
+                },
+                {
+                    to: '/docs/using-answerai/',
+                    label: 'Chat',
                     position: 'left'
                 },
                 {
                     to: '/docs/developers',
                     label: 'Developers',
-                    position: 'left'
-                },
-                {
-                    to: '/docs/use-cases',
-                    label: 'Use Cases',
                     position: 'left'
                 },
                 {

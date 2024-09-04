@@ -2,11 +2,11 @@
 description: Learn how to build a custom node for AnswerAI
 ---
 
-# Building a Custom Node for AnswerAI
+# Custom Nodes
 
 ## Overview
 
-This guide will walk you through the process of creating a custom node for AnswerAI. We'll be building a simple Calculator tool as an example.
+This guide will walk you through the process of creating a custom node for AnswerAI. We'll be building a simple Calculator tool as an example. Custom nodes can only be deployed to AnswerAI if you self host.
 
 ## Prerequisites
 

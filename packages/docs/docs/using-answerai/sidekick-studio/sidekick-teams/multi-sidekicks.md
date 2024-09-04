@@ -87,7 +87,7 @@ The Worker, as a specialized agent instructed to handle a specific task within t
 <figure><img src="/.gitbook/assets/mas05.png" alt="" width="375" /><figcaption></figcaption></figure>
 
 :::info
-The ability to assign **different Chat Models to each Worker** provides significant flexibility and optimization opportunities for our application. By selecting [Chat Models](../../integrations/langchain/chat-models/) tailored to specific tasks, we can leverage more cost-effective solutions for simpler tasks and reserve specialized, potentially more expensive, models when truly necessary.
+The ability to assign **different Chat Models to each Worker** provides significant flexibility and optimization opportunities for our application. By selecting [Chat Models](../nodes/chat-models/) tailored to specific tasks, we can leverage more cost-effective solutions for simpler tasks and reserve specialized, potentially more expensive, models when truly necessary.
 :::
 
 ### Undertanding Max Iteration parameter in Workers

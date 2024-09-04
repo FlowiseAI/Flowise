@@ -18,6 +18,24 @@ function HomepageHeader() {
         }
     }, [inputValue])
 
+    useEffect(() => {
+        const script = document.createElement('script')
+        script.src = 'https://cdn.jsdelivr.net/npm/aai-embed/dist/web.js'
+        script.type = 'module'
+
+        script.onload = () => {
+            const aai = window.Chatbot.init({
+                chatflowid: 'e24d5572-a27a-40b9-83fe-19a376535b9d',
+                apiHost: 'https://lastrev.flowise.theanswer.ai'
+            })
+        }
+        document.body.appendChild(script)
+
+        return () => {
+            document.body.removeChild(script)
+        }
+    }, [])
+
     const handleInputChange = (e) => {
         setInputValue(e.target.value)
     }

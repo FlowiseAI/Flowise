@@ -8,10 +8,10 @@ description: Learn how to use variables in Flowise
 
 Flowise allow users to create variables that can be used in:
 
--   [Custom Tool](../integrations/langchain/tools/custom-tool.md)
--   [Custom Function](../integrations/utilities/custom-js-function.md)
--   [Custom Loader](../integrations/langchain/document-loaders/custom-document-loader.md)
--   [If Else](../integrations/utilities/if-else.md)
+-   [Custom Tool](nodes/tools/custom-tool.md)
+-   [Custom Function](nodes/utilities/custom-js-function.md)
+-   [Custom Loader](nodes/document-loaders/custom-document-loader.md)
+-   [If Else](nodes/utilities/if-else.md)
 
 For example, you have a database URL that you do not want it to be exposed on the function, but you still want the function to be able to read the URL from your environment variable.
 
@@ -35,4 +35,4 @@ Value of the variable will be fetched from **.env** file using `process.env`
 
 ## Resources
 
--   [Pass Variables to Function](../integrations/langchain/tools/custom-tool.md#pass-variables-to-function)
+-   [Pass Variables to Function](../../developers/custom-tools.md)

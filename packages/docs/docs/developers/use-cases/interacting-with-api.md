@@ -1,5 +1,5 @@
 ---
-description: Learn how to use external API integrations with Flowise
+description: Learn how to use external API integrations with AnswerAI
 ---
 
 # Interacting with API

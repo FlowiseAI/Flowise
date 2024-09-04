@@ -22,7 +22,7 @@ You can pass `chatflowConfig` JSON object to override existing configuration. Th
 
 ```html
 <script type="module">
-    import Chatbot from 'https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js'
+    import Chatbot from 'https://cdn.jsdelivr.net/npm/aai-embed/dist/web.js'
     Chatbot.init({
         chatflowid: 'abc',
         apiHost: 'http://localhost:3000',
@@ -40,7 +40,7 @@ This allows you to execute code in parent based upon signal observations within 
 
 ```html
 <script type="module">
-    import Chatbot from 'https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js'
+    import Chatbot from 'https://cdn.jsdelivr.net/npm/aai-embed/dist/web.js'
     Chatbot.init({
         chatflowid: 'abc',
         apiHost: 'http://localhost:3000',
@@ -68,10 +68,28 @@ You can change the pop up button properties, as well as the chat window:
 
 ```html
 <script type="module">
-    import Chatbot from 'https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js'
+    import Chatbot from 'https://cdn.jsdelivr.net/npm/aai-embed/dist/web.js'
     Chatbot.init({
-        chatflowid: 'abc',
-        apiHost: 'http://localhost:3000',
+        chatflowid: '91e9c803-5169-4db9-8207-3c0915d71c5f',
+        apiHost: 'https://public.studio.theanswer.ai',
+        chatflowConfig: {
+            // topK: 2
+        },
+        observersConfig: {
+            // (optional) Allows you to execute code in parent based upon signal observations within the chatbot.
+            // The userinput field submitted to bot ("" when reset by bot)
+            observeUserInput: (userInput) => {
+                console.log({ userInput })
+            },
+            // The bot message stack has changed
+            observeMessages: (messages) => {
+                console.log({ messages })
+            },
+            // The bot loading signal changed
+            observeLoading: (loading) => {
+                console.log({ loading })
+            }
+        },
         theme: {
             button: {
                 backgroundColor: '#3B81F6',
@@ -80,7 +98,12 @@ You can change the pop up button properties, as well as the chat window:
                 size: 48, // small | medium | large | number
                 dragAndDrop: true,
                 iconColor: 'white',
-                customIconSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg'
+                customIconSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                autoWindowOpen: {
+                    autoOpen: true, //parameter to control automatic window opening
+                    openDelay: 2, // Optional parameter for delay time in seconds
+                    autoOpenOnMobile: false //parameter to control automatic window opening in mobile
+                }
             },
             tooltip: {
                 showTooltip: true,
@@ -90,16 +113,20 @@ You can change the pop up button properties, as well as the chat window:
                 tooltipFontSize: 16
             },
             chatWindow: {
-                showTitle: true, // show/hide the title bar
-                title: 'Flowise Bot',
-                titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                showTitle: true,
                 showAgentMessages: true,
+                title: 'AnswerAI Bot',
+                titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
                 welcomeMessage: 'Hello! This is custom welcome message',
                 errorMessage: 'This is a custom error message',
                 backgroundColor: '#ffffff',
+                backgroundImage: 'enter image path or link', // If set, this will overlap the background color of the chat window.
                 height: 700,
                 width: 400,
                 fontSize: 16,
+                starterPrompts: ['What is a bot?', 'Who are you?'], // It overrides the starter prompts set by the chat flow passed
+                starterPromptFontSize: 15,
+                clearChatOnReload: false, // If set to true, the chat will be cleared when the page reloads.
                 botMessage: {
                     backgroundColor: '#f7f8ff',
                     textColor: '#303235',
@@ -131,87 +158,11 @@ You can change the pop up button properties, as well as the chat window:
                 footer: {
                     textColor: '#303235',
                     text: 'Powered by',
-                    company: 'Flowise',
-                    companyLink: 'https://flowiseai.com'
+                    company: 'AnswerAI',
+                    companyLink: 'https://theanswer.ai'
                 }
             }
         }
     })
 </script>
 ```
-
-**Note:** See full [configuration list](https://github.com/FlowiseAI/FlowiseChatEmbed#configuration).
-
-## Custom Modificaton
-
-To modify the full source code of embedded chat widget, follow these steps:
-
-1. Fork the [Flowise Chat Embed](https://github.com/FlowiseAI/FlowiseChatEmbed) repository
-2. Then you can make any code changes
-3. Run `pnpm build` to pick up the changes
-4. Push changes to the forked repo
-5. You can then use it as embedded chat like so:
-
-Replace `username` to your Github username, and `forked-repo` to your forked repo.
-
-````html
-<script type="module">
-    import Chatbot from 'https://cdn.jsdelivr.net/gh/username/forked-repo/dist/web.js'
-    Chatbot.init({
-        chatflowid: 'chatflow-id',
-        apiHost: 'http://localhost:3000'
-    })
-</script>
-
-<figure>
-    <img src="/.gitbook/assets/image (1) (1) (2).png" alt="" width="563" />
-    <figcaption></figcaption>
-</figure>
-
-```html
-<script type="module">
-    import Chatbot from 'https://cdn.jsdelivr.net/gh/HenryHengZJ/FlowiseChatEmbed-Test/dist/web.js'
-    Chatbot.init({
-        chatflowid: 'chatflow-id',
-        apiHost: 'http://localhost:3000'
-    })
-</script>
-````
-
-:::info
-An alternative to jsdelivr is unpkg. Here is an example:
-[https://unpkg.com/flowise-embed/dist/web.js](https://unpkg.com/flowise-embed/dist/web.js)
-:::
-
-## CORS
-
-When using embedded chat widget, there's chance that you might face CORS issue like:
-
-:::danger
-Access to fetch at 'https://\<your-flowise.com>/api/v1/prediction/' from origin 'https://\<your-flowise.com>' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-:::
-
-To fix it, specify the following environment variables:
-
-```
-CORS_ORIGINS=*
-IFRAME_ORIGINS=*
-```
-
-For example, if you are using `npx flowise start`
-
-```
-npx flowise start --CORS_ORIGINS=* --IFRAME_ORIGINS=*
-```
-
-If using Docker, place the env variables inside `Flowise/docker/.env`
-
-If using local Git clone, place the env variables inside `Flowise/packages/server/.env`
-
-## Video Tutorials
-
-These two videos will teach you how to embed the Flowise widget into a website.
-
-<iframe src="https://www.youtube.com/embed/4paQ2wObDQ4"></iframe>
-
-<iframe src="https://www.youtube.com/embed/XOeCV1xyN48"></iframe>

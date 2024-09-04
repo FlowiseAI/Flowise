@@ -40,7 +40,7 @@ The Document Store feature in AnswerAI allows you to load data from pre-configur
 
 ## Additional Information
 
-For more detailed information on how to use document stores (also referred to as knowledge bases), please refer to the full documentation available at [Knowledge Bases](`../../../knowledge-bases`). This comprehensive guide will provide you with in-depth instructions on creating, managing, and optimizing your document stores within AnswerAI.
+For more detailed information on how to use document stores (also referred to as knowledge bases), please refer to the full documentation available at [Knowledge Bases](../../../knowledge-bases). This comprehensive guide will provide you with in-depth instructions on creating, managing, and optimizing your document stores within AnswerAI.
 
 <!-- TODO: Add a screenshot showing the Document Store node connected in a workflow -->
 <figure><img src="/.gitbook/assets/screenshots/documentstoreinaworkflow.png" alt="" /><figcaption><p> Document Store Node Configuration  &#x26; Drop UI</p></figcaption></figure>

@@ -2,9 +2,9 @@
 description: Learn how to use the AnswerAI Prediction, Vector Upsert, and Message API
 ---
 
-# AnswerAI API
+# API Endpoints
 
-## 1. Prediction API
+## Prediction API
 
 -   POST `/api/v1/prediction/{your-chatflowid}`
 
@@ -112,7 +112,7 @@ Include an API key in the Authorization header:
 Authorization: Bearer <your-api-key>
 ```
 
-## 2. Vector Upsert API
+## Vector Upsert API
 
 -   POST `/api/v1/vector/upsert/{your-chatflowid}`
 
