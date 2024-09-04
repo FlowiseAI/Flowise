@@ -5,12 +5,15 @@ import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
+import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { getFileFromStorage } from './storageUtils'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
+export const FLOWISE_CHATID = 'flowise_chatId'
+
 /*
  * List of dependencies allowed to be import in vm2
  */
@@ -599,14 +602,58 @@ export const getUserHome = (): string => {
  * @param {IChatMessage[]} chatmessages
  * @returns {BaseMessage[]}
  */
-export const mapChatMessageToBaseMessage = (chatmessages: any[] = []): BaseMessage[] => {
+export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Promise<BaseMessage[]> => {
     const chatHistory = []
 
     for (const message of chatmessages) {
         if (message.role === 'apiMessage' || message.type === 'apiMessage') {
             chatHistory.push(new AIMessage(message.content || ''))
         } else if (message.role === 'userMessage' || message.role === 'userMessage') {
-            chatHistory.push(new HumanMessage(message.content || ''))
+            // check for image uploads
+            if (message.fileUploads) {
+                // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
+                try {
+                    const uploads = JSON.parse(message.fileUploads)
+                    const imageContents: MessageContentImageUrl[] = []
+                    for (const upload of uploads) {
+                        if (upload.type === 'stored-file') {
+                            const fileData = await getFileFromStorage(upload.name, message.chatflowid, message.chatId)
+                            // as the image is stored in the server, read the file and convert it to base64
+                            const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
+
+                            imageContents.push({
+                                type: 'image_url',
+                                image_url: {
+                                    url: bf
+                                }
+                            })
+                        } else if (upload.type === 'url') {
+                            imageContents.push({
+                                type: 'image_url',
+                                image_url: {
+                                    url: upload.data
+                                }
+                            })
+                        }
+                    }
+                    chatHistory.push(
+                        new HumanMessage({
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: message.content
+                                },
+                                ...imageContents
+                            ]
+                        })
+                    )
+                } catch (e) {
+                    // failed to parse fileUploads, continue with text only
+                    chatHistory.push(new HumanMessage(message.content || ''))
+                }
+            } else {
+                chatHistory.push(new HumanMessage(message.content || ''))
+            }
         }
     }
     return chatHistory
@@ -814,4 +861,68 @@ export const getVersion: () => Promise<{ version: string }> = async () => {
     }
 
     throw new Error('None of the package.json paths could be parsed')
+}
+
+/**
+ * Map MimeType to InputField
+ * @param {string} mimeType
+ * @returns {string}
+ */
+export const mapMimeTypeToInputField = (mimeType: string) => {
+    switch (mimeType) {
+        case 'text/plain':
+            return 'txtFile'
+        case 'application/pdf':
+            return 'pdfFile'
+        case 'application/json':
+            return 'jsonFile'
+        case 'text/csv':
+            return 'csvFile'
+        case 'application/json-lines':
+        case 'application/jsonl':
+        case 'text/jsonl':
+            return 'jsonlinesFile'
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'docxFile'
+        case 'application/vnd.yaml':
+        case 'application/x-yaml':
+        case 'text/vnd.yaml':
+        case 'text/x-yaml':
+        case 'text/yaml':
+            return 'yamlFile'
+        default:
+            return 'txtFile'
+    }
+}
+
+/**
+ * Map MimeType to Extension
+ * @param {string} mimeType
+ * @returns {string}
+ */
+export const mapMimeTypeToExt = (mimeType: string) => {
+    switch (mimeType) {
+        case 'text/plain':
+            return 'txt'
+        case 'application/pdf':
+            return 'pdf'
+        case 'application/json':
+            return 'json'
+        case 'text/csv':
+            return 'csv'
+        case 'application/json-lines':
+        case 'application/jsonl':
+        case 'text/jsonl':
+            return 'jsonl'
+        case 'application/msword':
+            return 'doc'
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'docx'
+        case 'application/vnd.ms-excel':
+            return 'xls'
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            return 'xlsx'
+        default:
+            return ''
+    }
 }

@@ -580,9 +580,8 @@ const processAndSaveChunks = async (data: IDocumentStoreLoaderForPreview) => {
                 `Error: documentStoreServices.processAndSaveChunks - Document store ${data.storeId} not found`
             )
         }
-
-        const newLoaderId = data.id ?? uuidv4()
         const existingLoaders = JSON.parse(entity.loaders)
+        const newLoaderId = data.id ?? uuidv4()
         const found = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
         if (found) {
             // clean up the current status and mark the loader as pending_sync
@@ -590,6 +589,15 @@ const processAndSaveChunks = async (data: IDocumentStoreLoaderForPreview) => {
             found.totalChars = 0
             found.status = DocumentStoreStatus.SYNCING
             entity.loaders = JSON.stringify(existingLoaders)
+            data.loaderId = found.loaderId
+            data.loaderName = found.loaderName
+            data.loaderConfig = found.loaderConfig
+            data.splitterId = found.splitterId
+            data.splitterName = found.splitterName
+            data.splitterConfig = found.splitterConfig
+            if (found.credential) {
+                data.credential = found.credential
+            }
         } else {
             let loader: IDocumentStoreLoader = {
                 id: newLoaderId,
@@ -833,6 +841,9 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
                 config: data.embeddingConfig,
                 name: data.embeddingName
             })
+        } else if (entity.embeddingConfig && !data.embeddingName && !data.embeddingConfig) {
+            data.embeddingConfig = JSON.parse(entity.embeddingConfig)?.config
+            data.embeddingName = JSON.parse(entity.embeddingConfig)?.name
         } else if (!data.embeddingName && !data.embeddingConfig) {
             entity.embeddingConfig = null
         }
@@ -842,6 +853,9 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
                 config: data.vectorStoreConfig,
                 name: data.vectorStoreName
             })
+        } else if (entity.vectorStoreConfig && !data.vectorStoreName && !data.vectorStoreConfig) {
+            data.vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)?.config
+            data.vectorStoreName = JSON.parse(entity.vectorStoreConfig)?.name
         } else if (!data.vectorStoreName && !data.vectorStoreConfig) {
             entity.vectorStoreConfig = null
         }
@@ -851,6 +865,9 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
                 config: data.recordManagerConfig,
                 name: data.recordManagerName
             })
+        } else if (entity.recordManagerConfig && !data.recordManagerName && !data.recordManagerConfig) {
+            data.recordManagerConfig = JSON.parse(entity.recordManagerConfig)?.config
+            data.recordManagerName = JSON.parse(entity.recordManagerConfig)?.name
         } else if (!data.recordManagerName && !data.recordManagerConfig) {
             entity.recordManagerConfig = null
         }

@@ -1,13 +1,14 @@
 {
     "name": "flowise",
-    "version": "2.0.5",
+    "version": "2.0.7",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
         "packages/*",
         "flowise",
         "ui",
-        "components"
+        "components",
+        "api-documentation"
     ],
     "scripts": {
         "build": "turbo run build",

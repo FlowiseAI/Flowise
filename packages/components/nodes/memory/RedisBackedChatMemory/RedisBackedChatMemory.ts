@@ -208,7 +208,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
         const baseMessages = orderedMessages.map(mapStoredMessageToChatMessage)
         if (prependMessages?.length) {
-            baseMessages.unshift(...mapChatMessageToBaseMessage(prependMessages))
+            baseMessages.unshift(...(await mapChatMessageToBaseMessage(prependMessages)))
         }
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
