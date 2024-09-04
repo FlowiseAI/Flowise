@@ -90,7 +90,6 @@ class MultiPromptChain_Chains implements INode {
                 if (options.shouldStreamResponse) {
                     streamResponse(options.sseStreamer, options.chatId, e.message)
                 }
-                // streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
                 return formatResponse(e.message)
             }
         }

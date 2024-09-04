@@ -4,9 +4,11 @@ import { IServerSideEventStreamer } from 'flowise-components'
 
 // define a new type that has a client type (INTERNAL or EXTERNAL) and Response type
 type Client = {
+    // future use
     clientType: 'INTERNAL' | 'EXTERNAL'
     response: Response
-    abort: boolean
+    // optional property with default value
+    started?: boolean
 }
 
 export class SSEStreamer implements IServerSideEventStreamer {
@@ -18,16 +20,15 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     addExternalClient(chatId: string, res: Response) {
-        this.clients[chatId] = { clientType: 'EXTERNAL', response: res, abort: false }
+        this.clients[chatId] = { clientType: 'EXTERNAL', response: res, started: false }
     }
 
     addClient(chatId: string, res: Response) {
-        this.clients[chatId] = { clientType: 'INTERNAL', response: res, abort: false }
+        this.clients[chatId] = { clientType: 'INTERNAL', response: res, started: false }
     }
 
     removeClient(chatId: string) {
         const client = this.clients[chatId]
-        // console.log('Removing client', chatId)
         if (client) {
             const clientResponse = {
                 event: 'end',
@@ -64,12 +65,14 @@ export class SSEStreamer implements IServerSideEventStreamer {
 
     streamStartEvent(chatId: string, data: string) {
         const client = this.clients[chatId]
-        if (client) {
+        // prevent multiple start events being streamed to the client
+        if (client && !client.started) {
             const clientResponse = {
                 event: 'start',
                 data: data
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+            client.started = true
         }
     }
 
@@ -164,21 +167,31 @@ export class SSEStreamer implements IServerSideEventStreamer {
             }
             client.response.write('message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
-        client.abort = true
     }
 
     streamEndEvent(chatId: string) {
-        console.log('dummy streamEndEvent ', chatId)
-        // const client = this.clients[chatId]
-        // if (client && client.clientType === 'INTERNAL') {
-        //     client.response.write(`event: end\ndata: [DONE] \n\n`)
-        // }
-        // if (client && client.clientType === 'EXTERNAL') {
-        //     const clientResponse = {
-        //         event: 'end',
-        //         data: '[DONE]'
-        //     }
-        //     client.response.write('message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
-        // }
+        // placeholder for future use
+    }
+
+    streamMetadataEvent(chatId: string, apiResponse: any) {
+        const metadataJson: any = {}
+        if (apiResponse.chatId) {
+            metadataJson['chatId'] = apiResponse.chatId
+        }
+        if (apiResponse.chatMessageId) {
+            metadataJson['chatMessageId'] = apiResponse.chatMessageId
+        }
+        if (apiResponse.question) {
+            metadataJson['question'] = apiResponse.question
+        }
+        if (apiResponse.sessionId) {
+            metadataJson['sessionId'] = apiResponse.sessionId
+        }
+        if (apiResponse.memoryType) {
+            metadataJson['memoryType'] = apiResponse.memoryType
+        }
+        if (Object.keys(metadataJson).length > 0) {
+            this.streamCustomEvent(chatId, 'metadata', metadataJson)
+        }
     }
 }

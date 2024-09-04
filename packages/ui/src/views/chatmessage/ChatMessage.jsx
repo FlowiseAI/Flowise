@@ -171,7 +171,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             type: 'apiMessage'
         }
     ])
-    //const [socketIOClientId, setSocketIOClientId] = useState('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
     const [isChatFlowAvailableForSpeech, setIsChatFlowAvailableForSpeech] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
@@ -1006,33 +1005,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 setIsLeadSaved(!!savedLead)
                 setLeadEmail(savedLead.email)
             }
-
-            // SocketIO
-            // socket = socketIOClient(baseURL)
-            //
-            // socket.on('connect', () => {
-            //     setSocketIOClientId(socket.id)
-            // })
-            //
-            // socket.on('start', () => {
-            //     // setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
-            // })
-            //
-            // //socket.on('sourceDocuments', updateLastMessageSourceDocuments)
-            //
-            // socket.on('usedTools', updateLastMessageUsedTools)
-            //
-            // socket.on('fileAnnotations', updateLastMessageFileAnnotations)
-            //
-            // //socket.on('token', updateLastMessage)
-            //
-            // socket.on('agentReasoning', updateLastMessageAgentReasoning)
-            //
-            // socket.on('action', updateLastMessageAction)
-            //
-            // socket.on('nextAgent', updateLastMessageNextAgent)
-            //
-            // socket.on('abort', abortMessage)
         }
 
         return () => {
@@ -1045,10 +1017,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     type: 'apiMessage'
                 }
             ])
-            // if (socket) {
-            //     socket.disconnect()
-            //     setSocketIOClientId('')
-            // }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

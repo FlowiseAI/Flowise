@@ -29,23 +29,7 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
 
         const apiResponse = await utilBuildChatflow(req, true)
         const sseStreamer = getRunningExpressApp().sseStreamer
-        const metadataJson: any = {}
-        if (apiResponse.chatId) {
-            metadataJson['chatId'] = apiResponse.chatId
-        }
-        if (apiResponse.chatMessageId) {
-            metadataJson['chatMessageId'] = apiResponse.chatMessageId
-        }
-        if (apiResponse.question) {
-            metadataJson['question'] = apiResponse.question
-        }
-        if (apiResponse.sessionId) {
-            metadataJson['sessionId'] = apiResponse.sessionId
-        }
-        if (apiResponse.memoryType) {
-            metadataJson['memoryType'] = apiResponse.memoryType
-        }
-        sseStreamer.streamCustomEvent(apiResponse.chatId, 'metadata', metadataJson)
+        sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
         sseStreamer.removeClient(apiResponse.chatId)
         return
     } catch (error) {

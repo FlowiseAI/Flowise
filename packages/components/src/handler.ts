@@ -214,7 +214,6 @@ export class CustomChainHandler extends BaseCallbackHandler {
             result.forEach((token: string, index: number) => {
                 if (index === 0) {
                     if (this.sseStreamer) {
-                        //this.sseStreamer.streamEvent(this.chatId, 'event: start\ndata: ' + token + '\n\n')
                         this.sseStreamer.streamStartEvent(this.chatId, token)
                     }
                 }

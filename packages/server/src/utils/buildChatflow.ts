@@ -358,7 +358,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         const nodeInstanceFilePath = appServer.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const nodeInstance = new nodeModule.nodeClass({ sessionId })
-        console.log('streamResponse 2', isStreamValid)
 
         let result = isStreamValid
             ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
