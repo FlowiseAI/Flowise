@@ -85,7 +85,7 @@ const ThreeJsScene: React.FC<ThreeJsSceneProps> = ({ className }) => {
 
         // Update 3D text
         const text = new Text()
-        text.text = 'The Answer'
+        text.text = ''
         text.fontSize = 0.6
         text.position.set(-1.5, 0, 0)
         text.color = 0x00ffff
