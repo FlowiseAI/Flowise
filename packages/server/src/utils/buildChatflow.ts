@@ -509,7 +509,7 @@ const utilBuildAgentResponse = async (
             if (sourceDocuments?.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
             if (usedTools?.length) apiMessage.usedTools = JSON.stringify(usedTools)
             if (agentReasoning?.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
-            if (Object.keys(finalAction).length) apiMessage.action = JSON.stringify(finalAction)
+            if (finalAction && Object.keys(finalAction).length) apiMessage.action = JSON.stringify(finalAction)
             const chatMessage = await utilAddChatMessage(apiMessage)
 
             await appServer.telemetry.sendTelemetry('agentflow_prediction_sent', {
@@ -557,7 +557,7 @@ const utilBuildAgentResponse = async (
             if (sessionId) result.sessionId = sessionId
             if (memoryType) result.memoryType = memoryType
             if (agentReasoning?.length) result.agentReasoning = agentReasoning
-            if (Object.keys(finalAction).length) result.action = finalAction
+            if (finalAction && Object.keys(finalAction).length) result.action = finalAction
 
             return result
         }
