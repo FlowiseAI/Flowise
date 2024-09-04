@@ -218,13 +218,19 @@ const getChatflowById = async (chatflowId: string, user?: IUser): Promise<any> =
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('chatFlow')
-            .where(user?.permissions?.includes('org:manage') ? 'chatFlow.id = :id' : 'chatFlow.id = :id AND chatFlow.userId = :userId', {
-                id: chatflowId,
-                userId: user?.id
-            })
+            .where('chatFlow.id = :id', { id: chatflowId })
             .getOne()
+
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
+        }
+
+        // Check if the chatflow is not public and the user is not an org manager
+        if (!dbResponse.isPublic && !user?.permissions?.includes('org:manage')) {
+            // Perform the check against userId
+            if (dbResponse.userId !== user?.id) {
+                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
+            }
         }
 
         return dbResponse
