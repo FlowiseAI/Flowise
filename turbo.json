@@ -9,6 +9,7 @@
         },
         "test": {},
         "dev": {
+            "dependsOn": ["^build"],
             "cache": false
         },
         "typeorm:migration-run": {

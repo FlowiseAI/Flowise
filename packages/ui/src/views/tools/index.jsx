@@ -7,6 +7,7 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 import FlowListView from '@/ui-component/lists/FlowListView'
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import { useFlags } from 'flagsmith/react'
 
 // API
 import toolsApi from '@/api/tools'
@@ -44,6 +45,8 @@ const Tools = () => {
     const [categories, setCategories] = useState(['All'])
     const [myTools, setMyTools] = useState([])
     const [marketplaceTools, setMarketplaceTools] = useState([])
+    const [organizationTools, setOrganizationTools] = useState([])
+    const flags = useFlags(['org:manage'])
 
     const inputRef = useRef(null)
 
@@ -145,9 +148,16 @@ const Tools = () => {
     }
 
     useEffect(() => {
-        getAllToolsApi.request()
-        getMarketplaceToolsApi.request()
-    }, [])
+        if (getAllToolsApi.data && getMarketplaceToolsApi.data) {
+            const allTools = getAllToolsApi.data
+            setMyTools(allTools.filter((tool) => tool.isOwner))
+            setOrganizationTools(allTools.filter((tool) => !tool.isOwner))
+            setMarketplaceTools(getMarketplaceToolsApi.data.filter((tool) => tool.type === 'Tool'))
+
+            const uniqueCategories = ['All', ...new Set(allTools.concat(getMarketplaceToolsApi.data).flatMap((item) => (item?.category ? item.category.split(';') : [])))]
+            setCategories(uniqueCategories)
+        }
+    }, [getAllToolsApi.data, getMarketplaceToolsApi.data])
 
     useEffect(() => {
         setLoading(getAllToolsApi.loading || getMarketplaceToolsApi.loading)
@@ -160,15 +170,12 @@ const Tools = () => {
     }, [getAllToolsApi.error, getMarketplaceToolsApi.error])
 
     useEffect(() => {
-        if (getAllToolsApi.data && getMarketplaceToolsApi.data) {
-            setMyTools(getAllToolsApi.data)
-            setMarketplaceTools(getMarketplaceToolsApi.data.filter((tool) => tool.type === 'Tool'))
-
-            const allTools = [...getAllToolsApi.data, ...getMarketplaceToolsApi.data.filter((tool) => tool.type === 'Tool')]
-            const uniqueCategories = ['All', ...new Set(allTools.flatMap((item) => (item?.category ? item.category.split(';') : [])))]
-            setCategories(uniqueCategories)
+        if (getAllToolsApi.data) {
+            const allTools = getAllToolsApi.data
+            setMyTools(allTools.filter((tool) => tool.isOwner))
+            setOrganizationTools(allTools.filter((tool) => !tool.isOwner))
         }
-    }, [getAllToolsApi.data, getMarketplaceToolsApi.data])
+    }, [getAllToolsApi.data])
 
     const filterTools = (tools, search, categoryFilter) => {
         const searchRegex = new RegExp(search, 'i') // 'i' flag for case-insensitive search
@@ -192,11 +199,11 @@ const Tools = () => {
     }
 
     const filteredMyTools = useMemo(() => filterTools(myTools, search, categoryFilter), [myTools, search, categoryFilter])
+    const filteredMarketplaceTools = useMemo(() => filterTools(marketplaceTools, search, categoryFilter), [marketplaceTools, search, categoryFilter])
+    const filteredOrganizationTools = useMemo(() => filterTools(organizationTools, search, categoryFilter), [organizationTools, search, categoryFilter])
 
-    const filteredMarketplaceTools = useMemo(
-        () => filterTools(marketplaceTools, search, categoryFilter),
-        [marketplaceTools, search, categoryFilter]
-    )
+    const isAdmin = flags?.['org:manage']?.enabled
+
     return (
         <>
             <MainCard>
@@ -255,6 +262,7 @@ const Tools = () => {
                             <Tabs value={tabValue} onChange={handleTabChange} aria-label='tool tabs'>
                                 <Tab label='My Tools' />
                                 <Tab label='Marketplace Tools' />
+                                <Tab label='Organization Tools' />
                             </Tabs>
                         </Box>
                         <TabPanel value={tabValue} index={0}>
@@ -275,6 +283,16 @@ const Tools = () => {
                                 setError={setError}
                                 type='marketplace'
                                 onItemClick={goToTool}
+                            />
+                        </TabPanel>
+                        <TabPanel value={tabValue} index={2}>
+                            <FlowListView
+                                data={filteredOrganizationTools}
+                                isLoading={isLoading}
+                                updateFlowsApi={getAllToolsApi}
+                                setError={setError}
+                                type='tools'
+                                onItemClick={(tool) => isAdmin ? edit(tool) : goToTool(tool)}
                             />
                         </TabPanel>
                     </Stack>

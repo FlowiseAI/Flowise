@@ -27,7 +27,8 @@ import {
     IReactFlowObject,
     IReactFlowEdge,
     IMessage,
-    IncomingInput
+    IncomingInput,
+    IUser
 } from '../Interface'
 import {
     buildFlow,
@@ -56,6 +57,7 @@ import logger from './logger'
  * @param {Server} socketIO
  */
 export const buildAgentGraph = async (
+    user: IUser,
     chatflow: IChatFlow,
     chatId: string,
     sessionId: string,
@@ -111,6 +113,7 @@ export const buildAgentGraph = async (
 
         // Initialize nodes like ChatModels, Tools, etc.
         const reactFlowNodes: IReactFlowNode[] = await buildFlow({
+            user,
             startingNodeIds,
             reactFlowNodes: nodes,
             reactFlowEdges: edges,
@@ -173,6 +176,7 @@ export const buildAgentGraph = async (
         try {
             if (!seqAgentNodes.length) {
                 streamResults = await compileMultiAgentsGraph(
+                    user,
                     chatflow,
                     mapNameToLabel,
                     reactFlowNodes,
@@ -190,6 +194,7 @@ export const buildAgentGraph = async (
             } else {
                 isSequential = true
                 streamResults = await compileSeqAgentsGraph(
+                    user,
                     depthQueue,
                     chatflow,
                     reactFlowNodes,
@@ -441,6 +446,7 @@ export const buildAgentGraph = async (
  * @param {boolean} summarization
  */
 const compileMultiAgentsGraph = async (
+    user: IUser,
     chatflow: IChatFlow,
     mapNameToLabel: Record<string, { label: string; nodeName: string }>,
     reactflowNodes: IReactFlowNode[] = [],
@@ -485,7 +491,15 @@ const compileMultiAgentsGraph = async (
 
         let flowNodeData = cloneDeep(workerNode.data)
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = await resolveVariables(appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
+        flowNodeData = await resolveVariables(
+            user,
+            appServer.AppDataSource,
+            flowNodeData,
+            reactflowNodes,
+            question,
+            chatHistory,
+            overrideConfig
+        )
 
         try {
             const workerResult: IMultiAgentNode = await newNodeInstance.init(flowNodeData, question, options)
@@ -516,7 +530,15 @@ const compileMultiAgentsGraph = async (
         let flowNodeData = cloneDeep(supervisorNode.data)
 
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = await resolveVariables(appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
+        flowNodeData = await resolveVariables(
+            user,
+            appServer.AppDataSource,
+            flowNodeData,
+            reactflowNodes,
+            question,
+            chatHistory,
+            overrideConfig
+        )
 
         if (flowNodeData.inputs) flowNodeData.inputs.workerNodes = supervisorWorkers[supervisor]
 
@@ -613,6 +635,7 @@ const compileMultiAgentsGraph = async (
  * @param {IAction} action
  */
 const compileSeqAgentsGraph = async (
+    user:IUser,
     depthQueue: IDepthQueue,
     chatflow: IChatFlow,
     reactflowNodes: IReactFlowNode[] = [],
@@ -676,7 +699,7 @@ const compileSeqAgentsGraph = async (
 
         flowNodeData = cloneDeep(node.data)
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = await resolveVariables(appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
+        flowNodeData = await resolveVariables(user,appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
 
         const seqAgentNode: ISeqAgentNode = await newNodeInstance.init(flowNodeData, question, options)
         return seqAgentNode

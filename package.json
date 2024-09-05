@@ -3,12 +3,6 @@
     "version": "2.0.4",
     "private": true,
     "homepage": "https://flowiseai.com",
-    "workspaces": [
-        "packages/*",
-        "flowise",
-        "ui",
-        "components"
-    ],
     "scripts": {
         "build": "turbo run build",
         "build-force": "pnpm clean && turbo run build --force",

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { EntityTarget } from 'typeorm'
+import { EntityTarget, FindOptionsWhere, IsNull, Like } from 'typeorm'
 import path from 'path'
 
 // Cache for imported entities
@@ -24,7 +24,6 @@ const enforceAbility = (resourceName: string) => {
 
         const { id: userId, roles: userRoles = [], organizationId } = req.user
         const isAdmin = userRoles.includes('Admin')
-        console.log('isAdmin', { isAdmin, userRoles, organizationId, userId, user: req.user })
         // Set up filter based on user role
         let filter: any = { organizationId }
         if (!isAdmin) {

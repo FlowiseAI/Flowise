@@ -43,7 +43,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus, IconLock, IconWorld } from '@tabler/icons-react'
+import { IconTrash, IconEdit, IconX, IconPlus } from '@tabler/icons-react'
 import CredentialEmptySVG from '@/assets/images/credential_empty.svg'
 
 // const
@@ -396,13 +396,7 @@ const Credentials = () => {
                                                                 {credential.visibility.map((visibility, index) => (
                                                                     <Chip
                                                                         key={index}
-                                                                        icon={
-                                                                            visibility === 'private' ? (
-                                                                                <IconLock />
-                                                                            ) : visibility === 'organization' ? (
-                                                                                <IconWorld />
-                                                                            ) : null
-                                                                        }
+                                                                       
                                                                         label={
                                                                             visibility === 'private'
                                                                                 ? 'Private'

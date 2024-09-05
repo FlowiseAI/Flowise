@@ -213,26 +213,26 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
     }
 }
 
-const getChatflowById = async (chatflowId: string, user?: IUser): Promise<any> => {
+const getChatflowById = async (chatflowId: string, user: IUser): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('chatFlow')
             .where('chatFlow.id = :id', { id: chatflowId })
             .getOne()
-
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }
 
-        // Check if the chatflow is not public and the user is not an org manager
-        if (!dbResponse.isPublic && !user?.permissions?.includes('org:manage')) {
-            // Perform the check against userId
-            if (dbResponse.userId !== user?.id) {
-                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
-            }
-        }
+        const isUserOrgAdmin = user?.permissions?.includes('org:manage') && user?.organizationId === dbResponse.organizationId
+        const isUsersChatflow = dbResponse.userId === user?.id
+        const isChatflowPublic = dbResponse.isPublic
+        const hasChatflowOrgVisibility = dbResponse.visibility?.includes(ChatflowVisibility.ORGANIZATION)
+        const isUserInSameOrg = dbResponse.organizationId === user?.organizationId
 
+        if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg))) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
+        }
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(

@@ -16,6 +16,7 @@ import {
     IOverrideConfig,
     IReactFlowEdge,
     IReactFlowNode,
+    IUser,
     IVariableDict,
     IncomingInput
 } from '../Interface'
@@ -39,7 +40,7 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
 import { Assistant } from '../database/entities/Assistant'
-import { DataSource } from 'typeorm'
+import { DataSource, Like } from 'typeorm'
 import { CachePool } from '../CachePool'
 import { Variable } from '../database/entities/Variable'
 import { DocumentStore } from '../database/entities/DocumentStore'
@@ -418,6 +419,7 @@ const checkIfDocLoaderShouldBeIgnored = (
 }
 
 type BuildFlowParams = {
+    user: IUser
     startingNodeIds: string[]
     reactFlowNodes: IReactFlowNode[]
     reactFlowEdges: IReactFlowEdge[]
@@ -445,6 +447,7 @@ type BuildFlowParams = {
  * @param {BuildFlowParams} params
  */
 export const buildFlow = async ({
+    user,
     startingNodeIds,
     reactFlowNodes,
     reactFlowEdges,
@@ -504,6 +507,7 @@ export const buildFlow = async ({
             if (isUpsert) upsertHistory['flowData'] = saveUpsertFlowData(flowNodeData, upsertHistory)
 
             const reactFlowNodeData: INodeData = await resolveVariables(
+                user,
                 appDataSource,
                 flowNodeData,
                 flowNodes,
@@ -698,8 +702,15 @@ export const clearSessionMemory = async (
     }
 }
 
-const getGlobalVariable = async (appDataSource: DataSource, overrideConfig?: ICommonObject) => {
-    const variables = await appDataSource.getRepository(Variable).find()
+const getGlobalVariable = async (user: IUser, appDataSource: DataSource, overrideConfig?: ICommonObject) => {
+    const conditions: any = [
+        { userId: user?.id, organizationId: user?.organizationId },
+        { organizationId: user?.organizationId, visibility: Like('%Organization%') },
+        { userId: null }
+    ]
+    const variables = await appDataSource.getRepository(Variable).find({
+        where: conditions
+    })
 
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
@@ -754,6 +765,7 @@ const getGlobalVariable = async (appDataSource: DataSource, overrideConfig?: ICo
  * @returns {string}
  */
 export const getVariableValue = async (
+    user: IUser,
     appDataSource: DataSource,
     paramValue: string | object,
     reactFlowNodes: IReactFlowNode[],
@@ -797,7 +809,7 @@ export const getVariableValue = async (
             }
 
             if (variableFullPath.startsWith('$vars.')) {
-                const vars = await getGlobalVariable(appDataSource, overrideConfig)
+                const vars = await getGlobalVariable(user, appDataSource, overrideConfig)
                 const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
                 if (variableValue) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
@@ -892,6 +904,7 @@ export const getVariableValue = async (
  * @returns {INodeData}
  */
 export const resolveVariables = async (
+    user: IUser,
     appDataSource: DataSource,
     reactFlowNodeData: INodeData,
     reactFlowNodes: IReactFlowNode[],
@@ -909,6 +922,7 @@ export const resolveVariables = async (
                 const resolvedInstances = []
                 for (const param of paramValue) {
                     const resolvedInstance = await getVariableValue(
+                        user,
                         appDataSource,
                         param,
                         reactFlowNodes,
@@ -923,6 +937,7 @@ export const resolveVariables = async (
             } else {
                 const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
                 const resolvedInstance = await getVariableValue(
+                    user,
                     appDataSource,
                     paramValue,
                     reactFlowNodes,

@@ -1,6 +1,12 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
 import { IVariable } from '../../Interface'
+
+export enum VariableVisibility {
+    PRIVATE = 'Private',
+    ORGANIZATION = 'Organization'
+}
+
 
 @Entity()
 export class Variable implements IVariable {
@@ -23,4 +29,19 @@ export class Variable implements IVariable {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    userId?: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId?: string
+
+    @Column({
+        type: 'simple-array',
+        enum: VariableVisibility,
+        default: 'Private'
+    })
+    visibility?: VariableVisibility[]
 }

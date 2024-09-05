@@ -1,15 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
 import { findAvailableConfigs } from '../../utils'
-import { IReactFlowObject } from '../../Interface'
+import { IReactFlowObject, IUser } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import chatflowsService from '../chatflows'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 
-const getSingleFlowConfig = async (chatflowId: string): Promise<any> => {
+const getSingleFlowConfig = async (chatflowId: string, user: IUser): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const chatflow = await chatflowsService.getChatflowById(chatflowId)
+        const chatflow = await chatflowsService.getChatflowById(chatflowId,user)
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }
