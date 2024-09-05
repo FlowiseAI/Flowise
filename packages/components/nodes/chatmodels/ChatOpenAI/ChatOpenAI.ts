@@ -219,6 +219,7 @@ class ChatOpenAI_ChatModels implements INode {
 
         if (proxyUrl) {
             obj.configuration = {
+                ...obj?.configuration,
                 httpAgent: new HttpsProxyAgent(proxyUrl)
             }
         }
