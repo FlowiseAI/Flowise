@@ -3,9 +3,9 @@ import { ChatFlow } from '../../database/entities/ChatFlow'
 import { Tool } from '../../database/entities/Tool'
 import exportImportService from '../../services/export-import'
 
-const exportAll = async (req: Request, res: Response, next: NextFunction) => {
+const exportData = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await exportImportService.exportAll()
+        const apiResponse = await exportImportService.exportData(exportImportService.convertExportInput(req.body))
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -23,6 +23,6 @@ const importAll = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 export default {
-    exportAll,
+    exportData,
     importAll
 }

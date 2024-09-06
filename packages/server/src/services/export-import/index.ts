@@ -7,21 +7,41 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import chatflowService from '../chatflows'
 import toolsService from '../tools'
 
-const FileDefaultName = 'AllData.json'
+type exportInput = { tool: boolean; chatflow: boolean; multiagent: boolean }
 
-const exportAll = async (): Promise<{ FileDefaultName: string; Tool: Tool[]; ChatFlow: ChatFlow[] }> => {
+const convertExportInput = (body: any) => {
     try {
-        // step 1 - get all tool
-        const allTool: Tool[] = await toolsService.getAllTools()
-
-        // step 2 - get all ChatFlow and MultiAgent
-        const allChatflow: ChatFlow[] = await chatflowService.getAllChatflows('ALL')
-
-        return { FileDefaultName, Tool: allTool, ChatFlow: allChatflow }
+        if (typeof body.tool !== 'boolean' || typeof body.chatflow !== 'boolean' || typeof body.multiagent !== 'boolean')
+            throw new Error('Invalid ExportInput object in request body')
+        return body as exportInput
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: exportImportService.exportAll - ${getErrorMessage(error)}`
+            `Error: exportImportService.convertExportInput - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const FileDefaultName = 'ExportData.json'
+const exportData = async (exportInput: exportInput): Promise<{ FileDefaultName: string; Tool: Tool[]; ChatFlow: ChatFlow[] }> => {
+    try {
+        // step 1 - get all tool
+        let allTool: Tool[] = []
+        if (exportInput.tool === true) allTool = await toolsService.getAllTools()
+
+        // step 2 - get all ChatFlow
+        let allChatflow: ChatFlow[] = []
+        if (exportInput.chatflow === true) allChatflow = await chatflowService.getAllChatflows('CHATFLOW')
+
+        // step 3 - get all MultiAgent
+        let allMultiAgent: ChatFlow[] = []
+        if (exportInput.multiagent === true) allMultiAgent = await chatflowService.getAllChatflows('MULTIAGENT')
+
+        return { FileDefaultName, Tool: allTool, ChatFlow: [...allChatflow, ...allMultiAgent] }
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: exportImportService.exportData - ${getErrorMessage(error)}`
         )
     }
 }
@@ -53,6 +73,7 @@ const importAll = async (importData: { Tool: Partial<Tool>[]; ChatFlow: Partial<
 }
 
 export default {
-    exportAll,
+    convertExportInput,
+    exportData,
     importAll
 }
