@@ -18,6 +18,24 @@ function HomepageHeader() {
         }
     }, [inputValue])
 
+    useEffect(() => {
+        const script = document.createElement('script')
+        script.src = 'https://cdn.jsdelivr.net/npm/aai-embed/dist/web.js'
+        script.type = 'module'
+
+        script.onload = () => {
+            window.Chatbot.init({
+                chatflowid: 'e24d5572-a27a-40b9-83fe-19a376535b9d',
+                apiHost: 'https://lastrev.flowise.theanswer.ai'
+            })
+        }
+        document.body.appendChild(script)
+
+        return () => {
+            document.body.removeChild(script)
+        }
+    }, [])
+
     const handleInputChange = (e) => {
         setInputValue(e.target.value)
     }
@@ -28,17 +46,9 @@ function HomepageHeader() {
                 <ThreeJsScene className={styles.threeJsCanvas} logoUrl={true} />
             </div>
             <div className={styles.heroContent}>
-                <div className={styles.heroChatTypeAhead}>Hello, how can I help you?</div>
-                <textarea
-                    ref={textareaRef}
-                    className={styles.heroChatInput}
-                    placeholder='Type your message here...'
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    rows={1}
-                />
+                <img src='img/answerai-logo-600-wide-white.png' alt='AnswerAI Logo' className={styles.heroLogo} />
                 <div className={styles.heroSubtitle}>
-                    <p>Empowering humanity to ask the right questions in the Age of AGI</p>
+                    <p>Empowering you to ask the right questions in the age of AI</p>
                 </div>
             </div>
         </header>
@@ -50,7 +60,10 @@ HomepageHeader.propTypes = {}
 export default function Home(): JSX.Element {
     const { siteConfig } = useDocusaurusContext()
     return (
-        <Layout title={`Hello from ${siteConfig.title}`} description='Description will go into a meta tag in <head />'>
+        <Layout
+            title={`AnswerAI: Empowering you to ask the right questions in the age of AI`}
+            description='AnswerAI is the platform that empowers you create advanced AI applications with low-code.'
+        >
             <HomepageHeader />
             <main>
                 <HomepageFeatures />

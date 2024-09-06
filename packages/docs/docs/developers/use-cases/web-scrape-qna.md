@@ -90,4 +90,4 @@ Apart from Cheerio Web Scraper, there are other nodes that can perform web scrap
 The same logic can be applied to any document use cases, not just limited to web scraping!
 :::
 
-If you have any suggestion on how to improve the performance, we'd love your [contribution](../contributing/)!
+If you have any suggestion on how to improve the performance, we'd love your [contribution](../../community/)!

@@ -6,7 +6,7 @@ description: Learn how to effectively use the Chatflow Tool and the Custom Tool
 
 ---
 
-One of the powerful features of Flowise is that you can turn flows into tools. For example, having a main flow to orchestrate which/when to use the necessary tools. And each tool is designed to perform a niece/specific thing.
+One of the powerful features of AnswerAI is that you can turn flows into tools. For example, having a main flow to orchestrate which/when to use the necessary tools. And each tool is designed to perform a niece/specific thing.
 
 This offers a few benefits:
 
@@ -38,7 +38,7 @@ You can achieve this by using the following tools:
 
 ## Custom Tool
 
-With the same example as above, we are going to create a custom tool that will calls the [Prediction API](../using-flowise/api.md#prediction-api) of the Chain of Thought chatflow.
+With the same example as above, we are going to create a custom tool that will calls the [Prediction API](../api.md#prediction-api) of the Chain of Thought chatflow.
 
 1. Create a new tool:
 

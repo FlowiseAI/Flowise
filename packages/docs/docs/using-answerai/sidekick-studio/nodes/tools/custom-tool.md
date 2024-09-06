@@ -57,7 +57,7 @@ This example uses the `node-fetch` library, which is available by default in Cus
 -   Ensure that any external libraries you're using are supported by AnswerAI. You can find a list of supported libraries in the AnswerAI documentation.
 -   If you're getting unexpected results, use `console.log()` statements to debug your code and check the AnswerAI logs for output.
 
-For more detailed information on building custom tools, including how to work with input schemas and advanced use cases, please refer to the [Custom Tools documentation](../../custom-tools).
+For more detailed information on building custom tools, including how to work with input schemas and advanced use cases, please refer to the [Custom Tools documentation](../../../../developers/custom-tools).
 
 <!-- TODO: Add a screenshot showing the Custom Tool node configuration interface -->
 <figure><img src="/.gitbook/assets/screenshots/.png" alt="" /><figcaption><p>Custom Tool node  &#x26; Drop UI</p></figcaption></figure>

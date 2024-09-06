@@ -3,9 +3,9 @@ import type { Config } from '@docusaurus/types'
 import type * as Preset from '@docusaurus/preset-classic'
 
 const config: Config = {
-    title: 'The Answer AI',
+    title: 'AnswerAI',
     tagline: 'Intelligent Answers, Instantly',
-    favicon: 'img/favicon.ico',
+    favicon: 'img/favicon.png',
 
     // Set the production url of your site here
     url: 'https://docs.theanswer.ai',
@@ -15,8 +15,8 @@ const config: Config = {
 
     // GitHub pages deployment config.
     // If you aren't using GitHub pages, you don't need these.
-    organizationName: 'The Answer AI', // Usually your GitHub org/user name.
-    projectName: 'docusaurus', // Usually your repo name.
+    organizationName: 'AnswerAI', // Usually your GitHub org/user name.
+    projectName: 'answerai', // Usually your repo name.
 
     onBrokenLinks: 'log',
     onBrokenMarkdownLinks: 'warn',
@@ -49,9 +49,6 @@ const config: Config = {
                         xslt: true
                     },
                     // Please change this to your repo.
-                    // Remove this to remove the "edit this page" links.
-                    editUrl: 'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-                    // Useful options to enforce blogging best practices
                     onInlineTags: 'warn',
                     onInlineAuthors: 'warn',
                     onUntruncatedBlogPosts: 'warn'
@@ -65,18 +62,22 @@ const config: Config = {
 
     themeConfig: {
         // Replace with your project's social card
-        image: 'img/docusaurus-social-card.jpg',
+        image: 'img/answerai-social-card.png',
         navbar: {
-            title: 'AnswerAI',
             logo: {
                 alt: 'AnswerAI Logo',
-                src: 'img/logo.svg',
+                src: 'img/answerai-wide-black.png',
                 srcDark: 'img/answerai-logo-600-wide-white.png' // Add this line for dark mode logo
             },
             items: [
                 {
-                    to: '/docs/using-answerai',
-                    label: 'Using AnswerAI',
+                    to: '/docs/intro',
+                    label: 'Getting Started',
+                    position: 'left'
+                },
+                {
+                    to: '/docs/using-answerai/',
+                    label: 'Chat',
                     position: 'left'
                 },
                 {
@@ -85,17 +86,12 @@ const config: Config = {
                     position: 'left'
                 },
                 {
-                    to: '/docs/use-cases',
-                    label: 'Use Cases',
-                    position: 'left'
-                },
-                {
                     to: '/docs/community',
                     label: 'Community',
                     position: 'left'
                 },
                 {
-                    href: 'https://github.com/answers-ai/answerai',
+                    href: 'https://github.com/answers-ai/',
                     label: 'GitHub',
                     position: 'right'
                 }
@@ -108,8 +104,20 @@ const config: Config = {
                     title: 'Docs',
                     items: [
                         {
-                            label: 'Tutorial',
-                            to: '/docs/intro'
+                            to: '/docs/intro',
+                            label: 'Getting Started'
+                        },
+                        {
+                            to: '/docs/using-answerai/',
+                            label: 'Chat'
+                        },
+                        {
+                            to: '/docs/developers',
+                            label: 'Developers'
+                        },
+                        {
+                            to: '/docs/community',
+                            label: 'Community'
                         }
                     ]
                 },
@@ -117,34 +125,38 @@ const config: Config = {
                     title: 'Community',
                     items: [
                         {
-                            label: 'Stack Overflow',
-                            href: 'https://stackoverflow.com/questions/tagged/docusaurus'
-                        },
-                        {
                             label: 'Discord',
-                            href: 'https://discordapp.com/invite/docusaurus'
+                            href: 'https://discord.gg/X54ywt8pzj'
                         },
                         {
-                            label: 'Twitter',
-                            href: 'https://twitter.com/docusaurus'
+                            label: 'GitHub',
+                            href: 'https://github.com/answers-AI/'
+                        },
+                        {
+                            label: 'Website',
+                            href: 'https://theanswer.ai'
                         }
                     ]
                 },
                 {
-                    title: 'More',
+                    title: 'Social',
                     items: [
                         {
-                            label: 'Blog',
-                            to: '/blog'
+                            label: 'YouTube',
+                            href: 'https://youtube.com/@digitalatscale'
                         },
                         {
-                            label: 'GitHub',
-                            href: 'https://github.com/facebook/docusaurus'
+                            label: 'X',
+                            href: 'https://x.com/digitalatscale_'
+                        },
+                        {
+                            label: 'Instagram',
+                            href: 'https://instagram.com/digitalatscale'
                         }
                     ]
                 }
             ],
-            copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`
+            copyright: `Copyright © ${new Date().getFullYear()}`
         },
         prism: {
             theme: prismThemes.github,

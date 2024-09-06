@@ -9,7 +9,7 @@
 .heroSection {
     position: relative;
     width: 100%;
-    height: 100vh;
+    min-height: 50vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -92,12 +92,16 @@
 .heroSubtitle {
     font-size: 1.5rem;
     text-align: center;
-    padding-bottom: 2rem;
+    padding-top: 1rem;
     width: 100%;
-    position: absolute;
+    position: relative;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
+}
+
+.heroLogo {
+    margin: auto 0;
 }
 
 .visionSection,

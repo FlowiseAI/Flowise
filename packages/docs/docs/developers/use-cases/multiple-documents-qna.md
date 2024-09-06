@@ -21,7 +21,7 @@ In this example, we are going to perform QnA on 2 PDFs, which are FORM-10K of AP
 ## Upsert
 
 1. Find the example flow called - **Conversational Retrieval QA Chain** from the marketplace templates.
-2. We are going to use [PDF File Loader](../integrations/langchain/document-loaders/pdf-file.md), and upload the respective files:
+2. We are going to use [PDF File Loader](../../using-answerai/sidekick-studio/nodes/document-loaders/pdf-file.md), and upload the respective files:
 
 <figure><img src="/.gitbook/assets/multi-docs-upload.png" alt="" /><figcaption></figcaption></figure>
 
@@ -77,11 +77,11 @@ Each vector databse provider has different format of filtering syntax, recommend
 
 ## Tool Agent
 
-We can solve the _**"hard-coded"**_ metadata filter problem by using [Tool Agent](../integrations/langchain/agents/tool-agent.md).
+We can solve the _**"hard-coded"**_ metadata filter problem by using [Tool Agent](../../using-answerai/sidekick-studio/nodes/agents/tool-agent.md).
 
 By providing tools to agent, we can let the agent to decide which tool is suitable to be used depending on the question.
 
-1. Create a [Retriever Tool](../integrations/langchain/tools/retriever-tool.md) with following name and description:
+1. Create a [Retriever Tool](../../using-answerai/sidekick-studio/nodes/tools/retriever-tool.md) with following name and description:
 
 <table><thead><tr><th width="178">Name</th><th>Description</th></tr></thead><tbody><tr><td>search_apple</td><td>Use this function to answer user questions about Apple Inc (APPL). It contains a SEC Form 10K filing describing the financials of Apple Inc (APPL) for the 2022 time period.</td></tr></tbody></table>
 
@@ -177,6 +177,6 @@ Question: {input}
 
 We've covered using Conversational Retrieval QA Chain and its limitation when querying multiple documents. And we were able to overcome the issue by using OpenAI Function Agent/XML Agent + Tools. You can find the templates below:
 
-<a href="/.gitbook/assets/ToolAgent Chatflow.json" download>Download /.gitbook/assets/ToolAgent Chatflow.json</a>
+<a href="/.gitbook/assets/ToolAgent Chatflow.json" download>Download ToolAgent Chatflow.json</a>
 
-<a href="/.gitbook/assets/XMLAgent Chatflow.json" download>Download /.gitbook/assets/XMLAgent Chatflow.json</a>
+<a href="/.gitbook/assets/XMLAgent Chatflow.json" download>Download XMLAgent Chatflow.json</a>

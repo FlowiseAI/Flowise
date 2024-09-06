@@ -8,7 +8,7 @@ description: LangChain Tool Nodes
 
 Tools are functions that agents can use to interact with the world. These tools can be generic utilities (e.g. search), other chains, or even other agents.
 
-### Tool Nodes:
+### Tool Nodes
 
 -   [BraveSearch API](bravesearch-api.md)
 -   [Calculator](calculator.md)
@@ -23,8 +23,6 @@ Tools are functions that agents can use to interact with the world. These tools 
 -   [Request Get](request-get.md)
 -   [Request Post](request-post.md)
 -   [Retriever Tool](retriever-tool.md)
--   [SearchApi](searchapi.md)
--   [SearXNG](searxng.md)
 -   [Serp API](serp-api.md)
 -   [Serper](serper.md)
 -   [Web Browser](web-browser.md)

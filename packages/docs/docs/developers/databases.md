@@ -2,7 +2,7 @@
 description: Learn how to connect your AnswerAI instance to a database
 ---
 
-# Connecting AnswerAI to Databases
+# Databases
 
 ## Overview
 

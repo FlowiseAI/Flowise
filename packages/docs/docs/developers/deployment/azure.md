@@ -2,7 +2,7 @@
 description: Learn how to deploy AnswerAI on Azure using Terraform and Azure Container Instances
 ---
 
-# Deploying AnswerAI on Azure
+# Azure
 
 ## Overview
 

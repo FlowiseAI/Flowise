@@ -2,7 +2,7 @@
 description: Learn how to deploy AnswerAI locally
 ---
 
-# Running AnswerAI Locally
+# Local Development
 
 This guide will help you set up and run AnswerAI in your local development environment for ultimate privacy and control.
 
@@ -23,15 +23,14 @@ Certainly! I'll list out the rest of the @packages folders with descriptions bas
 -   `server`: Node.js backend for API logic
 -   `ui`: React frontend
 -   `components`: Integration components
--   `docusaurus`: Documentation site
--   `embed`: Javascript library to display flowise chatbot on your website
--   `flowise-configs`: Configuration and tooling for Flowise
+-   `docs`: Documentation site
+-   `embed`: Javascript library to display AnswerAI chatbot on your website
 
 Here's a more detailed breakdown of each package:
 
 1. `server`:
 
-    - Main backend server for Flowise
+    - Main backend server for AnswerAI
     - Handles API logic, database interactions, and server-side operations
     - Contains marketplaces and chatflow configurations
 
@@ -45,7 +44,7 @@ Here's a more detailed breakdown of each package:
     - Contains integration components and nodes for AnswerAI
     - Includes various LLM models, tools, and utilities
 
-4. `docusaurus`:
+4. `docs`:
 
     - Documentation site for AnswerAI
     - Contains user guides, API documentation, and developer resources
@@ -54,10 +53,6 @@ Here's a more detailed breakdown of each package:
 
     - Javascript library for embedding AnswerAI chatbot on websites
     - Provides components and features for full chatbot integration
-
-6. `flowise-configs`:
-    - Configuration files and tooling for AnswerAI
-    - Includes scripts for migrations, bulk processing, and project setup
 
 These packages work together to create the full AnswerAI ecosystem, providing a comprehensive solution for building and deploying AI-powered chatbots and workflows.
 
@@ -202,7 +197,7 @@ pnpm test:cmp
 To run the documentation site locally:
 
 ```bash
-cd packages/docusaurus
+cd packages/docs
 pnpm start
 ```
 

@@ -1,148 +1,84 @@
 ---
-description: Learn how to run AnswerAI locally
+description: Environment variables for AnswerAI
 ---
 
-# Getting Started with AnswerAI Locally
+# Environment Variables
 
 :::info
 Before you begin, ensure you have [NodeJS](https://nodejs.org/en/download) installed on your computer. AnswerAI supports Node `v18.15.0` or `v20` and above.
 :::
 
-## Quick Start
+There are three different .env files you can set environment variables for AnswerAI.
 
-Install and run AnswerAI locally using NPM:
+-   Root (.env)
+-   Server (packages/server/.env)
+-   UI (packages/ui/.env)
 
-1. Install AnswerAI:
+| Variable                      | Description                                              | File Location          |
+| ----------------------------- | -------------------------------------------------------- | ---------------------- |
+| PORT                          | The port number for the server to run on                 | Root, Server, UI       |
+| API_PORT                      | The port number for the API server                       | UI                     |
+| APIKEY_PATH                   | Path to the API key file                                 | Root, Server           |
+| SECRETKEY_PATH                | Path to the secret key file                              | Root, Server           |
+| LOG_PATH                      | Path to store log files                                  | Root, Server           |
+| DISABLE_FLOWISE_TELEMETRY     | Disable Flowise telemetry when set to true               | Root                   |
+| IFRAME_ORIGINS                | Allowed origins for iframes                              | Root                   |
+| VITE_AUTH_DOMAIN              | Auth0 domain for authentication                          | Root, UI               |
+| VITE_AUTH_CLIENT_ID           | Auth0 client ID for authentication                       | Root, UI               |
+| VITE_AUTH_AUDIENCE            | Auth0 audience for authentication                        | Root, UI               |
+| VITE_AUTH_ORGANIZATION_ID     | Auth0 organization ID for authentication                 | Root, UI               |
+| DOMAIN                        | Domain for the staging environment                       | Root                   |
+| ANSWERAI_DOMAIN               | Domain for the beta environment                          | Root                   |
+| DATABASE_TYPE                 | Type of database (e.g., postgres)                        | Root, Server           |
+| DATABASE_USER                 | Database username                                        | Root, Server           |
+| DATABASE_PASSWORD             | Database password                                        | Root, Server           |
+| DATABASE_HOST                 | Database host address                                    | Root, Server           |
+| DATABASE_PORT                 | Database port number                                     | Root, Server, AnswerAI |
+| AUTH0_JWKS_URI                | Auth0 JSON Web Key Set URI                               | Root                   |
+| AUTH0_ISSUER_BASE_URL         | Auth0 issuer base URL                                    | Root                   |
+| AUTH0_BASE_URL                | Base URL for Auth0 authentication                        | Root                   |
+| AUTH0_CLIENT_ID               | Auth0 client ID                                          | Root                   |
+| AUTH0_CLIENT_SECRET           | Auth0 client secret                                      | Root                   |
+| AUTH0_AUDIENCE                | Auth0 audience                                           | Root                   |
+| AUTH0_SCOPE                   | Auth0 scope for authentication                           | Root                   |
+| AUTH0_TOKEN_SIGN_ALG          | Auth0 token signing algorithm                            | Root                   |
+| AUTH0_ORGANIZATION_ID         | Auth0 organization ID                                    | Root                   |
+| LANGFUSE_RELEASE              | Langfuse release identifier                              | Root                   |
+| LANGFUSE_SECRET_KEY           | Langfuse secret key                                      | Root                   |
+| LANGFUSE_PUBLIC_KEY           | Langfuse public key                                      | Root                   |
+| LANGFUSE_HOST                 | Langfuse host URL                                        | Root                   |
+| AUTH_AUTH0_CLIENT_ID          | Auth0 client ID for authentication                       | Root                   |
+| AUTH_AUTH0_CLIENT_SECRET      | Auth0 client secret for authentication                   | Root                   |
+| AUTH_AUTH0_ISSUER             | Auth0 issuer URL for authentication                      | Root                   |
+| DATABASE_URL                  | Full database connection URL                             | AnswerAI               |
+| VITE_FLAGSMITH_ENVIRONMENT_ID | Flagsmith environment ID                                 | UI                     |
+| NUMBER_OF_PROXIES             | Number of proxies (commented out)                        | Server                 |
+| CORS_ORIGINS                  | Allowed CORS origins (commented out)                     | Server                 |
+| DATABASE_NAME                 | Database name (commented out)                            | Server                 |
+| DATABASE_SSL                  | Enable SSL for database connection (commented out)       | Server                 |
+| DATABASE_SSL_KEY_BASE64       | Base64 encoded SSL key for database (commented out)      | Server                 |
+| FLOWISE_USERNAME              | Flowise username (commented out)                         | Server                 |
+| FLOWISE_PASSWORD              | Flowise password (commented out)                         | Server                 |
+| FLOWISE_SECRETKEY_OVERWRITE   | Encryption key for Flowise (commented out)               | Server                 |
+| FLOWISE_FILE_SIZE_LIMIT       | File size limit for Flowise (commented out)              | Server                 |
+| DISABLE_CHATFLOW_REUSE        | Disable chatflow reuse when set to true (commented out)  | Server                 |
+| DEBUG                         | Enable debug mode when set to true (commented out)       | Server                 |
+| LOG_LEVEL                     | Logging level (commented out)                            | Server                 |
+| TOOL_FUNCTION_BUILTIN_DEP     | Built-in dependencies for tool functions (commented out) | Server                 |
+| TOOL_FUNCTION_EXTERNAL_DEP    | External dependencies for tool functions (commented out) | Server                 |
+| LANGCHAIN_TRACING_V2          | Enable LangChain tracing v2 (commented out)              | Server                 |
+| LANGCHAIN_ENDPOINT            | LangChain API endpoint (commented out)                   | Server                 |
+| LANGCHAIN_API_KEY             | LangChain API key (commented out)                        | Server                 |
+| LANGCHAIN_PROJECT             | LangChain project name (commented out)                   | Server                 |
+| MODEL_LIST_CONFIG_JSON        | Path to model list configuration JSON (commented out)    | Server                 |
+| STORAGE_TYPE                  | Storage type (local or s3) (commented out)               | Server                 |
+| BLOB_STORAGE_PATH             | Path for local blob storage (commented out)              | Server                 |
+| S3_STORAGE_BUCKET_NAME        | S3 storage bucket name (commented out)                   | Server                 |
+| S3_STORAGE_ACCESS_KEY_ID      | S3 storage access key ID (commented out)                 | Server                 |
+| S3_STORAGE_SECRET_ACCESS_KEY  | S3 storage secret access key (commented out)             | Server                 |
+| S3_STORAGE_REGION             | S3 storage region (commented out)                        | Server                 |
+| S3_ENDPOINT_URL               | Custom S3 endpoint URL (commented out)                   | Server                 |
+| APIKEY_STORAGE_TYPE           | API key storage type (json or db) (commented out)        | Server                 |
+| SHOW_COMMUNITY_NODES          | Show community nodes when set to true (commented out)    | Server                 |
 
-    ```bash
-    npm install -g answerai
-    ```
-
-2. Start AnswerAI:
-
-    ```bash
-    npx answerai start
-    ```
-
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Docker Deployment
-
-You can deploy AnswerAI using Docker in two ways:
-
-### Docker Compose
-
-1. Navigate to the `docker` folder at the root of the project.
-2. Copy the `.env.example` file and rename it to `.env`.
-3. Run:
-
-    ```bash
-    docker compose up -d
-    ```
-
-4. Access AnswerAI at [http://localhost:3000](http://localhost:3000).
-5. To stop the containers:
-
-    ```bash
-    docker compose stop
-    ```
-
-### Docker Image
-
-1. Build the image:
-
-    ```bash
-    docker build --no-cache -t answerai .
-    ```
-
-2. Run the image:
-
-    ```bash
-    docker run -d --name answerai -p 3000:3000 answerai
-    ```
-
-3. Stop the container:
-
-    ```bash
-    docker stop answerai
-    ```
-
-## For Developers
-
-AnswerAI is structured as a monorepo with three main modules:
-
--   **Server**: Node.js backend for API logic
--   **UI**: React frontend
--   **Components**: Integration components
-
-### Prerequisites
-
-Install [PNPM](https://pnpm.io/installation):
-
-```bash
-npm i -g pnpm
-```
-
-### Setup for Contributors
-
-1. Fork the official [AnswerAI Github Repository](https://github.com/AnswerAI/AnswerAI).
-2. Clone your forked repository.
-3. Create a new branch:
-    - For features: `feature/<Your-New-Feature>`
-    - For bug fixes: `bugfix/<Your-New-Bugfix>`
-4. Switch to your new branch.
-5. Navigate to the repository folder:
-
-    ```bash
-    cd AnswerAI
-    ```
-
-6. Install dependencies:
-
-    ```bash
-    pnpm install
-    ```
-
-7. Build the code:
-
-    ```bash
-    pnpm build
-    ```
-
-8. Start AnswerAI:
-
-    ```bash
-    pnpm start
-    ```
-
-    Access it at [http://localhost:3000](http://localhost:3000).
-
-### Development Build
-
-For development:
-
-1. Create `.env` files in both `packages/ui` and `packages/server`, specifying the `PORT` (refer to `.env.example` in each directory).
-2. Run:
-
-    ```bash
-    pnpm dev
-    ```
-
-    - Changes in `packages/ui` or `packages/server` will be reflected at [http://localhost:8080](http://localhost:8080/).
-    - For changes in `packages/components`, rebuild the project.
-
-3. After making changes, always run:
-
-    ```bash
-    pnpm build
-    ```
-
-    and
-
-    ```bash
-    pnpm start
-    ```
-
-    to ensure everything works in production.
-
-<!-- TODO: Add video tutorial for AnswerAI setup when available -->
+This table provides a comprehensive overview of all the environment variables used across the different files in your project. The "File Location" column indicates which file(s) each variable is found in (Root, Server, UI, or AnswerAI).

@@ -12,7 +12,7 @@ This centralized approach simplifies data handling and allows for efficient mana
 
 ## Setup
 
-In this tutorial, we will set up a [Retrieval Augmented Generation (RAG)](../use-cases/multiple-documents-qna.md) system to retrieve information about the _LibertyGuard Deluxe Homeowners Policy_, a topic that LLMs are likely not extensively trained on.
+In this tutorial, we will set up a [Retrieval Augmented Generation (RAG)](../../developers/use-cases/multiple-documents-qna.md) system to retrieve information about the _LibertyGuard Deluxe Homeowners Policy_, a topic that LLMs are likely not extensively trained on.
 
 Using the **Flowise Document Stores**, we'll prepare and upsert data about LibertyGuard and its set of home insurance policies. This will enable our RAG system to accurately answer user queries about LibertyGuard's home insurance offerings.
 
@@ -24,7 +24,7 @@ Using the **Flowise Document Stores**, we'll prepare and upsert data about Liber
 
 ## 2. Select a Document Loader
 
--   Enter the Document Store we just created and select the [Document Loader](../integrations/langchain/document-loaders/) you want to use. In our case, since our dataset is in PDF format, we'll use the [PDF Loader](../integrations/langchain/document-loaders/pdf-file.md).
+-   Enter the Document Store we just created and select the [Document Loader](../../using-answerai/sidekick-studio/nodes/document-loaders/) you want to use. In our case, since our dataset is in PDF format, we'll use the [PDF Loader](../../using-answerai/sidekick-studio/nodes/document-loaders/pdf-file.md).
 
 <figure><img src="/.gitbook/assets/ds02.png" alt="" /><figcaption></figcaption></figure>
 
@@ -37,7 +37,7 @@ Using the **Flowise Document Stores**, we'll prepare and upsert data about Liber
 
 <figure><img src="/.gitbook/assets/ds04.png" alt="" /><figcaption></figcaption></figure>
 
--   Finally, select the [Text Splitter](../integrations/langchain/text-splitters/) you want to use to chunk your data. In our particular case, we will use the [Recursive Character Text Splitter](../integrations/langchain/text-splitters/recursive-character-text-splitter.md).
+-   Finally, select the [Text Splitter](../../using-answerai/sidekick-studio/nodes/text-splitters/) you want to use to chunk your data. In our particular case, we will use the [Recursive Character Text Splitter](../../using-answerai/sidekick-studio/nodes/text-splitters/recursive-character-text-splitter.md).
 
 :::info
 In this guide, we've added a generous **Chunk Overlap** size to ensure no relevant data gets missed between chunks. However, the optimal overlap size is dependent on the complexity of your data. You may need to adjust this value based on your specific dataset and the nature of the information you want to extract.
@@ -47,11 +47,11 @@ In this guide, we've added a generous **Chunk Overlap** size to ensure no releva
 
 ## 4. Preview your data
 
--   We can now preview how our data will be chunked using our current [Text Splitter](../integrations/langchain/text-splitters/) configuration; `chunk_size=1500`and `chunk_overlap=750`.
+-   We can now preview how our data will be chunked using our current [Text Splitter](../../using-answerai/sidekick-studio/nodes/text-splitters/) configuration; `chunk_size=1500`and `chunk_overlap=750`.
 
 <figure><img src="/.gitbook/assets/ds06.png" alt="" /><figcaption></figcaption></figure>
 
--   It's important to experiment with different [Text Splitters](../integrations/langchain/text-splitters/), Chunk Sizes, and Overlap values to find the optimal configuration for your specific dataset. This preview allows you to refine the chunking process and ensure that the resulting chunks are suitable for your RAG system.
+-   It's important to experiment with different [Text Splitters](../../using-answerai/sidekick-studio/nodes/text-splitters/), Chunk Sizes, and Overlap values to find the optimal configuration for your specific dataset. This preview allows you to refine the chunking process and ensure that the resulting chunks are suitable for your RAG system.
 
 <figure><img src="/.gitbook/assets/ds07.png" alt="" /><figcaption></figcaption></figure>
 
@@ -77,13 +77,13 @@ Note that once you have processed your data, you will be able to **edit your chu
 
 ## 6. Add your Document Store node to your flow
 
--   Now that our dataset is ready to be upserted, it's time to go to your RAG chatflow / agentflow and add the [Document Store node](../integrations/langchain/document-loaders/document-store.md) under the **LangChain > Document Loader** section.
+-   Now that our dataset is ready to be upserted, it's time to go to your RAG chatflow / agentflow and add the [Document Store node](../../using-answerai/sidekick-studio/nodes/document-loaders/document-store.md) under the **LangChain > Document Loader** section.
 
 <figure><img src="/.gitbook/assets/ds11.png" alt="" /><figcaption></figcaption></figure>
 
 ## 7. Upsert your data to a Vector Store
 
--   Upsert your dataset to your [Vector Store](../integrations/langchain/vector-stores/) by clicking the green button in the right corner of your flow. We used the [Upstash Vector Store](../integrations/langchain/vector-stores/upstash-vector.md) in our implementation.
+-   Upsert your dataset to your [Vector Store](../../using-answerai/sidekick-studio/nodes/vector-stores/) by clicking the green button in the right corner of your flow. We used the [Upstash Vector Store](../../using-answerai/sidekick-studio/nodes/vector-stores/upstash-vector.md) in our implementation.
 
 <figure><img src="/.gitbook/assets/ds12.png" alt="" /><figcaption></figcaption></figure>
 
