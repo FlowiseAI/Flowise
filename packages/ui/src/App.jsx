@@ -16,6 +16,7 @@ import NavigationScroll from '@/layout/NavigationScroll'
 import { useAuth0 } from '@auth0/auth0-react'
 import useNotifyParentOfNavigation from './utils/useNotifyParentOfNavigation'
 import { useFlagsmith } from 'flagsmith/react'
+import { BubbleChat } from 'aai-embed-react'
 
 // ==============================|| APP ||============================== //
 
@@ -34,7 +35,10 @@ const App = () => {
                               return a & a
                           }, 0)
                         : ''
-                }`
+                }`,
+                {
+                    roles: user['https://theanswer.ai/roles']?.join(',')
+                }
             )
             // TODO: remove replace
             sessionStorage.setItem('baseURL', user.chatflowDomain?.replace('8080', '4000'))
@@ -68,6 +72,7 @@ const App = () => {
                         <Button onClick={() => loginWithRedirect()}>Try Again</Button>
                     </>
                 )}
+                <BubbleChat apiHost='https://lastrev.flowise.theanswer.ai' chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d' />
             </ThemeProvider>
         </StyledEngineProvider>
     )

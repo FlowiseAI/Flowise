@@ -1,12 +1,16 @@
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Variable } from '../../database/entities/Variable'
+import { Variable, VariableVisibility } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { IUser } from '../../Interface'
+import { Any, FindOptionsWhere, IsNull, Like } from 'typeorm'
 
-const createVariable = async (newVariable: Variable) => {
+const createVariable = async (newVariable: Variable, user: IUser) => {
     try {
         const appServer = getRunningExpressApp()
+        newVariable.userId = user.id
+        newVariable.organizationId = user.organizationId
         const variable = await appServer.AppDataSource.getRepository(Variable).create(newVariable)
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(variable)
         return dbResponse
@@ -31,11 +35,39 @@ const deleteVariable = async (variableId: string): Promise<any> => {
     }
 }
 
-const getAllVariables = async () => {
+const getAllVariables = async (user: IUser) => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(Variable).find()
-        return dbResponse
+        const variableRepo = appServer.AppDataSource.getRepository(Variable)
+
+        const isAdmin = user?.roles?.includes('Admin')
+
+        let conditions: FindOptionsWhere<Variable> | FindOptionsWhere<Variable>[]
+
+        if (isAdmin) {
+            conditions = [{ organizationId: user.organizationId }, { userId: IsNull() }]
+        } else {
+            conditions = [
+                { userId: user.id },
+                { userId: IsNull() },
+                {
+                    organizationId: user.organizationId,
+                    // @ts-ignore
+                    visibility: Like(`%${VariableVisibility.ORGANIZATION}%`)
+                }
+            ]
+        }
+
+        const variables = await variableRepo.find({ where: conditions })
+
+        // Deduplicate variables based on id
+        const uniqueVariables = Array.from(new Map(variables.map((item) => [item.id, item])).values())
+
+        // Add isOwner property
+        return uniqueVariables.map((variable) => ({
+            ...variable,
+            isOwner: variable.userId === user.id
+        }))
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

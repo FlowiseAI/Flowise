@@ -1,5 +1,11 @@
-const checkOwnership = async (entryOrArray: any | Array<any>, userId?: string, organizationId?: string) => {
+import { IUser } from '../Interface'
+
+const checkOwnership = async (entryOrArray: any | Array<any>, user: IUser | undefined) => {
+    const { id: userId, organizationId, permissions } = user || {}
     const checkEntry = (entry?: any) => {
+        if (permissions?.includes('org:manage')) {
+            return true
+        }
         if (entry?.isPublic || entry?.userId === userId) {
             return true
         }

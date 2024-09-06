@@ -57,6 +57,7 @@ export const authenticationHandlerMiddleware =
             const auth0Id = authUser.sub
             const email = authUser.email as string
             const name = authUser.name as string
+            const roles = (authUser?.['https://theanswer.ai/roles'] || []) as string[]
 
             if (!auth0Id || !email) {
                 return next()
@@ -83,7 +84,7 @@ export const authenticationHandlerMiddleware =
 
             await userRepo.save(user)
 
-            req.user = user // Attach user entity to request for downstream use
+            req.user = { ...authUser, ...user, roles } // Attach user entity to request for downstream use
             return next()
         })
     }

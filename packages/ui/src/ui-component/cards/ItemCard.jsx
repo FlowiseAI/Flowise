@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
-
+import { useState } from 'react'
 // material-ui
 import { styled } from '@mui/material/styles'
 import { Box, Grid, Typography, useTheme, Chip, Tooltip } from '@mui/material'
@@ -30,9 +30,10 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ===========================|| ITEM CARD ||=========================== //
 
-const ItemCard = ({ data, images, nodeTypes, onClick, type, updateFlowsApi, setError }) => {
+const ItemCard = ({ data: initialData, images, nodeTypes, onClick, type, updateFlowsApi, setError }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const [data, setData] = useState(initialData)
 
     if (!data) {
         return null
@@ -45,7 +46,7 @@ const ItemCard = ({ data, images, nodeTypes, onClick, type, updateFlowsApi, setE
     }
 
     const renderActionButton = () => {
-        if (type !== 'marketplace') {
+        if (type !== 'marketplace' && type !== 'tools') {
             return (
                 <Box
                     sx={{
@@ -60,6 +61,9 @@ const ItemCard = ({ data, images, nodeTypes, onClick, type, updateFlowsApi, setE
                         chatflow={data}
                         setError={setError}
                         updateFlowsApi={updateFlowsApi}
+                        onUpdateChatflow={(updatedChatflow) => {
+                            setData(updatedChatflow)
+                        }}
                     />
                 </Box>
             )

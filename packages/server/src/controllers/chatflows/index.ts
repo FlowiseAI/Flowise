@@ -43,7 +43,7 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.deleteChatflow - id not provided!`)
         }
-        const apiResponse = await chatflowsService.deleteChatflow(req.params.id, req.user?.id)
+        const apiResponse = await chatflowsService.deleteChatflow(req.params.id, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -59,9 +59,8 @@ const getAllChatflows = async (req: Request, res: Response, next: NextFunction) 
         const filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter as string)) : undefined
         const apiResponse = await chatflowsService.getAllChatflows(
             req.query?.type as ChatflowType,
-            filter,
-            userId,
-            req.user?.organizationId
+            { ...res.locals.filter, ...filter },
+            req.user
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -96,8 +95,8 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.getChatflowById - id not provided!`)
         }
-        const apiResponse = await chatflowsService.getChatflowById(req.params.id)
-        if (!(await checkOwnership(apiResponse, req.user.id, req.user.organizationId))) {
+        const apiResponse = await chatflowsService.getChatflowById(req.params.id, req.user)
+        if (!(await checkOwnership(apiResponse, req.user))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
         return res.json(apiResponse)
@@ -160,12 +159,13 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.updateChatflow - id not provided!`)
         }
-        const chatflow = await chatflowsService.getChatflowById(req.params.id)
+        const chatflow = await chatflowsService.getChatflowById(req.params.id, req.user!)
         if (!chatflow) {
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         }
 
-        if (!(await checkOwnership(chatflow, req.user?.id, req.user?.organizationId))) {
+        if (!(await checkOwnership(chatflow, req.user))) {
+            console.log('HEREEE')
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
         const body = req.body
@@ -210,7 +210,7 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
                 `Error: chatflowsRouter.getSinglePublicChatflow - id not provided!`
             )
         }
-        const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id, req.user?.id, req.user?.organizationId)
+        const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -225,7 +225,7 @@ const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: N
                 `Error: chatflowsRouter.getSinglePublicChatbotConfig - id not provided!`
             )
         }
-        const apiResponse = await chatflowsService.getSinglePublicChatbotConfig(req.params.id)
+        const apiResponse = await chatflowsService.getSinglePublicChatbotConfig(req.params.id, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

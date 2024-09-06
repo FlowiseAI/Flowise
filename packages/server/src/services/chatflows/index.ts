@@ -1,6 +1,6 @@
 import { removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { ChatflowType, IChatFlow, IReactFlowObject } from '../../Interface'
+import { ChatflowType, IChatFlow, IReactFlowObject, IUser } from '../../Interface'
 import { ChatFlow, ChatflowVisibility } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
@@ -15,6 +15,7 @@ import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import checkOwnership from '../../utils/checkOwnership'
 import { Organization } from '../../database/entities/Organization'
+import { User } from '../../database/entities/User'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -77,23 +78,32 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
     }
 }
 
-const deleteChatflow = async (chatflowId: string, userId?: string, organizationId?: string): Promise<any> => {
+const deleteChatflow = async (chatflowId: string, user: IUser | undefined): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId, userId, organizationId })
+        const { id: userId, organizationId, permissions } = user ?? {}
+
+        // First, try to find the chatflow
+        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+            where: { id: chatflowId, ...(permissions?.includes('org:manage') ? { organizationId } : { userId, organizationId }) }
+        })
+
+        if (!chatflow) {
+            return { affected: 0, message: 'Chatflow not found' }
+        }
+
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).softDelete({ id: chatflowId, organizationId })
+
         try {
             // Delete all uploads corresponding to this chatflow
             await removeFolderFromStorage(chatflowId)
             await documentStoreService.updateDocumentStoreUsage(chatflowId, undefined)
-
             // Delete all chat messages
-            await appServer.AppDataSource.getRepository(ChatMessage).delete({ chatflowid: chatflowId })
-
+            await appServer.AppDataSource.getRepository(ChatMessage).softDelete({ chatflowid: chatflowId })
             // Delete all chat feedback
-            await appServer.AppDataSource.getRepository(ChatMessageFeedback).delete({ chatflowid: chatflowId })
-
+            await appServer.AppDataSource.getRepository(ChatMessageFeedback).softDelete({ chatflowid: chatflowId })
             // Delete all upsert history
-            await appServer.AppDataSource.getRepository(UpsertHistory).delete({ chatflowid: chatflowId })
+            await appServer.AppDataSource.getRepository(UpsertHistory).softDelete({ chatflowid: chatflowId })
         } catch (e) {
             logger.error(`[server]: Error deleting file storage for chatflow ${chatflowId}: ${e}`)
         }
@@ -109,15 +119,10 @@ type ChatflowsFilter = {
     visibility?: string
     auth0_org_id?: string
 }
-const getAllChatflows = async (
-    type?: ChatflowType,
-    filter?: ChatflowsFilter,
-    userId?: string,
-    organizationId?: string
-): Promise<IChatFlow[]> => {
+const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, user?: IUser): Promise<IChatFlow[]> => {
     try {
         const appServer = getRunningExpressApp()
-
+        const { id: userId, organizationId, permissions } = user ?? {}
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
 
@@ -137,9 +142,13 @@ const getAllChatflows = async (
                 .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
                 .join(' AND ')
 
-            queryBuilder.where(`(chatFlow.userId = :userId AND (${visibilityConditions}))`, {
-                userId
-            })
+            if (permissions?.includes('org:manage')) {
+                queryBuilder.where(`(${visibilityConditions})`)
+            } else {
+                queryBuilder.where(`(chatFlow.userId = :userId AND (${visibilityConditions}))`, {
+                    userId
+                })
+            }
 
             const visibility = filter.visibility
                 .split(',')
@@ -150,7 +159,9 @@ const getAllChatflows = async (
                 queryBuilder.orWhere(`(${orgCondition})`, { organizationId: org?.id ?? organizationId })
             }
         } else {
-            queryBuilder.where(`chatFlow.userId = :userId`, { userId })
+            if (!permissions?.includes('org:manage')) {
+                queryBuilder.where(`chatFlow.userId = :userId`, { userId })
+            }
         }
         const response = await queryBuilder.getMany()
         const dbResponse = response.map((chatflow) => ({
@@ -159,10 +170,11 @@ const getAllChatflows = async (
                 ? 'SHARED'
                 : chatflow?.visibility?.includes(ChatflowVisibility.ORGANIZATION)
                 ? 'ORGANIZATION'
-                : ''
+                : '',
+            isOwner: chatflow.userId === userId
         }))
 
-        if (!(await checkOwnership(dbResponse, userId, organizationId))) {
+        if (!(await checkOwnership(dbResponse, user))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
         if (type === 'MULTIAGENT') {
@@ -201,17 +213,25 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
     }
 }
 
-const getChatflowById = async (chatflowId: string): Promise<any> => {
+const getChatflowById = async (chatflowId: string, user: IUser): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('chatFlow')
-            .where('chatFlow.id = :id', {
-                id: chatflowId
-            })
+            .where('chatFlow.id = :id', { id: chatflowId })
             .getOne()
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
+        }
+
+        const isUserOrgAdmin = user?.permissions?.includes('org:manage') && user?.organizationId === dbResponse.organizationId
+        const isUsersChatflow = dbResponse.userId === user?.id
+        const isChatflowPublic = dbResponse.isPublic
+        const hasChatflowOrgVisibility = dbResponse.visibility?.includes(ChatflowVisibility.ORGANIZATION)
+        const isUserInSameOrg = dbResponse.organizationId === user?.organizationId
+
+        if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg))) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
         }
         return dbResponse
     } catch (error) {
@@ -226,6 +246,20 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         let dbResponse: ChatFlow
+
+        // Check if the chatflow already exists
+        if (newChatFlow.id) {
+            const existingChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+                where: { id: newChatFlow.id }
+            })
+
+            if (existingChatflow) {
+                // Check if the user has access to the existing chatflow
+                if (existingChatflow.userId !== newChatFlow.userId || existingChatflow.organizationId !== newChatFlow.organizationId) {
+                    throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to update this chatflow`)
+                }
+            }
+        }
         if (containsBase64File(newChatFlow)) {
             // we need a 2-step process, as we need to save the chatflow first and then update the file paths
             // this is because we need the chatflow id to create the file paths
@@ -340,13 +374,13 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
 }
 
 // Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
-const getSinglePublicChatflow = async (chatflowId: string, userId?: string, organizationId?: string): Promise<any> => {
+const getSinglePublicChatflow = async (chatflowId: string, user: IUser | undefined): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowId
         })
-        if (dbResponse && (dbResponse.isPublic || (await checkOwnership(dbResponse, userId, organizationId)))) {
+        if (dbResponse && (dbResponse.isPublic || (await checkOwnership(dbResponse, user)))) {
             return dbResponse
         } else if (dbResponse && !dbResponse.isPublic) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
@@ -366,7 +400,7 @@ const getSinglePublicChatflow = async (chatflowId: string, userId?: string, orga
 
 // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
 // Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
-const getSinglePublicChatbotConfig = async (chatflowId: string, userId?: string, organizationId?: string): Promise<any> => {
+const getSinglePublicChatbotConfig = async (chatflowId: string, user: IUser | undefined): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
@@ -375,7 +409,7 @@ const getSinglePublicChatbotConfig = async (chatflowId: string, userId?: string,
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
-        if (dbResponse.isPublic || (await checkOwnership(dbResponse, userId, organizationId))) {
+        if (dbResponse.isPublic || (await checkOwnership(dbResponse, user))) {
             const uploadsConfig = await utilGetUploadsConfig(chatflowId)
             // even if chatbotConfig is not set but uploads are enabled
             // send uploadsConfig to the chatbot

@@ -118,6 +118,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
         const upsertedResult = await buildFlow({
+            user: req.user!,
             startingNodeIds,
             reactFlowNodes: nodes,
             reactFlowEdges: edges,

@@ -1,11 +1,25 @@
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // Material
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, OutlinedInput } from '@mui/material'
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Box,
+    Typography,
+    OutlinedInput,
+    FormControl,
+    FormGroup,
+    FormControlLabel,
+    Checkbox,
+    Tooltip
+} from '@mui/material'
 
 // Project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -17,14 +31,14 @@ import { IconX, IconVariable } from '@tabler/icons-react'
 // API
 import variablesApi from '@/api/variables'
 
-// Hooks
-
 // utils
 import useNotifier from '@/utils/useNotifier'
 
 // const
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+import { useFlags } from 'flagsmith/react'
 
 const variableTypes = [
     {
@@ -43,6 +57,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
     const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const dispatch = useDispatch()
+    const flags = useFlags(['org:manage'])
 
     // ==============================|| Snackbar ||============================== //
 
@@ -56,6 +71,15 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
     const [variableType, setVariableType] = useState('static')
     const [dialogType, setDialogType] = useState('ADD')
     const [variable, setVariable] = useState({})
+    const [visibility, setVisibility] = useState(['Private'])
+
+    const handleChangeVisibility = useCallback(
+        (event, option) => {
+            const updatedVisibility = visibility.includes(option) ? visibility.filter((v) => v !== option) : [...visibility, option]
+            setVisibility(updatedVisibility)
+        },
+        [visibility]
+    )
 
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
@@ -64,12 +88,14 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
             setVariableType(dialogProps.data.type)
             setDialogType('EDIT')
             setVariable(dialogProps.data)
+            setVisibility(dialogProps.data.visibility || ['Private'])
         } else if (dialogProps.type === 'ADD') {
             setVariableName('')
             setVariableValue('')
             setVariableType('static')
             setDialogType('ADD')
             setVariable({})
+            setVisibility(['Private'])
         }
 
         return () => {
@@ -78,6 +104,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
             setVariableType('static')
             setDialogType('ADD')
             setVariable({})
+            setVisibility(['Private'])
         }
     }, [dialogProps])
 
@@ -92,7 +119,8 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
             const obj = {
                 name: variableName,
                 value: variableValue,
-                type: variableType
+                type: variableType,
+                visibility
             }
             const createResp = await variablesApi.createVariable(obj)
             if (createResp.data) {
@@ -110,8 +138,8 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
                 })
                 onConfirm(createResp.data.id)
             }
-        } catch (err) {
-            if (setError) setError(err)
+        } catch (error) {
+            if (setError) setError(error)
             enqueueSnackbar({
                 message: `Failed to add new Variable: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -136,7 +164,8 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
             const saveObj = {
                 name: variableName,
                 value: variableValue,
-                type: variableType
+                type: variableType,
+                visibility
             }
 
             const saveResp = await variablesApi.updateVariable(variable.id, saveObj)
@@ -156,7 +185,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
-            if (setError) setError(err)
+            if (setError) setError(error)
             enqueueSnackbar({
                 message: `Failed to save Variable: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -247,6 +276,39 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
                         />
                     </Box>
                 )}
+                <Box sx={{ p: 2 }}>
+                    <Typography variant='h4' sx={{ mb: 1 }}>
+                        Variable visibility
+                        <TooltipWithParser
+                            style={{ mb: 1, mt: 2, marginLeft: 10 }}
+                            title={
+                                'Control visibility and organization permissions. Contact your organization admin to enable more options.'
+                            }
+                        />
+                    </Typography>
+                    <FormControl component='fieldset' sx={{ width: '100%', mb: 2 }}>
+                        <FormGroup>
+                            {['Private', 'Organization'].map((type) => {
+                                const isDisabled = type === 'Private' || (type === 'Organization' && !flags['org:manage']?.enabled)
+                                return (
+                                    <FormControlLabel
+                                        key={type}
+                                        control={
+                                            <Tooltip title={isDisabled ? 'Contact your org admin to enable this option' : ''}>
+                                                <Checkbox
+                                                    checked={visibility.includes(type)}
+                                                    onChange={(event) => handleChangeVisibility(event, type)}
+                                                />
+                                            </Tooltip>
+                                        }
+                                        label={type}
+                                        disabled={isDisabled}
+                                    />
+                                )
+                            })}
+                        </FormGroup>
+                    </FormControl>
+                </Box>
             </DialogContent>
             <DialogActions>
                 <StyledButton

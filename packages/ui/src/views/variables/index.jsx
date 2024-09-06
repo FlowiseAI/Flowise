@@ -21,7 +21,9 @@ import {
     Paper,
     IconButton,
     Chip,
-    useTheme
+    useTheme,
+    Tabs,
+    Tab
 } from '@mui/material'
 
 // project imports
@@ -48,6 +50,7 @@ import AddEditVariableDialog from './AddEditVariableDialog'
 import HowToUseVariablesDialog from './HowToUseVariablesDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import { useFlags } from 'flagsmith/react'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -68,7 +71,7 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-// ==============================|| Credentials ||============================== //
+// ==============================|| Variables ||============================== //
 
 const Variables = () => {
     const theme = useTheme()
@@ -85,6 +88,10 @@ const Variables = () => {
     const [variableDialogProps, setVariableDialogProps] = useState({})
     const [variables, setVariables] = useState([])
     const [showHowToDialog, setShowHowToDialog] = useState(false)
+    const [tabValue, setTabValue] = useState(0)
+    const flags = useFlags(['org:manage'])
+    const [myVariables, setMyVariables] = useState([])
+    const [organizationVariables, setOrganizationVariables] = useState([])
 
     const { confirm } = useConfirm()
 
@@ -173,6 +180,10 @@ const Variables = () => {
         getAllVariables.request()
     }
 
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue)
+    }
+
     useEffect(() => {
         getAllVariables.request()
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -191,8 +202,13 @@ const Variables = () => {
     useEffect(() => {
         if (getAllVariables.data) {
             setVariables(getAllVariables.data)
+            const allVariables = getAllVariables.data
+            setMyVariables(allVariables.filter((variable) => variable.isOwner))
+            setOrganizationVariables(allVariables.filter((variable) => !variable.isOwner))
         }
     }, [getAllVariables.data])
+
+    const isAdmin = flags?.['org:manage']?.enabled
 
     return (
         <>
@@ -215,6 +231,12 @@ const Variables = () => {
                                 Add Variable
                             </StyledButton>
                         </ViewHeader>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <Tabs value={tabValue} onChange={handleTabChange} aria-label='variable tabs'>
+                                <Tab label='My Variables' />
+                                <Tab label='Organization Variables' />
+                            </Tabs>
+                        </Box>
                         {!isLoading && variables.length === 0 ? (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
@@ -244,6 +266,7 @@ const Variables = () => {
                                             <StyledTableCell>Name</StyledTableCell>
                                             <StyledTableCell>Value</StyledTableCell>
                                             <StyledTableCell>Type</StyledTableCell>
+                                            <StyledTableCell>Visibility</StyledTableCell>
                                             <StyledTableCell>Last Updated</StyledTableCell>
                                             <StyledTableCell>Created</StyledTableCell>
                                             <StyledTableCell> </StyledTableCell>
@@ -275,26 +298,6 @@ const Variables = () => {
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>
-                                                </StyledTableRow>
-                                                <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>
@@ -302,66 +305,92 @@ const Variables = () => {
                                             </>
                                         ) : (
                                             <>
-                                                {variables.filter(filterVariables).map((variable, index) => (
-                                                    <StyledTableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                                        <StyledTableCell component='th' scope='row'>
-                                                            <div
-                                                                style={{
-                                                                    display: 'flex',
-                                                                    flexDirection: 'row',
-                                                                    alignItems: 'center'
-                                                                }}
-                                                            >
+                                                {(tabValue === 0 ? myVariables : organizationVariables)
+                                                    .filter(filterVariables)
+                                                    .map((variable, index) => (
+                                                        <StyledTableRow
+                                                            key={index}
+                                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                        >
+                                                            <StyledTableCell component='th' scope='row'>
                                                                 <div
                                                                     style={{
-                                                                        width: 25,
-                                                                        height: 25,
-                                                                        marginRight: 10,
-                                                                        borderRadius: '50%'
+                                                                        display: 'flex',
+                                                                        flexDirection: 'row',
+                                                                        alignItems: 'center'
                                                                     }}
                                                                 >
-                                                                    <IconVariable
+                                                                    <div
                                                                         style={{
-                                                                            width: '100%',
-                                                                            height: '100%',
-                                                                            borderRadius: '50%',
-                                                                            objectFit: 'contain'
+                                                                            width: 25,
+                                                                            height: 25,
+                                                                            marginRight: 10,
+                                                                            borderRadius: '50%'
                                                                         }}
-                                                                    />
+                                                                    >
+                                                                        <IconVariable
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                height: '100%',
+                                                                                borderRadius: '50%',
+                                                                                objectFit: 'contain'
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                    {variable.name}
                                                                 </div>
-                                                                {variable.name}
-                                                            </div>
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>{variable.value}</StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Chip
-                                                                color={variable.type === 'static' ? 'info' : 'secondary'}
-                                                                size='small'
-                                                                label={variable.type}
-                                                            />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            {moment(variable.updatedDate).format('MMMM Do, YYYY')}
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            {moment(variable.createdDate).format('MMMM Do, YYYY')}
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
-                                                                <IconEdit />
-                                                            </IconButton>
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <IconButton
-                                                                title='Delete'
-                                                                color='error'
-                                                                onClick={() => deleteVariable(variable)}
-                                                            >
-                                                                <IconTrash />
-                                                            </IconButton>
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                ))}
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>{variable.value}</StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Chip
+                                                                    color={variable.type === 'static' ? 'info' : 'secondary'}
+                                                                    size='small'
+                                                                    label={variable.type}
+                                                                />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                {variable.visibility.map((visibility, index) => (
+                                                                    <Chip
+                                                                        key={index}
+                                                                        label={
+                                                                            visibility.toLowerCase() === 'private'
+                                                                                ? 'Private'
+                                                                                : visibility.toLowerCase() === 'organization'
+                                                                                ? 'Organization'
+                                                                                : visibility.charAt(0).toUpperCase() + visibility.slice(1)
+                                                                        }
+                                                                        color={'primary'}
+                                                                        size='small'
+                                                                        sx={{ mr: 1, mb: 1 }}
+                                                                    />
+                                                                ))}
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                {moment(variable.updatedDate).format('MMMM Do, YYYY')}
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                {moment(variable.createdDate).format('MMMM Do, YYYY')}
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                {(variable.isOwner || (isAdmin && tabValue === 1)) && (
+                                                                    <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
+                                                                        <IconEdit />
+                                                                    </IconButton>
+                                                                )}
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                {(variable.isOwner || (isAdmin && tabValue === 1)) && (
+                                                                    <IconButton
+                                                                        title='Delete'
+                                                                        color='error'
+                                                                        onClick={() => deleteVariable(variable)}
+                                                                    >
+                                                                        <IconTrash />
+                                                                    </IconButton>
+                                                                )}
+                                                            </StyledTableCell>
+                                                        </StyledTableRow>
+                                                    ))}
                                             </>
                                         )}
                                     </TableBody>

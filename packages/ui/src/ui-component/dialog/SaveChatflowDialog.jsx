@@ -5,16 +5,26 @@ import PropTypes from 'prop-types'
 import { Button, Dialog, DialogActions, DialogContent, OutlinedInput, DialogTitle } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
-const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm, defaultValues = {} }) => {
     const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
     const [chatflowName, setChatflowName] = useState('')
     const [isReadyToSave, setIsReadyToSave] = useState(false)
 
     useEffect(() => {
+        if (show) {
+            setChatflowName(defaultValues.name || '')
+        }
+    }, [show, defaultValues])
+
+    useEffect(() => {
         if (chatflowName) setIsReadyToSave(true)
         else setIsReadyToSave(false)
     }, [chatflowName])
+
+    const handleConfirm = () => {
+        onConfirm(chatflowName)
+    }
 
     const component = show ? (
         <Dialog
@@ -41,7 +51,7 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
-                <StyledButton disabled={!isReadyToSave} variant='contained' onClick={() => onConfirm(chatflowName)}>
+                <StyledButton disabled={!isReadyToSave} variant='contained' onClick={handleConfirm}>
                     {dialogProps.confirmButtonName}
                 </StyledButton>
             </DialogActions>
@@ -55,7 +65,8 @@ SaveChatflowDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    defaultValues: PropTypes.object
 }
 
 export default SaveChatflowDialog

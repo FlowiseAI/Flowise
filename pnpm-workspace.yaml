@@ -7,3 +7,4 @@ packages:
     - 'packages/ui'
     - 'packages/embed'
     - 'packages/embed-react'
+    - 'packages/docs'

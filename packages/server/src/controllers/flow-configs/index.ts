@@ -11,7 +11,7 @@ const getSingleFlowConfig = async (req: Request, res: Response, next: NextFuncti
                 `Error: flowConfigsController.getSingleFlowConfig - id not provided!`
             )
         }
-        const apiResponse = await flowConfigsService.getSingleFlowConfig(req.params.id)
+        const apiResponse = await flowConfigsService.getSingleFlowConfig(req.params.id, req.user!)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

@@ -11,7 +11,8 @@ import {
     chatType,
     IChatMessage,
     IChatFlow,
-    IReactFlowEdge
+    IReactFlowEdge,
+    IUser
 } from '../Interface'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { ChatFlow } from '../database/entities/ChatFlow'
@@ -74,7 +75,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const userMessageDateTime = new Date()
 
         if (!isInternal && !chatflow?.isPublic) {
-            const isOwner = await checkOwnership(chatflow, req.user?.id, req.user?.organizationId)
+            const isOwner = await checkOwnership(chatflow, req.user)
             const isKeyValidated = await utilValidateKey(req, chatflow)
             if (!isOwner && !isKeyValidated) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
@@ -180,12 +181,12 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         /*** If the graph is an agent graph, build the agent response ***/
         if (endingNodes.filter((node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents').length) {
             return await utilBuildAgentResponse(
+                req.user!,
                 chatflow,
                 isInternal,
                 chatId,
                 memoryType ?? '',
                 sessionId,
-                req.user?.id!,
                 userMessageDateTime,
                 fileUploads,
                 incomingInput,
@@ -298,6 +299,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
             const reactFlowNodes = await buildFlow({
+                user: req.user!,
                 startingNodeIds,
                 reactFlowNodes: nodes,
                 reactFlowEdges: edges,
@@ -332,6 +334,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             }
 
             const reactFlowNodeData: INodeData = await resolveVariables(
+                req.user!,
                 appServer.AppDataSource,
                 nodeToExecute.data,
                 reactFlowNodes,
@@ -449,12 +452,12 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 }
 
 const utilBuildAgentResponse = async (
+    user: IUser,
     agentflow: IChatFlow,
     isInternal: boolean,
     chatId: string,
     memoryType: string,
     sessionId: string,
-    userId: string,
     userMessageDateTime: Date,
     fileUploads: IFileUpload[],
     incomingInput: IncomingInput,
@@ -465,7 +468,7 @@ const utilBuildAgentResponse = async (
 ) => {
     try {
         const appServer = getRunningExpressApp()
-        const streamResults = await buildAgentGraph(agentflow, chatId, sessionId, incomingInput, isInternal, baseURL, socketIO)
+        const streamResults = await buildAgentGraph(user, agentflow, chatId, sessionId, incomingInput, isInternal, baseURL, socketIO)
         if (streamResults) {
             const { finalResult, finalAction, sourceDocuments, usedTools, agentReasoning } = streamResults
             const userMessage: Omit<IChatMessage, 'id'> = {
@@ -479,7 +482,7 @@ const utilBuildAgentResponse = async (
                 createdDate: userMessageDateTime,
                 fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
                 leadEmail: incomingInput.leadEmail,
-                userId
+                userId: user.id
             }
             await utilAddChatMessage(userMessage)
 
@@ -491,7 +494,7 @@ const utilBuildAgentResponse = async (
                 chatId,
                 memoryType,
                 sessionId,
-                userId
+                userId: user.id
             }
             if (sourceDocuments.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
             if (usedTools.length) apiMessage.usedTools = JSON.stringify(usedTools)

@@ -1,0 +1,100 @@
+/* HomepageFeatures styles */
+.features {
+    /* padding: 2rem 0; */
+    width: 100%;
+}
+
+.featureListContainer {
+    padding: 2rem 0;
+}
+
+.featureLink {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.featureLink:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.featureList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    padding: 2rem;
+    background-color: #000; /* Ensure black background */
+}
+
+.featureCard {
+    height: 100%;
+    padding: 2rem;
+    text-decoration: none;
+    background-color: var(--ifm-card-background-color);
+    border-radius: var(--ifm-card-border-radius);
+    box-shadow: var(--ifm-global-shadow-lw);
+    transition: all 0.3s ease;
+}
+
+.featureIconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 4rem;
+    width: 4rem;
+    border-radius: 50%;
+    background-color: #000;
+    margin: 0 auto 1rem;
+}
+
+.featureIcon {
+    font-size: 2rem;
+}
+
+.featureContent {
+    text-align: center;
+}
+
+.featureButton {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #000;
+    color: #fff;
+    border-radius: var(--ifm-button-border-radius);
+    font-weight: var(--ifm-font-weight-bold);
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}
+
+.featureLink:hover .featureButton {
+    text-decoration: none !important;
+}
+
+.featureLink:hover * {
+    color: #2e8555 !important;
+}
+
+.fullWidthSection {
+    display: flex;
+    width: 100%;
+    padding: 4rem 2rem;
+    background-color: #050000; /* Ensure black background */
+}
+
+.fullWidthSection h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    color: #fff;
+}
+
+.fullWidthSection p {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.9); /* Increased opacity for better readability */
+}

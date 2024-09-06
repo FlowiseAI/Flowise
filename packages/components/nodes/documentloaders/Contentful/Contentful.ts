@@ -52,6 +52,10 @@ export function documentToPlainTextString(
             nodeTextValue = node.value
         } else if (helpers.isBlock(node) || helpers.isInline(node)) {
             if (node.nodeType === 'embedded-asset-block') {
+                if (!node.data || !node.data.target || !node.data.target.fields) {
+                    console.warn('Invalid embedded-asset-block:', JSON.stringify(node, null, 2))
+                    return acc
+                }
                 nodeTextValue = `![${node.data.target.fields.title}](https:${node.data.target.fields.file.url})`
             } else if (node.nodeType === 'embedded-entry-block' || node.nodeType === 'embedded-entry-inline') {
                 const embeddedContentObject = node.data.target

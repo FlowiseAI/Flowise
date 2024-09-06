@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, DeleteDateColumn } from 'typeorm'
 import { IChatMessage, MessageType } from '../../Interface'
 
 @Entity()
@@ -61,4 +61,7 @@ export class ChatMessage implements IChatMessage {
     @Index()
     @Column({ type: 'uuid', nullable: true })
     organizationId?: string
+
+    @DeleteDateColumn()
+    deletedDate: Date
 }

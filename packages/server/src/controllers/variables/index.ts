@@ -15,7 +15,7 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
         const body = req.body
         const newVariable = new Variable()
         Object.assign(newVariable, body)
-        const apiResponse = await variablesService.createVariable(newVariable)
+        const apiResponse = await variablesService.createVariable(newVariable, req.user!)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -36,7 +36,7 @@ const deleteVariable = async (req: Request, res: Response, next: NextFunction) =
 
 const getAllVariables = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await variablesService.getAllVariables()
+        const apiResponse = await variablesService.getAllVariables(req.user!)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
