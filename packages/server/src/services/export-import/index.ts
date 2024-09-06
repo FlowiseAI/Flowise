@@ -7,13 +7,13 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import chatflowService from '../chatflows'
 import toolsService from '../tools'
 
-type exportInput = { tool: boolean; chatflow: boolean; multiagent: boolean }
+type ExportInput = { tool: boolean; chatflow: boolean; multiagent: boolean }
 
-const convertExportInput = (body: any) => {
+const convertExportInput = (body: any): ExportInput => {
     try {
         if (typeof body.tool !== 'boolean' || typeof body.chatflow !== 'boolean' || typeof body.multiagent !== 'boolean')
             throw new Error('Invalid ExportInput object in request body')
-        return body as exportInput
+        return body as ExportInput
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -23,7 +23,7 @@ const convertExportInput = (body: any) => {
 }
 
 const FileDefaultName = 'ExportData.json'
-const exportData = async (exportInput: exportInput): Promise<{ FileDefaultName: string; Tool: Tool[]; ChatFlow: ChatFlow[] }> => {
+const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: string; Tool: Tool[]; ChatFlow: ChatFlow[] }> => {
     try {
         // step 1 - get all tool
         let allTool: Tool[] = []
