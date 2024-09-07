@@ -750,6 +750,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         const password = localStorage.getItem('password')
         params.streaming = true
         await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
+            openWhenHidden: true,
             method: 'POST',
             body: JSON.stringify(params),
             headers: {
