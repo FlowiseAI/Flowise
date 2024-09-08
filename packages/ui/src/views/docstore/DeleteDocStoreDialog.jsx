@@ -226,7 +226,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                 <Button onClick={onCancel} color='primary'>
                     Cancel
                 </Button>
-                <Button variant='contained' onClick={() => onDelete(dialogProps.type, removeFromVS)} color='error'>
+                <Button variant='contained' onClick={() => onDelete(dialogProps.type, dialogProps.file, removeFromVS)} color='error'>
                     Delete
                 </Button>
             </DialogActions>

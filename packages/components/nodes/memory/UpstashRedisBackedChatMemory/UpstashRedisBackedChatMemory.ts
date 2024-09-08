@@ -162,7 +162,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const previousMessages = orderedMessages.filter((x): x is StoredMessage => x.type !== undefined && x.data.content !== undefined)
         const baseMessages = previousMessages.map(mapStoredMessageToChatMessage)
         if (prependMessages?.length) {
-            baseMessages.unshift(...mapChatMessageToBaseMessage(prependMessages))
+            baseMessages.unshift(...(await mapChatMessageToBaseMessage(prependMessages)))
         }
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }

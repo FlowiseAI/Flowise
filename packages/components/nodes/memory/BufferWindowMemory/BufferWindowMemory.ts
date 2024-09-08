@@ -132,7 +132,7 @@ class BufferWindowMemoryExtended extends FlowiseWindowMemory implements MemoryMe
         }
 
         if (returnBaseMessages) {
-            return mapChatMessageToBaseMessage(chatMessage)
+            return await mapChatMessageToBaseMessage(chatMessage)
         }
 
         let returnIMessages: IMessage[] = []

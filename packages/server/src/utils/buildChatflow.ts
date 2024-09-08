@@ -1,5 +1,12 @@
 import { Request } from 'express'
-import { IFileUpload, convertSpeechToText, ICommonObject, addSingleFileToStorage, addArrayFilesToStorage } from 'flowise-components'
+import {
+    IFileUpload,
+    convertSpeechToText,
+    ICommonObject,
+    addSingleFileToStorage,
+    addArrayFilesToStorage,
+    mapMimeTypeToInputField
+} from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
     IncomingInput,
@@ -18,7 +25,6 @@ import { ChatFlow } from '../database/entities/ChatFlow'
 import { Server } from 'socket.io'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import {
-    mapMimeTypeToInputField,
     isFlowValidForStream,
     buildFlow,
     getTelemetryFlowObj,
@@ -32,9 +38,10 @@ import {
     getMemorySessionId,
     isSameOverrideConfig,
     getEndingNodes,
-    constructGraphs
+    constructGraphs,
+    isSameChatId
 } from '../utils'
-import { utilValidateKey } from './validateKey'
+import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
 import { v4 as uuidv4 } from 'uuid'
 import { omit } from 'lodash'
@@ -73,7 +80,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const userMessageDateTime = new Date()
 
         if (!isInternal) {
-            const isKeyValidated = await utilValidateKey(req, chatflow)
+            const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
             if (!isKeyValidated) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
@@ -201,6 +208,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
          * - Node Data already exists in pool
          * - Still in sync (i.e the flow has not been modified since)
          * - Existing overrideConfig and new overrideConfig are the same
+         * - Existing chatId and new chatId is the same
          * - Flow doesn't start with/contain nodes that depend on incomingInput.question
          ***/
         const isFlowReusable = () => {
@@ -209,6 +217,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 Object.prototype.hasOwnProperty.call(appServer.chatflowPool.activeChatflows, chatflowid) &&
                 appServer.chatflowPool.activeChatflows[chatflowid].inSync &&
                 appServer.chatflowPool.activeChatflows[chatflowid].endingNodeData &&
+                isSameChatId(appServer.chatflowPool.activeChatflows[chatflowid].chatId, chatId) &&
                 isSameOverrideConfig(
                     isInternal,
                     appServer.chatflowPool.activeChatflows[chatflowid].overrideConfig,
@@ -328,17 +337,25 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
             }
 
+            const flowData: ICommonObject = {
+                chatflowid,
+                chatId,
+                sessionId,
+                chatHistory,
+                ...incomingInput.overrideConfig
+            }
+
             const reactFlowNodeData: INodeData = await resolveVariables(
                 appServer.AppDataSource,
                 nodeToExecute.data,
                 reactFlowNodes,
                 incomingInput.question,
                 chatHistory,
-                incomingInput.overrideConfig
+                flowData
             )
             nodeToExecuteData = reactFlowNodeData
 
-            appServer.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig)
+            appServer.chatflowPool.add(chatflowid, nodeToExecuteData, startingNodes, incomingInput?.overrideConfig, chatId)
         }
 
         logger.debug(`[server]: Running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
