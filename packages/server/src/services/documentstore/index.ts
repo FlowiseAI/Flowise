@@ -589,12 +589,12 @@ const processAndSaveChunks = async (data: IDocumentStoreLoaderForPreview) => {
             found.totalChars = 0
             found.status = DocumentStoreStatus.SYNCING
             entity.loaders = JSON.stringify(existingLoaders)
-            data.loaderId = found.loaderId
-            data.loaderName = found.loaderName
-            data.loaderConfig = found.loaderConfig
-            data.splitterId = found.splitterId
-            data.splitterName = found.splitterName
-            data.splitterConfig = found.splitterConfig
+            if (!data.loaderId) data.loaderId = found.loaderId
+            if (!data.loaderName) data.loaderName = found.loaderName
+            if (!data.loaderConfig) data.loaderConfig = found.loaderConfig
+            if (!data.splitterId) data.splitterId = found.splitterId
+            if (!data.splitterName) data.splitterName = found.splitterName
+            if (!data.splitterConfig) data.splitterConfig = found.splitterConfig
             if (found.credential) {
                 data.credential = found.credential
             }
