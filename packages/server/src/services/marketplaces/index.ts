@@ -3,7 +3,12 @@ import * as fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { IReactFlowEdge, IReactFlowNode } from '../../Interface'
+import { chatType, ICustomTemplate, IReactFlowEdge, IReactFlowNode } from '../../Interface'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { DeleteResult } from 'typeorm'
+import { CustomTemplate } from '../../database/entities/CustomTemplate'
+
+import chatflowsService from '../chatflows'
 
 type ITemplate = {
     badge: string
@@ -96,6 +101,109 @@ const getAllTemplates = async () => {
     }
 }
 
+const deleteCustomTemplate = async (templateId: string): Promise<DeleteResult> => {
+    try {
+        const appServer = getRunningExpressApp()
+        return await appServer.AppDataSource.getRepository(CustomTemplate).delete({ id: templateId })
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: marketplacesService.deleteCustomTemplate - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getAllCustomTemplates = async (): Promise<any> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).find()
+        templates.map((template) => {
+            template.usecases = template.usecases ? JSON.parse(template.usecases) : ''
+            template.categories = getCategories(JSON.parse(template.flowData))
+        })
+        return templates
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: marketplacesService.getAllCustomTemplates - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const saveCustomTemplate = async (body: any): Promise<any> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const chatflow = await chatflowsService.getChatflowById(body.chatflowId)
+        const flowData = JSON.parse(chatflow.flowData)
+        const flowDataStr = JSON.stringify(_generateExportFlowData(flowData))
+        const customTemplate = new CustomTemplate()
+        Object.assign(customTemplate, body)
+        if (customTemplate.usecases) {
+            customTemplate.usecases = JSON.stringify(customTemplate.usecases)
+        }
+        const entity = appServer.AppDataSource.getRepository(CustomTemplate).create(customTemplate)
+        entity.flowData = flowDataStr
+        const flowTemplate = await appServer.AppDataSource.getRepository(CustomTemplate).save(entity)
+        return flowTemplate
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: marketplacesService.saveCustomTemplate - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const _generateExportFlowData = (flowData: any) => {
+    const nodes = flowData.nodes
+    const edges = flowData.edges
+
+    for (let i = 0; i < nodes.length; i += 1) {
+        nodes[i].selected = false
+        const node = nodes[i]
+
+        const newNodeData = {
+            id: node.data.id,
+            label: node.data.label,
+            version: node.data.version,
+            name: node.data.name,
+            type: node.data.type,
+            baseClasses: node.data.baseClasses,
+            tags: node.data.tags,
+            category: node.data.category,
+            description: node.data.description,
+            inputParams: node.data.inputParams,
+            inputAnchors: node.data.inputAnchors,
+            inputs: {},
+            outputAnchors: node.data.outputAnchors,
+            outputs: node.data.outputs,
+            selected: false
+        }
+
+        // Remove password, file & folder
+        if (node.data.inputs && Object.keys(node.data.inputs).length) {
+            const nodeDataInputs: any = {}
+            for (const input in node.data.inputs) {
+                const inputParam = node.data.inputParams.find((inp: any) => inp.name === input)
+                if (inputParam && inputParam.type === 'password') continue
+                if (inputParam && inputParam.type === 'file') continue
+                if (inputParam && inputParam.type === 'folder') continue
+                nodeDataInputs[input] = node.data.inputs[input]
+            }
+            newNodeData.inputs = nodeDataInputs
+        }
+
+        nodes[i].data = newNodeData
+    }
+    const exportJson = {
+        nodes,
+        edges
+    }
+    return exportJson
+}
+
 export default {
-    getAllTemplates
+    getAllTemplates,
+    getAllCustomTemplates,
+    saveCustomTemplate,
+    deleteCustomTemplate
 }
