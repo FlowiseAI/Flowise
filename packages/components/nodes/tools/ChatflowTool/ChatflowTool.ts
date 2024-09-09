@@ -136,7 +136,12 @@ class ChatflowTool_Tools implements INode {
         const description = nodeData.inputs?.description as string
         const useQuestionFromChat = nodeData.inputs?.useQuestionFromChat as boolean
         const customInput = nodeData.inputs?.customInput as string
-        const overrideConfig = JSON.parse(nodeData.inputs?.overrideConfig ?? {})
+        const overrideConfig =
+            typeof nodeData.inputs?.overrideConfig === 'string' &&
+            nodeData.inputs.overrideConfig.startsWith('{') &&
+            nodeData.inputs.overrideConfig.endsWith('}')
+                ? JSON.parse(nodeData.inputs.overrideConfig)
+                : nodeData.inputs?.overrideConfig
 
         const startNewSession = nodeData.inputs?.startNewSession as boolean
 
