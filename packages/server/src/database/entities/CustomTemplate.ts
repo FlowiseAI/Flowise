@@ -1,4 +1,4 @@
-import { ChatflowType, ICustomTemplate } from '../../Interface'
+import { ICustomTemplate } from '../../Interface'
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
 @Entity('custom_template')

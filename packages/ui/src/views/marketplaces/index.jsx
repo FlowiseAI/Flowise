@@ -291,7 +291,7 @@ const Marketplace = () => {
             try {
                 const flows = getAllCustomTemplatesApi.data
                 const usecases = []
-                const images = {}
+                const tImages = {}
                 for (let i = 0; i < flows.length; i += 1) {
                     if (flows[i].flowData) {
                         const flowDataStr = flows[i].flowData
@@ -301,22 +301,23 @@ const Marketplace = () => {
                             flows[i].framework = [flows[i].framework] || []
                         }
                         const nodes = flowData.nodes || []
-                        templateImages[flows[i].id] = []
+                        tImages[flows[i].id] = []
                         for (let j = 0; j < nodes.length; j += 1) {
                             const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                            if (!templateImages[flows[i].id].includes(imageSrc)) {
-                                templateImages[flows[i].id].push(imageSrc)
+                            if (!tImages[flows[i].id].includes(imageSrc)) {
+                                tImages[flows[i].id].push(imageSrc)
                             }
                         }
                     }
                 }
-                setTemplateImages(templateImages)
+                setTemplateImages(tImages)
                 setTemplateUsecases(Array.from(new Set(usecases)).sort())
                 setEligibleTemplateUsecases(Array.from(new Set(usecases)).sort())
             } catch (e) {
                 console.error(e)
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllCustomTemplatesApi.data])
 
     useEffect(() => {

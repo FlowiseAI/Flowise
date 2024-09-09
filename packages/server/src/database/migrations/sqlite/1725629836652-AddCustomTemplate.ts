@@ -15,7 +15,6 @@ export class AddCustomTemplate1725629836652 implements MigrationInterface {
                 "updatedDate" datetime NOT NULL DEFAULT (datetime('now')),
                 "createdDate" datetime NOT NULL DEFAULT (datetime('now')));`
         )
-
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {

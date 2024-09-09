@@ -137,6 +137,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                 }
             })
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [saveCustomTemplateApi.data])
 
     useEffect(() => {
@@ -155,6 +156,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                 }
             })
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [saveCustomTemplateApi.error])
 
     const component = show ? (

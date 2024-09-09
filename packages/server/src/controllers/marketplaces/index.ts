@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express'
 import marketplacesService from '../../services/marketplaces'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
-import { CustomTemplate } from '../../database/entities/CustomTemplate'
 
 // Get all templates for marketplaces
 const getAllTemplates = async (req: Request, res: Response, next: NextFunction) => {
