@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 
 // material-ui
 import {
@@ -33,17 +34,21 @@ import ToolDialog from '@/views/tools/ToolDialog'
 import { MarketplaceTable } from '@/ui-component/table/MarketplaceTable'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import { TabPanel } from '@/ui-component/tabs/TabPanel'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // API
 import marketplacesApi from '@/api/marketplaces'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import useConfirm from '@/hooks/useConfirm'
 
 // const
 import { baseURL } from '@/store/constant'
 import { gridSpacing } from '@/store/constant'
-import { TabPanel } from '@/ui-component/tabs/TabPanel'
+import useNotifier from '@/utils/useNotifier'
 
 const badges = ['POPULAR', 'NEW']
 const types = ['Chatflow', 'Agentflow', 'Tool']
@@ -64,6 +69,8 @@ const SelectStyles = {
 
 const Marketplace = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
+    useNotifier()
 
     const theme = useTheme()
 
@@ -91,6 +98,9 @@ const Marketplace = () => {
     const [templateUsecases, setTemplateUsecases] = useState([])
     const [eligibleTemplateUsecases, setEligibleTemplateUsecases] = useState([])
     const [selectedTemplateUsecases, setSelectedTemplateUsecases] = useState([])
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const { confirm } = useConfirm()
 
     const handleTabChange = (event, newValue) => {
         if (newValue === 1 && !getAllCustomTemplatesApi.data) {
@@ -152,6 +162,53 @@ const Marketplace = () => {
     const onSearchChange = (event) => {
         setSearch(event.target.value)
         getEligibleUsecases({ typeFilter, badgeFilter, frameworkFilter, search: event.target.value })
+    }
+
+    const onDeleteCustomTemplate = async (template) => {
+        const confirmPayload = {
+            title: `Delete`,
+            description: `Delete Custom Template ${template.name}?`,
+            confirmButtonName: 'Delete',
+            cancelButtonName: 'Cancel'
+        }
+        const isConfirmed = await confirm(confirmPayload)
+
+        if (isConfirmed) {
+            try {
+                const deleteResp = await marketplacesApi.deleteCustomTemplate(template.id)
+                if (deleteResp.data) {
+                    enqueueSnackbar({
+                        message: 'Custom Template deleted successfully!',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'success',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                    getAllCustomTemplatesApi.request()
+                }
+            } catch (error) {
+                enqueueSnackbar({
+                    message: `Failed to delete custom template: ${
+                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        }
     }
 
     function filterFlows(data) {
@@ -721,6 +778,7 @@ const Marketplace = () => {
                                     goToCanvas={goToCanvas}
                                     isLoading={isLoading}
                                     setError={setError}
+                                    onDelete={onDeleteCustomTemplate}
                                 />
                             )}
                             {!isLoading && (!getAllCustomTemplatesApi.data || getAllCustomTemplatesApi.data.length === 0) && (
@@ -746,6 +804,7 @@ const Marketplace = () => {
                 onConfirm={() => setShowToolDialog(false)}
                 onUseTemplate={(tool) => onUseTemplate(tool)}
             ></ToolDialog>
+            <ConfirmDialog />
         </>
     )
 }

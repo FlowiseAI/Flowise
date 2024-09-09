@@ -118,7 +118,6 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             chatflowId: dialogProps.chatflow.id
         }
         saveCustomTemplateApi.request(template)
-        onCancel()
     }
 
     useEffect(() => {
@@ -136,6 +135,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                     )
                 }
             })
+            onCancel()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [saveCustomTemplateApi.data])
@@ -155,6 +155,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                     )
                 }
             })
+            onCancel()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [saveCustomTemplateApi.error])
