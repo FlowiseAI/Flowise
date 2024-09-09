@@ -6,6 +6,7 @@ import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, 
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from './FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+import { HttpsProxyAgent } from 'https-proxy-agent'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -22,7 +23,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 6.0
+        this.version = 7.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -104,6 +105,13 @@ class ChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Proxy Url',
+                name: 'proxyUrl',
+                type: 'string',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'BaseOptions',
                 name: 'baseOptions',
                 type: 'json',
@@ -162,6 +170,7 @@ class ChatOpenAI_ChatModels implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
+        const proxyUrl = nodeData.inputs?.proxyUrl as string
         const baseOptions = nodeData.inputs?.baseOptions
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
@@ -205,6 +214,13 @@ class ChatOpenAI_ChatModels implements INode {
             obj.configuration = {
                 baseURL: basePath,
                 baseOptions: parsedBaseOptions
+            }
+        }
+
+        if (proxyUrl) {
+            obj.configuration = {
+                ...obj?.configuration,
+                httpAgent: new HttpsProxyAgent(proxyUrl)
             }
         }
 
