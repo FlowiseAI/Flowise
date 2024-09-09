@@ -203,7 +203,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             }
             if (filePaths.length) msg.filePaths = filePaths
             if (chatmsg.sourceDocuments) msg.sourceDocuments = chatmsg.sourceDocuments
-            if (chatmsg.usedTools) msg.usedTools = Jchatmsg.usedTools
+            if (chatmsg.usedTools) msg.usedTools = chatmsg.usedTools
             if (chatmsg.fileAnnotations) msg.fileAnnotations = chatmsg.fileAnnotations
             if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
             if (chatmsg.agentReasoning) msg.agentReasoning = chatmsg.agentReasoning
