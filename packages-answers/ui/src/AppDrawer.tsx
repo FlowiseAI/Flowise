@@ -18,10 +18,9 @@ import Collapse from '@mui/material/Collapse'
 import { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { usePathname } from 'next/navigation'
-import { Menu, MenuItem } from '@mui/material'
+import { Menu, MenuItem, Tooltip } from '@mui/material'
 import { useFlags } from 'flagsmith/react'
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined'
-import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined'
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
@@ -74,13 +73,23 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
     const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores']
     const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores']
-    const menuConfig = [
+    const menuConfig: {
+        text?: string
+        link?: string
+        icon?: React.ReactNode
+        subMenu?: {
+            id: string
+            text: string
+            link: string
+            icon: React.ReactNode
+        }[]
+    }[] = [
         {
             ...(flags['chatflow:use'].enabled
                 ? {
-                      text: 'Sidekick Studio',
-                      link: '/sidekick-studio',
-                      icon: <ConstructionOutlinedIcon color='primary' />,
+                      //   text: 'Sidekick Studio',
+                      //   link: '/sidekick-studio',
+                      //   icon: <ConstructionOutlinedIcon color='primary' />,
                       subMenu: [
                           {
                               id: 'chatflows',
@@ -220,35 +229,50 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                 {menuConfig.map((item) => (
                     <Box key={item.text}>
                         <ListItem disablePadding>
-                            <ListItemButton
-                                selected={!!item.link && pathname.startsWith(item.link)}
-                                href={item.link}
-                                component={item.link ? NextLink : 'button'}
-                                sx={{ flex: 1, display: 'flex', width: '100%' }}
-                                onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : item.text ?? '')}
-                            >
-                                <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                                <Typography
-                                    sx={{
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        textTransform: 'capitalize',
-                                        display: '-webkit-box',
-                                        WebkitBoxOrient: 'vertical',
-                                        WebkitLineClamp: '1',
-                                        flex: '1'
-                                    }}
+                            {item.text && (
+                                <ListItemButton
+                                    selected={!!item.link && pathname.startsWith(item.link)}
+                                    href={item.link}
+                                    component={item.link ? NextLink : 'button'}
+                                    sx={{ flex: 1, display: 'flex', width: '100%' }}
+                                    onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : item.text ?? '')}
                                 >
-                                    {item.text}
-                                </Typography>
-                            </ListItemButton>
+                                    <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+                                    <Typography
+                                        sx={{
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            textTransform: 'capitalize',
+                                            display: '-webkit-box',
+                                            WebkitBoxOrient: 'vertical',
+                                            WebkitLineClamp: '1',
+                                            flex: '1'
+                                        }}
+                                    >
+                                        {item.text}
+                                    </Typography>
+                                </ListItemButton>
+                            )}
                         </ListItem>
 
-                        <Collapse in={drawerOpen || (pathname && item.link ? pathname.includes(item.link) : false)} timeout='auto'>
+                        <Collapse
+                            in={
+                                true
+                                // drawerOpen ||
+                                // (pathname && item?.link
+                                //     ? pathname.includes(item?.link)
+                                //     : item.subMenu
+                                //     ? item.subMenu?.findIndex((subItem) => pathname.includes(subItem.link)) !== -1
+                                //     : false)
+                            }
+                            timeout='auto'
+                        >
                             {item.subMenu?.map((subItem) => (
                                 <ListItem key={subItem.text} disablePadding>
                                     <ListItemButton component={NextLink} href={subItem.link} selected={pathname === subItem.link}>
-                                        <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
+                                        <Tooltip title={drawerOpen ? null : subItem.text}>
+                                            <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
+                                        </Tooltip>
                                         <Typography>{subItem.text}</Typography>
                                     </ListItemButton>
                                 </ListItem>
