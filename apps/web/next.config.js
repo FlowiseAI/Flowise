@@ -70,6 +70,26 @@ let nextConfig = withBundleAnalyzer({
                 contextRegExp: /jsdom$/
             })
         ]
+        config.module.rules.push({
+            test: /\.svg$/,
+            use: [
+                {
+                    loader: '@svgr/webpack',
+                    options: {
+                        svgo: false
+                    }
+                },
+                {
+                    loader: 'url-loader',
+                    options: {
+                        limit: 8192, // 8kb
+                        name: '[name].[hash:8].[ext]',
+                        outputPath: 'static/images/',
+                        publicPath: '/_next/static/images/'
+                    }
+                }
+            ]
+        })
 
         if (isServer) {
             config.plugins = [...config.plugins, new PrismaPlugin()]

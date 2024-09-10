@@ -34,6 +34,7 @@
         "cors": "^2.8.5",
         "db": "workspace:*",
         "encoding": "^0.1.13",
+        "@svgr/webpack": "^8.1.0",
         "experimental-prisma-webpack-plugin": "workspace:*",
         "flagsmith": "^4.0.3",
         "handlebars": "^4.7.7",
