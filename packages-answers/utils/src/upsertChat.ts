@@ -52,6 +52,7 @@ export async function upsertChat({
     if (!id) {
         chat = await prisma.chat.create({
             data: {
+                id: chatflowChatId,
                 ...chatProperties,
                 owner: { connect: { id: user.id } },
                 organization: { connect: { id: user.organizationId } }

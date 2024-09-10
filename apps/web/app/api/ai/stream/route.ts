@@ -40,6 +40,7 @@ export async function POST(req: Request) {
         const sidekickId = sidekick?.id
         console.log('POST /api/ai/stream', {
             user: user.id,
+            chatId,
             organzation: user.organizationId,
             sidekickId
         })

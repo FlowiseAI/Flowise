@@ -317,8 +317,8 @@ export function AnswersProvider({
                         sidekickValue,
                         gptModel
                     })
-                    if (chatId !== data?.chat.id) {
-                        setChatId(data?.chat.id)
+                    if (chatId !== data?.chat.chatflowChatId) {
+                        setChatId(data?.chat.chatflowChatId)
                         setJourneyId(data?.chat.journeyId)
                         mutate('/api/chats')
                     }

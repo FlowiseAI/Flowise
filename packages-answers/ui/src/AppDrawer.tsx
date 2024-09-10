@@ -108,7 +108,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                           },
                           {
                               id: 'credentials',
-                              text: 'Integrations',
+                              text: 'Credentials',
                               link: '/sidekick-studio/credentials',
                               icon: <IntegrationInstructionsOutlinedIcon color='primary' />
                           },
