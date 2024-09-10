@@ -84,7 +84,7 @@ const importTools = async (newTools: Partial<Tool>[]) => {
         const appServer = getRunningExpressApp()
 
         // step 1 - check whether file tools array is zero
-        if (newTools.length == 0) throw new Error('No tools in this file.')
+        if (newTools.length == 0) return
 
         // step 2 - check whether ids are duplicate in database
         let ids = '('
@@ -112,7 +112,7 @@ const importTools = async (newTools: Partial<Tool>[]) => {
             if (newTool.id) id = newTool.id
             if (foundIds.includes(id)) {
                 newTool.id = undefined
-                newTool.name += ' with new id'
+                newTool.name += ' (1)'
             }
             return newTool
         })

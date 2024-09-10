@@ -1,6 +1,4 @@
 import { NextFunction, Request, Response } from 'express'
-import { ChatFlow } from '../../database/entities/ChatFlow'
-import { Tool } from '../../database/entities/Tool'
 import exportImportService from '../../services/export-import'
 
 const exportData = async (req: Request, res: Response, next: NextFunction) => {
@@ -12,10 +10,10 @@ const exportData = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-const importAll = async (req: Request, res: Response, next: NextFunction) => {
+const importData = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const importData: { Tool: Partial<Tool>[]; ChatFlow: Partial<ChatFlow>[] } = req.body
-        await exportImportService.importAll(importData)
+        const importData = req.body
+        await exportImportService.importData(importData)
         return res.json({ message: 'success' })
     } catch (error) {
         next(error)
@@ -24,5 +22,5 @@ const importAll = async (req: Request, res: Response, next: NextFunction) => {
 
 export default {
     exportData,
-    importAll
+    importData
 }

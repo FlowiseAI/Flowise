@@ -35,6 +35,36 @@ const sanitizeChatflow = (ChatFlow) => {
     }
 }
 
+const sanitizeVariable = (Variable) => {
+    try {
+        return Variable.map((variable) => {
+            return {
+                id: variable.id,
+                name: variable.name,
+                value: variable.value,
+                type: variable.type
+            }
+        })
+    } catch (error) {
+        throw new Error(`exportImport.sanitizeVariable ${getErrorMessage(error)}`)
+    }
+}
+
+const sanitizeAssistant = (Assistant) => {
+    try {
+        return Assistant.map((assistant) => {
+            return {
+                id: assistant.id,
+                details: assistant.details,
+                credential: assistant.credential,
+                iconSrc: assistant.iconSrc
+            }
+        })
+    } catch (error) {
+        throw new Error(`exportImport.sanitizeAssistant ${getErrorMessage(error)}`)
+    }
+}
+
 export const stringify = (object) => {
     try {
         return JSON.stringify(object, null, 2)
@@ -45,7 +75,13 @@ export const stringify = (object) => {
 
 export const exportData = (exportAllData) => {
     try {
-        return { Tool: sanitizeTool(exportAllData.Tool), ChatFlow: sanitizeChatflow(exportAllData.ChatFlow) }
+        return {
+            Tool: sanitizeTool(exportAllData.Tool),
+            ChatFlow: sanitizeChatflow(exportAllData.ChatFlow),
+            AgentFlow: sanitizeChatflow(exportAllData.AgentFlow),
+            Variable: sanitizeVariable(exportAllData.Variable),
+            Assistant: sanitizeAssistant(exportAllData.Assistant)
+        }
     } catch (error) {
         throw new Error(`exportImport.exportData ${getErrorMessage(error)}`)
     }

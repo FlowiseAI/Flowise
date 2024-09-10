@@ -4,6 +4,6 @@ const router = express.Router()
 
 router.post('/export', exportImportController.exportData)
 
-router.post('/import/all', exportImportController.importAll)
+router.post('/import', exportImportController.importData)
 
 export default router

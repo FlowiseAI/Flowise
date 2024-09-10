@@ -1,9 +1,10 @@
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, MENU_OPEN, REMOVE_DIRTY } from '@/store/actions'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, REMOVE_DIRTY } from '@/store/actions'
 import { exportData, stringify } from '@/utils/exportImport'
 import useNotifier from '@/utils/useNotifier'
 import PropTypes from 'prop-types'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { createPortal } from 'react-dom'
 
 // material-ui
 import {
@@ -19,7 +20,14 @@ import {
     ListItemText,
     Paper,
     Popper,
-    Typography
+    Typography,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    Stack,
+    FormControlLabel,
+    Checkbox,
+    DialogActions
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -34,6 +42,7 @@ import Transitions from '@/ui-component/extended/Transitions'
 // assets
 import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconX } from '@tabler/icons-react'
 import './index.css'
+import ExportingGIF from '@/assets/images/Exporting.gif'
 
 //API
 import exportImportApi from '@/api/exportimport'
@@ -41,7 +50,106 @@ import exportImportApi from '@/api/exportimport'
 // Hooks
 import useApi from '@/hooks/useApi'
 import { getErrorMessage } from '@/utils/errorHandler'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+
+const dataToExport = ['Chatflows', 'Agentflows', 'Tools', 'Variables', 'Assistants']
+
+const ExportDialog = ({ show, onCancel, onExport }) => {
+    const portalElement = document.getElementById('portal')
+
+    const [selectedData, setSelectedData] = useState(['Chatflows', 'Agentflows', 'Tools', 'Variables', 'Assistants'])
+    const [isExporting, setIsExporting] = useState(false)
+
+    useEffect(() => {
+        if (show) setIsExporting(false)
+
+        return () => {
+            setIsExporting(false)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [show])
+
+    const component = show ? (
+        <Dialog
+            onClose={!isExporting ? onCancel : undefined}
+            open={show}
+            fullWidth
+            maxWidth='sm'
+            aria-labelledby='export-dialog-title'
+            aria-describedby='export-dialog-description'
+        >
+            <DialogTitle sx={{ fontSize: '1rem' }} id='export-dialog-title'>
+                {!isExporting ? 'Select Data to Export' : 'Exporting..'}
+            </DialogTitle>
+            <DialogContent>
+                {!isExporting && (
+                    <Stack direction='row' sx={{ gap: 1, flexWrap: 'wrap' }}>
+                        {dataToExport.map((data, index) => (
+                            <FormControlLabel
+                                key={index}
+                                size='small'
+                                control={
+                                    <Checkbox
+                                        color='success'
+                                        checked={selectedData.includes(data)}
+                                        onChange={(event) => {
+                                            setSelectedData(
+                                                event.target.checked
+                                                    ? [...selectedData, data]
+                                                    : selectedData.filter((item) => item !== data)
+                                            )
+                                        }}
+                                    />
+                                }
+                                label={data}
+                            />
+                        ))}
+                    </Stack>
+                )}
+                {isExporting && (
+                    <Box sx={{ height: 'auto', display: 'flex', justifyContent: 'center', mb: 3 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <img
+                                style={{
+                                    objectFit: 'cover',
+                                    height: 'auto',
+                                    width: 'auto'
+                                }}
+                                src={ExportingGIF}
+                                alt='ExportingGIF'
+                            />
+                            <span>Exporting data might takes a while</span>
+                        </div>
+                    </Box>
+                )}
+            </DialogContent>
+            {!isExporting && (
+                <DialogActions>
+                    <Button onClick={onCancel}>Cancel</Button>
+                    <Button
+                        disabled={selectedData.length === 0}
+                        variant='contained'
+                        onClick={() => {
+                            setIsExporting(true)
+                            onExport(selectedData)
+                        }}
+                    >
+                        Export
+                    </Button>
+                </DialogActions>
+            )}
+        </Dialog>
+    ) : null
+
+    return createPortal(component, portalElement)
+}
+
+ExportDialog.propTypes = {
+    show: PropTypes.bool,
+    onCancel: PropTypes.func,
+    onExport: PropTypes.func
+}
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -52,12 +160,16 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     const [open, setOpen] = useState(false)
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
+    const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
     const anchorRef = useRef(null)
     const inputRef = useRef()
 
     const navigate = useNavigate()
-    const location = useLocation()
+
+    const importAllApi = useApi(exportImportApi.importData)
+    const exportAllApi = useApi(exportImportApi.exportData)
+    const prevOpen = useRef(open)
 
     // ==============================|| Snackbar ||============================== //
 
@@ -92,7 +204,7 @@ const ProfileSection = ({ username, handleLogout }) => {
             }
         })
     }
-    const importAllApi = useApi(exportImportApi.importAll)
+
     const fileChange = (e) => {
         if (!e.target.files) return
 
@@ -124,59 +236,75 @@ const ProfileSection = ({ username, handleLogout }) => {
             }
         })
     }
-    useEffect(() => {
-        if (importAllApi.error) errorFailed(`Failed to import all: ${importAllApi.error.response.data.message}`)
-        if (importAllApi.data) {
-            importAllSuccess()
-            // if current location is /chatflows, refresh the page
-            if (location.pathname === '/chatflows') navigate(0)
-            else {
-                // if not redirect to /chatflows
-                dispatch({ type: MENU_OPEN, id: 'chatflows' })
-                navigate('/chatflows')
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [importAllApi.error, importAllApi.data])
+
     const importAll = () => {
         inputRef.current.click()
     }
-    const exportAllApi = useApi(exportImportApi.exportAll)
-    const exportAllApiSuccess = () => {
-        dispatch({ type: REMOVE_DIRTY })
-        enqueueSnackbar({
-            message: `Export All successful`,
-            options: {
-                key: new Date().getTime() + Math.random(),
-                variant: 'success',
-                action: (key) => (
-                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                        <IconX />
-                    </Button>
-                )
-            }
-        })
+
+    const onExport = (data) => {
+        const body = {}
+        if (data.includes('Chatflows')) body.chatflow = true
+        if (data.includes('Agentflows')) body.agentflow = true
+        if (data.includes('Tools')) body.tool = true
+        if (data.includes('Variables')) body.variable = true
+        if (data.includes('Assistants')) body.assistant = true
+
+        exportAllApi.request(body)
     }
+
     useEffect(() => {
-        if (exportAllApi.error) errorFailed(`Failed to export all: ${exportAllApi.error.response.data.message}`)
+        if (importAllApi.data) {
+            importAllSuccess()
+            navigate(0)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [importAllApi.data])
+
+    useEffect(() => {
+        if (importAllApi.error) {
+            let errMsg = 'Invalid Imported File'
+            let error = importAllApi.error
+            if (error?.response?.data) {
+                errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+            }
+            errorFailed(`Failed to import: ${errMsg}`)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [importAllApi.error])
+
+    useEffect(() => {
         if (exportAllApi.data) {
+            setExportDialogOpen(false)
             try {
                 const dataStr = stringify(exportData(exportAllApi.data))
-                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                //const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                const blob = new Blob([dataStr], { type: 'application/json' })
+                const dataUri = URL.createObjectURL(blob)
 
                 const linkElement = document.createElement('a')
                 linkElement.setAttribute('href', dataUri)
                 linkElement.setAttribute('download', exportAllApi.data.FileDefaultName)
                 linkElement.click()
-                exportAllApiSuccess()
             } catch (error) {
                 errorFailed(`Failed to export all: ${getErrorMessage(error)}`)
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [exportAllApi.error, exportAllApi.data])
+    }, [exportAllApi.data])
 
-    const prevOpen = useRef(open)
+    useEffect(() => {
+        if (exportAllApi.error) {
+            setExportDialogOpen(false)
+            let errMsg = 'Internal Server Error'
+            let error = exportAllApi.error
+            if (error?.response?.data) {
+                errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+            }
+            errorFailed(`Failed to export: ${errMsg}`)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [exportAllApi.error])
+
     useEffect(() => {
         if (prevOpen.current === true && open === false) {
             anchorRef.current.focus()
@@ -259,13 +387,13 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
-                                                        exportAllApi.request()
+                                                        setExportDialogOpen(true)
                                                     }}
                                                 >
                                                     <ListItemIcon>
                                                         <IconFileExport stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Export All</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>Export</Typography>} />
                                                 </ListItemButton>
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
@@ -276,9 +404,9 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     <ListItemIcon>
                                                         <IconFileUpload stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Import All</Typography>} />
+                                                    <ListItemText primary={<Typography variant='body2'>Import</Typography>} />
                                                 </ListItemButton>
-                                                <input ref={inputRef} type='file' hidden onChange={fileChange} />
+                                                <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
                                                 <ListItemButton
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                     onClick={() => {
@@ -312,6 +440,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                 )}
             </Popper>
             <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
+            <ExportDialog show={exportDialogOpen} onCancel={() => setExportDialogOpen(false)} onExport={(data) => onExport(data)} />
         </>
     )
 }

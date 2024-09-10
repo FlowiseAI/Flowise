@@ -1,10 +1,9 @@
 import client from './client'
 
-const exportAll = () => client.get('/export-import/export/all')
-
-const importAll = (body) => client.post('/export-import/import/all', body)
+const exportData = (body) => client.post('/export-import/export', body)
+const importData = (body) => client.post('/export-import/import', body)
 
 export default {
-    exportAll,
-    importAll
+    exportData,
+    importData
 }

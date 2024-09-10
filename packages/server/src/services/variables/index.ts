@@ -73,10 +73,61 @@ const updateVariable = async (variable: Variable, updatedVariable: Variable) => 
     }
 }
 
+const importVariables = async (newVariables: Partial<Variable>[]): Promise<any> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // step 1 - check whether array is zero
+        if (newVariables.length == 0) return
+
+        // step 2 - check whether ids are duplicate in database
+        let ids = '('
+        let count: number = 0
+        const lastCount = newVariables.length - 1
+        newVariables.forEach((newVariable) => {
+            ids += `'${newVariable.id}'`
+            if (lastCount != count) ids += ','
+            if (lastCount == count) ids += ')'
+            count += 1
+        })
+
+        const selectResponse = await appServer.AppDataSource.getRepository(Variable)
+            .createQueryBuilder('v')
+            .select('v.id')
+            .where(`v.id IN ${ids}`)
+            .getMany()
+        const foundIds = selectResponse.map((response) => {
+            return response.id
+        })
+
+        // step 3 - remove ids that are only duplicate
+        const prepVariables: Partial<Variable>[] = newVariables.map((newVariable) => {
+            let id: string = ''
+            if (newVariable.id) id = newVariable.id
+            if (foundIds.includes(id)) {
+                newVariable.id = undefined
+                newVariable.name += ' (1)'
+            }
+            return newVariable
+        })
+
+        // step 4 - transactional insert array of entities
+        const insertResponse = await appServer.AppDataSource.getRepository(Variable).insert(prepVariables)
+
+        return insertResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: variableService.importVariables - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     createVariable,
     deleteVariable,
     getAllVariables,
     getVariableById,
-    updateVariable
+    updateVariable,
+    importVariables
 }
