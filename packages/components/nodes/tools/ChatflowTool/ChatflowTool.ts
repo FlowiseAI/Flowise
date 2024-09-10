@@ -63,7 +63,6 @@ class ChatflowTool_Tools implements INode {
                 description: 'Override the config passed to the Chatflow.',
                 type: 'json',
                 optional: true,
-                acceptVariable: true,
                 list: true
             },
             {
