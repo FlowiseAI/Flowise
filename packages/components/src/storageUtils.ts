@@ -20,6 +20,10 @@ export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: st
         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
         const mime = splitDataURI[0].split(':')[1].split(';')[0]
+        //https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-8vvx-qvq9-5948
+        if (fileName.includes('/') || fileName.includes('..')) {
+            throw new Error('Invalid file name')
+        }
 
         const Key = chatflowid + '/' + filename
         const putObjCmd = new PutObjectCommand({
@@ -55,6 +59,10 @@ export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: st
 
 export const addArrayFilesToStorage = async (mime: string, bf: Buffer, fileName: string, fileNames: string[], ...paths: string[]) => {
     const storageType = getStorageType()
+    //https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-8vvx-qvq9-5948
+    if (fileName.includes('/') || fileName.includes('..')) {
+        throw new Error('Invalid file name')
+    }
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
 
@@ -78,10 +86,6 @@ export const addArrayFilesToStorage = async (mime: string, bf: Buffer, fileName:
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })
         }
-        //https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-8vvx-qvq9-5948
-        if (fileName.includes('/') || fileName.includes('..')) {
-            throw new Error('Invalid file name')
-        }
         const filePath = path.join(dir, fileName)
         fs.writeFileSync(filePath, bf)
         fileNames.push(fileName)
@@ -91,6 +95,10 @@ export const addArrayFilesToStorage = async (mime: string, bf: Buffer, fileName:
 
 export const addSingleFileToStorage = async (mime: string, bf: Buffer, fileName: string, ...paths: string[]) => {
     const storageType = getStorageType()
+    //https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-8vvx-qvq9-5948
+    if (fileName.includes('/') || fileName.includes('..')) {
+        throw new Error('Invalid file name')
+    }
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
 
@@ -112,10 +120,6 @@ export const addSingleFileToStorage = async (mime: string, bf: Buffer, fileName:
         const dir = path.join(getStoragePath(), ...paths)
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })
-        }
-        //https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-8vvx-qvq9-5948
-        if (fileName.includes('/') || fileName.includes('..')) {
-            throw new Error('Invalid file name')
         }
         const filePath = path.join(dir, fileName)
         fs.writeFileSync(filePath, bf)
