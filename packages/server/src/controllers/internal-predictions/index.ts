@@ -28,7 +28,6 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
         res.setHeader('Cache-Control', 'no-cache')
         res.setHeader('Connection', 'keep-alive')
         res.flushHeaders()
-
     } catch (error) {
         if (chatId) {
             sseStreamer.streamErrorEvent(chatId, getErrorMessage(error))
