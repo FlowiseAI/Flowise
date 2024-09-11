@@ -793,6 +793,9 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     case 'metadata':
                         updateMetadata(payload.data, input)
                         break
+                    case 'error':
+                        updateLastMessage(payload.data)
+                        break
                     case 'abort':
                         abortMessage(payload.data)
                         closeResponse()

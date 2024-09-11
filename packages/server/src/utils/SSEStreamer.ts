@@ -173,6 +173,17 @@ export class SSEStreamer implements IServerSideEventStreamer {
         // placeholder for future use
     }
 
+    streamErrorEvent(chatId: string, msg: string) {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'error',
+                data: msg
+            }
+            client.response.write('message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+
     streamMetadataEvent(chatId: string, apiResponse: any) {
         const metadataJson: any = {}
         if (apiResponse.chatId) {
