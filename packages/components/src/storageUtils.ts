@@ -20,7 +20,7 @@ export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: st
         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
         const mime = splitDataURI[0].split(':')[1].split(';')[0]
-        //https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-8vvx-qvq9-5948
+
         if (filename.includes('/') || filename.includes('..')) {
             throw new Error('Invalid file name')
         }
@@ -46,7 +46,7 @@ export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: st
         const splitDataURI = fileBase64.split(',')
         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-        //https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-8vvx-qvq9-5948
+
         if (filename.includes('/') || filename.includes('..')) {
             throw new Error('Invalid file name')
         }
@@ -59,7 +59,7 @@ export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: st
 
 export const addArrayFilesToStorage = async (mime: string, bf: Buffer, fileName: string, fileNames: string[], ...paths: string[]) => {
     const storageType = getStorageType()
-    //https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-8vvx-qvq9-5948
+
     if (fileName.includes('/') || fileName.includes('..')) {
         throw new Error('Invalid file name')
     }
@@ -95,7 +95,7 @@ export const addArrayFilesToStorage = async (mime: string, bf: Buffer, fileName:
 
 export const addSingleFileToStorage = async (mime: string, bf: Buffer, fileName: string, ...paths: string[]) => {
     const storageType = getStorageType()
-    //https://github.com/FlowiseAI/Flowise/security/advisories/GHSA-8vvx-qvq9-5948
+
     if (fileName.includes('/') || fileName.includes('..')) {
         throw new Error('Invalid file name')
     }
