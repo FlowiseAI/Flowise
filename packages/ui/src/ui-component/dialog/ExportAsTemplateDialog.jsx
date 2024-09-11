@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 
 // material-ui
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, OutlinedInput, ToggleButton, Typography } from '@mui/material'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, OutlinedInput, Typography } from '@mui/material'
 
 // store
 import {
@@ -16,7 +16,6 @@ import {
 import useNotifier from '@/utils/useNotifier'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import Chip from '@mui/material/Chip'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { IconX } from '@tabler/icons-react'
 
 // API
@@ -34,16 +33,11 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     const [badge, setBadge] = useState('')
     const [usecases, setUsecases] = useState([])
     const [usecaseInput, setUsecaseInput] = useState('')
-    const [framework, setFramework] = useState('Langchain')
 
     const saveCustomTemplateApi = useApi(marketplacesApi.saveAsCustomTemplate)
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-
-    const handleFrameworkChange = (event, newFramework) => {
-        setFramework(newFramework)
-    }
 
     useNotifier()
 
@@ -57,7 +51,6 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             setName('')
             setDescription('')
             setBadge('')
-            setFramework('Langchain')
             setUsecases([])
             setFlowType('')
             setUsecaseInput('')
@@ -113,7 +106,6 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             description,
             badge: badge ? badge.toUpperCase() : undefined,
             usecases,
-            framework,
             type: flowType,
             chatflowId: dialogProps.chatflow.id
         }
@@ -223,21 +215,6 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                                 setBadge(e.target.value)
                             }}
                         />
-                    </div>
-                </Box>
-                <Box sx={{ pt: 2, pb: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Typography sx={{ mb: 1 }}>Framework</Typography>
-                        <ToggleButtonGroup
-                            color='primary'
-                            value={framework}
-                            exclusive
-                            onChange={handleFrameworkChange}
-                            aria-label='framework'
-                        >
-                            <ToggleButton value='Langchain'>Langchain</ToggleButton>
-                            <ToggleButton value='LlamaIndex'>LlamaIndex</ToggleButton>
-                        </ToggleButtonGroup>
                     </div>
                 </Box>
                 <Box sx={{ pt: 2, pb: 2 }}>

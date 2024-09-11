@@ -135,12 +135,15 @@ const saveCustomTemplate = async (body: any): Promise<any> => {
         const appServer = getRunningExpressApp()
         const chatflow = await chatflowsService.getChatflowById(body.chatflowId)
         const flowData = JSON.parse(chatflow.flowData)
-        const flowDataStr = JSON.stringify(_generateExportFlowData(flowData))
+        const { framework, exportJson } = _generateExportFlowData(flowData)
+        const flowDataStr = JSON.stringify(exportJson)
         const customTemplate = new CustomTemplate()
+
         Object.assign(customTemplate, body)
         if (customTemplate.usecases) {
             customTemplate.usecases = JSON.stringify(customTemplate.usecases)
         }
+        customTemplate.framework = framework
         const entity = appServer.AppDataSource.getRepository(CustomTemplate).create(customTemplate)
         entity.flowData = flowDataStr
         const flowTemplate = await appServer.AppDataSource.getRepository(CustomTemplate).save(entity)
@@ -157,6 +160,7 @@ const _generateExportFlowData = (flowData: any) => {
     const nodes = flowData.nodes
     const edges = flowData.edges
 
+    let framework = 'Langchain'
     for (let i = 0; i < nodes.length; i += 1) {
         nodes[i].selected = false
         const node = nodes[i]
@@ -179,6 +183,12 @@ const _generateExportFlowData = (flowData: any) => {
             selected: false
         }
 
+        if (node.data.tags && node.data.tags.length) {
+            if (node.data.tags.includes('LlamaIndex')) {
+                framework = 'LlamaIndex'
+            }
+        }
+
         // Remove password, file & folder
         if (node.data.inputs && Object.keys(node.data.inputs).length) {
             const nodeDataInputs: any = {}
@@ -198,7 +208,7 @@ const _generateExportFlowData = (flowData: any) => {
         nodes,
         edges
     }
-    return exportJson
+    return { exportJson, framework }
 }
 
 export default {
