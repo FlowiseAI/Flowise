@@ -499,6 +499,14 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         })
     }
 
+    const updateErrorMessage = (errorMessage) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            allMessages.push({ message: errorMessage, type: 'apiMessage' })
+            return allMessages
+        })
+    }
+
     const updateLastMessageSourceDocuments = (sourceDocuments) => {
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
@@ -794,7 +802,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                         updateMetadata(payload.data, input)
                         break
                     case 'error':
-                        updateLastMessage(payload.data)
+                        updateErrorMessage(payload.data)
                         break
                     case 'abort':
                         abortMessage(payload.data)
