@@ -7,6 +7,14 @@
         "name": "HenryHeng",
         "email": "henryheng@flowiseai.com"
     },
+    "type": "commonjs",
+    "exports": {
+        ".": {
+            "types": "./types.d.ts",
+            "default": "./main.js"
+        }
+    },
+    "types": "./types.d.ts",
     "dependencies": {
         "@codemirror/lang-javascript": "^6.2.1",
         "@codemirror/lang-json": "^6.0.1",

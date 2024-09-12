@@ -1,6 +1,7 @@
 # editor
 .idea
 .vscode
+.vim
 
 # dependencies
 **/node_modules
