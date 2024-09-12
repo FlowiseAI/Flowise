@@ -2,7 +2,7 @@ import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { VectorStore } from '@langchain/core/vectorstores'
 import { VectorDBQAChain } from 'langchain/chains'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
@@ -64,13 +64,19 @@ class VectorDBQAChain_Chains implements INode {
         const chain = nodeData.instance as VectorDBQAChain
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
+
         if (moderations && moderations.length > 0) {
             try {
                 // Use the output of the moderation chain as input for the VectorDB QA Chain
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                // if (options.shouldStreamResponse) {
+                //     streamResponse(options.sseStreamer, options.chatId, e.message)
+                // }
                 return formatResponse(e.message)
             }
         }
@@ -81,8 +87,8 @@ class VectorDBQAChain_Chains implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+        if (shouldStreamResponse) {
+            const handler = new CustomChainHandler(sseStreamer, chatId)
             const res = await chain.call(obj, [loggerHandler, handler, ...callbacks])
             return res?.text
         } else {

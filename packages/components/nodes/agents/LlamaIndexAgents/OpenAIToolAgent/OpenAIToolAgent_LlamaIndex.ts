@@ -1,7 +1,16 @@
 import { flatten } from 'lodash'
 import { ChatMessage, OpenAI, OpenAIAgent } from 'llamaindex'
 import { getBaseClasses } from '../../../../src/utils'
-import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../../src/Interface'
+import {
+    FlowiseMemory,
+    ICommonObject,
+    IMessage,
+    INode,
+    INodeData,
+    INodeParams,
+    IServerSideEventStreamer,
+    IUsedTool
+} from '../../../../src/Interface'
 
 class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
     label: string
@@ -67,7 +76,9 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
 
-        const isStreamingEnabled = options.socketIO && options.socketIOClientId
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
 
         const chatHistory = [] as ChatMessage[]
 
@@ -104,7 +115,7 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
         let isStreamingStarted = false
         const usedTools: IUsedTool[] = []
 
-        if (isStreamingEnabled) {
+        if (shouldStreamResponse) {
             const stream = await agent.chat({
                 message: input,
                 chatHistory,
@@ -116,7 +127,9 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
                 text += chunk.response.delta
                 if (!isStreamingStarted) {
                     isStreamingStarted = true
-                    options.socketIO.to(options.socketIOClientId).emit('start', chunk.response.delta)
+                    if (sseStreamer) {
+                        sseStreamer.streamStartEvent(chatId, chunk.response.delta)
+                    }
                     if (chunk.sources.length) {
                         for (const sourceTool of chunk.sources) {
                             usedTools.push({
@@ -125,11 +138,14 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
                                 toolOutput: sourceTool.output as any
                             })
                         }
-                        options.socketIO.to(options.socketIOClientId).emit('usedTools', usedTools)
+                        if (sseStreamer) {
+                            sseStreamer.streamUsedToolsEvent(chatId, usedTools)
+                        }
                     }
                 }
-
-                options.socketIO.to(options.socketIOClientId).emit('token', chunk.response.delta)
+                if (sseStreamer) {
+                    sseStreamer.streamTokenEvent(chatId, chunk.response.delta)
+                }
             }
         } else {
             const response = await agent.chat({ message: input, chatHistory, verbose: process.env.DEBUG === 'true' ? true : false })

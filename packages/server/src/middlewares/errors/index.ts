@@ -12,8 +12,10 @@ async function errorHandlerMiddleware(err: InternalFlowiseError, req: Request, r
         // Provide error stack trace only in development
         stack: process.env.NODE_ENV === 'development' ? err.stack : {}
     }
-    res.setHeader('Content-Type', 'application/json')
-    res.status(displayedError.statusCode).json(displayedError)
+    if (!req.body.streaming || req.body.streaming === 'false') {
+        res.setHeader('Content-Type', 'application/json')
+        res.status(displayedError.statusCode).json(displayedError)
+    }
 }
 
 export default errorHandlerMiddleware

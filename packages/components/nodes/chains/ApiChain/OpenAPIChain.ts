@@ -1,5 +1,5 @@
 import { APIChain, createOpenAPIChain } from 'langchain/chains'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
@@ -74,18 +74,24 @@ class OpenApiChain_Chains implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
+
         if (moderations && moderations.length > 0) {
             try {
                 // Use the output of the moderation chain as input for the OpenAPI chain
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (options.shouldStreamResponse) {
+                    streamResponse(sseStreamer, chatId, e.message)
+                }
                 return formatResponse(e.message)
             }
         }
-        if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+        if (shouldStreamResponse) {
+            const handler = new CustomChainHandler(sseStreamer, chatId)
             const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
             return res
         } else {
