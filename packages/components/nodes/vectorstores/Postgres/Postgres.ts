@@ -191,6 +191,18 @@ class Postgres_VectorStores implements INode {
                         return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter)
                     }
 
+                    vectorStore.delete = async (params: { ids: string[] }): Promise<void> => {
+                        const { ids } = params
+
+                        if (ids?.length) {
+                            try {
+                                vectorStore.appDataSource.getRepository(vectorStore.documentEntity).delete(ids)
+                            } catch (e) {
+                                console.error('Failed to delete')
+                            }
+                        }
+                    }
+
                     await recordManager.createSchema()
 
                     const res = await index({

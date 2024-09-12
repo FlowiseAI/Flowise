@@ -597,11 +597,8 @@ const processAndSaveChunks = async (data: IDocumentStoreLoaderForPreview) => {
         const newLoaderId = data.id ?? uuidv4()
         const found = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
         if (found) {
-            // clean up the current status and mark the loader as pending_sync
-            found.totalChunks = 0
-            found.totalChars = 0
-            found.status = DocumentStoreStatus.SYNCING
-            entity.loaders = JSON.stringify(existingLoaders)
+            const foundIndex = existingLoaders.findIndex((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
+
             if (!data.loaderId) data.loaderId = found.loaderId
             if (!data.loaderName) data.loaderName = found.loaderName
             if (!data.loaderConfig) data.loaderConfig = found.loaderConfig
@@ -611,6 +608,25 @@ const processAndSaveChunks = async (data: IDocumentStoreLoaderForPreview) => {
             if (found.credential) {
                 data.credential = found.credential
             }
+
+            let loader: IDocumentStoreLoader = {
+                ...found,
+                loaderId: data.loaderId,
+                loaderName: data.loaderName,
+                loaderConfig: data.loaderConfig,
+                splitterId: data.splitterId,
+                splitterName: data.splitterName,
+                splitterConfig: data.splitterConfig,
+                totalChunks: 0,
+                totalChars: 0,
+                status: DocumentStoreStatus.SYNCING
+            }
+            if (data.credential) {
+                loader.credential = data.credential
+            }
+
+            existingLoaders[foundIndex] = loader
+            entity.loaders = JSON.stringify(existingLoaders)
         } else {
             let loader: IDocumentStoreLoader = {
                 id: newLoaderId,
