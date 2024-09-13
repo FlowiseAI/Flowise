@@ -50,6 +50,7 @@ import { TableViewOnly } from '@/ui-component/table/Table'
 
 // Helpers
 import { unshiftFiles, getConfigExamplesForJS, getConfigExamplesForPython, getConfigExamplesForCurl } from '@/utils/genericHelper'
+import Image from 'next/image'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -584,7 +585,11 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                             {codes.map((codeLang, index) => (
                                 <Tab
                                     icon={
-                                        <img style={{ objectFit: 'cover', height: 15, width: 'auto' }} src={getSVG(codeLang)} alt='code' />
+                                        <Image
+                                            style={{ objectFit: 'cover', height: 15, width: 'auto' }}
+                                            src={getSVG(codeLang)}
+                                            alt='code'
+                                        />
                                     }
                                     iconPosition='start'
                                     key={index}

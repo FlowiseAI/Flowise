@@ -65,7 +65,8 @@
         "build": {
             "dependsOn": ["^build"],
             "outputs": ["dist/**", "build/**", ".next/**"],
-            "outputLogs": "new-only"
+            "outputLogs": "new-only",
+            "outputMode": "new-only"
         },
         "db:generate": {
             "cache": false,
@@ -85,7 +86,8 @@
         "db#build": {
             "dependsOn": [],
             "outputs": ["dist/**", "generated/**"],
-            "outputLogs": "new-only"
+            "outputLogs": "new-only",
+            "outputMode": "new-only"
         },
         "db#dev": {
             "dependsOn": ["//#db:healthcheck", "build"],
@@ -94,7 +96,9 @@
         },
         "web#build": {
             "dependsOn": ["^build", "db#build"],
-            "outputs": ["dist/**", ".next/**"]
+            "outputs": ["dist/**", ".next/**"],
+            "outputLogs": "new-only",
+            "outputMode": "new-only"
         },
         "lint": {
             "outputs": []

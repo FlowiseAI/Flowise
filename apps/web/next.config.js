@@ -23,7 +23,8 @@ let nextConfig = withBundleAnalyzer({
                 '@/hooks/*': '../../packages/ui/src/hooks/*',
                 '@/menu-items/*': '../../packages/ui/src/menu-items/*',
                 '@/store/*': '../../packages/ui/src/store/*',
-                '@/themes/*': '../../packages/ui/src/themes/*'
+                '@/themes/*': '../../packages/ui/src/themes/*',
+                '@/assets/images/*': '../../packages/ui/src/assets/images/*'
             }
         },
         serverComponentsExternalPackages: ['canvas', '@aws-sdk/client-s3', '@aws-sdk/signature-v4-crt', '@aws-sdk/s3-request-presigner']
@@ -70,6 +71,7 @@ let nextConfig = withBundleAnalyzer({
                 contextRegExp: /jsdom$/
             })
         ]
+
         config.module.rules.push({
             test: /\.svg$/,
             use: [
@@ -79,20 +81,6 @@ let nextConfig = withBundleAnalyzer({
                         svgo: false
                     }
                 },
-                {
-                    loader: 'url-loader',
-                    options: {
-                        limit: 8192, // 8kb
-                        name: '[name].[hash:8].[ext]',
-                        outputPath: 'static/images/',
-                        publicPath: '/_next/static/images/'
-                    }
-                }
-            ]
-        })
-        config.module.rules.push({
-            test: /\.png$/,
-            use: [
                 {
                     loader: 'url-loader',
                     options: {

@@ -22,6 +22,7 @@
             "@/themes": ["../../packages/ui/src/themes"],
             "@/config": ["../../packages/ui/src/config"],
             "@/ui-component/*": ["../../packages/ui/src/ui-component/*"],
+            "@/assets/images/*": ["../../packages/ui/src/assets/images/*"],
             "@/*": ["../../packages/ui/src/*"]
         },
         "plugins": [

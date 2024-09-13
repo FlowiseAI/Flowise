@@ -34,6 +34,7 @@ import useNotifier from '@/utils/useNotifier'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import Image from 'next/image'
 
 const analyticProviders = [
     {
@@ -237,7 +238,7 @@ const AnalyseFlow = ({ dialogProps }) => {
                                         backgroundColor: 'white'
                                     }}
                                 >
-                                    <img
+                                    <Image
                                         style={{
                                             width: '100%',
                                             height: '100%',

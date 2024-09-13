@@ -45,6 +45,7 @@ import utilNodesPNG from '@/assets/images/utilNodes.png'
 // const
 import { baseURL } from '@/store/constant'
 import { SET_COMPONENT_NODES } from '@/store/actions'
+import Image from 'next/image'
 
 // ==============================|| ADD NODES||============================== //
 function a11yProps(index) {
@@ -352,7 +353,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                                     borderRadius: '50%'
                                                                 }}
                                                             >
-                                                                <img
+                                                                <Image
                                                                     style={{
                                                                         width: '20px',
                                                                         height: '20px',

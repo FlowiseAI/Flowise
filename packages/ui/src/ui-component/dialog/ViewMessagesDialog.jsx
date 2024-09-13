@@ -63,6 +63,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 
 import '@/views/chatmessage/ChatMessage.css'
 import 'react-datepicker/dist/react-datepicker.css'
+import Image from 'next/image'
 
 const DatePickerCustomInput = forwardRef(function DatePickerCustomInput({ value, onClick }, ref) {
     return (
@@ -658,7 +659,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                         {chatlogs && chatlogs.length == 0 && (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }} flexDirection='column'>
                                 <Box sx={{ p: 5, height: 'auto' }}>
-                                    <img
+                                    <Image
                                         style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
                                         src={msgEmptySVG}
                                         alt='msgEmptySVG'
@@ -805,7 +806,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                         >
                                                             {/* Display the correct icon depending on the message type */}
                                                             {message.type === 'apiMessage' ? (
-                                                                <img
+                                                                <Image
                                                                     style={{ marginLeft: '10px' }}
                                                                     src={robotPNG}
                                                                     alt='AI'
@@ -814,7 +815,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                     className='boticon'
                                                                 />
                                                             ) : (
-                                                                <img
+                                                                <Image
                                                                     style={{ marginLeft: '10px' }}
                                                                     src={userPNG}
                                                                     alt='Me'
@@ -915,7 +916,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                             flexDirection='row'
                                                                                         >
                                                                                             <Box sx={{ height: 'auto', pr: 1 }}>
-                                                                                                <img
+                                                                                                <Image
                                                                                                     style={{
                                                                                                         objectFit: 'cover',
                                                                                                         height: '25px',

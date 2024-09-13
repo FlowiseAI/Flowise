@@ -77,6 +77,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 // Utils
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow, getLocalStorageChatflow } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
+import Image from 'next/image'
 
 const messageImageStyle = {
     width: '128px',
@@ -1016,9 +1017,9 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                 >
                                     {/* Display the correct icon depending on the message type */}
                                     {message.type === 'apiMessage' || message.type === 'leadCaptureMessage' ? (
-                                        <img src={robotPNG} alt='AI' width='30' height='30' className='boticon' />
+                                        <Image src={robotPNG} alt='AI' width='30' height='30' className='boticon' />
                                     ) : (
-                                        <img src={userPNG} alt='Me' width='30' height='30' className='usericon' />
+                                        <Image src={userPNG} alt='Me' width='30' height='30' className='usericon' />
                                     )}
                                     <div
                                         style={{
@@ -1096,7 +1097,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                     flexDirection='row'
                                                                 >
                                                                     <Box sx={{ height: 'auto', pr: 1 }}>
-                                                                        <img
+                                                                        <Image
                                                                             style={{
                                                                                 objectFit: 'cover',
                                                                                 height: '35px',
@@ -1132,7 +1133,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                     flexDirection='row'
                                                                 >
                                                                     <Box sx={{ height: 'auto', pr: 1 }}>
-                                                                        <img
+                                                                        <Image
                                                                             style={{
                                                                                 objectFit: 'cover',
                                                                                 height: '25px',

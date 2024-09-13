@@ -23,6 +23,7 @@ import useNotifier from '@/utils/useNotifier'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import Image from 'next/image'
 
 // If implementing a new provider, this must be updated in
 // components/src/speechToText.ts as well
@@ -274,7 +275,7 @@ const SpeechToText = ({ dialogProps }) => {
                                     backgroundColor: 'white'
                                 }}
                             >
-                                <img
+                                <Image
                                     style={{
                                         width: '100%',
                                         height: '100%',
