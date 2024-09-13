@@ -171,13 +171,14 @@ const Canvas = () => {
                     existingChatflow = await chatflowsApi.getSpecificChatflow(flowData.id)
                     hasAccess = true
                 } catch (error) {
-                    if (error.response && error.response.status === 401) {
-                        console.log("User doesn't have access to this chatflow. Creating a new one.")
+                    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
                         hasAccess = false
                     } else {
-                        throw error // Re-throw if it's not a 401 error
+                        throw error // Re-throw if it's not a 401 or 403 error
                     }
                 }
+            } else {
+                // No flowData.id provided, will create a new chatflow
             }
 
             if (existingChatflow && hasAccess) {
