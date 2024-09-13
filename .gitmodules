@@ -1,0 +1,3 @@
+[submodule "packages/embed"]
+	path = packages/embed
+	url = git@github.com:Answers-AI/FlowiseChatEmbed.git
