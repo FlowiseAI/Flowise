@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Chatbot Iframe test</title>
+    </head>
+    <body>
+        <aai-fullchatbot></aai-fullchatbot>
+        <script type="module">
+            import Chatbot from '/embed/dist/web.js'
+            Chatbot.initFull({
+                // chatflowid: '8ea705a8-d7ab-4185-bad1-3390447b8c87',
+                // apiHost: 'http://localhost:4000',
+                chatflowid: '9ee4eee1-931d-4007-bc9f-b1431ddabfa9',
+                apiHost: 'https://public.flowise.theanswer.ai',
+                isFullPage: true,
+                observersConfig: {
+                    //   observeUserInput: (userInput: string) => {
+                    //     // console.log("User input observed:", userInput);
+                    //   },
+                    //xw   observeLoading: (loading: boolean) => {
+                    //     // console.log("Loading state observed:", loading);
+                    //   },
+                    observeMessages: (messages) => {
+                        console.log('Messages observed again:', messages)
+                    },
+                    observeStreamEnd: (messages) => {
+                        console.log('Stream End:', messages)
+                    }
+                },
+                theme: {
+                    isFullPage: true,
+                    button: {
+                        size: 'medium',
+                        backgroundColor: '#000000',
+                        iconColor: '#ffffff',
+                        customIconSrc: 'https://example.com/icon.png',
+                        bottom: 10,
+                        right: 10
+                    },
+
+                    chatWindow: {
+                        showTitle: true,
+                        title: 'Default Bot Here',
+                        titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+                        showAgentMessages: false,
+                        welcomeMessage: 'Hello! Welcome to the chatbot! This is a custom welcome message',
+                        errorMessage: 'This is a custom error message',
+                        backgroundColor: '#000000',
+                        height: 700,
+                        width: -1,
+                        fontSize: 16,
+                        poweredByTextColor: '#ffffff',
+                        sourceBubble: {
+                            hideSources: false, //  Can hide sources altogether
+                            label: 'id', // Will check the src object and then the src.metadata object
+                            getLabel: (source) => {
+                                // Need to return something here.   This overrides the label above if you want a function
+                                console.log('getLabel:', source)
+                                return source.metadata.congress
+                            },
+                            onSourceClick: (source) => {
+                                // It won't link automatically if this override is set.
+                                console.log('SourceClick:', source)
+                            }
+                        },
+                        botMessage: {
+                            backgroundColor: '#000000',
+                            textColor: '#ffffff',
+                            showAvatar: true,
+                            avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
+                        },
+                        userMessage: {
+                            backgroundColor: '#000000',
+                            textColor: '#ffffff',
+                            showAvatar: true,
+                            avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+                        },
+                        textInput: {
+                            placeholder: 'Type your message...',
+                            backgroundColor: '#000000',
+                            textColor: '#ffffff',
+                            sendButtonColor: '#ffffff',
+                            maxChars: 200,
+                            maxCharsWarningMessage: 'You have exceeded the character limit.',
+                            autoFocus: true,
+                            sendMessageSound: true,
+                            receiveMessageSound: true
+                        },
+                        feedback: {
+                            color: '#ffffff'
+                        },
+                        footer: {
+                            textColor: '#ffffff',
+                            text: 'Powered by',
+                            company: 'The AnswerAI',
+                            companyLink: 'https://theanswer.ai'
+                        }
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>

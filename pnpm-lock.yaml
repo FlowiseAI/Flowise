@@ -1148,6 +1148,9 @@ importers:
             '@ts-stack/markdown':
                 specifier: ^1.4.0
                 version: 1.5.0
+            device-detector-js:
+                specifier: ^3.0.3
+                version: 3.0.3
             lodash:
                 specifier: ^4.17.21
                 version: 4.17.21
@@ -1163,6 +1166,9 @@ importers:
             solid-js:
                 specifier: 1.7.1
                 version: 1.7.1
+            zod:
+                specifier: ^3.22.4
+                version: 3.23.8
         devDependencies:
             '@babel/preset-typescript':
                 specifier: 7.21.4
@@ -1173,6 +1179,9 @@ importers:
             '@rollup/plugin-commonjs':
                 specifier: ^25.0.0
                 version: 25.0.8(rollup@3.23.0)
+            '@rollup/plugin-json':
+                specifier: ^6.1.0
+                version: 6.1.0(rollup@3.23.0)
             '@rollup/plugin-node-resolve':
                 specifier: 15.0.1
                 version: 15.0.1(rollup@3.23.0)
@@ -6030,6 +6039,15 @@ packages:
             rollup:
                 optional: true
 
+    '@rollup/plugin-json@6.1.0':
+        resolution: { integrity: sha512-EGI2te5ENk1coGeADSIwZ7G2Q8CJS2sF120T7jLw4xFw9n7wIOXHo+kIYRAoVpJAN+kmqZSoO3Fp4JtoNF4ReA== }
+        engines: { node: '>=14.0.0' }
+        peerDependencies:
+            rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+        peerDependenciesMeta:
+            rollup:
+                optional: true
+
     '@rollup/plugin-node-resolve@11.2.1':
         resolution: { integrity: sha512-yc2n43jcqVyGE2sqV5/YCmocy9ArjVAP/BeXyTtADTBBX6V0e5UMqwO8CdQ0kzjb6zu5P1qMzsScCMRvE9OlVg== }
         engines: { node: '>= 10.0.0' }
@@ -10366,6 +10384,10 @@ packages:
         resolution: { integrity: sha512-CmnVc+Hek2egPx1PeTFVta2W78xy2K/9Rkf6cC4T59S50tVnzKj+tnx5mmx5lwvCkujZ4uRrpRSuV+IVs3f90Q== }
         engines: { node: '>= 4.0.0' }
         hasBin: true
+
+    device-detector-js@3.0.3:
+        resolution: { integrity: sha512-jM89LJAvP6uOd84at8OlD9dWP8KeYCCHUde0RT0HQo/stdoRH4b54Xl/fntx2nEXCmqiFhmo+/cJetS2VGUHPw== }
+        engines: { node: '>= 8.11.4' }
 
     devlop@1.1.0:
         resolution: { integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA== }
@@ -28321,6 +28343,12 @@ snapshots:
         optionalDependencies:
             rollup: 3.23.0
 
+    '@rollup/plugin-json@6.1.0(rollup@3.23.0)':
+        dependencies:
+            '@rollup/pluginutils': 5.1.0(rollup@3.23.0)
+        optionalDependencies:
+            rollup: 3.23.0
+
     '@rollup/plugin-node-resolve@11.2.1(rollup@2.79.1)':
         dependencies:
             '@rollup/pluginutils': 3.1.0(rollup@2.79.1)
@@ -34294,6 +34322,8 @@ snapshots:
             debug: 4.3.6(supports-color@8.1.1)
         transitivePeerDependencies:
             - supports-color
+
+    device-detector-js@3.0.3: {}
 
     devlop@1.1.0:
         dependencies:
