@@ -396,3 +396,7 @@ export interface IVisionChatModal {
     revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
 }
+export interface IStateWithMessages extends ICommonObject {
+    messages: BaseMessage[]
+    [key: string]: any
+}

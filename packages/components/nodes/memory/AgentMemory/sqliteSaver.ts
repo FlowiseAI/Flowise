@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
         }
 
         if (returnBaseMessages) {
-            return mapChatMessageToBaseMessage(chatMessage)
+            return await mapChatMessageToBaseMessage(chatMessage)
         }
 
         let returnIMessages: IMessage[] = []

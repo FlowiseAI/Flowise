@@ -136,7 +136,7 @@ class ConversationSummaryBufferMemoryExtended extends FlowiseSummaryBufferMemory
             chatMessage.unshift(...prependMessages)
         }
 
-        let baseMessages = mapChatMessageToBaseMessage(chatMessage)
+        let baseMessages = await mapChatMessageToBaseMessage(chatMessage)
 
         // Prune baseMessages if it exceeds max token limit
         if (this.movingSummaryBuffer) {
