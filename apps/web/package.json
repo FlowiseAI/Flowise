@@ -9,7 +9,7 @@
         "lint": "next lint"
     },
     "dependencies": {
-        "aai-embed": "workspace:*",
+        "aai-embed": "^1.3.14",
         "flowise-ui": "workspace:*",
         "jose": "^5.2.3",
         "@auth0/nextjs-auth0": "^3.5.0",
