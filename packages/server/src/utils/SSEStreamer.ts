@@ -97,6 +97,16 @@ export class SSEStreamer implements IServerSideEventStreamer {
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
     }
+    streamArtifactsEvent(chatId: string, data: any) {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'artifacts',
+                data: data
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
     streamUsedToolsEvent(chatId: string, data: any): void {
         const client = this.clients[chatId]
         if (client) {

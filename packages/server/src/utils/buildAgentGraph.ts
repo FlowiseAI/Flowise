@@ -154,6 +154,7 @@ export const buildAgentGraph = async (
         let finalAction: IAction = {}
         let totalSourceDocuments: IDocument[] = []
         let totalUsedTools: IUsedTool[] = []
+        let totalArtifacts: ICommonObject[] = []
 
         const workerNodes = reactFlowNodes.filter((node) => node.data.name === 'worker')
         const supervisorNodes = reactFlowNodes.filter((node) => node.data.name === 'supervisor')
@@ -221,6 +222,9 @@ export const buildAgentGraph = async (
                             const sourceDocuments = output[agentName]?.messages
                                 ? output[agentName].messages.map((msg: BaseMessage) => msg.additional_kwargs?.sourceDocuments)
                                 : []
+                            const artifacts = output[agentName]?.messages
+                                ? output[agentName].messages.map((msg: BaseMessage) => msg.additional_kwargs?.artifacts)
+                                : []
                             const messages = output[agentName]?.messages
                                 ? output[agentName].messages.map((msg: BaseMessage) => (typeof msg === 'string' ? msg : msg.content))
                                 : []
@@ -238,6 +242,11 @@ export const buildAgentGraph = async (
                             if (sourceDocuments && sourceDocuments.length) {
                                 const cleanedDocs = sourceDocuments.filter((documents: IDocument) => documents)
                                 if (cleanedDocs.length) totalSourceDocuments.push(...cleanedDocs)
+                            }
+
+                            if (artifacts && artifacts.length) {
+                                const cleanedArtifacts = artifacts.filter((artifact: ICommonObject) => artifact)
+                                if (cleanedArtifacts.length) totalArtifacts.push(...cleanedArtifacts)
                             }
 
                             /*
@@ -273,6 +282,7 @@ export const buildAgentGraph = async (
                                 instructions: output[agentName]?.instructions,
                                 usedTools: flatten(usedTools) as IUsedTool[],
                                 sourceDocuments: flatten(sourceDocuments) as Document[],
+                                artifacts: flatten(artifacts) as ICommonObject[],
                                 state,
                                 nodeName: isSequential ? mapNameToLabel[agentName].nodeName : undefined,
                                 nodeId
@@ -395,10 +405,12 @@ export const buildAgentGraph = async (
 
                 totalSourceDocuments = uniq(flatten(totalSourceDocuments))
                 totalUsedTools = uniq(flatten(totalUsedTools))
+                totalArtifacts = uniq(flatten(totalArtifacts))
 
                 if (shouldStreamResponse && sseStreamer) {
                     sseStreamer.streamUsedToolsEvent(chatId, totalUsedTools)
                     sseStreamer.streamSourceDocumentsEvent(chatId, totalSourceDocuments)
+                    sseStreamer.streamArtifactsEvent(chatId, totalArtifacts)
                     sseStreamer.streamEndEvent(chatId)
                 }
 
@@ -406,6 +418,7 @@ export const buildAgentGraph = async (
                     finalResult,
                     finalAction,
                     sourceDocuments: totalSourceDocuments,
+                    artifacts: totalArtifacts,
                     usedTools: totalUsedTools,
                     agentReasoning
                 }

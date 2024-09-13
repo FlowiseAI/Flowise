@@ -42,6 +42,7 @@ export interface IChatMessage {
     fileAnnotations?: string
     agentReasoning?: string
     fileUploads?: string
+    artifacts?: string
     chatType: string
     chatId: string
     memoryType?: string

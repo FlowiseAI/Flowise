@@ -12,13 +12,12 @@ import {
 import { AIMessage, AIMessageChunk, BaseMessage, ToolMessage } from '@langchain/core/messages'
 import { StructuredTool } from '@langchain/core/tools'
 import { RunnableConfig } from '@langchain/core/runnables'
-import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
+import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 import { Document } from '@langchain/core/documents'
 import { DataSource } from 'typeorm'
 import { MessagesState, RunnableCallable, customGet, getVM } from '../commonUtils'
 import { getVars, prepareSandboxVars } from '../../../src/utils'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
-import { DynamicStructuredTool } from '../../tools/CustomTool/core'
 
 const defaultApprovalPrompt = `You are about to execute tool: {tools}. Ask if user want to proceed`
 
@@ -408,6 +407,9 @@ class ToolNode<T extends IStateWithMessages | BaseMessage[] | MessagesState> ext
         // Extract all properties except messages for IStateWithMessages
         const { messages: _, ...inputWithoutMessages } = Array.isArray(input) ? { messages: input } : input
         const ChannelsWithoutMessages = {
+            chatId: this.options.chatId,
+            sessionId: this.options.sessionId,
+            input: this.inputQuery,
             state: inputWithoutMessages
         }
 
@@ -417,12 +419,13 @@ class ToolNode<T extends IStateWithMessages | BaseMessage[] | MessagesState> ext
                 if (tool === undefined) {
                     throw new Error(`Tool ${call.name} not found.`)
                 }
-                if (tool && tool instanceof DynamicStructuredTool) {
+                if (tool && (tool as any).setFlowObject) {
                     // @ts-ignore
                     tool.setFlowObject(ChannelsWithoutMessages)
                 }
                 let output = await tool.invoke(call.args, config)
                 let sourceDocuments: Document[] = []
+                let artifacts = []
                 if (output?.includes(SOURCE_DOCUMENTS_PREFIX)) {
                     const outputArray = output.split(SOURCE_DOCUMENTS_PREFIX)
                     output = outputArray[0]
@@ -433,12 +436,23 @@ class ToolNode<T extends IStateWithMessages | BaseMessage[] | MessagesState> ext
                         console.error('Error parsing source documents from tool')
                     }
                 }
+                if (output?.includes(ARTIFACTS_PREFIX)) {
+                    const outputArray = output.split(ARTIFACTS_PREFIX)
+                    output = outputArray[0]
+                    try {
+                        artifacts = JSON.parse(outputArray[1])
+                    } catch (e) {
+                        console.error('Error parsing artifacts from tool')
+                    }
+                }
+
                 return new ToolMessage({
                     name: tool.name,
                     content: typeof output === 'string' ? output : JSON.stringify(output),
                     tool_call_id: call.id!,
                     additional_kwargs: {
                         sourceDocuments,
+                        artifacts,
                         args: call.args,
                         usedTools: [
                             {
@@ -489,7 +503,8 @@ const getReturnOutput = async (
             tool: output.name,
             toolInput: output.additional_kwargs.args,
             toolOutput: output.content,
-            sourceDocuments: output.additional_kwargs.sourceDocuments
+            sourceDocuments: output.additional_kwargs.sourceDocuments,
+            artifacts: output.additional_kwargs.artifacts
         } as IUsedTool
     })
 

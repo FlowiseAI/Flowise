@@ -534,6 +534,23 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         })
     }
 
+    const updateLastMessageArtifacts = (artifacts) => {
+        artifacts.forEach((artifact) => {
+            if (artifact.type === 'png' || artifact.type === 'jpeg') {
+                artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${artifact.data.replace(
+                    'FILE-STORAGE::',
+                    ''
+                )}`
+            }
+        })
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+            allMessages[allMessages.length - 1].artifacts = artifacts
+            return allMessages
+        })
+    }
+
     const updateLastMessageNextAgent = (nextAgent) => {
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
@@ -730,6 +747,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             fileAnnotations: data?.fileAnnotations,
                             agentReasoning: data?.agentReasoning,
                             action: data?.action,
+                            artifacts: data?.artifacts,
                             type: 'apiMessage',
                             feedback: null
                         }
@@ -791,6 +809,9 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                         break
                     case 'agentReasoning':
                         updateLastMessageAgentReasoning(payload.data)
+                        break
+                    case 'artifacts':
+                        updateLastMessageArtifacts(payload.data)
                         break
                     case 'action':
                         updateLastMessageAction(payload.data)
@@ -913,6 +934,17 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 if (message.fileAnnotations) obj.fileAnnotations = message.fileAnnotations
                 if (message.agentReasoning) obj.agentReasoning = message.agentReasoning
                 if (message.action) obj.action = message.action
+                if (message.artifacts) {
+                    obj.artifacts = message.artifacts
+                    obj.artifacts.forEach((artifact) => {
+                        if (artifact.type === 'png' || artifact.type === 'jpeg') {
+                            artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${artifact.data.replace(
+                                'FILE-STORAGE::',
+                                ''
+                            )}`
+                        }
+                    })
+                }
                 if (message.fileUploads) {
                     obj.fileUploads = message.fileUploads
                     obj.fileUploads.forEach((file) => {
@@ -1260,6 +1292,84 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         }
     }
 
+    const agentReasoningArtifacts = (artifacts) => {
+        const newArtifacts = cloneDeep(artifacts)
+        for (let i = 0; i < newArtifacts.length; i++) {
+            const artifact = newArtifacts[i]
+            if (artifact && (artifact.type === 'png' || artifact.type === 'jpeg')) {
+                const data = artifact.data
+                newArtifacts[i].data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowid}&chatId=${chatId}&fileName=${data.replace(
+                    'FILE-STORAGE::',
+                    ''
+                )}`
+            }
+        }
+        return newArtifacts
+    }
+
+    const renderArtifacts = (item, index, isAgentReasoning) => {
+        if (item.type === 'png' || item.type === 'jpeg') {
+            return (
+                <Card
+                    key={index}
+                    sx={{
+                        p: 0,
+                        m: 0,
+                        mt: 2,
+                        mb: 2,
+                        flex: '0 0 auto'
+                    }}
+                >
+                    <CardMedia
+                        component='img'
+                        image={item.data}
+                        sx={{ height: 'auto' }}
+                        alt={'artifact'}
+                        style={{
+                            width: isAgentReasoning ? '200px' : '100%',
+                            height: isAgentReasoning ? '200px' : 'auto',
+                            objectFit: 'cover'
+                        }}
+                    />
+                </Card>
+            )
+        } else if (item.type === 'html') {
+            return (
+                <div style={{ marginTop: '20px' }}>
+                    <div dangerouslySetInnerHTML={{ __html: item.data }}></div>
+                </div>
+            )
+        } else {
+            return (
+                <MemoizedReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
+                    components={{
+                        code({ inline, className, children, ...props }) {
+                            const match = /language-(\w+)/.exec(className || '')
+                            return !inline ? (
+                                <CodeBlock
+                                    key={Math.random()}
+                                    chatflowid={chatflowid}
+                                    isDialog={isDialog}
+                                    language={(match && match[1]) || ''}
+                                    value={String(children).replace(/\n$/, '')}
+                                    {...props}
+                                />
+                            ) : (
+                                <code className={className} {...props}>
+                                    {children}
+                                </code>
+                            )
+                        }
+                    }}
+                >
+                    {item.data}
+                </MemoizedReactMarkdown>
+            )
+        }
+    }
+
     return (
         <div onDragEnter={handleDrag}>
             {isDragActive && (
@@ -1459,6 +1569,23 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                         />
                                                                     </div>
                                                                 )}
+                                                                {agent.artifacts && (
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            flexWrap: 'wrap',
+                                                                            flexDirection: 'row',
+                                                                            width: '100%',
+                                                                            gap: '8px'
+                                                                        }}
+                                                                    >
+                                                                        {agentReasoningArtifacts(agent.artifacts).map((item, index) => {
+                                                                            return item !== null ? (
+                                                                                <>{renderArtifacts(item, index, true)}</>
+                                                                            ) : null
+                                                                        })}
+                                                                    </div>
+                                                                )}
                                                                 {agent.messages.length > 0 && (
                                                                     <MemoizedReactMarkdown
                                                                         remarkPlugins={[remarkGfm, remarkMath]}
@@ -1550,6 +1677,20 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                             onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                         />
                                                     ) : null
+                                                })}
+                                            </div>
+                                        )}
+                                        {message.artifacts && (
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexWrap: 'wrap',
+                                                    flexDirection: 'column',
+                                                    width: '100%'
+                                                }}
+                                            >
+                                                {message.artifacts.map((item, index) => {
+                                                    return item !== null ? <>{renderArtifacts(item, index)}</> : null
                                                 })}
                                             </div>
                                         )}
