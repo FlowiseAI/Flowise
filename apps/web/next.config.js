@@ -90,7 +90,20 @@ let nextConfig = withBundleAnalyzer({
                 }
             ]
         })
-
+        config.module.rules.push({
+            test: /\.png$/,
+            use: [
+                {
+                    loader: 'url-loader',
+                    options: {
+                        limit: 8192, // 8kb
+                        name: '[name].[hash:8].[ext]',
+                        outputPath: 'static/images/',
+                        publicPath: '/_next/static/images/'
+                    }
+                }
+            ]
+        })
         if (isServer) {
             config.plugins = [...config.plugins, new PrismaPlugin()]
             // Avoid AWS SDK Node.js require issue
