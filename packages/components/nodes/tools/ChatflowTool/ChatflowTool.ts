@@ -23,7 +23,7 @@ class ChatflowTool_Tools implements INode {
     constructor() {
         this.label = 'Chatflow Tool'
         this.name = 'ChatflowTool'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'ChatflowTool'
         this.icon = 'chatflowTool.svg'
         this.category = 'Tools'
@@ -56,6 +56,14 @@ class ChatflowTool_Tools implements INode {
                 rows: 3,
                 placeholder:
                     'State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.'
+            },
+            {
+                label: 'Override Config',
+                name: 'overrideConfig',
+                description: 'Override the config passed to the Chatflow.',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Base URL',
@@ -127,6 +135,12 @@ class ChatflowTool_Tools implements INode {
         const description = nodeData.inputs?.description as string
         const useQuestionFromChat = nodeData.inputs?.useQuestionFromChat as boolean
         const customInput = nodeData.inputs?.customInput as string
+        const overrideConfig =
+            typeof nodeData.inputs?.overrideConfig === 'string' &&
+            nodeData.inputs.overrideConfig.startsWith('{') &&
+            nodeData.inputs.overrideConfig.endsWith('}')
+                ? JSON.parse(nodeData.inputs.overrideConfig)
+                : nodeData.inputs?.overrideConfig
 
         const startNewSession = nodeData.inputs?.startNewSession as boolean
 
@@ -149,7 +163,16 @@ class ChatflowTool_Tools implements INode {
 
         let name = _name || 'chatflow_tool'
 
-        return new ChatflowTool({ name, baseURL, description, chatflowid: selectedChatflowId, startNewSession, headers, input: toolInput })
+        return new ChatflowTool({
+            name,
+            baseURL,
+            description,
+            chatflowid: selectedChatflowId,
+            startNewSession,
+            headers,
+            input: toolInput,
+            overrideConfig
+        })
     }
 }
 
@@ -172,8 +195,11 @@ class ChatflowTool extends StructuredTool {
 
     headers = {}
 
+    overrideConfig?: object
+
     schema = z.object({
         input: z.string().describe('input question')
+        // overrideConfig: z.record(z.any()).optional().describe('override config'), // This will be passed to the Agent, so comment it for now.
     }) as any
 
     constructor({
@@ -183,7 +209,8 @@ class ChatflowTool extends StructuredTool {
         chatflowid,
         startNewSession,
         baseURL,
-        headers
+        headers,
+        overrideConfig
     }: {
         name: string
         description: string
@@ -192,6 +219,7 @@ class ChatflowTool extends StructuredTool {
         startNewSession: boolean
         baseURL: string
         headers: ICommonObject
+        overrideConfig?: object
     }) {
         super()
         this.name = name
@@ -201,6 +229,7 @@ class ChatflowTool extends StructuredTool {
         this.startNewSession = startNewSession
         this.headers = headers
         this.chatflowid = chatflowid
+        this.overrideConfig = overrideConfig
     }
 
     async call(
@@ -260,7 +289,9 @@ class ChatflowTool extends StructuredTool {
             question: inputQuestion,
             chatId: this.startNewSession ? uuidv4() : flowConfig?.chatId,
             overrideConfig: {
-                sessionId: this.startNewSession ? uuidv4() : flowConfig?.sessionId
+                sessionId: this.startNewSession ? uuidv4() : flowConfig?.sessionId,
+                ...(this.overrideConfig ?? {}),
+                ...(arg.overrideConfig ?? {})
             }
         }
 
