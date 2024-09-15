@@ -389,7 +389,7 @@ const Marketplace = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                    <Stack flexDirection='column'>
                         <ViewHeader
                             filters={
                                 <>
@@ -541,18 +541,12 @@ const Marketplace = () => {
                                 </ToggleButton>
                             </ToggleButtonGroup>
                         </ViewHeader>
-                        <Tabs
-                            value={activeTabValue}
-                            onChange={handleTabChange}
-                            textColor='secondary'
-                            aria-label='secondary tabs example'
-                            centered
-                        >
-                            <Tab value={0} label='Market Place'></Tab>
+                        <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs' centered>
+                            <Tab value={0} label='Community Templates'></Tab>
                             <Tab value={1} label='My Templates' />
                         </Tabs>
                         <TabPanel value={activeTabValue} index={0}>
-                            <Stack direction='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <Stack direction='row' sx={{ gap: 2, my: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                                 {usecases.map((usecase, index) => (
                                     <FormControlLabel
                                         key={index}
@@ -577,7 +571,7 @@ const Marketplace = () => {
                             </Stack>
                             {selectedUsecases.length > 0 && (
                                 <Button
-                                    sx={{ width: 'max-content', borderRadius: '20px' }}
+                                    sx={{ width: 'max-content', mb: 2, borderRadius: '20px' }}
                                     variant='outlined'
                                     onClick={() => clearAllUsecases()}
                                     startIcon={<IconX />}
@@ -662,7 +656,7 @@ const Marketplace = () => {
                                 <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                     <Box sx={{ p: 2, height: 'auto' }}>
                                         <img
-                                            style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                            style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
                                             src={WorkflowEmptySVG}
                                             alt='WorkflowEmptySVG'
                                         />
@@ -672,7 +666,7 @@ const Marketplace = () => {
                             )}
                         </TabPanel>
                         <TabPanel value={activeTabValue} index={1}>
-                            <Stack direction='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                            <Stack direction='row' sx={{ gap: 2, my: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                                 {templateUsecases.map((usecase, index) => (
                                     <FormControlLabel
                                         key={index}
@@ -701,7 +695,7 @@ const Marketplace = () => {
                             </Stack>
                             {selectedTemplateUsecases.length > 0 && (
                                 <Button
-                                    sx={{ width: 'max-content', borderRadius: '20px' }}
+                                    sx={{ width: 'max-content', mb: 2, borderRadius: '20px' }}
                                     variant='outlined'
                                     onClick={() => clearAllUsecases()}
                                     startIcon={<IconX />}
@@ -785,7 +779,7 @@ const Marketplace = () => {
                                 <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                     <Box sx={{ p: 2, height: 'auto' }}>
                                         <img
-                                            style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                            style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
                                             src={WorkflowEmptySVG}
                                             alt='WorkflowEmptySVG'
                                         />
