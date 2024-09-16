@@ -427,8 +427,9 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                                     variant='outlined'
                                     onClick={() => onSaveAsTemplate()}
                                     startIcon={<IconTemplate />}
+                                    color='secondary'
                                 >
-                                    Save As Custom Template
+                                    Save As Template
                                 </Button>
                                 <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileDownload />}>
                                     Export
