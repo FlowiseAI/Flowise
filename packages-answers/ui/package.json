@@ -41,7 +41,7 @@
         "@types/cors": "^2.8.13",
         "@types/js-cookie": "^3.0.3",
         "@types/react-window": "^1.8.5",
-        "aai-embed-react": "~1.0.3",
+        "aai-embed-react": "~1.0.8",
         "axios": "^1.4.0",
         "clsx": "^1.2.1",
         "cors": "^2.8.5",

@@ -20,14 +20,15 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { usePathname } from 'next/navigation'
 import { Menu, MenuItem, Tooltip } from '@mui/material'
 import { useFlags } from 'flagsmith/react'
-import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined'
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
+import PasswordIcon from '@mui/icons-material/Password'
 import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/IntegrationInstructionsOutlined'
-import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
-import AdminOutlinedIcon from '@mui/icons-material/AdminPanelSettings'
+import ContactSupport from '@mui/icons-material/ContactSupport'
+import { useHelpChatContext } from './HelpChatContext' // Import the context
 
 const drawerWidth = 240
 
@@ -73,6 +74,7 @@ interface MenuConfig {
     subMenu?: MenuConfig[]
 }
 export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
+    const { helpChatOpen, setHelpChatOpen } = useHelpChatContext()
     const user = session?.user
     const [drawerOpen, setDrawerOpen] = useState(false)
     const [submenuOpen, setSubmenuOpen] = useState('')
@@ -103,19 +105,19 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                       subMenu: [
                           {
                               id: 'chatflows',
-                              text: 'Sidekicks',
+                              text: 'Chatflows',
                               link: '/sidekick-studio/chatflows',
-                              icon: <SmartToyOutlinedIcon color='primary' />
+                              icon: <AccountTreeIcon color='primary' />
                           },
                           {
                               id: 'agentflows',
-                              text: 'Sidekick Teams',
+                              text: 'Agentflows',
                               link: '/sidekick-studio/agentflows',
                               icon: <GroupsOutlinedIcon color='primary' />
                           },
                           {
                               id: 'documentstores',
-                              text: 'Knowledge Bases',
+                              text: 'Document Stores',
                               link: '/sidekick-studio/document-stores',
                               icon: <MenuBookOutlinedIcon color='primary' />
                           },
@@ -129,13 +131,13 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                               id: 'credentials',
                               text: 'Credentials',
                               link: '/sidekick-studio/credentials',
-                              icon: <IntegrationInstructionsOutlinedIcon color='primary' />
+                              icon: <PasswordIcon color='primary' />
                           },
                           {
                               id: 'variables',
                               text: 'Global Variables',
                               link: '/sidekick-studio/variables',
-                              icon: <LanguageOutlinedIcon color='primary' />
+                              icon: <IntegrationInstructionsOutlinedIcon color='primary' />
                           },
                           {
                               id: 'apikey',
@@ -167,6 +169,10 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
         setDrawerOpen(!drawerOpen)
     }
 
+    const toggleHelpChat = () => {
+        setHelpChatOpen(!helpChatOpen)
+    }
+
     const handleNewChat = () => {
         setDrawerOpen(false)
     }
@@ -177,18 +183,34 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                 sx={{
                     display: 'flex',
                     justifyContent: drawerOpen ? 'space-between' : 'center',
-                    flexDirection: drawerOpen ? 'row' : 'column',
+                    flexDirection: 'column',
                     p: 1
                 }}
             >
-                <IconButton onClick={toggleDrawer}>
-                    <ViewSidebarOutlinedIcon
-                        sx={{
-                            transform: drawerOpen ? 'scaleX(-1)' : 'none',
-                            color: 'primary.main'
-                        }}
-                    />
-                </IconButton>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: drawerOpen ? 'row' : 'column',
+                        p: 1
+                    }}
+                >
+                    <IconButton onClick={toggleDrawer}>
+                        <ViewSidebarOutlinedIcon
+                            sx={{
+                                transform: drawerOpen ? 'scaleX(-1)' : 'none',
+                                color: 'primary.main'
+                            }}
+                        />
+                    </IconButton>
+                    <IconButton onClick={toggleHelpChat}>
+                        <ContactSupport
+                            sx={{
+                                transform: drawerOpen ? 'scaleX(1)' : 'none',
+                                color: 'primary.main'
+                            }}
+                        />
+                    </IconButton>
+                </Box>
                 <Button
                     href='/chat'
                     variant='outlined'
@@ -242,8 +264,8 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
             </Box>
 
             <List sx={{ display: 'flex', flexDirection: 'column' }} disablePadding>
-                {menuConfig.map((item) => (
-                    <Box key={item.text}>
+                {menuConfig.map((item, index) => (
+                    <Box key={item.text || index}>
                         <ListItem disablePadding>
                             {item.text && (
                                 <ListItemButton
@@ -272,6 +294,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                         </ListItem>
 
                         <Collapse
+                            key={`${item.text}-collapse`}
                             in={
                                 true
                                 // drawerOpen ||

@@ -73,10 +73,10 @@ let nextConfig = withBundleAnalyzer({
         ]
 
         config.module.rules.push({
-            test: /\.svg$/,
+            test: /\.(svg)$/,
             use: [
                 {
-                    loader: '@svgr/webpack',
+                    loader: 'file-loader',
                     options: {
                         svgo: false
                     }

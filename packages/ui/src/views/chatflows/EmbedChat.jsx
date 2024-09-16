@@ -167,8 +167,8 @@ const chatwindowConfig = (isReact = false) => {
                     footer: {
                         textColor: '#303235',
                         text: 'Powered by',
-                        company: 'Flowise',
-                        companyLink: 'https://flowiseai.com',
+                        company: 'The AnswerAI',
+                        companyLink: 'https://theanswer.ai',
                     }
                 }`
         : `chatWindow: {
@@ -214,8 +214,8 @@ const chatwindowConfig = (isReact = false) => {
                 footer: {
                     textColor: '#303235',
                     text: 'Powered by',
-                    company: 'Flowise',
-                    companyLink: 'https://flowiseai.com',
+                    company: 'The AnswerAI',
+                    companyLink: 'https://theanswer.ai',
                 }
             }`
 }

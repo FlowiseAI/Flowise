@@ -198,7 +198,13 @@ const Agentflows = () => {
                 >
                     <FormControl sx={{ minWidth: 120, mr: 1 }}>
                         <InputLabel id='category-filter-label'>Category</InputLabel>
-                        <Select labelId='category-filter-label' value={categoryFilter} onChange={handleCategoryChange} label='Category'>
+                        <Select
+                            size='small'
+                            labelId='category-filter-label'
+                            value={categoryFilter}
+                            onChange={handleCategoryChange}
+                            label='Category'
+                        >
                             {categories.map((category) => (
                                 <MenuItem key={category} value={category}>
                                     {category}

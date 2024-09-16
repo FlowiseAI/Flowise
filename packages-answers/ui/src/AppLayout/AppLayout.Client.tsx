@@ -12,7 +12,8 @@ import GlobalStyles from '../GlobalStyles'
 
 import { AppSettings } from 'types'
 import { Auth0Provider } from '@auth0/auth0-react'
-
+import HelpChatDrawer from '../HelpChatDrawer'
+import { HelpChatProvider } from '../HelpChatContext'
 export default function AppLayout({
     session,
     chatList,
@@ -36,6 +37,7 @@ export default function AppLayout({
         audience: process.env.VITE_AUTH_AUDIENCE,
         scope: 'openid profile email'
     }
+
     return (
         <FlagsmithProvider
             serverState={flagsmithState}
@@ -50,29 +52,20 @@ export default function AppLayout({
                 authorizationParams={authorizationParams}
             >
                 <ThemeProvider theme={darkModeTheme}>
-                    <CssBaseline enableColorScheme />
-                    <GlobalStyles />
-                    <>
-                        <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
-                        <div
-                            style={{
-                                flex: 1,
-                                width: 'calc(100% - 65px)',
-                                height: '100vh',
-                                position: 'relative'
-                            }}
-                        >
-                            <div
-                                style={{
-                                    width: '100%',
-                                    height: '100vh',
-                                    position: 'relative'
-                                }}
-                            >
-                                {children}
+                    <HelpChatProvider>
+                        <CssBaseline enableColorScheme />
+                        <GlobalStyles />
+                        <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
+                            <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
+                            <div style={{ flex: 1, position: 'relative' }}>
+                                <div style={{ width: '100%', height: '100%', position: 'relative' }}>{children}</div>
                             </div>
+                            <HelpChatDrawer
+                                apiHost='https://lastrev.flowise.theanswer.ai'
+                                chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d'
+                            />
                         </div>
-                    </>
+                    </HelpChatProvider>
                 </ThemeProvider>
             </Auth0Provider>
         </FlagsmithProvider>
