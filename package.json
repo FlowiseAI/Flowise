@@ -57,7 +57,10 @@
         "onlyBuiltDependencies": [
             "faiss-node",
             "sqlite3"
-        ]
+        ],
+        "overrides": {
+            "set-value": "^3.0.3"
+        }
     },
     "engines": {
         "node": ">=18.15.0 <19.0.0 || ^20",
