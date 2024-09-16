@@ -59,34 +59,38 @@ async function hasAvailableExecutions(userId: string, orgId: string): Promise<bo
 async function getOrCreateTrialPlanForUser(userId: string): Promise<TrialPlan> {
     try {
         const appServer = getRunningExpressApp()
-        const user = await appServer.AppDataSource.getRepository(User).findOneBy({
-            id: userId
-        })
-        if (!user) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `User ${userId} not found`)
-        }
-        let trialPlan: TrialPlan | null = null
-        if (user.trialPlanId) {
-            trialPlan = await appServer.AppDataSource.getRepository(TrialPlan).findOneBy({
-                id: user.trialPlanId
+        return await appServer.AppDataSource.transaction(async (transactionalEntityManager) => {
+            const user = await transactionalEntityManager.findOne(User, {
+                where: { id: userId },
+                lock: { mode: 'pessimistic_write' }
             })
-            if (!trialPlan) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Trial plan ${user.trialPlanId} not found`)
+
+            if (!user) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `User ${userId} not found`)
             }
-        } else {
-            const newTrialPlan = new TrialPlan()
-            Object.assign(newTrialPlan, {
-                id: uuidv4(),
-                availableExecutions: DEFAULT_AVAILABLE_EXECUTIONS,
-                usedExecutions: 0,
-                userId: user.id
-            })
-            trialPlan = appServer.AppDataSource.getRepository(TrialPlan).create(newTrialPlan)
-            await appServer.AppDataSource.getRepository(TrialPlan).save(trialPlan)
-            user.trialPlanId = trialPlan.id
-            await appServer.AppDataSource.getRepository(User).save(user)
-        }
-        return trialPlan
+
+            if (user.trialPlanId) {
+                const trialPlan = await transactionalEntityManager.findOne(TrialPlan, {
+                    where: { id: user.trialPlanId }
+                })
+                if (!trialPlan) {
+                    throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Trial plan ${user.trialPlanId} not found`)
+                }
+                return trialPlan
+            } else {
+                const newTrialPlan = new TrialPlan()
+                Object.assign(newTrialPlan, {
+                    id: uuidv4(),
+                    availableExecutions: DEFAULT_AVAILABLE_EXECUTIONS,
+                    usedExecutions: 0,
+                    userId: user.id
+                })
+                const trialPlan = await transactionalEntityManager.save(TrialPlan, newTrialPlan)
+                user.trialPlanId = trialPlan.id
+                await transactionalEntityManager.save(User, user)
+                return trialPlan
+            }
+        })
     } catch (error) {
         console.error('Error in getOrCreateTrialPlanForUser:', error)
         if (error instanceof InternalFlowiseError) {
@@ -189,7 +193,13 @@ async function getPlanHistory(user: IUser): Promise<(PaidPlan | TrialPlan)[]> {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Organization ${orgId} not found`)
         }
         if (org.auth0Id === PUBLIC_ORG_ID) {
-            return [await getOrCreateTrialPlanForUser(user.id)]
+            const trialPlan = await appServer.AppDataSource.getRepository(TrialPlan).findOne({
+                where: { userId: user.id }
+            })
+            if (!trialPlan) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Trial plan ${user.id} not found`)
+            }
+            return [trialPlan]
         }
         const paidPlans = await appServer.AppDataSource.getRepository(PaidPlan).find({
             where: {
