@@ -47,6 +47,12 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             setFlowType(dialogProps.chatflow.type === 'MULTIAGENT' ? 'Agentflow' : 'Chatflow')
         }
 
+        if (dialogProps.tool) {
+            setName(dialogProps.tool.name)
+            setDescription(dialogProps.tool.description)
+            setFlowType('Tool')
+        }
+
         return () => {
             setName('')
             setDescription('')
@@ -106,8 +112,17 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             description,
             badge: badge ? badge.toUpperCase() : undefined,
             usecases,
-            type: flowType,
-            chatflowId: dialogProps.chatflow.id
+            type: flowType
+        }
+        if (dialogProps.chatflow) {
+            template.chatflowId = dialogProps.chatflow.id
+        }
+        if (dialogProps.tool) {
+            template.tool = {
+                iconSrc: dialogProps.tool.iconSrc,
+                schema: dialogProps.tool.schema,
+                func: dialogProps.tool.func
+            }
         }
         saveCustomTemplateApi.request(template)
     }

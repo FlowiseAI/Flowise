@@ -119,7 +119,22 @@ const getAllCustomTemplates = async (): Promise<any> => {
         const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).find()
         templates.map((template) => {
             template.usecases = template.usecases ? JSON.parse(template.usecases) : ''
-            template.categories = getCategories(JSON.parse(template.flowData))
+            if (template.type === 'Tool') {
+                template.flowData = JSON.parse(template.flowData)
+                template.iconSrc = template.flowData.iconSrc
+                template.schema = template.flowData.schema
+                template.func = template.flowData.func
+                template.categories = []
+                template.flowData = undefined
+            } else {
+                template.categories = getCategories(JSON.parse(template.flowData))
+            }
+            if (!template.badge) {
+                template.badge = ''
+            }
+            if (!template.framework) {
+                template.framework = ''
+            }
         })
         return templates
     } catch (error) {
@@ -133,17 +148,31 @@ const getAllCustomTemplates = async (): Promise<any> => {
 const saveCustomTemplate = async (body: any): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const chatflow = await chatflowsService.getChatflowById(body.chatflowId)
-        const flowData = JSON.parse(chatflow.flowData)
-        const { framework, exportJson } = _generateExportFlowData(flowData)
-        const flowDataStr = JSON.stringify(exportJson)
+        let flowDataStr = ''
+        let derivedFramework = ''
         const customTemplate = new CustomTemplate()
-
         Object.assign(customTemplate, body)
+
+        if (body.chatflowId) {
+            const chatflow = await chatflowsService.getChatflowById(body.chatflowId)
+            const flowData = JSON.parse(chatflow.flowData)
+            const { framework, exportJson } = _generateExportFlowData(flowData)
+            flowDataStr = JSON.stringify(exportJson)
+            customTemplate.framework = framework
+        } else if (body.tool) {
+            const flowData = {
+                iconSrc: body.tool.iconSrc,
+                schema: body.tool.schema,
+                func: body.tool.func
+            }
+            customTemplate.framework = ''
+            customTemplate.type = 'Tool'
+            flowDataStr = JSON.stringify(flowData)
+        }
+        customTemplate.framework = derivedFramework
         if (customTemplate.usecases) {
             customTemplate.usecases = JSON.stringify(customTemplate.usecases)
         }
-        customTemplate.framework = framework
         const entity = appServer.AppDataSource.getRepository(CustomTemplate).create(customTemplate)
         entity.flowData = flowDataStr
         const flowTemplate = await appServer.AppDataSource.getRepository(CustomTemplate).save(entity)

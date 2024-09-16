@@ -447,11 +447,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 onCancel={() => setViewMessagesDialogOpen(false)}
             />
             <ViewLeadsDialog show={viewLeadsDialogOpen} dialogProps={viewLeadsDialogProps} onCancel={() => setViewLeadsDialogOpen(false)} />
-            <ExportAsTemplateDialog
-                show={exportAsTemplateDialogOpen}
-                dialogProps={exportAsTemplateDialogProps}
-                onCancel={() => setExportAsTemplateDialogOpen(false)}
-            />
+            {exportAsTemplateDialogOpen && (
+                <ExportAsTemplateDialog
+                    show={exportAsTemplateDialogOpen}
+                    dialogProps={exportAsTemplateDialogProps}
+                    onCancel={() => setExportAsTemplateDialogOpen(false)}
+                />
+            )}
             <UpsertHistoryDialog
                 show={upsertHistoryDialogOpen}
                 dialogProps={upsertHistoryDialogProps}

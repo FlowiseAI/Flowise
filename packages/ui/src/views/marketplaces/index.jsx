@@ -139,7 +139,13 @@ const Marketplace = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value
         )
-        getEligibleUsecases({ typeFilter: typeof value === 'string' ? value.split(',') : value, badgeFilter, frameworkFilter, search })
+        const data = activeTabValue === 0 ? getAllTemplatesMarketplacesApi.data : getAllCustomTemplatesApi.data
+        getEligibleUsecases(data, {
+            typeFilter: typeof value === 'string' ? value.split(',') : value,
+            badgeFilter,
+            frameworkFilter,
+            search
+        })
     }
 
     const handleFrameworkFilterChange = (event) => {
@@ -150,7 +156,13 @@ const Marketplace = () => {
             // On autofill we get a stringified value.
             typeof value === 'string' ? value.split(',') : value
         )
-        getEligibleUsecases({ typeFilter, badgeFilter, frameworkFilter: typeof value === 'string' ? value.split(',') : value, search })
+        const data = activeTabValue === 0 ? getAllTemplatesMarketplacesApi.data : getAllCustomTemplatesApi.data
+        getEligibleUsecases(data, {
+            typeFilter,
+            badgeFilter,
+            frameworkFilter: typeof value === 'string' ? value.split(',') : value,
+            search
+        })
     }
 
     const handleViewChange = (event, nextView) => {
@@ -161,7 +173,9 @@ const Marketplace = () => {
 
     const onSearchChange = (event) => {
         setSearch(event.target.value)
-        getEligibleUsecases({ typeFilter, badgeFilter, frameworkFilter, search: event.target.value })
+        const data = activeTabValue === 0 ? getAllTemplatesMarketplacesApi.data : getAllCustomTemplatesApi.data
+
+        getEligibleUsecases(data, { typeFilter, badgeFilter, frameworkFilter, search: event.target.value })
     }
 
     const onDeleteCustomTemplate = async (template) => {
