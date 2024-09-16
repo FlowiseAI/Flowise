@@ -1,13 +1,11 @@
 import express from 'express'
-import { Request, Response } from 'express'
-import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
 import { Server } from 'socket.io'
 import { DataSource } from 'typeorm'
 import { IChatFlow } from './Interface'
-import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
+import { getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
@@ -158,16 +156,16 @@ export class App {
         // Serve UI static
         // ----------------------------------------
 
-        const packagePath = getNodeModulesPackagePath('flowise-ui')
-        const uiBuildPath = path.join(packagePath, 'build')
-        const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
+        // const packagePath = getNodeModulesPackagePath('flowise-ui')
+        // const uiBuildPath = path.join(packagePath, 'build')
+        // const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
 
-        this.app.use('/', express.static(uiBuildPath))
+        // this.app.use('/', express.static(uiBuildPath))
 
         // All other requests not handled will return React app
-        this.app.use((req: Request, res: Response) => {
-            res.sendFile(uiHtmlPath)
-        })
+        // this.app.use((req: Request, res: Response) => {
+        //     res.sendFile(uiHtmlPath)
+        // })
 
         // Error handling
         this.app.use(errorHandlerMiddleware)

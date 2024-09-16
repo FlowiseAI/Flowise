@@ -65,7 +65,7 @@
         "build": {
             "dependsOn": ["^build"],
             "outputs": ["dist/**", "build/**", ".next/**"],
-            "outputLogs": "new-only",
+
             "outputMode": "new-only"
         },
         "db:generate": {
@@ -86,7 +86,7 @@
         "db#build": {
             "dependsOn": [],
             "outputs": ["dist/**", "generated/**"],
-            "outputLogs": "new-only",
+
             "outputMode": "new-only"
         },
         "db#dev": {
@@ -97,7 +97,7 @@
         "web#build": {
             "dependsOn": ["^build", "db#build"],
             "outputs": ["dist/**", ".next/**"],
-            "outputLogs": "new-only",
+
             "outputMode": "new-only"
         },
         "lint": {
