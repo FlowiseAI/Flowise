@@ -258,7 +258,7 @@ class MySQLRecordManager implements RecordManagerInterface {
         const query = `
             INSERT INTO \`${this.tableName}\` (\`key\`, \`namespace\`, \`updated_at\`, \`group_id\`)
             VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE updated_at = updated_at;`
+            ON DUPLICATE KEY UPDATE \`updated_at\` = VALUES(\`updated_at\`)`
 
         // To handle multiple files upsert
         for (const record of recordsToUpsert) {
