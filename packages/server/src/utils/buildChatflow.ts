@@ -47,6 +47,7 @@ import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
 import checkOwnership from './checkOwnership'
+import PlansService from '../services/plans'
 
 /**
  * Build Chatflow
@@ -80,6 +81,22 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             if (!isOwner && !isKeyValidated) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
+        }
+
+        if (!chatflow.userId || !chatflow.organizationId) {
+            throw new InternalFlowiseError(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                `Chatflow ${chatflowid} does not have a user or organization associated with it`
+            )
+        }
+
+        const canContinue = await PlansService.hasAvailableExecutions(chatflow.userId, chatflow.organizationId)
+
+        if (!canContinue) {
+            throw new InternalFlowiseError(
+                StatusCodes.PAYMENT_REQUIRED,
+                'Insufficient executions. Please purchase more to continue using this service.'
+            )
         }
 
         let fileUploads: IFileUpload[] = []
@@ -440,6 +457,8 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
 
+        PlansService.incrementUsedExecutionCount(chatflow.userId, chatflow.organizationId)
+
         return result
     } catch (e) {
         logger.error('[server]: Error:', e)
@@ -467,6 +486,12 @@ const utilBuildAgentResponse = async (
     baseURL?: string
 ) => {
     try {
+        if (!agentflow.userId || !agentflow.organizationId) {
+            throw new InternalFlowiseError(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                `User ID and Organization ID are required on the agentflow: ${agentflow.id}`
+            )
+        }
         const appServer = getRunningExpressApp()
         const streamResults = await buildAgentGraph(user, agentflow, chatId, sessionId, incomingInput, isInternal, baseURL, socketIO)
         if (streamResults) {
@@ -548,6 +573,8 @@ const utilBuildAgentResponse = async (
             if (memoryType) result.memoryType = memoryType
             if (agentReasoning.length) result.agentReasoning = agentReasoning
             if (Object.keys(finalAction).length) result.action = finalAction
+
+            PlansService.incrementUsedExecutionCount(agentflow.userId, agentflow.organizationId)
 
             return result
         }

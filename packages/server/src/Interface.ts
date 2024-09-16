@@ -298,5 +298,18 @@ export interface IApiKey {
     updatedDate: Date
 }
 
+export interface ITrialPlan {
+    availableExecutions: number
+    usedExecutions: number
+}
+
+export interface IPaidPlan {
+    amount: number
+    currency: string
+    availableExecutions: number
+    usedExecutions: number
+    createdDate: Date
+}
+
 // DocumentStore related
 export * from './Interface.DocumentStore'

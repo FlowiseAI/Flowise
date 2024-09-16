@@ -12,6 +12,8 @@ import { UpsertHistory } from './UpsertHistory'
 import { ApiKey } from './ApiKey'
 import { User } from './User'
 import { Organization } from './Organization'
+import { PaidPlan } from './PaidPlan'
+import { TrialPlan } from './TrialPlan'
 
 export const entities = {
     ChatFlow,
@@ -27,5 +29,7 @@ export const entities = {
     UpsertHistory,
     ApiKey,
     User,
-    Organization
+    Organization,
+    PaidPlan,
+    TrialPlan
 }

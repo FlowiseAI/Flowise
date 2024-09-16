@@ -27,6 +27,7 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/IntegrationInstructionsOutlined'
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
+import AdminOutlinedIcon from '@mui/icons-material/AdminPanelSettings'
 
 const drawerWidth = 240
 
@@ -79,7 +80,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
     const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores']
-    const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores']
+    const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin']
 
     const filterMenuItems = (items: MenuConfig[]) => {
         return items.map((item) => {
@@ -141,6 +142,12 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                               text: 'API Keys',
                               link: '/sidekick-studio/apikey',
                               icon: <VpnKeyOutlinedIcon color='primary' />
+                          },
+                          {
+                              id: 'admin',
+                              text: 'Admin',
+                              link: '/sidekick-studio/admin',
+                              icon: <AdminOutlinedIcon color='primary' />
                           }
                       ]
                   }

@@ -1,17 +1,20 @@
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
-import { IOrganization } from '../../Interface'
+import { ITrialPlan } from '../../Interface'
 
 @Entity()
-export class Organization implements IOrganization {
+export class TrialPlan implements ITrialPlan {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
     @Index()
-    @Column({})
-    auth0Id: string
+    @Column({ type: 'uuid' })
+    userId: string
 
-    @Column({ nullable: true })
-    name: string
+    @Column({ type: 'integer', default: 0 })
+    availableExecutions: number
+
+    @Column({ type: 'integer', default: 0 })
+    usedExecutions: number
 
     @Column({ type: 'timestamp' })
     @CreateDateColumn()
@@ -20,7 +23,4 @@ export class Organization implements IOrganization {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
-
-    @Column({ type: 'uuid', nullable: true })
-    currentPaidPlanId?: string
 }
