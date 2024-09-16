@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 import Select from '@mui/material/Select'
 import type { SelectChangeEvent } from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 
-import Fieldset from './Fieldset'
 import type { Sidekick } from 'types'
 import useSWR from 'swr'
 import { useRouter } from 'next/navigation'
@@ -42,7 +41,7 @@ const SidekickSelect = ({ onSidekickSelected, sidekicks: defaultSidekicks = [] }
         const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
         const lastUsedSidekick = sidekickHistory?.lastUsed
         let sidekickIdx = sidekicks.findIndex((s) => s.id === lastUsedSidekick?.id)
-        if (sidekickIdx == -1) return
+        if (sidekickIdx == -1) sidekickIdx = 0
         const curSidekick = sidekicks[sidekickIdx]
 
         setSelectedSidekick(sidekickIdx)
