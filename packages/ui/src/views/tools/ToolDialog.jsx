@@ -16,7 +16,7 @@ import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import HowToUseFunctionDialog from './HowToUseFunctionDialog'
 
 // Icons
-import { IconX, IconFileDownload, IconPlus } from '@tabler/icons-react'
+import { IconX, IconFileDownload, IconPlus, IconTemplate } from '@tabler/icons-react'
 
 // API
 import toolsApi from '@/api/tools'
@@ -29,6 +29,7 @@ import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
 import { generateRandomGradient, formatDataGridRows } from '@/utils/genericHelper'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
 const exampleAPIFunc = `/*
 * You can use any libraries imported in Flowise
@@ -79,6 +80,9 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     const [toolFunc, setToolFunc] = useState('')
     const [showHowToDialog, setShowHowToDialog] = useState(false)
 
+    const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
+    const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
+
     const deleteItem = useCallback(
         (id) => () => {
             setTimeout(() => {
@@ -103,6 +107,20 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 return allRows
             })
         })
+    }
+
+    const onSaveAsTemplate = () => {
+        setExportAsTemplateDialogProps({
+            title: 'Export As Template',
+            tool: {
+                name: toolName,
+                description: toolDesc,
+                iconSrc: toolIcon,
+                schema: toolSchema,
+                func: toolFunc
+            }
+        })
+        setExportAsTemplateDialogOpen(true)
     }
 
     const onRowUpdate = (newRow) => {
@@ -401,11 +419,24 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             <DialogTitle sx={{ fontSize: '1rem', p: 3, pb: 0 }} id='alert-dialog-title'>
                 <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     {dialogProps.title}
-                    {dialogProps.type === 'EDIT' && (
-                        <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileDownload />}>
-                            Export
-                        </Button>
-                    )}
+                    <Box>
+                        {dialogProps.type === 'EDIT' && (
+                            <>
+                                <Button
+                                    style={{ marginRight: '10px' }}
+                                    variant='outlined'
+                                    onClick={() => onSaveAsTemplate()}
+                                    startIcon={<IconTemplate />}
+                                    color='secondary'
+                                >
+                                    Save As Template
+                                </Button>
+                                <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileDownload />}>
+                                    Export
+                                </Button>
+                            </>
+                        )}
+                    </Box>
                 </Box>
             </DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
@@ -535,6 +566,14 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 )}
             </DialogActions>
             <ConfirmDialog />
+            {exportAsTemplateDialogOpen && (
+                <ExportAsTemplateDialog
+                    show={exportAsTemplateDialogOpen}
+                    dialogProps={exportAsTemplateDialogProps}
+                    onCancel={() => setExportAsTemplateDialogOpen(false)}
+                />
+            )}
+
             <HowToUseFunctionDialog show={showHowToDialog} onCancel={() => setShowHowToDialog(false)} />
         </Dialog>
     ) : null
