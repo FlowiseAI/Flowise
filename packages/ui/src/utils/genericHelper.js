@@ -1,5 +1,5 @@
-import moment from 'moment'
 import { uniq } from 'lodash'
+import moment from 'moment'
 
 export const getUniqueNodeId = (nodeData, nodes) => {
     // Get amount of same nodes
@@ -371,18 +371,6 @@ export const getFolderName = (base64ArrayStr) => {
     } catch (e) {
         return ''
     }
-}
-
-export const sanitizeChatflows = (arrayChatflows) => {
-    const sanitizedChatflows = arrayChatflows.map((chatFlow) => {
-        const sanitizeFlowData = generateExportFlowData(JSON.parse(chatFlow.flowData))
-        return {
-            id: chatFlow.id,
-            name: chatFlow.name,
-            flowData: JSON.stringify(sanitizeFlowData, null, 2)
-        }
-    })
-    return sanitizedChatflows
 }
 
 export const generateExportFlowData = (flowData) => {

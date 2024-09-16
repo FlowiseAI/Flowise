@@ -10,6 +10,7 @@ import {
 } from '@aws-sdk/client-s3'
 import { Readable } from 'node:stream'
 import { getUserHome } from './utils'
+import sanitize from 'sanitize-filename'
 
 export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: string, fileNames: string[]) => {
     const storageType = getStorageType()
@@ -21,7 +22,9 @@ export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: st
         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
         const mime = splitDataURI[0].split(':')[1].split(';')[0]
 
-        const Key = chatflowid + '/' + filename
+        const sanitizedFilename = _sanitizeFilename(filename)
+
+        const Key = chatflowid + '/' + sanitizedFilename
         const putObjCmd = new PutObjectCommand({
             Bucket,
             Key,
@@ -31,7 +34,7 @@ export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: st
         })
         await s3Client.send(putObjCmd)
 
-        fileNames.push(filename)
+        fileNames.push(sanitizedFilename)
         return 'FILE-STORAGE::' + JSON.stringify(fileNames)
     } else {
         const dir = path.join(getStoragePath(), chatflowid)
@@ -42,20 +45,23 @@ export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: st
         const splitDataURI = fileBase64.split(',')
         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+        const sanitizedFilename = _sanitizeFilename(filename)
 
-        const filePath = path.join(dir, filename)
+        const filePath = path.join(dir, sanitizedFilename)
         fs.writeFileSync(filePath, bf)
-        fileNames.push(filename)
+        fileNames.push(sanitizedFilename)
         return 'FILE-STORAGE::' + JSON.stringify(fileNames)
     }
 }
 
 export const addArrayFilesToStorage = async (mime: string, bf: Buffer, fileName: string, fileNames: string[], ...paths: string[]) => {
     const storageType = getStorageType()
+
+    const sanitizedFilename = _sanitizeFilename(fileName)
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
 
-        let Key = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + fileName
+        let Key = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + sanitizedFilename
         if (Key.startsWith('/')) {
             Key = Key.substring(1)
         }
@@ -68,27 +74,28 @@ export const addArrayFilesToStorage = async (mime: string, bf: Buffer, fileName:
             Body: bf
         })
         await s3Client.send(putObjCmd)
-        fileNames.push(fileName)
+        fileNames.push(sanitizedFilename)
         return 'FILE-STORAGE::' + JSON.stringify(fileNames)
     } else {
         const dir = path.join(getStoragePath(), ...paths)
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })
         }
-
-        const filePath = path.join(dir, fileName)
+        const filePath = path.join(dir, sanitizedFilename)
         fs.writeFileSync(filePath, bf)
-        fileNames.push(fileName)
+        fileNames.push(sanitizedFilename)
         return 'FILE-STORAGE::' + JSON.stringify(fileNames)
     }
 }
 
 export const addSingleFileToStorage = async (mime: string, bf: Buffer, fileName: string, ...paths: string[]) => {
     const storageType = getStorageType()
+    const sanitizedFilename = _sanitizeFilename(fileName)
+
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
 
-        let Key = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + fileName
+        let Key = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + sanitizedFilename
         if (Key.startsWith('/')) {
             Key = Key.substring(1)
         }
@@ -101,16 +108,15 @@ export const addSingleFileToStorage = async (mime: string, bf: Buffer, fileName:
             Body: bf
         })
         await s3Client.send(putObjCmd)
-        return 'FILE-STORAGE::' + fileName
+        return 'FILE-STORAGE::' + sanitizedFilename
     } else {
         const dir = path.join(getStoragePath(), ...paths)
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })
         }
-
-        const filePath = path.join(dir, fileName)
+        const filePath = path.join(dir, sanitizedFilename)
         fs.writeFileSync(filePath, bf)
-        return 'FILE-STORAGE::' + fileName
+        return 'FILE-STORAGE::' + sanitizedFilename
     }
 }
 
@@ -185,6 +191,11 @@ export const removeSpecificFileFromStorage = async (...paths: string[]) => {
         }
         await _deleteS3Folder(Key)
     } else {
+        const fileName = paths.pop()
+        if (fileName) {
+            const sanitizedFilename = _sanitizeFilename(fileName)
+            paths.push(sanitizedFilename)
+        }
         const file = path.join(getStoragePath(), ...paths)
         fs.unlinkSync(file)
     }
@@ -282,10 +293,11 @@ export const streamStorageFile = async (
     fileName: string
 ): Promise<fs.ReadStream | Buffer | undefined> => {
     const storageType = getStorageType()
+    const sanitizedFilename = sanitize(fileName)
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
 
-        const Key = chatflowId + '/' + chatId + '/' + fileName
+        const Key = chatflowId + '/' + chatId + '/' + sanitizedFilename
         const getParams = {
             Bucket,
             Key
@@ -297,7 +309,7 @@ export const streamStorageFile = async (
             return Buffer.from(blob)
         }
     } else {
-        const filePath = path.join(getStoragePath(), chatflowId, chatId, fileName)
+        const filePath = path.join(getStoragePath(), chatflowId, chatId, sanitizedFilename)
         //raise error if file path is not absolute
         if (!path.isAbsolute(filePath)) throw new Error(`Invalid file path`)
         //raise error if file path contains '..'
@@ -338,4 +350,13 @@ export const getS3Config = () => {
         endpoint: customURL
     })
     return { s3Client, Bucket }
+}
+
+const _sanitizeFilename = (filename: string): string => {
+    if (filename) {
+        let sanitizedFilename = sanitize(filename)
+        // remove all leading .
+        return sanitizedFilename.replace(/^\.+/, '')
+    }
+    return ''
 }
