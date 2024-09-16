@@ -1,4 +1,3 @@
-import React from 'react'
 import getCachedSession from '@ui/getCachedSession'
 
 import { prisma } from '@db/client'
@@ -31,6 +30,7 @@ const ChatDrawerServer = async () => {
         .then((data: any) => JSON.parse(JSON.stringify(data)))
 
     const [chats] = await Promise.all([chatsPromise])
+
     return <ChatDrawerClient chats={chats} />
 }
 

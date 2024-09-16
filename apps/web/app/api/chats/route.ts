@@ -12,7 +12,10 @@ export async function GET(req: Request) {
                 some: {
                     email: user?.user?.email
                 }
-            }
+            },
+            organization: { id: user?.user?.organizationId! },
+            chatflowChatId: { not: null },
+            journeyId: null
         }
     })
     return NextResponse.json(records)
