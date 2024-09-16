@@ -64,6 +64,13 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
     })
 }))
 
+interface MenuConfig {
+    id?: string
+    text?: string
+    link?: string
+    icon?: React.ReactNode
+    subMenu?: MenuConfig[]
+}
 export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const user = session?.user
     const [drawerOpen, setDrawerOpen] = useState(false)
@@ -73,17 +80,19 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
     const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores']
     const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores']
-    const menuConfig: {
-        text?: string
-        link?: string
-        icon?: React.ReactNode
-        subMenu?: {
-            id: string
-            text: string
-            link: string
-            icon: React.ReactNode
-        }[]
-    }[] = [
+
+    const filterMenuItems = (items: MenuConfig[]) => {
+        return items.map((item) => {
+            if (!item.subMenu) return item
+            const filteredSubMenu = item.subMenu.filter((subItem) => {
+                const isMemberAction = MEMBER_ACTIONS.includes(subItem.id ?? '')
+                const isBuilderAction = BUILDER_ACTIONS.includes(subItem.id ?? '')
+                return (isMemberAction && flags['chatflow:use'].enabled) || (isBuilderAction && flags['chatflow:manage'].enabled)
+            })
+            return { ...item, subMenu: filteredSubMenu }
+        })
+    }
+    const menuConfig: MenuConfig[] = filterMenuItems([
         {
             ...(flags['chatflow:use'].enabled
                 ? {
@@ -137,7 +146,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                   }
                 : {})
         }
-    ]
+    ])
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget)
