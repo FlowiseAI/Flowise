@@ -23,6 +23,7 @@ import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-Add
 import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlow'
 import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
+import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -49,5 +50,6 @@ export const sqliteMigrations = [
     AddTypeToChatFlow1716300000000,
     AddVectorStoreConfigToDocStore1715861032479,
     AddApiKey1720230151480,
-    AddActionToChatMessage1721078251523
+    AddActionToChatMessage1721078251523,
+    AddCustomTemplate1725629836652
 ]

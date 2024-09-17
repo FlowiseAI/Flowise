@@ -273,5 +273,18 @@ export interface IApiKey {
     updatedDate: Date
 }
 
+export interface ICustomTemplate {
+    id: string
+    name: string
+    flowData: string
+    updatedDate: Date
+    createdDate: Date
+    description?: string
+    type?: string
+    badge?: string
+    framework?: string
+    usecases?: string
+}
+
 // DocumentStore related
 export * from './Interface.DocumentStore'

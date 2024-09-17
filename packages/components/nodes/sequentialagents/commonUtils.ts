@@ -1,7 +1,7 @@
 import { get } from 'lodash'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { NodeVM } from 'vm2'
+import { NodeVM } from '@flowiseai/nodevm'
 import { StructuredTool } from '@langchain/core/tools'
 import { ChatMistralAI } from '@langchain/mistralai'
 import { ChatAnthropic } from '@langchain/anthropic'
