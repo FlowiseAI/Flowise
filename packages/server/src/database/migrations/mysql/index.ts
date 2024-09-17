@@ -25,6 +25,7 @@ import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
 import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
+import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
 import { AddFollowUpPrompts1726666302024 } from './1726666302024-AddFollowUpPrompts'
 
 export const mysqlMigrations = [
@@ -55,5 +56,6 @@ export const mysqlMigrations = [
     AddActionToChatMessage1721078251523,
     LongTextColumn1722301395521,
     AddCustomTemplate1725629836652,
+    AddArtifactsToChatMessage1726156258465,
     AddFollowUpPrompts1726666302024
 ]
