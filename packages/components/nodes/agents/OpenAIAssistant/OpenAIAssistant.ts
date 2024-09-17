@@ -208,6 +208,7 @@ class OpenAIAssistant_Agents implements INode {
 
         const usedTools: IUsedTool[] = []
         const fileAnnotations = []
+        const artifacts = []
 
         const assistant = await appDataSource.getRepository(databaseEntities['Assistant']).findOneBy({
             id: selectedAssistantId
@@ -439,21 +440,23 @@ class OpenAIAssistant_Agents implements INode {
                             const fileId = chunk.image_file.file_id
                             const fileObj = await openai.files.retrieve(fileId)
 
-                            const buffer = await downloadImg(openai, fileId, `${fileObj.filename}.png`, options.chatflowid, options.chatId)
-                            const base64String = Buffer.from(buffer).toString('base64')
-
-                            // TODO: Use a file path and retrieve image on the fly. Storing as base64 to localStorage and database will easily hit limits
-                            const imgHTML = `<img src="data:image/png;base64,${base64String}" width="100%" height="max-content" alt="${fileObj.filename}" /><br/>`
-                            text += imgHTML
+                            const filePath = await downloadImg(
+                                openai,
+                                fileId,
+                                `${fileObj.filename}.png`,
+                                options.chatflowid,
+                                options.chatId
+                            )
+                            artifacts.push({ type: 'png', data: filePath })
 
                             if (!isStreamingStarted) {
                                 isStreamingStarted = true
                                 if (sseStreamer) {
-                                    sseStreamer.streamStartEvent(chatId, imgHTML)
+                                    sseStreamer.streamStartEvent(chatId, ' ')
                                 }
                             }
                             if (sseStreamer) {
-                                sseStreamer.streamTokenEvent(chatId, imgHTML)
+                                sseStreamer.streamArtifactsEvent(chatId, artifacts)
                             }
                         }
                     }
@@ -565,6 +568,7 @@ class OpenAIAssistant_Agents implements INode {
                 return {
                     text,
                     usedTools,
+                    artifacts,
                     fileAnnotations,
                     assistant: { assistantId: openAIAssistantId, threadId, runId: runThreadId, messages: messageData }
                 }
@@ -769,12 +773,8 @@ class OpenAIAssistant_Agents implements INode {
                     const fileId = content.image_file.file_id
                     const fileObj = await openai.files.retrieve(fileId)
 
-                    const buffer = await downloadImg(openai, fileId, `${fileObj.filename}.png`, options.chatflowid, options.chatId)
-                    const base64String = Buffer.from(buffer).toString('base64')
-
-                    // TODO: Use a file path and retrieve image on the fly. Storing as base64 to localStorage and database will easily hit limits
-                    const imgHTML = `<img src="data:image/png;base64,${base64String}" width="100%" height="max-content" alt="${fileObj.filename}" /><br/>`
-                    returnVal += imgHTML
+                    const filePath = await downloadImg(openai, fileId, `${fileObj.filename}.png`, options.chatflowid, options.chatId)
+                    artifacts.push({ type: 'png', data: filePath })
                 }
             }
 
@@ -787,6 +787,7 @@ class OpenAIAssistant_Agents implements INode {
             return {
                 text: returnVal,
                 usedTools,
+                artifacts,
                 fileAnnotations,
                 assistant: { assistantId: openAIAssistantId, threadId, runId: runThreadId, messages: messageData }
             }
@@ -807,9 +808,9 @@ const downloadImg = async (openai: OpenAI, fileId: string, fileName: string, ...
     const image_data_buffer = Buffer.from(image_data)
     const mime = 'image/png'
 
-    await addSingleFileToStorage(mime, image_data_buffer, fileName, ...paths)
+    const res = await addSingleFileToStorage(mime, image_data_buffer, fileName, ...paths)
 
-    return image_data_buffer
+    return res
 }
 
 const downloadFile = async (openAIApiKey: string, fileObj: any, fileName: string, ...paths: string[]) => {

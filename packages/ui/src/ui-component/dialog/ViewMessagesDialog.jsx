@@ -8,6 +8,7 @@ import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
+import { cloneDeep } from 'lodash'
 
 // material-ui
 import {
@@ -207,7 +208,16 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.fileAnnotations) msg.fileAnnotations = chatmsg.fileAnnotations
             if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
             if (chatmsg.agentReasoning) msg.agentReasoning = chatmsg.agentReasoning
-
+            if (chatmsg.artifacts) {
+                obj.artifacts = chatmsg.artifacts
+                obj.artifacts.forEach((artifact) => {
+                    if (artifact.type === 'png' || artifact.type === 'jpeg') {
+                        artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
+                            chatmsg.chatId
+                        }&fileName=${artifact.data.replace('FILE-STORAGE::', '')}`
+                    }
+                })
+            }
             if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
                 obj[chatPK] = {
                     id: chatmsg.chatId,
@@ -341,7 +351,16 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.usedTools) obj.usedTools = chatmsg.usedTools
             if (chatmsg.fileAnnotations) obj.fileAnnotations = chatmsg.fileAnnotations
             if (chatmsg.agentReasoning) obj.agentReasoning = chatmsg.agentReasoning
-
+            if (chatmsg.artifacts) {
+                obj.artifacts = chatmsg.artifacts
+                obj.artifacts.forEach((artifact) => {
+                    if (artifact.type === 'png' || artifact.type === 'jpeg') {
+                        artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
+                            chatmsg.chatId
+                        }&fileName=${artifact.data.replace('FILE-STORAGE::', '')}`
+                    }
+                })
+            }
             loadedMessages.push(obj)
         }
         setChatMessages(loadedMessages)
@@ -573,6 +592,83 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [feedbackTypeFilter])
+
+    const agentReasoningArtifacts = (artifacts) => {
+        const newArtifacts = cloneDeep(artifacts)
+        for (let i = 0; i < newArtifacts.length; i++) {
+            const artifact = newArtifacts[i]
+            if (artifact && (artifact.type === 'png' || artifact.type === 'jpeg')) {
+                const data = artifact.data
+                newArtifacts[i].data = `${baseURL}/api/v1/get-upload-file?chatflowId=${
+                    dialogProps.chatflow.id
+                }&chatId=${selectedChatId}&fileName=${data.replace('FILE-STORAGE::', '')}`
+            }
+        }
+        return newArtifacts
+    }
+
+    const renderArtifacts = (item, index, isAgentReasoning) => {
+        if (item.type === 'png' || item.type === 'jpeg') {
+            return (
+                <Card
+                    key={index}
+                    sx={{
+                        p: 0,
+                        m: 0,
+                        mt: 2,
+                        mb: 2,
+                        flex: '0 0 auto'
+                    }}
+                >
+                    <CardMedia
+                        component='img'
+                        image={item.data}
+                        sx={{ height: 'auto' }}
+                        alt={'artifact'}
+                        style={{
+                            width: isAgentReasoning ? '200px' : '100%',
+                            height: isAgentReasoning ? '200px' : 'auto',
+                            objectFit: 'cover'
+                        }}
+                    />
+                </Card>
+            )
+        } else if (item.type === 'html') {
+            return (
+                <div style={{ marginTop: '20px' }}>
+                    <div dangerouslySetInnerHTML={{ __html: item.data }}></div>
+                </div>
+            )
+        } else {
+            return (
+                <MemoizedReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
+                    components={{
+                        code({ inline, className, children, ...props }) {
+                            const match = /language-(\w+)/.exec(className || '')
+                            return !inline ? (
+                                <CodeBlock
+                                    key={Math.random()}
+                                    chatflowid={dialogProps.chatflow.id}
+                                    isDialog={true}
+                                    language={(match && match[1]) || ''}
+                                    value={String(children).replace(/\n$/, '')}
+                                    {...props}
+                                />
+                            ) : (
+                                <code className={className} {...props}>
+                                    {children}
+                                </code>
+                            )
+                        }
+                    }}
+                >
+                    {item.data}
+                </MemoizedReactMarkdown>
+            )
+        }
+    }
 
     const component = show ? (
         <Dialog
@@ -879,24 +975,6 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                     width: '100%'
                                                                 }}
                                                             >
-                                                                {message.usedTools && (
-                                                                    <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                                                                        {message.usedTools.map((tool, index) => {
-                                                                            return (
-                                                                                <Chip
-                                                                                    size='small'
-                                                                                    key={index}
-                                                                                    label={tool.tool}
-                                                                                    component='a'
-                                                                                    sx={{ mr: 1, mt: 1 }}
-                                                                                    variant='outlined'
-                                                                                    clickable
-                                                                                    onClick={() => onSourceDialogClick(tool, 'Used Tools')}
-                                                                                />
-                                                                            )
-                                                                        })}
-                                                                    </div>
-                                                                )}
                                                                 {message.fileUploads && message.fileUploads.length > 0 && (
                                                                     <div
                                                                         style={{
@@ -1008,6 +1086,31 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                     />
                                                                                                 </div>
                                                                                             )}
+                                                                                        {agent.artifacts && (
+                                                                                            <div
+                                                                                                style={{
+                                                                                                    display: 'flex',
+                                                                                                    flexWrap: 'wrap',
+                                                                                                    flexDirection: 'row',
+                                                                                                    width: '100%',
+                                                                                                    gap: '8px'
+                                                                                                }}
+                                                                                            >
+                                                                                                {agentReasoningArtifacts(
+                                                                                                    agent.artifacts
+                                                                                                ).map((item, index) => {
+                                                                                                    return item !== null ? (
+                                                                                                        <>
+                                                                                                            {renderArtifacts(
+                                                                                                                item,
+                                                                                                                index,
+                                                                                                                true
+                                                                                                            )}
+                                                                                                        </>
+                                                                                                    ) : null
+                                                                                                })}
+                                                                                            </div>
+                                                                                        )}
                                                                                         {agent.messages.length > 0 && (
                                                                                             <MemoizedReactMarkdown
                                                                                                 remarkPlugins={[remarkGfm, remarkMath]}
@@ -1025,8 +1128,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                         return !inline ? (
                                                                                                             <CodeBlock
                                                                                                                 key={Math.random()}
-                                                                                                                chatflowid={chatflowid}
-                                                                                                                isDialog={isDialog}
+                                                                                                                chatflowid={
+                                                                                                                    dialogProps.chatflow.id
+                                                                                                                }
+                                                                                                                isDialog={true}
                                                                                                                 language={
                                                                                                                     (match && match[1]) ||
                                                                                                                     ''
@@ -1119,6 +1224,40 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                     </CardContent>
                                                                                 </Card>
                                                                             )
+                                                                        })}
+                                                                    </div>
+                                                                )}
+                                                                {message.usedTools && (
+                                                                    <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                                                                        {message.usedTools.map((tool, index) => {
+                                                                            return (
+                                                                                <Chip
+                                                                                    size='small'
+                                                                                    key={index}
+                                                                                    label={tool.tool}
+                                                                                    component='a'
+                                                                                    sx={{ mr: 1, mt: 1 }}
+                                                                                    variant='outlined'
+                                                                                    clickable
+                                                                                    onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                                                />
+                                                                            )
+                                                                        })}
+                                                                    </div>
+                                                                )}
+                                                                {message.artifacts && (
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            flexWrap: 'wrap',
+                                                                            flexDirection: 'column',
+                                                                            width: '100%'
+                                                                        }}
+                                                                    >
+                                                                        {message.artifacts.map((item, index) => {
+                                                                            return item !== null ? (
+                                                                                <>{renderArtifacts(item, index)}</>
+                                                                            ) : null
                                                                         })}
                                                                     </div>
                                                                 )}

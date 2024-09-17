@@ -420,6 +420,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
         if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
+        if (result?.artifacts) apiMessage.artifacts = JSON.stringify(result.artifacts)
+
         const chatMessage = await utilAddChatMessage(apiMessage)
 
         logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
@@ -481,7 +483,7 @@ const utilBuildAgentResponse = async (
             shouldStreamResponse
         )
         if (streamResults) {
-            const { finalResult, finalAction, sourceDocuments, usedTools, agentReasoning } = streamResults
+            const { finalResult, finalAction, sourceDocuments, artifacts, usedTools, agentReasoning } = streamResults
             const userMessage: Omit<IChatMessage, 'id'> = {
                 role: 'userMessage',
                 content: incomingInput.question,
@@ -506,6 +508,7 @@ const utilBuildAgentResponse = async (
                 sessionId
             }
             if (sourceDocuments?.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
+            if (artifacts?.length) apiMessage.artifacts = JSON.stringify(artifacts)
             if (usedTools?.length) apiMessage.usedTools = JSON.stringify(usedTools)
             if (agentReasoning?.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
             if (finalAction && Object.keys(finalAction).length) apiMessage.action = JSON.stringify(finalAction)

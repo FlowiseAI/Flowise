@@ -134,6 +134,7 @@ class ToolAgent_Agents implements INode {
         let res: ChainValues = {}
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
+        let artifacts = []
 
         if (shouldStreamResponse) {
             const handler = new CustomChainHandler(sseStreamer, chatId)
@@ -149,6 +150,12 @@ class ToolAgent_Agents implements INode {
                     sseStreamer.streamUsedToolsEvent(chatId, flatten(res.usedTools))
                 }
                 usedTools = res.usedTools
+            }
+            if (res.artifacts) {
+                if (sseStreamer) {
+                    sseStreamer.streamArtifactsEvent(chatId, flatten(res.artifacts))
+                }
+                artifacts = res.artifacts
             }
             // If the tool is set to returnDirect, stream the output to the client
             if (res.usedTools && res.usedTools.length) {
@@ -168,6 +175,9 @@ class ToolAgent_Agents implements INode {
             }
             if (res.usedTools) {
                 usedTools = res.usedTools
+            }
+            if (res.artifacts) {
+                artifacts = res.artifacts
             }
         }
 
@@ -203,13 +213,16 @@ class ToolAgent_Agents implements INode {
 
         let finalRes = output
 
-        if (sourceDocuments.length || usedTools.length) {
+        if (sourceDocuments.length || usedTools.length || artifacts.length) {
             const finalRes: ICommonObject = { text: output }
             if (sourceDocuments.length) {
                 finalRes.sourceDocuments = flatten(sourceDocuments)
             }
             if (usedTools.length) {
                 finalRes.usedTools = usedTools
+            }
+            if (artifacts.length) {
+                finalRes.artifacts = artifacts
             }
             return finalRes
         }
