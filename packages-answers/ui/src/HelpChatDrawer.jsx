@@ -10,7 +10,62 @@ import Close from '@mui/icons-material/Close'
 import ChatIcon from '@mui/icons-material/ContactSupport'
 import Resize from '@mui/icons-material/Height'
 
-// const drawerWidth = 350
+// Need these as guidelines or either the chat window or main content will be unusable and the drawer tab icons will get lost.   May need some tweaking.
+const maxDrawerWidth = 40 // in "vw"
+const minDrawerWidth = 20 // in "vw"
+
+// Update theme color here
+const baseColor = '#000000' //theme.palette.primary.light
+const themeColors = generateThemeColors(baseColor)
+
+const themeConfig = {
+    button: {
+        size: 'small',
+        backgroundColor: themeColors.buttonBackgroundColor,
+        iconColor: themeColors.buttonIconColor,
+        // customIconSrc: 'https://example.com/icon.png',
+        bottom: 10,
+        right: 10
+    },
+    chatWindow: {
+        showTitle: true,
+        // title: 'Help Chatbot',
+        // titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+        backgroundColor: themeColors.chatWindowBackgroundColor,
+        width: -1,
+        fontSize: 12,
+        botMessage: {
+            backgroundColor: themeColors.botMessageBackgroundColor,
+            textColor: themeColors.botMessageTextColor,
+            showAvatar: true,
+            avatarSrc: '/static/images/logos/answerai-logo.png'
+        },
+        userMessage: {
+            backgroundColor: themeColors.userMessageBackgroundColor,
+            textColor: themeColors.userMessageTextColor,
+            showAvatar: false,
+            avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+        },
+        textInput: {
+            // placeholder: 'Type your message...',
+            backgroundColor: themeColors.textInputBackgroundColor,
+            textColor: themeColors.textInputTextColor,
+            sendButtonColor: themeColors.textInputSendButtonColor,
+            autoFocus: true
+            // sendMessageSound: true,
+            // receiveMessageSound: true
+        },
+        feedback: {
+            color: themeColors.feedbackColor
+        },
+        footer: {
+            textColor: themeColors.footerTextColor
+            // text: 'Powered by',
+            // company: 'The AnswerAI',
+            // companyLink: 'https://theanswer.ai'
+        }
+    }
+}
 
 const HelpChatDrawer = ({ apiHost, chatflowid }) => {
     const theme = useTheme()
@@ -31,7 +86,23 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
     }
 
     const handleMouseMove = (e) => {
-        setDrawerWidth(window.innerWidth - e.clientX) // adjust based on mouse X position
+        let newWidth = window.innerWidth - e.clientX
+        if (newWidth < 0) {
+            setHelpChatOpen(false)
+            setDrawerWidth(`${maxDrawerWidth}vw`)
+            return
+        }
+
+        const pctWidth = (newWidth / window.innerWidth) * 100
+
+        if (pctWidth > maxDrawerWidth) {
+            newWidth = `${maxDrawerWidth}vw`
+        } else if (pctWidth < minDrawerWidth) {
+            newWidth = `${minDrawerWidth}vw`
+        } else {
+            newWidth = `${pctWidth}vw`
+        }
+        setDrawerWidth(newWidth) // adjust based on mouse X position
     }
 
     const handleMouseUp = () => {
@@ -39,10 +110,6 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
         document.removeEventListener('mouseup', handleMouseUp)
         setTransition(transitionDefault)
     }
-
-    // Update theme color here
-    const baseColor = '#000000' //theme.palette.primary.light
-    const themeColors = generateThemeColors(baseColor)
 
     const toggleChat = () => {
         setHelpChatOpen(!helpChatOpen)
@@ -52,8 +119,7 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
         <Box
             sx={{
                 display: 'flex',
-                maxWidth: helpChatOpen ? `${drawerWidth}px` : '0px',
-                width: '100%',
+                width: helpChatOpen ? drawerWidth : '0px',
                 flexDirection: 'row',
                 alignItems: 'center'
             }}
@@ -116,6 +182,7 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
                 anchor='right'
                 open={helpChatOpen}
                 variant='permanent'
+                keepMounted={true}
                 sx={{
                     height: '100vh',
                     width: helpChatOpen ? drawerWidth : 0,
@@ -140,8 +207,9 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
                     }
                 }}
             >
-                <Box sx={{ maxWidth: drawerWidth, textWrap: 'initial' }}>
+                <Box sx={{ width: helpChatOpen ? drawerWidth : 0, textWrap: 'initial' }}>
                     <FullPageChat
+                        key='helpchatbot'
                         apiHost={apiHost}
                         chatflowid={chatflowid}
                         // observersConfig={{
@@ -158,55 +226,7 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
                         //         console.log('Stream End:', messages)
                         //     }
                         // }}
-                        theme={{
-                            button: {
-                                size: 'small',
-                                backgroundColor: themeColors.buttonBackgroundColor,
-                                iconColor: themeColors.buttonIconColor,
-                                // customIconSrc: 'https://example.com/icon.png',
-                                bottom: 10,
-                                right: 10
-                            },
-                            chatWindow: {
-                                showTitle: true,
-                                // title: 'Help Chatbot',
-                                // titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
-                                backgroundColor: themeColors.chatWindowBackgroundColor,
-                                width: -1,
-                                fontSize: 12,
-                                botMessage: {
-                                    backgroundColor: themeColors.botMessageBackgroundColor,
-                                    textColor: themeColors.botMessageTextColor,
-                                    showAvatar: true,
-                                    avatarSrc: '/static/images/logos/answerai-logo.png'
-                                },
-                                userMessage: {
-                                    backgroundColor: themeColors.userMessageBackgroundColor,
-                                    textColor: themeColors.userMessageTextColor,
-                                    showAvatar: false,
-                                    avatarSrc:
-                                        'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
-                                },
-                                textInput: {
-                                    // placeholder: 'Type your message...',
-                                    backgroundColor: themeColors.textInputBackgroundColor,
-                                    textColor: themeColors.textInputTextColor,
-                                    sendButtonColor: themeColors.textInputSendButtonColor,
-                                    autoFocus: true
-                                    // sendMessageSound: true,
-                                    // receiveMessageSound: true
-                                },
-                                feedback: {
-                                    color: themeColors.feedbackColor
-                                },
-                                footer: {
-                                    textColor: themeColors.footerTextColor
-                                    // text: 'Powered by',
-                                    // company: 'The AnswerAI',
-                                    // companyLink: 'https://theanswer.ai'
-                                }
-                            }
-                        }}
+                        theme={themeConfig}
                     />
                 </Box>
             </Drawer>
