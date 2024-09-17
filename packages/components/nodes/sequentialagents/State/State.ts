@@ -1,8 +1,8 @@
 import { START } from '@langchain/langgraph'
+import { NodeVM } from '@flowiseai/nodevm'
+import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams, ISeqAgentNode } from '../../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../../src/utils'
-import { NodeVM } from 'vm2'
-import { DataSource } from 'typeorm'
 
 const defaultFunc = `{
     aggregate: {

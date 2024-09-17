@@ -15,7 +15,7 @@ export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is no
 export const FLOWISE_CHATID = 'flowise_chatId'
 
 /*
- * List of dependencies allowed to be import in vm2
+ * List of dependencies allowed to be import in @flowiseai/nodevm
  */
 export const availableDependencies = [
     '@aws-sdk/client-bedrock-runtime',

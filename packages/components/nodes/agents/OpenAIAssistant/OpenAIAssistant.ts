@@ -449,16 +449,14 @@ class OpenAIAssistant_Agents implements INode {
                             )
                             artifacts.push({ type: 'png', data: filePath })
 
-                            if (artifacts.length) {
-                                if (!isStreamingStarted) {
-                                    isStreamingStarted = true
-                                    if (sseStreamer) {
-                                        sseStreamer.streamStartEvent(chatId, ' ')
-                                    }
-                                }
+                            if (!isStreamingStarted) {
+                                isStreamingStarted = true
                                 if (sseStreamer) {
-                                    sseStreamer.streamArtifactsEvent(chatId, artifacts)
+                                    sseStreamer.streamStartEvent(chatId, ' ')
                                 }
+                            }
+                            if (sseStreamer) {
+                                sseStreamer.streamArtifactsEvent(chatId, artifacts)
                             }
                         }
                     }

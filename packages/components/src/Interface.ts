@@ -416,7 +416,6 @@ export interface IServerSideEventStreamer {
     streamNextAgentEvent(chatId: string, data: any): void
     streamActionEvent(chatId: string, data: any): void
     streamArtifactsEvent(chatId: string, data: any): void
-
     streamAbortEvent(chatId: string): void
     streamEndEvent(chatId: string): void
 }

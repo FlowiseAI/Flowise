@@ -15,6 +15,7 @@ import PictureInPictureAltIcon from '@mui/icons-material/PictureInPictureAlt'
 import ThumbsUpDownOutlinedIcon from '@mui/icons-material/ThumbsUpDownOutlined'
 import VpnLockOutlinedIcon from '@mui/icons-material/VpnLockOutlined'
 import MicNoneOutlinedIcon from '@mui/icons-material/MicNoneOutlined'
+import ExportTemplateOutlinedIcon from '@mui/icons-material/BookmarksOutlined'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { IconX } from '@tabler/icons-react'
@@ -35,6 +36,7 @@ import useNotifier from '@/utils/useNotifier'
 import ChatFeedbackDialog from '../dialog/ChatFeedbackDialog'
 import AllowedDomainsDialog from '../dialog/AllowedDomainsDialog'
 import SpeechToTextDialog from '../dialog/SpeechToTextDialog'
+import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -95,6 +97,9 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     const [speechToTextDialogOpen, setSpeechToTextDialogOpen] = useState(false)
     const [speechToTextDialogProps, setSpeechToTextDialogProps] = useState({})
 
+    const [exportTemplateDialogOpen, setExportTemplateDialogOpen] = useState(false)
+    const [exportTemplateDialogProps, setExportTemplateDialogProps] = useState({})
+
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
     const handleClick = (event) => {
@@ -117,6 +122,14 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
             chatflow: chatflow
         })
         setConversationStartersDialogOpen(true)
+    }
+
+    const handleExportTemplate = () => {
+        setAnchorEl(null)
+        setExportTemplateDialogProps({
+            chatflow: chatflow
+        })
+        setExportTemplateDialogOpen(true)
     }
 
     const handleFlowChatFeedback = () => {
@@ -306,6 +319,10 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                     <FileDownloadIcon />
                     Export
                 </MenuItem>
+                <MenuItem onClick={handleExportTemplate} disableRipple>
+                    <ExportTemplateOutlinedIcon />
+                    Save As Template
+                </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
                 <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
                     <PictureInPictureAltIcon />
@@ -369,6 +386,13 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                 dialogProps={speechToTextDialogProps}
                 onCancel={() => setSpeechToTextDialogOpen(false)}
             />
+            {exportTemplateDialogOpen && (
+                <ExportAsTemplateDialog
+                    show={exportTemplateDialogOpen}
+                    dialogProps={exportTemplateDialogProps}
+                    onCancel={() => setExportTemplateDialogOpen(false)}
+                />
+            )}
         </div>
     )
 }
