@@ -50,8 +50,8 @@ aws configure
 Clone the AnswerAI repository to your local machine:
 
 ```bash
-git clone https://github.com/answers-AI/AnswerAI
-cd AnswerAI
+git clone https://github.com/the-answeri/theanswer
+cd theanswer
 ```
 
 ### 4. Initialize the Copilot Application
