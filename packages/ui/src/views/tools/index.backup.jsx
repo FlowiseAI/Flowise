@@ -213,6 +213,7 @@ const Tools = () => {
                             <FormControl sx={{ minWidth: 120, mr: 1 }}>
                                 <InputLabel id='category-filter-label'>Category</InputLabel>
                                 <Select
+                                    size='small'
                                     labelId='category-filter-label'
                                     value={categoryFilter}
                                     onChange={handleCategoryChange}

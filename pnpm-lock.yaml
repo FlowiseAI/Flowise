@@ -440,8 +440,8 @@ importers:
                 specifier: ^1.8.5
                 version: 1.8.8
             aai-embed-react:
-                specifier: ~1.0.3
-                version: link:../../packages/embed-react
+                specifier: ~1.0.8
+                version: 1.0.8(@types/node@20.12.12)(aai-embed@packages+embed)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
             axios:
                 specifier: ^1.4.0
                 version: 1.6.2(debug@4.3.4)
@@ -1649,6 +1649,9 @@ importers:
             swr:
                 specifier: ^2.2.0
                 version: 2.2.0(react@18.2.0)
+            tinycolor2:
+                specifier: ^1.6.0
+                version: 1.6.0
             uuid:
                 specifier: ^9.0.1
                 version: 9.0.1
@@ -7792,6 +7795,12 @@ packages:
 
     '@zilliz/milvus2-sdk-node@2.4.2':
         resolution: { integrity: sha512-fkPu7XXzfUvHoCnSPVOjqQpWuSnnn9x2NMmmCcIOyRzMeXIsrz4Mf/+M7LUzmT8J9F0Khx65B0rJgCu27YzWQw== }
+
+    aai-embed-react@1.0.8:
+        resolution: { integrity: sha512-lZ/C3oh22nWaDlVEfZd/ayIqRkERPGCbfVEV0uaZSneSOvt50aTjyXMDia3Bvb8WPr/hvFHH5RVtJ+i/BagwYQ== }
+        peerDependencies:
+            aai-embed: '*'
+            react: 18.x
 
     abab@2.0.6:
         resolution: { integrity: sha512-j2afSsaIENvHZN2B8GOpF566vZ5WVk5opAiMTvWgaQT8DkbOqsTfvNAvHoRGU2zzP8cPoqys+xHTRDWW8L+/BA== }
@@ -26970,6 +26979,56 @@ snapshots:
             - terser
             - typescript
 
+    '@ladle/react@2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)':
+        dependencies:
+            '@babel/code-frame': 7.23.5
+            '@babel/core': 7.24.0
+            '@babel/generator': 7.23.6
+            '@babel/parser': 7.24.8
+            '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.24.0)
+            '@babel/preset-env': 7.24.5(@babel/core@7.24.0)
+            '@babel/preset-react': 7.18.6(@babel/core@7.24.0)
+            '@babel/preset-typescript': 7.21.4(@babel/core@7.24.0)
+            '@babel/runtime': 7.24.0
+            '@babel/template': 7.24.0
+            '@babel/traverse': 7.24.0(supports-color@5.5.0)
+            '@babel/types': 7.24.5
+            '@ladle/react-context': 1.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+            '@vitejs/plugin-react': 3.1.0(vite@4.5.2(@types/node@20.12.12)(sass@1.71.1))
+            axe-core: 4.8.4
+            boxen: 7.1.1
+            chokidar: 3.6.0
+            classnames: 2.5.1
+            commander: 9.5.0
+            cross-spawn: 7.0.3
+            debug: 4.3.4(supports-color@5.5.0)
+            default-browser: 3.1.0
+            express: 4.18.3
+            get-port: 6.1.2
+            globby: 13.2.2
+            history: 5.3.0
+            lodash.merge: 4.6.2
+            open: 8.4.2
+            prism-react-renderer: 1.3.5(react@18.2.0)
+            prop-types: 15.8.1
+            query-string: 8.2.0
+            react: 18.2.0
+            react-dom: 18.2.0(react@18.2.0)
+            react-frame-component: 5.2.6(prop-types@15.8.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+            react-inspector: 6.0.2(react@18.2.0)
+            vite: 4.5.2(@types/node@20.12.12)(sass@1.71.1)
+            vite-tsconfig-paths: 4.3.1(typescript@4.9.5)(vite@4.5.2(@types/node@20.12.12)(sass@1.71.1))
+        transitivePeerDependencies:
+            - '@types/node'
+            - less
+            - lightningcss
+            - sass
+            - stylus
+            - sugarss
+            - supports-color
+            - terser
+            - typescript
+
     '@langchain/anthropic@0.2.1(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
         dependencies:
             '@anthropic-ai/sdk': 0.21.1(encoding@0.1.13)
@@ -27016,7 +27075,7 @@ snapshots:
             flat: 5.0.2
             js-yaml: 4.1.0
             langchain: 0.2.3(nphj44k7dsxncfcpdkfznsprde)
-            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             uuid: 9.0.1
             zod: 3.22.4
             zod-to-json-schema: 3.22.5(zod@3.22.4)
@@ -27117,7 +27176,7 @@ snapshots:
             camelcase: 6.3.0
             decamelize: 1.2.0
             js-tiktoken: 1.0.12
-            langsmith: 0.1.39(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.39(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             ml-distance: 4.0.1
             mustache: 4.2.0
             p-queue: 6.6.2
@@ -30606,6 +30665,17 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
+    '@vitejs/plugin-react@3.1.0(vite@4.5.2(@types/node@20.12.12)(sass@1.71.1))':
+        dependencies:
+            '@babel/core': 7.24.0
+            '@babel/plugin-transform-react-jsx-self': 7.23.3(@babel/core@7.24.0)
+            '@babel/plugin-transform-react-jsx-source': 7.23.3(@babel/core@7.24.0)
+            magic-string: 0.27.0
+            react-refresh: 0.14.0
+            vite: 4.5.2(@types/node@20.12.12)(sass@1.71.1)
+        transitivePeerDependencies:
+            - supports-color
+
     '@vitejs/plugin-react@4.2.1(vite@5.1.6(@types/node@20.12.12)(sass@1.71.1)(terser@5.29.1))':
         dependencies:
             '@babel/core': 7.24.0
@@ -30795,6 +30865,23 @@ snapshots:
             lru-cache: 9.1.2
             protobufjs: 7.2.6
             winston: 3.12.0
+
+    aai-embed-react@1.0.8(@types/node@20.12.12)(aai-embed@packages+embed)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(typescript@4.9.5):
+        dependencies:
+            '@ladle/react': 2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(typescript@4.9.5)
+            aai-embed: link:packages/embed
+            react: 18.2.0
+        transitivePeerDependencies:
+            - '@types/node'
+            - less
+            - lightningcss
+            - react-dom
+            - sass
+            - stylus
+            - sugarss
+            - supports-color
+            - terser
+            - typescript
 
     abab@2.0.6: {}
 
@@ -34935,8 +35022,8 @@ snapshots:
             '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@4.9.5)
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0)
-            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0)
+            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0)
+            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0)
             eslint-plugin-jsx-a11y: 6.8.0(eslint@7.32.0)
             eslint-plugin-react: 7.34.0(eslint@7.32.0)
             eslint-plugin-react-hooks: 4.6.0(eslint@7.32.0)
@@ -34998,23 +35085,6 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0):
-        dependencies:
-            debug: 4.3.6(supports-color@8.1.1)
-            enhanced-resolve: 5.16.0
-            eslint: 7.32.0
-            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0)
-            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0)
-            fast-glob: 3.3.2
-            get-tsconfig: 4.7.6
-            is-core-module: 2.13.1
-            is-glob: 4.0.3
-        transitivePeerDependencies:
-            - '@typescript-eslint/parser'
-            - eslint-import-resolver-node
-            - eslint-import-resolver-webpack
-            - supports-color
-
     eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.37.0):
         dependencies:
             debug: 4.3.6(supports-color@8.1.1)
@@ -35032,15 +35102,21 @@ snapshots:
             - eslint-import-resolver-webpack
             - supports-color
 
-    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0):
+    eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0):
         dependencies:
-            debug: 3.2.7(supports-color@5.5.0)
-        optionalDependencies:
-            '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@4.9.5)
+            debug: 4.3.6(supports-color@8.1.1)
+            enhanced-resolve: 5.16.0
             eslint: 7.32.0
-            eslint-import-resolver-node: 0.3.9
-            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0)
+            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0)
+            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0)
+            fast-glob: 3.3.2
+            get-tsconfig: 4.7.6
+            is-core-module: 2.13.1
+            is-glob: 4.0.3
         transitivePeerDependencies:
+            - '@typescript-eslint/parser'
+            - eslint-import-resolver-node
+            - eslint-import-resolver-webpack
             - supports-color
 
     eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.37.0))(eslint@8.37.0):
@@ -35054,13 +35130,14 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint@7.32.0):
+    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0):
         dependencies:
             debug: 3.2.7(supports-color@5.5.0)
         optionalDependencies:
             '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.5.2)
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
+            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -35109,7 +35186,7 @@ snapshots:
             - eslint-import-resolver-webpack
             - supports-color
 
-    eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0):
+    eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0):
         dependencies:
             array-includes: 3.1.7
             array.prototype.findlastindex: 1.2.4
@@ -35119,7 +35196,7 @@ snapshots:
             doctrine: 2.1.0
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint@7.32.0)
+            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0)
             hasown: 2.0.2
             is-core-module: 2.13.1
             is-glob: 4.0.3
@@ -39598,7 +39675,7 @@ snapshots:
             js-yaml: 4.1.0
             jsonpointer: 5.0.1
             langchainhub: 0.0.11
-            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             ml-distance: 4.0.1
             openapi-types: 12.1.3
             p-retry: 4.6.2
@@ -39684,7 +39761,7 @@ snapshots:
             langchain: 0.2.11(lcaakvik4gok2sgy65marre3ge)
             openai: 4.51.0(encoding@0.1.13)
 
-    langsmith@0.1.32(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
+    langsmith@0.1.32(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
         dependencies:
             '@types/uuid': 9.0.8
             commander: 10.0.1
@@ -39692,7 +39769,7 @@ snapshots:
             p-retry: 4.6.2
             uuid: 9.0.1
         optionalDependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             langchain: 0.2.3(nphj44k7dsxncfcpdkfznsprde)
             openai: 4.51.0(encoding@0.1.13)
 
@@ -39708,7 +39785,7 @@ snapshots:
             langchain: 0.2.11(lcaakvik4gok2sgy65marre3ge)
             openai: 4.51.0(encoding@0.1.13)
 
-    langsmith@0.1.39(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
+    langsmith@0.1.39(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
         dependencies:
             '@types/uuid': 9.0.8
             commander: 10.0.1
@@ -39716,7 +39793,7 @@ snapshots:
             p-retry: 4.6.2
             uuid: 9.0.1
         optionalDependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             langchain: 0.2.3(nphj44k7dsxncfcpdkfznsprde)
             openai: 4.51.0(encoding@0.1.13)
 
@@ -47490,6 +47567,10 @@ snapshots:
             string-argv: 0.3.2
             typescript: 5.5.2
 
+    tsconfck@3.0.3(typescript@4.9.5):
+        optionalDependencies:
+            typescript: 4.9.5
+
     tsconfck@3.0.3(typescript@5.0.3):
         optionalDependencies:
             typescript: 5.0.3
@@ -48379,6 +48460,17 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
+    vite-tsconfig-paths@4.3.1(typescript@4.9.5)(vite@4.5.2(@types/node@20.12.12)(sass@1.71.1)):
+        dependencies:
+            debug: 4.3.4(supports-color@5.5.0)
+            globrex: 0.1.2
+            tsconfck: 3.0.3(typescript@4.9.5)
+        optionalDependencies:
+            vite: 4.5.2(@types/node@20.12.12)(sass@1.71.1)
+        transitivePeerDependencies:
+            - supports-color
+            - typescript
+
     vite-tsconfig-paths@4.3.1(typescript@5.0.3)(vite@4.5.2(@types/node@18.15.11)(sass@1.71.1)(terser@5.29.1)):
         dependencies:
             debug: 4.3.4(supports-color@5.5.0)
@@ -48400,6 +48492,16 @@ snapshots:
             fsevents: 2.3.3
             sass: 1.71.1
             terser: 5.29.1
+
+    vite@4.5.2(@types/node@20.12.12)(sass@1.71.1):
+        dependencies:
+            esbuild: 0.18.20
+            postcss: 8.4.39
+            rollup: 3.29.4
+        optionalDependencies:
+            '@types/node': 20.12.12
+            fsevents: 2.3.3
+            sass: 1.71.1
 
     vite@5.1.6(@types/node@20.12.12)(sass@1.71.1)(terser@5.29.1):
         dependencies:
