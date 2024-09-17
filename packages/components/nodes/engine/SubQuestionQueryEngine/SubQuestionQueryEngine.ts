@@ -1,5 +1,5 @@
 import { flatten } from 'lodash'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import {
     TreeSummarize,
     SimpleResponseBuilder,
@@ -88,24 +88,32 @@ class SubQuestionQueryEngine_LlamaIndex implements INode {
         let sourceDocuments: ICommonObject[] = []
         let sourceNodes: NodeWithScore<Metadata>[] = []
         let isStreamingStarted = false
-        const isStreamingEnabled = options.socketIO && options.socketIOClientId
 
-        if (isStreamingEnabled) {
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
+
+        if (shouldStreamResponse) {
             const stream = await queryEngine.query({ query: input, stream: true })
             for await (const chunk of stream) {
                 text += chunk.response
                 if (chunk.sourceNodes) sourceNodes = chunk.sourceNodes
                 if (!isStreamingStarted) {
                     isStreamingStarted = true
-                    options.socketIO.to(options.socketIOClientId).emit('start', chunk.response)
+                    if (sseStreamer) {
+                        sseStreamer.streamStartEvent(chatId, chunk.response)
+                    }
                 }
-
-                options.socketIO.to(options.socketIOClientId).emit('token', chunk.response)
+                if (sseStreamer) {
+                    sseStreamer.streamTokenEvent(chatId, chunk.response)
+                }
             }
 
             if (returnSourceDocuments) {
                 sourceDocuments = reformatSourceDocuments(sourceNodes)
-                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', sourceDocuments)
+                if (sseStreamer) {
+                    sseStreamer.streamSourceDocumentsEvent(chatId, sourceDocuments)
+                }
             }
         } else {
             const response = await queryEngine.query({ query: input })

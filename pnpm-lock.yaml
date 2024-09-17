@@ -617,6 +617,9 @@ importers:
             '@emotion/styled':
                 specifier: ^11.10.6
                 version: 11.11.0(@emotion/react@11.11.4(@types/react@18.2.65)(react@18.2.0))(@types/react@18.2.65)(react@18.2.0)
+            '@microsoft/fetch-event-source':
+                specifier: ^2.0.1
+                version: 2.0.1
             '@mui/base':
                 specifier: 5.0.0-beta.40
                 version: 5.0.0-beta.40(@types/react@18.2.65)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -3749,6 +3752,9 @@ packages:
 
     '@mendable/firecrawl-js@0.0.28':
         resolution: { integrity: sha512-Xa+ZbBQkoR/KHM1ZpvJBdLWSCdRoRGyllDNoVvhKxGv9qXZk9h/lBxbqp3Kc1Kg2L2JJnJCkmeaTUCAn8y33GA== }
+
+    '@microsoft/fetch-event-source@2.0.1':
+        resolution: { integrity: sha512-W6CLUJ2eBMw3Rec70qrsEW0jOm/3twwJv21mrmj2yORiaVmVYGS4sSS5yUwvQc1ZlDLYGPnClVWmUUMagKNsfA== }
 
     '@mistralai/mistralai@0.1.3':
         resolution: { integrity: sha512-WUHxC2xdeqX9PTXJEqdiNY54vT2ir72WSJrZTTBKRnkfhX6zIfCYA24faRlWjUB5WTpn+wfdGsTMl3ArijlXFA== }
@@ -20097,6 +20103,8 @@ snapshots:
             zod-to-json-schema: 3.23.1(zod@3.23.8)
         transitivePeerDependencies:
             - debug
+
+    '@microsoft/fetch-event-source@2.0.1': {}
 
     '@mistralai/mistralai@0.1.3(encoding@0.1.13)':
         dependencies:

@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { MultiRetrievalQAChain } from 'langchain/chains'
-import { ICommonObject, INode, INodeData, INodeParams, VectorStoreRetriever } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, VectorStoreRetriever } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
@@ -83,13 +83,20 @@ class MultiRetrievalQAChain_Chains implements INode {
         const chain = nodeData.instance as MultiRetrievalQAChain
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
+
         if (moderations && moderations.length > 0) {
             try {
                 // Use the output of the moderation chain as input for the Multi Retrieval QA Chain
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (options.shouldStreamResponse) {
+                    streamResponse(options.sseStreamer, options.chatId, e.message)
+                }
                 return formatResponse(e.message)
             }
         }
@@ -97,8 +104,8 @@ class MultiRetrievalQAChain_Chains implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2, returnSourceDocuments)
+        if (shouldStreamResponse) {
+            const handler = new CustomChainHandler(sseStreamer, chatId, 2, returnSourceDocuments)
             const res = await chain.call(obj, [loggerHandler, handler, ...callbacks])
             if (res.text && res.sourceDocuments) return res
             return res?.text

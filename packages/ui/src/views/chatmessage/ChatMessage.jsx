@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback, Fragment } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
-import socketIOClient from 'socket.io-client'
 import { cloneDeep } from 'lodash'
 import rehypeMathjax from 'rehype-mathjax'
 import rehypeRaw from 'rehype-raw'
@@ -9,6 +8,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
+import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
 
 import {
     Box,
@@ -171,7 +171,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             type: 'apiMessage'
         }
     ])
-    const [socketIOClientId, setSocketIOClientId] = useState('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
     const [isChatFlowAvailableForSpeech, setIsChatFlowAvailableForSpeech] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
@@ -500,6 +499,14 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         })
     }
 
+    const updateErrorMessage = (errorMessage) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            allMessages.push({ message: errorMessage, type: 'apiMessage' })
+            return allMessages
+        })
+    }
+
     const updateLastMessageSourceDocuments = (sourceDocuments) => {
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
@@ -614,6 +621,34 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         handleSubmit(undefined, elem.label, action)
     }
 
+    const updateMetadata = (data, input) => {
+        // set message id that is needed for feedback
+        if (data.chatMessageId) {
+            setMessages((prevMessages) => {
+                let allMessages = [...cloneDeep(prevMessages)]
+                if (allMessages[allMessages.length - 1].type === 'apiMessage') {
+                    allMessages[allMessages.length - 1].id = data.chatMessageId
+                }
+                return allMessages
+            })
+        }
+
+        if (data.chatId) {
+            setChatId(data.chatId)
+        }
+
+        if (input === '' && data.question) {
+            // the response contains the question even if it was in an audio format
+            // so if input is empty but the response contains the question, update the user message to show the question
+            setMessages((prevMessages) => {
+                let allMessages = [...cloneDeep(prevMessages)]
+                if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
+                allMessages[allMessages.length - 2].message = data.question
+                return allMessages
+            })
+        }
+    }
+
     // Handle form submission
     const handleSubmit = async (e, selectedInput, action) => {
         if (e) e.preventDefault()
@@ -649,7 +684,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             }
             if (uploads && uploads.length > 0) params.uploads = uploads
             if (leadEmail) params.leadEmail = leadEmail
-            if (isChatFlowAvailableToStream) params.socketIOClientId = socketIOClientId
+
             if (action) params.action = action
 
             if (uploadedFiles.length > 0) {
@@ -671,33 +706,15 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 }
             }
 
-            const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
+            if (isChatFlowAvailableToStream) {
+                fetchResponseFromEventStream(chatflowid, params)
+            } else {
+                const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
+                if (response.data) {
+                    const data = response.data
 
-            if (response.data) {
-                const data = response.data
+                    updateMetadata(data, input)
 
-                setMessages((prevMessages) => {
-                    let allMessages = [...cloneDeep(prevMessages)]
-                    if (allMessages[allMessages.length - 1].type === 'apiMessage') {
-                        allMessages[allMessages.length - 1].id = data?.chatMessageId
-                    }
-                    return allMessages
-                })
-
-                setChatId(data.chatId)
-
-                if (input === '' && data.question) {
-                    // the response contains the question even if it was in an audio format
-                    // so if input is empty but the response contains the question, update the user message to show the question
-                    setMessages((prevMessages) => {
-                        let allMessages = [...cloneDeep(prevMessages)]
-                        if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
-                        allMessages[allMessages.length - 2].message = data.question
-                        return allMessages
-                    })
-                }
-
-                if (!isChatFlowAvailableToStream) {
                     let text = ''
                     if (data.text) text = data.text
                     else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
@@ -717,15 +734,16 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             feedback: null
                         }
                     ])
+
+                    setLocalStorageChatflow(chatflowid, data.chatId)
+                    setLoading(false)
+                    setUserInput('')
+                    setUploadedFiles([])
+                    setTimeout(() => {
+                        inputRef.current?.focus()
+                        scrollToBottom()
+                    }, 100)
                 }
-                setLocalStorageChatflow(chatflowid, data.chatId)
-                setLoading(false)
-                setUserInput('')
-                setUploadedFiles([])
-                setTimeout(() => {
-                    inputRef.current?.focus()
-                    scrollToBottom()
-                }, 100)
             }
         } catch (error) {
             handleError(error.response.data.message)
@@ -733,6 +751,88 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         }
     }
 
+    const fetchResponseFromEventStream = async (chatflowid, params) => {
+        const chatId = params.chatId
+        const input = params.question
+        const username = localStorage.getItem('username')
+        const password = localStorage.getItem('password')
+        params.streaming = true
+        await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
+            openWhenHidden: true,
+            method: 'POST',
+            body: JSON.stringify(params),
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: username && password ? `Basic ${btoa(`${username}:${password}`)}` : undefined,
+                'x-request-from': 'internal'
+            },
+            async onopen(response) {
+                if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
+                    //console.log('EventSource Open')
+                }
+            },
+            async onmessage(ev) {
+                const payload = JSON.parse(ev.data)
+                switch (payload.event) {
+                    case 'start':
+                        setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+                        break
+                    case 'token':
+                        updateLastMessage(payload.data)
+                        break
+                    case 'sourceDocuments':
+                        updateLastMessageSourceDocuments(payload.data)
+                        break
+                    case 'usedTools':
+                        updateLastMessageUsedTools(payload.data)
+                        break
+                    case 'fileAnnotations':
+                        updateLastMessageFileAnnotations(payload.data)
+                        break
+                    case 'agentReasoning':
+                        updateLastMessageAgentReasoning(payload.data)
+                        break
+                    case 'action':
+                        updateLastMessageAction(payload.data)
+                        break
+                    case 'nextAgent':
+                        updateLastMessageNextAgent(payload.data)
+                        break
+                    case 'metadata':
+                        updateMetadata(payload.data, input)
+                        break
+                    case 'error':
+                        updateErrorMessage(payload.data)
+                        break
+                    case 'abort':
+                        abortMessage(payload.data)
+                        closeResponse()
+                        break
+                    case 'end':
+                        setLocalStorageChatflow(chatflowid, chatId)
+                        closeResponse()
+                        break
+                }
+            },
+            async onclose() {
+                closeResponse()
+            },
+            async onerror(err) {
+                console.error('EventSource Error: ', err)
+                closeResponse()
+            }
+        })
+    }
+
+    const closeResponse = () => {
+        setLoading(false)
+        setUserInput('')
+        setUploadedFiles([])
+        setTimeout(() => {
+            inputRef.current?.focus()
+            scrollToBottom()
+        }, 100)
+    }
     // Prevent blank submissions and allow for multiline input
     const handleEnter = (e) => {
         // Check if IME composition is in progress
@@ -899,7 +999,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     }, [isDialog, inputRef])
 
     useEffect(() => {
-        let socket
         if (open && chatflowid) {
             // API request
             getChatmessageApi.request(chatflowid)
@@ -918,33 +1017,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 setIsLeadSaved(!!savedLead)
                 setLeadEmail(savedLead.email)
             }
-
-            // SocketIO
-            socket = socketIOClient(baseURL)
-
-            socket.on('connect', () => {
-                setSocketIOClientId(socket.id)
-            })
-
-            socket.on('start', () => {
-                setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
-            })
-
-            socket.on('sourceDocuments', updateLastMessageSourceDocuments)
-
-            socket.on('usedTools', updateLastMessageUsedTools)
-
-            socket.on('fileAnnotations', updateLastMessageFileAnnotations)
-
-            socket.on('token', updateLastMessage)
-
-            socket.on('agentReasoning', updateLastMessageAgentReasoning)
-
-            socket.on('action', updateLastMessageAction)
-
-            socket.on('nextAgent', updateLastMessageNextAgent)
-
-            socket.on('abort', abortMessage)
         }
 
         return () => {
@@ -957,10 +1029,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     type: 'apiMessage'
                 }
             ])
-            if (socket) {
-                socket.disconnect()
-                setSocketIOClientId('')
-            }
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

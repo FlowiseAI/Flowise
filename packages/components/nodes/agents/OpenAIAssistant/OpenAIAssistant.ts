@@ -1,4 +1,13 @@
-import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams, IUsedTool } from '../../../src/Interface'
+import {
+    ICommonObject,
+    IDatabaseEntity,
+    INode,
+    INodeData,
+    INodeOptionsValue,
+    INodeParams,
+    IServerSideEventStreamer,
+    IUsedTool
+} from '../../../src/Interface'
 import OpenAI from 'openai'
 import { DataSource } from 'typeorm'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
@@ -176,16 +185,19 @@ class OpenAIAssistant_Agents implements INode {
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
         const _toolChoice = nodeData.inputs?.toolChoice as string
         const parallelToolCalls = nodeData.inputs?.parallelToolCalls as boolean
-        const isStreaming = options.socketIO && options.socketIOClientId
-        const socketIO = isStreaming ? options.socketIO : undefined
-        const socketIOClientId = isStreaming ? options.socketIOClientId : ''
+
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
 
         if (moderations && moderations.length > 0) {
             try {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                streamResponse(isStreaming, e.message, socketIO, socketIOClientId)
+                if (shouldStreamResponse) {
+                    streamResponse(sseStreamer, chatId, e.message)
+                }
                 return formatResponse(e.message)
             }
         }
@@ -307,7 +319,7 @@ class OpenAIAssistant_Agents implements INode {
                 }
             }
 
-            if (isStreaming) {
+            if (shouldStreamResponse) {
                 const streamThread = await openai.beta.threads.runs.create(threadId, {
                     assistant_id: retrievedAssistant.id,
                     stream: true,
@@ -389,26 +401,37 @@ class OpenAIAssistant_Agents implements INode {
                                 if (message_content.value) {
                                     if (!isStreamingStarted) {
                                         isStreamingStarted = true
-                                        socketIO.to(socketIOClientId).emit('start', message_content.value)
+                                        if (sseStreamer) {
+                                            sseStreamer.streamStartEvent(chatId, message_content.value)
+                                        }
                                     }
-                                    socketIO.to(socketIOClientId).emit('token', message_content.value)
+                                    if (sseStreamer) {
+                                        sseStreamer.streamTokenEvent(chatId, message_content.value)
+                                    }
                                 }
 
                                 if (fileAnnotations.length) {
                                     if (!isStreamingStarted) {
                                         isStreamingStarted = true
-                                        socketIO.to(socketIOClientId).emit('start', '')
+                                        if (sseStreamer) {
+                                            sseStreamer.streamStartEvent(chatId, ' ')
+                                        }
                                     }
-                                    socketIO.to(socketIOClientId).emit('fileAnnotations', fileAnnotations)
+                                    if (sseStreamer) {
+                                        sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
+                                    }
                                 }
                             } else {
                                 text += chunk.text?.value
                                 if (!isStreamingStarted) {
                                     isStreamingStarted = true
-                                    socketIO.to(socketIOClientId).emit('start', chunk.text?.value)
+                                    if (sseStreamer) {
+                                        sseStreamer.streamStartEvent(chatId, chunk.text?.value || '')
+                                    }
                                 }
-
-                                socketIO.to(socketIOClientId).emit('token', chunk.text?.value)
+                                if (sseStreamer) {
+                                    sseStreamer.streamTokenEvent(chatId, chunk.text?.value || '')
+                                }
                             }
                         }
 
@@ -425,10 +448,13 @@ class OpenAIAssistant_Agents implements INode {
 
                             if (!isStreamingStarted) {
                                 isStreamingStarted = true
-                                socketIO.to(socketIOClientId).emit('start', imgHTML)
+                                if (sseStreamer) {
+                                    sseStreamer.streamStartEvent(chatId, imgHTML)
+                                }
                             }
-
-                            socketIO.to(socketIOClientId).emit('token', imgHTML)
+                            if (sseStreamer) {
+                                sseStreamer.streamTokenEvent(chatId, imgHTML)
+                            }
                         }
                     }
 
@@ -495,15 +521,19 @@ class OpenAIAssistant_Agents implements INode {
                                             text += chunk.text.value
                                             if (!isStreamingStarted) {
                                                 isStreamingStarted = true
-                                                socketIO.to(socketIOClientId).emit('start', chunk.text.value)
+                                                if (sseStreamer) {
+                                                    sseStreamer.streamStartEvent(chatId, chunk.text.value)
+                                                }
                                             }
-
-                                            socketIO.to(socketIOClientId).emit('token', chunk.text.value)
+                                            if (sseStreamer) {
+                                                sseStreamer.streamTokenEvent(chatId, chunk.text.value)
+                                            }
                                         }
                                     }
                                 }
-
-                                socketIO.to(socketIOClientId).emit('usedTools', usedTools)
+                                if (sseStreamer) {
+                                    sseStreamer.streamUsedToolsEvent(chatId, usedTools)
+                                }
                             } catch (error) {
                                 console.error('Error submitting tool outputs:', error)
                                 await openai.beta.threads.runs.cancel(threadId, runThreadId)
@@ -574,7 +604,9 @@ class OpenAIAssistant_Agents implements INode {
 
                                     // Start tool analytics
                                     const toolIds = await analyticHandlers.onToolStart(tool.name, actions[i].toolInput, parentIds)
-                                    if (socketIO && socketIOClientId) socketIO.to(socketIOClientId).emit('tool', tool.name)
+                                    if (shouldStreamResponse && sseStreamer) {
+                                        sseStreamer.streamToolEvent(chatId, tool.name)
+                                    }
 
                                     try {
                                         const toolOutput = await tool.call(actions[i].toolInput, undefined, undefined, {
