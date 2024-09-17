@@ -28,6 +28,7 @@ import PasswordIcon from '@mui/icons-material/Password'
 import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/IntegrationInstructionsOutlined'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
+import AdminOutlinedIcon from '@mui/icons-material/AdminPanelSettings'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 
 const drawerWidth = 240
