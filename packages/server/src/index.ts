@@ -153,19 +153,14 @@ export class App {
         })
 
         // ----------------------------------------
-        // Serve UI static
+        // Redirect to staging.theanswer.ai
         // ----------------------------------------
 
-        // const packagePath = getNodeModulesPackagePath('flowise-ui')
-        // const uiBuildPath = path.join(packagePath, 'build')
-        // const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
-
-        // this.app.use('/', express.static(uiBuildPath))
-
-        // All other requests not handled will return React app
-        // this.app.use((req: Request, res: Response) => {
-        //     res.sendFile(uiHtmlPath)
-        // })
+        this.app.use((req: express.Request, res: express.Response) => {
+            const path = req.url
+            console.log('Redirecting to', `${process.env.ANSWERAI_DOMAIN}${path}`)
+            res.redirect(301, `${process.env.ANSWERAI_DOMAIN}${path}`)
+        })
 
         // Error handling
         this.app.use(errorHandlerMiddleware)

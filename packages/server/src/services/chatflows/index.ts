@@ -15,7 +15,6 @@ import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import checkOwnership from '../../utils/checkOwnership'
 import { Organization } from '../../database/entities/Organization'
-import { User } from '../../database/entities/User'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -229,8 +228,9 @@ const getChatflowById = async (chatflowId: string, user: IUser): Promise<any> =>
         const isChatflowPublic = dbResponse.isPublic
         const hasChatflowOrgVisibility = dbResponse.visibility?.includes(ChatflowVisibility.ORGANIZATION)
         const isUserInSameOrg = dbResponse.organizationId === user?.organizationId
+        const isUsingAPIKey = dbResponse.apikeyid !== null && dbResponse.apikeyid !== undefined
 
-        if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg))) {
+        if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg) || isUsingAPIKey)) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
         }
         return dbResponse
