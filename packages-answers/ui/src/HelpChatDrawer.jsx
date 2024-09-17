@@ -120,7 +120,6 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
             sx={{
                 display: 'flex',
                 width: helpChatOpen ? drawerWidth : '0px',
-                // width: '100%',
                 flexDirection: 'row',
                 alignItems: 'center'
             }}
@@ -128,7 +127,6 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
             <Box
                 sx={{
                     transition,
-                    // transform: `translateX(calc(-${drawerWidth}))`,
                     transform: 'translateX(-100%)',
                     position: 'absolute',
                     display: 'flex',
