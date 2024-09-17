@@ -15,8 +15,10 @@ import {
     TableRow,
     Typography,
     Stack,
-    useTheme
+    useTheme,
+    IconButton
 } from '@mui/material'
+import { IconTrash } from '@tabler/icons-react'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -46,7 +48,8 @@ export const MarketplaceTable = ({
     filterByUsecases,
     goToCanvas,
     goToTool,
-    isLoading
+    isLoading,
+    onDelete
 }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -87,6 +90,11 @@ export const MarketplaceTable = ({
                             <StyledTableCell component='th' scope='row' key='6'>
                                 &nbsp;
                             </StyledTableCell>
+                            {onDelete && (
+                                <StyledTableCell component='th' scope='row' key='7'>
+                                    Delete
+                                </StyledTableCell>
+                            )}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -114,6 +122,11 @@ export const MarketplaceTable = ({
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
+                                    {onDelete && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                 </StyledTableRow>
                                 <StyledTableRow>
                                     <StyledTableCell>
@@ -137,6 +150,11 @@ export const MarketplaceTable = ({
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
+                                    {onDelete && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                 </StyledTableRow>
                             </>
                         ) : (
@@ -234,6 +252,13 @@ export const MarketplaceTable = ({
                                                             ))}
                                                 </Typography>
                                             </StyledTableCell>
+                                            {onDelete && (
+                                                <StyledTableCell key='7'>
+                                                    <IconButton title='Delete' color='error' onClick={() => onDelete(row)}>
+                                                        <IconTrash />
+                                                    </IconButton>
+                                                </StyledTableCell>
+                                            )}
                                         </StyledTableRow>
                                     ))}
                             </>
@@ -254,5 +279,6 @@ MarketplaceTable.propTypes = {
     filterByUsecases: PropTypes.func,
     goToTool: PropTypes.func,
     goToCanvas: PropTypes.func,
-    isLoading: PropTypes.bool
+    isLoading: PropTypes.bool,
+    onDelete: PropTypes.func
 }

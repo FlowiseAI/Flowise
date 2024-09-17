@@ -209,6 +209,9 @@ const parseAPIResponse = (apiResponse: ChatMessage | ChatMessage[]): ChatMessage
         if (parsedResponse.action) {
             parsedResponse.action = JSON.parse(parsedResponse.action)
         }
+        if (parsedResponse.artifacts) {
+            parsedResponse.artifacts = JSON.parse(parsedResponse.artifacts)
+        }
 
         return parsedResponse
     }

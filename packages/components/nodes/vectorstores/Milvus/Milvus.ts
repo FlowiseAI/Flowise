@@ -28,7 +28,7 @@ class Milvus_VectorStores implements INode {
     constructor() {
         this.label = 'Milvus'
         this.name = 'milvus'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'Milvus'
         this.icon = 'milvus.svg'
         this.category = 'Vector Stores'
@@ -64,6 +64,13 @@ class Milvus_VectorStores implements INode {
                 label: 'Milvus Collection Name',
                 name: 'milvusCollection',
                 type: 'string'
+            },
+            {
+                label: 'Milvus Partition Name',
+                name: 'milvusPartition',
+                default: '_default',
+                type: 'string',
+                optional: true
             },
             {
                 label: 'File Upload',
@@ -103,6 +110,46 @@ class Milvus_VectorStores implements INode {
                 type: 'number',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Secure',
+                name: 'secure',
+                type: 'boolean',
+                optional: true,
+                description: 'Enable secure connection to Milvus server',
+                additionalParams: true
+            },
+            {
+                label: 'Client PEM Path',
+                name: 'clientPemPath',
+                type: 'string',
+                optional: true,
+                description: 'Path to the client PEM file',
+                additionalParams: true
+            },
+            {
+                label: 'Client Key Path',
+                name: 'clientKeyPath',
+                type: 'string',
+                optional: true,
+                description: 'Path to the client key file',
+                additionalParams: true
+            },
+            {
+                label: 'CA PEM Path',
+                name: 'caPemPath',
+                type: 'string',
+                optional: true,
+                description: 'Path to the root PEM file',
+                additionalParams: true
+            },
+            {
+                label: 'Server Name',
+                name: 'serverName',
+                type: 'string',
+                optional: true,
+                description: 'Server name for the secure connection',
+                additionalParams: true
             }
         ]
         this.outputs = [
@@ -136,10 +183,34 @@ class Milvus_VectorStores implements INode {
             const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData)
             const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData)
 
+            // tls
+            const secure = nodeData.inputs?.secure as boolean
+            const clientPemPath = nodeData.inputs?.clientPemPath as string
+            const clientKeyPath = nodeData.inputs?.clientKeyPath as string
+            const caPemPath = nodeData.inputs?.caPemPath as string
+            const serverName = nodeData.inputs?.serverName as string
+
+            // partition
+            const partitionName = nodeData.inputs?.milvusPartition ?? '_default'
+
             // init MilvusLibArgs
             const milVusArgs: MilvusLibArgs = {
                 url: address,
-                collectionName: collectionName
+                collectionName: collectionName,
+                partitionName: partitionName
+            }
+
+            if (secure) {
+                milVusArgs.clientConfig = {
+                    address: address,
+                    ssl: secure,
+                    tls: {
+                        rootCertPath: caPemPath,
+                        certChainPath: clientPemPath,
+                        privateKeyPath: clientKeyPath,
+                        serverName: serverName
+                    }
+                }
             }
 
             if (milvusUser) milVusArgs.username = milvusUser
@@ -194,11 +265,35 @@ class Milvus_VectorStores implements INode {
         const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData)
         const milvusPassword = getCredentialParam('milvusPassword', credentialData, nodeData)
 
+        // tls
+        const secure = nodeData.inputs?.secure as boolean
+        const clientPemPath = nodeData.inputs?.clientPemPath as string
+        const clientKeyPath = nodeData.inputs?.clientKeyPath as string
+        const caPemPath = nodeData.inputs?.caPemPath as string
+        const serverName = nodeData.inputs?.serverName as string
+
+        // partition
+        const partitionName = nodeData.inputs?.milvusPartition ?? '_default'
+
         // init MilvusLibArgs
         const milVusArgs: MilvusLibArgs = {
             url: address,
             collectionName: collectionName,
+            partitionName: partitionName,
             textField: textField
+        }
+
+        if (secure) {
+            milVusArgs.clientConfig = {
+                address: address,
+                ssl: secure,
+                tls: {
+                    rootCertPath: caPemPath,
+                    certChainPath: clientPemPath,
+                    privateKeyPath: clientKeyPath,
+                    serverName: serverName
+                }
+            }
         }
 
         if (milvusUser) milVusArgs.username = milvusUser
