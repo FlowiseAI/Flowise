@@ -1,25 +1,25 @@
-import express from 'express'
-import { Request, Response } from 'express'
-import path from 'path'
 import cors from 'cors'
-import http from 'http'
+import express, { Request, Response } from 'express'
 import basicAuth from 'express-basic-auth'
+import { buildRoot } from 'flowise-ui'
+import http from 'http'
+import path from 'path'
 import { Server } from 'socket.io'
 import { DataSource } from 'typeorm'
-import { IChatFlow } from './Interface'
-import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
-import logger, { expressRequestLogger } from './utils/logger'
+import { CachePool } from './CachePool'
+import { ChatflowPool } from './ChatflowPool'
 import { getDataSource } from './DataSource'
+import { IChatFlow } from './Interface'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
-import { ChatflowPool } from './ChatflowPool'
-import { CachePool } from './CachePool'
-import { initializeRateLimiter } from './utils/rateLimit'
-import { getAPIKeys } from './utils/apiKey'
-import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
-import { Telemetry } from './utils/telemetry'
-import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
+import flowiseApiV1Router from './routes'
+import { getEncryptionKey } from './utils'
+import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
+import { getAPIKeys } from './utils/apiKey'
+import logger, { expressRequestLogger } from './utils/logger'
+import { initializeRateLimiter } from './utils/rateLimit'
+import { Telemetry } from './utils/telemetry'
 import { validateAPIKey } from './utils/validateKey'
 
 declare global {
@@ -215,11 +215,9 @@ export class App {
         // Serve UI static
         // ----------------------------------------
 
-        const packagePath = getNodeModulesPackagePath('flowise-ui')
-        const uiBuildPath = path.join(packagePath, 'build')
-        const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
+        const uiHtmlPath = path.join(buildRoot, 'index.html')
 
-        this.app.use('/', express.static(uiBuildPath))
+        this.app.use('/', express.static(buildRoot))
 
         // All other requests not handled will return React app
         this.app.use((req: Request, res: Response) => {

@@ -88,19 +88,10 @@ export const getUserHome = (): string => {
  * @returns {string}
  */
 export const getNodeModulesPackagePath = (packageName: string): string => {
-    const checkPaths = [
-        path.join(__dirname, '..', 'node_modules', packageName),
-        path.join(__dirname, '..', '..', 'node_modules', packageName),
-        path.join(__dirname, '..', '..', '..', 'node_modules', packageName),
-        path.join(__dirname, '..', '..', '..', '..', 'node_modules', packageName),
-        path.join(__dirname, '..', '..', '..', '..', '..', 'node_modules', packageName)
-    ]
-    for (const checkPath of checkPaths) {
-        if (fs.existsSync(checkPath)) {
-            return checkPath
-        }
-    }
-    return ''
+    const packagePath = require.resolve(packageName)
+
+    console.log({ packagePath })
+    return packagePath
 }
 
 /**
