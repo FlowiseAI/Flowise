@@ -1,5 +1,3 @@
-/*
-* TODO: Implement codeInterpreter column to chat_message table
 import { INodeParams, INodeCredential } from '../src/Interface'
 
 class E2BApi implements INodeCredential {
@@ -23,4 +21,3 @@ class E2BApi implements INodeCredential {
 }
 
 module.exports = { credClass: E2BApi }
-*/
