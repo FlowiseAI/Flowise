@@ -57,6 +57,8 @@ cd theanswer
 ### 4. Initialize the Copilot Application
 
 In the root directory of your AnswerAI project, run:
+Ensure yo uhave setup a hosted zone in AWS.
+// TODO: Add Details
 
 ```bash
 copilot app init --domain <your-domain>
