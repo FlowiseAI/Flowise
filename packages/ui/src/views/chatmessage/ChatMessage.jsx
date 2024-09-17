@@ -75,7 +75,7 @@ import leadsApi from '@/api/lead'
 import useApi from '@/hooks/useApi'
 
 // Const
-import { coreURL, maxScroll, subpath } from '@/store/constant'
+import { baseURL, maxScroll } from '@/store/constant'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // Utils
