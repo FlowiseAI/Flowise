@@ -23,6 +23,7 @@ import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlo
 import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
 import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
 import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
+import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
 import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
 
 export const mariadbMigrations = [
@@ -51,5 +52,6 @@ export const mariadbMigrations = [
     AddApiKey1720230151480,
     AddActionToChatMessage1721078251523,
     LongTextColumn1722301395521,
+    AddArtifactsToChatMessage1726156258465,
     AddCustomTemplate1725629836652
 ]
