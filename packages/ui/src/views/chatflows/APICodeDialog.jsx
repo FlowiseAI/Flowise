@@ -34,7 +34,7 @@ import pythonSVG from '@/assets/images/python.svg'
 import javascriptSVG from '@/assets/images/javascript.svg'
 import cURLSVG from '@/assets/images/cURL.svg'
 import EmbedSVG from '@/assets/images/embed.svg'
-import ShareChatbotSVG from '@/assets/images/sharing.png'
+import ShareChatbotSVG from '@/assets/images/sharing.svg'
 import settingsSVG from '@/assets/images/settings.svg'
 import { IconBulb } from '@tabler/icons-react'
 
@@ -50,7 +50,6 @@ import { TableViewOnly } from '@/ui-component/table/Table'
 
 // Helpers
 import { unshiftFiles, getConfigExamplesForJS, getConfigExamplesForPython, getConfigExamplesForCurl } from '@/utils/genericHelper'
-import Image from 'next/image'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -585,11 +584,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                             {codes.map((codeLang, index) => (
                                 <Tab
                                     icon={
-                                        <Image
-                                            style={{ objectFit: 'cover', height: 15, width: 'auto' }}
-                                            src={getSVG(codeLang)}
-                                            alt='code'
-                                        />
+                                        <img style={{ objectFit: 'cover', height: 15, width: 'auto' }} src={getSVG(codeLang)} alt='code' />
                                     }
                                     iconPosition='start'
                                     key={index}
