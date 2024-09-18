@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FullPageChat } from 'aai-embed-react'
 import { useNavigate, usePathname } from '@/utils/navigation'
 
@@ -13,11 +13,14 @@ import chatflowsApi from '@/api/chatflows'
 import useApi from '@/hooks/useApi'
 
 //Const
-import { baseURL } from '@/store/constant'
+import { baseURL, setBaseURL } from '@/store/constant'
 
 // ==============================|| Chatbot ||============================== //
 
-const ChatbotFull = () => {
+const ChatbotFull = ({ apiHost }) => {
+    React.useEffect(() => {
+        setBaseURL(apiHost)
+    }, [apiHost])
     const pathname = usePathname()
     const URLpath = pathname.split('/')
     const chatflowId = URLpath[URLpath.length - 1] === 'chatbot' ? '' : URLpath[URLpath.length - 1]
@@ -120,12 +123,12 @@ const ChatbotFull = () => {
                     ) : (
                         <FullPageChat
                             chatflowid={chatflow.id}
-                            apiHost={baseURL}
+                            apiHost={apiHost ?? baseURL}
                             chatflowConfig={chatbotOverrideConfig}
                             theme={{ chatWindow: chatbotTheme }}
                         />
                     )}
-                    <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
+                    {/* <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} /> */}
                 </>
             ) : null}
         </>

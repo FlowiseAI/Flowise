@@ -158,8 +158,10 @@ export class App {
 
         this.app.use((req: express.Request, res: express.Response) => {
             const path = req.url
-            console.log('Redirecting to', `${process.env.ANSWERAI_DOMAIN}${path}`)
-            res.redirect(301, `${process.env.ANSWERAI_DOMAIN}${path}`)
+            const encodedDomain = Buffer.from(process.env.DOMAIN || '').toString('base64')
+            const redirectURL = new URL(`${encodedDomain}${path}`, process.env.ANSWERAI_DOMAIN)
+            console.log('Redirecting to', redirectURL.toString())
+            res.redirect(301, redirectURL.toString())
         })
 
         // Error handling

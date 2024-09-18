@@ -149,6 +149,11 @@ const Tools = () => {
     }
 
     useEffect(() => {
+        getAllToolsApi.request()
+        getMarketplaceToolsApi.request()
+    }, [])
+
+    useEffect(() => {
         if (getAllToolsApi.data && getMarketplaceToolsApi.data) {
             const allTools = getAllToolsApi.data
             setMyTools(allTools.filter((tool) => tool.isOwner))

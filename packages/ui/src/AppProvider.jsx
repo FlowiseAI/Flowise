@@ -33,7 +33,7 @@ const AppProvider = ({ children }) => {
                 const newToken = await getAccessTokenSilently()
                 sessionStorage.setItem('access_token', newToken)
             } catch (err) {
-                loginWithRedirect()
+                // loginWithRedirect()
                 console.log(err)
             }
         })()
@@ -49,7 +49,7 @@ const AppProvider = ({ children }) => {
                     <SnackbarProvider>
                         <ConfirmContextProvider>
                             {/* Improve loading state when there is no user (currently all or nothing due to icons ) */}
-                            <ReactFlowContext>{user ? children : null}</ReactFlowContext>
+                            <ReactFlowContext>{children}</ReactFlowContext>
                         </ConfirmContextProvider>
                     </SnackbarProvider>
                 </Provider>

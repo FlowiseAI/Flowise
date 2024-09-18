@@ -6,13 +6,14 @@ import ChatDrawerServer from '@ui/ChatDrawer.Server'
 
 const AppLayoutServer = (props: {
     session?: Session
-    appSettings: AppSettings
+    appSettings?: AppSettings
     // providers: Record<string, ClientSafeProvider> | null;
     children: any
-    params: {
+    params?: {
         slug: string
     }
     flagsmithState: any
+    noDrawer?: boolean
 }) => {
     return (
         <AppLayoutClient

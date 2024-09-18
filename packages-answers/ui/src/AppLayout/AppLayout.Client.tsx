@@ -19,17 +19,19 @@ export default function AppLayout({
     chatList,
     params,
     children,
-    flagsmithState
+    flagsmithState,
+    noDrawer
 }: {
     session?: Session
-    appSettings: AppSettings
+    appSettings?: AppSettings
     // providers: Record<string, ClientSafeProvider> | null;
     children: any
-    chatList: any
-    params: {
+    chatList?: any
+    params?: {
         slug: string
     }
-    flagsmithState: any
+    flagsmithState?: any
+    noDrawer?: boolean
 }) {
     const authorizationParams = {
         organization: session?.user.organizationId,
@@ -47,8 +49,8 @@ export default function AppLayout({
             flagsmith={flagsmith}
         >
             <Auth0Provider
-                domain={process.env.VITE_AUTH_DOMAIN}
-                clientId={process.env.VITE_AUTH_CLIENT_ID}
+                domain={process.env.VITE_AUTH_DOMAIN!}
+                clientId={process.env.VITE_AUTH_CLIENT_ID!}
                 authorizationParams={authorizationParams}
             >
                 <ThemeProvider theme={darkModeTheme}>
@@ -56,7 +58,9 @@ export default function AppLayout({
                         <CssBaseline enableColorScheme />
                         <GlobalStyles />
                         <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
-                            <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
+                            {!noDrawer && (
+                                <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
+                            )}
                             <div style={{ flex: 1, position: 'relative' }}>
                                 <div style={{ width: '100%', height: '100%', position: 'relative' }}>{children}</div>
                             </div>
