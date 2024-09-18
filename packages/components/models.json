@@ -506,6 +506,22 @@
                     "name": "gpt-4o-2024-05-13"
                 },
                 {
+                    "label": "o1-preview (latest)",
+                    "name": "o1-preview"
+                },
+                {
+                    "label": "o1-preview-2024-09-12",
+                    "name": "o1-preview-2024-09-12"
+                },
+                {
+                    "label": "o1-mini (latest)",
+                    "name": "o1-mini"
+                },
+                {
+                    "label": "o1-mini-2024-09-12",
+                    "name": "o1-mini-2024-09-12"
+                },
+                {
                     "label": "gpt-4 (latest)",
                     "name": "gpt-4"
                 },
