@@ -7,6 +7,7 @@ import { StructuredTool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { v4 as uuidv4 } from 'uuid'
+import { CustomChainHandler } from '../../../src'
 
 class ChatflowTool_Tools implements INode {
     label: string
@@ -247,6 +248,15 @@ class ChatflowTool extends StructuredTool {
             parsed = await this.schema.parseAsync(arg)
         } catch (e) {
             throw new Error(`Received tool input did not match expected schema: ${JSON.stringify(arg)}`)
+        }
+        // iterate over the callbacks and the sse streamer
+        if (config.callbacks instanceof CallbackManager) {
+            const callbacks = config.callbacks.handlers
+            for (let i = 0; i < callbacks.length; i += 1) {
+                if (callbacks[i] instanceof CustomChainHandler) {
+                    ;(callbacks[i] as any).sseStreamer = undefined
+                }
+            }
         }
         const callbackManager_ = await CallbackManager.configure(
             config.callbacks,

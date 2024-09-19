@@ -42,6 +42,7 @@ export interface IChatMessage {
     fileAnnotations?: string
     agentReasoning?: string
     fileUploads?: string
+    artifacts?: string
     chatType: string
     chatId: string
     memoryType?: string
@@ -215,7 +216,6 @@ export interface IMessage {
 export interface IncomingInput {
     question: string
     overrideConfig?: ICommonObject
-    socketIOClientId?: string
     chatId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]
