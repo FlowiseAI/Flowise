@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
 
 // icons
 import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
@@ -27,8 +27,9 @@ import useApi from '@/hooks/useApi'
 // utils
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
-import { SET_CHATFLOW } from '@/store/actions'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
+import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -54,6 +55,11 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
     const [chatflowConfigurationDialogOpen, setChatflowConfigurationDialogOpen] = useState(false)
     const [chatflowConfigurationDialogProps, setChatflowConfigurationDialogProps] = useState({})
 
+    const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
+    const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -76,6 +82,28 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 chatflow: chatflow
             })
             setViewLeadsDialogOpen(true)
+        } else if (setting === 'saveAsTemplate') {
+            if (canvas.isDirty) {
+                enqueueSnackbar({
+                    message: 'Please save the flow before exporting as template',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                return
+            }
+            setExportAsTemplateDialogProps({
+                title: 'Export As Template',
+                chatflow: chatflow
+            })
+            setExportAsTemplateDialogOpen(true)
         } else if (setting === 'viewUpsertHistory') {
             setUpsertHistoryDialogProps({
                 title: 'View Upsert History',
@@ -419,6 +447,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 onCancel={() => setViewMessagesDialogOpen(false)}
             />
             <ViewLeadsDialog show={viewLeadsDialogOpen} dialogProps={viewLeadsDialogProps} onCancel={() => setViewLeadsDialogOpen(false)} />
+            {exportAsTemplateDialogOpen && (
+                <ExportAsTemplateDialog
+                    show={exportAsTemplateDialogOpen}
+                    dialogProps={exportAsTemplateDialogProps}
+                    onCancel={() => setExportAsTemplateDialogOpen(false)}
+                />
+            )}
             <UpsertHistoryDialog
                 show={upsertHistoryDialogOpen}
                 dialogProps={upsertHistoryDialogProps}

@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { MultiPromptChain } from 'langchain/chains'
-import { ICommonObject, INode, INodeData, INodeParams, PromptRetriever } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, PromptRetriever } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
@@ -75,13 +75,21 @@ class MultiPromptChain_Chains implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const chain = nodeData.instance as MultiPromptChain
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        // this is true if the prediction is external and the client has requested streaming='true'
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
+
         if (moderations && moderations.length > 0) {
             try {
                 // Use the output of the moderation chain as input for the Multi Prompt Chain
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (options.shouldStreamResponse) {
+                    streamResponse(options.sseStreamer, options.chatId, e.message)
+                }
                 return formatResponse(e.message)
             }
         }
@@ -90,8 +98,8 @@ class MultiPromptChain_Chains implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
+        if (shouldStreamResponse) {
+            const handler = new CustomChainHandler(sseStreamer, chatId, 2)
             const res = await chain.call(obj, [loggerHandler, handler, ...callbacks])
             return res?.text
         } else {

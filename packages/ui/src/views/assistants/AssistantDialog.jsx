@@ -165,7 +165,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
 
     useEffect(() => {
         if (getAssistantObjApi.error) {
-            let errMsg = ''
+            let errMsg = 'Internal Server Error'
+            let error = getAssistantObjApi.error
             if (error?.response?.data) {
                 errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
             }
