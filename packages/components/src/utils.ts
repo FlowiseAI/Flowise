@@ -926,3 +926,8 @@ export const mapMimeTypeToExt = (mimeType: string) => {
             return ''
     }
 }
+
+// remove invalid markdown image pattern: ![<some-string>](<some-string>)
+export const removeInvalidImageMarkdown = (output: string): string => {
+    return typeof output === 'string' ? output.replace(/!\[.*?\]\((?!https?:\/\/).*?\)/g, '') : output
+}
