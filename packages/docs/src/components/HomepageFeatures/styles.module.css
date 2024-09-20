@@ -17,7 +17,6 @@
 
 .featureLink:hover {
     text-decoration: none;
-    color: inherit;
 }
 
 .featureList {
@@ -57,23 +56,15 @@
 }
 
 .featureButton {
-    display: inline-block;
     margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    background-color: #000;
-    color: #fff;
-    border-radius: var(--ifm-button-border-radius);
-    font-weight: var(--ifm-font-weight-bold);
-    transition: background-color 0.3s ease;
-    text-decoration: none;
 }
 
 .featureLink:hover .featureButton {
     text-decoration: none !important;
 }
 
-.featureLink:hover * {
-    color: #2e8555 !important;
+.featureLink:hover *:not([class*='button']) {
+    color: var(--ifm-button-background-color) !important;
 }
 
 .fullWidthSection {

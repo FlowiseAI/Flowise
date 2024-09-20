@@ -47,7 +47,7 @@ function Feature({ title, description, icon, buttonText, url }: FeatureItem) {
                     <div className={styles.featureContent}>
                         <Heading as='h3'>{title}</Heading>
                         <p>{description}</p>
-                        <div className={styles.featureButton}>{buttonText}</div>
+                        <div className={clsx('button button--primary', styles.featureButton)}>{buttonText}</div>
                     </div>
                 </div>
             </Link>

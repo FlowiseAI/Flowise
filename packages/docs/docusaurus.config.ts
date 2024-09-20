@@ -54,7 +54,7 @@ const config: Config = {
                     onUntruncatedBlogPosts: 'warn'
                 },
                 theme: {
-                    customCss: './src/components/HomepageFeatures/styles.module.css'
+                    customCss: './src/css/custom.css'
                 }
             } satisfies Preset.Options
         ]
@@ -91,6 +91,12 @@ const config: Config = {
                     position: 'left'
                 },
                 {
+                    href: 'https://studio.theanswer.ai',
+                    label: 'Sign In',
+                    position: 'right',
+                    className: 'button button--primary button--sm'
+                },
+                {
                     href: 'https://github.com/answers-ai/',
                     label: 'GitHub',
                     position: 'right'
@@ -98,7 +104,6 @@ const config: Config = {
             ]
         },
         footer: {
-            style: 'dark',
             links: [
                 {
                     title: 'Docs',
