@@ -29,7 +29,7 @@ type Element = {
 export class UnstructuredLoader extends BaseDocumentLoader {
     public filePath: string
 
-    private apiUrl = 'https://api.unstructured.io/general/v0/general'
+    private apiUrl = 'https://api.unstructuredapp.io/general/v0/general'
 
     private apiKey?: string
 
