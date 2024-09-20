@@ -9,9 +9,9 @@ import {
     ISeqAgentsState,
     ISeqAgentNode,
     IUsedTool,
-    IDocument
+    IDocument,
+    IServerSideEventStreamer
 } from 'flowise-components'
-import { Server } from 'socket.io'
 import { omit, cloneDeep, flatten, uniq } from 'lodash'
 import { StateGraph, END, START } from '@langchain/langgraph'
 import { Document } from '@langchain/core/documents'
@@ -53,7 +53,6 @@ import logger from './logger'
  * @param {ICommonObject} incomingInput
  * @param {boolean} isInternal
  * @param {string} baseURL
- * @param {Server} socketIO
  */
 export const buildAgentGraph = async (
     chatflow: IChatFlow,
@@ -62,7 +61,8 @@ export const buildAgentGraph = async (
     incomingInput: IncomingInput,
     isInternal: boolean,
     baseURL?: string,
-    socketIO?: Server
+    sseStreamer?: IServerSideEventStreamer,
+    shouldStreamResponse?: boolean
 ): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
@@ -154,6 +154,7 @@ export const buildAgentGraph = async (
         let finalAction: IAction = {}
         let totalSourceDocuments: IDocument[] = []
         let totalUsedTools: IUsedTool[] = []
+        let totalArtifacts: ICommonObject[] = []
 
         const workerNodes = reactFlowNodes.filter((node) => node.data.name === 'worker')
         const supervisorNodes = reactFlowNodes.filter((node) => node.data.name === 'supervisor')
@@ -221,6 +222,9 @@ export const buildAgentGraph = async (
                             const sourceDocuments = output[agentName]?.messages
                                 ? output[agentName].messages.map((msg: BaseMessage) => msg.additional_kwargs?.sourceDocuments)
                                 : []
+                            const artifacts = output[agentName]?.messages
+                                ? output[agentName].messages.map((msg: BaseMessage) => msg.additional_kwargs?.artifacts)
+                                : []
                             const messages = output[agentName]?.messages
                                 ? output[agentName].messages.map((msg: BaseMessage) => (typeof msg === 'string' ? msg : msg.content))
                                 : []
@@ -238,6 +242,11 @@ export const buildAgentGraph = async (
                             if (sourceDocuments && sourceDocuments.length) {
                                 const cleanedDocs = sourceDocuments.filter((documents: IDocument) => documents)
                                 if (cleanedDocs.length) totalSourceDocuments.push(...cleanedDocs)
+                            }
+
+                            if (artifacts && artifacts.length) {
+                                const cleanedArtifacts = artifacts.filter((artifact: ICommonObject) => artifact)
+                                if (cleanedArtifacts.length) totalArtifacts.push(...cleanedArtifacts)
                             }
 
                             /*
@@ -273,6 +282,7 @@ export const buildAgentGraph = async (
                                 instructions: output[agentName]?.instructions,
                                 usedTools: flatten(usedTools) as IUsedTool[],
                                 sourceDocuments: flatten(sourceDocuments) as Document[],
+                                artifacts: flatten(artifacts) as ICommonObject[],
                                 state,
                                 nodeName: isSequential ? mapNameToLabel[agentName].nodeName : undefined,
                                 nodeId
@@ -287,28 +297,31 @@ export const buildAgentGraph = async (
                                     ? output[agentName].messages[output[agentName].messages.length - 1].content
                                     : lastWorkerResult
 
-                            if (socketIO && incomingInput.socketIOClientId) {
+                            if (shouldStreamResponse) {
                                 if (!isStreamingStarted) {
                                     isStreamingStarted = true
-                                    socketIO.to(incomingInput.socketIOClientId).emit('start', agentReasoning)
+                                    if (sseStreamer) {
+                                        sseStreamer.streamStartEvent(chatId, agentReasoning)
+                                    }
                                 }
 
-                                socketIO.to(incomingInput.socketIOClientId).emit('agentReasoning', agentReasoning)
+                                if (sseStreamer) {
+                                    sseStreamer.streamAgentReasoningEvent(chatId, agentReasoning)
+                                }
 
                                 // Send loading next agent indicator
                                 if (reasoning.next && reasoning.next !== 'FINISH' && reasoning.next !== 'END') {
-                                    socketIO
-                                        .to(incomingInput.socketIOClientId)
-                                        .emit('nextAgent', mapNameToLabel[reasoning.next].label || reasoning.next)
+                                    if (sseStreamer) {
+                                        sseStreamer.streamNextAgentEvent(chatId, mapNameToLabel[reasoning.next].label || reasoning.next)
+                                    }
                                 }
                             }
                         }
                     } else {
                         finalResult = output.__end__.messages.length ? output.__end__.messages.pop()?.content : ''
                         if (Array.isArray(finalResult)) finalResult = output.__end__.instructions
-
-                        if (socketIO && incomingInput.socketIOClientId) {
-                            socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
+                        if (shouldStreamResponse && sseStreamer) {
+                            sseStreamer.streamTokenEvent(chatId, finalResult)
                         }
                     }
                 }
@@ -321,9 +334,8 @@ export const buildAgentGraph = async (
                 if (!isSequential && !finalResult) {
                     if (lastWorkerResult) finalResult = lastWorkerResult
                     else if (finalSummarization) finalResult = finalSummarization
-
-                    if (socketIO && incomingInput.socketIOClientId) {
-                        socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
+                    if (shouldStreamResponse && sseStreamer) {
+                        sseStreamer.streamTokenEvent(chatId, finalResult)
                     }
                 }
 
@@ -377,33 +389,36 @@ export const buildAgentGraph = async (
                                     { type: 'reject-button', label: rejectButtonText }
                                 ]
                             }
-                            if (socketIO && incomingInput.socketIOClientId) {
-                                socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
-                                socketIO.to(incomingInput.socketIOClientId).emit('action', finalAction)
+                            if (shouldStreamResponse && sseStreamer) {
+                                sseStreamer.streamTokenEvent(chatId, finalResult)
+                                sseStreamer.streamActionEvent(chatId, finalAction)
                             }
                         }
                         totalUsedTools.push(...mappedToolCalls)
                     } else if (lastAgentReasoningMessage) {
                         finalResult = lastAgentReasoningMessage
-                        if (socketIO && incomingInput.socketIOClientId) {
-                            socketIO.to(incomingInput.socketIOClientId).emit('token', finalResult)
+                        if (shouldStreamResponse && sseStreamer) {
+                            sseStreamer.streamTokenEvent(chatId, finalResult)
                         }
                     }
                 }
 
                 totalSourceDocuments = uniq(flatten(totalSourceDocuments))
                 totalUsedTools = uniq(flatten(totalUsedTools))
+                totalArtifacts = uniq(flatten(totalArtifacts))
 
-                if (socketIO && incomingInput.socketIOClientId) {
-                    socketIO.to(incomingInput.socketIOClientId).emit('usedTools', totalUsedTools)
-                    socketIO.to(incomingInput.socketIOClientId).emit('sourceDocuments', totalSourceDocuments)
-                    socketIO.to(incomingInput.socketIOClientId).emit('end')
+                if (shouldStreamResponse && sseStreamer) {
+                    sseStreamer.streamUsedToolsEvent(chatId, totalUsedTools)
+                    sseStreamer.streamSourceDocumentsEvent(chatId, totalSourceDocuments)
+                    sseStreamer.streamArtifactsEvent(chatId, totalArtifacts)
+                    sseStreamer.streamEndEvent(chatId)
                 }
 
                 return {
                     finalResult,
                     finalAction,
                     sourceDocuments: totalSourceDocuments,
+                    artifacts: totalArtifacts,
                     usedTools: totalUsedTools,
                     agentReasoning
                 }
@@ -412,8 +427,8 @@ export const buildAgentGraph = async (
             // clear agent memory because checkpoints were saved during runtime
             await clearSessionMemory(nodes, appServer.nodesPool.componentNodes, chatId, appServer.AppDataSource, sessionId)
             if (getErrorMessage(e).includes('Aborted')) {
-                if (socketIO && incomingInput.socketIOClientId) {
-                    socketIO.to(incomingInput.socketIOClientId).emit('abort')
+                if (shouldStreamResponse && sseStreamer) {
+                    sseStreamer.streamAbortEvent(chatId)
                 }
                 return { finalResult, agentReasoning }
             }
