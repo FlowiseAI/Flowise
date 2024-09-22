@@ -180,9 +180,9 @@ Flowise は、インスタンスを設定するためのさまざまな環境変
 
       </details>
 
-## 💻 クラウドホスト
+## ☁️ クラウドホスト
 
-近日公開
+[Flowise Cloud の使い方を始める](https://flowiseai.com/)
 
 ## 🙋 サポート
 

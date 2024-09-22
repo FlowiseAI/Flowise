@@ -1,6 +1,6 @@
 import client from './client'
 
-const getAllDocumentStores = () => client.get('/document-store/stores')
+const getAllDocumentStores = () => client.get('/document-store/store')
 const getDocumentLoaders = () => client.get('/document-store/components/loaders')
 const getSpecificDocumentStore = (id) => client.get(`/document-store/store/${id}`)
 const createDocumentStore = (body) => client.post(`/document-store/store`, body)

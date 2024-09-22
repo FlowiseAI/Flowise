@@ -20,6 +20,8 @@ import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './u
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
+import { SSEStreamer } from './utils/SSEStreamer'
+import { validateAPIKey } from './utils/validateKey'
 
 declare global {
     namespace Express {
@@ -36,6 +38,7 @@ export class App {
     cachePool: CachePool
     telemetry: Telemetry
     AppDataSource: DataSource = getDataSource()
+    sseStreamer: SSEStreamer
 
     constructor() {
         this.app = express()
@@ -116,38 +119,90 @@ export class App {
             next()
         })
 
+        const whitelistURLs = [
+            '/api/v1/verify/apikey/',
+            '/api/v1/chatflows/apikey/',
+            '/api/v1/public-chatflows',
+            '/api/v1/public-chatbotConfig',
+            '/api/v1/prediction/',
+            '/api/v1/vector/upsert/',
+            '/api/v1/node-icon/',
+            '/api/v1/components-credentials-icon/',
+            '/api/v1/chatflows-streaming',
+            '/api/v1/chatflows-uploads',
+            '/api/v1/openai-assistants-file/download',
+            '/api/v1/feedback',
+            '/api/v1/leads',
+            '/api/v1/get-upload-file',
+            '/api/v1/ip',
+            '/api/v1/ping'
+        ]
+        const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
+        const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
+
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
             const password = process.env.FLOWISE_PASSWORD
             const basicAuthMiddleware = basicAuth({
                 users: { [username]: password }
             })
-            const whitelistURLs = [
-                '/api/v1/verify/apikey/',
-                '/api/v1/chatflows/apikey/',
-                '/api/v1/public-chatflows',
-                '/api/v1/public-chatbotConfig',
-                '/api/v1/prediction/',
-                '/api/v1/vector/upsert/',
-                '/api/v1/node-icon/',
-                '/api/v1/components-credentials-icon/',
-                '/api/v1/chatflows-streaming',
-                '/api/v1/chatflows-uploads',
-                '/api/v1/openai-assistants-file/download',
-                '/api/v1/feedback',
-                '/api/v1/leads',
-                '/api/v1/get-upload-file',
-                '/api/v1/ip',
-                '/api/v1/ping'
-            ]
-            this.app.use((req, res, next) => {
-                if (/\/api\/v1\//i.test(req.url)) {
-                    whitelistURLs.some((url) => new RegExp(url, 'i').test(req.url)) ? next() : basicAuthMiddleware(req, res, next)
-                } else next()
+            this.app.use(async (req, res, next) => {
+                // Step 1: Check if the req path contains /api/v1 regardless of case
+                if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
+                    // Step 2: Check if the req path is case sensitive
+                    if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
+                        // Step 3: Check if the req path is in the whitelist
+                        const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
+                        if (isWhitelisted) {
+                            next()
+                        } else if (req.headers['x-request-from'] === 'internal') {
+                            basicAuthMiddleware(req, res, next)
+                        } else {
+                            const isKeyValidated = await validateAPIKey(req)
+                            if (!isKeyValidated) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+                            next()
+                        }
+                    } else {
+                        return res.status(401).json({ error: 'Unauthorized Access' })
+                    }
+                } else {
+                    // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
+                    next()
+                }
+            })
+        } else {
+            this.app.use(async (req, res, next) => {
+                // Step 1: Check if the req path contains /api/v1 regardless of case
+                if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
+                    // Step 2: Check if the req path is case sensitive
+                    if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
+                        // Step 3: Check if the req path is in the whitelist
+                        const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
+                        if (isWhitelisted) {
+                            next()
+                        } else if (req.headers['x-request-from'] === 'internal') {
+                            next()
+                        } else {
+                            const isKeyValidated = await validateAPIKey(req)
+                            if (!isKeyValidated) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+                            next()
+                        }
+                    } else {
+                        return res.status(401).json({ error: 'Unauthorized Access' })
+                    }
+                } else {
+                    // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
+                    next()
+                }
             })
         }
 
         this.app.use('/api/v1', flowiseApiV1Router)
+        this.sseStreamer = new SSEStreamer(this.app)
 
         // ----------------------------------------
         // Configure number of proxies in Host Environment

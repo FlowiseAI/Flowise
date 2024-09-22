@@ -3,7 +3,7 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory'
-import { JSONLoader } from 'langchain/document_loaders/fs/json'
+import { JSONLinesLoader, JSONLoader } from 'langchain/document_loaders/fs/json'
 import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
@@ -22,7 +22,7 @@ class Folder_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Folder with Files'
         this.name = 'folderFiles'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Document'
         this.icon = 'folder.svg'
         this.category = 'Document Loaders'
@@ -51,6 +51,7 @@ class Folder_DocumentLoaders implements INode {
                 label: 'Pdf Usage',
                 name: 'pdfUsage',
                 type: 'options',
+                description: 'Only when loading PDF files',
                 options: [
                     {
                         label: 'One document per page',
@@ -62,6 +63,15 @@ class Folder_DocumentLoaders implements INode {
                     }
                 ],
                 default: 'perPage',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'JSONL Pointer Extraction',
+                name: 'pointerName',
+                type: 'string',
+                description: 'Only when loading JSONL files',
+                placeholder: '<pointerName>',
                 optional: true,
                 additionalParams: true
             },
@@ -93,6 +103,7 @@ class Folder_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
         const recursive = nodeData.inputs?.recursive as boolean
         const pdfUsage = nodeData.inputs?.pdfUsage
+        const pointerName = nodeData.inputs?.pointerName as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
 
         let omitMetadataKeys: string[] = []
@@ -104,8 +115,12 @@ class Folder_DocumentLoaders implements INode {
             folderPath,
             {
                 '.json': (path) => new JSONLoader(path),
+                '.jsonl': (blob) => new JSONLinesLoader(blob, '/' + pointerName.trim()),
                 '.txt': (path) => new TextLoader(path),
                 '.csv': (path) => new CSVLoader(path),
+                '.xls': (path) => new CSVLoader(path),
+                '.xlsx': (path) => new CSVLoader(path),
+                '.doc': (path) => new DocxLoader(path),
                 '.docx': (path) => new DocxLoader(path),
                 '.pdf': (path) =>
                     pdfUsage === 'perFile'

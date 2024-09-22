@@ -1,6 +1,6 @@
 import { removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { ChatflowType, IChatFlow, IReactFlowObject } from '../../Interface'
+import { ChatflowType, IReactFlowObject } from '../../Interface'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
@@ -103,14 +103,17 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
     }
 }
 
-const getAllChatflows = async (type?: ChatflowType): Promise<IChatFlow[]> => {
+const getAllChatflows = async (type?: ChatflowType): Promise<ChatFlow[]> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
         if (type === 'MULTIAGENT') {
-            return dbResponse.filter((chatflow) => chatflow.type === type)
+            return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
+        } else if (type === 'CHATFLOW') {
+            // fetch all chatflows that are not agentflow
+            return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
         }
-        return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
+        return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -202,7 +205,7 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
         const appServer = getRunningExpressApp()
 
         // step 1 - check whether file chatflows array is zero
-        if (newChatflows.length == 0) throw new Error('No chatflows in this file.')
+        if (newChatflows.length == 0) return
 
         // step 2 - check whether ids are duplicate in database
         let ids = '('
@@ -232,9 +235,8 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
             if (newChatflow.flowData) flowData = newChatflow.flowData
             if (foundIds.includes(id)) {
                 newChatflow.id = undefined
-                newChatflow.name += ' with new id'
+                newChatflow.name += ' (1)'
             }
-            newChatflow.type = 'CHATFLOW'
             newChatflow.flowData = JSON.stringify(JSON.parse(flowData))
             return newChatflow
         })

@@ -21,7 +21,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleGenerativeAI'
         this.name = 'chatGoogleGenerativeAI'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'ChatGoogleGenerativeAI'
         this.icon = 'GoogleGemini.svg'
         this.category = 'Chat Models'
@@ -48,6 +48,14 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
                 default: 'gemini-pro'
+            },
+            {
+                label: 'Custom Model Name',
+                name: 'customModelName',
+                type: 'string',
+                placeholder: 'gemini-1.5-pro-exp-0801',
+                description: 'Custom model name to use. If provided, it will override the model selected',
+                additionalParams: true
             },
             {
                 label: 'Temperature',
@@ -145,7 +153,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Automatically uses vision model when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
+                    'Automatically uses vision model when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, Conversational Agent, Tool Agent',
                 default: false,
                 optional: true
             }
@@ -165,6 +173,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
 
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
+        const customModelName = nodeData.inputs?.customModelName as string
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
@@ -177,7 +186,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
 
         const obj: Partial<GoogleGenerativeAIChatInput> = {
             apiKey: apiKey,
-            modelName: modelName,
+            modelName: customModelName || modelName,
             streaming: streaming ?? true
         }
 

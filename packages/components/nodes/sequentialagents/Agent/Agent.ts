@@ -18,10 +18,11 @@ import {
     ISeqAgentNode,
     IDatabaseEntity,
     IUsedTool,
-    IDocument
+    IDocument,
+    IStateWithMessages
 } from '../../../src/Interface'
-import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX, ARTIFACTS_PREFIX } from '../../../src/agents'
+import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, removeInvalidImageMarkdown } from '../../../src/utils'
 import {
     customGet,
     getVM,
@@ -737,13 +738,21 @@ async function agentNode(
 
             // If the last message is a tool message and is an interrupted message, format output into standard agent output
             if (lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
-                let formattedAgentResult: { output?: string; usedTools?: IUsedTool[]; sourceDocuments?: IDocument[] } = {}
+                let formattedAgentResult: {
+                    output?: string
+                    usedTools?: IUsedTool[]
+                    sourceDocuments?: IDocument[]
+                    artifacts?: ICommonObject[]
+                } = {}
                 formattedAgentResult.output = result.content
                 if (lastMessage.additional_kwargs?.usedTools) {
                     formattedAgentResult.usedTools = lastMessage.additional_kwargs.usedTools as IUsedTool[]
                 }
                 if (lastMessage.additional_kwargs?.sourceDocuments) {
                     formattedAgentResult.sourceDocuments = lastMessage.additional_kwargs.sourceDocuments as IDocument[]
+                }
+                if (lastMessage.additional_kwargs?.artifacts) {
+                    formattedAgentResult.artifacts = lastMessage.additional_kwargs.artifacts as ICommonObject[]
                 }
                 result = formattedAgentResult
             } else {
@@ -763,12 +772,16 @@ async function agentNode(
         if (result.sourceDocuments) {
             additional_kwargs.sourceDocuments = result.sourceDocuments
         }
+        if (result.artifacts) {
+            additional_kwargs.artifacts = result.artifacts
+        }
         if (result.output) {
             result.content = result.output
             delete result.output
         }
 
-        const outputContent = typeof result === 'string' ? result : result.content || result.output
+        let outputContent = typeof result === 'string' ? result : result.content || result.output
+        outputContent = removeInvalidImageMarkdown(outputContent)
 
         if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {
             let formattedOutput = {
@@ -904,10 +917,35 @@ class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable
     }
 
     private async run(input: BaseMessage[] | MessagesState, config: RunnableConfig): Promise<BaseMessage[] | MessagesState> {
-        const message = Array.isArray(input) ? input[input.length - 1] : input.messages[input.messages.length - 1]
+        let messages: BaseMessage[]
+
+        // Check if input is an array of BaseMessage[]
+        if (Array.isArray(input)) {
+            messages = input
+        }
+        // Check if input is IStateWithMessages
+        else if ((input as IStateWithMessages).messages) {
+            messages = (input as IStateWithMessages).messages
+        }
+        // Handle MessagesState type
+        else {
+            messages = (input as MessagesState).messages
+        }
+
+        // Get the last message
+        const message = messages[messages.length - 1]
 
         if (message._getType() !== 'ai') {
             throw new Error('ToolNode only accepts AIMessages as input.')
+        }
+
+        // Extract all properties except messages for IStateWithMessages
+        const { messages: _, ...inputWithoutMessages } = Array.isArray(input) ? { messages: input } : input
+        const ChannelsWithoutMessages = {
+            chatId: this.options.chatId,
+            sessionId: this.options.sessionId,
+            input: this.inputQuery,
+            state: inputWithoutMessages
         }
 
         const outputs = await Promise.all(
@@ -916,8 +954,14 @@ class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable
                 if (tool === undefined) {
                     throw new Error(`Tool ${call.name} not found.`)
                 }
+                if (tool && (tool as any).setFlowObject) {
+                    // @ts-ignore
+                    tool.setFlowObject(ChannelsWithoutMessages)
+                }
                 let output = await tool.invoke(call.args, config)
                 let sourceDocuments: Document[] = []
+                let artifacts = []
+
                 if (output?.includes(SOURCE_DOCUMENTS_PREFIX)) {
                     const outputArray = output.split(SOURCE_DOCUMENTS_PREFIX)
                     output = outputArray[0]
@@ -928,12 +972,23 @@ class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable
                         console.error('Error parsing source documents from tool')
                     }
                 }
+                if (output?.includes(ARTIFACTS_PREFIX)) {
+                    const outputArray = output.split(ARTIFACTS_PREFIX)
+                    output = outputArray[0]
+                    try {
+                        artifacts = JSON.parse(outputArray[1])
+                    } catch (e) {
+                        console.error('Error parsing artifacts from tool')
+                    }
+                }
+
                 return new ToolMessage({
                     name: tool.name,
                     content: typeof output === 'string' ? output : JSON.stringify(output),
                     tool_call_id: call.id!,
                     additional_kwargs: {
                         sourceDocuments,
+                        artifacts,
                         args: call.args,
                         usedTools: [
                             {

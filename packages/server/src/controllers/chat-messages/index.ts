@@ -18,7 +18,7 @@ const createChatMessage = async (req: Request, res: Response, next: NextFunction
             )
         }
         const apiResponse = await chatMessagesService.createChatMessage(req.body)
-        return res.json(apiResponse)
+        return res.json(parseAPIResponse(apiResponse))
     } catch (error) {
         next(error)
     }
@@ -88,7 +88,8 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             feedback,
             feedbackTypeFilters
         )
-        return res.json(apiResponse)
+
+        return res.json(parseAPIResponse(apiResponse))
     } catch (error) {
         next(error)
     }
@@ -116,7 +117,7 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             messageId,
             feedback
         )
-        return res.json(apiResponse)
+        return res.json(parseAPIResponse(apiResponse))
     } catch (error) {
         next(error)
     }
@@ -183,6 +184,42 @@ const abortChatMessage = async (req: Request, res: Response, next: NextFunction)
         return res.json({ status: 200, message: 'Chat message aborted' })
     } catch (error) {
         next(error)
+    }
+}
+
+const parseAPIResponse = (apiResponse: ChatMessage | ChatMessage[]): ChatMessage | ChatMessage[] => {
+    const parseResponse = (response: ChatMessage): ChatMessage => {
+        const parsedResponse = { ...response }
+
+        if (parsedResponse.sourceDocuments) {
+            parsedResponse.sourceDocuments = JSON.parse(parsedResponse.sourceDocuments)
+        }
+        if (parsedResponse.usedTools) {
+            parsedResponse.usedTools = JSON.parse(parsedResponse.usedTools)
+        }
+        if (parsedResponse.fileAnnotations) {
+            parsedResponse.fileAnnotations = JSON.parse(parsedResponse.fileAnnotations)
+        }
+        if (parsedResponse.agentReasoning) {
+            parsedResponse.agentReasoning = JSON.parse(parsedResponse.agentReasoning)
+        }
+        if (parsedResponse.fileUploads) {
+            parsedResponse.fileUploads = JSON.parse(parsedResponse.fileUploads)
+        }
+        if (parsedResponse.action) {
+            parsedResponse.action = JSON.parse(parsedResponse.action)
+        }
+        if (parsedResponse.artifacts) {
+            parsedResponse.artifacts = JSON.parse(parsedResponse.artifacts)
+        }
+
+        return parsedResponse
+    }
+
+    if (Array.isArray(apiResponse)) {
+        return apiResponse.map(parseResponse)
+    } else {
+        return parseResponse(apiResponse)
     }
 }
 

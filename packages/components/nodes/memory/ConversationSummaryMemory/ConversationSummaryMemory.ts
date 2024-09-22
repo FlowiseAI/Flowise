@@ -127,7 +127,7 @@ class ConversationSummaryMemoryExtended extends FlowiseSummaryMemory implements 
             chatMessage.unshift(...prependMessages)
         }
 
-        const baseMessages = mapChatMessageToBaseMessage(chatMessage)
+        const baseMessages = await mapChatMessageToBaseMessage(chatMessage)
 
         // Get summary
         if (this.llm && typeof this.llm !== 'string') {

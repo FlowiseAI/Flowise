@@ -55,7 +55,7 @@ class MeilisearchRetriever_node implements INode {
                 label: 'Host',
                 name: 'host',
                 type: 'string',
-                description: 'This is the URL for the desired Meilisearch instance'
+                description: "This is the URL for the desired Meilisearch instance, the URL must not end with a '/'"
             },
             {
                 label: 'Index Uid',
@@ -64,10 +64,16 @@ class MeilisearchRetriever_node implements INode {
                 description: 'UID for the index to answer from'
             },
             {
+                label: 'Delete Index if exists',
+                name: 'deleteIndex',
+                type: 'boolean',
+                optional: true
+            },
+            {
                 label: 'Top K',
                 name: 'K',
                 type: 'number',
-                description: 'number of top searches to return as context',
+                description: 'number of top searches to return as context, default is 4',
                 additionalParams: true,
                 optional: true
             },
@@ -75,7 +81,15 @@ class MeilisearchRetriever_node implements INode {
                 label: 'Semantic Ratio',
                 name: 'semanticRatio',
                 type: 'number',
-                description: 'percentage of sematic reasoning in meilisearch hybrid search',
+                description: 'percentage of sematic reasoning in meilisearch hybrid search, default is 0.75',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Search Filter',
+                name: 'searchFilter',
+                type: 'string',
+                description: 'search filter to apply on searchable attributes',
                 additionalParams: true,
                 optional: true
             }
@@ -104,6 +118,7 @@ class MeilisearchRetriever_node implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const host = nodeData.inputs?.host as string
             const indexUid = nodeData.inputs?.indexUid as string
+            const deleteIndex = nodeData.inputs?.deleteIndex as boolean
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             let embeddingDimension: number = 384
             const client = new Meilisearch({
@@ -132,17 +147,52 @@ class MeilisearchRetriever_node implements INode {
                     finalDocs.push(documentForIndexing)
                 }
             }
+            let taskUid_created: number = 0
+
+            if (deleteIndex) {
+                try {
+                    const deleteResponse = await client.deleteIndex(indexUid)
+                    taskUid_created = deleteResponse.taskUid
+                    let deleteTaskStatus = await client.getTask(taskUid_created)
+
+                    while (deleteTaskStatus.status !== 'succeeded') {
+                        deleteTaskStatus = await client.getTask(taskUid_created)
+                        if (deleteTaskStatus.error !== null || deleteTaskStatus.status === 'failed') {
+                            throw new Error('Error during index deletion task: ' + deleteTaskStatus.error)
+                        }
+                    }
+                } catch (error) {
+                    console.error(error)
+                    console.warn('Error occured when deleting your index, if it did not exist, we will create one for you... ')
+                }
+            }
+
             let index: any
+
             try {
                 index = await client.getIndex(indexUid)
             } catch (error) {
-                console.error('Error fetching index:', error)
-                await client.createIndex(indexUid, { primaryKey: 'objectID' })
-            } finally {
-                index = await client.getIndex(indexUid)
+                console.warn('Index not found, creating a new index...')
+
+                try {
+                    const createResponse = await client.createIndex(indexUid, { primaryKey: 'objectID' })
+                    taskUid_created = createResponse.taskUid
+                    let createTaskStatus = await client.getTask(taskUid_created)
+
+                    while (createTaskStatus.status !== 'succeeded') {
+                        createTaskStatus = await client.getTask(taskUid_created)
+                        if (createTaskStatus.error !== null || createTaskStatus.status === 'failed') {
+                            throw new Error('Error during index creation task: ' + createTaskStatus.error)
+                        }
+                    }
+                    index = await client.getIndex(indexUid)
+                } catch (taskError) {
+                    console.error('Error during index creation process:', taskError)
+                }
             }
 
             try {
+                await index.updateFilterableAttributes(['metadata'])
                 await index.updateSettings({
                     embedders: {
                         ollama: {
@@ -151,23 +201,72 @@ class MeilisearchRetriever_node implements INode {
                         }
                     }
                 })
-                await index.addDocuments(finalDocs)
+                const addResponse = await index.addDocuments(finalDocs)
+                taskUid_created = addResponse.taskUid
+                let AddTaskStatus = await client.getTask(taskUid_created)
+                while (AddTaskStatus.status !== 'succeeded') {
+                    AddTaskStatus = await client.getTask(taskUid_created)
+                    if (AddTaskStatus.error !== null || AddTaskStatus.status === 'failed') {
+                        throw new Error('Error during documents adding task: ' + AddTaskStatus.error)
+                    }
+                }
+                index = await client.getIndex(indexUid)
             } catch (error) {
                 console.error('Error occurred while adding documents:', error)
             }
-            return
+            return { numAdded: finalDocs.length, addedDocs: finalDocs }
         }
     }
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const meilisearchSearchApiKey = getCredentialParam('meilisearchSearchApiKey', credentialData, nodeData)
+        const meilisearchAdminApiKey = getCredentialParam('meilisearchAdminApiKey', credentialData, nodeData)
         const host = nodeData.inputs?.host as string
         const indexUid = nodeData.inputs?.indexUid as string
         const K = nodeData.inputs?.K as string
         const semanticRatio = nodeData.inputs?.semanticRatio as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const searchFilter = nodeData.inputs?.searchFilter as string
 
-        const hybridsearchretriever = new MeilisearchRetriever(host, meilisearchSearchApiKey, indexUid, K, semanticRatio, embeddings)
+        const experimentalEndpoint = host + '/experimental-features/'
+        const token = meilisearchAdminApiKey
+
+        const experimentalOptions = {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                vectorStore: true
+            })
+        }
+
+        try {
+            const response = await fetch(experimentalEndpoint, experimentalOptions)
+            if (!response.ok) {
+                throw new Error(`Failed to enable vectorStore: ${response.statusText}`)
+            }
+
+            const data = await response.json()
+
+            const vectorStoreEnabled = data.vectorStore
+            if (vectorStoreEnabled !== true) {
+                throw new Error('Failed to enable vectorStore, vectorStrore property returned is not true')
+            }
+        } catch (error) {
+            console.error('Error enabling vectorStore feature:', error)
+        }
+
+        const hybridsearchretriever = new MeilisearchRetriever(
+            host,
+            meilisearchSearchApiKey,
+            indexUid,
+            K,
+            semanticRatio,
+            embeddings,
+            searchFilter
+        )
         return hybridsearchretriever
     }
 }

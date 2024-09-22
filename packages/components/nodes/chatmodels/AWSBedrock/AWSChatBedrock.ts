@@ -89,7 +89,7 @@ class AWSChatBedrock_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Only works with claude-3-* models when image is being uploaded from chat. Compatible with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
+                    'Only works with claude-3-* models when image is being uploaded from chat. Compatible with LLMChain, Conversation Chain, ReAct Agent, Conversational Agent, Tool Agent',
                 default: false,
                 optional: true
             }

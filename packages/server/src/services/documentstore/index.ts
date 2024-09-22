@@ -62,6 +62,19 @@ const getAllDocumentStores = async () => {
     }
 }
 
+const getAllDocumentFileChunks = async () => {
+    try {
+        const appServer = getRunningExpressApp()
+        const entities = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find()
+        return entities
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getAllDocumentFileChunks - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string) => {
     try {
         const appServer = getRunningExpressApp()
@@ -580,15 +593,39 @@ const processAndSaveChunks = async (data: IDocumentStoreLoaderForPreview) => {
                 `Error: documentStoreServices.processAndSaveChunks - Document store ${data.storeId} not found`
             )
         }
-
-        const newLoaderId = data.id ?? uuidv4()
         const existingLoaders = JSON.parse(entity.loaders)
+        const newLoaderId = data.id ?? uuidv4()
         const found = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
         if (found) {
-            // clean up the current status and mark the loader as pending_sync
-            found.totalChunks = 0
-            found.totalChars = 0
-            found.status = DocumentStoreStatus.SYNCING
+            const foundIndex = existingLoaders.findIndex((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
+
+            if (!data.loaderId) data.loaderId = found.loaderId
+            if (!data.loaderName) data.loaderName = found.loaderName
+            if (!data.loaderConfig) data.loaderConfig = found.loaderConfig
+            if (!data.splitterId) data.splitterId = found.splitterId
+            if (!data.splitterName) data.splitterName = found.splitterName
+            if (!data.splitterConfig) data.splitterConfig = found.splitterConfig
+            if (found.credential) {
+                data.credential = found.credential
+            }
+
+            let loader: IDocumentStoreLoader = {
+                ...found,
+                loaderId: data.loaderId,
+                loaderName: data.loaderName,
+                loaderConfig: data.loaderConfig,
+                splitterId: data.splitterId,
+                splitterName: data.splitterName,
+                splitterConfig: data.splitterConfig,
+                totalChunks: 0,
+                totalChars: 0,
+                status: DocumentStoreStatus.SYNCING
+            }
+            if (data.credential) {
+                loader.credential = data.credential
+            }
+
+            existingLoaders[foundIndex] = loader
             entity.loaders = JSON.stringify(existingLoaders)
         } else {
             let loader: IDocumentStoreLoader = {
@@ -833,6 +870,9 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
                 config: data.embeddingConfig,
                 name: data.embeddingName
             })
+        } else if (entity.embeddingConfig && !data.embeddingName && !data.embeddingConfig) {
+            data.embeddingConfig = JSON.parse(entity.embeddingConfig)?.config
+            data.embeddingName = JSON.parse(entity.embeddingConfig)?.name
         } else if (!data.embeddingName && !data.embeddingConfig) {
             entity.embeddingConfig = null
         }
@@ -842,6 +882,9 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
                 config: data.vectorStoreConfig,
                 name: data.vectorStoreName
             })
+        } else if (entity.vectorStoreConfig && !data.vectorStoreName && !data.vectorStoreConfig) {
+            data.vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)?.config
+            data.vectorStoreName = JSON.parse(entity.vectorStoreConfig)?.name
         } else if (!data.vectorStoreName && !data.vectorStoreConfig) {
             entity.vectorStoreConfig = null
         }
@@ -851,6 +894,9 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
                 config: data.recordManagerConfig,
                 name: data.recordManagerName
             })
+        } else if (entity.recordManagerConfig && !data.recordManagerName && !data.recordManagerConfig) {
+            data.recordManagerConfig = JSON.parse(entity.recordManagerConfig)?.config
+            data.recordManagerName = JSON.parse(entity.recordManagerConfig)?.name
         } else if (!data.recordManagerName && !data.recordManagerConfig) {
             entity.recordManagerConfig = null
         }
@@ -1208,6 +1254,7 @@ export default {
     createDocumentStore,
     deleteLoaderFromDocumentStore,
     getAllDocumentStores,
+    getAllDocumentFileChunks,
     getDocumentStoreById,
     getUsedChatflowNames,
     getDocumentStoreFileChunks,

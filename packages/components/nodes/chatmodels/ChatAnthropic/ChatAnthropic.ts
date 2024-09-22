@@ -84,7 +84,7 @@ class ChatAnthropic_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Automatically uses claude-3-* models when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
+                    'Automatically uses claude-3-* models when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, Conversational Agent, Tool Agent',
                 default: false,
                 optional: true
             }

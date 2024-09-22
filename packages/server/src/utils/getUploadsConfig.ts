@@ -2,14 +2,22 @@ import { StatusCodes } from 'http-status-codes'
 import { INodeParams } from 'flowise-components'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
-import { IUploadFileSizeAndTypes, IReactFlowNode } from '../Interface'
+import { IUploadFileSizeAndTypes, IReactFlowNode, IReactFlowEdge } from '../Interface'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
+
+type IUploadConfig = {
+    isSpeechToTextEnabled: boolean
+    isImageUploadAllowed: boolean
+    isFileUploadAllowed: boolean
+    imgUploadSizeAndTypes: IUploadFileSizeAndTypes[]
+    fileUploadSizeAndTypes: IUploadFileSizeAndTypes[]
+}
 
 /**
  * Method that checks if uploads are enabled in the chatflow
  * @param {string} chatflowid
  */
-export const utilGetUploadsConfig = async (chatflowid: string): Promise<any> => {
+export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadConfig> => {
     const appServer = getRunningExpressApp()
     const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
         id: chatflowid
@@ -18,21 +26,17 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<any> => 
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
 
-    const uploadAllowedNodes = [
-        'llmChain',
-        'conversationChain',
-        'reactAgentChat',
-        'conversationalAgent',
-        'toolAgent',
-        'supervisor',
-        'seqStart'
-    ]
-    const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI', 'chatGoogleGenerativeAI']
-
     const flowObj = JSON.parse(chatflow.flowData)
-    const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
+    const nodes: IReactFlowNode[] = flowObj.nodes
+    const edges: IReactFlowEdge[] = flowObj.edges
 
     let isSpeechToTextEnabled = false
+    let isImageUploadAllowed = false
+    let isFileUploadAllowed = false
+
+    /*
+     * Check for STT
+     */
     if (chatflow.speechToText) {
         const speechToTextProviders = JSON.parse(chatflow.speechToText)
         for (const provider in speechToTextProviders) {
@@ -46,39 +50,72 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<any> => 
         }
     }
 
-    let isImageUploadAllowed = false
-    const nodes: IReactFlowNode[] = flowObj.nodes
-
     /*
-     * Condition for isImageUploadAllowed
-     * 1.) one of the uploadAllowedNodes exists
-     * 2.) one of the uploadProcessingNodes exists + allowImageUploads is ON
+     * Condition for isFileUploadAllowed
+     * 1.) vector store with fileUpload = true && connected to a document loader with fileType
      */
-    if (!nodes.some((node) => uploadAllowedNodes.includes(node.data.name))) {
-        return {
-            isSpeechToTextEnabled,
-            isImageUploadAllowed: false,
-            imgUploadSizeAndTypes
+    const fileUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
+    for (const node of nodes) {
+        if (node.data.category === 'Vector Stores' && node.data.inputs?.fileUpload) {
+            // Get the connected document loader node fileTypes
+            const sourceDocumentEdges = edges.filter(
+                (edge) => edge.target === node.id && edge.targetHandle === `${node.id}-input-document-Document`
+            )
+            for (const edge of sourceDocumentEdges) {
+                const sourceNode = nodes.find((node) => node.id === edge.source)
+                if (!sourceNode) continue
+                const fileType = sourceNode.data.inputParams.find((param) => param.type === 'file' && param.fileType)?.fileType
+                if (fileType) {
+                    fileUploadSizeAndTypes.push({
+                        fileTypes: fileType.split(', '),
+                        maxUploadSize: 500
+                    })
+                    isFileUploadAllowed = true
+                }
+            }
+            break
         }
     }
 
-    nodes.forEach((node: IReactFlowNode) => {
-        if (uploadProcessingNodes.indexOf(node.data.name) > -1) {
-            // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
-            node.data.inputParams.map((param: INodeParams) => {
-                if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
-                    imgUploadSizeAndTypes.push({
-                        fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
-                        maxUploadSize: 5
-                    })
-                    isImageUploadAllowed = true
-                }
-            })
-        }
-    })
+    /*
+     * Condition for isImageUploadAllowed
+     * 1.) one of the imgUploadAllowedNodes exists
+     * 2.) one of the imgUploadLLMNodes exists + allowImageUploads is ON
+     */
+    const imgUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
+    const imgUploadAllowedNodes = [
+        'llmChain',
+        'conversationChain',
+        'reactAgentChat',
+        'conversationalAgent',
+        'toolAgent',
+        'supervisor',
+        'seqStart'
+    ]
+    const imgUploadLLMNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI', 'chatGoogleGenerativeAI']
+
+    if (nodes.some((node) => imgUploadAllowedNodes.includes(node.data.name))) {
+        nodes.forEach((node: IReactFlowNode) => {
+            if (imgUploadLLMNodes.indexOf(node.data.name) > -1) {
+                // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
+                node.data.inputParams.map((param: INodeParams) => {
+                    if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
+                        imgUploadSizeAndTypes.push({
+                            fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
+                            maxUploadSize: 5
+                        })
+                        isImageUploadAllowed = true
+                    }
+                })
+            }
+        })
+    }
+
     return {
         isSpeechToTextEnabled,
         isImageUploadAllowed,
-        imgUploadSizeAndTypes
+        isFileUploadAllowed,
+        imgUploadSizeAndTypes,
+        fileUploadSizeAndTypes
     }
 }
