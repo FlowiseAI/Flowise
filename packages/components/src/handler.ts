@@ -276,10 +276,10 @@ class ExtendedLunaryHandler extends LunaryHandler {
                 await this.initThread()
             }
 
-            const message = inputs.input
+            const messageText = inputs.input
 
             const messageId = this.thread.trackMessage({
-                content: message,
+                content: messageText,
                 role: 'user'
             })
 
@@ -369,8 +369,6 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                 } else if (provider === 'lunary') {
                     const lunaryPublicKey = getCredentialParam('lunaryAppId', credentialData, nodeData)
                     const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, nodeData)
-
-                    console.log({ options })
 
                     let lunaryFields = {
                         publicKey: lunaryPublicKey,
@@ -561,17 +559,6 @@ export class AnalyticHandler {
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'lunary')) {
             const monitor = this.handlers['lunary'].client
-
-            console.log(`==================================================`)
-            console.log('CHAIN START EVENT: Lunary handler detected')
-            console.log('Monitor:', monitor)
-            console.log('Name:', name)
-            console.log('Input:', input)
-            console.log('Parent IDs:', parentIds)
-            console.log('Node Data:', this.nodeData)
-            console.log('Options:', this.options)
-            console.log('Return IDs:', returnIds)
-            console.log(`==================================================`)
 
             if (monitor) {
                 const runId = uuidv4()
