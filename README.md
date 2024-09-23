@@ -1,5 +1,5 @@
 
-Version : 2.1.1. - 23.09.24 @ 15:59
+Version : 2.1.1. - 23.09.24 @ 16:06
 <!-- markdownlint-disable MD030 -->
 
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
