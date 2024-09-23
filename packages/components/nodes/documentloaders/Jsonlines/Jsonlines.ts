@@ -161,7 +161,8 @@ class Jsonlines_DocumentLoaders implements INode {
         }
 
         if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            let parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            parsedMetadata = removeValuesStartingWithSlash(parsedMetadata)
             docs = docs.map((doc) => ({
                 ...doc,
                 metadata:
@@ -194,6 +195,20 @@ class Jsonlines_DocumentLoaders implements INode {
 
         return docs
     }
+}
+
+const removeValuesStartingWithSlash = (obj: Record<string, any>): Record<string, any> => {
+    const result: Record<string, any> = {}
+
+    for (const key in obj) {
+        const value = obj[key]
+        if (typeof value === 'string' && value.startsWith('/')) {
+            continue
+        }
+        result[key] = value
+    }
+
+    return result
 }
 
 class TextLoader extends BaseDocumentLoader {
@@ -281,7 +296,7 @@ class JSONLinesLoader extends TextLoader {
                 let metadata = {}
                 for (const value of values) {
                     if (value) {
-                        const key = jsonpointer.get(this.metadata, value)
+                        const key = Object.keys(this.metadata).find((key) => this.metadata?.[key] === value)
                         if (key) {
                             metadata = {
                                 ...metadata,
