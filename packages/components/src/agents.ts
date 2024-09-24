@@ -26,6 +26,8 @@ import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
 import { IUsedTool } from './Interface'
 
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
+export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
+
 export type AgentFinish = {
     returnValues: Record<string, any>
     log: string
@@ -345,12 +347,14 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         let iterations = 0
         let sourceDocuments: Array<Document> = []
         const usedTools: IUsedTool[] = []
+        let artifacts: any[] = []
 
         const getOutput = async (finishStep: AgentFinish): Promise<AgentExecutorOutput> => {
             const { returnValues } = finishStep
             const additional = await this.agent.prepareForOutput(returnValues, steps)
             if (sourceDocuments.length) additional.sourceDocuments = flatten(sourceDocuments)
             if (usedTools.length) additional.usedTools = usedTools
+            if (artifacts.length) additional.artifacts = flatten(artifacts)
             if (this.returnIntermediateSteps) {
                 return { ...returnValues, intermediateSteps: steps, ...additional }
             }
@@ -426,13 +430,17 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                     state: inputs
                                 }
                             )
+                            let toolOutput = observation
+                            if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                                toolOutput = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)[0]
+                            }
+                            if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
+                                toolOutput = toolOutput.split(ARTIFACTS_PREFIX)[0]
+                            }
                             usedTools.push({
                                 tool: tool.name,
                                 toolInput: action.toolInput as any,
-                                toolOutput:
-                                    typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)
-                                        ? observation.split(SOURCE_DOCUMENTS_PREFIX)[0]
-                                        : observation
+                                toolOutput
                             })
                         } else {
                             observation = `${action.tool} is not a valid tool, try another one.`
@@ -459,6 +467,16 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                         try {
                             const parsedDocs = JSON.parse(docs)
                             sourceDocuments.push(parsedDocs)
+                        } catch (e) {
+                            console.error('Error parsing source documents from tool')
+                        }
+                    }
+                    if (typeof observation === 'string' && observation.includes(ARTIFACTS_PREFIX)) {
+                        const observationArray = observation.split(ARTIFACTS_PREFIX)
+                        observation = observationArray[0]
+                        try {
+                            const artifact = JSON.parse(observationArray[1])
+                            artifacts.push(artifact)
                         } catch (e) {
                             console.error('Error parsing source documents from tool')
                         }
@@ -564,6 +582,10 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                     )
                     if (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)) {
                         const observationArray = observation.split(SOURCE_DOCUMENTS_PREFIX)
+                        observation = observationArray[0]
+                    }
+                    if (typeof observation === 'string' && observation.includes(ARTIFACTS_PREFIX)) {
+                        const observationArray = observation.split(ARTIFACTS_PREFIX)
                         observation = observationArray[0]
                     }
                 } catch (e) {
