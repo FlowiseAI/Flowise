@@ -764,7 +764,6 @@ export class AnalyticHandler {
                     runId,
                     parentRunId: chainEventId,
                     name,
-                    // userId: this.options.chatId,
                     input
                 })
                 this.handlers['lunary'].llmEvent = { [runId]: runId }
@@ -921,7 +920,6 @@ export class AnalyticHandler {
                     runId,
                     parentRunId: chainEventId,
                     name,
-                    userId: this.options.chatId,
                     input
                 })
                 this.handlers['lunary'].toolEvent = { [runId]: runId }
