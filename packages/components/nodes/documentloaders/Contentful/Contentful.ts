@@ -377,7 +377,7 @@ class ContentfulLoader extends BaseDocumentLoader {
         this.accessToken = accessToken
         this.includeAll = includeAll
         this.include = include
-        this.limit = limit
+        this.limit = limit ?? 50
         this.includeFieldNames = includeFieldNames
 
         if (typeof metadata === 'string' && metadata.trim() !== '') {
@@ -546,7 +546,7 @@ class ContentfulLoader extends BaseDocumentLoader {
     private async runQuery(): Promise<Document[]> {
         let query: any = this.metadata || {}
 
-        if (this.limit && !this.includeAll) {
+        if (this.limit) {
             query.limit = this.limit
         }
         if (this.include) {
