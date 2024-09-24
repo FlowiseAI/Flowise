@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { prisma } from '@db/client'
 import auth0 from '@utils/auth/auth0'
+import { authenticateApiKey } from '@utils/auth/authenticateApiKey';
 import * as jose from 'jose'
 import { User } from 'types'
 import flagsmith from 'flagsmith/isomorphic'
@@ -74,6 +75,13 @@ const getCachedSession = cache(async (req?: any, res: any = new Response()): Pro
     if (session?.user?.['https://theanswer.ai/roles']) {
         session.user.roles = session.user['https://theanswer.ai/roles']
     }
+    if (!session?.user) {
+        // no auth0 user, but maybe using an AnswerAI API Key
+        const apiKeyData = await authenticateApiKey(req)
+        if (apiKeyData?.type === 'user') {
+            session = { user: apiKeyData.user } as any
+        }
+    }
     if (session?.user) {
         await flagsmith.init({
             // fetches flags on the server and passes them to the App
@@ -87,13 +95,15 @@ const getCachedSession = cache(async (req?: any, res: any = new Response()): Pro
                           }, 0)
                         : ''
                 }`,
-                traits: {
-                    env: 'production',
-                    organization: session?.user?.organizationId,
-                    roles: session?.user?.roles?.join(',') ?? '',
-                    invited: !!session?.user?.invited,
-                    domain: session?.user?.email?.split('@')[1]!
-                }
+                traits: session.user.roles
+                    ? {
+                          env: 'production',
+                          organization: session?.user?.organizationId,
+                          roles: session?.user?.roles?.join(',') ?? '',
+                          invited: !!session?.user?.invited,
+                          domain: session?.user?.email?.split('@')[1]!
+                      }
+                    : undefined
             })
         })
 

@@ -65,6 +65,7 @@ model User {
   contextFields      ContextField[]
   activeUserPlan     ActiveUserPlan?
   userPlanHistories  UserPlanHistory[]
+  appConfigs         AppConfig[]
 }
 
 enum ApiKeyType {
@@ -459,4 +460,13 @@ model Tasks {
   completed   Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @default(now()) @updatedAt
+}
+
+model AppConfig {
+  id     String   @id @default(uuid())
+  userId String
+  appId  String
+  appType String
+  config Json
+  user   User     @relation(fields: [userId], references: [id])
 }
