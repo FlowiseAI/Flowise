@@ -68,9 +68,14 @@ const Canvas = () => {
 
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId =
-        URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
+        URLpath[URLpath.length - 1] === 'canvas' ||
+        URLpath[URLpath.length - 1] === 'agentcanvas' ||
+        URLpath[URLpath.length - 1] === 'opeacanvas'
+            ? ''
+            : URLpath[URLpath.length - 1]
     const isAgentCanvas = URLpath.includes('agentcanvas') ? true : false
-    const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
+    const isOpeaCanvas = URLpath.includes('opeacanvas') ? true : false
+    const canvasTitle = isAgentCanvas ? 'Agent' : isOpeaCanvas ? 'OpeaFlow' : 'Chatflow'
 
     const { confirm } = useConfirm()
 
@@ -179,7 +184,7 @@ const Canvas = () => {
             try {
                 await chatflowsApi.deleteChatflow(chatflow.id)
                 localStorage.removeItem(`${chatflow.id}_INTERNAL`)
-                navigate(isAgentCanvas ? '/agentflows' : '/')
+                navigate(isAgentCanvas ? '/agentflows' : isOpeaCanvas ? '/opeaflows' : '/')
             } catch (error) {
                 enqueueSnackbar({
                     message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
@@ -223,7 +228,7 @@ const Canvas = () => {
                     deployed: false,
                     isPublic: false,
                     flowData,
-                    type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW'
+                    type: isAgentCanvas ? 'MULTIAGENT' : isOpeaCanvas ? 'OPEA' : 'CHATFLOW'
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
@@ -418,7 +423,11 @@ const Canvas = () => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
+            window.history.replaceState(
+                state,
+                null,
+                `/${isAgentCanvas ? 'agentcanvas' : isOpeaCanvas ? 'opeacanvas' : 'canvas'}/${chatflow.id}`
+            )
         } else if (createNewChatflowApi.error) {
             errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }
@@ -532,6 +541,7 @@ const Canvas = () => {
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
                             isAgentCanvas={isAgentCanvas}
+                            isOpeaCanvas={isOpeaCanvas}
                         />
                     </Toolbar>
                 </AppBar>

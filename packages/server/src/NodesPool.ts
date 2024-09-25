@@ -24,9 +24,11 @@ export class NodesPool {
      * Initialize nodes
      */
     private async initializeNodes() {
-        const packagePath = getNodeModulesPackagePath('flowise-components')
-        const nodesPath = path.join(packagePath, 'dist', 'nodes')
+        // const packagePath = getNodeModulesPackagePath('flowise-components')
+        // const nodesPath = path.join(packagePath, 'dist', 'nodes')
+        const nodesPath = '../src/nodes'
         const nodeFiles = await this.getFiles(nodesPath)
+        // const nodeFiles: Array<string> =[]
         return Promise.all(
             nodeFiles.map(async (file) => {
                 if (file.endsWith('.js')) {

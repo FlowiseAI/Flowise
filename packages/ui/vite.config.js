@@ -8,7 +8,7 @@ export default defineConfig(async ({ mode }) => {
     if (mode === 'development') {
         const serverEnv = dotenv.config({ processEnv: {}, path: '../server/.env' }).parsed
         const serverHost = serverEnv?.['HOST'] ?? 'localhost'
-        const serverPort = parseInt(serverEnv?.['PORT'] ?? 3000)
+        const serverPort = parseInt(serverEnv?.['PORT'] ?? '3000')
         if (!Number.isNaN(serverPort) && serverPort > 0 && serverPort < 65535) {
             proxy = {
                 '/api': {

@@ -33,7 +33,7 @@ import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, isAgentCanvas, isOpeaCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -60,7 +60,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
-    const title = isAgentCanvas ? 'Agents' : 'Chatflow'
+    const title = isAgentCanvas ? 'Agents' : isOpeaCanvas ? 'OpeaFlow' : 'Chatflow'
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -122,7 +122,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 const parsedFlowData = JSON.parse(flowData)
                 flowData = JSON.stringify(parsedFlowData)
                 localStorage.setItem('duplicatedFlowData', flowData)
-                window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
+                window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : isOpeaCanvas ? 'opeacanvas' : 'canvas'}`, '_blank')
             } catch (e) {
                 console.error(e)
             }
@@ -195,7 +195,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
             chatflowApiKeyId: chatflow.apikeyid,
             isFormDataRequired,
             isSessionMemory,
-            isAgentCanvas
+            isAgentCanvas,
+            isOpeaCanvas
         })
         setAPIDialogOpen(true)
     }
@@ -429,6 +430,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 onSettingsItemClick={onSettingsItemClick}
                 onUploadFile={onUploadFile}
                 isAgentCanvas={isAgentCanvas}
+                isOpeaCanvas={isOpeaCanvas}
             />
             <SaveChatflowDialog
                 show={flowDialogOpen}
@@ -474,7 +476,8 @@ CanvasHeader.propTypes = {
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isOpeaCanvas: PropTypes.bool
 }
 
 export default CanvasHeader

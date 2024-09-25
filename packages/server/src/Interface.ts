@@ -2,7 +2,7 @@ import { IAction, ICommonObject, IFileUpload, INode, INodeData as INodeDataFromC
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT'
+export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'OPEA'
 
 export enum chatType {
     INTERNAL = 'INTERNAL',

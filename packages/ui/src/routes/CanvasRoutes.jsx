@@ -31,6 +31,14 @@ const CanvasRoutes = {
             element: <Canvas />
         },
         {
+            path: '/opeacanvas',
+            element: <Canvas />
+        },
+        {
+            path: '/opeacanvas/:id',
+            element: <Canvas />
+        },
+        {
             path: '/marketplace/:id',
             element: <MarketplaceCanvas />
         }

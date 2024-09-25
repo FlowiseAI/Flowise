@@ -134,17 +134,23 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         const langchainNodes = nodes.filter((nd) => !nd.tags)
         const llmaindexNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('LlamaIndex'))
         const utilitiesNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('Utilities'))
-        if (newTabValue === 0) {
-            return langchainNodes
-        } else if (newTabValue === 1) {
-            return llmaindexNodes
-        } else {
-            return utilitiesNodes
-        }
+        const opeaNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('OPEA'))
+        const tabSequence = [opeaNodes, utilitiesNodes]
+        return tabSequence[newTabValue]
+        // if (newTabValue === 0) {
+        //     return langchainNodes
+        // } else if (newTabValue === 1) {
+        //     return llmaindexNodes
+        // } else if (newTabValue === 3) {
+        //     return opeaNodes
+        // } else {
+        //     return utilitiesNodes
+        // }
     }
 
     const groupByCategory = (nodes, newTabValue, isFilter) => {
         if (isAgentCanvas) {
+            console.log('groupByCategory --> isAgnetCanvas')
             const accordianCategories = {}
             const result = nodes.reduce(function (r, a) {
                 r[a.category] = r[a.category] || []
@@ -181,7 +187,9 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             accordianCategories['Memory'] = true
             setCategoryExpanded(accordianCategories)
         } else {
+            console.log('groupByCategory --> else isAgentCanvas')
             const taggedNodes = groupByTags(nodes, newTabValue)
+            console.log('taggedNodes', taggedNodes)
             const accordianCategories = {}
             const result = taggedNodes.reduce(function (r, a) {
                 r[a.category] = r[a.category] || []
@@ -189,7 +197,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                 accordianCategories[a.category] = isFilter ? true : false
                 return r
             }, Object.create(null))
-
+            console.log('result', result)
             const filteredResult = {}
             for (const category in result) {
                 if (category === 'Multi Agents' || category === 'Sequential Agents') {
@@ -197,6 +205,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                 }
                 filteredResult[category] = result[category]
             }
+            console.log('filteredResult', filteredResult)
             setNodes(filteredResult)
             setCategoryExpanded(accordianCategories)
         }
@@ -344,7 +353,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                 onChange={handleTabChange}
                                                 aria-label='tabs'
                                             >
-                                                {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
+                                                {['OPEA', 'Utilities'].map((item, index) => (
                                                     <Tab
                                                         icon={
                                                             <div

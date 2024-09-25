@@ -112,6 +112,9 @@ const getAllChatflows = async (type?: ChatflowType): Promise<ChatFlow[]> => {
         } else if (type === 'CHATFLOW') {
             // fetch all chatflows that are not agentflow
             return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
+        } else if (type === 'OPEA') {
+            // fetch all chatflows that are OPEAflow
+            return dbResponse.filter((chatflow) => chatflow.type === 'OPEA')
         }
         return dbResponse
     } catch (error) {

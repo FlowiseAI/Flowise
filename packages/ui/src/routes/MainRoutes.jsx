@@ -5,6 +5,9 @@ import MainLayout from '@/layout/MainLayout'
 import Loadable from '@/ui-component/loading/Loadable'
 
 // chatflows routing
+const Opeaflows = Loadable(lazy(() => import('@/views/opeaflows')))
+
+// chatflows routing
 const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
 
 // agents routing
@@ -44,7 +47,11 @@ const MainRoutes = {
     children: [
         {
             path: '/',
-            element: <Chatflows />
+            element: <Opeaflows />
+        },
+        {
+            path: '/opeaflows',
+            element: <Opeaflows />
         },
         {
             path: '/chatflows',
