@@ -432,6 +432,22 @@
             "name": "groqChat",
             "models": [
                 {
+                    "label": "llama-3.2-1b-preview",
+                    "name": "llama-3.2-1b-preview"
+                },
+                {
+                    "label": "llama-3.2-3b-preview",
+                    "name": "llama-3.2-3b-preview"
+                },
+                {
+                    "label": "llama-3.2-11b-text-preview",
+                    "name": "llama-3.2-11b-text-preview"
+                },
+                {
+                    "label": "llama-3.2-90b-text-preview",
+                    "name": "llama-3.2-90b-text-preview"
+                },
+                {
                     "label": "llama-3.1-405b-reasoning",
                     "name": "llama-3.1-405b-reasoning"
                 },
