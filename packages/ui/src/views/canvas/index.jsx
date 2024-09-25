@@ -27,6 +27,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { ChatPopUp } from '@/views/chatmessage/ChatPopUp'
 import { VectorStorePopUp } from '@/views/vectorstore/VectorStorePopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
+import CanvasWrapper from './CanvasWrapper'
 
 // API
 import nodesApi from '@/api/nodes'
@@ -546,60 +547,67 @@ const Canvas = () => {
                     </Toolbar>
                 </AppBar>
                 <Box sx={{ pt: '70px', height: '100vh', width: '100%' }}>
-                    <div className='reactflow-parent-wrapper'>
-                        <div className='reactflow-wrapper' ref={reactFlowWrapper}>
-                            <ReactFlow
-                                nodes={nodes}
-                                edges={edges}
-                                onNodesChange={onNodesChange}
-                                onNodeClick={onNodeClick}
-                                onEdgesChange={onEdgesChange}
-                                onDrop={onDrop}
-                                onDragOver={onDragOver}
-                                onNodeDragStop={setDirty}
-                                nodeTypes={nodeTypes}
-                                edgeTypes={edgeTypes}
-                                onConnect={onConnect}
-                                onInit={setReactFlowInstance}
-                                fitView
-                                deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
-                                minZoom={0.1}
-                            >
-                                <Controls
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)'
-                                    }}
-                                />
-                                <Background color='#aaa' gap={16} />
-                                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
-                                {isSyncNodesButtonEnabled && (
-                                    <Fab
-                                        sx={{
-                                            left: 40,
-                                            top: 20,
-                                            color: 'white',
-                                            background: 'orange',
-                                            '&:hover': {
-                                                background: 'orange',
-                                                backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
-                                            }
+                    <CanvasWrapper isAgentCanvas={isAgentCanvas} isOpeaCanvas={isOpeaCanvas}>
+                        <div className='reactflow-parent-wrapper'>
+                            <div className='reactflow-wrapper' ref={reactFlowWrapper}>
+                                <ReactFlow
+                                    nodes={nodes}
+                                    edges={edges}
+                                    onNodesChange={onNodesChange}
+                                    onNodeClick={onNodeClick}
+                                    onEdgesChange={onEdgesChange}
+                                    onDrop={onDrop}
+                                    onDragOver={onDragOver}
+                                    onNodeDragStop={setDirty}
+                                    nodeTypes={nodeTypes}
+                                    edgeTypes={edgeTypes}
+                                    onConnect={onConnect}
+                                    onInit={setReactFlowInstance}
+                                    fitView
+                                    deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
+                                    minZoom={0.1}
+                                >
+                                    <Controls
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            left: '50%',
+                                            transform: 'translate(-50%, -50%)'
                                         }}
-                                        size='small'
-                                        aria-label='sync'
-                                        title='Sync Nodes'
-                                        onClick={() => syncNodes()}
-                                    >
-                                        <IconRefreshAlert />
-                                    </Fab>
-                                )}
-                                {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
-                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
-                            </ReactFlow>
+                                    />
+                                    <Background color='#aaa' gap={16} />
+                                    <AddNodes
+                                        isAgentCanvas={isAgentCanvas}
+                                        isOpeaCanvas={isOpeaCanvas}
+                                        nodesData={getNodesApi.data}
+                                        node={selectedNode}
+                                    />
+                                    {isSyncNodesButtonEnabled && (
+                                        <Fab
+                                            sx={{
+                                                left: 40,
+                                                top: 20,
+                                                color: 'white',
+                                                background: 'orange',
+                                                '&:hover': {
+                                                    background: 'orange',
+                                                    backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
+                                                }
+                                            }}
+                                            size='small'
+                                            aria-label='sync'
+                                            title='Sync Nodes'
+                                            onClick={() => syncNodes()}
+                                        >
+                                            <IconRefreshAlert />
+                                        </Fab>
+                                    )}
+                                    {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
+                                    <ChatPopUp isAgentCanvas={isAgentCanvas} isOpeaCanvas={isOpeaCanvas} chatflowid={chatflowId} />
+                                </ReactFlow>
+                            </div>
                         </div>
-                    </div>
+                    </CanvasWrapper>
                 </Box>
                 <ConfirmDialog />
             </Box>
