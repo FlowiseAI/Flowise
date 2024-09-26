@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useRef } from 'react'
 
 // material-ui
 import { IconButton, Box, OutlinedInput, Toolbar, Typography } from '@mui/material'
@@ -7,6 +8,8 @@ import { StyledFab } from '@/ui-component/button/StyledFab'
 
 // icons
 import { IconSearch, IconArrowLeft, IconEdit } from '@tabler/icons-react'
+
+import useSearchShorcut from '@/hooks/useSearchShortcut'
 
 const ViewHeader = ({
     children,
@@ -22,6 +25,8 @@ const ViewHeader = ({
     onEdit
 }) => {
     const theme = useTheme()
+    const searchInputRef = useRef()
+    useSearchShorcut(searchInputRef)
 
     return (
         <Box sx={{ flexGrow: 1, py: 1.25, width: '100%' }}>
@@ -85,6 +90,7 @@ const ViewHeader = ({
                 <Box sx={{ height: 40, display: 'flex', alignItems: 'center', gap: 1 }}>
                     {search && (
                         <OutlinedInput
+                            inputRef={searchInputRef}
                             size='small'
                             sx={{
                                 width: '280px',
