@@ -6,6 +6,9 @@ const isMac = getOS() === 'macos'
 const useSearchShorcut = (inputRef) => {
     useEffect(() => {
         const component = inputRef.current
+
+        if (!component) return // Check if inputRef.current is defined
+
         const handleKeyDown = (event) => {
             if ((isMac && event.metaKey && event.key === 'f') || (!isMac && event.ctrlKey && event.key === 'f')) {
                 event.preventDefault()
@@ -17,14 +20,16 @@ const useSearchShorcut = (inputRef) => {
             if (event.key === 'Escape') component.blur()
         }
 
-        inputRef.current.addEventListener('keydown', handleInputEscape)
+        component.addEventListener('keydown', handleInputEscape)
         document.addEventListener('keydown', handleKeyDown)
 
         return () => {
-            component.addEventListener('keydown', handleInputEscape)
+            if (component) {
+                component.removeEventListener('keydown', handleInputEscape)
+            }
             document.removeEventListener('keydown', handleKeyDown)
         }
-    })
+    }, [inputRef]) // Add inputRef to the dependency array to ensure the effect is re-applied if inputRef changes
 }
 
 export default useSearchShorcut
