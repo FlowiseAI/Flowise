@@ -5,6 +5,7 @@ const isMac = getOS() === 'macos'
 
 const useSearchShorcut = (inputRef) => {
     useEffect(() => {
+        if (!inputRef.current) return
         const component = inputRef.current
         const handleKeyDown = (event) => {
             if ((isMac && event.metaKey && event.key === 'f') || (!isMac && event.ctrlKey && event.key === 'f')) {
