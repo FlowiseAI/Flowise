@@ -359,6 +359,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         const nodeModule = await import(nodeInstanceFilePath)
         const nodeInstance = new nodeModule.nodeClass({ sessionId })
 
+        isStreamValid = (req.body.streaming === 'true' || req.body.streaming === true) && isStreamValid
+
         let result = isStreamValid
             ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
                   chatId,

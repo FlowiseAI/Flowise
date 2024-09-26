@@ -701,14 +701,23 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
         const zodObj: ICommonObject = {}
         for (const sch of parsedSchema) {
             if (sch.type === 'string') {
-                if (sch.required) z.string({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.string().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.string({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.string().describe(sch.description).optional()
+                }
             } else if (sch.type === 'number') {
-                if (sch.required) z.number({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.number().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.number({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.number().describe(sch.description).optional()
+                }
             } else if (sch.type === 'boolean') {
-                if (sch.required) z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.boolean().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.boolean().describe(sch.description).optional()
+                }
             }
         }
         return zodObj
