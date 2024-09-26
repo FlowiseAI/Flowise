@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import moment from 'moment'
 import { styled } from '@mui/material/styles'
 import {
     Box,
+    Button,
     Chip,
+    CircularProgress,
     Paper,
     Skeleton,
     Stack,
@@ -23,6 +25,10 @@ import {
 import { tableCellClasses } from '@mui/material/TableCell'
 import FlowListMenu from '../button/FlowListMenu'
 import { Link } from 'react-router-dom'
+import { 
+    OpenInNew,
+    StopCircleOutlined
+} from '@mui/icons-material'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -66,19 +72,61 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
         localStorage.setItem(localStorageKeyOrderBy, property)
     }
 
-    const sortedData = data
-        ? [...data].sort((a, b) => {
-              if (orderBy === 'name') {
-                  return order === 'asc' ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '')
-              } else if (orderBy === 'updatedDate') {
-                  return order === 'asc'
-                      ? new Date(a.updatedDate) - new Date(b.updatedDate)
-                      : new Date(b.updatedDate) - new Date(a.updatedDate)
-              }
-              return 0
-          })
-        : []
+    const [sortedData, setSortedData] = useState([]);
 
+    const handleSortData = () => {
+        if (!data) return [];
+        const sorted = [...data].map((row) => ({
+            ...row,
+            sandboxStatus: row.sandboxStatus || 'Not Running' // Ensure initial status
+        })).sort((a, b) => {
+            if (orderBy === 'name') {
+                return order === 'asc' ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '');
+            } else if (orderBy === 'updatedDate') {
+                return order === 'asc'
+                    ? new Date(a.updatedDate) - new Date(b.updatedDate)
+                    : new Date(b.updatedDate) - new Date(a.updatedDate);
+            }
+            return 0;
+        });
+        return sorted;
+    };
+
+    const updateSandboxStatus = (id, newStatus) => {
+        setSortedData((prevData) =>
+            prevData.map((row) =>
+                row.id === id ? { ...row, sandboxStatus: newStatus } : row
+            )
+        );
+    };
+
+    useEffect(() => {
+        setSortedData(handleSortData());
+    }, [data, order, orderBy]); // Run effect when any dependency changes
+
+    // const handleRequestSort = (property) => {
+    //     const isAsc = orderBy === property && order === 'asc';
+    //     setOrder(isAsc ? 'desc' : 'asc');
+    //     setOrderBy(property);
+    // };
+
+    // const sortedData = data
+    //     ? [...data].sort((a, b) => {
+    //           if (orderBy === 'name') {
+    //               return order === 'asc' ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '')
+    //           } else if (orderBy === 'updatedDate') {
+    //               return order === 'asc'
+    //                   ? new Date(a.updatedDate) - new Date(b.updatedDate)
+    //                   : new Date(b.updatedDate) - new Date(a.updatedDate)
+    //           }
+    //           return 0
+    //       })
+    //     : []
+
+    const handleOpenSandbox = (id) => {
+        console.log('Button clicked for', id);
+        window.open(`http://44.211.59.18:3008/`, '_blank');
+    }
     return (
         <>
             <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
@@ -90,18 +138,12 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                         }}
                     >
                         <TableRow>
-                            <StyledTableCell component='th' scope='row' style={{ width: '20%' }} key='0'>
+                            <StyledTableCell component='th' scope='row' style={{ width: '25%' }} key='0'>
                                 <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
                                     Name
                                 </TableSortLabel>
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '25%' }} key='1'>
-                                Category
-                            </StyledTableCell>
-                            <StyledTableCell style={{ width: '30%' }} key='2'>
-                                Nodes
-                            </StyledTableCell>
-                            <StyledTableCell style={{ width: '15%' }} key='3'>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
                                     direction={order}
@@ -110,8 +152,17 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                     Last Modified Date
                                 </TableSortLabel>
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '10%' }} key='4'>
-                                Actions
+                            <StyledTableCell style={{ width: '20%' }} key='2'>
+                                Sandbox 
+                            </StyledTableCell>
+                            <StyledTableCell style={{ width: '25%' }} key='3'>
+                                <Stack
+                                    direction={{ xs: 'column', sm: 'row' }}
+                                    spacing={1}
+                                    justifyContent='center'
+                                >
+                                    Actions
+                                </Stack>
                             </StyledTableCell>
                         </TableRow>
                     </TableHead>
@@ -131,14 +182,8 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
                                 </StyledTableRow>
                                 <StyledTableRow>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
@@ -179,77 +224,44 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                 </Typography>
                                             </Tooltip>
                                         </StyledTableCell>
-                                        <StyledTableCell key='1'>
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row',
-                                                    flexWrap: 'wrap',
-                                                    marginTop: 5
-                                                }}
-                                            >
-                                                &nbsp;
-                                                {row.category &&
-                                                    row.category
-                                                        .split(';')
-                                                        .map((tag, index) => (
-                                                            <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />
-                                                        ))}
-                                            </div>
-                                        </StyledTableCell>
+                                        <StyledTableCell key='1'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
                                         <StyledTableCell key='2'>
-                                            {images[row.id] && (
-                                                <Box
-                                                    sx={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'start',
-                                                        gap: 1
-                                                    }}
-                                                >
-                                                    {images[row.id]
-                                                        .slice(0, images[row.id].length > 5 ? 5 : images[row.id].length)
-                                                        .map((img) => (
-                                                            <Box
-                                                                key={img}
-                                                                sx={{
-                                                                    width: 30,
-                                                                    height: 30,
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: customization.isDarkMode
-                                                                        ? theme.palette.common.white
-                                                                        : theme.palette.grey[300] + 75
-                                                                }}
-                                                            >
-                                                                <img
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        padding: 5,
-                                                                        objectFit: 'contain'
-                                                                    }}
-                                                                    alt=''
-                                                                    src={img}
-                                                                />
-                                                            </Box>
-                                                        ))}
-                                                    {images[row.id].length > 5 && (
-                                                        <Typography
-                                                            sx={{
-                                                                alignItems: 'center',
-                                                                display: 'flex',
-                                                                fontSize: '.9rem',
-                                                                fontWeight: 200
-                                                            }}
+                                            <Stack direction="row" alignItems="center" spacing={1}>
+                                                <Typography variant="body2">{row.sandboxStatus}</Typography>
+                                                <Tooltip title={row.sandboxStatus === 'Ready'? "Click to open Chat UI":"Sandbox is not running" }>
+                                                    <Button
+                                                        // variant="outlined"
+                                                        // style={{ width: '20px' }}
+                                                        color={row.sandboxStatus === 'Not Running' ? 'inherit' : 'primary'}
+                                                        startIcon={<OpenInNew />}
+                                                        onClick={() => {
+                                                            // console.log('Button clicked for', row.name || row.id);
+                                                            handleOpenSandbox(row.name || row.id);
+                                                        }}
+                                                        disabled={row.sandboxStatus !== 'Ready'}
+                                                    >
+                                                    </Button>
+                                                </Tooltip>
+                                                {row.sandboxStatus === "Getting Ready" ? (
+                                                    <CircularProgress size={20} />
+                                                ) : null}
+                                                {row.sandboxStatus === "Ready" ? (
+                                                    <Button
+                                                        // style={{ width: '10px' }}
+                                                        // variant="outlined"
+                                                        color={row.sandboxStatus === 'Not Running' ? 'inherit' : 'primary'}
+                                                        startIcon={<StopCircleOutlined />}
+                                                        onClick={() => {
+                                                            console.log('Stop Button clicked for', row.name || row.id);
+                                                            // handleStopSandbox(row.name || row.id);
+                                                        }}
+                                                        disabled={row.sandboxStatus !== 'Ready'}
                                                         >
-                                                            + {images[row.id].length - 5} More
-                                                        </Typography>
-                                                    )}
-                                                </Box>
-                                            )}
+                                                    </Button>
+                                                ) : null}
+                                            </Stack>
                                         </StyledTableCell>
-                                        <StyledTableCell key='3'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
-                                        <StyledTableCell key='4'>
+                                        <StyledTableCell key='3'>
                                             <Stack
                                                 direction={{ xs: 'column', sm: 'row' }}
                                                 spacing={1}
@@ -261,6 +273,8 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                     chatflow={row}
                                                     setError={setError}
                                                     updateFlowsApi={updateFlowsApi}
+                                                    sandboxStatus={row.sandboxStatus}
+                                                    updateSandboxStatus={updateSandboxStatus}
                                                 />
                                             </Stack>
                                         </StyledTableCell>

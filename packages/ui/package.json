@@ -61,7 +61,7 @@
         "yup": "^0.32.9"
     },
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --host",
         "start": "vite",
         "build": "vite build",
         "clean": "rimraf build",

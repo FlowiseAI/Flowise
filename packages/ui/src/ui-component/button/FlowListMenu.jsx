@@ -15,6 +15,8 @@ import PictureInPictureAltIcon from '@mui/icons-material/PictureInPictureAlt'
 import ThumbsUpDownOutlinedIcon from '@mui/icons-material/ThumbsUpDownOutlined'
 import VpnLockOutlinedIcon from '@mui/icons-material/VpnLockOutlined'
 import MicNoneOutlinedIcon from '@mui/icons-material/MicNoneOutlined'
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
 import ExportTemplateOutlinedIcon from '@mui/icons-material/BookmarksOutlined'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -37,6 +39,7 @@ import ChatFeedbackDialog from '../dialog/ChatFeedbackDialog'
 import AllowedDomainsDialog from '../dialog/AllowedDomainsDialog'
 import SpeechToTextDialog from '../dialog/SpeechToTextDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
+import BuildDeploymentPackageDialog from '../dialog/BuildDeploymentPackageDialog'
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -74,7 +77,7 @@ const StyledMenu = styled((props) => (
     }
 }))
 
-export default function FlowListMenu({ chatflow, isAgentCanvas, setError, updateFlowsApi }) {
+export default function FlowListMenu({ chatflow, isAgentCanvas, setError, updateFlowsApi, sandboxStatus, updateSandboxStatus }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -91,6 +94,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     const [conversationStartersDialogOpen, setConversationStartersDialogOpen] = useState(false)
     const [conversationStartersDialogProps, setConversationStartersDialogProps] = useState({})
     const [chatFeedbackDialogOpen, setChatFeedbackDialogOpen] = useState(false)
+    // const [runSandboxProps, setrunSandboxProps] = useState({})
     const [chatFeedbackDialogProps, setChatFeedbackDialogProps] = useState({})
     const [allowedDomainsDialogOpen, setAllowedDomainsDialogOpen] = useState(false)
     const [allowedDomainsDialogProps, setAllowedDomainsDialogProps] = useState({})
@@ -99,6 +103,10 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
 
     const [exportTemplateDialogOpen, setExportTemplateDialogOpen] = useState(false)
     const [exportTemplateDialogProps, setExportTemplateDialogProps] = useState({})
+
+    const [buildDeploymentPackageDialogOpen, setBuildDeploymentPackageDialogOpen] = useState(false)
+    const [buildDeploymentPackageDialogProps, setBuildDeploymentPackageDialogProps] = useState({})
+
 
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
@@ -132,6 +140,26 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         setExportTemplateDialogOpen(true)
     }
 
+    const handleRunSandbox = () => {
+        setAnchorEl(null)
+        if (sandboxStatus === 'Not Running') {
+            updateSandboxStatus(chatflow.id, 'Getting Ready');
+
+            // Simulate a 10-second loading period
+            setTimeout(() => {
+                updateSandboxStatus(chatflow.id, 'Ready');
+                // setLoading(false);
+            }, 7000); // 10 seconds
+        }
+    }
+    const handleBuildDeploymentPackage = () => {
+        setAnchorEl(null)
+        setBuildDeploymentPackageDialogProps({
+            chatflow: chatflow
+        })
+        console.log ("chatflow", chatflow)
+        setBuildDeploymentPackageDialogOpen(true)
+    }
     const handleFlowChatFeedback = () => {
         setAnchorEl(null)
         setChatFeedbackDialogProps({
@@ -324,7 +352,15 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                     Save As Template
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
-                <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
+                <MenuItem onClick={handleRunSandbox} disableRipple>
+                    <PlayCircleOutlineIcon />
+                    Run Sandbox
+                </MenuItem>
+                <MenuItem onClick={handleBuildDeploymentPackage} disableRipple>
+                    <BuildCircleOutlinedIcon />
+                    Build Deployment Package
+                </MenuItem>
+                {/* <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
                     <PictureInPictureAltIcon />
                     Starter Prompts
                 </MenuItem>
@@ -343,7 +379,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                 <MenuItem onClick={handleFlowCategory} disableRipple>
                     <FileCategoryIcon />
                     Update Category
-                </MenuItem>
+                </MenuItem> */}
                 <Divider sx={{ my: 0.5 }} />
                 <MenuItem onClick={handleDelete} disableRipple>
                     <FileDeleteIcon />
@@ -386,13 +422,16 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                 dialogProps={speechToTextDialogProps}
                 onCancel={() => setSpeechToTextDialogOpen(false)}
             />
-            {exportTemplateDialogOpen && (
-                <ExportAsTemplateDialog
-                    show={exportTemplateDialogOpen}
-                    dialogProps={exportTemplateDialogProps}
-                    onCancel={() => setExportTemplateDialogOpen(false)}
-                />
-            )}
+            <ExportAsTemplateDialog
+                show={exportTemplateDialogOpen}
+                dialogProps={exportTemplateDialogProps}
+                onCancel={() => setExportTemplateDialogOpen(false)}
+            />
+            <BuildDeploymentPackageDialog
+                show={buildDeploymentPackageDialogOpen}
+                dialogProps={buildDeploymentPackageDialogProps}
+                onCancel={() => setBuildDeploymentPackageDialogOpen(false)}
+            />
         </div>
     )
 }

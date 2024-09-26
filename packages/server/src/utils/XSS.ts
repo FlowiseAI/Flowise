@@ -28,11 +28,12 @@ export function getCorsOptions(): any {
     const corsOptions = {
         origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
             const allowedOrigins = getAllowedCorsOrigins()
-            if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
-                callback(null, true)
-            } else {
-                callback(null, false)
-            }
+            callback(null, true)
+            // if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
+            //     callback(null, true)
+            // } else {
+            //     callback(null, false)
+            // }
         }
     }
     return corsOptions
