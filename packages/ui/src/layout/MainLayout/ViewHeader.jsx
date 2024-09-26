@@ -98,7 +98,7 @@ const ViewHeader = ({
                             inputRef={searchInputRef}
                             size='small'
                             sx={{
-                                width: '280px',
+                                width: '325px',
                                 height: '100%',
                                 display: { xs: 'none', sm: 'flex' },
                                 borderRadius: 2,
