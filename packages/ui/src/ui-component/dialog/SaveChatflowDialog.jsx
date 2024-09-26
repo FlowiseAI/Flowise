@@ -40,6 +40,9 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     placeholder='My New Chatflow'
                     value={chatflowName}
                     onChange={(e) => setChatflowName(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (isReadyToSave && e.key === 'Enter') onConfirm(e.target.value)
+                    }}
                 />
             </DialogContent>
             <DialogActions>
