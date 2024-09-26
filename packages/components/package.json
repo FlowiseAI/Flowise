@@ -93,7 +93,7 @@
         "linkifyjs": "^4.1.1",
         "llamaindex": "^0.3.13",
         "lodash": "^4.17.21",
-        "lunary": "^0.7.10",
+        "lunary": "^0.7.12",
         "mammoth": "^1.5.1",
         "meilisearch": "^0.41.0",
         "moment": "^2.29.3",

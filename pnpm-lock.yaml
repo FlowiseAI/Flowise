@@ -323,7 +323,7 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
       lunary:
-        specifier: ^0.7.10
+        specifier: ^0.7.12
         version: 0.7.12(openai@4.51.0(encoding@0.1.13))(react@18.2.0)
       mammoth:
         specifier: ^1.5.1
