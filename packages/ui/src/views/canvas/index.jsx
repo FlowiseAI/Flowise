@@ -27,7 +27,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { ChatPopUp } from '@/views/chatmessage/ChatPopUp'
 import { VectorStorePopUp } from '@/views/vectorstore/VectorStorePopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
-import CanvasWrapper from './CanvasWrapper'
+// import CanvasWrapper from './CanvasWrapper'
 
 // API
 import nodesApi from '@/api/nodes'
@@ -547,7 +547,7 @@ const Canvas = () => {
                     </Toolbar>
                 </AppBar>
                 <Box sx={{ pt: '70px', height: '100vh', width: '100%' }}>
-                    <CanvasWrapper isAgentCanvas={isAgentCanvas} isOpeaCanvas={isOpeaCanvas}>
+                    {/* <CanvasWrapper isAgentCanvas={isAgentCanvas} isOpeaCanvas={isOpeaCanvas}> */}
                         <div className='reactflow-parent-wrapper'>
                             <div className='reactflow-wrapper' ref={reactFlowWrapper}>
                                 <ReactFlow
@@ -607,7 +607,7 @@ const Canvas = () => {
                                 </ReactFlow>
                             </div>
                         </div>
-                    </CanvasWrapper>
+                    {/* </CanvasWrapper> */}
                 </Box>
                 <ConfirmDialog />
             </Box>
