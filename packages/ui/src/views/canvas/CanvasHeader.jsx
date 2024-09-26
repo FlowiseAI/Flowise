@@ -310,6 +310,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                         ml: 2
                                     }}
                                     defaultValue={flowName}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            submitFlowName()
+                                        } else if (e.key === 'Escape') {
+                                            setEditingFlowName(false)
+                                        }
+                                    }}
                                 />
                                 <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
                                     <Avatar
