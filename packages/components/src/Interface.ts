@@ -419,3 +419,24 @@ export interface IServerSideEventStreamer {
     streamAbortEvent(chatId: string): void
     streamEndEvent(chatId: string): void
 }
+
+export enum FollowUpPromptProvider {
+    ANTHROPIC = 'chatAnthropic',
+    AZURE_OPENAI = 'azureChatOpenAI',
+    MISTRALAI = 'chatMistralAI',
+    OPENAI = 'chatOpenAI'
+}
+
+export type FollowUpPromptProviderConfig = {
+    [key in FollowUpPromptProvider]: {
+        credentialId: string
+        modelName: string
+        prompt: string
+        temperature: string
+    }
+}
+
+export type FollowUpPromptConfig = {
+    status: boolean
+    selectedProvider: FollowUpPromptProvider
+} & FollowUpPromptProviderConfig
