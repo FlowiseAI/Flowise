@@ -79,6 +79,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 // Utils
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow, getLocalStorageChatflow } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
+import FollowUpPromptsCard from '@/ui-component/cards/FollowUpPromptsCard'
 
 const messageImageStyle = {
     width: '128px',
@@ -201,6 +202,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const [leadPhone, setLeadPhone] = useState('')
     const [isLeadSaving, setIsLeadSaving] = useState(false)
     const [isLeadSaved, setIsLeadSaved] = useState(false)
+
+    // follow-up prompts
+    const [followUpPromptsStatus, setFollowUpPromptsStatus] = useState(false)
+    const [followUpPrompts, setFollowUpPrompts] = useState([])
 
     // drag & drop and file input
     const imgUploadRef = useRef(null)
@@ -627,6 +632,12 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         handleSubmit(undefined, promptStarterInput)
     }
 
+    const handleFollowUpPromptClick = async (promptStarterInput) => {
+        setUserInput(promptStarterInput)
+        setFollowUpPrompts([])
+        handleSubmit(undefined, promptStarterInput)
+    }
+
     const handleActionClick = async (elem, action) => {
         setUserInput(elem.label)
         setMessages((prevMessages) => {
@@ -663,6 +674,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 allMessages[allMessages.length - 2].message = data.question
                 return allMessages
             })
+        }
+
+        if (data.followUpPrompts) {
+            const followUpPrompts = JSON.parse(data.followUpPrompts)
+            setFollowUpPrompts(followUpPrompts)
         }
     }
 
@@ -1011,6 +1027,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             return [...prevMessages, leadCaptureMessage]
                         })
                     }
+                }
+
+                if (config.followUpPrompts) {
+                    setFollowUpPromptsStatus(config.followUpPrompts.status)
                 }
             }
         }
@@ -1964,6 +1984,17 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                         sx={{ bottom: previews && previews.length > 0 ? 70 : 0 }}
                         starterPrompts={starterPrompts || []}
                         onPromptClick={handlePromptClick}
+                        isGrid={isDialog}
+                    />
+                </div>
+            )}
+
+            {messages && messages.length > 2 && followUpPromptsStatus && followUpPrompts.length > 0 && (
+                <div style={{ position: 'relative' }}>
+                    <FollowUpPromptsCard
+                        sx={{ bottom: previews && previews.length > 0 ? 70 : 0 }}
+                        followUpPrompts={followUpPrompts || []}
+                        onPromptClick={handleFollowUpPromptClick}
                         isGrid={isDialog}
                     />
                 </div>
