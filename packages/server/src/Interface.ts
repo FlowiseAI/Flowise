@@ -50,6 +50,7 @@ export interface IChatMessage {
     createdDate: Date
     leadEmail?: string
     action?: string | null
+    followUpPrompts?: string
 }
 
 export interface IChatMessageFeedback {

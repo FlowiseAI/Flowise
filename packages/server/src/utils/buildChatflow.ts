@@ -6,7 +6,8 @@ import {
     addSingleFileToStorage,
     addArrayFilesToStorage,
     mapMimeTypeToInputField,
-    IServerSideEventStreamer
+    IServerSideEventStreamer,
+    generateFollowUpPrompts
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -421,6 +422,18 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
         if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
         if (result?.artifacts) apiMessage.artifacts = JSON.stringify(result.artifacts)
+        if (chatflow.followUpPrompts) {
+            const followUpPromptsConfig = JSON.parse(chatflow.followUpPrompts)
+            const followUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
+                chatId,
+                chatflowid,
+                appDataSource: appServer.AppDataSource,
+                databaseEntities
+            })
+            if (followUpPrompts?.questions) {
+                apiMessage.followUpPrompts = JSON.stringify(followUpPrompts.questions)
+            }
+        }
 
         const chatMessage = await utilAddChatMessage(apiMessage)
 
@@ -439,6 +452,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         result.question = incomingInput.question
         result.chatId = chatId
         result.chatMessageId = chatMessage?.id
+        result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
         result.isStreamValid = isStreamValid
 
         if (sessionId) result.sessionId = sessionId
