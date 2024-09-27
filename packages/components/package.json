@@ -119,7 +119,7 @@
         "weaviate-ts-client": "^1.1.0",
         "winston": "^3.9.0",
         "ws": "^8.9.0",
-        "zod": "^3.22.4",
+        "zod": "3.22.4",
         "zod-to-json-schema": "^3.21.4"
     },
     "devDependencies": {
