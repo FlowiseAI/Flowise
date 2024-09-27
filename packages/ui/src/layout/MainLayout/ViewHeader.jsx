@@ -12,8 +12,9 @@ import { IconSearch, IconArrowLeft, IconEdit } from '@tabler/icons-react'
 import useSearchShorcut from '@/hooks/useSearchShortcut'
 import { getOS } from '@/utils/genericHelper'
 
-const isMac = getOS() === 'macos'
-export const isDesktop = isMac || os === 'windows' || os === 'linux'
+const os = getOS()
+const isMac = os === 'macos'
+const isDesktop = isMac || os === 'windows' || os === 'linux'
 const keyboardShortcut = isMac ? '[ ⌘ + F ]' : '[ Ctrl + F ]'
 
 const ViewHeader = ({
