@@ -858,6 +858,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             async onerror(err) {
                 console.error('EventSource Error: ', err)
                 closeResponse()
+                throw err
             }
         })
     }
