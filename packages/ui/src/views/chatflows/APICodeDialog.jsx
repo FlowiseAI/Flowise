@@ -37,6 +37,7 @@ import EmbedSVG from '@/assets/images/embed.svg'
 import ShareChatbotSVG from '@/assets/images/sharing.png'
 import settingsSVG from '@/assets/images/settings.svg'
 import { IconBulb } from '@tabler/icons-react'
+import flutter from '@/assets/images/flutter.png'
 
 // API
 import apiKeyApi from '@/api/apikey'
@@ -84,7 +85,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
+    const codes = ['Embed', 'Python', 'JavaScript','Flutter', 'cURL', 'Share Chatbot']
     const [value, setValue] = useState(0)
     const [keyOptions, setKeyOptions] = useState([])
     const [apiKeys, setAPIKeys] = useState([])
@@ -170,7 +171,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const handleChange = (event, newValue) => {
         setValue(newValue)
     }
-
+//New Addd Flutter
     const getCode = (codeLang) => {
         if (codeLang === 'Python') {
             return `import requests
@@ -205,7 +206,41 @@ query({"question": "Hey, how are you?"}).then((response) => {
     console.log(response);
 });
 `
-        } else if (codeLang === 'cURL') {
+        } 
+    //New Flutter Code
+    else if (codeLang === 'Flutter') {
+            return `import 'package:http/http.dart' as http;
+
+    Future<Map<String, dynamic>> query(Map<String, dynamic> data) async {
+    final url = Uri.parse(
+    "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}");
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      return {};
+      // throw Exception('Failed to load data');
+    }
+  } 
+    //Call the "query" Function to get Result
+    final response = await query({
+      "question": "Hey, how are you?",
+      "overrideConfig": {
+        "sessionId": "902PS" //Pass the 'User ID' like User DOB/PhoneNo/Or anything
+        "returnSourceDocuments": true
+      }
+    });
+    print(response);
+    print(response['text']);
+  `
+        }
+        else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}' \\
@@ -249,8 +284,45 @@ output = query({
 query({"question": "Hey, how are you?"}).then((response) => {
     console.log(response);
 });
-`
-        } else if (codeLang === 'cURL') {
+`}
+    //New Flutter Code
+        else if (codeLang === 'Flutter') {
+            return `import 'package:http/http.dart' as http;
+
+    Future<Map<String, dynamic>> query(Map<String, dynamic> data) async {
+    final url = Uri.parse(
+    "${baseURL}/api/v1/prediction/${dialogProps.chatflowid}");
+
+    final response = await http.post(
+      url,
+      headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ${selectedApiKey?.apiKey}",
+      },
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      return {};
+      // throw Exception('Failed to load data');
+    }
+  } 
+    //Call the "query" Function to get Result
+    final response = await query({
+      "question": "Hey, how are you?",
+      "overrideConfig": {
+        "sessionId": "902PS" //Pass the 'User ID' like User DOB/PhoneNo/Or anything
+        "returnSourceDocuments": true
+      }
+    });
+    print(response);
+    print(response['text']);
+  `
+        }
+        
+    else if (codeLang === 'cURL') {
             return `curl ${baseURL}/api/v1/prediction/${dialogProps.chatflowid} \\
      -X POST \\
      -d '{"question": "Hey, how are you?"}' \\
@@ -267,6 +339,8 @@ query({"question": "Hey, how are you?"}).then((response) => {
             return 'javascript'
         } else if (codeLang === 'cURL') {
             return 'bash'
+        }else  if(codeLang==='Flutter'){
+            return 'dart'
         }
         return 'python'
     }
@@ -284,6 +358,9 @@ query({"question": "Hey, how are you?"}).then((response) => {
             return ShareChatbotSVG
         } else if (codeLang === 'Configuration') {
             return settingsSVG
+        }
+        else if(codeLang==='Flutter'){
+            return flutter
         }
         return pythonSVG
     }
