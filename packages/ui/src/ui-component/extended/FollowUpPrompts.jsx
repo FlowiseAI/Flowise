@@ -20,11 +20,13 @@ import { AsyncDropdown } from '@/ui-component/dropdown/AsyncDropdown'
 
 // Icons
 import { IconX } from '@tabler/icons-react'
+import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 
 // update when adding new providers
 const FollowUpPromptProviders = {
     ANTHROPIC: 'chatAnthropic',
     AZURE_OPENAI: 'azureChatOpenAI',
+    GOOGLE_GENAI: 'chatGoogleGenerativeAI',
     MISTRALAI: 'chatMistralAI',
     OPENAI: 'chatOpenAI'
 }
@@ -45,8 +47,7 @@ const followUpPromptsOptions = {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'asyncOptions',
-                loadMethod: 'listModels',
-                default: 'claude-3-haiku'
+                loadMethod: 'listModels'
             },
             {
                 label: 'Prompt',
@@ -107,6 +108,48 @@ const followUpPromptsOptions = {
             }
         ]
     },
+    [FollowUpPromptProviders.GOOGLE_GENAI]: {
+        label: 'Google Generative AI',
+        name: FollowUpPromptProviders.GOOGLE_GENAI,
+        icon: azureOpenAiIcon,
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['googleGenerativeAI']
+            },
+            {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'options',
+                default: 'gemini-1.5-pro-latest',
+                options: [
+                    { label: 'gemini-1.5-flash-latest', name: 'gemini-1.5-flash-latest' },
+                    { label: 'gemini-1.5-pro-latest', name: 'gemini-1.5-pro-latest' }
+                ]
+            },
+            {
+                label: 'Prompt',
+                name: 'prompt',
+                type: 'string',
+                rows: 4,
+                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                optional: true,
+                default:
+                    'Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise.'
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
+                optional: true,
+                default: 0.9
+            }
+        ]
+    },
     [FollowUpPromptProviders.MISTRALAI]: {
         label: 'Mistral AI',
         name: FollowUpPromptProviders.MISTRALAI,
@@ -121,8 +164,11 @@ const followUpPromptsOptions = {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'asyncOptions',
-                loadMethod: 'listModels'
+                type: 'options',
+                options: [
+                    { label: 'mistral-large-latest', name: 'mistral-large-latest' },
+                    { label: 'mistral-large-2402', name: 'mistral-large-2402' }
+                ]
             },
             {
                 label: 'Prompt',
@@ -428,6 +474,20 @@ const FollowUpPrompts = ({ dialogProps }) => {
                                                     />
                                                 </div>
                                             </>
+                                        )}
+
+                                        {inputParam.type === 'options' && (
+                                            <Dropdown
+                                                name={inputParam.name}
+                                                options={inputParam.options}
+                                                onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
+                                                value={
+                                                    followUpPromptsConfig[selectedProvider] &&
+                                                    followUpPromptsConfig[selectedProvider][inputParam.name]
+                                                        ? followUpPromptsConfig[selectedProvider][inputParam]
+                                                        : inputParam.default ?? 'choose an option'
+                                                }
+                                            />
                                         )}
                                     </Box>
                                 ))}
