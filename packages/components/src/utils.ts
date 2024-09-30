@@ -873,6 +873,35 @@ export const getVersion: () => Promise<{ version: string }> = async () => {
 }
 
 /**
+ * Map Ext to InputField
+ * @param {string} ext
+ * @returns {string}
+ */
+export const mapExtToInputField = (ext: string) => {
+    switch (ext) {
+        case '.txt':
+            return 'txtFile'
+        case '.pdf':
+            return 'pdfFile'
+        case '.json':
+            return 'jsonFile'
+        case '.csv':
+        case '.xls':
+        case '.xlsx':
+            return 'csvFile'
+        case '.jsonl':
+            return 'jsonlinesFile'
+        case '.docx':
+        case '.doc':
+            return 'docxFile'
+        case '.yaml':
+            return 'yamlFile'
+        default:
+            return 'txtFile'
+    }
+}
+
+/**
  * Map MimeType to InputField
  * @param {string} mimeType
  * @returns {string}
