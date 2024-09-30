@@ -38,7 +38,8 @@ import {
     IconSquareFilled,
     IconDeviceSdCard,
     IconCheck,
-    IconPaperclip
+    IconPaperclip,
+    IconSparkles
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -1990,14 +1991,23 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             )}
 
             {messages && messages.length > 2 && followUpPromptsStatus && followUpPrompts.length > 0 && (
-                <div style={{ position: 'relative' }}>
-                    <FollowUpPromptsCard
-                        sx={{ bottom: previews && previews.length > 0 ? 70 : 0 }}
-                        followUpPrompts={followUpPrompts || []}
-                        onPromptClick={handleFollowUpPromptClick}
-                        isGrid={isDialog}
-                    />
-                </div>
+                <>
+                    <Divider sx={{ width: '100%' }} />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', position: 'relative', pt: 1.5 }}>
+                        <Stack sx={{ flexDirection: 'row', alignItems: 'center', px: 1.5, gap: 0.5 }}>
+                            <IconSparkles size={12} />
+                            <Typography sx={{ fontSize: '0.75rem' }} variant='body2'>
+                                Try these prompts
+                            </Typography>
+                        </Stack>
+                        <FollowUpPromptsCard
+                            sx={{ bottom: previews && previews.length > 0 ? 70 : 0 }}
+                            followUpPrompts={followUpPrompts || []}
+                            onPromptClick={handleFollowUpPromptClick}
+                            isGrid={isDialog}
+                        />
+                    </Box>
+                </>
             )}
 
             <Divider sx={{ width: '100%' }} />
