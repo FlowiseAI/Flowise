@@ -423,6 +423,7 @@ export interface IServerSideEventStreamer {
 export enum FollowUpPromptProvider {
     ANTHROPIC = 'chatAnthropic',
     AZURE_OPENAI = 'azureChatOpenAI',
+    GOOGLE_GENAI = 'chatGoogleGenerativeAI',
     MISTRALAI = 'chatMistralAI',
     OPENAI = 'chatOpenAI'
 }

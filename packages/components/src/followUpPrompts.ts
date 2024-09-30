@@ -1,13 +1,18 @@
 import { FollowUpPromptConfig, FollowUpPromptProvider, ICommonObject } from './Interface'
 import { getCredentialData } from './utils'
 import { ChatAnthropic } from '@langchain/anthropic'
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 import { ChatMistralAI } from '@langchain/mistralai'
-import { AzureChatOpenAI, ChatOpenAI } from '@langchain/openai'
+import { ChatOpenAI } from '@langchain/openai'
 import { z } from 'zod'
+import { PromptTemplate } from '@langchain/core/prompts'
+import { StructuredOutputParser } from '@langchain/core/output_parsers'
 
-const FollowUpPromptType = z.object({
-    questions: z.array(z.string())
-})
+const FollowUpPromptType = z
+    .object({
+        questions: z.array(z.string())
+    })
+    .describe('Generate Follow Up Prompts')
 
 export const generateFollowUpPrompts = async (
     followUpPromptsConfig: FollowUpPromptConfig,
@@ -22,12 +27,12 @@ export const generateFollowUpPrompts = async (
 
         switch (followUpPromptsConfig.selectedProvider) {
             case FollowUpPromptProvider.ANTHROPIC: {
-                const model = new ChatAnthropic({
+                const llm = new ChatAnthropic({
                     apiKey: credentialData.anthropicApiKey,
                     model: providerConfig.modelName,
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
-                const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
+                const structuredLLM = llm.withStructuredOutput(FollowUpPromptType)
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
                 return structuredResponse
             }
@@ -36,22 +41,55 @@ export const generateFollowUpPrompts = async (
                 const azureOpenAIApiInstanceName = credentialData['azureOpenAIApiInstanceName']
                 const azureOpenAIApiDeploymentName = credentialData['azureOpenAIApiDeploymentName']
                 const azureOpenAIApiVersion = credentialData['azureOpenAIApiVersion']
-                const model = new AzureChatOpenAI({
+
+                const llm = new ChatOpenAI({
                     azureOpenAIApiKey,
                     azureOpenAIApiInstanceName,
                     azureOpenAIApiDeploymentName,
                     azureOpenAIApiVersion,
-                    modelName: providerConfig.modelName,
+                    model: providerConfig.modelName,
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
-                const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
-                const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
+                // use structured output parser because withStructuredOutput is not working
+                const parser = StructuredOutputParser.fromZodSchema(FollowUpPromptType)
+                const formatInstructions = parser.getFormatInstructions()
+                const prompt = PromptTemplate.fromTemplate(`
+                    ${providerConfig.prompt}
+                                
+                    {format_instructions}
+                `)
+                const chain = prompt.pipe(llm).pipe(parser)
+                const structuredResponse = await chain.invoke({
+                    history: apiMessageContent,
+                    format_instructions: formatInstructions
+                })
+                return structuredResponse
+            }
+            case FollowUpPromptProvider.GOOGLE_GENAI: {
+                const llm = new ChatGoogleGenerativeAI({
+                    apiKey: credentialData.googleGenerativeAPIKey,
+                    model: providerConfig.modelName,
+                    temperature: parseFloat(`${providerConfig.temperature}`)
+                })
+                // use structured output parser because withStructuredOutput is not working
+                const parser = StructuredOutputParser.fromZodSchema(FollowUpPromptType)
+                const formatInstructions = parser.getFormatInstructions()
+                const prompt = PromptTemplate.fromTemplate(`
+                    ${providerConfig.prompt}
+                     
+                    {format_instructions}
+                `)
+                const chain = prompt.pipe(llm).pipe(parser)
+                const structuredResponse = await chain.invoke({
+                    history: apiMessageContent,
+                    format_instructions: formatInstructions
+                })
                 return structuredResponse
             }
             case FollowUpPromptProvider.MISTRALAI: {
                 const model = new ChatMistralAI({
                     apiKey: credentialData.mistralAIAPIKey,
-                    modelName: providerConfig.modelName,
+                    model: providerConfig.modelName,
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
                 const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
@@ -60,8 +98,8 @@ export const generateFollowUpPrompts = async (
             }
             case FollowUpPromptProvider.OPENAI: {
                 const model = new ChatOpenAI({
-                    apiKey: credentialData.openAIAPIKey,
-                    modelName: providerConfig.modelName,
+                    apiKey: credentialData.openAIApiKey,
+                    model: providerConfig.modelName,
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
                 const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
