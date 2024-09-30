@@ -1,4 +1,5 @@
 import { Request } from 'express'
+import * as path from 'path'
 import {
     IFileUpload,
     convertSpeechToText,
@@ -6,6 +7,7 @@ import {
     addSingleFileToStorage,
     addArrayFilesToStorage,
     mapMimeTypeToInputField,
+    mapExtToInputField,
     IServerSideEventStreamer
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
@@ -151,15 +153,42 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
-                const fileInputField = mapMimeTypeToInputField(file.mimetype)
+                const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
 
-                overrideConfig[fileInputField] = storagePath
+                const fileExtension = path.extname(file.originalname)
+
+                const fileInputFieldFromExt = mapExtToInputField(fileExtension)
+
+                let fileInputField = 'txtFile'
+
+                if (fileInputFieldFromExt !== 'txtFile') {
+                    fileInputField = fileInputFieldFromExt
+                } else if (fileInputFieldFromMimeType !== 'txtFile') {
+                    fileInputField = fileInputFieldFromExt
+                }
+
+                if (overrideConfig[fileInputField]) {
+                    const existingFileInputField = overrideConfig[fileInputField].replace('FILE-STORAGE::', '')
+                    const existingFileInputFieldArray = JSON.parse(existingFileInputField)
+
+                    const newFileInputField = storagePath.replace('FILE-STORAGE::', '')
+                    const newFileInputFieldArray = JSON.parse(newFileInputField)
+
+                    const updatedFieldArray = existingFileInputFieldArray.concat(newFileInputFieldArray)
+
+                    overrideConfig[fileInputField] = `FILE-STORAGE::${JSON.stringify(updatedFieldArray)}`
+                } else {
+                    overrideConfig[fileInputField] = storagePath
+                }
 
                 fs.unlinkSync(file.path)
             }
             incomingInput = {
                 question: req.body.question ?? 'hello',
                 overrideConfig
+            }
+            if (req.body.chatId) {
+                incomingInput.chatId = req.body.chatId
             }
         }
 
