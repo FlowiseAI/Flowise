@@ -22,7 +22,7 @@ export interface IUser {
     id: string
     name: string
     email: string
-    organizationId?: string
+    organizationId: string
     updatedDate: Date
     createdDate: Date
     permissions?: string[]

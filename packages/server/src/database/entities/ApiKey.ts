@@ -18,4 +18,10 @@ export class ApiKey implements IApiKey {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Column({ type: 'uuid' })
+    organizationId: string
+
+    @Column({ type: 'uuid' })
+    userId: string
 }

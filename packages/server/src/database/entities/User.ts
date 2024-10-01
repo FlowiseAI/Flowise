@@ -25,7 +25,7 @@ export class User implements IUser {
 
     @Index()
     @Column({ type: 'uuid', nullable: true, array: true })
-    organizationId?: string
+    organizationId: string
 
     @Column({ type: 'uuid', nullable: true })
     trialPlanId?: string
