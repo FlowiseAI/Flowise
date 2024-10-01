@@ -30,7 +30,7 @@ export default defineConfig(async ({ mode }) => {
         build: {
             outDir: './build'
         },
-        base: process.env.VITA_SUBPATH ?? '/aichatbot',
+        base: '/aichatbot',
         server: {
             open: true,
             proxy,
