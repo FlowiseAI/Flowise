@@ -33,8 +33,10 @@ const AppProvider = ({ children }) => {
                 const newToken = await getAccessTokenSilently()
                 sessionStorage.setItem('access_token', newToken)
             } catch (err) {
-                // loginWithRedirect()
-                console.log(err)
+                console.log('err', err)
+                if (err.message == 'Login required') {
+                    loginWithRedirect()
+                }
             }
         })()
     }, [getAccessTokenSilently, loginWithRedirect])

@@ -21,7 +21,7 @@ import { useFlagsmith } from 'flagsmith/react'
 
 const App = () => {
     const customization = useSelector((state) => state.customization)
-    const { user, getAccessTokenSilently, error } = useAuth0()
+    const { user, isLoading, getAccessTokenSilently, error, signinWithRedirect } = useAuth0()
     const flagsmith = useFlagsmith()
     useNotifyParentOfNavigation()
     React.useEffect(() => {
@@ -46,17 +46,22 @@ const App = () => {
     React.useEffect(() => {
         ;(async () => {
             try {
-                const newToken = await getAccessTokenSilently({
-                    authorizationParams: {
-                        // scope: 'write:admin'
-                    }
-                })
-                sessionStorage.setItem('access_token', newToken)
+                console.log('user', { user, isLoading })
+                if (!user && !isLoading) {
+                    await signinWithRedirect()
+                } else if (user) {
+                    const newToken = await getAccessTokenSilently({
+                        authorizationParams: {
+                            // scope: 'write:admin'
+                        }
+                    })
+                    sessionStorage.setItem('access_token', newToken)
+                }
             } catch (err) {
                 console.log(err)
             }
         })()
-    }, [getAccessTokenSilently])
+    }, [user, isLoading, getAccessTokenSilently, signinWithRedirect])
 
     return (
         <StyledEngineProvider injectFirst>
