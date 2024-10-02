@@ -62,6 +62,7 @@
     },
     "scripts": {
         "dev": "vite",
+        "start": "vite",
         "build": "vite build",
         "clean": "rimraf build",
         "nuke": "rimraf build node_modules .turbo"
