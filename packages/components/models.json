@@ -369,8 +369,24 @@
                     "name": "gemini-1.5-flash-latest"
                 },
                 {
+                    "label": "gemini-1.5-flash-001",
+                    "name": "gemini-1.5-flash-001"
+                },
+                {
+                    "label": "gemini-1.5-flash-002",
+                    "name": "gemini-1.5-flash-002"
+                },
+                {
                     "label": "gemini-1.5-pro-latest",
                     "name": "gemini-1.5-pro-latest"
+                },
+                {
+                    "label": "gemini-1.5-pro-001",
+                    "name": "gemini-1.5-pro-001"
+                },
+                {
+                    "label": "gemini-1.5-pro-002",
+                    "name": "gemini-1.5-pro-002"
                 },
                 {
                     "label": "gemini-pro",
