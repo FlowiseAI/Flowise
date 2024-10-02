@@ -22,6 +22,11 @@ import { AsyncDropdown } from '@/ui-component/dropdown/AsyncDropdown'
 import { IconX } from '@tabler/icons-react'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 
+const promptDescription =
+    'Prompt to generate questions based on the conversation history. You can use variable {history} to refer to the conversation history.'
+const defaultPrompt =
+    'Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise.'
+
 // update when adding new providers
 const FollowUpPromptProviders = {
     ANTHROPIC: 'chatAnthropic',
@@ -33,7 +38,7 @@ const FollowUpPromptProviders = {
 
 const followUpPromptsOptions = {
     [FollowUpPromptProviders.ANTHROPIC]: {
-        label: 'Anthropic',
+        label: 'Anthropic Claude',
         name: FollowUpPromptProviders.ANTHROPIC,
         icon: anthropicIcon,
         inputs: [
@@ -54,17 +59,15 @@ const followUpPromptsOptions = {
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
-                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                description: promptDescription,
                 optional: true,
-                default:
-                    'Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise.'
+                default: defaultPrompt
             },
             {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
                 optional: true,
                 default: 0.9
             }
@@ -92,24 +95,22 @@ const followUpPromptsOptions = {
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
-                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                description: promptDescription,
                 optional: true,
-                default:
-                    'Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise.'
+                default: defaultPrompt
             },
             {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
                 optional: true,
                 default: 0.9
             }
         ]
     },
     [FollowUpPromptProviders.GOOGLE_GENAI]: {
-        label: 'Google Generative AI',
+        label: 'Google Gemini',
         name: FollowUpPromptProviders.GOOGLE_GENAI,
         icon: azureOpenAiIcon,
         inputs: [
@@ -134,17 +135,15 @@ const followUpPromptsOptions = {
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
-                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                description: promptDescription,
                 optional: true,
-                default:
-                    'Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise.'
+                default: defaultPrompt
             },
             {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
                 optional: true,
                 default: 0.9
             }
@@ -175,17 +174,15 @@ const followUpPromptsOptions = {
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
-                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                description: promptDescription,
                 optional: true,
-                default:
-                    'Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise.'
+                default: defaultPrompt
             },
             {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
                 optional: true,
                 default: 0.9
             }
@@ -213,17 +210,15 @@ const followUpPromptsOptions = {
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
-                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                description: promptDescription,
                 optional: true,
-                default:
-                    'Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise.'
+                default: defaultPrompt
             },
             {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
                 optional: true,
                 default: 0.9
             }
@@ -349,6 +344,27 @@ const FollowUpPrompts = ({ dialogProps }) => {
 
         return () => {}
     }, [dialogProps])
+
+    const checkDisabled = () => {
+        if (followUpPromptsConfig && followUpPromptsConfig.status) {
+            if (selectedProvider === 'none') {
+                return true
+            }
+            const provider = followUpPromptsOptions[selectedProvider]
+            for (let inputParam of provider.inputs) {
+                if (!inputParam.optional) {
+                    if (
+                        !followUpPromptsConfig[selectedProvider] ||
+                        !followUpPromptsConfig[selectedProvider][inputParam.name] ||
+                        followUpPromptsConfig[selectedProvider][inputParam.name] === ''
+                    ) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
 
     return (
         <>
@@ -496,7 +512,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                     </>
                 )}
             </Box>
-            <StyledButton variant='contained' onClick={onSave}>
+            <StyledButton disabled={checkDisabled()} variant='contained' onClick={onSave}>
                 Save
             </StyledButton>
         </>

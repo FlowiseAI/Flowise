@@ -557,6 +557,18 @@ const utilBuildAgentResponse = async (
             if (usedTools?.length) apiMessage.usedTools = JSON.stringify(usedTools)
             if (agentReasoning?.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
             if (finalAction && Object.keys(finalAction).length) apiMessage.action = JSON.stringify(finalAction)
+            if (agentflow.followUpPrompts) {
+                const followUpPromptsConfig = JSON.parse(agentflow.followUpPrompts)
+                const generatedFollowUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
+                    chatId,
+                    chatflowid: agentflow.id,
+                    appDataSource: appServer.AppDataSource,
+                    databaseEntities
+                })
+                if (generatedFollowUpPrompts?.questions) {
+                    apiMessage.followUpPrompts = JSON.stringify(generatedFollowUpPrompts.questions)
+                }
+            }
             const chatMessage = await utilAddChatMessage(apiMessage)
 
             await appServer.telemetry.sendTelemetry('agentflow_prediction_sent', {
