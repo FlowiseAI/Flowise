@@ -346,24 +346,31 @@ const FollowUpPrompts = ({ dialogProps }) => {
     }, [dialogProps])
 
     const checkDisabled = () => {
-        if (followUpPromptsConfig && followUpPromptsConfig.status) {
-            if (selectedProvider === 'none') {
-                return true
-            }
-            const provider = followUpPromptsOptions[selectedProvider]
-            for (let inputParam of provider.inputs) {
-                if (!inputParam.optional) {
-                    if (
-                        !followUpPromptsConfig[selectedProvider] ||
-                        !followUpPromptsConfig[selectedProvider][inputParam.name] ||
-                        followUpPromptsConfig[selectedProvider][inputParam.name] === ''
-                    ) {
-                        return true
-                    }
+        if (!followUpPromptsConfig || !followUpPromptsConfig.status) {
+            return true
+        }
+
+        if (selectedProvider === 'none') {
+            return true
+        }
+
+        const provider = followUpPromptsOptions[selectedProvider]
+        const providerConfig = followUpPromptsConfig[selectedProvider]
+        if (!providerConfig) {
+            return true
+        }
+
+        for (let inputParam of provider.inputs) {
+            if (!inputParam.optional) {
+                const param = inputParam.name === 'credential' ? 'credentialId' : inputParam.name
+                const value = providerConfig[param]
+                if (value === undefined || value === '') {
+                    return true
                 }
             }
         }
-        return false
+
+        return false // All required fields are filled
     }
 
     return (
