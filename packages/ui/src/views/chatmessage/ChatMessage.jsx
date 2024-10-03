@@ -971,6 +971,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                         }
                     })
                 }
+                if (message.followUpPrompts) obj.followUpPrompts = JSON.parse(message.followUpPrompts)
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
@@ -1098,6 +1099,17 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         }
         // eslint-disable-next-line
     }, [previews])
+
+    useEffect(() => {
+        if (followUpPromptsStatus && messages.length > 0) {
+            const lastMessage = messages[messages.length - 1]
+            if (lastMessage.type === 'apiMessage' && lastMessage.followUpPrompts) {
+                setFollowUpPrompts(lastMessage.followUpPrompts)
+            } else if (lastMessage.type === 'userMessage') {
+                setFollowUpPrompts([])
+            }
+        }
+    }, [followUpPromptsStatus, messages])
 
     const copyMessageToClipboard = async (text) => {
         try {
