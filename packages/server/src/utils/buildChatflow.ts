@@ -617,6 +617,7 @@ const utilBuildAgentResponse = async (
             if (memoryType) result.memoryType = memoryType
             if (agentReasoning?.length) result.agentReasoning = agentReasoning
             if (finalAction && Object.keys(finalAction).length) result.action = finalAction
+            result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
 
             return result
         }
