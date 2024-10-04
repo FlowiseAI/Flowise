@@ -38,7 +38,8 @@ import {
     IconSquareFilled,
     IconDeviceSdCard,
     IconCheck,
-    IconPaperclip
+    IconPaperclip,
+    IconSparkles
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -79,6 +80,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 // Utils
 import { isValidURL, removeDuplicateURL, setLocalStorageChatflow, getLocalStorageChatflow } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
+import FollowUpPromptsCard from '@/ui-component/cards/FollowUpPromptsCard'
 
 const messageImageStyle = {
     width: '128px',
@@ -201,6 +203,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const [leadPhone, setLeadPhone] = useState('')
     const [isLeadSaving, setIsLeadSaving] = useState(false)
     const [isLeadSaved, setIsLeadSaved] = useState(false)
+
+    // follow-up prompts
+    const [followUpPromptsStatus, setFollowUpPromptsStatus] = useState(false)
+    const [followUpPrompts, setFollowUpPrompts] = useState([])
 
     // drag & drop and file input
     const imgUploadRef = useRef(null)
@@ -627,6 +633,12 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         handleSubmit(undefined, promptStarterInput)
     }
 
+    const handleFollowUpPromptClick = async (promptStarterInput) => {
+        setUserInput(promptStarterInput)
+        setFollowUpPrompts([])
+        handleSubmit(undefined, promptStarterInput)
+    }
+
     const handleActionClick = async (elem, action) => {
         setUserInput(elem.label)
         setMessages((prevMessages) => {
@@ -663,6 +675,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 allMessages[allMessages.length - 2].message = data.question
                 return allMessages
             })
+        }
+
+        if (data.followUpPrompts) {
+            const followUpPrompts = JSON.parse(data.followUpPrompts)
+            setFollowUpPrompts(followUpPrompts)
         }
     }
 
@@ -954,6 +971,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                         }
                     })
                 }
+                if (message.followUpPrompts) obj.followUpPrompts = JSON.parse(message.followUpPrompts)
                 return obj
             })
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
@@ -1012,6 +1030,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             return [...prevMessages, leadCaptureMessage]
                         })
                     }
+                }
+
+                if (config.followUpPrompts) {
+                    setFollowUpPromptsStatus(config.followUpPrompts.status)
                 }
             }
         }
@@ -1077,6 +1099,17 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         }
         // eslint-disable-next-line
     }, [previews])
+
+    useEffect(() => {
+        if (followUpPromptsStatus && messages.length > 0) {
+            const lastMessage = messages[messages.length - 1]
+            if (lastMessage.type === 'apiMessage' && lastMessage.followUpPrompts) {
+                setFollowUpPrompts(lastMessage.followUpPrompts)
+            } else if (lastMessage.type === 'userMessage') {
+                setFollowUpPrompts([])
+            }
+        }
+    }, [followUpPromptsStatus, messages])
 
     const copyMessageToClipboard = async (text) => {
         try {
@@ -1968,6 +2001,26 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                         isGrid={isDialog}
                     />
                 </div>
+            )}
+
+            {messages && messages.length > 2 && followUpPromptsStatus && followUpPrompts.length > 0 && (
+                <>
+                    <Divider sx={{ width: '100%' }} />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', position: 'relative', pt: 1.5 }}>
+                        <Stack sx={{ flexDirection: 'row', alignItems: 'center', px: 1.5, gap: 0.5 }}>
+                            <IconSparkles size={12} />
+                            <Typography sx={{ fontSize: '0.75rem' }} variant='body2'>
+                                Try these prompts
+                            </Typography>
+                        </Stack>
+                        <FollowUpPromptsCard
+                            sx={{ bottom: previews && previews.length > 0 ? 70 : 0 }}
+                            followUpPrompts={followUpPrompts || []}
+                            onPromptClick={handleFollowUpPromptClick}
+                            isGrid={isDialog}
+                        />
+                    </Box>
+                </>
             )}
 
             <Divider sx={{ width: '100%' }} />

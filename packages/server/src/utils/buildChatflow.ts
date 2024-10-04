@@ -8,6 +8,7 @@ import {
     addArrayFilesToStorage,
     mapMimeTypeToInputField,
     mapExtToInputField,
+    generateFollowUpPrompts,
     IServerSideEventStreamer
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
@@ -452,6 +453,18 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
         if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
         if (result?.artifacts) apiMessage.artifacts = JSON.stringify(result.artifacts)
+        if (chatflow.followUpPrompts) {
+            const followUpPromptsConfig = JSON.parse(chatflow.followUpPrompts)
+            const followUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
+                chatId,
+                chatflowid,
+                appDataSource: appServer.AppDataSource,
+                databaseEntities
+            })
+            if (followUpPrompts?.questions) {
+                apiMessage.followUpPrompts = JSON.stringify(followUpPrompts.questions)
+            }
+        }
 
         const chatMessage = await utilAddChatMessage(apiMessage)
 
@@ -470,6 +483,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         result.question = incomingInput.question
         result.chatId = chatId
         result.chatMessageId = chatMessage?.id
+        result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
         result.isStreamValid = isStreamValid
 
         if (sessionId) result.sessionId = sessionId
@@ -543,6 +557,18 @@ const utilBuildAgentResponse = async (
             if (usedTools?.length) apiMessage.usedTools = JSON.stringify(usedTools)
             if (agentReasoning?.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
             if (finalAction && Object.keys(finalAction).length) apiMessage.action = JSON.stringify(finalAction)
+            if (agentflow.followUpPrompts) {
+                const followUpPromptsConfig = JSON.parse(agentflow.followUpPrompts)
+                const generatedFollowUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
+                    chatId,
+                    chatflowid: agentflow.id,
+                    appDataSource: appServer.AppDataSource,
+                    databaseEntities
+                })
+                if (generatedFollowUpPrompts?.questions) {
+                    apiMessage.followUpPrompts = JSON.stringify(generatedFollowUpPrompts.questions)
+                }
+            }
             const chatMessage = await utilAddChatMessage(apiMessage)
 
             await appServer.telemetry.sendTelemetry('agentflow_prediction_sent', {
@@ -591,6 +617,7 @@ const utilBuildAgentResponse = async (
             if (memoryType) result.memoryType = memoryType
             if (agentReasoning?.length) result.agentReasoning = agentReasoning
             if (finalAction && Object.keys(finalAction).length) result.action = finalAction
+            result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
 
             return result
         }
