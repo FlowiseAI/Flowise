@@ -19,7 +19,7 @@ import {
     IReactFlowObject,
     IReactFlowNode,
     IDepthQueue,
-    chatType,
+    ChatType,
     IChatMessage,
     IChatFlow,
     IReactFlowEdge
@@ -88,12 +88,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         }
 
         let fileUploads: IFileUpload[] = []
+        let uploadedFilesContent = ''
         if (incomingInput.uploads) {
             fileUploads = incomingInput.uploads
             for (let i = 0; i < fileUploads.length; i += 1) {
                 const upload = fileUploads[i]
 
-                if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
+                // if upload in an image, a rag file, or audio
+                if ((upload.type === 'file' || upload.type === 'file:rag' || upload.type === 'audio') && upload.data) {
                     const filename = upload.name
                     const splitDataURI = upload.data.split(',')
                     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
@@ -138,6 +140,13 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                             incomingInput.question = speechToTextResult
                         }
                     }
+                }
+
+                if (upload.type === 'file:full' && upload.data) {
+                    upload.type = 'stored-file:full'
+                    // Omit upload.data since we don't store the content in database
+                    uploadedFilesContent += `<doc name='${upload.name}'>${upload.data}</doc>\n\n`
+                    fileUploads[i] = omit(upload, ['data'])
                 }
             }
         }
@@ -223,7 +232,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 edges,
                 baseURL,
                 appServer.sseStreamer,
-                true
+                true,
+                uploadedFilesContent
             )
         }
 
@@ -338,6 +348,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 depthQueue,
                 componentNodes: appServer.nodesPool.componentNodes,
                 question: incomingInput.question,
+                uploadedFilesContent,
                 chatHistory,
                 chatId,
                 sessionId: sessionId ?? '',
@@ -376,7 +387,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 reactFlowNodes,
                 incomingInput.question,
                 chatHistory,
-                flowData
+                flowData,
+                uploadedFilesContent
             )
             nodeToExecuteData = reactFlowNodeData
 
@@ -390,9 +402,10 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         const nodeInstance = new nodeModule.nodeClass({ sessionId })
 
         isStreamValid = (req.body.streaming === 'true' || req.body.streaming === true) && isStreamValid
+        const finalQuestion = uploadedFilesContent ? `${uploadedFilesContent}\n\n${incomingInput.question}` : incomingInput.question
 
         let result = isStreamValid
-            ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+            ? await nodeInstance.run(nodeToExecuteData, finalQuestion, {
                   chatId,
                   chatflowid,
                   logger,
@@ -404,7 +417,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                   sseStreamer: appServer.sseStreamer,
                   shouldStreamResponse: isStreamValid
               })
-            : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+            : await nodeInstance.run(nodeToExecuteData, finalQuestion, {
                   chatId,
                   chatflowid,
                   logger,
@@ -425,7 +438,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             role: 'userMessage',
             content: incomingInput.question,
             chatflowid,
-            chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+            chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
             chatId,
             memoryType,
             sessionId,
@@ -444,7 +457,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             role: 'apiMessage',
             content: resultText,
             chatflowid,
-            chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+            chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
             chatId,
             memoryType,
             sessionId
@@ -473,7 +486,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             version: await getAppVersion(),
             chatflowId: chatflowid,
             chatId,
-            type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+            type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
             flowGraph: getTelemetryFlowObj(nodes, edges)
         })
 
@@ -513,7 +526,8 @@ const utilBuildAgentResponse = async (
     edges: IReactFlowEdge[],
     baseURL?: string,
     sseStreamer?: IServerSideEventStreamer,
-    shouldStreamResponse?: boolean
+    shouldStreamResponse?: boolean,
+    uploadedFilesContent?: string
 ) => {
     try {
         const appServer = getRunningExpressApp()
@@ -525,7 +539,8 @@ const utilBuildAgentResponse = async (
             isInternal,
             baseURL,
             sseStreamer,
-            shouldStreamResponse
+            shouldStreamResponse,
+            uploadedFilesContent
         )
         if (streamResults) {
             const { finalResult, finalAction, sourceDocuments, artifacts, usedTools, agentReasoning } = streamResults
@@ -533,7 +548,7 @@ const utilBuildAgentResponse = async (
                 role: 'userMessage',
                 content: incomingInput.question,
                 chatflowid: agentflow.id,
-                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 chatId,
                 memoryType,
                 sessionId,
@@ -547,7 +562,7 @@ const utilBuildAgentResponse = async (
                 role: 'apiMessage',
                 content: finalResult,
                 chatflowid: agentflow.id,
-                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 chatId,
                 memoryType,
                 sessionId
@@ -575,7 +590,7 @@ const utilBuildAgentResponse = async (
                 version: await getAppVersion(),
                 agentflowId: agentflow.id,
                 chatId,
-                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
 

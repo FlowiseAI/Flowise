@@ -11,6 +11,7 @@ import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 import Leads from '@/ui-component/extended/Leads'
 import FollowUpPrompts from '@/ui-component/extended/FollowUpPrompts'
+import FileUpload from '@/ui-component/extended/FileUpload'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
@@ -44,6 +45,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Leads',
         id: 'leads'
+    },
+    {
+        label: 'File Upload',
+        id: 'fileUpload'
     }
 ]
 
@@ -127,6 +132,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                         {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
                         {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
+                        {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>

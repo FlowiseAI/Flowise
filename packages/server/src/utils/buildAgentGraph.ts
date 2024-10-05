@@ -62,7 +62,8 @@ export const buildAgentGraph = async (
     isInternal: boolean,
     baseURL?: string,
     sseStreamer?: IServerSideEventStreamer,
-    shouldStreamResponse?: boolean
+    shouldStreamResponse?: boolean,
+    uploadedFilesContent?: string
 ): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
@@ -127,7 +128,8 @@ export const buildAgentGraph = async (
             cachePool: appServer.cachePool,
             isUpsert: false,
             uploads: incomingInput.uploads,
-            baseURL
+            baseURL,
+            uploadedFilesContent
         })
 
         const options = {
@@ -186,7 +188,8 @@ export const buildAgentGraph = async (
                     chatHistory,
                     incomingInput?.overrideConfig,
                     sessionId || chatId,
-                    seqAgentNodes.some((node) => node.data.inputs?.summarization)
+                    seqAgentNodes.some((node) => node.data.inputs?.summarization),
+                    uploadedFilesContent
                 )
             } else {
                 isSequential = true
@@ -202,7 +205,8 @@ export const buildAgentGraph = async (
                     chatHistory,
                     incomingInput?.overrideConfig,
                     sessionId || chatId,
-                    incomingInput.action
+                    incomingInput.action,
+                    uploadedFilesContent
                 )
             }
 
@@ -346,7 +350,6 @@ export const buildAgentGraph = async (
                 if (isSequential && !finalResult && agentReasoning.length) {
                     const lastMessages = agentReasoning[agentReasoning.length - 1].messages
                     const lastAgentReasoningMessage = lastMessages[lastMessages.length - 1]
-
                     // If last message is an AI Message with tool calls, that means the last node was interrupted
                     if (lastMessageRaw.tool_calls && lastMessageRaw.tool_calls.length > 0) {
                         // The last node that got interrupted
@@ -454,6 +457,7 @@ export const buildAgentGraph = async (
  * @param {ICommonObject} overrideConfig
  * @param {string} threadId
  * @param {boolean} summarization
+ * @param {string} uploadedFilesContent,
  */
 const compileMultiAgentsGraph = async (
     chatflow: IChatFlow,
@@ -468,7 +472,8 @@ const compileMultiAgentsGraph = async (
     chatHistory: IMessage[] = [],
     overrideConfig?: ICommonObject,
     threadId?: string,
-    summarization?: boolean
+    summarization?: boolean,
+    uploadedFilesContent?: string
 ) => {
     const appServer = getRunningExpressApp()
     const channels: ITeamState = {
@@ -500,7 +505,15 @@ const compileMultiAgentsGraph = async (
 
         let flowNodeData = cloneDeep(workerNode.data)
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = await resolveVariables(appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
+        flowNodeData = await resolveVariables(
+            appServer.AppDataSource,
+            flowNodeData,
+            reactflowNodes,
+            question,
+            chatHistory,
+            overrideConfig,
+            uploadedFilesContent
+        )
 
         try {
             const workerResult: IMultiAgentNode = await newNodeInstance.init(flowNodeData, question, options)
@@ -531,7 +544,15 @@ const compileMultiAgentsGraph = async (
         let flowNodeData = cloneDeep(supervisorNode.data)
 
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = await resolveVariables(appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
+        flowNodeData = await resolveVariables(
+            appServer.AppDataSource,
+            flowNodeData,
+            reactflowNodes,
+            question,
+            chatHistory,
+            overrideConfig,
+            uploadedFilesContent
+        )
 
         if (flowNodeData.inputs) flowNodeData.inputs.workerNodes = supervisorWorkers[supervisor]
 
@@ -601,9 +622,10 @@ const compileMultiAgentsGraph = async (
             }
 
             // Return stream result as we should only have 1 supervisor
+            const finalQuestion = uploadedFilesContent ? `${uploadedFilesContent}\n\n${question}` : question
             return await graph.stream(
                 {
-                    messages: [...prependMessages, new HumanMessage({ content: question })]
+                    messages: [...prependMessages, new HumanMessage({ content: finalQuestion })]
                 },
                 { recursionLimit: supervisorResult?.recursionLimit ?? 100, callbacks: [loggerHandler, ...callbacks], configurable: config }
             )
@@ -639,7 +661,8 @@ const compileSeqAgentsGraph = async (
     chatHistory: IMessage[] = [],
     overrideConfig?: ICommonObject,
     threadId?: string,
-    action?: IAction
+    action?: IAction,
+    uploadedFilesContent?: string
 ) => {
     const appServer = getRunningExpressApp()
 
@@ -691,7 +714,15 @@ const compileSeqAgentsGraph = async (
 
         flowNodeData = cloneDeep(node.data)
         if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
-        flowNodeData = await resolveVariables(appServer.AppDataSource, flowNodeData, reactflowNodes, question, chatHistory, overrideConfig)
+        flowNodeData = await resolveVariables(
+            appServer.AppDataSource,
+            flowNodeData,
+            reactflowNodes,
+            question,
+            chatHistory,
+            overrideConfig,
+            uploadedFilesContent
+        )
 
         const seqAgentNode: ISeqAgentNode = await newNodeInstance.init(flowNodeData, question, options)
         return seqAgentNode
@@ -995,8 +1026,9 @@ const compileSeqAgentsGraph = async (
             }
         }
 
+        const finalQuestion = uploadedFilesContent ? `${uploadedFilesContent}\n\n${question}` : question
         let humanMsg: { messages: HumanMessage[] | ToolMessage[] } | null = {
-            messages: [...prependMessages, new HumanMessage({ content: question })]
+            messages: [...prependMessages, new HumanMessage({ content: finalQuestion })]
         }
 
         if (action && action.mapping && question === action.mapping.approve) {
