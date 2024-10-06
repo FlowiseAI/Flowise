@@ -158,6 +158,7 @@ Flowise support different environment variables to configure your instance. You 
 | S3_STORAGE_REGION            | Region for S3 bucket                                                                            | String                                           |                                     |
 | S3_ENDPOINT_URL              | Custom Endpoint for S3                                                                          | String                                           |                                     |
 | SHOW_COMMUNITY_NODES         | Show nodes created by community                                                                 | Boolean                                          |                                     |
+| BASE_HREF                    | Sets the base URL for React Router’s basename and should only be defined dynamically at runtime | String                                           |                                     |
 
 You can also specify the env variables when using `npx`. For example:
 
