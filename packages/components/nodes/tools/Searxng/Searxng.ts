@@ -2,6 +2,10 @@ import { Tool } from '@langchain/core/tools'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 
+const defaultDesc =
+    'A meta search engine. Useful for when you need to answer questions about current events. Input should be a search query. Output is a JSON array of the query results'
+const defaultName = 'searxng-search'
+
 interface SearxngResults {
     query: string
     number_of_results: number
@@ -65,7 +69,7 @@ class Searxng_Tools implements INode {
     constructor() {
         this.label = 'SearXNG'
         this.name = 'searXNG'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'SearXNG'
         this.icon = 'SearXNG.svg'
         this.category = 'Tools'
@@ -75,7 +79,20 @@ class Searxng_Tools implements INode {
                 label: 'Base URL',
                 name: 'apiBase',
                 type: 'string',
-                default: 'http://searxng:8080'
+                default: 'http://localhost:8080'
+            },
+            {
+                label: 'Tool Name',
+                name: 'toolName',
+                type: 'string',
+                default: defaultName
+            },
+            {
+                label: 'Tool Description',
+                name: 'toolDescription',
+                type: 'string',
+                rows: 4,
+                default: defaultDesc
             },
             {
                 label: 'Headers',
@@ -101,7 +118,7 @@ class Searxng_Tools implements INode {
                 ],
                 default: 'json',
                 description:
-                    'Format of the response. You need to enable search formats in settings.yml. Refer to <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/searchapi">SearXNG Setup Guide</a> for more details.',
+                    'Format of the response. You need to enable search formats in settings.yml. Refer to <a target="_blank" href="https://docs.flowiseai.com/integrations/langchain/tools/searxng">SearXNG Setup Guide</a> for more details.',
                 additionalParams: true
             },
             {
@@ -170,6 +187,8 @@ class Searxng_Tools implements INode {
         const time_range = nodeData.inputs?.time_range as string
         const safesearch = nodeData.inputs?.safesearch as 0 | 1 | 2 | undefined
         const format = nodeData.inputs?.format as string
+        const toolName = nodeData.inputs?.toolName as string
+        const toolDescription = nodeData.inputs?.toolDescription as string
 
         const params: SearxngSearchParams = {}
 
@@ -189,7 +208,9 @@ class Searxng_Tools implements INode {
         const tool = new SearxngSearch({
             apiBase,
             params,
-            headers: customHeaders
+            headers: customHeaders,
+            toolName,
+            toolDescription
         })
 
         return tool
@@ -201,10 +222,9 @@ class SearxngSearch extends Tool {
         return 'SearxngSearch'
     }
 
-    name = 'searxng-search'
+    name = defaultName
 
-    description =
-        'A meta search engine. Useful for when you need to answer questions about current events. Input should be a search query. Output is a JSON array of the query results'
+    description = defaultDesc
 
     protected apiBase?: string
 
@@ -223,7 +243,19 @@ class SearxngSearch extends Tool {
         }
     }
 
-    constructor({ apiBase, params, headers }: { apiBase?: string; params?: SearxngSearchParams; headers?: SearxngCustomHeaders }) {
+    constructor({
+        apiBase,
+        params,
+        headers,
+        toolName,
+        toolDescription
+    }: {
+        apiBase?: string
+        params?: SearxngSearchParams
+        headers?: SearxngCustomHeaders
+        toolName?: string
+        toolDescription?: string
+    }) {
         super(...arguments)
 
         this.apiBase = apiBase
@@ -235,6 +267,14 @@ class SearxngSearch extends Tool {
 
         if (params) {
             this.params = { ...this.params, ...params }
+        }
+
+        if (toolName) {
+            this.name = toolName
+        }
+
+        if (toolDescription) {
+            this.description = toolDescription
         }
     }
 
