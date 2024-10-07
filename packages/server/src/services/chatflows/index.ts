@@ -349,18 +349,34 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
 const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
+
         if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
             updateChatFlow.flowData = await updateFlowDataWithFilePaths(chatflow.id, updateChatFlow.flowData)
         }
 
+        // Parse existing chatbotConfig or create a new object if it doesn't exist
+        const existingChatbotConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {}
+
+        // Update chatbotConfig with new displayMode and embeddedUrl if provided
+        if (updateChatFlow.chatbotConfig) {
+            const updatedConfig = JSON.parse(updateChatFlow.chatbotConfig)
+            if (updatedConfig.displayMode !== undefined) {
+                existingChatbotConfig.displayMode = updatedConfig.displayMode
+            }
+            if (updatedConfig.embeddedUrl !== undefined) {
+                existingChatbotConfig.embeddedUrl = updatedConfig.embeddedUrl
+            }
+        }
+
+        // Update the chatbotConfig in the chatflow object
+        chatflow.chatbotConfig = JSON.stringify(existingChatbotConfig)
+
         const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
+
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
 
-        // chatFlowPool is initialized only when a flow is opened
-        // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
         if (appServer.chatflowPool) {
-            // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
             appServer.chatflowPool.updateInSync(chatflow.id, false)
         }
 

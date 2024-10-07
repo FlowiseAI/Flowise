@@ -1,8 +1,8 @@
 {
-    "name": "flowise",
-    "version": "2.0.4",
+    "name": "theanswer",
+    "version": "0.0.1",
     "private": true,
-    "homepage": "https://flowiseai.com",
+    "homepage": "https://theanswer.ai",
     "scripts": {
         "build": "turbo run build ",
         "build-force": "pnpm clean && turbo run build --force",
