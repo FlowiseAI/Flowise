@@ -63,6 +63,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                     res.setHeader('Content-Type', 'text/event-stream')
                     res.setHeader('Cache-Control', 'no-cache')
                     res.setHeader('Connection', 'keep-alive')
+                    res.setHeader('X-Accel-Buffering', 'no') //nginx config: https://serverfault.com/a/801629
                     res.flushHeaders()
 
                     const apiResponse = await predictionsServices.buildChatflow(req)

@@ -27,6 +27,7 @@ export interface IChatFlow {
     apikeyid?: string
     analytic?: string
     chatbotConfig?: string
+    followUpPrompts?: string
     apiConfig?: string
     category?: string
     type?: ChatflowType
@@ -50,6 +51,7 @@ export interface IChatMessage {
     createdDate: Date
     leadEmail?: string
     action?: string | null
+    followUpPrompts?: string
 }
 
 export interface IChatMessageFeedback {

@@ -35,6 +35,9 @@ export class ChatFlow implements IChatFlow {
     speechToText?: string
 
     @Column({ nullable: true, type: 'text' })
+    followUpPrompts?: string
+
+    @Column({ nullable: true, type: 'text' })
     category?: string
 
     @Column({ nullable: true, type: 'text' })
