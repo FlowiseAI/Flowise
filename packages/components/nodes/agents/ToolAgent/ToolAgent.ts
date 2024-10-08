@@ -7,7 +7,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
-import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters, removeInvalidImageMarkdown } from '../../../src/utils'
 import {
     FlowiseMemory,
     ICommonObject,
@@ -187,6 +187,8 @@ class ToolAgent_Agents implements INode {
         } else if (typeof output === 'object') {
             output = output?.text || ''
         }
+
+        output = removeInvalidImageMarkdown(output)
 
         // Claude 3 Opus tends to spit out <thinking>..</thinking> as well, discard that in final output
         const regexPattern: RegExp = /<thinking>[\s\S]*?<\/thinking>/

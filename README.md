@@ -161,6 +161,7 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 -   [Azure](https://docs.flowiseai.com/deployment/azure)
 -   [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)
 -   [GCP](https://docs.flowiseai.com/deployment/gcp)
+-   [Alibaba Cloud](https://computenest.console.aliyun.com/service/instance/create/default?type=user&ServiceName=Flowise社区版)
 -   <details>
       <summary>Others</summary>
 
