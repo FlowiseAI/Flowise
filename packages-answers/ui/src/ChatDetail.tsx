@@ -4,17 +4,13 @@ import React, { Suspense, useRef } from 'react'
 import NextLink from 'next/link'
 
 import AppBar from '@mui/material/AppBar'
-import Avatar from '@mui/material/Avatar'
-import AvatarGroup from '@mui/material/AvatarGroup'
 import Box from '@mui/material/Box'
 import IconButton from '@mui/material/IconButton'
 import Toolbar from '@mui/material/Toolbar'
-import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import SourceDocumentModal from '@ui/SourceDocumentModal'
 
-import ArrowBackIcon from '@mui/icons-material/ArrowForward'
 import ShareIcon from '@mui/icons-material/IosShare'
 
 import { MessageCard } from './Message'
@@ -26,9 +22,14 @@ import type { AppService, AppSettings, Document, Sidekick } from 'types'
 import SidekickSelect from './SidekickSelect'
 import Drawer from './Drawer'
 
+const DISPLAY_MODES = {
+    CHATBOT: 'chatbot',
+    EMBEDDED_FORM: 'embeddedForm'
+}
+
 export const ChatDetail = ({
     appSettings,
-    prompts,
+
     sidekicks = []
 }: {
     appSettings: AppSettings
@@ -65,6 +66,9 @@ export const ChatDetail = ({
         },
         [setSidekick]
     )
+
+    const displayMode = chatbotConfig?.displayMode || DISPLAY_MODES.CHATBOT
+    const embeddedUrl = chatbotConfig?.embeddedUrl || ''
 
     return (
         <>
@@ -171,61 +175,73 @@ export const ChatDetail = ({
                             </Toolbar>
                         </AppBar>
 
-                        <Box ref={scrollRef} sx={{ height: '100%', overflow: 'auto', px: 2, py: 3 }}>
-                            <Suspense fallback={<div>Loading...</div>}>
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: 2
-                                    }}
-                                >
-                                    {messages?.map((message, index) => (
-                                        <MessageCard {...message} key={`message_${index}`} setSelectedDocuments={setSelectedDocuments} />
-                                    ))}
+                        {displayMode === DISPLAY_MODES.CHATBOT ? (
+                            <>
+                                <Box ref={scrollRef} sx={{ height: '100%', overflow: 'auto', px: 2, py: 3 }}>
+                                    <Suspense fallback={<div>Loading...</div>}>
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 2
+                                            }}
+                                        >
+                                            {messages?.map((message, index) => (
+                                                <MessageCard
+                                                    {...message}
+                                                    key={`message_${index}`}
+                                                    setSelectedDocuments={setSelectedDocuments}
+                                                />
+                                            ))}
 
-                                    {error ? (
-                                        <>
-                                            <MessageCard id='error' role='assistant' content={`${error.message} `} error={error} />
+                                            {error ? (
+                                                <>
+                                                    <MessageCard id='error' role='status' content={`${error.message} `} error={error} />
 
-                                            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                                <Button
-                                                    onClick={() => regenerateAnswer()}
-                                                    variant='contained'
-                                                    color='primary'
-                                                    sx={{ margin: 'auto' }}
-                                                >
-                                                    Retry
-                                                </Button>
-                                            </Box>
-                                        </>
-                                    ) : null}
+                                                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                                                        <Button
+                                                            onClick={() => regenerateAnswer()}
+                                                            variant='contained'
+                                                            color='primary'
+                                                            sx={{ margin: 'auto' }}
+                                                        >
+                                                            Retry
+                                                        </Button>
+                                                    </Box>
+                                                </>
+                                            ) : null}
 
-                                    {isLoading && messages?.[messages?.length - 1]?.role === 'user' ? (
-                                        <MessageCard role='loading' isLoading content={'...'} />
-                                    ) : null}
+                                            {isLoading && messages?.[messages?.length - 1]?.role === 'user' ? (
+                                                <MessageCard role='status' isLoading content={'...'} />
+                                            ) : null}
 
-                                    {!messages?.length ? (
-                                        <MessageCard
-                                            id='placeholder'
-                                            role='assistant'
-                                            content={chatbotConfig?.welcomeMessage ?? 'Welcome! Try asking me something!'}
-                                        />
-                                    ) : null}
+                                            {!messages?.length && !isLoading ? (
+                                                <MessageCard
+                                                    id='placeholder'
+                                                    role='status'
+                                                    content={chatbotConfig?.welcomeMessage ?? 'Welcome! Try asking me something!'}
+                                                />
+                                            ) : null}
 
-                                    {!isLoading && !error && messages?.length ? (
-                                        <Box sx={{ py: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                            <Button onClick={() => regenerateAnswer()} variant='outlined' color='primary'>
-                                                Regenerate answer
-                                            </Button>
+                                            {!isLoading && !error && messages?.length ? (
+                                                <Box sx={{ py: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
+                                                    <Button onClick={() => regenerateAnswer()} variant='outlined' color='primary'>
+                                                        Regenerate answer
+                                                    </Button>
+                                                </Box>
+                                            ) : null}
                                         </Box>
-                                    ) : null}
+                                    </Suspense>
                                 </Box>
-                            </Suspense>
-                        </Box>
-                    </Box>
 
-                    <ChatInput sidekicks={sidekicks} scrollRef={scrollRef} />
+                                <ChatInput sidekicks={sidekicks} scrollRef={scrollRef} />
+                            </>
+                        ) : (
+                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                                <iframe src={embeddedUrl} style={{ flex: 1, border: 'none' }} title='Embedded Form' allowFullScreen />
+                            </Box>
+                        )}
+                    </Box>
                 </Box>
                 <Drawer
                     sx={{
@@ -247,7 +263,7 @@ export const ChatDetail = ({
                     {selectedDocuments ? (
                         <SourceDocumentModal documents={selectedDocuments} onClose={() => setSelectedDocuments(undefined)} />
                     ) : null}
-                    {!!showFilters ? (
+                    {showFilters ? (
                         <Suspense fallback={<div>Loading...</div>}>
                             <DrawerFilters appSettings={appSettings} />
                         </Suspense>

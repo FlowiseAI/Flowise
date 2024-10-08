@@ -165,12 +165,16 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         }
 
         if (!(await checkOwnership(chatflow, req.user))) {
-            console.log('HEREEE')
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
         const body = req.body
         const updateChatFlow = new ChatFlow()
         Object.assign(updateChatFlow, body)
+
+        // Ensure chatbotConfig is passed as a string
+        if (body.chatbotConfig && typeof body.chatbotConfig === 'string') {
+            updateChatFlow.chatbotConfig = body.chatbotConfig
+        }
 
         updateChatFlow.id = chatflow.id
         createRateLimiter(updateChatFlow)

@@ -8,7 +8,7 @@ The `GeneralSettings` component allows administrators to configure general setti
 
 ## Purpose
 
-The main purpose of this component is to enable users to edit basic information about a chatflow, including its title, description, and categories.
+The main purpose of this component is to enable users to edit basic information about a chatflow, including its title, description, categories, and display mode.
 
 ## Features
 
@@ -26,6 +26,13 @@ The main purpose of this component is to enable users to edit basic information 
 
 -   Allows you to add, edit, or remove categories associated with the chatflow.
 -   Categories are useful for organizing and filtering chatflows.
+
+### Display Mode
+
+-   **Chatbot**: Display the chatflow as an interactive chatbot interface.
+-   **Embedded Form**: Display an embedded form within an iframe.
+    -   When "Embedded Form" is selected, you can specify the URL of the page to embed.
+    -   The embedded URL will be displayed in the user interface where the chatbot would normally appear.
 
 ## How to Use
 
@@ -49,7 +56,15 @@ The main purpose of this component is to enable users to edit basic information 
     - Type a category name and press Enter to add it.
     - Click on the 'x' next to a category to remove it.
 
-5. **Saving Changes**:
+5. **Setting the Display Mode**:
+
+    - In the "Display Mode" section, choose between "Chatbot" and "Embedded Form".
+    - If you select "Embedded Form":
+        - An input field labeled "Embedded URL" will appear.
+        - Enter the URL of the page you wish to embed.
+        - This URL will be shown in the user interface within an iframe.
+
+6. **Saving Changes**:
     - After making your desired changes, click the "Save" button to apply the settings.
     - A success message will appear if the settings are saved successfully.
 
@@ -57,13 +72,15 @@ The main purpose of this component is to enable users to edit basic information 
 
 -   Changes take effect immediately after saving.
 -   If you encounter any errors while saving, an error message will be displayed.
--   The chatflow title, description, and categories are stored as part of the chatflow data.
+-   The chatflow title, description, categories, and display mode settings are stored as part of the chatflow data.
+-   When using the "Embedded Form" display mode, ensure that the URL provided is valid and allows embedding.
 
 ## Technical Details
 
 -   The component uses Redux for state management and dispatching actions.
 -   When saved, the configuration is updated via an API call to `updateChatflow`.
 -   Categories are stored as a semicolon-separated string in the backend.
+-   Display mode and embedded URL settings are stored in the chatflow's configuration.
 
 ## Error Handling
 
@@ -71,4 +88,6 @@ If an error occurs while saving the settings, an error message will be displayed
 
 ## Security Implications
 
-While this component doesn't directly handle sensitive data, ensure that any information entered (especially in the description) doesn't contain confidential or sensitive details, as it may be visible to users with access to the chatflow configuration.
+-   Be cautious when embedding external URLs. Ensure that the embedded content is from a trusted source.
+-   Some websites may prevent embedding via iframe due to security policies.
+-   Ensure that any information entered doesn't contain confidential or sensitive details, as it may be visible to users with access to the chatflow configuration.

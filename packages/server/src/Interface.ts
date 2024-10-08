@@ -52,6 +52,8 @@ export interface IChatFlow {
     type?: ChatflowType
     userId?: string
     organizationId?: string
+    displayMode?: string
+    embeddedUrl?: string
 }
 
 export interface IChatMessage {
