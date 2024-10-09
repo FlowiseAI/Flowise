@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "2.1.0",
+    "version": "2.1.2",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -20,6 +20,7 @@
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
+        "@apidevtools/json-schema-ref-parser": "^11.7.0",
         "@aws-sdk/client-bedrock-runtime": "3.422.0",
         "@aws-sdk/client-dynamodb": "^3.360.0",
         "@aws-sdk/client-s3": "^3.427.0",
@@ -93,7 +94,7 @@
         "linkifyjs": "^4.1.1",
         "llamaindex": "^0.3.13",
         "lodash": "^4.17.21",
-        "lunary": "^0.7.10",
+        "lunary": "^0.7.12",
         "mammoth": "^1.5.1",
         "meilisearch": "^0.41.0",
         "moment": "^2.29.3",
@@ -119,7 +120,7 @@
         "weaviate-ts-client": "^1.1.0",
         "winston": "^3.9.0",
         "ws": "^8.9.0",
-        "zod": "^3.22.4",
+        "zod": "3.22.4",
         "zod-to-json-schema": "^3.21.4"
     },
     "devDependencies": {

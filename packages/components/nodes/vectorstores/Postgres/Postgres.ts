@@ -72,7 +72,7 @@ class Postgres_VectorStores implements INode {
                 label: 'Port',
                 name: 'port',
                 type: 'number',
-                placeholder: '6432',
+                placeholder: '5432',
                 optional: true
             },
             {

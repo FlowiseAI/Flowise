@@ -10,6 +10,7 @@ import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 import Leads from '@/ui-component/extended/Leads'
+import FollowUpPrompts from '@/ui-component/extended/FollowUpPrompts'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
@@ -19,6 +20,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Starter Prompts',
         id: 'conversationStarters'
+    },
+    {
+        label: 'Follow-up Prompts',
+        id: 'followUpPrompts'
     },
     {
         label: 'Speech to Text',
@@ -116,6 +121,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                     <TabPanel key={index} value={tabValue} index={index}>
                         {item.id === 'rateLimiting' && <RateLimit />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
+                        {item.id === 'followUpPrompts' ? <FollowUpPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
                         {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}

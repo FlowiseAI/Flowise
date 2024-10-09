@@ -21,6 +21,12 @@ async function addRateLimiter(id: string, duration: number, limit: number, messa
     }
 }
 
+function removeRateLimit(id: string) {
+    if (rateLimiters[id]) {
+        delete rateLimiters[id]
+    }
+}
+
 export function getRateLimiter(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id
     if (!rateLimiters[id]) return next()
@@ -28,21 +34,22 @@ export function getRateLimiter(req: Request, res: Response, next: NextFunction) 
     return idRateLimiter(req, res, next)
 }
 
-export async function createRateLimiter(chatFlow: IChatFlow) {
+export async function updateRateLimiter(chatFlow: IChatFlow) {
     if (!chatFlow.apiConfig) return
     const apiConfig = JSON.parse(chatFlow.apiConfig)
 
-    const rateLimit: { limitDuration: number; limitMax: number; limitMsg: string } = apiConfig.rateLimit
+    const rateLimit: { limitDuration: number; limitMax: number; limitMsg: string; status?: boolean } = apiConfig.rateLimit
     if (!rateLimit) return
 
-    const { limitDuration, limitMax, limitMsg } = rateLimit
-    if (limitMax && limitDuration && limitMsg) await addRateLimiter(chatFlow.id, limitDuration, limitMax, limitMsg)
+    const { limitDuration, limitMax, limitMsg, status } = rateLimit
+    if (status === false) removeRateLimit(chatFlow.id)
+    else if (limitMax && limitDuration && limitMsg) await addRateLimiter(chatFlow.id, limitDuration, limitMax, limitMsg)
 }
 
 export async function initializeRateLimiter(chatFlowPool: IChatFlow[]) {
     await Promise.all(
         chatFlowPool.map(async (chatFlow) => {
-            await createRateLimiter(chatFlow)
+            await updateRateLimiter(chatFlow)
         })
     )
 }
