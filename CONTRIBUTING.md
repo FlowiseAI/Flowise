@@ -4,7 +4,7 @@
 
 English | [中文](./i18n/CONTRIBUTING-ZH.md)
 
-We appreciate any form of contributions.
+We appreciate any form of contribution.
 
 ## ⭐ Star
 
@@ -12,15 +12,14 @@ Star and share the [Github Repo](https://github.com/FlowiseAI/Flowise).
 
 ## 🙋 Q&A
 
-Search up for any questions in [Q&A section](https://github.com/FlowiseAI/Flowise/discussions/categories/q-a), if you can't find one, don't hesitate to create one. It might helps others that have similar question.
-
+Search up for any questions in [Q&A section](https://github.com/FlowiseAI/Flowise/discussions/categories/q-a), if you can't find one, don't hesitate to create one. It might help others who have similar questions.
 ## 🙌 Share Chatflow
 
-Yes! Sharing how you use Flowise is a way of contribution. Export your chatflow as JSON, attach a screenshot and share it in [Show and Tell section](https://github.com/FlowiseAI/Flowise/discussions/categories/show-and-tell).
+Yes! Sharing how you use Flowise is a way of contributing. Export your chatflow as JSON, attach a screenshot and share it in [Show and Tell section](https://github.com/FlowiseAI/Flowise/discussions/categories/show-and-tell).
 
 ## 💡 Ideas
 
-Ideas are welcome such as new feature, apps integration, and blockchain networks. Submit in [Ideas section](https://github.com/FlowiseAI/Flowise/discussions/categories/ideas).
+Ideas are welcome such as new features, app integrations, and blockchain networks. Submit in [Ideas section](https://github.com/FlowiseAI/Flowise/discussions/categories/ideas).
 
 ## 🐞 Report Bugs
 
@@ -38,7 +37,7 @@ Not sure what to contribute? Some ideas:
 
 Flowise has 3 different modules in a single mono repository.
 
--   `server`: Node backend to serve API logics
+-   `server`: Node backend to serve API logic
 -   `ui`: React frontend
 -   `components`: Third-party nodes integrations
 
@@ -62,7 +61,7 @@ Flowise has 3 different modules in a single mono repository.
 
 4. Switch to the newly created branch.
 
-5. Go into repository folder
+5. Go into the repository folder
 
     ```bash
     cd Flowise
@@ -118,7 +117,7 @@ Flowise has 3 different modules in a single mono repository.
 
 ## 🌱 Env Variables
 
-Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
+Flowise supports different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
 
 | Variable                     | Description                                                                                     | Type                                             | Default                             |
 | ---------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
