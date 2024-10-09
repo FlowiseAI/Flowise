@@ -9,7 +9,7 @@ import {
     removeSpecificFileFromStorage
 } from 'flowise-components'
 import {
-    chatType,
+    ChatType,
     DocumentStoreStatus,
     IDocumentStoreFileChunkPagedResponse,
     IDocumentStoreLoader,
@@ -995,7 +995,7 @@ const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject) => {
             data: {
                 version: await getAppVersion(),
                 chatlowId: chatflowid,
-                type: chatType.INTERNAL,
+                type: ChatType.INTERNAL,
                 flowGraph: omit(indexResult['result'], ['totalKeys', 'addedDocs'])
             }
         })

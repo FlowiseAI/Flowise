@@ -48,6 +48,7 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 
 const QUESTION_VAR_PREFIX = 'question'
+const FILE_ATTACHMENT_PREFIX = 'file_attachment'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
@@ -437,6 +438,7 @@ type BuildFlowParams = {
     stopNodeId?: string
     uploads?: IFileUpload[]
     baseURL?: string
+    uploadedFilesContent?: string
 }
 
 /**
@@ -451,6 +453,7 @@ export const buildFlow = async ({
     depthQueue,
     componentNodes,
     question,
+    uploadedFilesContent,
     chatHistory,
     chatId,
     sessionId,
@@ -514,7 +517,8 @@ export const buildFlow = async ({
                 flowNodes,
                 question,
                 chatHistory,
-                flowData
+                flowData,
+                uploadedFilesContent
             )
 
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
@@ -543,7 +547,8 @@ export const buildFlow = async ({
                 initializedNodes.add(nodeId)
             } else {
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
-                let outputResult = await newNodeInstance.init(reactFlowNodeData, question, {
+                const finalQuestion = uploadedFilesContent ? `${uploadedFilesContent}\n\n${question}` : question
+                let outputResult = await newNodeInstance.init(reactFlowNodeData, finalQuestion, {
                     chatId,
                     sessionId,
                     chatflowid,
@@ -767,7 +772,8 @@ export const getVariableValue = async (
     question: string,
     chatHistory: IMessage[],
     isAcceptVariable = false,
-    flowData?: ICommonObject
+    flowData?: ICommonObject,
+    uploadedFilesContent?: string
 ) => {
     const isObject = typeof paramValue === 'object'
     const initialValue = (isObject ? JSON.stringify(paramValue) : paramValue) ?? ''
@@ -798,6 +804,10 @@ export const getVariableValue = async (
              */
             if (isAcceptVariable && variableFullPath === QUESTION_VAR_PREFIX) {
                 variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(question, false)
+            }
+
+            if (isAcceptVariable && variableFullPath === FILE_ATTACHMENT_PREFIX) {
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(uploadedFilesContent, false)
             }
 
             if (isAcceptVariable && variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
@@ -913,7 +923,8 @@ export const resolveVariables = async (
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
-    flowData?: ICommonObject
+    flowData?: ICommonObject,
+    uploadedFilesContent?: string
 ): Promise<INodeData> => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
@@ -931,7 +942,8 @@ export const resolveVariables = async (
                         question,
                         chatHistory,
                         undefined,
-                        flowData
+                        flowData,
+                        uploadedFilesContent
                     )
                     resolvedInstances.push(resolvedInstance)
                 }
@@ -945,7 +957,8 @@ export const resolveVariables = async (
                     question,
                     chatHistory,
                     isAcceptVariable,
-                    flowData
+                    flowData,
+                    uploadedFilesContent
                 )
                 paramsObj[key] = resolvedInstance
             }
@@ -1567,4 +1580,19 @@ export const convertToValidFilename = (word: string) => {
         .replace(/[/|\\:*?"<>]/g, ' ')
         .replace(' ', '')
         .toLowerCase()
+}
+
+export const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
+    const date = new Date(dateTimeStr)
+    if (isNaN(date.getTime())) {
+        return undefined
+    }
+    setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
+    return date
+}
+
+export const aMonthAgo = () => {
+    const date = new Date()
+    date.setMonth(new Date().getMonth() - 1)
+    return date
 }

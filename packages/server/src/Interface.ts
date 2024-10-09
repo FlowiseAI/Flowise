@@ -4,7 +4,7 @@ export type MessageType = 'apiMessage' | 'userMessage'
 
 export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT'
 
-export enum chatType {
+export enum ChatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL'
 }
