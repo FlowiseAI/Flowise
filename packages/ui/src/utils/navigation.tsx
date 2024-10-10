@@ -36,6 +36,7 @@ export const useNavigate = () => {
 
     return navigate
 }
+
 export const useLocation = () => {
     const pathname = usePathname()
     const [state, setState] = React.useState<any>(null)
@@ -56,6 +57,24 @@ export const useLocation = () => {
     }, [pathname])
 
     return { pathname, state }
+}
+
+export const useParams = () => {
+    const pathname = usePathname()
+    const params: { [key: string]: string } = {}
+
+    if (pathname) {
+        const segments = pathname.split('/')
+        const dynamicSegments = segments.filter((segment) => segment.startsWith(':'))
+
+        dynamicSegments.forEach((segment, index) => {
+            const key = segment.slice(1) // Remove the ':' prefix
+            const value = segments[segments.indexOf(`:${key}`)]
+            params[key] = value
+        })
+    }
+
+    return params
 }
 
 interface LinkProps extends Omit<NextLinkProps, 'href'> {

@@ -44,7 +44,8 @@ export default function AppLayout({
         <FlagsmithProvider
             serverState={flagsmithState}
             options={{
-                environmentID: process.env.FLAGSMITH_ENVIRONMENT_ID!
+                environmentID: process.env.FLAGSMITH_ENVIRONMENT_ID!,
+                // preventFetch: true
             }}
             flagsmith={flagsmith}
         >

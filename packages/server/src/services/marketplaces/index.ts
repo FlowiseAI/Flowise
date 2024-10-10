@@ -8,6 +8,14 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow, ChatflowVisibility } from '../../database/entities/ChatFlow'
 import checkOwnership from '../../utils/checkOwnership'
 
+// Remove the import from 'class-validator'
+
+// Add a pure JavaScript implementation of isUUID
+function isUUID(str: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    return uuidRegex.test(str)
+}
+
 type ITemplate = {
     badge: string
     description: string
@@ -152,6 +160,92 @@ const getAllTemplates = async (user: IUser | undefined) => {
     }
 }
 
+// Get specific marketplace template
+const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): Promise<any> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        let dbResponse = null
+        // Check if the input is a valid UUID
+        if (isUUID(templateIdOrName)) {
+            // Try to find the template in the database
+            dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
+                .createQueryBuilder('chatFlow')
+                .where('chatFlow.id = :id', { id: templateIdOrName })
+                .getOne()
+        }
+
+        if (dbResponse) {
+            // For unauthenticated users, only allow access to public (Marketplace) chatflows
+            if (!user && (!dbResponse.visibility || !dbResponse.visibility.includes(ChatflowVisibility.MARKETPLACE))) {
+                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized access to non-public template`)
+            }
+
+            // For authenticated users, check permissions
+            if (user) {
+                const isUserOrgAdmin = user.permissions?.includes('org:manage') && user.organizationId === dbResponse.organizationId
+                const isUsersChatflow = dbResponse.userId === user.id
+                const isChatflowPublic = dbResponse.isPublic
+                const hasChatflowOrgVisibility = dbResponse.visibility?.includes(ChatflowVisibility.ORGANIZATION)
+                const isUserInSameOrg = dbResponse.organizationId === user.organizationId
+
+                if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg))) {
+                    throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this template`)
+                }
+            }
+
+            return dbResponse
+        }
+
+        // If not found in the database, look for it in the file system
+        const marketplaceDirs = [
+            path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows'),
+            path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows'),
+            path.join(__dirname, '..', '..', '..', 'marketplaces', 'answerai')
+        ]
+        console.log(`Searching for template: ${templateIdOrName}`)
+        for (const dir of marketplaceDirs) {
+            console.log(`Searching in directory: ${dir}`)
+            const files = fs.readdirSync(dir).filter((file) => path.extname(file) === '.json')
+            console.log(`Found ${files.length} JSON files in ${dir}`)
+            for (const [idx, file] of files.entries()) {
+                console.log(`Checking file: ${file}, index: ${idx}`)
+                if (idx.toString() === templateIdOrName || path.parse(file).name === templateIdOrName) {
+                    console.log(`Match found: ${file}`)
+                    const filePath = path.join(dir, file)
+                    const fileData = fs.readFileSync(filePath, 'utf8')
+                    const fileDataObj = JSON.parse(fileData)
+
+                    const result = {
+                        id: idx.toString(),
+                        name: path.parse(file).name,
+                        flowData: fileData,
+                        description: fileDataObj.description || '',
+                        badge: fileDataObj.badge,
+                        usecases: fileDataObj.usecases,
+                        framework: fileDataObj.framework,
+                        category: fileDataObj.category || '',
+                        type:
+                            path.basename(dir) === 'agentflows' ? 'Agentflow' : path.basename(dir) === 'answerai' ? 'AnswerAI' : 'Chatflow',
+                        iconSrc: fileDataObj.iconSrc || ''
+                    }
+                    console.log(`Returning result:`, result)
+                    return result
+                }
+            }
+        }
+        console.log(`No matching template found for: ${templateIdOrName}`)
+
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Template ${templateIdOrName} not found`)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: marketplacesService.getMarketplaceTemplate - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
-    getAllTemplates
+    getAllTemplates,
+    getMarketplaceTemplate
 }

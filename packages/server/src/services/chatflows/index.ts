@@ -14,7 +14,6 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import checkOwnership from '../../utils/checkOwnership'
-import { Organization } from '../../database/entities/Organization'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -125,43 +124,14 @@ const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, us
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
 
-        let org
-        if (filter?.auth0_org_id) {
-            org = await appServer.AppDataSource.getRepository(Organization).findOne({
-                where: {
-                    auth0Id: filter.auth0_org_id
-                }
-            })
-        }
-
         if (filter?.visibility) {
-            const visibilityConditions = filter.visibility
-                .split(',')
-                .map((v: string) => (v === 'Organization' ? 'Private' : v))
-                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
-                .join(' AND ')
-
-            if (permissions?.includes('org:manage')) {
-                queryBuilder.where(`(${visibilityConditions})`)
-            } else {
-                queryBuilder.where(`(chatFlow.userId = :userId AND (${visibilityConditions}))`, {
-                    userId
-                })
-            }
-
-            const visibility = filter.visibility
-                .split(',')
-                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
-                .join(' AND ')
-            if (filter.visibility.includes('Organization')) {
-                const orgCondition = `chatFlow.organizationId = :organizationId AND (${visibility})`
-                queryBuilder.orWhere(`(${orgCondition})`, { organizationId: org?.id ?? organizationId })
-            }
+            queryBuilder.where('chatFlow.visibility LIKE :visibility', { visibility: `%${filter.visibility}%` })
         } else {
             if (!permissions?.includes('org:manage')) {
                 queryBuilder.where(`chatFlow.userId = :userId`, { userId })
             }
         }
+
         const response = await queryBuilder.getMany()
         const dbResponse = response.map((chatflow) => ({
             ...chatflow,
@@ -212,27 +182,36 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
     }
 }
 
-const getChatflowById = async (chatflowId: string, user: IUser): Promise<any> => {
+const getChatflowById = async (chatflowId: string, user?: IUser): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('chatFlow')
             .where('chatFlow.id = :id', { id: chatflowId })
             .getOne()
+
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }
 
-        const isUserOrgAdmin = user?.permissions?.includes('org:manage') && user?.organizationId === dbResponse.organizationId
-        const isUsersChatflow = dbResponse.userId === user?.id
-        const isChatflowPublic = dbResponse.isPublic
-        const hasChatflowOrgVisibility = dbResponse.visibility?.includes(ChatflowVisibility.ORGANIZATION)
-        const isUserInSameOrg = dbResponse.organizationId === user?.organizationId
-        const isUsingAPIKey = dbResponse.apikeyid !== null && dbResponse.apikeyid !== undefined
-
-        if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg) || isUsingAPIKey)) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
+        // For unauthenticated users, only allow access to public (Marketplace) chatflows
+        if (!user && (!dbResponse.visibility || !dbResponse.visibility.includes(ChatflowVisibility.MARKETPLACE))) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized access to non-public chatflow`)
         }
+
+        // For authenticated users, check permissions
+        if (user) {
+            const isUserOrgAdmin = user.permissions?.includes('org:manage') && user.organizationId === dbResponse.organizationId
+            const isUsersChatflow = dbResponse.userId === user.id
+            const isChatflowPublic = dbResponse.isPublic
+            const hasChatflowOrgVisibility = dbResponse.visibility?.includes(ChatflowVisibility.ORGANIZATION)
+            const isUserInSameOrg = dbResponse.organizationId === user.organizationId
+
+            if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg))) {
+                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
+            }
+        }
+
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
