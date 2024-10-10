@@ -243,12 +243,14 @@ class ExtendedLunaryHandler extends LunaryHandler {
     databaseEntities: IDatabaseEntity
     currentRunId: string | null
     thread: any
+    apiMessageId: string
 
     constructor({ flowiseOptions, ...options }: any) {
         super(options)
         this.appDataSource = flowiseOptions.appDataSource
         this.databaseEntities = flowiseOptions.databaseEntities
         this.chatId = flowiseOptions.chatId
+        this.apiMessageId = flowiseOptions.apiMessageId
     }
 
     async initThread() {
@@ -258,14 +260,18 @@ class ExtendedLunaryHandler extends LunaryHandler {
             }
         })
 
+        const userId = entity?.email ?? entity?.id
+
         this.thread = lunary.openThread({
             id: this.chatId,
-            userId: entity?.email ?? entity?.id,
-            userProps: {
-                name: entity?.name ?? undefined,
-                email: entity?.email ?? undefined,
-                phone: entity?.phone ?? undefined
-            }
+            userId,
+            userProps: userId
+                ? {
+                      name: entity?.name ?? undefined,
+                      email: entity?.email ?? undefined,
+                      phone: entity?.phone ?? undefined
+                  }
+                : undefined
         })
     }
 
@@ -298,6 +304,7 @@ class ExtendedLunaryHandler extends LunaryHandler {
             const answer = outputs.output
 
             this.thread.trackMessage({
+                id: this.apiMessageId,
                 content: answer,
                 role: 'assistant'
             })
