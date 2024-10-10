@@ -276,6 +276,20 @@ export const getEndingNodes = (
                 error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent or Engine`)
                 continue
             }
+
+            if (
+                endingNodeData.outputs &&
+                Object.keys(endingNodeData.outputs).length &&
+                !Object.values(endingNodeData.outputs ?? {}).includes(endingNodeData.name)
+            ) {
+                // The actual use case is that the Output of LLMChain is `Output Prediction`,
+                // which is not an EndingNode at this time.
+                error = new InternalFlowiseError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    `Output of ${endingNodeData.label} (${endingNodeData.id}) must be ${endingNodeData.label}, can't be an Output Prediction`
+                )
+                continue
+            }
         }
         verifiedEndingNodes.push(endingNode)
     }
