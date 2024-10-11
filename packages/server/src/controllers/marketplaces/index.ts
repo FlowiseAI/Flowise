@@ -26,7 +26,8 @@ const getMarketplaceTemplate = async (req: Request, res: Response, next: NextFun
         const apiResponse = await marketplacesService.getMarketplaceTemplate(req.params.id, req.user)
 
         // Check if the template is public (Marketplace) for unauthenticated users
-        if (!req.user && (!apiResponse.visibility || !apiResponse.visibility.includes('Marketplace'))) {
+        if (!req.user && !apiResponse.isPublic && !apiResponse.visibility.includes('Marketplace')) {
+            console.log('[getMarketplaceTemplate] apiResponse:', apiResponse)
             throw new InternalFlowiseError(
                 StatusCodes.UNAUTHORIZED,
                 `Error: marketplacesController.getMarketplaceTemplate - Unauthorized access to non-public template!`

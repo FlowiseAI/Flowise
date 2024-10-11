@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withMiddlewareAuthRequired } from '@auth0/nextjs-auth0/edge'
 
 // const allowedOrigins = ['https://localhost:3210'] // TODO: lock this down
 const allowedOrigins = ['*']
@@ -8,7 +9,7 @@ const corsOptions = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 }
 
-export function middleware(request: NextRequest) {
+export const middleware = withMiddlewareAuthRequired(function middleware(request: NextRequest) {
     // Check the origin from the request
     const origin = request.headers.get('origin') ?? ''
     const isAllowedOrigin = allowedOrigins.includes(origin) || allowedOrigins.includes('*')
@@ -36,7 +37,7 @@ export function middleware(request: NextRequest) {
     })
 
     return response
-}
+})
 
 export const config = {
     matcher: '/api/:path*'

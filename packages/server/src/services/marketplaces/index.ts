@@ -217,6 +217,7 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
                     const fileDataObj = JSON.parse(fileData)
 
                     const result = {
+                        isPublic: true,
                         id: idx.toString(),
                         name: path.parse(file).name,
                         flowData: fileData,

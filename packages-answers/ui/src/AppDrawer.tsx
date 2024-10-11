@@ -74,6 +74,7 @@ interface MenuConfig {
     icon?: React.ReactNode
     subMenu?: MenuConfig[]
 }
+
 export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const { helpChatOpen, setHelpChatOpen } = useHelpChatContext()
     const user = session?.user

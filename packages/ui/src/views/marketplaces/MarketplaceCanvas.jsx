@@ -48,6 +48,7 @@ const MarketplaceCanvas = ({ template }) => {
         navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, {
             state: {
                 templateFlowData: typeof template.flowData === 'string' ? template.flowData : JSON.stringify(template.flowData),
+                templateData: JSON.stringify(template),
                 templateName: template.name,
                 parentChatflowId: template.id
             }
