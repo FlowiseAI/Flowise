@@ -331,6 +331,7 @@ export const getS3Config = () => {
     const region = process.env.S3_STORAGE_REGION
     const Bucket = process.env.S3_STORAGE_BUCKET_NAME
     const customURL = process.env.S3_ENDPOINT_URL
+    const forcePathStyle = process.env.S3_FORCE_PATH_STYLE === 'true' ? true : false
 
     if (!region || !Bucket) {
         throw new Error('S3 storage configuration is missing')
@@ -347,7 +348,8 @@ export const getS3Config = () => {
     const s3Client = new S3Client({
         credentials,
         region,
-        endpoint: customURL
+        endpoint: customURL,
+        forcePathStyle: forcePathStyle
     })
     return { s3Client, Bucket }
 }
