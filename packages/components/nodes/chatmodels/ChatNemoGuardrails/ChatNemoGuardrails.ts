@@ -5,7 +5,7 @@ import { NemoClient } from './NemoClient'
 import { CallbackManager, CallbackManagerForLLMRun } from '@langchain/core/callbacks/manager'
 import { ChatResult } from '@langchain/core/outputs'
 import { FailedAttemptHandler } from '@langchain/core/utils/async_caller'
-import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
+import { getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
 
 export interface ChatNemoGuardrailsCallOptions extends BaseChatModelCallOptions {
     /**
@@ -37,17 +37,16 @@ class ChatNemoGuardrailsModel extends BaseChatModel<ChatNemoGuardrailsCallOption
         return 'nemo-guardrails'
     }
 
-    _generate(messages: BaseMessage[], options: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): Promise<ChatResult> {
+    _generate(messages: BaseMessage[], _: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): Promise<ChatResult> {
         const generate = async (messages: BaseMessage[], client: NemoClient): Promise<ChatResult> => {
             const chatMessages = await client.chat(messages)
-            const generations =  chatMessages.map( (message) => {
-                 
+            const generations = chatMessages.map((message) => {
                 return {
                     text: message.content?.toString(),
                     message
                 }
             })
-            
+
             return {
                 generations
             }
