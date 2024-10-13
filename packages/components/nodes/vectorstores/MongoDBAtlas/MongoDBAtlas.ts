@@ -86,7 +86,7 @@ class MongoDBAtlas_VectorStores implements INode {
                 additionalParams: true,
                 optional: true
             },
-						{
+            {
                 label: 'Mongodb Metadata Filter',
                 name: 'mongoMetadataFilter',
                 type: 'json',
@@ -171,11 +171,11 @@ class MongoDBAtlas_VectorStores implements INode {
         let textKey = nodeData.inputs?.textKey as string
         let embeddingKey = nodeData.inputs?.embeddingKey as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
-				const mongoMetadataFilter = nodeData.inputs?.mongoMetadataFilter as object
+        const mongoMetadataFilter = nodeData.inputs?.mongoMetadataFilter as object
 
         let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
-				const filter: MongoDBAtlasVectorSearch['FilterType'] = {}
+        const filter: MongoDBAtlasVectorSearch['FilterType'] = {}
 
         const mongoClient = await getMongoClient(mongoDBConnectUrl)
         try {
@@ -191,18 +191,18 @@ class MongoDBAtlas_VectorStores implements INode {
                 embeddingKey
             }) as unknown as VectorStore
 
-						if(mongoMetadataFilter){
-							const metadataFilter = typeof mongoMetadataFilter === 'object' ? mongoMetadataFilter : JSON.parse(mongoMetadataFilter)
+            if (mongoMetadataFilter) {
+                const metadataFilter = typeof mongoMetadataFilter === 'object' ? mongoMetadataFilter : JSON.parse(mongoMetadataFilter)
 
-							for (const key in metadataFilter) {
-								filter.preFilter = {
-									...filter.preFilter,
-									[key]: {
-										$eq: metadataFilter[key],
-									},
-								}
-							}
-						}
+                for (const key in metadataFilter) {
+                    filter.preFilter = {
+                        ...filter.preFilter,
+                        [key]: {
+                            $eq: metadataFilter[key]
+                        }
+                    }
+                }
+            }
 
             return resolveVectorStoreOrRetriever(nodeData, vectorStore, filter)
         } catch (e) {
