@@ -101,17 +101,19 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             const nodes = nodesData.filter((nd) => !blacklistCategoriesForAgentCanvas.includes(nd.category))
             nodes.push(...addException())
             const passed = nodes.filter((nd) => {
-                const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
+                const passesName = nd.name.toLowerCase().includes(value.toLowerCase())
+                const passesLabel = nd.label.toLowerCase().includes(value.toLowerCase())
                 const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
-                return passesQuery || passesCategory
+                return passesName || passesCategory || passesLabel
             })
             return passed
         }
         const nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents' && nd.category !== 'Sequential Agents')
         const passed = nodes.filter((nd) => {
-            const passesQuery = nd.name.toLowerCase().includes(value.toLowerCase())
+            const passesName = nd.name.toLowerCase().includes(value.toLowerCase())
+            const passesLabel = nd.label.toLowerCase().includes(value.toLowerCase())
             const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
-            return passesQuery || passesCategory
+            return passesName || passesCategory || passesLabel
         })
         return passed
     }
