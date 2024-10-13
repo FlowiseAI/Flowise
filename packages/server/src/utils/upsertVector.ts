@@ -89,6 +89,9 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
 
                 fs.unlinkSync(file.path)
             }
+            if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
+                overrideConfig.vars = JSON.parse(overrideConfig.vars)
+            }
             incomingInput = {
                 question: req.body.question ?? 'hello',
                 overrideConfig,
