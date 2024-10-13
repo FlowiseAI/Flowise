@@ -34,19 +34,20 @@ class ChatNemoGuardrailsModel extends BaseChatModel<ChatNemoGuardrailsCallOption
     client: NemoClient
 
     _llmType(): string {
-        // Add your implementation here
         return 'nemo-guardrails'
     }
 
     _generate(messages: BaseMessage[], options: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): Promise<ChatResult> {
         const generate = async (messages: BaseMessage[], client: NemoClient): Promise<ChatResult> => {
             const chatMessages = await client.chat(messages)
-            const generations = chatMessages.map((message) => {
+            const generations =  chatMessages.map( (message) => {
+                 
                 return {
-                    text: '',
+                    text: message.content?.toString(),
                     message
                 }
             })
+            
             return {
                 generations
             }
@@ -104,7 +105,7 @@ class ChatNemoGuardrailsChatModel implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData): Promise<any> {
         const configurationId = nodeData.inputs?.configurationId
         const baseUrl = nodeData.inputs?.baseUrl
         const obj: Partial<ChatNemoGuardrailsInput> = {
