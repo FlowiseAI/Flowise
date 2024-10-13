@@ -51,7 +51,7 @@ class ChatNemoGuardrailsModel extends BaseChatModel<ChatNemoGuardrailsCallOption
                 generations
             }
         }
-        
+
         return generate(messages, this.client)
     }
 
