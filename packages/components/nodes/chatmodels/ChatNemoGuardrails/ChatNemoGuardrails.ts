@@ -37,12 +37,12 @@ class ChatNemoGuardrailsModel extends BaseChatModel<ChatNemoGuardrailsCallOption
         return 'nemo-guardrails'
     }
 
-    _generate(messages: BaseMessage[], _: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): Promise<ChatResult> {
+    _generate(messages: BaseMessage[], options: this['ParsedCallOptions'], runManager?: CallbackManagerForLLMRun): Promise<ChatResult> {
         const generate = async (messages: BaseMessage[], client: NemoClient): Promise<ChatResult> => {
             const chatMessages = await client.chat(messages)
             const generations = chatMessages.map((message) => {
                 return {
-                    text: message.content?.toString(),
+                    text: message.content?.toString() ?? '',
                     message
                 }
             })
@@ -51,6 +51,7 @@ class ChatNemoGuardrailsModel extends BaseChatModel<ChatNemoGuardrailsCallOption
                 generations
             }
         }
+        
         return generate(messages, this.client)
     }
 
