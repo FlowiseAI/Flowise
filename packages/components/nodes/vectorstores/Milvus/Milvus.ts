@@ -364,7 +364,7 @@ const similaritySearchVectorWithScore = async (query: number[], k: number, vecto
         anns_field: vectorStore.vectorField,
         topk: k.toString(),
         metric_type: vectorStore.indexCreateParams.metric_type,
-        params: vectorStore.indexSearchParams
+        params: vectorStore.indexSearchParams.toString()
     }
     const searchResp = await vectorStore.client.search({
         collection_name: vectorStore.collectionName,
