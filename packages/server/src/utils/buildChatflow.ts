@@ -184,6 +184,9 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
                 fs.unlinkSync(file.path)
             }
+            if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
+                overrideConfig.vars = JSON.parse(overrideConfig.vars)
+            }
             incomingInput = {
                 question: req.body.question ?? 'hello',
                 overrideConfig
