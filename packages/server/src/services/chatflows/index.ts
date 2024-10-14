@@ -14,6 +14,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import checkOwnership from '../../utils/checkOwnership'
+import { Organization } from '../../database/entities/Organization'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -123,9 +124,37 @@ const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, us
         const { id: userId, organizationId, permissions } = user ?? {}
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
-
+        let org
+        if (filter?.auth0_org_id) {
+            org = await appServer.AppDataSource.getRepository(Organization).findOne({
+                where: {
+                    auth0Id: filter.auth0_org_id
+                }
+            })
+        }
         if (filter?.visibility) {
-            queryBuilder.where('chatFlow.visibility LIKE :visibility', { visibility: `%${filter.visibility}%` })
+            const visibilityConditions = filter.visibility
+                .split(',')
+                .map((v: string) => (v === 'Organization' ? 'Private' : v))
+                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
+                .join(' AND ')
+
+            if (permissions?.includes('org:manage')) {
+                queryBuilder.where(`(${visibilityConditions})`)
+            } else {
+                queryBuilder.where(`(chatFlow.userId = :userId AND (${visibilityConditions}))`, {
+                    userId
+                })
+            }
+
+            const visibility = filter.visibility
+                .split(',')
+                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
+                .join(' AND ')
+            if (filter.visibility.includes('Organization')) {
+                const orgCondition = `chatFlow.organizationId = :organizationId AND (${visibility})`
+                queryBuilder.orWhere(`(${orgCondition})`, { organizationId: org?.id ?? organizationId })
+            }
         } else {
             if (!permissions?.includes('org:manage')) {
                 queryBuilder.where(`chatFlow.userId = :userId`, { userId })

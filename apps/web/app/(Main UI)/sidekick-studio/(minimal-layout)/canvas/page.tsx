@@ -6,7 +6,6 @@ const View = dynamic(() => import('@/views/canvas/index'), { ssr: false })
 
 const Page = async () => {
     const session = await getCachedSession()
-    console.log('[Page] session', session)
     return (
         <>
             <View />

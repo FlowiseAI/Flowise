@@ -5,7 +5,6 @@ import { parseEncodedDomain } from '@/hooks/useApiHost'
 
 const StudioLayout = ({ children, params }: { children: React.ReactElement; params: { encodedDomain: string } }) => {
     const apiHost = parseEncodedDomain(params.encodedDomain)
-    console.log('[EncodedDomainStudioLayout] apiHost:', apiHost)
     return (
         <AppLayout
             noDrawer

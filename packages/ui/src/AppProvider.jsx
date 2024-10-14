@@ -2,7 +2,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { store } from '@/store'
-import { Auth0Provider } from '@auth0/auth0-react'
+import { UserProvider } from '@auth0/nextjs-auth0/client'
 
 // style + assets
 import '@/assets/scss/style.scss'
@@ -23,13 +23,13 @@ export const Auth0Context = React.createContext({ isAuth0Ready: false })
 // New component to wrap Auth0 setup
 import { useAuth0Setup } from './hooks/useAuth0Setup'
 
-const Auth0Setup = ({ children, apiHost }) => {
-    const { isAuth0Ready, user } = useAuth0Setup(apiHost)
+const Auth0Setup = ({ children, apiHost, accessToken }) => {
+    const { isAuth0Ready, user } = useAuth0Setup(apiHost, accessToken)
 
     return <Auth0Context.Provider value={{ isAuth0Ready, user }}>{children}</Auth0Context.Provider>
 }
 
-const AppProvider = ({ children, apiHost }) => {
+const AppProvider = ({ children, apiHost, accessToken }) => {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={themes(store.getState().customization)}>
@@ -37,17 +37,11 @@ const AppProvider = ({ children, apiHost }) => {
                 <Provider store={store}>
                     <SnackbarProvider>
                         <ConfirmContextProvider>
-                            <Auth0Provider
-                                domain={process.env.REACT_APP_AUTH0_DOMAIN}
-                                clientId={process.env.REACT_APP_AUTH0_CLIENT_ID}
-                                // authorizationParams={{
-                                //     redirect_uri: typeof window !== 'undefined' ? window.location.origin : ''
-                                // }}
-                            >
-                                <Auth0Setup apiHost={apiHost}>
+                            <UserProvider>
+                                <Auth0Setup apiHost={apiHost} accessToken={accessToken}>
                                     <ReactFlowContext>{children}</ReactFlowContext>
                                 </Auth0Setup>
-                            </Auth0Provider>
+                            </UserProvider>
                         </ConfirmContextProvider>
                     </SnackbarProvider>
                 </Provider>
@@ -58,7 +52,8 @@ const AppProvider = ({ children, apiHost }) => {
 
 AppProvider.propTypes = {
     children: PropTypes.node,
-    apiHost: PropTypes.string
+    apiHost: PropTypes.string,
+    accessToken: PropTypes.string
 }
 
 export default AppProvider

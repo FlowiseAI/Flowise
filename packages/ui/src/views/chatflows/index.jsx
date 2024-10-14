@@ -19,7 +19,8 @@ import useApi from '@/hooks/useApi'
 
 // const
 import { baseURL } from '@/store/constant'
-import { useAuth0 } from '@auth0/auth0-react'
+
+import { useUser } from '@auth0/nextjs-auth0/client'
 import { useFlags } from 'flagsmith/react'
 
 function TabPanel(props) {
@@ -39,7 +40,7 @@ function TabPanel(props) {
 
 const Chatflows = () => {
     const navigate = useNavigate()
-    const { user } = useAuth0()
+    const { user } = useUser()
     const flags = useFlags(['org:manage'])
     const [tabValue, setTabValue] = useState(0)
     const [isLoading, setLoading] = useState(true)

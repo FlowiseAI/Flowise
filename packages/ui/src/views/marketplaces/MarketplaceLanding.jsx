@@ -4,8 +4,7 @@ import useMarketplaceLanding from '@/hooks/useMarketplaceLanding'
 import marketplacesApi from '@/api/marketplaces'
 import { useAuth0 } from '@auth0/auth0-react'
 import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
-import { Typography, Button, Box, Chip, Tab, Tabs, Tooltip, Alert, Avatar, Divider, Menu, MenuItem, useTheme, Grid } from '@mui/material'
+import { Typography, Box, Chip, Tab, Tabs, Tooltip, Alert, Avatar, Divider, Menu, MenuItem, Grid } from '@mui/material'
 import { useNavigate } from '@/utils/navigation'
 import { IconCopy, IconDownload, IconShare } from '@tabler/icons-react'
 import MarketplaceCanvas from './MarketplaceCanvas'
@@ -17,9 +16,8 @@ import { Snackbar } from '@mui/material'
 const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }, ref) {
     const navigate = useNavigate()
     const { isLoading, error, template } = useMarketplaceLanding(templateId)
-    const { isAuthenticated, loginWithPopup } = useAuth0()
-    const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
+    const { user } = useUser()
+    const [, setNavigationState] = useNavigationState()
 
     const [isSignInPromptOpen, setIsSignInPromptOpen] = useState(false)
     const [actionType, setActionType] = useState(null)
@@ -32,10 +30,10 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
     const [nodeTypes, setNodeTypes] = useState([])
 
     useEffect(() => {
-        if (isAuthenticated && template) {
+        if (user && template) {
             checkFavoriteStatus()
         }
-    }, [isAuthenticated, template])
+    }, [user, template])
 
     useEffect(() => {
         if (template && template.flowData) {
@@ -67,7 +65,7 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
     }
 
     const toggleFavorite = async () => {
-        if (!isAuthenticated) {
+        if (!user) {
             setIsSignInPromptOpen(true)
             return
         }
@@ -97,20 +95,25 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
             const isAgentCanvas = (template.flowData?.nodes || []).some(
                 (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
             )
-            if (!isAuthenticated) {
-                await loginWithPopup()
-            }
 
-            // flowData.name = `Copy of ${flowData.name}`
+            // flowData.name = `Copy of ${flowData.nCreaame}`
             localStorage.setItem('duplicatedFlowData', JSON.stringify(template.flowData))
-
-            navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, {
-                state: {
-                    templateData: JSON.stringify(template),
-                    templateName: template.name,
-                    parentChatflowId: template.id
-                }
-            })
+            const state = {
+                templateData: JSON.stringify(template),
+                templateName: template.name,
+                parentChatflowId: template.id
+            }
+            if (!user) {
+                const redirectUrl = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
+                const encodedState = encodeURIComponent(JSON.stringify(state))
+                const loginUrl = `/api/auth/login?returnTo=${redirectUrl}&state=${encodedState}`
+                setNavigationState(state)
+                window.location.href = loginUrl
+            } else {
+                navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, {
+                    state
+                })
+            }
         } else {
             setActionType(type)
             setIsSignInPromptOpen(true)

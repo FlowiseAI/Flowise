@@ -1,6 +1,6 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import { parseEncodedDomain } from 'packages/ui/src/hooks/useApiHost'
+import { parseEncodedDomain } from '@/hooks/useApiHost'
 
 const DynamicView = dynamic(() => import('flowise-ui/src/views/chatbot/index'), {
     ssr: false

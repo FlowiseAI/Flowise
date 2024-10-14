@@ -25,6 +25,7 @@ import { useTheme } from '@mui/material/styles'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import { useUser } from '@auth0/nextjs-auth0/client'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -34,7 +35,6 @@ import Transitions from '@/ui-component/extended/Transitions'
 // assets
 import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconX } from '@tabler/icons-react'
 import './index.css'
-import { useAuth0 } from '@auth0/auth0-react'
 
 //API
 import chatFlowsApi from '@/api/chatflows'
@@ -47,7 +47,7 @@ import { useLocation, useNavigate } from '@/utils/navigation'
 
 const ProfileSection = ({ username, handleLogout }) => {
     const theme = useTheme()
-    const { user } = useAuth0()
+    const { user } = useUser()
 
     const customization = useSelector((state) => state.customization)
 
