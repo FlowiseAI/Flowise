@@ -105,7 +105,7 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
                 parentChatflowId: template.id
             }
             if (!user) {
-                const redirectUrl = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
+                const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
                 const loginUrl = `/api/auth/login?returnTo=${redirectUrl}`
                 setNavigationState(state)
                 window.location.href = loginUrl

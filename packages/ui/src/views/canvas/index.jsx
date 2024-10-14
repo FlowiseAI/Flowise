@@ -609,7 +609,9 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }, [])
 
     useEffect(() => {
-        if (templateFlowData && templateFlowData.includes('"nodes":[') && templateFlowData.includes('],"edges":[')) {
+
+        if (templateFlowData && templateFlowData.includes('"nodes": [') && templateFlowData.includes('"edges": [')) {
+
             handleLoadFlow(templateFlowData)
         }
 

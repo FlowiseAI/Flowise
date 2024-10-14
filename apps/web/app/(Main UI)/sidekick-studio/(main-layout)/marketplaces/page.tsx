@@ -1,7 +1,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 
-const View = dynamic(() => import('@/views/marketplaces/index'), { ssr: false })
+const View = dynamic(() => import('@/views/marketplaces/MarketplaceLanding'), { ssr: false })
 
 const Page = () => {
     return (
@@ -12,3 +12,4 @@ const Page = () => {
 }
 
 export default Page
+    
