@@ -1,13 +1,17 @@
 // utils/auth0.js
 import { initAuth0 } from '@auth0/nextjs-auth0'
+
 const getBaseUrl = () => {
+    if (process.env.VERCEL_PREVIEW_URL) {
+        return `https://${process.env.VERCEL_PREVIEW_URL}`
+    }
     if (process.env.VERCEL_URL) {
         return `https://${process.env.VERCEL_URL}`
     }
     if (process.env.AUTH0_BASE_URL) {
         return process.env.AUTH0_BASE_URL
     }
-    throw new Error('No valid baseURL found. Set either VERCEL_URL or AUTH0_BASE_URL environment variable.')
+    throw new Error('No valid baseURL found. Set either VERCEL_PREVIEW_URL, VERCEL_URL, or AUTH0_BASE_URL environment variable.')
 }
 
 export default initAuth0({

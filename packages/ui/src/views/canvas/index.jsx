@@ -61,7 +61,7 @@ import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 // ==============================|| CANVAS ||============================== //
 const ReactFlow = dynamic(() => import('reactflow').then((mod) => mod.default), { ssr: false })
 
-const Canvas = React.memo(function Canvas({ chatflowId }) {
+const Canvas = React.memo(function Canvas({ chatflowid }) {
     const theme = useTheme()
     const navigate = useNavigate()
 
@@ -70,7 +70,7 @@ const Canvas = React.memo(function Canvas({ chatflowId }) {
     const templateFlowData = templateData?.flowData ? templateData.flowData : ''
     const templateName = state ? state.templateName : ''
     const parentChatflowId = state && isNaN(state.parentChatflowId) ? state.parentChatflowId : undefined
-    console.log({ templateData, chatflowId, templateFlowData, templateName, parentChatflowId })
+    // console.log({ templateData, chatflowid, templateFlowData, templateName, parentChatflowId })
     const pathname = usePathname()
     // const URLpath = pathname.split('/')
     // const chatflowId =
@@ -214,7 +214,7 @@ const Canvas = React.memo(function Canvas({ chatflowId }) {
                     type: flowData.type,
                     flowData: JSON.stringify({ nodes, edges })
                 }
-                console.log('newChatflow', { existingChatflow, flowData, newChatflow })
+                // console.log('newChatflow', { existingChatflow, flowData, newChatflow })
                 dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
                 setNodes(nodes)
                 setEdges(edges)
@@ -548,12 +548,12 @@ const Canvas = React.memo(function Canvas({ chatflowId }) {
     useEffect(() => {
         setIsSyncNodesButtonEnabled(false)
         setIsUpsertButtonEnabled(false)
-        if (chatflowId) {
-            getSpecificChatflowApi.request(chatflowId)
+        if (chatflowid) {
+            getSpecificChatflowApi.request(chatflowid)
         } else {
             if (localStorage.getItem('duplicatedFlowData')) {
                 const duplicatedFlowData = JSON.parse(localStorage.getItem('duplicatedFlowData'))
-                console.log('duplicatedFlowData', duplicatedFlowData)
+
                 setNodes(duplicatedFlowData.nodes || [])
                 setEdges(duplicatedFlowData.edges || [])
                 dispatch({
@@ -584,7 +584,7 @@ const Canvas = React.memo(function Canvas({ chatflowId }) {
         return () => {
             setTimeout(() => dispatch({ type: REMOVE_DIRTY }), 0)
         }
-    }, [chatflowId]) // Only re-run if chatflowId changes
+    }, [chatflowid]) // Only re-run if chatflowId changes
 
     useEffect(() => {
         canvasDataStoreRef.current = canvas
@@ -702,8 +702,8 @@ const Canvas = React.memo(function Canvas({ chatflowId }) {
                                         <IconRefreshAlert />
                                     </Fab>
                                 )}
-                                {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
-                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
+                                {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowid} />}
+                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowid} />
                             </ReactFlow>
                         </div>
                     </div>

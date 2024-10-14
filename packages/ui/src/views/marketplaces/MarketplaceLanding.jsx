@@ -2,7 +2,6 @@
 import { useState, useEffect, forwardRef } from 'react'
 import useMarketplaceLanding from '@/hooks/useMarketplaceLanding'
 import marketplacesApi from '@/api/marketplaces'
-import { useAuth0 } from '@auth0/auth0-react'
 import PropTypes from 'prop-types'
 import { Typography, Box, Chip, Tab, Tabs, Tooltip, Alert, Avatar, Divider, Menu, MenuItem, Grid } from '@mui/material'
 import { useNavigate } from '@/utils/navigation'
@@ -12,6 +11,8 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import ErrorBoundary from '@/ErrorBoundary'
 import { baseURL } from '@/store/constant'
 import { Snackbar } from '@mui/material'
+import { useUser } from '@auth0/nextjs-auth0/client'
+import { useNavigationState } from '@/utils/navigation'
 
 const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }, ref) {
     const navigate = useNavigate()
@@ -105,8 +106,7 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
             }
             if (!user) {
                 const redirectUrl = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-                const encodedState = encodeURIComponent(JSON.stringify(state))
-                const loginUrl = `/api/auth/login?returnTo=${redirectUrl}&state=${encodedState}`
+                const loginUrl = `/api/auth/login?returnTo=${redirectUrl}`
                 setNavigationState(state)
                 window.location.href = loginUrl
             } else {
