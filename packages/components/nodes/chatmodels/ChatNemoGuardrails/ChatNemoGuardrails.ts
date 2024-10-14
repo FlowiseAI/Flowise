@@ -47,11 +47,12 @@ class ChatNemoGuardrailsModel extends BaseChatModel<ChatNemoGuardrailsCallOption
                 }
             })
 
+            await runManager?.handleLLMNewToken(generations.length ? generations[0].text : '')
+
             return {
                 generations
             }
         }
-
         return generate(messages, this.client)
     }
 
