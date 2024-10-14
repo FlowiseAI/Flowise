@@ -8,7 +8,7 @@ import { Input } from '@/ui-component/input/Input'
 import { useAuth0 } from '@auth0/auth0-react'
 
 const LoginDialog = ({ show, dialogProps, onConfirm }) => {
-    const { user, isAuthenticated, isLoading, loginWithRedirect } = useAuth0()
+    const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0()
     useEffect(() => {
         if (show && !isLoading && !isAuthenticated) {
             loginWithRedirect()

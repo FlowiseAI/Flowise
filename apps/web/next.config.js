@@ -55,10 +55,10 @@ let nextConfig = withBundleAnalyzer({
     },
     env: {
         AUTH0_BASE_URL: process.env.AUTH0_BASE_URL ?? `https://${process.env.VERCEL_BRANCH_URL}`,
-        VITE_AUTH_ORGANIZATION_ID: process.env.AUTH0_ORGANIZATION_ID,
-        VITE_AUTH_AUDIENCE: process.env.AUTH0_AUDIENCE,
-        VITE_AUTH_DOMAIN: process.env.AUTH0_DOMAIN,
-        VITE_AUTH_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
+        REACT_APP_AUTH0_ORGANIZATION_ID: process.env.AUTH0_ORGANIZATION_ID,
+        REACT_APP_AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
+        REACT_APP_AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
+        REACT_APP_AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
         FLAGSMITH_ENVIRONMENT_ID: process.env.FLAGSMITH_ENVIRONMENT_ID
     },
     webpack: (config, { isServer }) => {

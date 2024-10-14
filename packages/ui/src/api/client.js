@@ -13,16 +13,6 @@ apiClient.interceptors.request.use(async function (config) {
     const baseURL = sessionStorage.getItem('baseURL') || Constants.baseURL // Fallback URL
     config.baseURL = `${baseURL}/api/v1`
 
-    const username = localStorage.getItem('username')
-    const password = localStorage.getItem('password')
-
-    if (username && password) {
-        config.auth = {
-            username,
-            password
-        }
-    }
-
     const token = sessionStorage.getItem('access_token')
     if (token) {
         config.headers['Authorization'] = `Bearer ${token}`

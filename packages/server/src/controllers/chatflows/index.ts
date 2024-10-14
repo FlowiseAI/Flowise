@@ -90,15 +90,24 @@ const getChatflowByApiKey = async (req: Request, res: Response, next: NextFuncti
 
 const getChatflowById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.user) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsRouter.getChatflowById - Unauthorized!`)
-
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.getChatflowById - id not provided!`)
         }
         const apiResponse = await chatflowsService.getChatflowById(req.params.id, req.user)
-        if (!(await checkOwnership(apiResponse, req.user))) {
+
+        // Check if the chatflow is public (Marketplace) for unauthenticated users
+        if (!req.user && (!apiResponse.visibility || !apiResponse.visibility.includes('Marketplace'))) {
+            throw new InternalFlowiseError(
+                StatusCodes.UNAUTHORIZED,
+                `Error: chatflowsRouter.getChatflowById - Unauthorized access to non-public chatflow!`
+            )
+        }
+
+        // For authenticated users, check ownership
+        if (req.user && !(await checkOwnership(apiResponse, req.user))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
+
         return res.json(apiResponse)
     } catch (error) {
         next(error)

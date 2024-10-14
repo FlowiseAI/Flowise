@@ -123,7 +123,8 @@ export class App {
             '/api/v1/leads',
             '/api/v1/get-upload-file',
             '/api/v1/ip',
-            '/api/v1/ping'
+            '/api/v1/ping',
+            '/api/v1/marketplaces/templates'
         ]
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME

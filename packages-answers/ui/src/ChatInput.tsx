@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useRef, ChangeEvent, useCallback } from 'react'
+import React, { useState, useEffect, useRef, ChangeEvent } from 'react'
 
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
@@ -9,7 +9,6 @@ import AddIcon from '@mui/icons-material/Add'
 import Tooltip from '@mui/material/Tooltip'
 
 import { useAnswers } from './AnswersContext'
-import SidekickSelect from './SidekickSelect'
 // import Fieldset from './Fieldset';
 
 import { throttle } from '@utils/throttle'
@@ -33,7 +32,6 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks = [] }: { scrollRef?: any; i
 
     const throttledScroll = React.useCallback(
         throttle(() => {
-            console.log('ScrollREf', scrollRef, new Date())
             scrollRef?.current?.scrollTo({ top: scrollRef.current.scrollHeight })
         }, 300),
         [scrollRef]
