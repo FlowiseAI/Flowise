@@ -419,17 +419,31 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                          * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
                          */
                         if (tool) {
-                            observation = await (tool as any).call(
-                                this.isXML && typeof action.toolInput === 'string' ? { input: action.toolInput } : action.toolInput,
-                                runManager?.getChild(),
-                                undefined,
-                                {
-                                    sessionId: this.sessionId,
-                                    chatId: this.chatId,
-                                    input: this.input,
-                                    state: inputs
-                                }
-                            )
+                            if (this.isXML) {
+                                observation = await (tool as any).call(
+                                    typeof action.toolInput === 'string' ? { input: action.toolInput } : action.toolInput,
+                                    runManager?.getChild(),
+                                    undefined,
+                                    {
+                                        sessionId: this.sessionId,
+                                        chatId: this.chatId,
+                                        input: this.input,
+                                        state: inputs
+                                    }
+                                )
+                            } else {
+                               observation = await (tool as any).call(
+                                    { input: action.toolInput },
+                                    runManager?.getChild(),
+                                    undefined,
+                                    {
+                                        sessionId: this.sessionId,
+                                        chatId: this.chatId,
+                                        input: this.input,
+                                        state: inputs
+                                    }
+                                )
+                            }
                             let toolOutput = observation
                             if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
                                 toolOutput = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)[0]
