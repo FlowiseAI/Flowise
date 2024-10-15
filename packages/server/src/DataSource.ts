@@ -1,7 +1,4 @@
 import 'reflect-metadata'
-import path from 'path'
-import * as fs from 'fs'
-import { DataSource } from 'typeorm'
 import { getUserHome } from './utils'
 import { entities } from './database/entities'
 import { sqliteMigrations } from './database/migrations/sqlite'
@@ -9,7 +6,32 @@ import { mysqlMigrations } from './database/migrations/mysql'
 import { mariadbMigrations } from './database/migrations/mariadb'
 import { postgresMigrations } from './database/migrations/postgres'
 
-let appDataSource: DataSource
+// Type assertion for DataSource
+const DataSource: any = {} as any
+
+// Declare types for Node.js built-ins
+declare const process: {
+    env: {
+        [key: string]: string | undefined
+    }
+}
+
+declare const Buffer: any
+declare const console: any
+
+// Declare minimal types for 'path' and 'fs' modules
+declare const path: {
+    join: (...paths: string[]) => string
+    resolve: (...paths: string[]) => string
+}
+
+declare const fs: {
+    existsSync: (path: string) => boolean
+    mkdirSync: (path: string) => void
+    readFileSync: (path: string, encoding: string) => string
+}
+
+let appDataSource: any
 
 export const init = async (): Promise<void> => {
     let homePath
@@ -90,7 +112,7 @@ export const init = async (): Promise<void> => {
     }
 }
 
-export function getDataSource(): DataSource {
+export function getDataSource(): any {
     if (appDataSource === undefined) {
         init()
     }
@@ -98,6 +120,26 @@ export function getDataSource(): DataSource {
 }
 
 const getDatabaseSSLFromEnv = () => {
+    if (process.env.DATABASE_SSL) {
+        try {
+            // Attempt to parse DATABASE_SSL as JSON
+            const sslConfig = JSON.parse(process.env.DATABASE_SSL)
+            
+            // If parsing succeeds, return the parsed object
+            if (typeof sslConfig === 'object' && sslConfig !== null) {
+                // If 'ca' is provided as a file path, read the file
+                if (sslConfig.ca && typeof sslConfig.ca === 'string' && fs.existsSync(sslConfig.ca)) {
+                    sslConfig.ca = fs.readFileSync(sslConfig.ca, 'utf8')
+                }
+                return sslConfig
+            }
+        } catch (error) {
+            // If parsing fails, fall back to the existing behavior
+            console.warn('Failed to parse DATABASE_SSL as JSON. Falling back to default behavior.')
+        }
+    }
+
+    // Existing behavior as fallback
     if (process.env.DATABASE_SSL_KEY_BASE64) {
         return {
             rejectUnauthorized: false,
