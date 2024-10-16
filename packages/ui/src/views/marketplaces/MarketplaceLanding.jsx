@@ -3,7 +3,23 @@ import { useState, useEffect, forwardRef } from 'react'
 import useMarketplaceLanding from '@/hooks/useMarketplaceLanding'
 import marketplacesApi from '@/api/marketplaces'
 import PropTypes from 'prop-types'
-import { Typography, Box, Chip, Tab, Tabs, Tooltip, Alert, Avatar, Divider, Menu, MenuItem, Grid } from '@mui/material'
+import { useSelector } from 'react-redux'
+import {
+    useTheme,
+    Typography,
+    Box,
+    Chip,
+    Tooltip,
+    Alert,
+    Avatar,
+    Divider,
+    Menu,
+    MenuItem,
+    Grid,
+    Tabs,
+    Tab,
+    useMediaQuery
+} from '@mui/material'
 import { useNavigate } from '@/utils/navigation'
 import { IconCopy, IconDownload, IconShare } from '@tabler/icons-react'
 import MarketplaceCanvas from './MarketplaceCanvas'
@@ -19,16 +35,19 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
     const { isLoading, error, template } = useMarketplaceLanding(templateId)
     const { user } = useUser()
     const [, setNavigationState] = useNavigationState()
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
     const [isSignInPromptOpen, setIsSignInPromptOpen] = useState(false)
     const [actionType, setActionType] = useState(null)
     const [isFavorite, setIsFavorite] = useState(false)
-    const [tabValue, setTabValue] = useState(0)
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
     const [anchorEl, setAnchorEl] = useState(null)
     const [images, setImages] = useState([])
     const [nodeTypes, setNodeTypes] = useState([])
+    const [tabValue, setTabValue] = useState(0)
+    const customization = useSelector((state) => state.customization)
 
     useEffect(() => {
         if (user && template) {
@@ -97,7 +116,6 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
                 (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
             )
 
-            // flowData.name = `Copy of ${flowData.nCreaame}`
             localStorage.setItem('duplicatedFlowData', JSON.stringify(template.flowData))
             const state = {
                 templateData: JSON.stringify(template),
@@ -118,10 +136,6 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
             setActionType(type)
             setIsSignInPromptOpen(true)
         }
-    }
-
-    const handleTabChange = (event, newValue) => {
-        setTabValue(newValue)
     }
 
     const handleSnackbarClose = (event, reason) => {
@@ -148,15 +162,18 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
         link.click()
         handleExportClose()
     }
-    // const encodedDomain = Buffer.from(window.location.host).toString('base64')
+
     const encodedDomain = Buffer.from(baseURL).toString('base64')
     const shareUrl = `${window.location.origin}/org/${encodedDomain}/marketplace/${templateId}`
-    console.log('[MarketplaceLanding] shareUrl:', shareUrl)
-    console.log('[MarketplaceLanding] host:', window.location.host)
+
     const handleShare = () => {
         navigator.clipboard.writeText(shareUrl)
         setSnackbarMessage('Share link copied to clipboard')
         setSnackbarOpen(true)
+    }
+
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue)
     }
 
     if (isLoading) return <div>Loading...</div>
@@ -164,62 +181,67 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
     if (!template) return <div>Template not found</div>
 
     const renderTemplateDetails = () => (
-        <Box sx={{ mt: 3 }}>
+        <Box sx={{ height: '100%', overflowY: 'auto' }}>
             <Typography variant='h6' gutterBottom fontWeight='bold'>
                 About this template
             </Typography>
             <Typography variant='body2' paragraph>
                 {template.description}
             </Typography>
-            <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                    <Box sx={{ mb: 2 }}>
-                        <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
-                            Category
-                        </Typography>
-                        <Chip label={template.category} color='primary' />
-                    </Box>
-                    <Box sx={{ mb: 2 }}>
-                        <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
-                            Usage Count
-                        </Typography>
-                        <Typography variant='body2'>{template.analytic ? JSON.parse(template.analytic).usageCount : 0} times</Typography>
-                    </Box>
-                    <Box sx={{ mb: 2 }}>
-                        <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
-                            Created On
-                        </Typography>
-                        <Typography variant='body2'>{new Date(template.createdDate).toLocaleDateString()}</Typography>
-                    </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                    <Box sx={{ mb: 2 }}>
-                        <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
-                            Requirements
-                        </Typography>
-                        {template.apikeyid ? (
-                            <Alert severity='warning' sx={{ mt: 1 }}>
-                                This flow requires personal API tokens or credentials.
-                            </Alert>
-                        ) : (
-                            <Typography variant='body2'>No special requirements</Typography>
-                        )}
-                    </Box>
-                    <Box sx={{ mb: 2 }}>
-                        <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
-                            Node Types
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                            {images.slice(0, 3).map((img, index) => (
-                                <Tooltip key={img} title={nodeTypes[index]} arrow>
-                                    <Avatar src={img} sx={{ width: 30, height: 30 }} />
-                                </Tooltip>
-                            ))}
-                            {images.length > 3 && <Typography variant='body2'>+ {images.length - 3} More</Typography>}
-                        </Box>
-                    </Box>
-                </Grid>
-            </Grid>
+            {template.category && (
+                <Box sx={{ mb: 2 }}>
+                    <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
+                        Category
+                    </Typography>
+                    <Chip label={template.category} color='primary' />
+                </Box>
+            )}
+            <Box sx={{ mb: 2 }}>
+                <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
+                    Usage Count
+                </Typography>
+                <Typography variant='body2'>{template.analytic ? JSON.parse(template.analytic).usageCount : 0} times</Typography>
+            </Box>
+            <Box sx={{ mb: 2 }}>
+                <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
+                    Created On
+                </Typography>
+                <Typography variant='body2'>{new Date(template.createdDate).toLocaleDateString()}</Typography>
+            </Box>
+            <Box sx={{ mb: 2 }}>
+                <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
+                    Requirements
+                </Typography>
+                {template.apikeyid ? (
+                    <Alert severity='warning' sx={{ mt: 1 }}>
+                        This flow requires personal API tokens or credentials.
+                    </Alert>
+                ) : (
+                    <Typography variant='body2'>No special requirements</Typography>
+                )}
+            </Box>
+            <Box sx={{ mb: 2 }}>
+                <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
+                    Node Types
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    {images.slice(0, 3).map((img, index) => (
+                        <Tooltip key={img} title={nodeTypes[index]} arrow>
+                            <Box
+                                sx={{
+                                    width: 30,
+                                    height: 30,
+                                    borderRadius: '50%',
+                                    backgroundColor: customization.isDarkMode ? theme.palette.common.white : theme.palette.grey[300] + 75
+                                }}
+                            >
+                                <img style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }} alt='' src={img} />
+                            </Box>
+                        </Tooltip>
+                    ))}
+                    {images.length > 3 && <Typography variant='body2'>+ {images.length - 3} More</Typography>}
+                </Box>
+            </Box>
             {template.tags && (
                 <Box sx={{ mt: 2 }}>
                     <Typography variant='subtitle1' gutterBottom fontWeight='bold'>
@@ -236,7 +258,7 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
     )
 
     const renderActionButtons = () => (
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
             <StyledButton color='primary' variant='contained' onClick={() => handleAction('new')} startIcon={<IconCopy />}>
                 Use as New Flow
             </StyledButton>
@@ -252,44 +274,92 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
         </Box>
     )
 
-    return (
-        <Box ref={ref} sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    {template.iconSrc && (
-                        <Avatar
-                            src={template.iconSrc}
-                            alt={template.name}
-                            sx={{
-                                width: 35,
-                                height: 35,
-                                borderRadius: '50%'
-                            }}
-                        />
-                    )}
-                    <Typography variant='h4' component='h1' gutterBottom fontWeight='bold'>
-                        {template.name}
-                    </Typography>
-                </Box>
-                {renderActionButtons()}
+    const renderPreview = () => (
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant='h6' gutterBottom fontWeight='bold'>
+                Preview
+            </Typography>
+            <Typography variant='body2' paragraph>
+                This preview shows the structure of the flow. To use and customize this template, click &quot;Use as New Flow&quot; above.
+            </Typography>
+            <Box sx={{ flexGrow: 1, position: 'relative', minHeight: 400 }}>
+                <MarketplaceCanvas template={template} />
             </Box>
-            <Divider sx={{ mb: 3 }} />
-            <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 2 }}>
-                <Tab label='Details' />
-                <Tab label='Preview' />
-            </Tabs>
-            <Box sx={{ mt: 2 }}>
-                {tabValue === 0 && renderTemplateDetails()}
-                {tabValue === 1 && (
-                    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant='body2' paragraph>
-                            This preview shows the structure of the flow. To use and customize this template, click &quot;Use as New
-                            Flow&quot; above.
+        </Box>
+    )
+
+    return (
+        <Box
+            ref={ref}
+            sx={{
+                maxWidth: '1080px',
+                width: '100%',
+                mx: 'auto',
+                p: { xs: 2, sm: 3 },
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
+            }}
+        >
+            <Box sx={{ mb: 3 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: { xs: 'flex-start', sm: 'center' },
+                        justifyContent: 'space-between',
+                        gap: 2,
+                        mb: 2
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {template.iconSrc && (
+                            <Avatar
+                                src={template.iconSrc}
+                                alt={template.name}
+                                sx={{
+                                    width: 35,
+                                    height: 35,
+                                    borderRadius: '50%'
+                                }}
+                            />
+                        )}
+                        <Typography variant='h4' component='h1' gutterBottom fontWeight='bold'>
+                            {template.name}
                         </Typography>
-                        <Box sx={{ flexGrow: 1, minHeight: 400 }}>
-                            <MarketplaceCanvas template={template} />
-                        </Box>
                     </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>{renderActionButtons()}</Box>
+                </Box>
+                <Divider />
+            </Box>
+            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, overflow: 'hidden' }}>
+                {isMobile ? (
+                    <>
+                        <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>{tabValue === 0 ? renderTemplateDetails() : renderPreview()}</Box>
+                        <Tabs
+                            value={tabValue}
+                            onChange={handleTabChange}
+                            variant='fullWidth'
+                            sx={{
+                                position: 'sticky',
+                                bottom: 0,
+                                bgcolor: 'background.paper',
+                                zIndex: 1000,
+                                borderTop: 1,
+                                borderColor: 'divider'
+                            }}
+                        >
+                            <Tab label='Details' />
+                            <Tab label='Preview' />
+                        </Tabs>
+                    </>
+                ) : (
+                    <>
+                        <Box sx={{ width: '30%', pr: 2, overflowY: 'auto', borderRight: 1, borderColor: 'divider' }}>
+                            {renderTemplateDetails()}
+                        </Box>
+                        <Box sx={{ width: '70%', pl: 2, overflowY: 'auto' }}>{renderPreview()}</Box>
+                    </>
                 )}
             </Box>
             <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose} message={snackbarMessage} />
