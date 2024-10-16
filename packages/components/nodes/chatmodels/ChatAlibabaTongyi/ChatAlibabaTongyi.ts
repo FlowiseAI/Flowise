@@ -1,9 +1,8 @@
 import { BaseCache } from '@langchain/core/caches'
-import { ChatAlibabaTongyi } from "@langchain/community/chat_models/alibaba_tongyi";
+import { ChatAlibabaTongyi } from '@langchain/community/chat_models/alibaba_tongyi'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 
 class ChatAlibabaTongyi_ChatModels implements INode {
     label: string
@@ -62,12 +61,12 @@ class ChatAlibabaTongyi_ChatModels implements INode {
         const modelName = nodeData.inputs?.modelName as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const ApiKey = getCredentialParam('alibabaApiKey', credentialData, nodeData)
+        const alibabaApiKey = getCredentialParam('alibabaApiKey', credentialData, nodeData)
 
-        const obj: Partial<ChatAlibabaTongyi> & BaseChatModelParams ={
+        const obj: Partial<ChatAlibabaTongyi> & BaseChatModelParams = {
             streaming: true,
-            alibabaApiKey: ApiKey,
-            model : modelName,
+            alibabaApiKey,
+            model: modelName,
             temperature: temperature ? parseFloat(temperature) : undefined
         }
         if (cache) obj.cache = cache
