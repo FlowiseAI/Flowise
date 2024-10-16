@@ -1,13 +1,13 @@
-import { Pool } from 'pg'
 import { flatten } from 'lodash'
-import { DataSourceOptions } from 'typeorm'
-import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
-import { TypeORMVectorStore, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FLOWISE_CHATID, getBaseClasses } from '../../../src/utils'
 import { index } from '../../../src/indexing'
 import { howToUseFileUpload } from '../VectorStoreUtils'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { VectorStoreDriver } from './driver/Base'
+import { TypeORMDriver } from './driver/TypeORM'
+import { PGVectorDriver } from './driver/PGVector'
 
 class Postgres_VectorStores implements INode {
     label: string
@@ -59,6 +59,22 @@ class Postgres_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Driver',
+                name: 'driver',
+                type: 'options',
+                default: 'typeorm',
+                options: [
+                    {
+                        label: 'TypeORM',
+                        name: 'typeorm'
+                    },
+                    {
+                        label: 'PGVector',
+                        name: 'pgvector'
+                    }
+                ]
+            },
+            {
                 label: 'Host',
                 name: 'host',
                 type: 'string'
@@ -80,6 +96,15 @@ class Postgres_VectorStores implements INode {
                 name: 'tableName',
                 type: 'string',
                 placeholder: 'documents',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Content Column Name',
+                name: 'contentColumnName',
+                description: 'Column name to store the text content (PGVector Driver only)',
+                type: 'string',
+                placeholder: PGVectorDriver.CONTENT_COLUMN_NAME_DEFAULT,
                 additionalParams: true,
                 optional: true
             },
@@ -128,7 +153,7 @@ class Postgres_VectorStores implements INode {
             {
                 label: 'Postgres Vector Store',
                 name: 'vectorStore',
-                baseClasses: [this.type, ...getBaseClasses(TypeORMVectorStore)]
+                baseClasses: [this.type, ...getBaseClasses(VectorStore)]
             }
         ]
     }
@@ -136,43 +161,16 @@ class Postgres_VectorStores implements INode {
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
-            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-            const user = getCredentialParam('user', credentialData, nodeData)
-            const password = getCredentialParam('password', credentialData, nodeData)
             const _tableName = nodeData.inputs?.tableName as string
             const tableName = _tableName ? _tableName : 'documents'
             const docs = nodeData.inputs?.document as Document[]
-            const embeddings = nodeData.inputs?.embeddings as Embeddings
-            const additionalConfig = nodeData.inputs?.additionalConfig as string
             const recordManager = nodeData.inputs?.recordManager
             const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
-
-            let additionalConfiguration = {}
-            if (additionalConfig) {
-                try {
-                    additionalConfiguration = typeof additionalConfig === 'object' ? additionalConfig : JSON.parse(additionalConfig)
-                } catch (exception) {
-                    throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
-                }
-            }
-
-            const postgresConnectionOptions = {
-                ...additionalConfiguration,
-                type: 'postgres',
-                host: nodeData.inputs?.host as string,
-                port: nodeData.inputs?.port as number,
-                username: user,
-                password: password,
-                database: nodeData.inputs?.database as string
-            }
-
-            const args = {
-                postgresConnectionOptions: postgresConnectionOptions as DataSourceOptions,
-                tableName: tableName
-            }
+            const vectorStoreDriver: VectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options)
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
             const finalDocs = []
+
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
                     if (isFileUploadEnabled && options.chatId) {
@@ -184,24 +182,7 @@ class Postgres_VectorStores implements INode {
 
             try {
                 if (recordManager) {
-                    const vectorStore = await TypeORMVectorStore.fromDataSource(embeddings, args)
-
-                    // Avoid Illegal invocation error
-                    vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
-                        return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter)
-                    }
-
-                    vectorStore.delete = async (params: { ids: string[] }): Promise<void> => {
-                        const { ids } = params
-
-                        if (ids?.length) {
-                            try {
-                                vectorStore.appDataSource.getRepository(vectorStore.documentEntity).delete(ids)
-                            } catch (e) {
-                                console.error('Failed to delete')
-                            }
-                        }
-                    }
+                    const vectorStore = await vectorStoreDriver.instanciate()
 
                     await recordManager.createSchema()
 
@@ -218,12 +199,7 @@ class Postgres_VectorStores implements INode {
 
                     return res
                 } else {
-                    const vectorStore = await TypeORMVectorStore.fromDocuments(finalDocs, embeddings, args)
-
-                    // Avoid Illegal invocation error
-                    vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
-                        return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter)
-                    }
+                    await vectorStoreDriver.fromDocuments(finalDocs)
 
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
@@ -232,40 +208,12 @@ class Postgres_VectorStores implements INode {
             }
         },
         async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
-            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-            const user = getCredentialParam('user', credentialData, nodeData)
-            const password = getCredentialParam('password', credentialData, nodeData)
+            const vectorStoreDriver: VectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options)
             const _tableName = nodeData.inputs?.tableName as string
             const tableName = _tableName ? _tableName : 'documents'
-            const embeddings = nodeData.inputs?.embeddings as Embeddings
-            const additionalConfig = nodeData.inputs?.additionalConfig as string
             const recordManager = nodeData.inputs?.recordManager
 
-            let additionalConfiguration = {}
-            if (additionalConfig) {
-                try {
-                    additionalConfiguration = typeof additionalConfig === 'object' ? additionalConfig : JSON.parse(additionalConfig)
-                } catch (exception) {
-                    throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
-                }
-            }
-
-            const postgresConnectionOptions = {
-                ...additionalConfiguration,
-                type: 'postgres',
-                host: nodeData.inputs?.host as string,
-                port: nodeData.inputs?.port as number,
-                username: user,
-                password: password,
-                database: nodeData.inputs?.database as string
-            }
-
-            const args = {
-                postgresConnectionOptions: postgresConnectionOptions as DataSourceOptions,
-                tableName: tableName
-            }
-
-            const vectorStore = await TypeORMVectorStore.fromDataSource(embeddings, args)
+            const vectorStore = await vectorStoreDriver.instanciate()
 
             try {
                 if (recordManager) {
@@ -286,13 +234,7 @@ class Postgres_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const user = getCredentialParam('user', credentialData, nodeData)
-        const password = getCredentialParam('password', credentialData, nodeData)
-        const _tableName = nodeData.inputs?.tableName as string
-        const tableName = _tableName ? _tableName : 'documents'
-        const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const additionalConfig = nodeData.inputs?.additionalConfig as string
+        const vectorStoreDriver: VectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options)
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
@@ -312,42 +254,7 @@ class Postgres_VectorStores implements INode {
             }
         }
 
-        let additionalConfiguration = {}
-        if (additionalConfig) {
-            try {
-                additionalConfiguration = typeof additionalConfig === 'object' ? additionalConfig : JSON.parse(additionalConfig)
-            } catch (exception) {
-                throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
-            }
-        }
-
-        const postgresConnectionOptions = {
-            ...additionalConfiguration,
-            type: 'postgres',
-            host: nodeData.inputs?.host as string,
-            port: nodeData.inputs?.port as number,
-            username: user, // Required by TypeORMVectorStore
-            user: user, // Required by Pool in similaritySearchVectorWithScore
-            password: password,
-            database: nodeData.inputs?.database as string
-        }
-
-        const args = {
-            postgresConnectionOptions: postgresConnectionOptions as DataSourceOptions,
-            tableName: tableName
-        }
-
-        const vectorStore = await TypeORMVectorStore.fromDataSource(embeddings, args)
-
-        // Rewrite the method to use pg pool connection instead of the default connection
-        /* Otherwise a connection error is displayed when the chain tries to execute the function
-            [chain/start] [1:chain:ConversationalRetrievalQAChain] Entering Chain run with input: { "question": "what the document is about", "chat_history": [] }
-            [retriever/start] [1:chain:ConversationalRetrievalQAChain > 2:retriever:VectorStoreRetriever] Entering Retriever run with input: { "query": "what the document is about" }
-            [ERROR]: uncaughtException:  Illegal invocation TypeError: Illegal invocation at Socket.ref (node:net:1524:18) at Connection.ref (.../node_modules/pg/lib/connection.js:183:17) at Client.ref (.../node_modules/pg/lib/client.js:591:21) at BoundPool._pulseQueue (/node_modules/pg-pool/index.js:148:28) at .../node_modules/pg-pool/index.js:184:37 at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
-        */
-        vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
-            return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter ?? pgMetadataFilter)
-        }
+        const vectorStore = await vectorStoreDriver.instanciate(pgMetadataFilter)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)
@@ -361,51 +268,17 @@ class Postgres_VectorStores implements INode {
         }
         return vectorStore
     }
-}
 
-const similaritySearchVectorWithScore = async (
-    query: number[],
-    k: number,
-    tableName: string,
-    postgresConnectionOptions: ICommonObject,
-    filter?: any
-) => {
-    const embeddingString = `[${query.join(',')}]`
-    let _filter = '{}'
-    let notExists = ''
-    if (filter && typeof filter === 'object') {
-        if (filter.$notexists) {
-            notExists = `OR NOT (metadata ? '${filter.$notexists}')`
-            delete filter.$notexists
+    static getDriverFromConfig(nodeData: INodeData, options: ICommonObject): VectorStoreDriver {
+        switch (nodeData.inputs?.driver) {
+            case 'typeorm':
+                return new TypeORMDriver(nodeData, options)
+            case 'pgvector':
+                return new PGVectorDriver(nodeData, options)
         }
-        _filter = JSON.stringify(filter)
+
+        throw new Error('Invalid driver')
     }
-
-    const queryString = `
-        SELECT *, embedding <=> $1 as "_distance"
-        FROM ${tableName}
-        WHERE metadata @> $2
-        ${notExists}
-        ORDER BY "_distance" ASC
-        LIMIT $3;`
-
-    const pool = new Pool(postgresConnectionOptions)
-    const conn = await pool.connect()
-
-    const documents = await conn.query(queryString, [embeddingString, _filter, k])
-
-    conn.release()
-
-    const results = [] as [TypeORMVectorStoreDocument, number][]
-    for (const doc of documents.rows) {
-        if (doc._distance != null && doc.pageContent != null) {
-            const document = new Document(doc) as TypeORMVectorStoreDocument
-            document.id = doc.id
-            results.push([document, doc._distance])
-        }
-    }
-
-    return results
 }
 
 module.exports = { nodeClass: Postgres_VectorStores }
