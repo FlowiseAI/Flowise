@@ -1142,15 +1142,6 @@
             ]
         },
         {
-            "name": "jinaEmbeddings",
-            "models": [
-                {
-                    "label": "jina-embeddings-v2-base-en",
-                    "name": "jina-embeddings-v2-base-en"
-                }
-            ]
-        },
-        {
             "name": "voyageAIEmbeddings",
             "models": [
                 {
