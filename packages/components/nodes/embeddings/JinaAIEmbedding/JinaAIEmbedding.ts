@@ -1,8 +1,5 @@
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-
-import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
-
 import { JinaEmbeddings, JinaEmbeddingsParams } from '@langchain/community/embeddings/jina'
 
 class JinaAIEmbedding_Embeddings implements INode {
@@ -36,46 +33,15 @@ class JinaAIEmbedding_Embeddings implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'asyncOptions',
-                loadMethod: 'listModels',
-                default: 'jina-embeddings-v2-base-en'
-            },
-            // {
-            //     label: 'Strip New Lines',
-            //     name: 'stripNewLines',
-            //     type: 'boolean',
-            //     optional: true,
-            //     additionalParams: true
-            // },
-            // {
-            //     label: 'Batch Size',
-            //     name: 'batchSize',
-            //     type: 'number',
-            //     optional: true,
-            //     additionalParams: true
-            // },
-            // {
-            //     label: 'Timeout',
-            //     name: 'timeout',
-            //     type: 'number',
-            //     optional: true,
-            //     additionalParams: true
-            // }
+                type: 'string',
+                default: 'jina-embeddings-v2-base-en',
+                description: 'Refer to <a href="https://jina.ai/embeddings/" target="_blank">JinaAI documentation</a> for available models'
+            }
         ]
-    }
-
-    loadMethods = {
-        async listModels(): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.EMBEDDING, 'jinaEmbeddings')
-        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const modelName = nodeData.inputs?.modelName as string
-        // const batchSize = nodeData.inputs?.batchSize as string
-        // const stripNewLines = nodeData.inputs?.stripNewLines as boolean
-        // const overrideEndpoint = nodeData.inputs?.overrideEndpoint as string
-
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('jinaAIAPIKey', credentialData, nodeData)
 
@@ -83,11 +49,6 @@ class JinaAIEmbedding_Embeddings implements INode {
             apiKey: apiKey,
             model: modelName
         }
-
-        // if (batchSize) obj.batchSize = parseInom '../../../src/Interface'
-// import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils't(batchSize, 10)
-        // if (stripNewLines) obj.stripNewLines = stripNewLines
-        // if (overrideEndpoint) obj.endpoint = overrideEndpoint
 
         const model = new JinaEmbeddings(obj)
         return model
