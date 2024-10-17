@@ -96,7 +96,7 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
         const apiResponse = await chatflowsService.getChatflowById(req.params.id, req.user)
 
         // Check if the chatflow is public (Marketplace) for unauthenticated users
-        if (!req.user && !apiResponse.ispublic && (!apiResponse.visibility || !apiResponse.visibility.includes('Marketplace'))) {
+        if (!req.user && (!apiResponse.visibility || !apiResponse.visibility.includes('Marketplace') || !apiResponse.isPublic)) {
             throw new InternalFlowiseError(
                 StatusCodes.UNAUTHORIZED,
                 `Error: chatflowsRouter.getChatflowById - Unauthorized access to non-public chatflow!`

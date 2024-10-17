@@ -224,7 +224,7 @@ const getChatflowById = async (chatflowId: string, user?: IUser): Promise<any> =
         }
 
         // For unauthenticated users, only allow access to public (Marketplace) chatflows
-        if (!user && (!dbResponse.visibility || !dbResponse.visibility.includes(ChatflowVisibility.MARKETPLACE))) {
+        if (!user && !dbResponse.isPublic) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized access to non-public chatflow`)
         }
 
