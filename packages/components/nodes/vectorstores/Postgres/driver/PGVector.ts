@@ -3,7 +3,6 @@ import { getCredentialData, getCredentialParam } from '../../../../src'
 import { PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import { PoolConfig } from 'pg'
-import { VectorStore } from '@langchain/core/vectorstores'
 
 export class PGVectorDriver extends VectorStoreDriver {
     static CONTENT_COLUMN_NAME_DEFAULT: string = 'pageContent'
@@ -62,12 +61,45 @@ export class PGVectorDriver extends VectorStoreDriver {
         return this.adaptInstance(Promise.resolve(instance))
     }
 
-    protected async adaptInstance(instancePromise: Promise<VectorStore>, metadataFilters?: any): Promise<VectorStore> {
+    protected async adaptInstance(instancePromise: Promise<PGVectorStore>, metadataFilters?: any): Promise<PGVectorStore> {
+        const { $notexists, ...restFilters } = metadataFilters || {}
+        const { [$notexists]: chatId, ...pgMetadataFilter } = restFilters
         const instance = await instancePromise
-        const baseFn = instance.similaritySearchVectorWithScore.bind(instance)
+        const baseSimilaritySearchVectorWithScoreFn = instance.similaritySearchVectorWithScore.bind(instance)
 
-        instance.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
-            return await baseFn(query, k, filter ?? metadataFilters)
+        instance.similaritySearchVectorWithScore = async (query, k, filter) => {
+            return await baseSimilaritySearchVectorWithScoreFn(query, k, filter ?? pgMetadataFilter)
+        }
+
+        const basePoolQueryFn = instance.pool.query.bind(instance.pool)
+
+        // @ts-ignore
+        instance.pool.query = (queryString: string, parameters: any[]) => {
+            // Tweak query to handle $notexists
+            if ($notexists) {
+                const chatClause = `${instance.metadataColumnName}->>'${$notexists}' = $${
+                    parameters.length + 1
+                } OR NOT (metadata ? '${$notexists}')`
+                const whereClauseRegex = /WHERE ([^\n]+)/
+                if (queryString.match(whereClauseRegex)) {
+                    queryString = queryString.replace(whereClauseRegex, `WHERE $1 AND (${chatClause})`)
+                } else {
+                    const orderByClauseRegex = /ORDER BY (.*)/
+                    // Insert WHERE clause before ORDER BY
+                    queryString = queryString.replace(
+                        orderByClauseRegex,
+                        `
+                        WHERE ${chatClause}
+                        ORDER BY $1
+                        `
+                    )
+                }
+
+                parameters.push(chatId)
+            }
+
+            // Run base function
+            return basePoolQueryFn(queryString, parameters)
         }
 
         return instance
