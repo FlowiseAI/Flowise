@@ -949,7 +949,7 @@ export const getCustomConditionOutputs = (value, nodeId, existingEdges, isDataGr
 export const getBasename = () => {
     try {
         const baseTag = document.querySelector('base')
-        let baseHref = !!baseTag ? baseTag.getAttribute('href') || '/' : '/'
+        let baseHref = baseTag ? baseTag.getAttribute('href') || '/' : '/'
         if (baseHref === '%BASE_HREF%') {
             baseHref = '/'
         }
