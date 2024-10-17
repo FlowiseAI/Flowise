@@ -243,7 +243,7 @@
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
                 "category": "Agents",
-                "description": "Agent used to to answer queries on CSV data",
+                "description": "Agent used to answer queries on CSV data",
                 "inputParams": [
                     {
                         "label": "Csv File",
@@ -301,7 +301,7 @@
                         "id": "csvAgent_0-output-csvAgent-AgentExecutor|BaseChain|Runnable",
                         "name": "csvAgent",
                         "label": "AgentExecutor",
-                        "description": "Agent used to to answer queries on CSV data",
+                        "description": "Agent used to answer queries on CSV data",
                         "type": "AgentExecutor | BaseChain | Runnable"
                     }
                 ],

@@ -412,6 +412,15 @@
             ]
         },
         {
+            "name": "chatAlibabaTongyi",
+            "models": [
+                {
+                    "label": "qwen-plus",
+                    "name": "qwen-plus"
+                }
+            ]
+        },
+        {
             "name": "chatGoogleVertexAI",
             "models": [
                 {
