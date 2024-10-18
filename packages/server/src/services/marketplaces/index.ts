@@ -53,6 +53,7 @@ const getAllTemplates = async (user: IUser | undefined) => {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflows not found`)
         }
         chatflows.forEach((chatflow) => {
+            const chatbotConfig = JSON.parse(chatflow.chatbotConfig || '{}')
             const template = {
                 id: chatflow.id,
                 templateName: chatflow.name,
@@ -60,7 +61,8 @@ const getAllTemplates = async (user: IUser | undefined) => {
                 badge: chatflow.userId === user?.id ? `SHARED BY ME` : `SHARED BY OTHERS`,
                 categories: chatflow.category,
                 type: chatflow.type === 'MULTIAGENT' ? 'Agent Community' : 'Chatflow Community',
-                description: chatflow.description
+                description: chatflow.description,
+                requiresClone: chatbotConfig.requiresClone || false // Get from chatbotConfig
             }
             templates.push(template)
         })
@@ -80,7 +82,8 @@ const getAllTemplates = async (user: IUser | undefined) => {
                 categories: getCategories(fileDataObj),
                 type: 'Chatflow',
                 description: fileDataObj?.description || '',
-                iconSrc: fileDataObj?.iconSrc || ''
+                iconSrc: fileDataObj?.iconSrc || '',
+                requiresClone: true // All marketplace templates require cloning
             }
             templates.push(template)
         })
@@ -99,7 +102,8 @@ const getAllTemplates = async (user: IUser | undefined) => {
                 badge: fileDataObj?.badge,
                 usecases: fileDataObj?.usecases,
                 categories: [],
-                templateName: file.split('.json')[0]
+                templateName: file.split('.json')[0],
+                requiresClone: true // All marketplace templates require cloning
             }
             templates.push(template)
         })
@@ -120,7 +124,8 @@ const getAllTemplates = async (user: IUser | undefined) => {
                 categories: fileDataObj?.categories,
                 type: 'Agentflow',
                 description: fileDataObj?.description || '',
-                iconSrc: fileDataObj?.iconSrc || ''
+                iconSrc: fileDataObj?.iconSrc || '',
+                requiresClone: true // All marketplace templates require cloning
             }
             templates.push(template)
         })
@@ -141,7 +146,8 @@ const getAllTemplates = async (user: IUser | undefined) => {
                 categories: fileDataObj?.categories,
                 type: 'AnswerAI',
                 description: fileDataObj?.description || '',
-                iconSrc: fileDataObj?.iconSrc || ''
+                iconSrc: fileDataObj?.iconSrc || '',
+                requiresClone: true // All marketplace templates require cloning
             }
             templates.push(template)
         })
@@ -194,7 +200,11 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
                 }
             }
 
-            return dbResponse
+            const chatbotConfig = JSON.parse(dbResponse.chatbotConfig || '{}')
+            return {
+                ...dbResponse,
+                requiresClone: chatbotConfig.requiresClone || false // Get from chatbotConfig
+            }
         }
 
         // If not found in the database, look for it in the file system
@@ -228,7 +238,8 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
                         category: fileDataObj.category || '',
                         type:
                             path.basename(dir) === 'agentflows' ? 'Agentflow' : path.basename(dir) === 'answerai' ? 'AnswerAI' : 'Chatflow',
-                        iconSrc: fileDataObj.iconSrc || ''
+                        iconSrc: fileDataObj.iconSrc || '',
+                        requiresClone: true // All marketplace templates require cloning
                     }
                     console.log(`Returning result:`, result)
                     return result
