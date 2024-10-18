@@ -18,7 +18,7 @@ import { useAnswers } from './AnswersContext'
 import ChatInput from './ChatInput'
 import DrawerFilters from './DrawerFilters/DrawerFilters'
 
-import type { AppService, AppSettings, Document, Sidekick } from 'types'
+import type { AppSettings, Document, Sidekick } from 'types'
 import SidekickSelect from './SidekickSelect'
 import Drawer from './Drawer'
 
@@ -29,12 +29,13 @@ const DISPLAY_MODES = {
 
 export const ChatDetail = ({
     appSettings,
-
-    sidekicks = []
+    sidekicks = [],
+    session
 }: {
     appSettings: AppSettings
     prompts?: any
     sidekicks?: Sidekick[]
+    session: any
 }) => {
     const {
         error,
@@ -44,32 +45,18 @@ export const ChatDetail = ({
         isLoading,
         regenerateAnswer,
         showFilters,
-        filters,
-        setShowFilters,
-        setSidekick,
-        chatbotConfig
+        chatbotConfig,
+        sidekick: selectedSidekick
     } = useAnswers()
+
     const scrollRef = useRef<HTMLDivElement>(null)
     const [selectedDocuments, setSelectedDocuments] = React.useState<Document[] | undefined>()
 
     const messages = clientMessages || chat?.messages
 
-    const filteredServices = Object.keys((filters?.datasources as Object) ?? {})
-    const services: { [key: string]: AppService } =
-        appSettings?.services
-            ?.filter((service) => filteredServices.includes(service.id))
-            ?.reduce((acc, service) => ({ ...acc, [service.id]: service }), {}) ?? {}
-
-    const handleSidekickSelected = React.useCallback(
-        (value: Sidekick) => {
-            setSidekick(value)
-        },
-        [setSidekick]
-    )
-
     const displayMode = chatbotConfig?.displayMode || DISPLAY_MODES.CHATBOT
     const embeddedUrl = chatbotConfig?.embeddedUrl || ''
-
+    // console.log('chat', chat)
     return (
         <>
             <Box sx={{ display: 'flex', width: '100%' }}>
@@ -91,52 +78,52 @@ export const ChatDetail = ({
                             height: '100%',
                             flex: 1,
                             justifyContent: 'space-between'
-                            // borderLeft: '1px solid rgba(255, 255, 255, 0.12)'
                         }}
                     >
-                        <AppBar
-                            position='static'
-                            sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}
-                            color={'transparent'}
-                            elevation={0}
-                        >
-                            <Toolbar sx={{ px: '16px!important', gap: 1 }}>
-                                <SidekickSelect sidekicks={sidekicks} onSidekickSelected={handleSidekickSelected} />
-                                <Box
-                                    sx={{
-                                        flexGrow: 1,
-                                        display: 'flex',
-                                        gap: 2,
-                                        p: {
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            textTransform: 'capitalize',
-                                            display: '-webkit-box',
-                                            WebkitBoxOrient: 'vertical',
-                                            WebkitLineClamp: '1'
-                                        }
-                                    }}
-                                >
-                                    {chat ? <Typography variant='body1'>{chat?.title ?? chat.id}</Typography> : null}
+                        {selectedSidekick ? (
+                            <AppBar
+                                position='static'
+                                sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}
+                                color={'transparent'}
+                                elevation={0}
+                            >
+                                <Toolbar sx={{ px: '16px!important', gap: 1 }}>
+                                    <SidekickSelect sidekicks={sidekicks} />
+                                    <Box
+                                        sx={{
+                                            flexGrow: 1,
+                                            display: 'flex',
+                                            gap: 2,
+                                            p: {
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                textTransform: 'capitalize',
+                                                display: '-webkit-box',
+                                                WebkitBoxOrient: 'vertical',
+                                                WebkitLineClamp: '1'
+                                            }
+                                        }}
+                                    >
+                                        {chat ? <Typography variant='body1'>{chat?.title ?? chat.id}</Typography> : null}
 
-                                    {journey ? <Typography variant='body2'>{journey?.goal ?? journey?.title}</Typography> : null}
-                                </Box>
+                                        {journey ? <Typography variant='body2'>{journey?.goal ?? journey?.title}</Typography> : null}
+                                    </Box>
 
-                                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                                    {chat ? (
-                                        <IconButton
-                                            size='large'
-                                            edge='start'
-                                            color='inherit'
-                                            aria-label='share'
-                                            component={NextLink}
-                                            href={`?modal=share`}
-                                        >
-                                            <ShareIcon />
-                                        </IconButton>
-                                    ) : null}
+                                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                        {chat ? (
+                                            <IconButton
+                                                size='large'
+                                                edge='start'
+                                                color='inherit'
+                                                aria-label='share'
+                                                component={NextLink}
+                                                href={`?modal=share`}
+                                            >
+                                                <ShareIcon />
+                                            </IconButton>
+                                        ) : null}
 
-                                    {/* {!showFilters ? (
+                                        {/* {!showFilters ? (
                   <Tooltip
                     PopperProps={{ placement: 'top-end' }}
                     title={!Object.keys(services)?.length ? null : <Filters />}>
@@ -171,11 +158,27 @@ export const ChatDetail = ({
                     <ArrowBackIcon />
                   </IconButton>
                 )} */}
-                                </Box>
-                            </Toolbar>
-                        </AppBar>
-
-                        {displayMode === DISPLAY_MODES.CHATBOT ? (
+                                    </Box>
+                                </Toolbar>
+                            </AppBar>
+                        ) : null}
+                        {!selectedSidekick ? (
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    height: '100%',
+                                    width: '100%',
+                                    maxWidth: 1200,
+                                    flexDirection: 'column',
+                                    margin: 'auto'
+                                }}
+                            >
+                                <Typography variant='h4'>What do you want today?</Typography>
+                                <SidekickSelect noDialog sidekicks={sidekicks} />
+                            </Box>
+                        ) : displayMode === DISPLAY_MODES.CHATBOT ? (
                             <>
                                 <Box ref={scrollRef} sx={{ height: '100%', overflow: 'auto', px: 2, py: 3 }}>
                                     <Suspense fallback={<div>Loading...</div>}>

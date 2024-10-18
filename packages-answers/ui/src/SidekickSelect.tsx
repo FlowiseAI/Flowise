@@ -1,3 +1,4 @@
+'use client'
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
     Button,
@@ -37,19 +38,25 @@ import { useRouter } from 'next/navigation'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import marketplacesApi from '@/api/marketplaces'
 import { Sidekick } from './types/sidekick'
+import Fuse from 'fuse.js'
+import { useAnswers } from './AnswersContext'
+
+import { useNavigate, useNavigationState } from '@/utils/navigation'
+import { IconCopy } from '@tabler/icons-react'
 
 // Create a theme that matches shadcn/ui styling
 
 interface SidekickSelectProps {
     onSidekickSelected: (sidekick: Sidekick) => void
     sidekicks?: Sidekick[]
+    noDialog?: boolean
 }
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialog-paper': {
         width: '90vw',
         maxWidth: '1200px',
-        height: '90vh',
+        height: '60vh',
         maxHeight: '800px',
         backgroundColor: theme.palette.background.default
     }
@@ -75,8 +82,8 @@ const SidekickCard = styled(Paper)(({ theme, onClick }) => ({
               cursor: 'pointer',
               '&:hover': {
                   backgroundColor: theme.palette.action.hover,
-                  transform: 'translateY(-2px)',
-                  boxShadow: theme.shadows[4]
+                  transform: 'translateY(-2px)'
+                  //   boxShadow: theme.shadows[4]
               }
           })
 }))
@@ -122,16 +129,38 @@ const CloneButton = styled(Button)(({ theme }) => ({
     zIndex: 1
 }))
 
-const SidekickSelect: React.FC<SidekickSelectProps> = ({ onSidekickSelected, sidekicks: defaultSidekicks = [] }) => {
+const ContentWrapper = styled(Box)(({ theme }) => ({
+    width: '100%',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    height: '90vh',
+    maxHeight: '800px',
+    backgroundColor: theme.palette.background.default,
+    overflowY: 'auto',
+    padding: theme.spacing(2),
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[5]
+}))
+
+const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
+    const { setSidekick, sidekick: selectedSidekick, setSidekick: setSelectedSidekick } = useAnswers()
+
     const { user } = useUser()
 
     const [searchTerm, setSearchTerm] = useState('')
     const [activeTab, setActiveTab] = useState('all')
-    const [open, setOpen] = useState(true)
-    const [selectedSidekick, setSelectedSidekick] = useState<Sidekick | null>(null)
+    const [open, setOpen] = useState(false || noDialog)
+    // const [selectedSidekick, setSelectedSidekick] = useState<Sidekick | null>(null)
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
     const [favorites, setFavorites] = useState<Set<string>>(new Set())
+
+    const [fuse, setFuse] = useState<Fuse<Sidekick> | null>(null)
+
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+
+    const navigate = useNavigate()
+    const [, setNavigationState] = useNavigationState()
 
     useEffect(() => {
         const storedFavorites = localStorage.getItem('favoriteSidekicks')
@@ -139,6 +168,11 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ onSidekickSelected, sid
             setFavorites(new Set(JSON.parse(storedFavorites)))
         }
     }, [])
+
+    useEffect(() => {
+        const timer = setTimeout(() => setSearchTerm(debouncedSearchTerm), 300)
+        return () => clearTimeout(timer)
+    }, [debouncedSearchTerm])
 
     const toggleFavorite = useCallback((sidekick: Sidekick, event: React.MouseEvent) => {
         event.stopPropagation()
@@ -153,8 +187,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ onSidekickSelected, sid
             return newFavorites
         })
     }, [])
-
-    const updateSearchTerm = useCallback((event: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(event.target.value), [])
 
     const fetcher = async (url: string) => {
         try {
@@ -195,11 +227,21 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ onSidekickSelected, sid
     const { sidekicks: allSidekicks = [], categories: chatflowCategories = { top: [], more: [] } } = data
     const combinedSidekicks = useMemo(() => [...allSidekicks, ...marketplaceSidekicks], [allSidekicks, marketplaceSidekicks])
 
+    useEffect(() => {
+        if (combinedSidekicks.length > 0) {
+            const fuseOptions = {
+                keys: ['chatflow.name', 'chatflow.description', 'categories'],
+                threshold: 0.3,
+                includeScore: true
+            }
+            setFuse(new Fuse(combinedSidekicks, fuseOptions))
+        }
+    }, [combinedSidekicks])
     const allCategories = useMemo(() => {
         const allCats = [
             ...chatflowCategories.top,
             ...chatflowCategories.more,
-            ...new Set(marketplaceSidekicks.flatMap((s) => s.categories))
+            ...new Set(marketplaceSidekicks.flatMap((s: Sidekick) => s.categories))
         ].filter(Boolean)
         const uniqueCats = [...new Set(allCats)]
         return {
@@ -232,22 +274,24 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ onSidekickSelected, sid
                 case 'all':
                     return true
                 default:
-                    console.log('FilterByCategory', sidekick.chatflow.categories, sidekick.chatflow.category, activeTab)
                     return sidekick.chatflow.categories?.includes(activeTab) || sidekick.chatflow.category === activeTab
             }
         }
 
-        return combinedSidekicks.filter(
-            (sidekick) =>
-                (sidekick.chatflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    sidekick.chatflow.description?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-                filterByTab(sidekick)
-        )
-    }, [combinedSidekicks, searchTerm, activeTab, favorites])
+        let filtered = combinedSidekicks
+
+        if (searchTerm && fuse) {
+            filtered = fuse.search(searchTerm).map((result) => result.item)
+        }
+
+        filtered = filtered.filter(filterByTab)
+
+        return filtered
+    }, [combinedSidekicks, searchTerm, activeTab, favorites, fuse])
 
     const handleSidekickSelect = (sidekick: Sidekick) => {
         setSelectedSidekick(sidekick)
-        onSidekickSelected(sidekick)
+        setSidekick(sidekick)
         setOpen(false)
 
         const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
@@ -256,6 +300,8 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ onSidekickSelected, sid
     }
 
     const handleMoreClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault()
+        event.stopPropagation()
         setAnchorEl(event.currentTarget)
     }
 
@@ -276,7 +322,155 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ onSidekickSelected, sid
         return topTabs
     }, [allCategories, activeTab])
 
-    console.log({ combinedSidekicks, filteredSidekicks })
+    const handleClone = (sidekick: Sidekick, e: React.MouseEvent) => {
+        e.stopPropagation()
+
+        if (!sidekick) return
+
+        const isAgentCanvas = (sidekick.flowData?.nodes || []).some(
+            (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
+        )
+
+        localStorage.setItem('duplicatedFlowData', JSON.stringify(sidekick.chatflow))
+        const state = {
+            templateData: JSON.stringify(sidekick),
+            parentChatflowId: sidekick.id
+        }
+        if (!user) {
+            const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
+            const loginUrl = `/api/auth/login?returnTo=${redirectUrl}`
+            setNavigationState(state)
+            window.location.href = loginUrl
+        } else {
+            navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, {
+                state
+            })
+        }
+    }
+
+    const content = (
+        <>
+            <Box sx={{ pb: 2 }}>
+                <TextField
+                    key={'search-term-input'}
+                    fullWidth
+                    variant='outlined'
+                    placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
+                    onChange={(e) => setDebouncedSearchTerm(e.target.value)}
+                    InputProps={{
+                        startAdornment: <SearchIcon color='action' />
+                    }}
+                />
+            </Box>
+            <Box>
+                <Tabs
+                    value={activeTab}
+                    onChange={(event, newValue) => {
+                        if (newValue !== null) {
+                            setActiveTab(newValue)
+                        }
+                    }}
+                    variant='scrollable'
+                    scrollButtons='auto'
+                    sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
+                >
+                    <Tab label='All' value='all' disabled={categoryCounts.all === 0} />
+                    <Tab
+                        label='Favorites'
+                        icon={<FavoriteIcon />}
+                        iconPosition='start'
+                        value='favorites'
+                        disabled={categoryCounts.favorites === 0}
+                    />
+                    <Tab
+                        label='Recent'
+                        icon={<AccessTimeIcon />}
+                        iconPosition='start'
+                        value='recent'
+                        disabled={categoryCounts.recent === 0}
+                    />
+                    {visibleTabs.map((category: string) => (
+                        <Tab key={category} label={category} value={category} disabled={categoryCounts[category] === 0} />
+                    ))}
+                    {allCategories.more.length > 0 && (
+                        <Tab
+                            icon={<MoreHorizIcon />}
+                            iconPosition='start'
+                            onClick={handleMoreClick}
+                            sx={{ minWidth: 'auto' }}
+                            disabled={allCategories.more.every((category) => categoryCounts[category] === 0)}
+                            value={null}
+                        />
+                    )}
+                </Tabs>
+                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMoreClose}>
+                    {allCategories.more.map((category: string) => (
+                        <MenuItem key={category} onClick={() => handleCategorySelect(category)} disabled={categoryCounts[category] === 0}>
+                            {category}
+                        </MenuItem>
+                    ))}
+                </Menu>
+                <ScrollableContent key={`scrollable-content-${activeTab}-${searchTerm}`}>
+                    <Grid container spacing={2}>
+                        {filteredSidekicks.map((sidekick) => (
+                            <Grid item xs={12} sm={6} md={4}>
+                                <SidekickCard onClick={sidekick.requiresClone ? undefined : () => handleSidekickSelect(sidekick)}>
+                                    <SidekickHeader sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                        <SidekickTitle variant='h6' sx={{ width: '100%' }}>
+                                            {sidekick.chatflow.name}
+                                        </SidekickTitle>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', width: '100%', gap: 1 }}>
+                                            {sidekick.categories?.length > 0 && sidekick.categories?.map ? (
+                                                <Tooltip title={sidekick.categories.join(', ')}>
+                                                    <Chip
+                                                        // icon={<CategoryIcon />}
+                                                        label={sidekick.categories
+                                                            .map((category: string, index: number) => category.trim())
+                                                            .join(' | ')}
+                                                        size='small'
+                                                        variant='outlined'
+                                                        sx={{ marginRight: 0.5 }}
+                                                    />
+                                                </Tooltip>
+                                            ) : // <Chip icon={<CategoryIcon />} label='Uncategorized' size='small' variant='outlined' />
+                                            null}
+                                            {sidekick.chatflow.isOwner && (
+                                                <Chip label='Owner' size='small' color='primary' variant='outlined' />
+                                            )}
+                                        </Box>
+                                    </SidekickHeader>
+                                    <SidekickDescription variant='body2' color='text.secondary'>
+                                        {sidekick.chatflow.description || 'No description available'}
+                                    </SidekickDescription>
+                                    <SidekickFooter>
+                                        {sidekick.isAvailable && (
+                                            <FavoriteButton onClick={(e) => toggleFavorite(sidekick, e)} color='primary' size='small'>
+                                                {favorites.has(sidekick.id) ? <StarIcon /> : <StarBorderIcon />}
+                                            </FavoriteButton>
+                                        )}
+                                        {sidekick.requiresClone && (
+                                            <CloneButton
+                                                variant='outlined'
+                                                size='small'
+                                                startIcon={<IconCopy />}
+                                                onClick={(e) => handleClone(sidekick, e)}
+                                            >
+                                                Clone
+                                            </CloneButton>
+                                        )}
+                                    </SidekickFooter>
+                                </SidekickCard>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </ScrollableContent>
+            </Box>
+        </>
+    )
+
+    if (noDialog) {
+        return <ContentWrapper>{content}</ContentWrapper>
+    }
 
     return (
         <Box>
@@ -289,124 +483,8 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ onSidekickSelected, sid
                 {selectedSidekick ? selectedSidekick.chatflow.name : 'Select Sidekick'}
             </Button>
             <StyledDialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth='lg' TransitionComponent={Fade}>
-                <DialogTitle sx={{ pb: 0 }}>
-                    <TextField
-                        key={'search-term-input'}
-                        fullWidth
-                        variant='outlined'
-                        placeholder='Search sidekicks...'
-                        onChange={updateSearchTerm}
-                        InputProps={{
-                            startAdornment: <SearchIcon color='action' />
-                        }}
-                    />
-                </DialogTitle>
-                <DialogContent>
-                    <Tabs
-                        value={activeTab}
-                        onChange={(event, newValue) => setActiveTab(newValue)}
-                        variant='scrollable'
-                        scrollButtons='auto'
-                        sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
-                    >
-                        <Tab label='All' value='all' disabled={categoryCounts.all === 0} />
-                        <Tab
-                            label='Favorites'
-                            icon={<FavoriteIcon />}
-                            iconPosition='start'
-                            value='favorites'
-                            disabled={categoryCounts.favorites === 0}
-                        />
-                        <Tab
-                            label='Recent'
-                            icon={<AccessTimeIcon />}
-                            iconPosition='start'
-                            value='recent'
-                            disabled={categoryCounts.recent === 0}
-                        />
-                        {visibleTabs.map((category: string) => (
-                            <Tab key={category} label={category} value={category} disabled={categoryCounts[category] === 0} />
-                        ))}
-                        {allCategories.more.length > 0 && (
-                            <Tab
-                                icon={<MoreHorizIcon />}
-                                iconPosition='start'
-                                onClick={handleMoreClick}
-                                sx={{ minWidth: 'auto' }}
-                                disabled={allCategories.more.every((category) => categoryCounts[category] === 0)}
-                            />
-                        )}
-                    </Tabs>
-                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMoreClose}>
-                        {allCategories.more.map((category: string) => (
-                            <MenuItem
-                                key={category}
-                                onClick={() => handleCategorySelect(category)}
-                                disabled={categoryCounts[category] === 0}
-                            >
-                                {category}
-                            </MenuItem>
-                        ))}
-                    </Menu>
-                    <ScrollableContent key={`scrollable-content-${activeTab}`}>
-                        <Grid container spacing={2}>
-                            {filteredSidekicks.map((sidekick) => (
-                                <Grid item xs={12} sm={6} md={4} key={sidekick.id}>
-                                    <SidekickCard onClick={sidekick.requiresClone ? undefined : () => handleSidekickSelect(sidekick)}>
-                                        <SidekickHeader sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                            <SidekickTitle variant='h6' sx={{ width: '100%' }}>
-                                                {sidekick.chatflow.name}
-                                            </SidekickTitle>
-                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', width: '100%', gap: 1 }}>
-                                                {sidekick.categories?.length > 0 && sidekick.categories?.map ? (
-                                                    <Tooltip title={sidekick.categories.join(', ')}>
-                                                        <Chip
-                                                            // icon={<CategoryIcon />}
-                                                            label={sidekick.categories
-                                                                .map((category: string, index: number) => category.trim())
-                                                                .join(' | ')}
-                                                            size='small'
-                                                            variant='outlined'
-                                                            sx={{ marginRight: 0.5 }}
-                                                        />
-                                                    </Tooltip>
-                                                ) : // <Chip icon={<CategoryIcon />} label='Uncategorized' size='small' variant='outlined' />
-                                                null}
-                                                {sidekick.chatflow.isOwner && (
-                                                    <Chip label='Owner' size='small' color='primary' variant='outlined' />
-                                                )}
-                                            </Box>
-                                        </SidekickHeader>
-                                        <SidekickDescription variant='body2' color='text.secondary'>
-                                            {sidekick.chatflow.description || 'No description available'}
-                                        </SidekickDescription>
-                                        <SidekickFooter>
-                                            {sidekick.isAvailable && (
-                                                <FavoriteButton onClick={(e) => toggleFavorite(sidekick, e)} color='primary' size='small'>
-                                                    {favorites.has(sidekick.id) ? <StarIcon /> : <StarBorderIcon />}
-                                                </FavoriteButton>
-                                            )}
-                                            {sidekick.requiresClone && (
-                                                <CloneButton
-                                                    variant='outlined'
-                                                    size='small'
-                                                    startIcon={<ContentCopyIcon />}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        // TODO: Implement cloning logic
-                                                        console.log('Clone chatflow:', sidekick.id)
-                                                    }}
-                                                >
-                                                    Clone
-                                                </CloneButton>
-                                            )}
-                                        </SidekickFooter>
-                                    </SidekickCard>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </ScrollableContent>
-                </DialogContent>
+                <DialogTitle sx={{ pb: 0 }}>Select a Sidekick</DialogTitle>
+                <DialogContent>{content}</DialogContent>
             </StyledDialog>
         </Box>
     )

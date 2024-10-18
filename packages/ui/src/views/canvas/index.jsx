@@ -58,6 +58,9 @@ import { usePrompt } from '@/utils/usePrompt'
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
+// Add prop validation for 'chatflowid'
+import PropTypes from 'prop-types'
+
 // ==============================|| CANVAS ||============================== //
 const ReactFlow = dynamic(() => import('reactflow').then((mod) => mod.default), { ssr: false })
 
@@ -67,6 +70,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
 
     const { state } = useLocation()
     const templateData = state?.templateData ? JSON.parse(state.templateData) : ''
+    console.log('Template', { templateData })
     const templateFlowData = templateData?.flowData ? templateData.flowData : ''
     const templateName = state ? state.templateName : ''
     const parentChatflowId = state && isNaN(state.parentChatflowId) ? state.parentChatflowId : undefined
@@ -89,8 +93,18 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     // ==============================|| Snackbar ||============================== //
 
     useNotifier()
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+    const enqueueSnackbar = useCallback(
+        (message, options) => {
+            dispatch(enqueueSnackbarAction(message, options))
+        },
+        [dispatch]
+    )
+    const closeSnackbar = useCallback(
+        (key) => {
+            dispatch(closeSnackbarAction(key))
+        },
+        [dispatch]
+    )
 
     // ==============================|| ReactFlow ||============================== //
 
@@ -111,55 +125,61 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
 
     // ==============================|| Events & Actions ||============================== //
-    const setDirty = () => {
-        dispatch({ type: SET_DIRTY })
-    }
-    const onConnect = useCallback((params) => {
-        const newEdge = {
-            ...params,
-            type: 'buttonedge',
-            id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
-        }
+    const setDirty = useCallback(
+        (value) => {
+            dispatch({ type: SET_DIRTY, value })
+        },
+        [dispatch]
+    )
+    const onConnect = useCallback(
+        (params) => {
+            const newEdge = {
+                ...params,
+                type: 'buttonedge',
+                id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
+            }
 
-        const targetNodeId = params.targetHandle.split('-')[0]
-        const sourceNodeId = params.sourceHandle.split('-')[0]
-        const targetInput = params.targetHandle.split('-')[2]
+            const targetNodeId = params.targetHandle.split('-')[0]
+            const sourceNodeId = params.sourceHandle.split('-')[0]
+            const targetInput = params.targetHandle.split('-')[2]
 
-        setNodes((nds) =>
-            nds.map((node) => {
-                if (node.id === targetNodeId) {
-                    setTimeout(() => setDirty(), 0)
-                    let value
-                    const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
-                    const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+            setNodes((nds) =>
+                nds.map((node) => {
+                    if (node.id === targetNodeId) {
+                        setTimeout(() => setDirty(), 0)
+                        let value
+                        const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
+                        const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
 
-                    if (inputAnchor && inputAnchor.list) {
-                        const newValues = node.data.inputs[targetInput] || []
-                        if (targetInput === 'tools') {
-                            rearrangeToolsOrdering(newValues, sourceNodeId)
+                        if (inputAnchor && inputAnchor.list) {
+                            const newValues = node.data.inputs[targetInput] || []
+                            if (targetInput === 'tools') {
+                                rearrangeToolsOrdering(newValues, sourceNodeId)
+                            } else {
+                                newValues.push(`{{${sourceNodeId}.data.instance}}`)
+                            }
+                            value = newValues
+                        } else if (inputParam && inputParam.acceptVariable) {
+                            value = node.data.inputs[targetInput] || ''
                         } else {
-                            newValues.push(`{{${sourceNodeId}.data.instance}}`)
+                            value = `{{${sourceNodeId}.data.instance}}`
                         }
-                        value = newValues
-                    } else if (inputParam && inputParam.acceptVariable) {
-                        value = node.data.inputs[targetInput] || ''
-                    } else {
-                        value = `{{${sourceNodeId}.data.instance}}`
-                    }
-                    node.data = {
-                        ...node.data,
-                        inputs: {
-                            ...node.data.inputs,
-                            [targetInput]: value
+                        node.data = {
+                            ...node.data,
+                            inputs: {
+                                ...node.data.inputs,
+                                [targetInput]: value
+                            }
                         }
                     }
-                }
-                return node
-            })
-        )
+                    return node
+                })
+            )
 
-        setEdges((eds) => addEdge(newEdge, eds))
-    }, [])
+            setEdges((eds) => addEdge(newEdge, eds))
+        },
+        [setDirty, setNodes, setEdges]
+    )
 
     const handleLoadFlow = useCallback(
         async (file) => {
@@ -609,9 +629,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }, [])
 
     useEffect(() => {
-
-        if (templateFlowData && templateFlowData.includes('"nodes": [') && templateFlowData.includes('"edges": [')) {
-
+        if (templateFlowData?.includes && templateFlowData.includes('"nodes": [') && templateFlowData.includes('"edges": [')) {
             handleLoadFlow(templateFlowData)
         }
 
@@ -715,5 +733,9 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
         </>
     )
 })
+
+Canvas.propTypes = {
+    chatflowid: PropTypes.string
+}
 
 export default Canvas

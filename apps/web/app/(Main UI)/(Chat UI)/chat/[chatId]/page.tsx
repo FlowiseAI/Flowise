@@ -75,7 +75,7 @@ const ChatDetailPage = async ({ params }: any) => {
         }
         // @ts-ignore
         chat.messages = await getMessages({ user, chat })
-
+        console.log('chat', chat)
         // @ts-expect-error Async Server Component
         return <Chat {...params} chat={chat} journey={(chat as any)?.journey} sidekicks={sidekicks} />
     } catch (error) {
