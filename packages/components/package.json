@@ -24,7 +24,7 @@
         "@aws-sdk/client-bedrock-runtime": "3.422.0",
         "@aws-sdk/client-dynamodb": "^3.360.0",
         "@aws-sdk/client-s3": "^3.427.0",
-        "@datastax/astra-db-ts": "^0.1.2",
+        "@datastax/astra-db-ts": "1.5.0",
         "@dqbd/tiktoken": "^1.0.7",
         "@e2b/code-interpreter": "^0.0.5",
         "@elastic/elasticsearch": "^8.9.0",
