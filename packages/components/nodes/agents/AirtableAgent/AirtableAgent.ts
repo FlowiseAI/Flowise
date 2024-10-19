@@ -28,7 +28,7 @@ class Airtable_Agents implements INode {
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'airtable.svg'
-        this.description = 'Agent used to to answer queries on Airtable table'
+        this.description = 'Agent used to answer queries on Airtable table'
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.credential = {
             label: 'Connect Credential',
