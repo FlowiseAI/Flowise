@@ -28,6 +28,7 @@ class HtmlToMarkdownTextSplitter_TextSplitters implements INode {
                 label: 'Chunk Size',
                 name: 'chunkSize',
                 type: 'number',
+                description: 'Number of characters in each chunk. Default is 1000.',
                 default: 1000,
                 optional: true
             },
@@ -35,6 +36,8 @@ class HtmlToMarkdownTextSplitter_TextSplitters implements INode {
                 label: 'Chunk Overlap',
                 name: 'chunkOverlap',
                 type: 'number',
+                description: 'Number of characters to overlap between chunks. Default is 200.',
+                default: 200,
                 optional: true
             }
         ]

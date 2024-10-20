@@ -1,7 +1,7 @@
-import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
+import { Embeddings } from '@langchain/core/embeddings'
+import { BaseStore } from '@langchain/core/stores'
 import { CacheBackedEmbeddings } from 'langchain/embeddings/cache_backed'
-import { Embeddings } from 'langchain/embeddings/base'
-import { BaseStore } from 'langchain/schema/storage'
+import { getBaseClasses, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 
 class InMemoryEmbeddingCache implements INode {
     label: string

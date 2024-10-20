@@ -1,4 +1,4 @@
-import { VectorStore } from 'langchain/vectorstores/base'
+import { VectorStore } from '@langchain/core/vectorstores'
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { handleEscapeCharacters } from '../../../src/utils'
 
@@ -51,11 +51,13 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
             {
                 label: 'Document',
                 name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
                 baseClasses: [...this.baseClasses, 'json']
             },
             {
                 label: 'Text',
                 name: 'text',
+                description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
         ]
@@ -68,12 +70,19 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
         const output = nodeData.outputs?.output as string
 
         const topK = (vectorStore as any)?.k ?? 4
+        const _filter = (vectorStore as any)?.filter
 
-        const docs = await vectorStore.similaritySearchWithScore(query ?? input, topK)
+        // If it is already pre-defined in lc_kwargs, then don't pass it again
+        const filter = vectorStore.lc_kwargs.filter ? undefined : _filter
+        if (vectorStore.lc_kwargs.filter) {
+            ;(vectorStore as any).filter = vectorStore.lc_kwargs.filter
+        }
+
+        const docs = await vectorStore.similaritySearchWithScore(query ?? input, topK, filter)
         // eslint-disable-next-line no-console
         console.log('\x1b[94m\x1b[1m\n*****VectorStore Documents*****\n\x1b[0m\x1b[0m')
         // eslint-disable-next-line no-console
-        console.log(docs)
+        console.log(JSON.stringify(docs, null, 2))
 
         if (output === 'document') {
             let finaldocs = []

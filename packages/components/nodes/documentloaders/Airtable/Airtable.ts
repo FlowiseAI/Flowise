@@ -1,9 +1,11 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import axios from 'axios'
+import { omit } from 'lodash'
+import { Document } from '@langchain/core/documents'
 import { TextSplitter } from 'langchain/text_splitter'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
-import { Document } from 'langchain/document'
-import axios from 'axios'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { IDocument, ICommonObject, INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
+import { handleEscapeCharacters } from '../../../src'
 
 class Airtable_DocumentLoaders implements INode {
     label: string
@@ -16,11 +18,12 @@ class Airtable_DocumentLoaders implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs?: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Airtable'
         this.name = 'airtable'
-        this.version = 3.0
+        this.version = 3.02
         this.type = 'Document'
         this.icon = 'airtable.svg'
         this.category = 'Document Loaders'
@@ -93,11 +96,47 @@ class Airtable_DocumentLoaders implements INode {
                 description: 'Number of results to return. Ignored when Return All is enabled.'
             },
             {
-                label: 'Metadata',
+                label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
+                description: 'Additional metadata to be added to the extracted documents',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Omit Metadata Keys',
+                name: 'omitMetadataKeys',
+                type: 'string',
+                rows: 4,
+                description:
+                    'Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field',
+                placeholder: 'key1, key2, key3.nestedKey1',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Filter By Formula',
+                name: 'filterByFormula',
+                type: 'string',
+                placeholder: 'NOT({Id} = "")',
+                optional: true,
+                additionalParams: true,
+                description:
+                    'A formula used to filter records. The formula will be evaluated for each record, and if the result is not 0, false, "", NaN, [], or #Error! the record will be included in the response.'
+            }
+        ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
             }
         ]
     }
@@ -111,6 +150,13 @@ class Airtable_DocumentLoaders implements INode {
         const limit = nodeData.inputs?.limit as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const filterByFormula = nodeData.inputs?.filterByFormula as string
+
+        let omitMetadataKeys: string[] = []
+        if (_omitMetadataKeys) {
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
@@ -122,7 +168,8 @@ class Airtable_DocumentLoaders implements INode {
             fields,
             returnAll,
             accessToken,
-            limit: limit ? parseInt(limit, 10) : 100
+            limit: limit ? parseInt(limit, 10) : 100,
+            filterByFormula
         }
 
         const loader = new AirtableLoader(airtableOptions)
@@ -131,28 +178,55 @@ class Airtable_DocumentLoaders implements INode {
             throw new Error('Base ID and Table ID must be provided.')
         }
 
-        let docs = []
+        let docs: IDocument[] = []
 
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
         } else {
             docs = await loader.load()
         }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata:
+                    _omitMetadataKeys === '*'
+                        ? {
+                              ...parsedMetadata
+                          }
+                        : omit(
+                              {
+                                  ...doc.metadata,
+                                  ...parsedMetadata
+                              },
+                              omitMetadataKeys
+                          )
+            }))
+        } else {
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata:
+                    _omitMetadataKeys === '*'
+                        ? {}
+                        : omit(
+                              {
+                                  ...doc.metadata
+                              },
+                              omitMetadataKeys
+                          )
+            }))
+        }
+
+        const output = nodeData.outputs?.output as string
+
+        if (output === 'text') {
+            let finalText = ''
             for (const doc of docs) {
-                const newdoc = {
-                    ...doc,
-                    metadata: {
-                        ...doc.metadata,
-                        ...parsedMetadata
-                    }
-                }
-                finaldocs.push(newdoc)
+                finalText += `${doc.pageContent}\n`
             }
-            return finaldocs
+            return handleEscapeCharacters(finalText, false)
         }
 
         return docs
@@ -167,6 +241,7 @@ interface AirtableLoaderParams {
     fields?: string[]
     limit?: number
     returnAll?: boolean
+    filterByFormula?: string
 }
 
 interface AirtableLoaderRequest {
@@ -174,6 +249,7 @@ interface AirtableLoaderRequest {
     view: string | undefined
     fields?: string[]
     offset?: string
+    filterByFormula?: string
 }
 
 interface AirtableLoaderResponse {
@@ -202,7 +278,18 @@ class AirtableLoader extends BaseDocumentLoader {
 
     public readonly returnAll: boolean
 
-    constructor({ baseId, tableId, viewId, fields = [], accessToken, limit = 100, returnAll = false }: AirtableLoaderParams) {
+    public readonly filterByFormula?: string
+
+    constructor({
+        baseId,
+        tableId,
+        viewId,
+        fields = [],
+        accessToken,
+        limit = 100,
+        returnAll = false,
+        filterByFormula
+    }: AirtableLoaderParams) {
         super()
         this.baseId = baseId
         this.tableId = tableId
@@ -211,9 +298,10 @@ class AirtableLoader extends BaseDocumentLoader {
         this.accessToken = accessToken
         this.limit = limit
         this.returnAll = returnAll
+        this.filterByFormula = filterByFormula
     }
 
-    public async load(): Promise<Document[]> {
+    public async load(): Promise<IDocument[]> {
         if (this.returnAll) {
             return this.loadAll()
         }
@@ -238,7 +326,7 @@ class AirtableLoader extends BaseDocumentLoader {
         }
     }
 
-    private createDocumentFromPage(page: AirtableLoaderPage): Document {
+    private createDocumentFromPage(page: AirtableLoaderPage): IDocument {
         // Generate the URL
         const pageUrl = `https://api.airtable.com/v0/${this.baseId}/${this.tableId}/${page.id}`
 
@@ -251,7 +339,7 @@ class AirtableLoader extends BaseDocumentLoader {
         })
     }
 
-    private async loadLimit(): Promise<Document[]> {
+    private async loadLimit(): Promise<IDocument[]> {
         let data: AirtableLoaderRequest = {
             maxRecords: this.limit,
             view: this.viewId
@@ -259,6 +347,10 @@ class AirtableLoader extends BaseDocumentLoader {
 
         if (this.fields.length > 0) {
             data.fields = this.fields
+        }
+
+        if (this.filterByFormula) {
+            data.filterByFormula = this.filterByFormula
         }
 
         let response: AirtableLoaderResponse
@@ -282,13 +374,17 @@ class AirtableLoader extends BaseDocumentLoader {
         return returnPages.map((page) => this.createDocumentFromPage(page))
     }
 
-    private async loadAll(): Promise<Document[]> {
+    private async loadAll(): Promise<IDocument[]> {
         let data: AirtableLoaderRequest = {
             view: this.viewId
         }
 
         if (this.fields.length > 0) {
             data.fields = this.fields
+        }
+
+        if (this.filterByFormula) {
+            data.filterByFormula = this.filterByFormula
         }
 
         let response: AirtableLoaderResponse

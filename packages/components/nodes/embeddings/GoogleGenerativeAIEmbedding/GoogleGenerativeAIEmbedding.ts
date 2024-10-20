@@ -1,7 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { GoogleGenerativeAIEmbeddings, GoogleGenerativeAIEmbeddingsParams } from '@langchain/google-genai'
 import { TaskType } from '@google/generative-ai'
+import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
 class GoogleGenerativeAIEmbedding_Embeddings implements INode {
     label: string
@@ -18,7 +19,7 @@ class GoogleGenerativeAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'GoogleGenerativeAI Embeddings'
         this.name = 'googleGenerativeAiEmbeddings'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'GoogleGenerativeAiEmbeddings'
         this.icon = 'GoogleGemini.svg'
         this.category = 'Embeddings'
@@ -36,13 +37,8 @@ class GoogleGenerativeAIEmbedding_Embeddings implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'embedding-001',
-                        name: 'embedding-001'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'embedding-001'
             },
             {
@@ -61,6 +57,13 @@ class GoogleGenerativeAIEmbedding_Embeddings implements INode {
                 default: 'TASK_TYPE_UNSPECIFIED'
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.EMBEDDING, 'googleGenerativeAiEmbeddings')
+        }
     }
 
     // eslint-disable-next-line unused-imports/no-unused-vars

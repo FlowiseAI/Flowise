@@ -1,12 +1,14 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { SqlDatabaseChain, SqlDatabaseChainInput, DEFAULT_SQL_DATABASE_PROMPT } from 'langchain/chains/sql_db'
-import { getBaseClasses, getInputVariables } from '../../../src/utils'
-import { DataSource } from 'typeorm'
-import { SqlDatabase } from 'langchain/sql_db'
-import { BaseLanguageModel } from 'langchain/base_language'
-import { PromptTemplate, PromptTemplateInput } from 'langchain/prompts'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { DataSourceOptions } from 'typeorm/data-source'
+import { DataSource } from 'typeorm'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { PromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
+import { SqlDatabaseChain, SqlDatabaseChainInput, DEFAULT_SQL_DATABASE_PROMPT } from 'langchain/chains/sql_db'
+import { SqlDatabase } from 'langchain/sql_db'
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
+import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { getBaseClasses, getInputVariables } from '../../../src/utils'
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
+import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 type DatabaseType = 'sqlite' | 'postgres' | 'mssql' | 'mysql'
 
@@ -24,7 +26,7 @@ class SqlDatabaseChain_Chains implements INode {
     constructor() {
         this.label = 'Sql Database Chain'
         this.name = 'sqlDatabaseChain'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'SqlDatabaseChain'
         this.icon = 'sqlchain.svg'
         this.category = 'Chains'
@@ -64,13 +66,13 @@ class SqlDatabaseChain_Chains implements INode {
                 label: 'Connection string or file path (sqlite only)',
                 name: 'url',
                 type: 'string',
-                placeholder: '1270.0.0.1:5432/chinook'
+                placeholder: '127.0.0.1:5432/chinook'
             },
             {
                 label: 'Include Tables',
                 name: 'includesTables',
                 type: 'string',
-                description: 'Tables to include for queries, seperated by comma. Can only use Include Tables or Ignore Tables',
+                description: 'Tables to include for queries, separated by comma. Can only use Include Tables or Ignore Tables',
                 placeholder: 'table1, table2',
                 additionalParams: true,
                 optional: true
@@ -79,7 +81,7 @@ class SqlDatabaseChain_Chains implements INode {
                 label: 'Ignore Tables',
                 name: 'ignoreTables',
                 type: 'string',
-                description: 'Tables to ignore for queries, seperated by comma. Can only use Ignore Tables or Include Tables',
+                description: 'Tables to ignore for queries, separated by comma. Can only use Ignore Tables or Include Tables',
                 placeholder: 'table1, table2',
                 additionalParams: true,
                 optional: true
@@ -115,6 +117,14 @@ class SqlDatabaseChain_Chains implements INode {
                 placeholder: DEFAULT_SQL_DATABASE_PROMPT.template + DEFAULT_SQL_DATABASE_PROMPT.templateFormat,
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Input Moderation',
+                description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
+                name: 'inputModeration',
+                type: 'Moderation',
+                optional: true,
+                list: true
             }
         ]
     }
@@ -144,7 +154,7 @@ class SqlDatabaseChain_Chains implements INode {
         return chain
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string> {
+    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const databaseType = nodeData.inputs?.database as DatabaseType
         const model = nodeData.inputs?.model as BaseLanguageModel
         const url = nodeData.inputs?.url as string
@@ -155,6 +165,25 @@ class SqlDatabaseChain_Chains implements INode {
         const sampleRowsInTableInfo = nodeData.inputs?.sampleRowsInTableInfo as number
         const topK = nodeData.inputs?.topK as number
         const customPrompt = nodeData.inputs?.customPrompt as string
+        const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
+
+        if (moderations && moderations.length > 0) {
+            try {
+                // Use the output of the moderation chain as input for the Sql Database Chain
+                input = await checkInputs(moderations, input)
+            } catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+                if (shouldStreamResponse) {
+                    streamResponse(sseStreamer, chatId, e.message)
+                }
+                // streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                return formatResponse(e.message)
+            }
+        }
 
         const chain = await getSQLDBChain(
             databaseType,
@@ -169,8 +198,9 @@ class SqlDatabaseChain_Chains implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
+        if (shouldStreamResponse) {
+            const handler = new CustomChainHandler(sseStreamer, chatId, 2)
+
             const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
             return res
         } else {

@@ -1,10 +1,11 @@
 import { flatten } from 'lodash'
 import { Client, ClientOptions } from '@elastic/elasticsearch'
-import { Document } from 'langchain/document'
-import { Embeddings } from 'langchain/embeddings/base'
-import { ElasticClientArgs, ElasticVectorSearch } from 'langchain/vectorstores/elasticsearch'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { Document } from '@langchain/core/documents'
+import { Embeddings } from '@langchain/core/embeddings'
+import { ElasticClientArgs, ElasticVectorSearch } from '@langchain/community/vectorstores/elasticsearch'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { index } from '../../../src/indexing'
 
 class Elasticsearch_VectorStores implements INode {
     label: string
@@ -23,14 +24,13 @@ class Elasticsearch_VectorStores implements INode {
     constructor() {
         this.label = 'Elasticsearch'
         this.name = 'elasticsearch'
-        this.version = 1.0
+        this.version = 2.0
         this.description =
             'Upsert embedded data and perform similarity search upon query using Elasticsearch, a distributed search and analytics engine'
         this.type = 'Elasticsearch'
         this.icon = 'elasticsearch.png'
         this.category = 'Vector Stores'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -49,6 +49,13 @@ class Elasticsearch_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
+            },
+            {
+                label: 'Record Manager',
+                name: 'recordManager',
+                type: 'RecordManager',
+                description: 'Keep track of the record to prevent duplication',
+                optional: true
             },
             {
                 label: 'Index Name',
@@ -105,13 +112,14 @@ class Elasticsearch_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const endPoint = getCredentialParam('endpoint', credentialData, nodeData)
             const cloudId = getCredentialParam('cloudId', credentialData, nodeData)
             const indexName = nodeData.inputs?.indexName as string
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const similarityMeasure = nodeData.inputs?.similarityMeasure as string
+            const recordManager = nodeData.inputs?.recordManager
 
             const docs = nodeData.inputs?.document as Document[]
             const flattenDocs = docs && docs.length ? flatten(docs) : []
@@ -134,7 +142,53 @@ class Elasticsearch_VectorStores implements INode {
             const vectorStore = new ElasticVectorSearch(embeddings, elasticSearchClientArgs)
 
             try {
-                await vectorStore.addDocuments(finalDocs)
+                if (recordManager) {
+                    const vectorStore = await ElasticVectorSearch.fromExistingIndex(embeddings, elasticSearchClientArgs)
+                    await recordManager.createSchema()
+                    const res = await index({
+                        docsSource: finalDocs,
+                        recordManager,
+                        vectorStore,
+                        options: {
+                            cleanup: recordManager?.cleanup,
+                            sourceIdKey: recordManager?.sourceIdKey ?? 'source',
+                            vectorStoreName: indexName
+                        }
+                    })
+                    return res
+                } else {
+                    await vectorStore.addDocuments(finalDocs)
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const indexName = nodeData.inputs?.indexName as string
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const similarityMeasure = nodeData.inputs?.similarityMeasure as string
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const endPoint = getCredentialParam('endpoint', credentialData, nodeData)
+            const cloudId = getCredentialParam('cloudId', credentialData, nodeData)
+
+            const elasticSearchClientArgs = prepareClientArgs(endPoint, cloudId, credentialData, nodeData, similarityMeasure, indexName)
+            const vectorStore = new ElasticVectorSearch(embeddings, elasticSearchClientArgs)
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = indexName
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await vectorStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    await vectorStore.delete({ ids })
+                }
             } catch (e) {
                 throw new Error(e)
             }

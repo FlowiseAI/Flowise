@@ -1,7 +1,7 @@
+import { BaseCache } from '@langchain/core/caches'
+import { HFInput, HuggingFaceInference } from './core'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { HFInput, HuggingFaceInference } from './core'
-import { BaseCache } from 'langchain/schema'
 
 class ChatHuggingFace_ChatModels implements INode {
     label: string
@@ -18,7 +18,7 @@ class ChatHuggingFace_ChatModels implements INode {
     constructor() {
         this.label = 'ChatHuggingFace'
         this.name = 'chatHuggingFace'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatHuggingFace'
         this.icon = 'HuggingFace.svg'
         this.category = 'Chat Models'
@@ -42,8 +42,7 @@ class ChatHuggingFace_ChatModels implements INode {
                 name: 'model',
                 type: 'string',
                 description: 'If using own inference endpoint, leave this blank',
-                placeholder: 'gpt2',
-                optional: true
+                placeholder: 'gpt2'
             },
             {
                 label: 'Endpoint',
@@ -97,6 +96,16 @@ class ChatHuggingFace_ChatModels implements INode {
                 description: 'Frequency Penalty parameter may not apply to certain model. Please check available model parameters',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Stop Sequence',
+                name: 'stop',
+                type: 'string',
+                rows: 4,
+                placeholder: 'AI assistant:',
+                description: 'Sets the stop sequences to use. Use comma to seperate different sequences.',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -110,6 +119,7 @@ class ChatHuggingFace_ChatModels implements INode {
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const endpoint = nodeData.inputs?.endpoint as string
         const cache = nodeData.inputs?.cache as BaseCache
+        const stop = nodeData.inputs?.stop as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const huggingFaceApiKey = getCredentialParam('huggingFaceApiKey', credentialData, nodeData)
@@ -124,7 +134,11 @@ class ChatHuggingFace_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (hfTopK) obj.topK = parseFloat(hfTopK)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (endpoint) obj.endpoint = endpoint
+        if (endpoint) obj.endpointUrl = endpoint
+        if (stop) {
+            const stopSequences = stop.split(',')
+            obj.stopSequences = stopSequences
+        }
 
         const huggingFace = new HuggingFaceInference(obj)
         if (cache) huggingFace.cache = cache

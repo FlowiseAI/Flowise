@@ -1,13 +1,15 @@
 {
-    "description": "An agent that uses ReAct logic to decide what action to take",
+    "description": "An agent that uses ReAct (Reason + Act) logic to decide what action to take",
+    "usecases": ["Agent"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
             "height": 143,
             "id": "calculator_1",
             "position": {
-                "x": 664.1366474718458,
-                "y": 123.16419000640141
+                "x": 466.86432329033937,
+                "y": 235.98158789908442
             },
             "type": "customNode",
             "data": {
@@ -34,72 +36,23 @@
                 "selected": false
             },
             "positionAbsolute": {
-                "x": 664.1366474718458,
-                "y": 123.16419000640141
+                "x": 466.86432329033937,
+                "y": 235.98158789908442
             },
             "selected": false,
             "dragging": false
         },
         {
-            "width": 300,
-            "height": 277,
-            "id": "serper_0",
-            "position": {
-                "x": 330.964079024626,
-                "y": 109.83185250619351
-            },
-            "type": "customNode",
-            "data": {
-                "id": "serper_0",
-                "label": "Serper",
-                "version": 1,
-                "name": "serper",
-                "type": "Serper",
-                "baseClasses": ["Serper", "Tool", "StructuredTool"],
-                "category": "Tools",
-                "description": "Wrapper around Serper.dev - Google Search API",
-                "inputParams": [
-                    {
-                        "label": "Connect Credential",
-                        "name": "credential",
-                        "type": "credential",
-                        "credentialNames": ["serperApi"],
-                        "id": "serper_0-input-credential-credential"
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {},
-                "outputAnchors": [
-                    {
-                        "id": "serper_0-output-serper-Serper|Tool|StructuredTool",
-                        "name": "serper",
-                        "label": "Serper",
-                        "type": "Serper | Tool | StructuredTool"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 330.964079024626,
-                "y": 109.83185250619351
-            },
-            "dragging": false
-        },
-        {
-            "width": 300,
-            "height": 574,
             "id": "chatOpenAI_0",
             "position": {
-                "x": -27.71074046118335,
-                "y": 243.62715178281059
+                "x": 81.2222202723384,
+                "y": 59.395597724017364
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 3,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -116,63 +69,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-4",
-                                "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-turbo-preview",
-                                "name": "gpt-4-turbo-preview"
-                            },
-                            {
-                                "label": "gpt-4-0125-preview",
-                                "name": "gpt-4-0125-preview"
-                            },
-                            {
-                                "label": "gpt-4-1106-preview",
-                                "name": "gpt-4-1106-preview"
-                            },
-                            {
-                                "label": "gpt-4-vision-preview",
-                                "name": "gpt-4-vision-preview"
-                            },
-                            {
-                                "label": "gpt-4-0613",
-                                "name": "gpt-4-0613"
-                            },
-                            {
-                                "label": "gpt-4-32k",
-                                "name": "gpt-4-32k"
-                            },
-                            {
-                                "label": "gpt-4-32k-0613",
-                                "name": "gpt-4-32k-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo",
-                                "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-1106",
-                                "name": "gpt-3.5-turbo-1106"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0613",
-                                "name": "gpt-3.5-turbo-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k",
-                                "name": "gpt-3.5-turbo-16k"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k-0613",
-                                "name": "gpt-3.5-turbo-16k-0613"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_0-input-modelName-options"
                     },
                     {
@@ -244,6 +143,39 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
                     }
                 ],
                 "inputAnchors": [
@@ -265,115 +197,258 @@
                     "presencePenalty": "",
                     "timeout": "",
                     "basepath": "",
-                    "baseOptions": ""
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
                 },
                 "outputAnchors": [
                     {
                         "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
                         "name": "chatOpenAI",
                         "label": "ChatOpenAI",
+                        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
                         "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
+            "width": 300,
+            "height": 670,
             "selected": false,
             "positionAbsolute": {
-                "x": -27.71074046118335,
-                "y": 243.62715178281059
+                "x": 81.2222202723384,
+                "y": 59.395597724017364
             },
             "dragging": false
         },
         {
-            "width": 300,
-            "height": 280,
-            "id": "mrklAgentChat_0",
+            "id": "bufferMemory_0",
             "position": {
-                "x": 1090.2058867451212,
-                "y": 423.2174695788541
+                "x": 467.5487883440105,
+                "y": 425.5853290438628
             },
             "type": "customNode",
             "data": {
-                "id": "mrklAgentChat_0",
-                "label": "ReAct Agent for Chat Models",
+                "id": "bufferMemory_0",
+                "label": "Buffer Memory",
+                "version": 2,
+                "name": "bufferMemory",
+                "type": "BufferMemory",
+                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Retrieve chat messages stored in database",
+                "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "bufferMemory_0-input-memoryKey-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+                        "name": "bufferMemory",
+                        "label": "BufferMemory",
+                        "description": "Retrieve chat messages stored in database",
+                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 253,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 467.5487883440105,
+                "y": 425.5853290438628
+            },
+            "dragging": false
+        },
+        {
+            "id": "googleCustomSearch_0",
+            "position": {
+                "x": 468.5319676071002,
+                "y": -72.88655734265808
+            },
+            "type": "customNode",
+            "data": {
+                "id": "googleCustomSearch_0",
+                "label": "Google Custom Search",
                 "version": 1,
-                "name": "mrklAgentChat",
+                "name": "googleCustomSearch",
+                "type": "GoogleCustomSearchAPI",
+                "baseClasses": ["GoogleCustomSearchAPI", "Tool", "StructuredTool", "Runnable"],
+                "category": "Tools",
+                "description": "Wrapper around Google Custom Search API - a real-time API to access Google search results",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["googleCustomSearchApi"],
+                        "id": "googleCustomSearch_0-input-credential-credential"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable",
+                        "name": "googleCustomSearch",
+                        "label": "GoogleCustomSearchAPI",
+                        "description": "Wrapper around Google Custom Search API - a real-time API to access Google search results",
+                        "type": "GoogleCustomSearchAPI | Tool | StructuredTool | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 276,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 468.5319676071002,
+                "y": -72.88655734265808
+            },
+            "dragging": false
+        },
+        {
+            "id": "reactAgentChat_0",
+            "position": {
+                "x": 880.48407884172,
+                "y": 237.79808979371387
+            },
+            "type": "customNode",
+            "data": {
+                "id": "reactAgentChat_0",
+                "label": "ReAct Agent for Chat Models",
+                "version": 4,
+                "name": "reactAgentChat",
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
                 "category": "Agents",
                 "description": "Agent that uses the ReAct logic to decide what action to take, optimized to be used with Chat Models",
-                "inputParams": [],
+                "inputParams": [
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "reactAgentChat_0-input-maxIterations-number"
+                    }
+                ],
                 "inputAnchors": [
                     {
                         "label": "Allowed Tools",
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
-                        "id": "mrklAgentChat_0-input-tools-Tool"
+                        "id": "reactAgentChat_0-input-tools-Tool"
                     },
                     {
-                        "label": "Language Model",
+                        "label": "Chat Model",
                         "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "mrklAgentChat_0-input-model-BaseLanguageModel"
+                        "type": "BaseChatModel",
+                        "id": "reactAgentChat_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "reactAgentChat_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "reactAgentChat_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
-                    "tools": ["{{calculator_1.data.instance}}", "{{serper_0.data.instance}}"],
-                    "model": "{{chatOpenAI_0.data.instance}}"
+                    "tools": ["{{googleCustomSearch_0.data.instance}}", "{{calculator_1.data.instance}}"],
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "inputModeration": "",
+                    "maxIterations": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "mrklAgentChat_0-output-mrklAgentChat-AgentExecutor|BaseChain|Runnable",
-                        "name": "mrklAgentChat",
+                        "id": "reactAgentChat_0-output-reactAgentChat-AgentExecutor|BaseChain|Runnable",
+                        "name": "reactAgentChat",
                         "label": "AgentExecutor",
+                        "description": "Agent that uses the ReAct logic to decide what action to take, optimized to be used with Chat Models",
                         "type": "AgentExecutor | BaseChain | Runnable"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
+            "width": 300,
+            "height": 435,
+            "selected": false,
             "positionAbsolute": {
-                "x": 1090.2058867451212,
-                "y": 423.2174695788541
+                "x": 880.48407884172,
+                "y": 237.79808979371387
             },
-            "selected": false
+            "dragging": false
         }
     ],
     "edges": [
         {
-            "source": "calculator_1",
-            "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
-            "target": "mrklAgentChat_0",
-            "targetHandle": "mrklAgentChat_0-input-tools-Tool",
+            "source": "googleCustomSearch_0",
+            "sourceHandle": "googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable",
+            "target": "reactAgentChat_0",
+            "targetHandle": "reactAgentChat_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "googleCustomSearch_0-googleCustomSearch_0-output-googleCustomSearch-GoogleCustomSearchAPI|Tool|StructuredTool|Runnable-reactAgentChat_0-reactAgentChat_0-input-tools-Tool"
         },
         {
-            "source": "serper_0",
-            "sourceHandle": "serper_0-output-serper-Serper|Tool|StructuredTool",
-            "target": "mrklAgentChat_0",
-            "targetHandle": "mrklAgentChat_0-input-tools-Tool",
+            "source": "calculator_1",
+            "sourceHandle": "calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain",
+            "target": "reactAgentChat_0",
+            "targetHandle": "reactAgentChat_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "serper_0-serper_0-output-serper-Serper|Tool|StructuredTool-mrklAgentChat_0-mrklAgentChat_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "calculator_1-calculator_1-output-calculator-Calculator|Tool|StructuredTool|BaseLangChain-reactAgentChat_0-reactAgentChat_0-input-tools-Tool"
+        },
+        {
+            "source": "bufferMemory_0",
+            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+            "target": "reactAgentChat_0",
+            "targetHandle": "reactAgentChat_0-input-memory-BaseChatMemory",
+            "type": "buttonedge",
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-reactAgentChat_0-reactAgentChat_0-input-memory-BaseChatMemory"
         },
         {
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-            "target": "mrklAgentChat_0",
-            "targetHandle": "mrklAgentChat_0-input-model-BaseLanguageModel",
+            "target": "reactAgentChat_0",
+            "targetHandle": "reactAgentChat_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-mrklAgentChat_0-mrklAgentChat_0-input-model-BaseLanguageModel",
-            "data": {
-                "label": ""
-            }
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-reactAgentChat_0-reactAgentChat_0-input-model-BaseChatModel"
         }
     ]
 }

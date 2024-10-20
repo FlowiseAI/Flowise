@@ -1,8 +1,8 @@
 import { flatten } from 'lodash'
-import { Embeddings } from 'langchain/embeddings/base'
-import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from 'langchain/vectorstores/singlestore'
-import { Document } from 'langchain/document'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { Embeddings } from '@langchain/core/embeddings'
+import { SingleStoreVectorStore, SingleStoreVectorStoreConfig } from '@langchain/community/vectorstores/singlestore'
+import { Document } from '@langchain/core/documents'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class SingleStore_VectorStores implements INode {
@@ -29,7 +29,6 @@ class SingleStore_VectorStores implements INode {
         this.description =
             'Upsert embedded data and perform similarity search upon query using SingleStore, a fast and distributed cloud relational database'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -118,7 +117,7 @@ class SingleStore_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const user = getCredentialParam('user', credentialData, nodeData)
             const password = getCredentialParam('password', credentialData, nodeData)
@@ -151,6 +150,7 @@ class SingleStore_VectorStores implements INode {
             try {
                 const vectorStore = new SingleStoreVectorStore(embeddings, singleStoreConnectionConfig)
                 vectorStore.addDocuments.bind(vectorStore)(finalDocs)
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }

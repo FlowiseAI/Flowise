@@ -1,5 +1,5 @@
+import { UpstashRedisCache as LangchainUpstashRedisCache } from '@langchain/community/caches/upstash_redis'
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-import { UpstashRedisCache as LangchainUpstashRedisCache } from 'langchain/cache/upstash_redis'
 
 class UpstashRedisCache implements INode {
     label: string

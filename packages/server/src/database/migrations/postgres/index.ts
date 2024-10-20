@@ -10,7 +10,23 @@ import { AddAssistantEntity1699325775451 } from './1699325775451-AddAssistantEnt
 import { AddUsedToolsToChatMessage1699481607341 } from './1699481607341-AddUsedToolsToChatMessage'
 import { AddCategoryToChatFlow1699900910291 } from './1699900910291-AddCategoryToChatFlow'
 import { AddFileAnnotationsToChatMessage1700271021237 } from './1700271021237-AddFileAnnotationsToChatMessage'
+import { AddFileUploadsToChatMessage1701788586491 } from './1701788586491-AddFileUploadsToChatMessage'
 import { AddVariableEntity1699325775451 } from './1702200925471-AddVariableEntity'
+import { AddSpeechToText1706364937060 } from './1706364937060-AddSpeechToText'
+import { AddFeedback1707213601923 } from './1707213601923-AddFeedback'
+import { AddUpsertHistoryEntity1709814301358 } from './1709814301358-AddUpsertHistoryEntity'
+import { FieldTypes1710497452584 } from './1710497452584-FieldTypes'
+import { AddLead1710832137905 } from './1710832137905-AddLead'
+import { AddLeadToChatMessage1711538016098 } from './1711538016098-AddLeadToChatMessage'
+import { AddVectorStoreConfigToDocStore1715861032479 } from './1715861032479-AddVectorStoreConfigToDocStore'
+import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
+import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
+import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlow'
+import { AddApiKey1720230151480 } from './1720230151480-AddApiKey'
+import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionToChatMessage'
+import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
+import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
+import { AddFollowUpPrompts1726666309552 } from './1726666309552-AddFollowUpPrompts'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -25,5 +41,21 @@ export const postgresMigrations = [
     AddUsedToolsToChatMessage1699481607341,
     AddCategoryToChatFlow1699900910291,
     AddFileAnnotationsToChatMessage1700271021237,
-    AddVariableEntity1699325775451
+    AddVariableEntity1699325775451,
+    AddFileUploadsToChatMessage1701788586491,
+    AddSpeechToText1706364937060,
+    AddUpsertHistoryEntity1709814301358,
+    AddFeedback1707213601923,
+    FieldTypes1710497452584,
+    AddDocumentStore1711637331047,
+    AddLead1710832137905,
+    AddLeadToChatMessage1711538016098,
+    AddAgentReasoningToChatMessage1714679514451,
+    AddTypeToChatFlow1716300000000,
+    AddVectorStoreConfigToDocStore1715861032479,
+    AddApiKey1720230151480,
+    AddActionToChatMessage1721078251523,
+    AddCustomTemplate1725629836652,
+    AddArtifactsToChatMessage1726156258465,
+    AddFollowUpPrompts1726666309552
 ]

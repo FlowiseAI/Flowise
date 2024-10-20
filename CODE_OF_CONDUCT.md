@@ -1,6 +1,6 @@
 # Contributor Covenant Code of Conduct
 
-English | [中文](<./CODE_OF_CONDUCT-ZH.md>)
+English | [中文](./i18n/CODE_OF_CONDUCT-ZH.md)
 
 ## Our Pledge
 

@@ -1,8 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { BaseCache } from '@langchain/core/caches'
+import { ChatVertexAI, ChatVertexAIInput } from '@langchain/google-vertexai'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatGoogleVertexAI, GoogleVertexAIChatInput } from 'langchain/chat_models/googlevertexai'
-import { GoogleAuthOptions } from 'google-auth-library'
-import { BaseCache } from 'langchain/schema'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class GoogleVertexAI_ChatModels implements INode {
     label: string
@@ -19,12 +19,12 @@ class GoogleVertexAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleVertexAI'
         this.name = 'chatGoogleVertexAI'
-        this.version = 2.0
+        this.version = 4.0
         this.type = 'ChatGoogleVertexAI'
         this.icon = 'GoogleVertex.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around VertexAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatGoogleVertexAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(ChatVertexAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -44,27 +44,9 @@ class GoogleVertexAI_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'chat-bison',
-                        name: 'chat-bison'
-                    },
-                    {
-                        label: 'codechat-bison',
-                        name: 'codechat-bison'
-                    },
-                    {
-                        label: 'chat-bison-32k',
-                        name: 'chat-bison-32k'
-                    },
-                    {
-                        label: 'codechat-bison-32k',
-                        name: 'codechat-bison-32k'
-                    }
-                ],
-                default: 'chat-bison',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'chat-bison'
             },
             {
                 label: 'Temperature',
@@ -89,8 +71,24 @@ class GoogleVertexAI_ChatModels implements INode {
                 step: 0.1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Top Next Highest Probability Tokens',
+                name: 'topK',
+                type: 'number',
+                description: `Decode using top-k sampling: consider the set of top_k most probable tokens. Must be positive`,
+                step: 1,
+                optional: true,
+                additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatGoogleVertexAI')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -99,7 +97,7 @@ class GoogleVertexAI_ChatModels implements INode {
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
-        const authOptions: GoogleAuthOptions = {}
+        const authOptions: ICommonObject = {}
         if (Object.keys(credentialData).length !== 0) {
             if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
                 throw new Error('Please specify your Google Application Credential')
@@ -121,8 +119,9 @@ class GoogleVertexAI_ChatModels implements INode {
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
         const topP = nodeData.inputs?.topP as string
         const cache = nodeData.inputs?.cache as BaseCache
+        const topK = nodeData.inputs?.topK as string
 
-        const obj: GoogleVertexAIChatInput<GoogleAuthOptions> = {
+        const obj: ChatVertexAIInput = {
             temperature: parseFloat(temperature),
             model: modelName
         }
@@ -131,8 +130,9 @@ class GoogleVertexAI_ChatModels implements INode {
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (cache) obj.cache = cache
+        if (topK) obj.topK = parseFloat(topK)
 
-        const model = new ChatGoogleVertexAI(obj)
+        const model = new ChatVertexAI(obj)
         return model
     }
 }

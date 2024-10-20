@@ -10,7 +10,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-English | [中文](./README-ZH.md)
+English | [中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
 
 <h3>Drag & drop UI to build your customized LLM flow</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
@@ -41,12 +41,12 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 ## 🐳 Docker
 
 ### Docker Compose
-
-1. Go to `docker` folder at the root of the project
-2. Copy `.env.example` file, paste it into the same location, and rename to `.env`
-3. `docker-compose up -d`
-4. Open [http://localhost:3000](http://localhost:3000)
-5. You can bring the containers down by `docker-compose stop`
+1. Clone the Flowise project
+2. Go to `docker` folder at the root of the project
+3. Copy `.env.example` file, paste it into the same location, and rename to `.env`
+4. `docker compose up -d`
+5. Open [http://localhost:3000](http://localhost:3000)
+6. You can bring the containers down by `docker compose stop`
 
 ### Docker Image
 
@@ -71,57 +71,67 @@ Flowise has 3 different modules in a single mono repository.
 
 -   `server`: Node backend to serve API logics
 -   `ui`: React frontend
--   `components`: Langchain components
+-   `components`: Third-party nodes integrations
+-   `api-documentation`: Auto-generated swagger-ui API docs from express
 
 ### Prerequisite
 
--   Install [Yarn v1](https://classic.yarnpkg.com/en/docs/install)
+-   Install [PNPM](https://pnpm.io/installation)
     ```bash
-    npm i -g yarn
+    npm i -g pnpm
     ```
 
 ### Setup
 
-1. Clone the repository
+1.  Clone the repository
 
     ```bash
     git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
-2. Go into repository folder
+2.  Go into repository folder
 
     ```bash
     cd Flowise
     ```
 
-3. Install all dependencies of all modules:
+3.  Install all dependencies of all modules:
 
     ```bash
-    yarn install
+    pnpm install
     ```
 
-4. Build all the code:
+4.  Build all the code:
 
     ```bash
-    yarn build
+    pnpm build
     ```
 
-5. Start the app:
+    <details>
+    <summary>Exit code 134 (JavaScript heap out of memory)</summary>  
+      If you get this error when running the above `build` script, try increasing the Node.js heap size and run the script again:
+
+        export NODE_OPTIONS="--max-old-space-size=4096"
+        pnpm build
+
+    </details>
+
+5.  Start the app:
 
     ```bash
-    yarn start
+    pnpm start
     ```
 
     You can now access the app on [http://localhost:3000](http://localhost:3000)
 
-6. For development build:
+6.  For development build:
 
-    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/ui`
-    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
-    - Run
+    -   Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
+    -   Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
+    -   Run
 
         ```bash
-        yarn dev
+        pnpm dev
         ```
 
     Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)
@@ -151,6 +161,7 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 -   [Azure](https://docs.flowiseai.com/deployment/azure)
 -   [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)
 -   [GCP](https://docs.flowiseai.com/deployment/gcp)
+-   [Alibaba Cloud](https://computenest.console.aliyun.com/service/instance/create/default?type=user&ServiceName=Flowise社区版)
 -   <details>
       <summary>Others</summary>
 
@@ -168,7 +179,7 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 
     -   [Elestio](https://elest.io/open-source/flowiseai)
 
-        [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
+        [![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/flowiseai)
 
     -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
 
@@ -180,9 +191,9 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 
       </details>
 
-## 💻 Cloud Hosted
+## ☁️ Flowise Cloud
 
-Coming soon
+[Get Started with Flowise Cloud](https://flowiseai.com/)
 
 ## 🙋 Support
 

@@ -1,11 +1,12 @@
 import { flatten } from 'lodash'
 import { MongoClient } from 'mongodb'
-import { MongoDBAtlasVectorSearch } from 'langchain/vectorstores/mongodb_atlas'
-import { Embeddings } from 'langchain/embeddings/base'
-import { Document } from 'langchain/document'
-import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { MongoDBAtlasVectorSearch } from '@langchain/mongodb'
+import { Embeddings } from '@langchain/core/embeddings'
+import { Document } from '@langchain/core/documents'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam, getVersion } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
+import { VectorStore } from '@langchain/core/vectorstores'
 
 class MongoDBAtlas_VectorStores implements INode {
     label: string
@@ -30,7 +31,6 @@ class MongoDBAtlas_VectorStores implements INode {
         this.icon = 'mongodb.svg'
         this.category = 'Vector Stores'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -87,6 +87,13 @@ class MongoDBAtlas_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Mongodb Metadata Filter',
+                name: 'mongoMetadataFilter',
+                type: 'json',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -113,7 +120,7 @@ class MongoDBAtlas_VectorStores implements INode {
 
     //@ts-ignore
     vectorStoreMethods = {
-        async upsert(nodeData: INodeData, options: ICommonObject): Promise<void> {
+        async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const databaseName = nodeData.inputs?.databaseName as string
             const collectionName = nodeData.inputs?.collectionName as string
@@ -135,21 +142,21 @@ class MongoDBAtlas_VectorStores implements INode {
                 }
             }
 
-            const mongoClient = new MongoClient(mongoDBConnectUrl)
-            const collection = mongoClient.db(databaseName).collection(collectionName)
-
-            if (!textKey || textKey === '') textKey = 'text'
-            if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
-
-            const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
-                collection,
-                indexName,
-                textKey,
-                embeddingKey
-            })
-
+            const mongoClient = await getMongoClient(mongoDBConnectUrl)
             try {
+                const collection = mongoClient.db(databaseName).collection(collectionName)
+
+                if (!textKey || textKey === '') textKey = 'text'
+                if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
+
+                const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
+                    collection,
+                    indexName,
+                    textKey,
+                    embeddingKey
+                })
                 await mongoDBAtlasVectorSearch.addDocuments(finalDocs)
+                return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
             }
@@ -164,24 +171,64 @@ class MongoDBAtlas_VectorStores implements INode {
         let textKey = nodeData.inputs?.textKey as string
         let embeddingKey = nodeData.inputs?.embeddingKey as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const mongoMetadataFilter = nodeData.inputs?.mongoMetadataFilter as object
 
         let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
-        const mongoClient = new MongoClient(mongoDBConnectUrl)
-        const collection = mongoClient.db(databaseName).collection(collectionName)
+        const filter: MongoDBAtlasVectorSearch['FilterType'] = {}
 
-        if (!textKey || textKey === '') textKey = 'text'
-        if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
+        const mongoClient = await getMongoClient(mongoDBConnectUrl)
+        try {
+            const collection = mongoClient.db(databaseName).collection(collectionName)
 
-        const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
-            collection,
-            indexName,
-            textKey,
-            embeddingKey
-        })
+            if (!textKey || textKey === '') textKey = 'text'
+            if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
 
-        return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+            const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
+                collection,
+                indexName,
+                textKey,
+                embeddingKey
+            }) as unknown as VectorStore
+
+            if (mongoMetadataFilter) {
+                const metadataFilter = typeof mongoMetadataFilter === 'object' ? mongoMetadataFilter : JSON.parse(mongoMetadataFilter)
+
+                for (const key in metadataFilter) {
+                    filter.preFilter = {
+                        ...filter.preFilter,
+                        [key]: {
+                            $eq: metadataFilter[key]
+                        }
+                    }
+                }
+            }
+
+            return resolveVectorStoreOrRetriever(nodeData, vectorStore, filter)
+        } catch (e) {
+            throw new Error(e)
+        }
     }
 }
 
+let mongoClientSingleton: MongoClient
+let mongoUrl: string
+
+const getMongoClient = async (newMongoUrl: string) => {
+    const driverInfo = { name: 'Flowise', version: (await getVersion()).version }
+
+    if (!mongoClientSingleton) {
+        // if client does not exist
+        mongoClientSingleton = new MongoClient(newMongoUrl, { driverInfo })
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    } else if (mongoClientSingleton && newMongoUrl !== mongoUrl) {
+        // if client exists but url changed
+        mongoClientSingleton.close()
+        mongoClientSingleton = new MongoClient(newMongoUrl, { driverInfo })
+        mongoUrl = newMongoUrl
+        return mongoClientSingleton
+    }
+    return mongoClientSingleton
+}
 module.exports = { nodeClass: MongoDBAtlas_VectorStores }

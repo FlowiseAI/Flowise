@@ -1,8 +1,10 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { AzureOpenAIInput, ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput } from '@langchain/openai'
+import { BaseCache } from '@langchain/core/caches'
+import { BaseLLMParams } from '@langchain/core/language_models/llms'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { AzureOpenAIInput, ChatOpenAI, OpenAIChatInput } from 'langchain/chat_models/openai'
-import { BaseCache } from 'langchain/schema'
-import { BaseLLMParams } from 'langchain/llms/base'
+import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class AzureChatOpenAI_ChatModels implements INode {
     label: string
@@ -19,12 +21,12 @@ class AzureChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'Azure ChatOpenAI'
         this.name = 'azureChatOpenAI'
-        this.version = 2.0
+        this.version = 5.0
         this.type = 'AzureChatOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Azure OpenAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(LangchainChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -41,27 +43,8 @@ class AzureChatOpenAI_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'gpt-4',
-                        name: 'gpt-4'
-                    },
-                    {
-                        label: 'gpt-4-32k',
-                        name: 'gpt-4-32k'
-                    },
-                    {
-                        label: 'gpt-35-turbo',
-                        name: 'gpt-35-turbo'
-                    },
-                    {
-                        label: 'gpt-35-turbo-16k',
-                        name: 'gpt-35-turbo-16k'
-                    }
-                ],
-                default: 'gpt-35-turbo',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels'
             },
             {
                 label: 'Temperature',
@@ -76,6 +59,14 @@ class AzureChatOpenAI_ChatModels implements INode {
                 name: 'maxTokens',
                 type: 'number',
                 step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Top Probability',
+                name: 'topP',
+                type: 'number',
+                step: 0.1,
                 optional: true,
                 additionalParams: true
             },
@@ -102,8 +93,54 @@ class AzureChatOpenAI_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'BasePath',
+                name: 'basepath',
+                type: 'string',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, Conversational Agent, Tool Agent',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'Image Resolution',
+                description: 'This parameter controls the resolution in which the model views the image.',
+                name: 'imageResolution',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'low'
+                    },
+                    {
+                        label: 'High',
+                        name: 'high'
+                    },
+                    {
+                        label: 'Auto',
+                        name: 'auto'
+                    }
+                ],
+                default: 'low',
+                optional: false,
+                additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'azureChatOpenAI')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -115,12 +152,17 @@ class AzureChatOpenAI_ChatModels implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const streaming = nodeData.inputs?.streaming as boolean
         const cache = nodeData.inputs?.cache as BaseCache
+        const topP = nodeData.inputs?.topP as string
+        const basePath = nodeData.inputs?.basepath as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
         const azureOpenAIApiInstanceName = getCredentialParam('azureOpenAIApiInstanceName', credentialData, nodeData)
         const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
+
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const imageResolution = nodeData.inputs?.imageResolution as string
 
         const obj: Partial<AzureOpenAIInput> & BaseLLMParams & Partial<OpenAIChatInput> = {
             temperature: parseFloat(temperature),
@@ -137,8 +179,18 @@ class AzureChatOpenAI_ChatModels implements INode {
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
+        if (topP) obj.topP = parseFloat(topP)
+        if (basePath) obj.azureOpenAIBasePath = basePath
 
-        const model = new ChatOpenAI(obj)
+        const multiModalOption: IMultiModalOption = {
+            image: {
+                allowImageUploads: allowImageUploads ?? false,
+                imageResolution
+            }
+        }
+
+        const model = new ChatOpenAI(nodeData.id, obj)
+        model.setMultiModalOption(multiModalOption)
         return model
     }
 }

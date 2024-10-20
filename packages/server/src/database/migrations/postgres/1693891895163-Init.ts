@@ -27,7 +27,7 @@ export class Init1693891895163 implements MigrationInterface {
                 CONSTRAINT "PK_3cc0d85193aade457d3077dd06b" PRIMARY KEY (id)
             );`
         )
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_e574527322272fd838f4f0f3d3" ON chat_message USING btree (chatflowid);`)
+        await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_e574527322272fd838f4f0f3d3" ON chat_message USING btree ("chatflowid");`)
         await queryRunner.query(
             `CREATE TABLE IF NOT EXISTS credential (
                 id uuid NOT NULL DEFAULT uuid_generate_v4(),

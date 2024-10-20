@@ -1,7 +1,9 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { GooglePaLM, GooglePaLMTextInput } from '@langchain/community/llms/googlepalm'
+import { BaseCache } from '@langchain/core/caches'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { GooglePaLM, GooglePaLMTextInput } from 'langchain/llms/googlepalm'
-import { BaseCache } from 'langchain/schema'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+
 class GooglePaLM_LLMs implements INode {
     label: string
     name: string
@@ -17,7 +19,7 @@ class GooglePaLM_LLMs implements INode {
     constructor() {
         this.label = 'GooglePaLM'
         this.name = 'GooglePaLM'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'GooglePaLM'
         this.icon = 'GooglePaLM.svg'
         this.category = 'LLMs'
@@ -39,15 +41,9 @@ class GooglePaLM_LLMs implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'models/text-bison-001',
-                        name: 'models/text-bison-001'
-                    }
-                ],
-                default: 'models/text-bison-001',
-                optional: true
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'models/text-bison-001'
             },
             {
                 label: 'Temperature',
@@ -123,6 +119,13 @@ class GooglePaLM_LLMs implements INode {
             } 
             */
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.LLM, 'GooglePaLM')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

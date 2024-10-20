@@ -1,7 +1,8 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { BaseCache } from 'langchain/schema'
+import { BaseCache } from '@langchain/core/caches'
 import { ChatMistralAI, ChatMistralAIInput } from '@langchain/mistralai'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatMistral_ChatModels implements INode {
     label: string
@@ -18,7 +19,7 @@ class ChatMistral_ChatModels implements INode {
     constructor() {
         this.label = 'ChatMistralAI'
         this.name = 'chatMistralAI'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'ChatMistralAI'
         this.icon = 'MistralAI.svg'
         this.category = 'Chat Models'
@@ -40,21 +41,8 @@ class ChatMistral_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    {
-                        label: 'mistral-tiny',
-                        name: 'mistral-tiny'
-                    },
-                    {
-                        label: 'mistral-small',
-                        name: 'mistral-small'
-                    },
-                    {
-                        label: 'mistral-medium',
-                        name: 'mistral-medium'
-                    }
-                ],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'mistral-tiny'
             },
             {
@@ -111,6 +99,13 @@ class ChatMistral_ChatModels implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatMistralAI')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {

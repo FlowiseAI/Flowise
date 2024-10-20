@@ -1,6 +1,5 @@
+import { BaseOutputParser, CommaSeparatedListOutputParser } from '@langchain/core/output_parsers'
 import { getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
-import { BaseOutputParser } from 'langchain/schema/output_parser'
-import { CommaSeparatedListOutputParser } from 'langchain/output_parsers'
 import { CATEGORY } from '../OutputParserHelpers'
 
 class CSVListOutputParser implements INode {

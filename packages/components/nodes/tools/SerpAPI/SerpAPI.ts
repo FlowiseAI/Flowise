@@ -1,6 +1,6 @@
+import { SerpAPI } from '@langchain/community/tools/serpapi'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { SerpAPI } from 'langchain/tools'
 
 class SerpAPI_Tools implements INode {
     label: string

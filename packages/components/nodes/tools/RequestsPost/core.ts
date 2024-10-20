@@ -1,4 +1,4 @@
-import { Tool } from 'langchain/tools'
+import { Tool } from '@langchain/core/tools'
 import fetch from 'node-fetch'
 
 export const desc = `Use this when you want to POST to a website.

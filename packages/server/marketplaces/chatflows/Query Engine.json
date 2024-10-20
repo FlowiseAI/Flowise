@@ -1,0 +1,474 @@
+{
+    "description": "Stateless query engine designed to answer question over your data using LlamaIndex",
+    "usecases": ["Documents QnA"],
+    "framework": ["LlamaIndex"],
+    "nodes": [
+        {
+            "width": 300,
+            "height": 382,
+            "id": "queryEngine_0",
+            "position": {
+                "x": 1407.9610494306783,
+                "y": 241.12144405808692
+            },
+            "type": "customNode",
+            "data": {
+                "id": "queryEngine_0",
+                "label": "Query Engine",
+                "version": 2,
+                "name": "queryEngine",
+                "type": "QueryEngine",
+                "baseClasses": ["QueryEngine", "BaseQueryEngine"],
+                "tags": ["LlamaIndex"],
+                "category": "Engine",
+                "description": "Simple query engine built to answer question over your data, without memory",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "queryEngine_0-input-returnSourceDocuments-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "VectorIndexRetriever",
+                        "id": "queryEngine_0-input-vectorStoreRetriever-VectorIndexRetriever"
+                    },
+                    {
+                        "label": "Response Synthesizer",
+                        "name": "responseSynthesizer",
+                        "type": "ResponseSynthesizer",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/response_synthesizer\">more</a>",
+                        "optional": true,
+                        "id": "queryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
+                    }
+                ],
+                "inputs": {
+                    "vectorStoreRetriever": "{{pineconeLlamaIndex_0.data.instance}}",
+                    "responseSynthesizer": "{{compactrefineLlamaIndex_0.data.instance}}",
+                    "returnSourceDocuments": true
+                },
+                "outputAnchors": [
+                    {
+                        "id": "queryEngine_0-output-queryEngine-QueryEngine|BaseQueryEngine",
+                        "name": "queryEngine",
+                        "label": "QueryEngine",
+                        "type": "QueryEngine | BaseQueryEngine"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1407.9610494306783,
+                "y": 241.12144405808692
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 585,
+            "id": "pineconeLlamaIndex_0",
+            "position": {
+                "x": 977.3886641397302,
+                "y": -261.2253031641797
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeLlamaIndex_0",
+                "label": "Pinecone",
+                "version": 1,
+                "name": "pineconeLlamaIndex",
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorIndexRetriever"],
+                "tags": ["LlamaIndex"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["pineconeApi"],
+                        "id": "pineconeLlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeLlamaIndex_0-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pineconeLlamaIndex_0-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_0-input-document-Document"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel_LlamaIndex",
+                        "id": "pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "BaseEmbedding_LlamaIndex",
+                        "id": "pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex"
+                    }
+                ],
+                "inputs": {
+                    "document": "",
+                    "model": "{{chatAnthropic_LlamaIndex_0.data.instance}}",
+                    "embeddings": "{{openAIEmbedding_LlamaIndex_0.data.instance}}",
+                    "pineconeIndex": "",
+                    "pineconeNamespace": "",
+                    "pineconeMetadataFilter": "",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeLlamaIndex_0-output-retriever-Pinecone|VectorIndexRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorIndexRetriever"
+                            },
+                            {
+                                "id": "pineconeLlamaIndex_0-output-retriever-Pinecone|VectorStoreIndex",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store Index",
+                                "type": "Pinecone | VectorStoreIndex"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 977.3886641397302,
+                "y": -261.2253031641797
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 334,
+            "id": "openAIEmbedding_LlamaIndex_0",
+            "position": {
+                "x": 529.8690713844503,
+                "y": -18.955726653613254
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbedding_LlamaIndex_0",
+                "label": "OpenAI Embedding",
+                "version": 2,
+                "name": "openAIEmbedding_LlamaIndex",
+                "type": "OpenAIEmbedding",
+                "baseClasses": ["OpenAIEmbedding", "BaseEmbedding_LlamaIndex", "BaseEmbedding"],
+                "tags": ["LlamaIndex"],
+                "category": "Embeddings",
+                "description": "OpenAI Embedding specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbedding_LlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "text-embedding-ada-002",
+                        "id": "openAIEmbedding_LlamaIndex_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbedding_LlamaIndex_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbedding_LlamaIndex_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "timeout": "",
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+                        "name": "openAIEmbedding_LlamaIndex",
+                        "label": "OpenAIEmbedding",
+                        "type": "OpenAIEmbedding | BaseEmbedding_LlamaIndex | BaseEmbedding"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 529.8690713844503,
+                "y": -18.955726653613254
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 749,
+            "id": "compactrefineLlamaIndex_0",
+            "position": {
+                "x": 170.71031618977543,
+                "y": -33.83233752386292
+            },
+            "type": "customNode",
+            "data": {
+                "id": "compactrefineLlamaIndex_0",
+                "label": "Compact and Refine",
+                "version": 1,
+                "name": "compactrefineLlamaIndex",
+                "type": "CompactRefine",
+                "baseClasses": ["CompactRefine", "ResponseSynthesizer"],
+                "tags": ["LlamaIndex"],
+                "category": "Response Synthesizer",
+                "description": "CompactRefine is a slight variation of Refine that first compacts the text chunks into the smallest possible number of chunks.",
+                "inputParams": [
+                    {
+                        "label": "Refine Prompt",
+                        "name": "refinePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "The original query is as follows: {query}\nWe have provided an existing answer: {existingAnswer}\nWe have the opportunity to refine the existing answer (only if needed) with some more context below.\n------------\n{context}\n------------\nGiven the new context, refine the original answer to better answer the query. If the context isn't useful, return the original answer.\nRefined Answer:",
+                        "warning": "Prompt can contains no variables, or up to 3 variables. Variables must be {existingAnswer}, {context} and {query}",
+                        "optional": true,
+                        "id": "compactrefineLlamaIndex_0-input-refinePrompt-string"
+                    },
+                    {
+                        "label": "Text QA Prompt",
+                        "name": "textQAPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "Context information is below.\n---------------------\n{context}\n---------------------\nGiven the context information and not prior knowledge, answer the query.\nQuery: {query}\nAnswer:",
+                        "warning": "Prompt can contains no variables, or up to 2 variables. Variables must be {context} and {query}",
+                        "optional": true,
+                        "id": "compactrefineLlamaIndex_0-input-textQAPrompt-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "refinePrompt": "The original query is as follows: {query}\nWe have provided an existing answer: {existingAnswer}\nWe have the opportunity to refine the existing answer (only if needed) with some more context below.\n------------\n{context}\n------------\nGiven the new context, refine the original answer to better answer the query. If the context isn't useful, return the original answer.\nRefined Answer:",
+                    "textQAPrompt": "Context information:\n<context>\n{context}\n</context>\nGiven the context information and not prior knowledge, answer the query.\nQuery: {query}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "compactrefineLlamaIndex_0-output-compactrefineLlamaIndex-CompactRefine|ResponseSynthesizer",
+                        "name": "compactrefineLlamaIndex",
+                        "label": "CompactRefine",
+                        "type": "CompactRefine | ResponseSynthesizer"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 170.71031618977543,
+                "y": -33.83233752386292
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 529,
+            "id": "chatAnthropic_LlamaIndex_0",
+            "position": {
+                "x": 521.3530883359147,
+                "y": -584.8241219614786
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatAnthropic_LlamaIndex_0",
+                "label": "ChatAnthropic",
+                "version": 3.0,
+                "name": "chatAnthropic_LlamaIndex",
+                "type": "ChatAnthropic",
+                "baseClasses": ["ChatAnthropic", "BaseChatModel_LlamaIndex"],
+                "tags": ["LlamaIndex"],
+                "category": "Chat Models",
+                "description": "Wrapper around ChatAnthropic LLM specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["anthropicApi"],
+                        "id": "chatAnthropic_LlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "claude-3-haiku",
+                        "id": "chatAnthropic_LlamaIndex_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatAnthropic_LlamaIndex_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokensToSample",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_LlamaIndex_0-input-maxTokensToSample-number"
+                    },
+                    {
+                        "label": "Top P",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatAnthropic_LlamaIndex_0-input-topP-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "claude-2",
+                    "temperature": 0.9,
+                    "maxTokensToSample": "",
+                    "topP": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatAnthropic_LlamaIndex_0-output-chatAnthropic_LlamaIndex-ChatAnthropic|BaseChatModel_LlamaIndex",
+                        "name": "chatAnthropic_LlamaIndex",
+                        "label": "ChatAnthropic",
+                        "type": "ChatAnthropic | BaseChatModel_LlamaIndex"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 521.3530883359147,
+                "y": -584.8241219614786
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "pineconeLlamaIndex_0",
+            "sourceHandle": "pineconeLlamaIndex_0-output-pineconeLlamaIndex-Pinecone|VectorIndexRetriever",
+            "target": "queryEngine_0",
+            "targetHandle": "queryEngine_0-input-vectorStoreRetriever-VectorIndexRetriever",
+            "type": "buttonedge",
+            "id": "pineconeLlamaIndex_0-pineconeLlamaIndex_0-output-pineconeLlamaIndex-Pinecone|VectorIndexRetriever-queryEngine_0-queryEngine_0-input-vectorStoreRetriever-VectorIndexRetriever",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "openAIEmbedding_LlamaIndex_0",
+            "sourceHandle": "openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+            "target": "pineconeLlamaIndex_0",
+            "targetHandle": "pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex",
+            "type": "buttonedge",
+            "id": "openAIEmbedding_LlamaIndex_0-openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "compactrefineLlamaIndex_0",
+            "sourceHandle": "compactrefineLlamaIndex_0-output-compactrefineLlamaIndex-CompactRefine|ResponseSynthesizer",
+            "target": "queryEngine_0",
+            "targetHandle": "queryEngine_0-input-responseSynthesizer-ResponseSynthesizer",
+            "type": "buttonedge",
+            "id": "compactrefineLlamaIndex_0-compactrefineLlamaIndex_0-output-compactrefineLlamaIndex-CompactRefine|ResponseSynthesizer-queryEngine_0-queryEngine_0-input-responseSynthesizer-ResponseSynthesizer",
+            "data": {
+                "label": ""
+            }
+        },
+        {
+            "source": "chatAnthropic_LlamaIndex_0",
+            "sourceHandle": "chatAnthropic_LlamaIndex_0-output-chatAnthropic_LlamaIndex-ChatAnthropic|BaseChatModel_LlamaIndex",
+            "target": "pineconeLlamaIndex_0",
+            "targetHandle": "pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex",
+            "type": "buttonedge",
+            "id": "chatAnthropic_LlamaIndex_0-chatAnthropic_LlamaIndex_0-output-chatAnthropic_LlamaIndex-ChatAnthropic|BaseChatModel_LlamaIndex-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex",
+            "data": {
+                "label": ""
+            }
+        }
+    ]
+}
