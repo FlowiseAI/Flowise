@@ -175,7 +175,7 @@ class ChatOpenAI_ChatModels implements INode {
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
-        const stopSequenceArray = nodeData.inputs?.stopSequence.split(" ");
+        const stopSequenceArray = nodeData.inputs?.stopSequence.split(' ')
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
         const proxyUrl = nodeData.inputs?.proxyUrl as string
@@ -198,7 +198,7 @@ class ChatOpenAI_ChatModels implements INode {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
-            streaming: streaming ?? true,
+            streaming: streaming ?? true
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
@@ -239,7 +239,7 @@ class ChatOpenAI_ChatModels implements INode {
                 imageResolution
             }
         }
-        
+
         const model = new ChatOpenAI(nodeData.id, obj)
         model.setMultiModalOption(multiModalOption)
         return model
