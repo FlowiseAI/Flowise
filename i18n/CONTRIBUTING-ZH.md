@@ -152,6 +152,7 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 | S3_ENDPOINT_URL              | S3 端点 URL                                                          | 字符串                                          |                                     |
 | S3_FORCE_PATH_STYLE          | 将其设置为 true 以强制请求使用路径样式寻址                              | Boolean                                          | false                               |
 | SHOW_COMMUNITY_NODES         | 显示由社区创建的节点                                                 | 布尔值                                          |                                     |
+| BASE_HREF                    | 设置React路由器的basename的基本URL，并且只能在运行时动态定义             | 字符串                                           |                                     |
 
 您也可以在使用 `npx` 时指定环境变量。例如：
 

@@ -1,5 +1,6 @@
 import express from 'express'
 import { Request, Response } from 'express'
+import fs from 'fs'
 import path from 'path'
 import cors from 'cors'
 import http from 'http'
@@ -29,6 +30,29 @@ declare global {
             io?: Server
         }
     }
+}
+
+function replaceBaseHref(filePath: string) {
+    const backupPath = `${filePath}.tpl`
+    let sourceFile = filePath
+
+    // If index.html.tpl exists, use it as the source file and skip creating the backup
+    if (fs.existsSync(backupPath)) {
+        sourceFile = backupPath
+    } else {
+        // Create a backup if it doesn't exist
+        fs.copyFileSync(filePath, backupPath)
+    }
+
+    // Read the source file
+    const content = fs.readFileSync(sourceFile, 'utf8')
+
+    // Replace %BASE_HREF% with the value of BASE_HREF or '/' if not set
+    const baseHref = process.env.BASE_HREF || '/'
+    const updatedContent = content.replace(/%BASE_HREF%/g, baseHref)
+
+    // Write the updated content back to index.html
+    fs.writeFileSync(filePath, updatedContent, 'utf8')
 }
 
 export class App {
@@ -222,6 +246,9 @@ export class App {
         const packagePath = getNodeModulesPackagePath('flowise-ui')
         const uiBuildPath = path.join(packagePath, 'build')
         const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
+
+        // replace index.html BASE_HREF env variable to support custom basename
+        replaceBaseHref(uiHtmlPath)
 
         this.app.use('/', express.static(uiBuildPath))
 
