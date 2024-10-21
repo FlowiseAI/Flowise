@@ -1029,7 +1029,9 @@ const getEmbeddingProviders = async () => {
 const getVectorStoreProviders = async () => {
     try {
         const dbResponse = await nodesService.getAllNodesForCategory('Vector Stores')
-        return dbResponse.filter((node) => !node.tags?.includes('LlamaIndex') && node.name !== 'documentStoreVS')
+        return dbResponse.filter(
+            (node) => !node.tags?.includes('LlamaIndex') && node.name !== 'documentStoreVS' && node.name !== 'memoryVectorStore'
+        )
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
