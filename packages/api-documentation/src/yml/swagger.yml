@@ -1,5 +1,6 @@
 tags:
     - name: assistants
+    - name: attachments
     - name: chatmessage
     - name: chatflows
     - name: document-store
@@ -269,6 +270,61 @@ paths:
                     description: Assistant not found
                 '500':
                     description: Internal error
+
+    /attachments/{chatflowId}/{chatId}:
+        post:
+            tags:
+                - attachments
+            security:
+                - bearerAuth: []
+            operationId: createAttachment
+            summary: Create attachments array
+            description: Return contents of the files in plain string format
+            parameters:
+                - in: path
+                  name: chatflowId
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+                - in: path
+                  name: chatId
+                  required: true
+                  schema:
+                      type: string
+                  description: Chat ID
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                files:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: binary
+                                    description: Files to be uploaded
+                            required:
+                                - files
+                required: true
+            responses:
+                '200':
+                    description: Attachments created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/CreateAttachmentResponse'
+                '400':
+                    description: Invalid input provided
+                '404':
+                    description: Chatflow or ChatId not found
+                '422':
+                    description: Validation error
+                '500':
+                    description: Internal server error
 
     /chatflows:
         post:
@@ -1825,7 +1881,8 @@ components:
                         properties:
                             type:
                                 type: string
-                                description: The type of file upload (e.g., 'file', 'audio', 'url')
+                                enum: [audio, url, file, file:rag, file:full]
+                                description: The type of file upload
                                 example: file
                             name:
                                 type: string
@@ -2192,6 +2249,22 @@ components:
                     type: string
                     format: date-time
                     description: Date and time when the feedback was created
+
+        CreateAttachmentResponse:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the file
+                mimeType:
+                    type: string
+                    description: Mime type of the file
+                size:
+                    type: string
+                    description: Size of the file
+                content:
+                    type: string
+                    description: Content of the file in string format
 
     securitySchemes:
         bearerAuth:

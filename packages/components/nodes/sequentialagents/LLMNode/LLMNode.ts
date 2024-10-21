@@ -88,7 +88,7 @@ const howToUse = `
     |-----------|-----------|
     | user      | john doe  |
 
-2. If you want to use the agent's output as the value to update state, it is available as available as \`$flow.output\` with the following structure:
+2. If you want to use the LLM Node's output as the value to update state, it is available as available as \`$flow.output\` with the following structure:
     \`\`\`json
     {
         "content": 'Hello! How can I assist you today?',

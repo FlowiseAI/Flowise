@@ -1,13 +1,14 @@
 import { MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
-import { ChatMessageRatingType, chatType } from '../Interface'
+import { ChatMessageRatingType, ChatType } from '../Interface'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
+import { aMonthAgo, setDateToStartOrEndOfDay } from '.'
 
 /**
  * Method that get chat messages.
  * @param {string} chatflowid
- * @param {chatType} chatType
+ * @param {ChatType} chatType
  * @param {string} sortOrder
  * @param {string} chatId
  * @param {string} memoryType
@@ -19,7 +20,7 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
  */
 export const utilGetChatMessage = async (
     chatflowid: string,
-    chatType: chatType | undefined,
+    chatType: ChatType | undefined,
     sortOrder: string = 'ASC',
     chatId?: string,
     memoryType?: string,
@@ -31,20 +32,6 @@ export const utilGetChatMessage = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<ChatMessage[]> => {
     const appServer = getRunningExpressApp()
-    const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
-        const date = new Date(dateTimeStr)
-        if (isNaN(date.getTime())) {
-            return undefined
-        }
-        setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
-        return date
-    }
-
-    const aMonthAgo = () => {
-        const date = new Date()
-        date.setMonth(new Date().getMonth() - 1)
-        return date
-    }
 
     let fromDate
     if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
