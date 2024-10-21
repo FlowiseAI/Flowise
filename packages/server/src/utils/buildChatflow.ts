@@ -424,7 +424,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             prependMessages
         }
 
-        let result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+        let result = await nodeInstance.run(nodeToExecuteData, finalQuestion, {
             ...runParams,
             ...(isStreamValid && { sseStreamer: appServer.sseStreamer, shouldStreamResponse: true })
         })
