@@ -20,7 +20,9 @@ export const generateFollowUpPrompts = async (
     options: ICommonObject
 ) => {
     if (followUpPromptsConfig) {
+        if (!followUpPromptsConfig.status) return undefined
         const providerConfig = followUpPromptsConfig[followUpPromptsConfig.selectedProvider]
+        if (!providerConfig) return undefined
         const credentialId = providerConfig.credentialId as string
         const credentialData = await getCredentialData(credentialId ?? '', options)
         const followUpPromptsPrompt = providerConfig.prompt.replace('{history}', apiMessageContent)
