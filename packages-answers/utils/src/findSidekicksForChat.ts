@@ -1,7 +1,23 @@
 import { parseChatbotConfig, parseFlowData } from './normalizeSidekick'
 import { User } from 'types'
-
+import { prisma } from '@db/client'
 import auth0 from '@utils/auth/auth0'
+
+interface Sidekick {
+    id: string
+    label: string
+    visibility: string[]
+    chatflow: any
+    answersConfig: any
+    chatflowId: string
+    chatflowDomain: string
+    chatbotConfig: any
+    flowData: any
+    isRecent: boolean
+    category: string
+    isAvailable: boolean
+    isFavorite: boolean
+}
 
 export async function findSidekicksForChat(user: User) {
     let token
@@ -12,22 +28,22 @@ export async function findSidekicksForChat(user: User) {
         if (!accessToken) throw new Error('No access token found')
         token = accessToken
     } catch (err) {
-        // On error redirect to auth0 sign in
-
         throw new Error('Unauthorized')
     }
-    // CAll the chatflow flowise endpoint with the token
-    // Use the chatflowDomain field on the user
+
+    // Fetch user chats from the database
+    const userChats = await prisma.chat.findMany({
+        where: {
+            users: { some: { email: user.email } },
+            organization: { id: user.org_id }
+        },
+        select: {
+            id: true
+        }
+    })
+
     const { chatflowDomain } = user
     try {
-        console.log(
-            'FetchFlowise',
-            `${chatflowDomain}/api/v1/chatflows?filter=${encodeURIComponent(
-                JSON.stringify({
-                    visibility: 'AnswerAI,Organization'
-                })
-            )}`
-        )
         const response = await fetch(
             `${chatflowDomain}/api/v1/chatflows?filter=${encodeURIComponent(
                 JSON.stringify({
@@ -46,55 +62,45 @@ export async function findSidekicksForChat(user: User) {
         if (response.ok) {
             const result = await response.json()
 
-            const sidekicks = result.map((chatflow: any) => ({
-                // placeholder: sidekick.placeholder || '',
-                // tagString: (sidekick.tags || []).map((t) => toSentenceCase(t)).join(', '),
-                // tags: (sidekick.tags || []).map((t) => toSentenceCase(t)),
+            const sidekicks: Sidekick[] = result.map((chatflow: any) => ({
                 id: chatflow.id || '',
-                // aiModel: sidekick.aiModel || '',
                 label: chatflow.name || '',
-                // sharedWith: sharedWith,
-                // isFavorite: hasFavorited,
-                visibility: chatflow?.visibility,
+                visibility: chatflow.visibility || [],
                 chatflow: chatflow,
-                answersConfig: chatflow?.answersConfig,
-                chatflowId: chatflow?.id || '',
+                answersConfig: chatflow.answersConfig,
+                chatflowId: chatflow.id || '',
                 chatflowDomain: chatflowDomain,
-                chatbotConfig: parseChatbotConfig(chatflow?.chatbotConfig),
-                flowData: parseFlowData(chatflow?.flowData)
+                chatbotConfig: parseChatbotConfig(chatflow.chatbotConfig),
+                flowData: parseFlowData(chatflow.flowData),
+                isRecent: userChats.some((chat) => chat.chatflowId === chatflow.id),
+                category: chatflow.category,
+                categories: chatflow.categories || chatflow.category ? [chatflow.category] : [],
+                isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
+                isFavorite: false // This will be managed client-side
             }))
 
-            return sidekicks
+            return {
+                sidekicks,
+                categories: getUniqueCategories(sidekicks)
+            }
         } else {
             const result = await response.text()
-            console.log('Chatflow error:', { result })
+            console.error('Chatflow error:', { result })
+            return { sidekicks: [], categories: { top: [], more: [] } }
         }
     } catch (err) {
         console.error('Error fetching chatflows:', err)
-        return []
+        return { sidekicks: [], categories: { top: [], more: [] } }
     }
-    // const dbSidekicks = await prisma.sidekick.findMany({
-    //   where: {
-    //     tags: { has: 'flowise' },
-    //     NOT: { tags: { has: 'internal' } },
-    //     chatflow: {
-    //       path: ['answersConfig', 'workflowVisibility'],
-    //       array_contains: ['AnswerAI']
-    //     },
-    //     organization: { id: user.org_id },
-    //     OR: [
-    //       { createdByUser: { id: user.id } },
-    //       {
-    //         organization: { id: user.org_id },
-    //         chatflow: {
-    //           path: ['answersConfig', 'workflowVisibility'],
-    //           array_contains: ['Organization']
-    //         }s
-    //       }
-    //     ]
-    //   }
-    // });
+}
 
-    // const sidekicks = dbSidekicks?.length ? normalizeSidekickList(dbSidekicks, user) : [];
-    // return sidekicks;
+function getUniqueCategories(sidekicks: Sidekick[]) {
+    const categories = [...new Set(sidekicks.map((s) => s.category))].filter(Boolean)
+    const topCategories = categories.slice(0, 3)
+    const moreCategories = categories.slice(3)
+
+    return {
+        top: topCategories,
+        more: moreCategories
+    }
 }

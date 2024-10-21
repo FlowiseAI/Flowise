@@ -460,6 +460,9 @@ importers:
             framer-motion:
                 specifier: ^10.13.0
                 version: 10.18.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+            fuse.js:
+                specifier: ^7.0.0
+                version: 7.0.0
             handlebars:
                 specifier: ^4.7.7
                 version: 4.7.8
@@ -4072,12 +4075,15 @@ packages:
 
     '@esbuild-kit/cjs-loader@2.4.4':
         resolution: { integrity: sha512-NfsJX4PdzhwSkfJukczyUiZGc7zNNWZcEAyqeISpDnn0PTfzMJR1aR8xAIPskBejIxBJbIgCCMzbaYa9SXepIg== }
+        deprecated: 'Merged into tsx: https://tsx.is'
 
     '@esbuild-kit/core-utils@3.3.2':
         resolution: { integrity: sha512-sPRAnw9CdSsRmEtnsl2WXWdyquogVpB3yZ3dgwJfe8zrOzTsV7cJvmwrKVa+0ma5BoiGJ+BoqkMvawbayKUsqQ== }
+        deprecated: 'Merged into tsx: https://tsx.is'
 
     '@esbuild-kit/esm-loader@2.6.5':
         resolution: { integrity: sha512-FxEMIkJKnodyA1OaCUoEvbYRkoZlLZ4d/eXFu9Fh8CbBBgP5EmZxrfTRyN0qpXZ4vOvqnE5YdRdcrmUUXuU+dA== }
+        deprecated: 'Merged into tsx: https://tsx.is'
 
     '@esbuild/aix-ppc64@0.19.12':
         resolution: { integrity: sha512-bmoCYyWdEL3wDQIVbcyzRyeKLgk2WtWLTWz1ZIAZF/EGbNOwSA6ew3PftJ1PqMiOOGu0OyFMzG53L0zqIpPeNA== }
@@ -4644,6 +4650,7 @@ packages:
     '@humanwhocodes/config-array@0.11.14':
         resolution: { integrity: sha512-3T8LkOmg45BV5FICb15QQMsyUSWrQ8AygVfC7ZG32zOalnqrilm018ZVCw0eapXux8FtA33q8PSRSstjee3jSg== }
         engines: { node: '>=10.10.0' }
+        deprecated: Use @eslint/config-array instead
 
     '@humanwhocodes/config-array@0.5.0':
         resolution: { integrity: sha512-FagtKFz74XrTl7y6HCzQpwDfXP0yhxe9lHLD1UZxjvZIcbyRz8zTFF/yYNfSfzU414eDwZ1SrO0Qvtyf+wFMQg== }
@@ -4660,6 +4667,7 @@ packages:
 
     '@humanwhocodes/object-schema@2.0.2':
         resolution: { integrity: sha512-6EwiSjwWYP7pTckG6I5eyFANjPhmPjUX9JRLUSfNPC7FX7zK9gyZAfUEaECL6ALTpGX5AjnBq3C9XmVWPitNpw== }
+        deprecated: Use @eslint/object-schema instead
 
     '@icons/material@0.2.4':
         resolution: { integrity: sha512-QPcGmICAPbGLGb6F/yNf/KzKqvFx8z5qx3D1yFqVAjoFmXK35EgyW+cJ57Te3CNsmzblwtzakLGFqHPqrfb4Tw== }
@@ -8167,10 +8175,12 @@ packages:
     are-we-there-yet@2.0.0:
         resolution: { integrity: sha512-Ci/qENmwHnsYo9xKIcUJN5LeDKdJ6R1Z1j9V/J5wyq8nh/mYPEpIKJbBZXtZjG04HiK7zV/p6Vs9952MrMeUIw== }
         engines: { node: '>=10' }
+        deprecated: This package is no longer supported.
 
     are-we-there-yet@3.0.1:
         resolution: { integrity: sha512-QZW4EDmGwlYur0Yyf/b2uGucHQMa8aFUP7eu9ddR73vvhFyt4V0Vl3QHPcTNJ8l6qYOBdxgXdnBXQrHilfRQBg== }
         engines: { node: ^12.13.0 || ^14.15.0 || >=16.0.0 }
+        deprecated: This package is no longer supported.
 
     arg@4.1.3:
         resolution: { integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA== }
@@ -11804,7 +11814,7 @@ packages:
         resolution: { integrity: sha512-oWb1Z6mkHIskLzEJ/XWX0srkpkTQ7vaopMQkyaEIoq0fmtFVxOthb8cCxeT+p3ynTdkk/RZwbgG4brR5BeWECw== }
         engines: { node: '>= 4.0' }
         os: [darwin]
-        deprecated: The v1 package contains DANGEROUS / INSECURE binaries. Upgrade to safe fsevents v2
+        deprecated: Upgrade to fsevents v2 to mitigate potential security issues
 
     fsevents@2.3.2:
         resolution: { integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA== }
@@ -11829,13 +11839,19 @@ packages:
     functions-have-names@1.2.3:
         resolution: { integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ== }
 
+    fuse.js@7.0.0:
+        resolution: { integrity: sha512-14F4hBIxqKvD4Zz/XjDc3y94mNZN6pRv3U13Udo0lNLCWRBUsrMv2xwcF/y/Z5sV6+FQW+/ow68cHpm4sunt8Q== }
+        engines: { node: '>=10' }
+
     gauge@3.0.2:
         resolution: { integrity: sha512-+5J6MS/5XksCuXq++uFRsnUd7Ovu1XenbeuIuNRJxYWjgQbPuFhT14lAvsWfqfAmnwluf1OwMjz39HjfLPci0Q== }
         engines: { node: '>=10' }
+        deprecated: This package is no longer supported.
 
     gauge@4.0.4:
         resolution: { integrity: sha512-f9m+BEN5jkg6a0fZjleidjN51VE1X+mPFQ2DJ0uv1V39oCLCbsGe6yjbBnp7eK7z/+GAon99a3nHuqbuuthyPg== }
         engines: { node: ^12.13.0 || ^14.15.0 || >=16.0.0 }
+        deprecated: This package is no longer supported.
 
     gaxios@5.1.3:
         resolution: { integrity: sha512-95hVgBRgEIRQQQHIbnxBXeHbW4TqFk4ZDJW7wmVtvYar72FdhRIo1UGOLS2eRAKCPEdPBWu+M7+A33D9CdX9rA== }
@@ -11999,6 +12015,7 @@ packages:
 
     glob@7.2.3:
         resolution: { integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q== }
+        deprecated: Glob versions prior to v9 are no longer supported
 
     glob@8.1.0:
         resolution: { integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ== }
@@ -12082,6 +12099,7 @@ packages:
     google-p12-pem@4.0.1:
         resolution: { integrity: sha512-WPkN4yGtz05WZ5EhtlxNDWPhC4JIic6G8ePitwUWy4l+XPVYec+a0j0Ts47PDtW59y3RwAhUd9/h9ZZ63px6RQ== }
         engines: { node: '>=12.0.0' }
+        deprecated: Package is no longer maintained
         hasBin: true
 
     google-protobuf@3.21.2:
@@ -12666,6 +12684,7 @@ packages:
 
     inflight@1.0.6:
         resolution: { integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA== }
+        deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
 
     info-symbol@0.1.0:
         resolution: { integrity: sha512-qkc9wjLDQ+dYYZnY5uJXGNNHyZ0UOMDUnhvy0SEZGVVYmQ5s4i8cPAin2MbU6OxJgi8dfj/AnwqPx0CJE6+Lsw== }
@@ -16149,10 +16168,12 @@ packages:
 
     npmlog@5.0.1:
         resolution: { integrity: sha512-AqZtDUWOMKs1G/8lwylVjrdYgqA4d9nu8hc+0gzRxlDb1I10+FHBGMXs6aiQHFdCUUlqH99MUMuLfzWDNDtfxw== }
+        deprecated: This package is no longer supported.
 
     npmlog@6.0.2:
         resolution: { integrity: sha512-/vBvz5Jfr9dT/aFWd0FIRf+T/Q2WBsLENygUaFUqstqsycmZAP/t5BvFJTK0viFmSUxiUKTUplWy5vt+rvKIxg== }
         engines: { node: ^12.13.0 || ^14.15.0 || >=16.0.0 }
+        deprecated: This package is no longer supported.
 
     nprogress@0.2.0:
         resolution: { integrity: sha512-I19aIingLgR1fmhftnbWWO3dXc0hSxqHQHQb3H8m+K3TnEn/iSeTZZOyvKXWqQESMwuUVnatlCnZdLBZZt2VSA== }
@@ -17892,7 +17913,7 @@ packages:
     puppeteer@20.9.0:
         resolution: { integrity: sha512-kAglT4VZ9fWEGg3oLc4/de+JcONuEJhlh3J6f5R1TLkrY/EHHIHxWXDOzXvaxQCtedmyVXBwg8M+P8YCO/wZjw== }
         engines: { node: '>=16.3.0' }
-        deprecated: < 21.5.0 is no longer supported
+        deprecated: < 22.8.2 is no longer supported
 
     pure-color@1.3.0:
         resolution: { integrity: sha512-QFADYnsVoBMw1srW7OVKEYjG+MbIa49s54w1MA1EDY6r2r/sTcKKYqRX1f4GYvnXP7eN/Pe9HFcX+hwzmrXRHA== }
@@ -17906,6 +17927,10 @@ packages:
     q@1.5.1:
         resolution: { integrity: sha512-kV/CThkXo6xyFEZUugw/+pIOywXcDbFYgSct5cT3gqlbkBE1SJdwy6UQoZvodiWF/ckQLZyDE/Bu1M6gVu5lVw== }
         engines: { node: '>=0.6.0', teleport: '>=0.2.0' }
+        deprecated: |-
+            You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+
+            (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
     qs@6.10.4:
         resolution: { integrity: sha512-OQiU+C+Ds5qiH91qh/mg0w+8nwQuLjM4F4M/PbmhDOoYehPh+Fb0bDjtR1sOvy7YKxvj28Y/M0PhP5uVX0kB+g== }
@@ -18288,6 +18313,7 @@ packages:
     read-package-json@6.0.4:
         resolution: { integrity: sha512-AEtWXYfopBj2z5N5PbkAOeNHRPUg5q+Nen7QLxV8M2zJq1ym6/lCz3fYNTCXe19puu2d06jfHhrP7v/S2PtMMw== }
         engines: { node: ^14.17.0 || ^16.13.0 || >=18.0.0 }
+        deprecated: This package is no longer supported. Please use @npmcli/package-json instead.
 
     read-pkg-up@1.0.1:
         resolution: { integrity: sha512-WD9MTlNtI55IwYUS27iHh9tK3YoIVhxis8yKhLpTqWtml739uXc9NWTpxoHkfZf3+DkCCsXox94/VWZniuZm6A== }
@@ -18382,6 +18408,7 @@ packages:
 
     reflect-metadata@0.2.1:
         resolution: { integrity: sha512-i5lLI6iw9AU3Uu4szRNPPEkomnkjRTaVt9hy/bn5g/oSzekBSMeLZblcjP74AW0vBabqERLLIrz+gR8QYR54Tw== }
+        deprecated: This version has a critical bug in fallback handling. Please upgrade to reflect-metadata@0.2.2 or newer.
 
     reflect.getprototypeof@1.0.5:
         resolution: { integrity: sha512-62wgfC8dJWrmxv44CA36pLDnP6KKl3Vhxb7PL+8+qrrFMMoJij4vgiMP8zV4O8+CBMXY1mHxI5fITGHXFHVmQQ== }
@@ -18720,10 +18747,12 @@ packages:
 
     rimraf@2.7.1:
         resolution: { integrity: sha512-uWjbaKIK3T1OSVptzX7Nl6PvQ3qAGtKEtVRjRuazjfL3Bx5eI409VZSqgND+4UNnmzLVdPj9FqFJNPqBZFve4w== }
+        deprecated: Rimraf versions prior to v4 are no longer supported
         hasBin: true
 
     rimraf@3.0.2:
         resolution: { integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA== }
+        deprecated: Rimraf versions prior to v4 are no longer supported
         hasBin: true
 
     rimraf@5.0.5:
@@ -21363,6 +21392,7 @@ packages:
 
     workbox-google-analytics@6.6.0:
         resolution: { integrity: sha512-p4DJa6OldXWd6M9zRl0H6vB9lkrmqYFkRQ2xEiNdBFp9U0LhsGO7hsBscVEyH9H2/3eZZt8c97NB2FD9U2NJ+Q== }
+        deprecated: It is not compatible with newer versions of GA starting with v4, as long as you are using GAv3 it should be ok, but the package is not longer being maintained
 
     workbox-google-analytics@7.0.0:
         resolution: { integrity: sha512-MEYM1JTn/qiC3DbpvP2BVhyIH+dV/5BjHk756u9VbwuAhu0QHyKscTnisQuz21lfRpOwiS9z4XdqeVAKol0bzg== }
@@ -27075,7 +27105,7 @@ snapshots:
             flat: 5.0.2
             js-yaml: 4.1.0
             langchain: 0.2.3(nphj44k7dsxncfcpdkfznsprde)
-            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             uuid: 9.0.1
             zod: 3.22.4
             zod-to-json-schema: 3.22.5(zod@3.22.4)
@@ -27176,7 +27206,7 @@ snapshots:
             camelcase: 6.3.0
             decamelize: 1.2.0
             js-tiktoken: 1.0.12
-            langsmith: 0.1.39(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.39(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             ml-distance: 4.0.1
             mustache: 4.2.0
             p-queue: 6.6.2
@@ -35022,8 +35052,8 @@ snapshots:
             '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@4.9.5)
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0)
-            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0)
+            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0)
+            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0)
             eslint-plugin-jsx-a11y: 6.8.0(eslint@7.32.0)
             eslint-plugin-react: 7.34.0(eslint@7.32.0)
             eslint-plugin-react-hooks: 4.6.0(eslint@7.32.0)
@@ -35085,6 +35115,23 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
+    eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0):
+        dependencies:
+            debug: 4.3.6(supports-color@8.1.1)
+            enhanced-resolve: 5.16.0
+            eslint: 7.32.0
+            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0)
+            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0)
+            fast-glob: 3.3.2
+            get-tsconfig: 4.7.6
+            is-core-module: 2.13.1
+            is-glob: 4.0.3
+        transitivePeerDependencies:
+            - '@typescript-eslint/parser'
+            - eslint-import-resolver-node
+            - eslint-import-resolver-webpack
+            - supports-color
+
     eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.37.0):
         dependencies:
             debug: 4.3.6(supports-color@8.1.1)
@@ -35102,21 +35149,15 @@ snapshots:
             - eslint-import-resolver-webpack
             - supports-color
 
-    eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0):
+    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0):
         dependencies:
-            debug: 4.3.6(supports-color@8.1.1)
-            enhanced-resolve: 5.16.0
+            debug: 3.2.7(supports-color@5.5.0)
+        optionalDependencies:
+            '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@4.9.5)
             eslint: 7.32.0
-            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0)
-            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0)
-            fast-glob: 3.3.2
-            get-tsconfig: 4.7.6
-            is-core-module: 2.13.1
-            is-glob: 4.0.3
+            eslint-import-resolver-node: 0.3.9
+            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0)
         transitivePeerDependencies:
-            - '@typescript-eslint/parser'
-            - eslint-import-resolver-node
-            - eslint-import-resolver-webpack
             - supports-color
 
     eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.37.0))(eslint@8.37.0):
@@ -35127,17 +35168,6 @@ snapshots:
             eslint: 8.37.0
             eslint-import-resolver-node: 0.3.9
             eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.37.0)
-        transitivePeerDependencies:
-            - supports-color
-
-    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0):
-        dependencies:
-            debug: 3.2.7(supports-color@5.5.0)
-        optionalDependencies:
-            '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.5.2)
-            eslint: 7.32.0
-            eslint-import-resolver-node: 0.3.9
-            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -35158,6 +35188,33 @@ snapshots:
             eslint: 8.57.0
             lodash: 4.17.21
             string-natural-compare: 3.0.1
+
+    eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0):
+        dependencies:
+            array-includes: 3.1.7
+            array.prototype.findlastindex: 1.2.4
+            array.prototype.flat: 1.3.2
+            array.prototype.flatmap: 1.3.2
+            debug: 3.2.7(supports-color@5.5.0)
+            doctrine: 2.1.0
+            eslint: 7.32.0
+            eslint-import-resolver-node: 0.3.9
+            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0)
+            hasown: 2.0.2
+            is-core-module: 2.13.1
+            is-glob: 4.0.3
+            minimatch: 3.1.2
+            object.fromentries: 2.0.7
+            object.groupby: 1.0.2
+            object.values: 1.1.7
+            semver: 6.3.1
+            tsconfig-paths: 3.15.0
+        optionalDependencies:
+            '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@4.9.5)
+        transitivePeerDependencies:
+            - eslint-import-resolver-typescript
+            - eslint-import-resolver-webpack
+            - supports-color
 
     eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.37.0):
         dependencies:
@@ -35181,33 +35238,6 @@ snapshots:
             tsconfig-paths: 3.15.0
         optionalDependencies:
             '@typescript-eslint/parser': 5.62.0(eslint@8.37.0)(typescript@5.0.3)
-        transitivePeerDependencies:
-            - eslint-import-resolver-typescript
-            - eslint-import-resolver-webpack
-            - supports-color
-
-    eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0):
-        dependencies:
-            array-includes: 3.1.7
-            array.prototype.findlastindex: 1.2.4
-            array.prototype.flat: 1.3.2
-            array.prototype.flatmap: 1.3.2
-            debug: 3.2.7(supports-color@5.5.0)
-            doctrine: 2.1.0
-            eslint: 7.32.0
-            eslint-import-resolver-node: 0.3.9
-            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0)
-            hasown: 2.0.2
-            is-core-module: 2.13.1
-            is-glob: 4.0.3
-            minimatch: 3.1.2
-            object.fromentries: 2.0.7
-            object.groupby: 1.0.2
-            object.values: 1.1.7
-            semver: 6.3.1
-            tsconfig-paths: 3.15.0
-        optionalDependencies:
-            '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.5.2)
         transitivePeerDependencies:
             - eslint-import-resolver-typescript
             - eslint-import-resolver-webpack
@@ -36608,6 +36638,8 @@ snapshots:
     functional-red-black-tree@1.0.1: {}
 
     functions-have-names@1.2.3: {}
+
+    fuse.js@7.0.0: {}
 
     gauge@3.0.2:
         dependencies:
@@ -39675,7 +39707,7 @@ snapshots:
             js-yaml: 4.1.0
             jsonpointer: 5.0.1
             langchainhub: 0.0.11
-            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             ml-distance: 4.0.1
             openapi-types: 12.1.3
             p-retry: 4.6.2
@@ -39761,7 +39793,7 @@ snapshots:
             langchain: 0.2.11(lcaakvik4gok2sgy65marre3ge)
             openai: 4.51.0(encoding@0.1.13)
 
-    langsmith@0.1.32(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
+    langsmith@0.1.32(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
         dependencies:
             '@types/uuid': 9.0.8
             commander: 10.0.1
@@ -39769,7 +39801,7 @@ snapshots:
             p-retry: 4.6.2
             uuid: 9.0.1
         optionalDependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             langchain: 0.2.3(nphj44k7dsxncfcpdkfznsprde)
             openai: 4.51.0(encoding@0.1.13)
 
@@ -39785,7 +39817,7 @@ snapshots:
             langchain: 0.2.11(lcaakvik4gok2sgy65marre3ge)
             openai: 4.51.0(encoding@0.1.13)
 
-    langsmith@0.1.39(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
+    langsmith@0.1.39(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
         dependencies:
             '@types/uuid': 9.0.8
             commander: 10.0.1
@@ -39793,7 +39825,7 @@ snapshots:
             p-retry: 4.6.2
             uuid: 9.0.1
         optionalDependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             langchain: 0.2.3(nphj44k7dsxncfcpdkfznsprde)
             openai: 4.51.0(encoding@0.1.13)
 

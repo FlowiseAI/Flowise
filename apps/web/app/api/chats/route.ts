@@ -3,22 +3,23 @@ import { NextResponse } from 'next/server'
 import getCachedSession from '@ui/getCachedSession'
 import { prisma } from '@db/client'
 
-export async function GET(req: Request) {
-    const user = await getCachedSession()
-    if (!user?.user?.email) return NextResponse.redirect('/auth')
-    const records = await prisma.chat.findMany({
+import type { Chat } from 'types'
+
+export async function GET(req: Request): Promise<NextResponse<Chat[]>> {
+    const session = await getCachedSession()
+
+    if (!session?.user?.email) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const chats = await prisma.chat.findMany({
         where: {
-            users: {
-                some: {
-                    email: user?.user?.email
-                }
-            },
-            organization: { id: user?.user?.organizationId! },
-            chatflowChatId: { not: null },
-            journeyId: null
+            users: { some: { email: session.user.email } },
+            organizationId: session.user.organizationId
         }
     })
-    return NextResponse.json(records)
+
+    return NextResponse.json(chats)
 }
 
 export async function DELETE(req: Request) {
