@@ -29,7 +29,6 @@ class OpenSearch_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = `Upsert embedded data and perform similarity search upon query using OpenSearch, an open-source, all-in-one vector database`
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

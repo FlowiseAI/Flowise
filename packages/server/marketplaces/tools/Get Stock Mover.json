@@ -1,6 +1,5 @@
 {
     "name": "get_stock_movers",
-    "framework": "Langchain",
     "description": "Get the stocks that has biggest price/volume moves, e.g. actives, gainers, losers, etc.",
     "iconSrc": "https://rapidapi.com/cdn/images?url=https://rapidapi-prod-apis.s3.amazonaws.com/9c/e743343bdd41edad39a3fdffd5b974/016c33699f51603ae6fe4420c439124b.png",
     "color": "linear-gradient(rgb(191,202,167), rgb(143,202,246))",

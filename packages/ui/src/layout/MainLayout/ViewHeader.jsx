@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useRef } from 'react'
 
 // material-ui
 import { IconButton, Box, OutlinedInput, Toolbar, Typography } from '@mui/material'
@@ -7,6 +8,14 @@ import { StyledFab } from '@/ui-component/button/StyledFab'
 
 // icons
 import { IconSearch, IconArrowLeft, IconEdit } from '@tabler/icons-react'
+
+import useSearchShorcut from '@/hooks/useSearchShortcut'
+import { getOS } from '@/utils/genericHelper'
+
+const os = getOS()
+const isMac = os === 'macos'
+const isDesktop = isMac || os === 'windows' || os === 'linux'
+const keyboardShortcut = isMac ? '[ ⌘ + F ]' : '[ Ctrl + F ]'
 
 const ViewHeader = ({
     children,
@@ -22,6 +31,8 @@ const ViewHeader = ({
     onEdit
 }) => {
     const theme = useTheme()
+    const searchInputRef = useRef()
+    useSearchShorcut(searchInputRef)
 
     return (
         <Box sx={{ flexGrow: 1, py: 1.25, width: '100%' }}>
@@ -85,9 +96,10 @@ const ViewHeader = ({
                 <Box sx={{ height: 40, display: 'flex', alignItems: 'center', gap: 1 }}>
                     {search && (
                         <OutlinedInput
+                            inputRef={searchInputRef}
                             size='small'
                             sx={{
-                                width: '280px',
+                                width: '325px',
                                 height: '100%',
                                 display: { xs: 'none', sm: 'flex' },
                                 borderRadius: 2,
@@ -97,7 +109,7 @@ const ViewHeader = ({
                                 }
                             }}
                             variant='outlined'
-                            placeholder={searchPlaceholder}
+                            placeholder={`${searchPlaceholder} ${isDesktop ? keyboardShortcut : ''}`}
                             onChange={onSearchChange}
                             startAdornment={
                                 <Box

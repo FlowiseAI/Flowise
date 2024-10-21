@@ -4,7 +4,7 @@ import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { PromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
 import { SqlDatabaseChain, SqlDatabaseChainInput, DEFAULT_SQL_DATABASE_PROMPT } from 'langchain/chains/sql_db'
 import { SqlDatabase } from 'langchain/sql_db'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, getInputVariables } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
@@ -66,7 +66,7 @@ class SqlDatabaseChain_Chains implements INode {
                 label: 'Connection string or file path (sqlite only)',
                 name: 'url',
                 type: 'string',
-                placeholder: '1270.0.0.1:5432/chinook'
+                placeholder: '127.0.0.1:5432/chinook'
             },
             {
                 label: 'Include Tables',
@@ -166,13 +166,21 @@ class SqlDatabaseChain_Chains implements INode {
         const topK = nodeData.inputs?.topK as number
         const customPrompt = nodeData.inputs?.customPrompt as string
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
+
         if (moderations && moderations.length > 0) {
             try {
                 // Use the output of the moderation chain as input for the Sql Database Chain
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (shouldStreamResponse) {
+                    streamResponse(sseStreamer, chatId, e.message)
+                }
+                // streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
                 return formatResponse(e.message)
             }
         }
@@ -190,8 +198,9 @@ class SqlDatabaseChain_Chains implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
-        if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId, 2)
+        if (shouldStreamResponse) {
+            const handler = new CustomChainHandler(sseStreamer, chatId, 2)
+
             const res = await chain.run(input, [loggerHandler, handler, ...callbacks])
             return res
         } else {

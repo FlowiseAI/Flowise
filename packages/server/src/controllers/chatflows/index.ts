@@ -1,11 +1,11 @@
-import { Request, Response, NextFunction } from 'express'
-import chatflowsService from '../../services/chatflows'
-import { ChatFlow } from '../../database/entities/ChatFlow'
-import { createRateLimiter } from '../../utils/rateLimit'
-import { getApiKey } from '../../utils/apiKey'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import apiKeyService from '../../services/apikey'
+import { ChatFlow } from '../../database/entities/ChatFlow'
+import { updateRateLimiter } from '../../utils/rateLimit'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { ChatflowType } from '../../Interface'
+import chatflowsService from '../../services/chatflows'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -67,7 +67,7 @@ const getChatflowByApiKey = async (req: Request, res: Response, next: NextFuncti
                 `Error: chatflowsRouter.getChatflowByApiKey - apikey not provided!`
             )
         }
-        const apikey = await getApiKey(req.params.apikey)
+        const apikey = await apiKeyService.getApiKey(req.params.apikey)
         if (!apikey) {
             return res.status(401).send('Unauthorized')
         }
@@ -105,6 +105,16 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
+const importChatflows = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const chatflows: Partial<ChatFlow>[] = req.body.Chatflows
+        const apiResponse = await chatflowsService.importChatflows(chatflows)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const updateChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
@@ -120,7 +130,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         Object.assign(updateChatFlow, body)
 
         updateChatFlow.id = chatflow.id
-        createRateLimiter(updateChatFlow)
+        updateRateLimiter(updateChatFlow)
 
         const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow)
         return res.json(apiResponse)
@@ -167,6 +177,7 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
+    importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig

@@ -3,7 +3,7 @@ import {
     SkipInferTableTypes,
     UnstructuredLoaderOptions,
     UnstructuredLoaderStrategy
-} from 'langchain/document_loaders/fs/unstructured'
+} from '@langchain/community/document_loaders/fs/unstructured'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
 import { StringWithAutocomplete } from 'langchain/dist/util/types'
 import { Document } from '@langchain/core/documents'
@@ -29,7 +29,7 @@ type Element = {
 export class UnstructuredLoader extends BaseDocumentLoader {
     public filePath: string
 
-    private apiUrl = 'https://api.unstructured.io/general/v0/general'
+    private apiUrl = 'https://api.unstructuredapp.io/general/v0/general'
 
     private apiKey?: string
 

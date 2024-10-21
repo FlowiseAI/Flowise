@@ -1,6 +1,6 @@
 import client from './client'
 
-const getAllChatflows = () => client.get('/chatflows')
+const getAllChatflows = () => client.get('/chatflows?type=CHATFLOW')
 
 const getAllAgentflows = () => client.get('/chatflows?type=MULTIAGENT')
 
@@ -9,6 +9,8 @@ const getSpecificChatflow = (id) => client.get(`/chatflows/${id}`)
 const getSpecificChatflowFromPublicEndpoint = (id) => client.get(`/public-chatflows/${id}`)
 
 const createNewChatflow = (body) => client.post(`/chatflows`, body)
+
+const importChatflows = (body) => client.post(`/chatflows/importchatflows`, body)
 
 const updateChatflow = (id, body) => client.put(`/chatflows/${id}`, body)
 
@@ -24,6 +26,7 @@ export default {
     getSpecificChatflow,
     getSpecificChatflowFromPublicEndpoint,
     createNewChatflow,
+    importChatflows,
     updateChatflow,
     deleteChatflow,
     getIsChatflowStreaming,

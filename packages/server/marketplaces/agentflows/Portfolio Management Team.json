@@ -1,5 +1,7 @@
 {
     "description": "A team of portfolio manager, financial analyst, and risk manager working together to optimize an investment portfolio.",
+    "framework": ["Langchain"],
+    "usecases": ["Finance & Accounting"],
     "nodes": [
         {
             "id": "supervisor_0",

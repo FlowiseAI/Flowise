@@ -77,7 +77,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                 onConfirm()
             }
         } catch (error) {
-            setError(error)
+            if (setError) setError(error)
             enqueueSnackbar({
                 message: `Failed to add new API key: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -116,7 +116,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                 onConfirm()
             }
         } catch (error) {
-            setError(error)
+            if (setError) setError(error)
             enqueueSnackbar({
                 message: `Failed to save API key: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data

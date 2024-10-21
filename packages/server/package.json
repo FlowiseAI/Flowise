@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "1.8.2",
+    "version": "2.1.2",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -70,6 +70,7 @@
         "flowise-ui": "workspace:^",
         "http-errors": "^2.0.0",
         "http-status-codes": "^2.3.0",
+        "langchainhub": "^0.0.11",
         "lodash": "^4.17.21",
         "moment": "^2.29.3",
         "moment-timezone": "^0.5.34",
@@ -93,7 +94,7 @@
         "@types/multer": "^1.4.7",
         "@types/sanitize-html": "^2.9.5",
         "concurrently": "^7.1.0",
-        "cypress": "^13.7.1",
+        "cypress": "^13.13.0",
         "nodemon": "^2.0.22",
         "oclif": "^3",
         "rimraf": "^5.0.5",
@@ -102,6 +103,6 @@
         "start-server-and-test": "^2.0.3",
         "ts-node": "^10.7.0",
         "tsc-watch": "^6.0.4",
-        "typescript": "^4.8.4"
+        "typescript": "^5.4.5"
     }
 }

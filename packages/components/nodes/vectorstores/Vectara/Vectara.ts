@@ -36,7 +36,6 @@ class Vectara_VectorStores implements INode {
         this.category = 'Vector Stores'
         this.description = 'Upsert embedded data and perform similarity search upon query using Vectara, a LLM-powered search-as-a-service'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -195,6 +194,7 @@ class Vectara_VectorStores implements INode {
                 const chatflowid = options.chatflowid
 
                 for (const file of files) {
+                    if (!file) continue
                     const fileData = await getFileFromStorage(file, chatflowid)
                     const blob = new Blob([fileData])
                     vectaraFiles.push({ blob: blob, fileName: getFileName(file) })
@@ -207,6 +207,7 @@ class Vectara_VectorStores implements INode {
                 }
 
                 for (const file of files) {
+                    if (!file) continue
                     const splitDataURI = file.split(',')
                     splitDataURI.pop()
                     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')

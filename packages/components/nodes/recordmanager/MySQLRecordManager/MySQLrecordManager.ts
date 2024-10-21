@@ -25,7 +25,6 @@ class MySQLRecordManager_RecordManager implements INode {
         this.category = 'Record Manager'
         this.description = 'Use MySQL to keep track of document writes into the vector databases'
         this.baseClasses = [this.type, 'RecordManager', ...getBaseClasses(MySQLRecordManager)]
-        this.badge = 'NEW'
         this.inputs = [
             {
                 label: 'Host',
@@ -195,7 +194,7 @@ class MySQLRecordManager implements RecordManagerInterface {
                 \`key\` varchar(255) not null,
                 \`namespace\` varchar(255) not null,
                 \`updated_at\` DOUBLE precision not null,
-                \`group_id\` varchar(36),
+                \`group_id\` longtext,
                 unique key \`unique_key_namespace\` (\`key\`,
 \`namespace\`));`)
             const columns = [`updated_at`, `key`, `namespace`, `group_id`]
@@ -259,7 +258,7 @@ class MySQLRecordManager implements RecordManagerInterface {
         const query = `
             INSERT INTO \`${this.tableName}\` (\`key\`, \`namespace\`, \`updated_at\`, \`group_id\`)
             VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE updated_at = updated_at;`
+            ON DUPLICATE KEY UPDATE \`updated_at\` = VALUES(\`updated_at\`)`
 
         // To handle multiple files upsert
         for (const record of recordsToUpsert) {

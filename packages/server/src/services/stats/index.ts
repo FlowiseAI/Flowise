@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import { chatType } from '../../Interface'
+import { ChatMessageRatingType, chatType } from '../../Interface'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
@@ -13,7 +13,8 @@ const getChatflowStats = async (
     startDate?: string,
     endDate?: string,
     messageId?: string,
-    feedback?: boolean
+    feedback?: boolean,
+    feedbackTypes?: ChatMessageRatingType[]
 ): Promise<any> => {
     try {
         const chatmessages = (await utilGetChatMessage(
@@ -26,7 +27,8 @@ const getChatflowStats = async (
             startDate,
             endDate,
             messageId,
-            feedback
+            feedback,
+            feedbackTypes
         )) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
         const totalMessages = chatmessages.length
         const totalFeedback = chatmessages.filter((message) => message?.feedback).length

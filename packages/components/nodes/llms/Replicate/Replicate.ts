@@ -1,8 +1,8 @@
-import { Replicate, ReplicateInput } from '@langchain/community/llms/replicate'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { Replicate, ReplicateInput } from './core'
 
 class Replicate_LLMs implements INode {
     label: string
@@ -97,7 +97,7 @@ class Replicate_LLMs implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const modelName = nodeData.inputs?.model as string
+        const modelName = nodeData.inputs?.model as `${string}/${string}` | `${string}/${string}:${string}`
         const temperature = nodeData.inputs?.temperature as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
@@ -107,14 +107,10 @@ class Replicate_LLMs implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('replicateApiKey', credentialData, nodeData)
 
-        const version = modelName.split(':').pop()
-        const name = modelName.split(':')[0].split('/').pop()
-        const org = modelName.split(':')[0].split('/')[0]
-
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: ReplicateInput & BaseLLMParams = {
-            model: `${org}/${name}:${version}`,
+            model: modelName,
             apiKey
         }
 

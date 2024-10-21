@@ -1,5 +1,7 @@
 {
     "description": "Software engineering team working together to build a feature, solve a problem, or complete a task.",
+    "framework": ["Langchain"],
+    "usecases": ["Engineering"],
     "nodes": [
         {
             "id": "supervisor_0",

@@ -46,6 +46,7 @@ const FormatPromptValuesDialog = ({ show, dialogProps, onChange, onCancel }) => 
                         nodes={dialogProps.nodes}
                         edges={dialogProps.edges}
                         nodeId={dialogProps.nodeId}
+                        isSequentialAgent={dialogProps.data.category === 'Sequential Agents'}
                     />
                 </PerfectScrollbar>
             </DialogContent>

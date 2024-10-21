@@ -740,7 +740,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                             </>
                         )}
                         {codeLang === 'Share Chatbot' && !chatflowApiKeyId && (
-                            <ShareChatbot isSessionMemory={dialogProps.isSessionMemory} />
+                            <ShareChatbot isSessionMemory={dialogProps.isSessionMemory} isAgentCanvas={dialogProps.isAgentCanvas} />
                         )}
                     </TabPanel>
                 ))}

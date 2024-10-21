@@ -6,7 +6,7 @@ const router = express.Router()
 // Create document store
 router.post('/store', documentStoreController.createDocumentStore)
 // List all stores
-router.get('/stores', documentStoreController.getAllDocumentStores)
+router.get('/store', documentStoreController.getAllDocumentStores)
 // Get specific store
 router.get('/store/:id', documentStoreController.getDocumentStoreById)
 // Update documentStore
@@ -16,7 +16,7 @@ router.delete('/store/:id', documentStoreController.deleteDocumentStore)
 
 /** Component Nodes = Document Store - Loaders */
 // Get all loaders
-router.get('/loaders', documentStoreController.getDocumentLoaders)
+router.get('/components/loaders', documentStoreController.getDocumentLoaders)
 
 // delete loader from document store
 router.delete('/loader/:id/:loaderId', documentStoreController.deleteLoaderFromDocumentStore)
@@ -32,5 +32,23 @@ router.delete('/chunks/:storeId/:loaderId/:chunkId', documentStoreController.del
 router.put('/chunks/:storeId/:loaderId/:chunkId', documentStoreController.editDocumentStoreFileChunk)
 // Get all file chunks from the store
 router.get('/chunks/:storeId/:fileId/:pageNo', documentStoreController.getDocumentStoreFileChunks)
+
+// add chunks to the selected vector store
+router.post('/vectorstore/insert', documentStoreController.insertIntoVectorStore)
+// save the selected vector store
+router.post('/vectorstore/save', documentStoreController.saveVectorStoreConfig)
+// delete data from the selected vector store
+router.delete('/vectorstore/:storeId', documentStoreController.deleteVectorStoreFromStore)
+// query the vector store
+router.post('/vectorstore/query', documentStoreController.queryVectorStore)
+// Get all embedding providers
+router.get('/components/embeddings', documentStoreController.getEmbeddingProviders)
+// Get all vector store providers
+router.get('/components/vectorstore', documentStoreController.getVectorStoreProviders)
+// Get all Record Manager providers
+router.get('/components/recordmanager', documentStoreController.getRecordManagerProviders)
+
+// update the selected vector store from the playground
+router.post('/vectorstore/update', documentStoreController.updateVectorStoreConfigOnly)
 
 export default router

@@ -1,11 +1,11 @@
 {
     "description": "Use BabyAGI to create tasks and reprioritize for a given objective",
-    "categories": "BabyAGI,ChatOpenAI,Pinecone,Langchain",
-    "framework": "Langchain",
+    "framework": ["Langchain"],
+    "usecases": ["Reflective Agent"],
     "nodes": [
         {
             "width": 300,
-            "height": 379,
+            "height": 431,
             "id": "babyAGI_1",
             "position": {
                 "x": 950.8042093214954,
@@ -79,7 +79,7 @@
         },
         {
             "width": 300,
-            "height": 329,
+            "height": 424,
             "id": "openAIEmbeddings_0",
             "position": {
                 "x": -111.82510263637522,
@@ -89,7 +89,7 @@
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "version": 3,
+                "version": 4,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -109,7 +109,7 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "id": "openAIEmbeddings_0-input-modelName-options"
+                        "id": "openAIEmbeddings_0-input-modelName-asyncOptions"
                     },
                     {
                         "label": "Strip New Lines",
@@ -142,21 +142,31 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_0-input-basepath-string"
+                    },
+                    {
+                        "label": "Dimensions",
+                        "name": "dimensions",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-dimensions-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
+                    "modelName": "text-embedding-ada-002",
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
                     "basepath": "",
-                    "modelName": "text-embedding-ada-002"
+                    "dimensions": ""
                 },
                 "outputAnchors": [
                     {
                         "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
                         "name": "openAIEmbeddings",
                         "label": "OpenAIEmbeddings",
+                        "description": "OpenAI API to generate embeddings for a given text",
                         "type": "OpenAIEmbeddings | Embeddings"
                     }
                 ],
@@ -172,17 +182,17 @@
         },
         {
             "width": 300,
-            "height": 555,
+            "height": 606,
             "id": "pinecone_0",
             "position": {
-                "x": 238.1350223788262,
-                "y": -133.38073692212225
+                "x": 245.707825551803,
+                "y": -176.9243551667388
             },
             "type": "customNode",
             "data": {
                 "id": "pinecone_0",
                 "label": "Pinecone",
-                "version": 2,
+                "version": 3,
                 "name": "pinecone",
                 "type": "Pinecone",
                 "baseClasses": ["Pinecone", "VectorStoreRetriever", "BaseRetriever"],
@@ -283,11 +293,20 @@
                         "name": "embeddings",
                         "type": "Embeddings",
                         "id": "pinecone_0-input-embeddings-Embeddings"
+                    },
+                    {
+                        "label": "Record Manager",
+                        "name": "recordManager",
+                        "type": "RecordManager",
+                        "description": "Keep track of the record to prevent duplication",
+                        "optional": true,
+                        "id": "pinecone_0-input-recordManager-RecordManager"
                     }
                 ],
                 "inputs": {
                     "document": "",
                     "embeddings": "{{openAIEmbeddings_0.data.instance}}",
+                    "recordManager": "",
                     "pineconeIndex": "",
                     "pineconeNamespace": "",
                     "pineconeMetadataFilter": "",
@@ -301,17 +320,20 @@
                         "name": "output",
                         "label": "Output",
                         "type": "options",
+                        "description": "",
                         "options": [
                             {
                                 "id": "pinecone_0-output-retriever-Pinecone|VectorStoreRetriever|BaseRetriever",
                                 "name": "retriever",
                                 "label": "Pinecone Retriever",
+                                "description": "",
                                 "type": "Pinecone | VectorStoreRetriever | BaseRetriever"
                             },
                             {
                                 "id": "pinecone_0-output-vectorStore-Pinecone|VectorStore",
                                 "name": "vectorStore",
                                 "label": "Pinecone Vector Store",
+                                "description": "",
                                 "type": "Pinecone | VectorStore"
                             }
                         ],
@@ -325,24 +347,24 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 238.1350223788262,
-                "y": -133.38073692212225
+                "x": 245.707825551803,
+                "y": -176.9243551667388
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 600.5963052289515,
-                "y": -359.24280496678995
+                "x": 597.7565040390853,
+                "y": -381.01461408909825
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -504,8 +526,61 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 600.5963052289515,
-                "y": -359.24280496678995
+                "x": 597.7565040390853,
+                "y": -381.01461408909825
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 949.0763123880214,
+                "y": -172.0310628893923
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "BabyAGI is made up of 3 components:\n\n- A chain responsible for creating tasks\n- A chain responsible for prioritising tasks\n- A chain responsible for executing tasks\n\nThese chains are executed in sequence until the task list is empty or the maximum number of iterations is reached"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 203,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 949.0763123880214,
+                "y": -172.0310628893923
             },
             "dragging": false
         }

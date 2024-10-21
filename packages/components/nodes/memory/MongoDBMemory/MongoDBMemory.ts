@@ -111,6 +111,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
         sessionId
     })
 
+    // @ts-ignore
     mongoDBChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
         const document = await collection.findOne({
             sessionId: (mongoDBChatMessageHistory as any).sessionId
@@ -119,6 +120,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
         return messages.map(mapStoredMessageToChatMessage)
     }
 
+    // @ts-ignore
     mongoDBChatMessageHistory.addMessage = async (message: BaseMessage): Promise<void> => {
         const messages = [message].map((msg) => msg.toDict())
         await collection.updateOne(
@@ -136,6 +138,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
 
     return new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
+        // @ts-ignore
         chatHistory: mongoDBChatMessageHistory,
         sessionId,
         collection
@@ -169,7 +172,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const messages = document?.messages || []
         const baseMessages = messages.map(mapStoredMessageToChatMessage)
         if (prependMessages?.length) {
-            baseMessages.unshift(...mapChatMessageToBaseMessage(prependMessages))
+            baseMessages.unshift(...(await mapChatMessageToBaseMessage(prependMessages)))
         }
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }

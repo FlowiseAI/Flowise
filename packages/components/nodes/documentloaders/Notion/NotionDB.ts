@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { NotionAPILoader, NotionAPILoaderOptions } from 'langchain/document_loaders/web/notionapi'
+import { NotionAPILoader, NotionAPILoaderOptions } from '@langchain/community/document_loaders/web/notionapi'
 import { getCredentialData, getCredentialParam } from '../../../src'
 
 class NotionDB_DocumentLoaders implements INode {
@@ -95,7 +95,8 @@ class NotionDB_DocumentLoaders implements INode {
 
         let docs: IDocument[] = []
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
         } else {
             docs = await loader.load()
         }

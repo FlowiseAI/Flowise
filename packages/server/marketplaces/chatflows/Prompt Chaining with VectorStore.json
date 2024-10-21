@@ -1,12 +1,11 @@
 {
-    "description": "Use chat history to rephrase user question, and answer the rephrased question using retrieved docs from vector store",
-    "categories": "ChatOpenAI,LLM Chain,SingleStore,Langchain",
-    "badge": "POPULAR",
-    "framework": "Langchain",
+    "description": "Use chat history to rephrase user question, then answer the rephrased question using retrieved docs from vector store",
+    "usecases": ["Documents QnA"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
-            "height": 475,
+            "height": 511,
             "id": "promptTemplate_0",
             "position": {
                 "x": 344.73370692733414,
@@ -66,11 +65,11 @@
         },
         {
             "width": 300,
-            "height": 652,
+            "height": 688,
             "id": "chatPromptTemplate_0",
             "position": {
-                "x": 2290.8365353040026,
-                "y": -168.49082887954518
+                "x": 2314.8876045231254,
+                "y": -163.68061503572068
             },
             "type": "customNode",
             "data": {
@@ -128,8 +127,8 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 2290.8365353040026,
-                "y": -168.49082887954518
+                "x": 2314.8876045231254,
+                "y": -163.68061503572068
             },
             "dragging": false
         },
@@ -221,7 +220,7 @@
         },
         {
             "width": 300,
-            "height": 456,
+            "height": 507,
             "id": "llmChain_2",
             "position": {
                 "x": 756.2678342825631,
@@ -320,11 +319,11 @@
         },
         {
             "width": 300,
-            "height": 456,
+            "height": 507,
             "id": "llmChain_1",
             "position": {
-                "x": 2684.08901232628,
-                "y": -301.4742415779482
+                "x": 2716.1571046184436,
+                "y": -279.02657697343375
             },
             "type": "customNode",
             "data": {
@@ -412,24 +411,24 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 2684.08901232628,
-                "y": -301.4742415779482
+                "x": 2716.1571046184436,
+                "y": -279.02657697343375
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 669,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 339.96857057520754,
-                "y": -732.8078068632885
+                "x": 344.77878441903204,
+                "y": -832.2188929689953
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -591,24 +590,24 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 339.96857057520754,
-                "y": -732.8078068632885
+                "x": 344.77878441903204,
+                "y": -832.2188929689953
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 669,
             "id": "chatOpenAI_1",
             "position": {
-                "x": 2291.510577325338,
-                "y": -785.9138727666948
+                "x": 2296.3207911691625,
+                "y": -880.514745028577
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_1",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -770,14 +769,14 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 2291.510577325338,
-                "y": -785.9138727666948
+                "x": 2296.3207911691625,
+                "y": -880.514745028577
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 654,
+            "height": 652,
             "id": "singlestore_0",
             "position": {
                 "x": 1530.532503048084,
@@ -924,7 +923,7 @@
         },
         {
             "width": 300,
-            "height": 329,
+            "height": 423,
             "id": "openAIEmbeddings_0",
             "position": {
                 "x": 1154.293946350955,
@@ -934,7 +933,7 @@
             "data": {
                 "id": "openAIEmbeddings_0",
                 "label": "OpenAI Embeddings",
-                "version": 3,
+                "version": 4,
                 "name": "openAIEmbeddings",
                 "type": "OpenAIEmbeddings",
                 "baseClasses": ["OpenAIEmbeddings", "Embeddings"],
@@ -954,7 +953,7 @@
                         "type": "asyncOptions",
                         "loadMethod": "listModels",
                         "default": "text-embedding-ada-002",
-                        "id": "openAIEmbeddings_0-input-modelName-options"
+                        "id": "openAIEmbeddings_0-input-modelName-asyncOptions"
                     },
                     {
                         "label": "Strip New Lines",
@@ -987,21 +986,31 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "openAIEmbeddings_0-input-basepath-string"
+                    },
+                    {
+                        "label": "Dimensions",
+                        "name": "dimensions",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbeddings_0-input-dimensions-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
+                    "modelName": "text-embedding-ada-002",
                     "stripNewLines": "",
                     "batchSize": "",
                     "timeout": "",
                     "basepath": "",
-                    "modelName": "text-embedding-ada-002"
+                    "dimensions": ""
                 },
                 "outputAnchors": [
                     {
                         "id": "openAIEmbeddings_0-output-openAIEmbeddings-OpenAIEmbeddings|Embeddings",
                         "name": "openAIEmbeddings",
                         "label": "OpenAIEmbeddings",
+                        "description": "OpenAI API to generate embeddings for a given text",
                         "type": "OpenAIEmbeddings | Embeddings"
                     }
                 ],
@@ -1012,6 +1021,165 @@
             "positionAbsolute": {
                 "x": 1154.293946350955,
                 "y": -589.6072684085893
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 753.8985547694751,
+                "y": -597.2403700691232
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "First, we rephrase the question using context from previous conversation.\n\nThis is to ensure that a follow-up question can be asked. For example:\n\n- What is the address of the Bakery shop?\n- What about the opening time?\n\nA rephrased question will be:\n- What is the opening time of the Bakery shop?\n\nThis ensure a better search to vector store, hence better results"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 324,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 753.8985547694751,
+                "y": -597.2403700691232
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_1",
+            "position": {
+                "x": 1904.305205441637,
+                "y": -241.45986503369568
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_1",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_1-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Second, rephrased question is used to do a similarity search to find relevant context"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_1-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 62,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1904.305205441637,
+                "y": -241.45986503369568
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_2",
+            "position": {
+                "x": 2717.983596010546,
+                "y": -369.73223420234956
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_2",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_2-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Last, using the context from vector store, we instruct LLM to give a final response"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_2-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 62,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2717.983596010546,
+                "y": -369.73223420234956
             },
             "dragging": false
         }

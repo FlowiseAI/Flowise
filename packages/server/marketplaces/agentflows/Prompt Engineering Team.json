@@ -1,5 +1,7 @@
 {
     "description": "Prompt engineering team working together to craft Worker Prompts for your AgentFlow.",
+    "framework": ["Langchain"],
+    "usecases": ["Engineering"],
     "nodes": [
         {
             "id": "supervisor_0",

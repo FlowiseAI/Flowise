@@ -99,12 +99,15 @@ class Json_DocumentLoaders implements INode {
             const chatflowid = options.chatflowid
 
             for (const file of files) {
+                if (!file) continue
                 const fileData = await getFileFromStorage(file, chatflowid)
                 const blob = new Blob([fileData])
                 const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined)
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    let splittedDocs = await loader.load()
+                    splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                    docs.push(...splittedDocs)
                 } else {
                     docs.push(...(await loader.load()))
                 }
@@ -117,6 +120,7 @@ class Json_DocumentLoaders implements INode {
             }
 
             for (const file of files) {
+                if (!file) continue
                 const splitDataURI = file.split(',')
                 splitDataURI.pop()
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
@@ -124,7 +128,9 @@ class Json_DocumentLoaders implements INode {
                 const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined)
 
                 if (textSplitter) {
-                    docs.push(...(await loader.loadAndSplit(textSplitter)))
+                    let splittedDocs = await loader.load()
+                    splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+                    docs.push(...splittedDocs)
                 } else {
                     docs.push(...(await loader.load()))
                 }

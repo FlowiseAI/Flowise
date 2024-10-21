@@ -4,6 +4,7 @@ import moment from 'moment'
 import fs from 'fs'
 import path from 'path'
 import logger from './logger'
+import { appConfig } from '../AppConfig'
 
 /**
  * Returns the api key path
@@ -50,6 +51,9 @@ export const compareKeys = (storedKey: string, suppliedKey: string): boolean => 
  * @returns {Promise<ICommonObject[]>}
  */
 export const getAPIKeys = async (): Promise<ICommonObject[]> => {
+    if (appConfig.apiKeys.storageType !== 'json') {
+        return []
+    }
     try {
         const content = await fs.promises.readFile(getAPIKeyPath(), 'utf8')
         return JSON.parse(content)
@@ -92,6 +96,47 @@ export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
     ]
     await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
     return content
+}
+
+/**
+ * import API keys
+ * @param {[]} keys
+ * @returns {Promise<ICommonObject[]>}
+ */
+export const importKeys = async (keys: any[], importMode: string): Promise<ICommonObject[]> => {
+    const allApiKeys = await getAPIKeys()
+    // if importMode is errorIfExist, check for existing keys and raise error before any modification to the file
+    if (importMode === 'errorIfExist') {
+        for (const key of keys) {
+            const keyNameExists = allApiKeys.find((k) => k.keyName === key.keyName)
+            if (keyNameExists) {
+                throw new Error(`Key with name ${key.keyName} already exists`)
+            }
+        }
+    }
+    for (const key of keys) {
+        // Check if keyName already exists, if overwrite is false, raise an error else overwrite the key
+        const keyNameExists = allApiKeys.find((k) => k.keyName === key.keyName)
+        if (keyNameExists) {
+            const keyIndex = allApiKeys.findIndex((k) => k.keyName === key.keyName)
+            switch (importMode) {
+                case 'overwriteIfExist':
+                    allApiKeys[keyIndex] = key
+                    continue
+                case 'ignoreIfExist':
+                    // ignore this key and continue
+                    continue
+                case 'errorIfExist':
+                    // should not reach here as we have already checked for existing keys
+                    throw new Error(`Key with name ${key.keyName} already exists`)
+                default:
+                    throw new Error(`Unknown overwrite option ${importMode}`)
+            }
+        }
+        allApiKeys.push(key)
+    }
+    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(allApiKeys), 'utf8')
+    return allApiKeys
 }
 
 /**

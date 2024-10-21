@@ -1,11 +1,11 @@
 {
     "description": "Given API docs, agent automatically decide which API to call, generating url and body request from conversation",
-    "categories": "Buffer Memory,ChainTool,API Chain,ChatOpenAI,Conversational Agent,Langchain",
-    "framework": "Langchain",
+    "framework": ["Langchain"],
+    "usecases": ["Interacting with API"],
     "nodes": [
         {
             "width": 300,
-            "height": 459,
+            "height": 460,
             "id": "getApiChain_0",
             "position": {
                 "x": 1222.6923202234623,
@@ -94,7 +94,7 @@
         },
         {
             "width": 300,
-            "height": 602,
+            "height": 603,
             "id": "chainTool_0",
             "position": {
                 "x": 1600.1485877701232,
@@ -145,7 +145,7 @@
                 "inputs": {
                     "name": "weather-qa",
                     "description": "useful for when you need to ask question about weather",
-                    "returnDirect": "",
+                    "returnDirect": false,
                     "baseChain": "{{getApiChain_0.data.instance}}"
                 },
                 "outputAnchors": [
@@ -168,7 +168,7 @@
         },
         {
             "width": 300,
-            "height": 376,
+            "height": 253,
             "id": "bufferMemory_0",
             "position": {
                 "x": 1642.0644080121785,
@@ -229,7 +229,7 @@
         },
         {
             "width": 300,
-            "height": 602,
+            "height": 603,
             "id": "chainTool_1",
             "position": {
                 "x": 1284.7746596034926,
@@ -303,7 +303,7 @@
         },
         {
             "width": 300,
-            "height": 459,
+            "height": 460,
             "id": "postApiChain_0",
             "position": {
                 "x": 933.3631140153886,
@@ -367,7 +367,7 @@
                 ],
                 "inputs": {
                     "model": "{{chatOpenAI_2.data.instance}}",
-                    "apiDocs": "API documentation:\nEndpoint: https://eog776prcv6dg0j.m.pipedream.net\n\nThis API is for sending Discord message\n\nQuery body table:\nmessage | string | Message to send | required\n\nResponse schema (string):\nresult | string",
+                    "apiDocs": "API documentation:\nEndpoint: https://some-discord-webhook.com\n\nThis API is for sending Discord message\n\nQuery body table:\nmessage | string | Message to send | required\n\nResponse schema (string):\nresult | string",
                     "headers": "",
                     "urlPrompt": "You are given the below API Documentation:\n{api_docs}\nUsing this documentation, generate a json string with two keys: \"url\" and \"data\".\nThe value of \"url\" should be a string, which is the API url to call for answering the user question.\nThe value of \"data\" should be a dictionary of key-value pairs you want to POST to the url as a JSON body.\nBe careful to always use double quotes for strings in the json string.\nYou should build the json string in order to get a response that is as short as possible, while still getting the necessary information to answer the question. Pay attention to deliberately exclude any unnecessary pieces of data in the API call.\n\nQuestion:{question}\njson string:",
                     "ansPrompt": "You are given the below API Documentation:\n{api_docs}\nUsing this documentation, generate a json string with two keys: \"url\" and \"data\".\nThe value of \"url\" should be a string, which is the API url to call for answering the user question.\nThe value of \"data\" should be a dictionary of key-value pairs you want to POST to the url as a JSON body.\nBe careful to always use double quotes for strings in the json string.\nYou should build the json string in order to get a response that is as short as possible, while still getting the necessary information to answer the question. Pay attention to deliberately exclude any unnecessary pieces of data in the API call.\n\nQuestion:{question}\njson string: {api_url_body}\n\nHere is the response from the API:\n\n{api_response}\n\nSummarize this response to answer the original question.\n\nSummary:"
@@ -392,7 +392,7 @@
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_2",
             "position": {
                 "x": 572.8941615312035,
@@ -402,7 +402,7 @@
             "data": {
                 "id": "chatOpenAI_2",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
@@ -564,17 +564,17 @@
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_1",
             "position": {
-                "x": 828.7788305309582,
-                "y": 302.8996144964516
+                "x": 859.9597222599807,
+                "y": 163.26344718821986
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_1",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
@@ -705,7 +705,7 @@
                 ],
                 "inputs": {
                     "modelName": "gpt-3.5-turbo",
-                    "temperature": 0.9,
+                    "temperature": "0.6",
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
@@ -729,14 +729,14 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 828.7788305309582,
-                "y": 302.8996144964516
+                "x": 859.9597222599807,
+                "y": 163.26344718821986
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_3",
             "position": {
                 "x": 1148.338912314111,
@@ -746,7 +746,7 @@
             "data": {
                 "id": "chatOpenAI_3",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
@@ -907,33 +907,31 @@
             "dragging": false
         },
         {
-            "width": 300,
-            "height": 383,
-            "id": "conversationalAgent_0",
+            "id": "toolAgent_0",
             "position": {
-                "x": 2090.570467632979,
-                "y": 969.5131357270544
+                "x": 2087.462952706838,
+                "y": 974.6001334100872
             },
             "type": "customNode",
             "data": {
-                "id": "conversationalAgent_0",
-                "label": "Conversational Agent",
-                "version": 3,
-                "name": "conversationalAgent",
+                "id": "toolAgent_0",
+                "label": "Tool Agent",
+                "version": 1,
+                "name": "toolAgent",
                 "type": "AgentExecutor",
                 "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
                 "category": "Agents",
-                "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
+                "description": "Agent that uses Function Calling to pick the tools and args to call",
                 "inputParams": [
                     {
                         "label": "System Message",
                         "name": "systemMessage",
                         "type": "string",
+                        "default": "You are a helpful AI assistant.",
                         "rows": 4,
-                        "default": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.",
                         "optional": true,
                         "additionalParams": true,
-                        "id": "conversationalAgent_0-input-systemMessage-string"
+                        "id": "toolAgent_0-input-systemMessage-string"
                     },
                     {
                         "label": "Max Iterations",
@@ -941,28 +939,29 @@
                         "type": "number",
                         "optional": true,
                         "additionalParams": true,
-                        "id": "conversationalAgent_0-input-maxIterations-number"
+                        "id": "toolAgent_0-input-maxIterations-number"
                     }
                 ],
                 "inputAnchors": [
                     {
-                        "label": "Allowed Tools",
+                        "label": "Tools",
                         "name": "tools",
                         "type": "Tool",
                         "list": true,
-                        "id": "conversationalAgent_0-input-tools-Tool"
-                    },
-                    {
-                        "label": "Chat Model",
-                        "name": "model",
-                        "type": "BaseChatModel",
-                        "id": "conversationalAgent_0-input-model-BaseChatModel"
+                        "id": "toolAgent_0-input-tools-Tool"
                     },
                     {
                         "label": "Memory",
                         "name": "memory",
                         "type": "BaseChatMemory",
-                        "id": "conversationalAgent_0-input-memory-BaseChatMemory"
+                        "id": "toolAgent_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat",
+                        "id": "toolAgent_0-input-model-BaseChatModel"
                     },
                     {
                         "label": "Input Moderation",
@@ -971,31 +970,88 @@
                         "type": "Moderation",
                         "optional": true,
                         "list": true,
-                        "id": "conversationalAgent_0-input-inputModeration-Moderation"
+                        "id": "toolAgent_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
-                    "inputModeration": "",
                     "tools": ["{{chainTool_0.data.instance}}", "{{chainTool_1.data.instance}}"],
-                    "model": "{{chatOpenAI_3.data.instance}}",
                     "memory": "{{bufferMemory_0.data.instance}}",
-                    "systemMessage": "Assistant is a large language model trained by OpenAI.\n\nAssistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.\n\nAssistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.\n\nOverall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist."
+                    "model": "{{chatOpenAI_3.data.instance}}",
+                    "systemMessage": "You are a helpful AI assistant.",
+                    "inputModeration": "",
+                    "maxIterations": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain|Runnable",
-                        "name": "conversationalAgent",
+                        "id": "toolAgent_0-output-toolAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "toolAgent",
                         "label": "AgentExecutor",
+                        "description": "Agent that uses Function Calling to pick the tools and args to call",
                         "type": "AgentExecutor | BaseChain | Runnable"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
+            "width": 300,
+            "height": 435,
             "selected": false,
             "positionAbsolute": {
-                "x": 2090.570467632979,
-                "y": 969.5131357270544
+                "x": 2087.462952706838,
+                "y": 974.6001334100872
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 2081.8371244608006,
+                "y": 595.924073574161
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Using agent, we give it 2 tools that is each attached to a GET/POST API Chain.\n\nThe goal is to have the agent to decide when to use which tool. \n\nWhen the tool is being used, API Chain's task is to figure out the correct URL and params to make the HTTP call.\n\nHowever, it is recommended to use OpenAPI YML to give a more structured input to LLM, for better quality output.\n\nExample question:\nSend me the weather of SF today to my discord"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 364,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2081.8371244608006,
+                "y": 595.924073574161
             },
             "dragging": false
         }
@@ -1048,46 +1104,34 @@
         {
             "source": "chainTool_0",
             "sourceHandle": "chainTool_0-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
-            "target": "conversationalAgent_0",
-            "targetHandle": "conversationalAgent_0-input-tools-Tool",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "chainTool_0-chainTool_0-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-conversationalAgent_0-conversationalAgent_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
+            "id": "chainTool_0-chainTool_0-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-toolAgent_0-toolAgent_0-input-tools-Tool"
         },
         {
             "source": "chainTool_1",
             "sourceHandle": "chainTool_1-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain",
-            "target": "conversationalAgent_0",
-            "targetHandle": "conversationalAgent_0-input-tools-Tool",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-tools-Tool",
             "type": "buttonedge",
-            "id": "chainTool_1-chainTool_1-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-conversationalAgent_0-conversationalAgent_0-input-tools-Tool",
-            "data": {
-                "label": ""
-            }
-        },
-        {
-            "source": "chatOpenAI_3",
-            "sourceHandle": "chatOpenAI_3-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
-            "target": "conversationalAgent_0",
-            "targetHandle": "conversationalAgent_0-input-model-BaseChatModel",
-            "type": "buttonedge",
-            "id": "chatOpenAI_3-chatOpenAI_3-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalAgent_0-conversationalAgent_0-input-model-BaseChatModel",
-            "data": {
-                "label": ""
-            }
+            "id": "chainTool_1-chainTool_1-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-toolAgent_0-toolAgent_0-input-tools-Tool"
         },
         {
             "source": "bufferMemory_0",
             "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-            "target": "conversationalAgent_0",
-            "targetHandle": "conversationalAgent_0-input-memory-BaseChatMemory",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
-            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-conversationalAgent_0-conversationalAgent_0-input-memory-BaseChatMemory",
-            "data": {
-                "label": ""
-            }
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-toolAgent_0-toolAgent_0-input-memory-BaseChatMemory"
+        },
+        {
+            "source": "chatOpenAI_3",
+            "sourceHandle": "chatOpenAI_3-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_3-chatOpenAI_3-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-toolAgent_0-toolAgent_0-input-model-BaseChatModel"
         }
     ]
 }

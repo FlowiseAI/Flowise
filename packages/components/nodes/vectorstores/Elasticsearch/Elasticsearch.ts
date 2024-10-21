@@ -31,7 +31,6 @@ class Elasticsearch_VectorStores implements INode {
         this.icon = 'elasticsearch.png'
         this.category = 'Vector Stores'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -160,6 +159,35 @@ class Elasticsearch_VectorStores implements INode {
                 } else {
                     await vectorStore.addDocuments(finalDocs)
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
+            } catch (e) {
+                throw new Error(e)
+            }
+        },
+        async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
+            const indexName = nodeData.inputs?.indexName as string
+            const embeddings = nodeData.inputs?.embeddings as Embeddings
+            const similarityMeasure = nodeData.inputs?.similarityMeasure as string
+            const recordManager = nodeData.inputs?.recordManager
+
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const endPoint = getCredentialParam('endpoint', credentialData, nodeData)
+            const cloudId = getCredentialParam('cloudId', credentialData, nodeData)
+
+            const elasticSearchClientArgs = prepareClientArgs(endPoint, cloudId, credentialData, nodeData, similarityMeasure, indexName)
+            const vectorStore = new ElasticVectorSearch(embeddings, elasticSearchClientArgs)
+
+            try {
+                if (recordManager) {
+                    const vectorStoreName = indexName
+                    await recordManager.createSchema()
+                    ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
+                    const keys: string[] = await recordManager.listKeys({})
+
+                    await vectorStore.delete({ ids: keys })
+                    await recordManager.deleteKeys(keys)
+                } else {
+                    await vectorStore.delete({ ids })
                 }
             } catch (e) {
                 throw new Error(e)

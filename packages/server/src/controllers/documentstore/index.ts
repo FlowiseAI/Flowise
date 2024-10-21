@@ -248,6 +248,100 @@ const getDocumentLoaders = async (req: Request, res: Response, next: NextFunctio
     }
 }
 
+const insertIntoVectorStore = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.insertIntoVectorStore - body not provided!')
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.insertIntoVectorStore(body)
+        return res.json(DocumentStoreDTO.fromEntity(apiResponse))
+    } catch (error) {
+        next(error)
+    }
+}
+
+const queryVectorStore = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.queryVectorStore - body not provided!')
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.queryVectorStore(body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const deleteVectorStoreFromStore = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.storeId === 'undefined' || req.params.storeId === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.deleteVectorStoreFromStore - storeId not provided!`
+            )
+        }
+        const apiResponse = await documentStoreService.deleteVectorStoreFromStore(req.params.storeId)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const saveVectorStoreConfig = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.saveVectorStoreConfig - body not provided!')
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.saveVectorStoreConfig(body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const updateVectorStoreConfigOnly = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.updateVectorStoreConfigOnly - body not provided!')
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.updateVectorStoreConfigOnly(body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getEmbeddingProviders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await documentStoreService.getEmbeddingProviders()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getVectorStoreProviders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await documentStoreService.getVectorStoreProviders()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getRecordManagerProviders = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await documentStoreService.getRecordManagerProviders()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     deleteDocumentStore,
     createDocumentStore,
@@ -260,5 +354,13 @@ export default {
     previewFileChunks,
     getDocumentLoaders,
     deleteDocumentStoreFileChunk,
-    editDocumentStoreFileChunk
+    editDocumentStoreFileChunk,
+    insertIntoVectorStore,
+    getEmbeddingProviders,
+    getVectorStoreProviders,
+    getRecordManagerProviders,
+    saveVectorStoreConfig,
+    queryVectorStore,
+    deleteVectorStoreFromStore,
+    updateVectorStoreConfigOnly
 }

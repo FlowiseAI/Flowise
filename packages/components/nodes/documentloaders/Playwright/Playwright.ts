@@ -1,7 +1,12 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { Browser, Page, PlaywrightWebBaseLoader, PlaywrightWebBaseLoaderOptions } from 'langchain/document_loaders/web/playwright'
+import {
+    Browser,
+    Page,
+    PlaywrightWebBaseLoader,
+    PlaywrightWebBaseLoaderOptions
+} from '@langchain/community/document_loaders/web/playwright'
 import { test } from 'linkifyjs'
 import { webCrawl, xmlScrape } from '../../../src'
 
@@ -174,7 +179,8 @@ class Playwright_DocumentLoaders implements INode {
                 }
                 const loader = new PlaywrightWebBaseLoader(url, config)
                 if (textSplitter) {
-                    docs = await loader.loadAndSplit(textSplitter)
+                    docs = await loader.load()
+                    docs = await textSplitter.splitDocuments(docs)
                 } else {
                     docs = await loader.load()
                 }

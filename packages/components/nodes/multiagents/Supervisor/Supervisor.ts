@@ -30,6 +30,9 @@ Select strategically to minimize the number of steps taken.`
 
 const routerToolName = 'route'
 
+const defaultSummarization = 'Conversation finished'
+const defaultInstruction = 'Conversation finished'
+
 class Supervisor_MultiAgents implements INode {
     label: string
     name: string
@@ -46,7 +49,7 @@ class Supervisor_MultiAgents implements INode {
     constructor() {
         this.label = 'Supervisor'
         this.name = 'supervisor'
-        this.version = 1.0
+        this.version = 3.0
         this.type = 'Supervisor'
         this.icon = 'supervisor.svg'
         this.category = 'Multi Agents'
@@ -75,6 +78,21 @@ class Supervisor_MultiAgents implements INode {
                 description: `Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, GroqChat. Best result with GPT-4 model`
             },
             {
+                label: 'Agent Memory',
+                name: 'agentMemory',
+                type: 'BaseCheckpointSaver',
+                description: 'Save the state of the agent',
+                optional: true
+            },
+            {
+                label: 'Summarization',
+                name: 'summarization',
+                type: 'boolean',
+                description: 'Return final output as a summarization of the conversation',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Recursion Limit',
                 name: 'recursionLimit',
                 type: 'number',
@@ -100,6 +118,7 @@ class Supervisor_MultiAgents implements INode {
         const _recursionLimit = nodeData.inputs?.recursionLimit as string
         const recursionLimit = _recursionLimit ? parseFloat(_recursionLimit) : 100
         const moderations = (nodeData.inputs?.inputModeration as Moderation[]) ?? []
+        const summarization = nodeData.inputs?.summarization as string
 
         const abortControllerSignal = options.signal as AbortController
 
@@ -144,6 +163,7 @@ class Supervisor_MultiAgents implements INode {
                 multiModalMessageContent = messages.multiModalMessageContent
 
                 // Force Mistral to use tool
+                // @ts-ignore
                 const modelWithTool = llm.bind({
                     tools: [tool],
                     tool_choice: 'any',
@@ -189,11 +209,11 @@ class Supervisor_MultiAgents implements INode {
                 prompt = messages.prompt
                 multiModalMessageContent = messages.multiModalMessageContent
 
-                if (llm.bindTools === undefined) {
+                if ((llm as any).bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
                 }
 
-                const modelWithTool = llm.bindTools([tool])
+                const modelWithTool = (llm as any).bindTools([tool])
 
                 const outputParser = new ToolCallingAgentOutputParser()
 
@@ -229,6 +249,7 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
+                // @ts-ignore
                 const messages = await processImageMessage(1, llm, prompt, nodeData, options)
                 prompt = messages.prompt
                 multiModalMessageContent = messages.multiModalMessageContent
@@ -273,10 +294,8 @@ class Supervisor_MultiAgents implements INode {
                  * So we have to place the system + human prompt at last
                  */
                 let prompt = ChatPromptTemplate.fromMessages([
-                    ['human', systemPrompt],
-                    ['ai', ''],
+                    ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
-                    ['ai', ''],
                     ['human', userPrompt]
                 ])
 
@@ -364,13 +383,283 @@ class Supervisor_MultiAgents implements INode {
             return supervisor
         }
 
-        const supervisorAgent = await createTeamSupervisor(llm, supervisorPrompt ? supervisorPrompt : sysPrompt, workersNodeNames)
+        async function createTeamSupervisorWithSummarize(llm: BaseChatModel, systemPrompt: string, members: string[]): Promise<Runnable> {
+            const memberOptions = ['FINISH', ...members]
+
+            systemPrompt = systemPrompt.replaceAll('{team_members}', members.join(', '))
+
+            let userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${memberOptions.join(
+                ', '
+            )}
+            Remember to give reasonings, instructions and summarization`
+
+            const tool = new RouteTool({
+                schema: z.object({
+                    reasoning: z.string(),
+                    next: z.enum(['FINISH', ...members]),
+                    instructions: z.string().describe('The specific instructions of the sub-task the next role should accomplish.'),
+                    summarization: z.string().optional().describe('Summarization of the conversation')
+                })
+            })
+
+            let supervisor
+
+            if (llm instanceof ChatMistralAI) {
+                let prompt = ChatPromptTemplate.fromMessages([
+                    ['system', systemPrompt],
+                    new MessagesPlaceholder('messages'),
+                    ['human', userPrompt]
+                ])
+
+                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
+
+                // Force Mistral to use tool
+                // @ts-ignore
+                const modelWithTool = llm.bind({
+                    tools: [tool],
+                    tool_choice: 'any',
+                    signal: abortControllerSignal ? abortControllerSignal.signal : undefined
+                })
+
+                const outputParser = new JsonOutputToolsParser()
+
+                supervisor = prompt
+                    .pipe(modelWithTool)
+                    .pipe(outputParser)
+                    .pipe((x) => {
+                        if (Array.isArray(x) && x.length) {
+                            const toolAgentAction = x[0]
+                            return {
+                                next: Object.keys(toolAgentAction.args).length ? toolAgentAction.args.next : 'FINISH',
+                                instructions: Object.keys(toolAgentAction.args).length
+                                    ? toolAgentAction.args.instructions
+                                    : defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: Object.keys(toolAgentAction.args).length ? toolAgentAction.args.summarization : ''
+                            }
+                        } else {
+                            return {
+                                next: 'FINISH',
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
+                            }
+                        }
+                    })
+            } else if (llm instanceof ChatAnthropic) {
+                // Force Anthropic to use tool : https://docs.anthropic.com/claude/docs/tool-use#forcing-tool-use
+                userPrompt = `Given the conversation above, who should act next? Or should we FINISH? Select one of: ${memberOptions.join(
+                    ', '
+                )}. Remember to give reasonings, instructions and summarization. Use the ${routerToolName} tool in your response.`
+
+                let prompt = ChatPromptTemplate.fromMessages([
+                    ['system', systemPrompt],
+                    new MessagesPlaceholder('messages'),
+                    ['human', userPrompt]
+                ])
+
+                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
+
+                if ((llm as any).bindTools === undefined) {
+                    throw new Error(`This agent only compatible with function calling models.`)
+                }
+
+                const modelWithTool = (llm as any).bindTools([tool])
+
+                const outputParser = new ToolCallingAgentOutputParser()
+
+                supervisor = prompt
+                    .pipe(modelWithTool)
+                    .pipe(outputParser)
+                    .pipe((x) => {
+                        if (Array.isArray(x) && x.length) {
+                            const toolAgentAction = x[0] as any
+                            return {
+                                next: toolAgentAction.toolInput.next,
+                                instructions: toolAgentAction.toolInput.instructions,
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
+                            }
+                        } else if (typeof x === 'object' && 'returnValues' in x) {
+                            return {
+                                next: 'FINISH',
+                                instructions: x.returnValues?.output,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
+                            }
+                        } else {
+                            return {
+                                next: 'FINISH',
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
+                            }
+                        }
+                    })
+            } else if (llm instanceof ChatOpenAI) {
+                let prompt = ChatPromptTemplate.fromMessages([
+                    ['system', systemPrompt],
+                    new MessagesPlaceholder('messages'),
+                    ['human', userPrompt]
+                ])
+
+                // @ts-ignore
+                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
+
+                // Force OpenAI to use tool
+                const modelWithTool = llm.bind({
+                    tools: [tool],
+                    tool_choice: { type: 'function', function: { name: routerToolName } },
+                    signal: abortControllerSignal ? abortControllerSignal.signal : undefined
+                })
+
+                const outputParser = new ToolCallingAgentOutputParser()
+
+                supervisor = prompt
+                    .pipe(modelWithTool)
+                    .pipe(outputParser)
+                    .pipe((x) => {
+                        if (Array.isArray(x) && x.length) {
+                            const toolAgentAction = x[0] as any
+                            return {
+                                next: toolAgentAction.toolInput.next,
+                                instructions: toolAgentAction.toolInput.instructions,
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
+                            }
+                        } else if (typeof x === 'object' && 'returnValues' in x) {
+                            return {
+                                next: 'FINISH',
+                                instructions: x.returnValues?.output,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
+                            }
+                        } else {
+                            return {
+                                next: 'FINISH',
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
+                            }
+                        }
+                    })
+            } else if (llm instanceof ChatGoogleGenerativeAI) {
+                /*
+                 * Gemini doesn't have system message and messages have to be alternate between model and user
+                 * So we have to place the system + human prompt at last
+                 */
+                let prompt = ChatPromptTemplate.fromMessages([
+                    ['system', systemPrompt],
+                    new MessagesPlaceholder('messages'),
+                    ['human', userPrompt]
+                ])
+
+                const messages = await processImageMessage(2, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
+
+                if (llm.bindTools === undefined) {
+                    throw new Error(`This agent only compatible with function calling models.`)
+                }
+                const modelWithTool = llm.bindTools([tool])
+
+                const outputParser = new ToolCallingAgentOutputParser()
+
+                supervisor = prompt
+                    .pipe(modelWithTool)
+                    .pipe(outputParser)
+                    .pipe((x) => {
+                        if (Array.isArray(x) && x.length) {
+                            const toolAgentAction = x[0] as any
+                            return {
+                                next: toolAgentAction.toolInput.next,
+                                instructions: toolAgentAction.toolInput.instructions,
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
+                            }
+                        } else if (typeof x === 'object' && 'returnValues' in x) {
+                            return {
+                                next: 'FINISH',
+                                instructions: x.returnValues?.output,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
+                            }
+                        } else {
+                            return {
+                                next: 'FINISH',
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
+                            }
+                        }
+                    })
+            } else {
+                let prompt = ChatPromptTemplate.fromMessages([
+                    ['system', systemPrompt],
+                    new MessagesPlaceholder('messages'),
+                    ['human', userPrompt]
+                ])
+
+                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
+                prompt = messages.prompt
+                multiModalMessageContent = messages.multiModalMessageContent
+
+                if (llm.bindTools === undefined) {
+                    throw new Error(`This agent only compatible with function calling models.`)
+                }
+                const modelWithTool = llm.bindTools([tool])
+
+                const outputParser = new ToolCallingAgentOutputParser()
+
+                supervisor = prompt
+                    .pipe(modelWithTool)
+                    .pipe(outputParser)
+                    .pipe((x) => {
+                        if (Array.isArray(x) && x.length) {
+                            const toolAgentAction = x[0] as any
+                            return {
+                                next: toolAgentAction.toolInput.next,
+                                instructions: toolAgentAction.toolInput.instructions,
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
+                            }
+                        } else if (typeof x === 'object' && 'returnValues' in x) {
+                            return {
+                                next: 'FINISH',
+                                instructions: x.returnValues?.output,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
+                            }
+                        } else {
+                            return {
+                                next: 'FINISH',
+                                instructions: defaultInstruction,
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
+                            }
+                        }
+                    })
+            }
+
+            return supervisor
+        }
+
+        const supervisorAgent = summarization
+            ? await createTeamSupervisorWithSummarize(llm, supervisorPrompt ? supervisorPrompt : sysPrompt, workersNodeNames)
+            : await createTeamSupervisor(llm, supervisorPrompt ? supervisorPrompt : sysPrompt, workersNodeNames)
 
         const supervisorNode = async (state: ITeamState, config: RunnableConfig) =>
             await agentNode(
                 {
                     state,
                     agent: supervisorAgent,
+                    nodeId: nodeData.id,
                     abortControllerSignal
                 },
                 config
@@ -385,7 +674,8 @@ class Supervisor_MultiAgents implements INode {
             recursionLimit,
             llm,
             moderations,
-            multiModalMessageContent
+            multiModalMessageContent,
+            checkpointMemory: nodeData.inputs?.agentMemory
         }
 
         return returnOutput
@@ -393,7 +683,12 @@ class Supervisor_MultiAgents implements INode {
 }
 
 async function agentNode(
-    { state, agent, abortControllerSignal }: { state: ITeamState; agent: AgentExecutor | Runnable; abortControllerSignal: AbortController },
+    {
+        state,
+        agent,
+        nodeId,
+        abortControllerSignal
+    }: { state: ITeamState; agent: AgentExecutor | Runnable; nodeId: string; abortControllerSignal: AbortController },
     config: RunnableConfig
 ) {
     try {
@@ -401,6 +696,8 @@ async function agentNode(
             throw new Error('Aborted!')
         }
         const result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
+        const additional_kwargs: ICommonObject = { nodeId, type: 'supervisor' }
+        result.additional_kwargs = { ...result.additional_kwargs, ...additional_kwargs }
         return result
     } catch (error) {
         throw new Error('Aborted!')

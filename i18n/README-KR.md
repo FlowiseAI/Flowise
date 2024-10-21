@@ -44,9 +44,9 @@
 
 1. 프로젝트의 최상위(root) 디렉토리에 있는 `docker` 폴더로 이동하세요.
 2. `.env.example` 파일을 복사한 후, 같은 경로에 붙여넣기 한 다음, `.env`로 이름을 변경합니다.
-3. `docker-compose up -d` 실행
+3. `docker compose up -d` 실행
 4. [http://localhost:3000](http://localhost:3000) URL 열기
-5. `docker-compose stop` 명령어를 통해 컨테이너를 종료시킬 수 있습니다.
+5. `docker compose stop` 명령어를 통해 컨테이너를 종료시킬 수 있습니다.
 
 ### 도커 이미지 활용
 
@@ -180,9 +180,9 @@ Flowise는 인스턴스 구성을 위한 다양한 환경 변수를 지원합니
 
       </details>
 
-## 💻 클라우드 호스팅 서비스
+## ☁️ 클라우드 호스팅 서비스
 
-곧 출시될 예정입니다.
+[Flowise Cloud 시작하기](https://flowiseai.com/)
 
 ## 🙋 기술 지원
 

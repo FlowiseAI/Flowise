@@ -59,6 +59,7 @@ class ChatFireworks_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
+        const streaming = nodeData.inputs?.streaming as boolean
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const fireworksApiKey = getCredentialParam('fireworksApiKey', credentialData, nodeData)
@@ -67,7 +68,8 @@ class ChatFireworks_ChatModels implements INode {
             fireworksApiKey,
             model: modelName,
             modelName,
-            temperature: temperature ? parseFloat(temperature) : undefined
+            temperature: temperature ? parseFloat(temperature) : undefined,
+            streaming: streaming ?? true
         }
         if (cache) obj.cache = cache
 

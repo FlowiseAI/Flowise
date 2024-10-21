@@ -30,10 +30,11 @@ const MainCard = forwardRef(function MainCard(
     },
     ref
 ) {
+    const otherProps = { ...others, border: others.border === false ? undefined : others.border }
     return (
         <Card
             ref={ref}
-            {...others}
+            {...otherProps}
             sx={{
                 background: 'transparent',
                 ':hover': {

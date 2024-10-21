@@ -1,6 +1,5 @@
 {
     "name": "send_message_to_slack_channel",
-    "framework": "Langchain",
     "description": "Send message to Slack channel",
     "color": "linear-gradient(rgb(155,190,84), rgb(176,69,245))",
     "iconSrc": "https://raw.githubusercontent.com/gilbarbara/logos/main/logos/slack-icon.svg",

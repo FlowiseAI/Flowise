@@ -29,7 +29,6 @@ class SingleStore_VectorStores implements INode {
         this.description =
             'Upsert embedded data and perform similarity search upon query using SingleStore, a fast and distributed cloud relational database'
         this.baseClasses = [this.type, 'VectorStoreRetriever', 'BaseRetriever']
-        this.badge = 'NEW'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

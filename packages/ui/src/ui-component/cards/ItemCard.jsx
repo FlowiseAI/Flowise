@@ -56,7 +56,7 @@ const ItemCard = ({ data, images, onClick }) => {
                                         flexShrink: 0,
                                         marginRight: 10,
                                         borderRadius: '50%',
-                                        background: `url(${data.iconSrc})`,
+                                        backgroundImage: `url(${data.iconSrc})`,
                                         backgroundSize: 'contain',
                                         backgroundRepeat: 'no-repeat',
                                         backgroundPosition: 'center center'

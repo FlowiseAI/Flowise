@@ -1,13 +1,13 @@
 import { omit } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { S3Loader } from 'langchain/document_loaders/web/s3'
+import { S3Loader } from '@langchain/community/document_loaders/web/s3'
 import {
     UnstructuredLoader,
     UnstructuredLoaderOptions,
     UnstructuredLoaderStrategy,
     SkipInferTableTypes,
     HiResModelName
-} from 'langchain/document_loaders/fs/unstructured'
+} from '@langchain/community/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { S3Client, GetObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3'
 import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'

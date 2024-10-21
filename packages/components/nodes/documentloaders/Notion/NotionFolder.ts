@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { NotionLoader } from 'langchain/document_loaders/fs/notion'
+import { NotionLoader } from '@langchain/community/document_loaders/fs/notion'
 
 class NotionFolder_DocumentLoaders implements INode {
     label: string
@@ -74,7 +74,8 @@ class NotionFolder_DocumentLoaders implements INode {
         let docs: IDocument[] = []
 
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
         } else {
             docs = await loader.load()
         }

@@ -25,7 +25,6 @@ class SQLiteRecordManager_RecordManager implements INode {
         this.category = 'Record Manager'
         this.description = 'Use SQLite to keep track of document writes into the vector databases'
         this.baseClasses = [this.type, 'RecordManager', ...getBaseClasses(SQLiteRecordManager)]
-        this.badge = 'NEW'
         this.inputs = [
             {
                 label: 'Database File Path',

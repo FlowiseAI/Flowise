@@ -1,12 +1,11 @@
 {
     "description": "Return response as a list (array) instead of a string/text",
-    "badge": "NEW",
-    "categories": "CSV Output Parser,ChatOpenAI,LLM Chain,Langchain",
-    "framework": "Langchain",
+    "usecases": ["Extraction"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
-            "height": 456,
+            "height": 508,
             "id": "llmChain_0",
             "position": {
                 "x": 1490.4252662385359,
@@ -105,11 +104,11 @@
         },
         {
             "width": 300,
-            "height": 276,
+            "height": 277,
             "id": "csvOutputParser_0",
             "position": {
-                "x": 476.70884184429417,
-                "y": 346.38506209058426
+                "x": 475.6669697284608,
+                "y": 372.431864986419
             },
             "type": "customNode",
             "data": {
@@ -148,18 +147,18 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 476.70884184429417,
-                "y": 346.38506209058426
+                "x": 475.6669697284608,
+                "y": 372.431864986419
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 475,
+            "height": 513,
             "id": "promptTemplate_0",
             "position": {
                 "x": 804.3731431892371,
-                "y": 10.888147964487587
+                "y": -27.66112032134788
             },
             "type": "customNode",
             "data": {
@@ -209,23 +208,23 @@
             "selected": false,
             "positionAbsolute": {
                 "x": 804.3731431892371,
-                "y": 10.888147964487587
+                "y": -27.66112032134788
             },
             "dragging": false
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
-                "x": 1137.2591863882824,
-                "y": -204.50870351724768
+                "x": 1140.3848027357826,
+                "y": -293.0678333630858
             },
             "type": "customNode",
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
@@ -387,8 +386,114 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1137.2591863882824,
-                "y": -204.50870351724768
+                "x": 1140.3848027357826,
+                "y": -293.0678333630858
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 470.58135005141685,
+                "y": 265.982559487312
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Turning on Autofix allows LLM to automatically correct itself if output is not an array"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 82,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 470.58135005141685,
+                "y": 265.982559487312
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_1",
+            "position": {
+                "x": 1482.7892542600414,
+                "y": 120.12427436791523
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_1",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_1-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Example question:\n\n- top 10 movies"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_1-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 82,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1482.7892542600414,
+                "y": 120.12427436791523
             },
             "dragging": false
         }

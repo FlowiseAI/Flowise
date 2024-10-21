@@ -11,6 +11,7 @@ import { Runnable, RunnableSequence, RunnablePassthrough } from '@langchain/core
 import { Serializable } from '@langchain/core/load/serializable'
 import { renderTemplate } from '@langchain/core/prompts'
 import { ChatGeneration } from '@langchain/core/outputs'
+import { Document } from '@langchain/core/documents'
 import { BaseChain, SerializedLLMChain } from 'langchain/chains'
 import {
     CreateReactAgentParams,
@@ -25,6 +26,8 @@ import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
 import { IUsedTool } from './Interface'
 
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
+export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
+
 export type AgentFinish = {
     returnValues: Record<string, any>
     log: string
@@ -338,18 +341,20 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
     }
 
     async _call(inputs: ChainValues, runManager?: CallbackManagerForChainRun): Promise<AgentExecutorOutput> {
-        const toolsByName = Object.fromEntries(this.tools.map((t) => [t.name.toLowerCase(), t]))
+        const toolsByName = Object.fromEntries(this.tools.map((t) => [t.name?.toLowerCase(), t]))
 
         const steps: AgentStep[] = []
         let iterations = 0
         let sourceDocuments: Array<Document> = []
         const usedTools: IUsedTool[] = []
+        let artifacts: any[] = []
 
         const getOutput = async (finishStep: AgentFinish): Promise<AgentExecutorOutput> => {
             const { returnValues } = finishStep
             const additional = await this.agent.prepareForOutput(returnValues, steps)
             if (sourceDocuments.length) additional.sourceDocuments = flatten(sourceDocuments)
             if (usedTools.length) additional.usedTools = usedTools
+            if (artifacts.length) additional.artifacts = flatten(artifacts)
             if (this.returnIntermediateSteps) {
                 return { ...returnValues, intermediateSteps: steps, ...additional }
             }
@@ -421,15 +426,21 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                 {
                                     sessionId: this.sessionId,
                                     chatId: this.chatId,
-                                    input: this.input
+                                    input: this.input,
+                                    state: inputs
                                 }
                             )
+                            let toolOutput = observation
+                            if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                                toolOutput = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)[0]
+                            }
+                            if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
+                                toolOutput = toolOutput.split(ARTIFACTS_PREFIX)[0]
+                            }
                             usedTools.push({
                                 tool: tool.name,
                                 toolInput: action.toolInput as any,
-                                toolOutput: observation.includes(SOURCE_DOCUMENTS_PREFIX)
-                                    ? observation.split(SOURCE_DOCUMENTS_PREFIX)[0]
-                                    : observation
+                                toolOutput
                             })
                         } else {
                             observation = `${action.tool} is not a valid tool, try another one.`
@@ -449,13 +460,23 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                             return { action, observation: observation ?? '' }
                         }
                     }
-                    if (observation?.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                    if (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)) {
                         const observationArray = observation.split(SOURCE_DOCUMENTS_PREFIX)
                         observation = observationArray[0]
                         const docs = observationArray[1]
                         try {
                             const parsedDocs = JSON.parse(docs)
                             sourceDocuments.push(parsedDocs)
+                        } catch (e) {
+                            console.error('Error parsing source documents from tool')
+                        }
+                    }
+                    if (typeof observation === 'string' && observation.includes(ARTIFACTS_PREFIX)) {
+                        const observationArray = observation.split(ARTIFACTS_PREFIX)
+                        observation = observationArray[0]
+                        try {
+                            const artifact = JSON.parse(observationArray[1])
+                            artifacts.push(artifact)
                         } catch (e) {
                             console.error('Error parsing source documents from tool')
                         }
@@ -555,11 +576,16 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                         {
                             sessionId: this.sessionId,
                             chatId: this.chatId,
-                            input: this.input
+                            input: this.input,
+                            state: inputs
                         }
                     )
-                    if (observation?.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                    if (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)) {
                         const observationArray = observation.split(SOURCE_DOCUMENTS_PREFIX)
+                        observation = observationArray[0]
+                    }
+                    if (typeof observation === 'string' && observation.includes(ARTIFACTS_PREFIX)) {
+                        const observationArray = observation.split(ARTIFACTS_PREFIX)
                         observation = observationArray[0]
                     }
                 } catch (e) {
@@ -604,7 +630,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
 
     async _getToolReturn(nextStepOutput: AgentStep): Promise<AgentFinish | null> {
         const { action, observation } = nextStepOutput
-        const nameToolMap = Object.fromEntries(this.tools.map((t) => [t.name.toLowerCase(), t]))
+        const nameToolMap = Object.fromEntries(this.tools.map((t) => [t.name?.toLowerCase(), t]))
         const [returnValueKey = 'output'] = this.agent.returnValues
         // Invalid tools won't be in the map, so we return False.
         if (action.tool in nameToolMap) {

@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { GitbookLoader } from 'langchain/document_loaders/web/gitbook'
+import { GitbookLoader } from '@langchain/community/document_loaders/web/gitbook'
 
 class Gitbook_DocumentLoaders implements INode {
     label: string
@@ -79,7 +79,14 @@ class Gitbook_DocumentLoaders implements INode {
 
         const loader = shouldLoadAllPaths ? new GitbookLoader(webPath, { shouldLoadAllPaths }) : new GitbookLoader(webPath)
 
-        let docs = textSplitter ? await loader.loadAndSplit() : await loader.load()
+        let docs: IDocument[] = []
+
+        if (textSplitter) {
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
+        } else {
+            docs = await loader.load()
+        }
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)

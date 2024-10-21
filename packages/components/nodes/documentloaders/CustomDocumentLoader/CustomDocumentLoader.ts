@@ -1,5 +1,5 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { NodeVM } from 'vm2'
+import { NodeVM } from '@flowiseai/nodevm'
 import { DataSource } from 'typeorm'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
 
@@ -23,7 +23,6 @@ class CustomDocumentLoader_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 'customDocLoader.svg'
         this.category = 'Document Loaders'
-        this.badge = 'NEW'
         this.description = `Custom function for loading documents`
         this.baseClasses = [this.type]
         this.inputs = [

@@ -1,7 +1,7 @@
 import { BaseCache } from '@langchain/core/caches'
+import { Cohere, CohereInput } from '@langchain/cohere'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Cohere, CohereInput } from './core'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class Cohere_LLMs implements INode {

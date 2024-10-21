@@ -6,6 +6,32 @@ import { Button } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { cloneDeep } from 'lodash'
 import { formatDataGridRows } from '@/utils/genericHelper'
+import { styled } from '@mui/material/styles'
+
+const StyledDataGrid = styled(MUIDataGrid)(({ theme }) => ({
+    border: `1px solid ${theme.palette.mode === 'light' ? '#b4b4b4' : '#303030'}`,
+
+    letterSpacing: 'normal',
+    '& .MuiDataGrid-columnsContainer': {
+        backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : '#1d1d1d'
+    },
+    '& .MuiDataGrid-iconSeparator': {
+        display: 'none'
+    },
+    '& .MuiDataGrid-columnHeader, .MuiDataGrid-cell': {
+        borderRight: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+    },
+    '& .MuiDataGrid-columnsContainer, .MuiDataGrid-cell': {
+        borderBottom: `1px solid ${theme.palette.mode === 'light' ? '#f0f0f0' : '#303030'}`
+    },
+
+    '& .MuiPaginationItem-root': {
+        borderRadius: 0
+    },
+    '& .MuiDataGrid-columnHeader:last-child, .MuiDataGrid-cell:last-child': {
+        borderRight: 'none'
+    }
+}))
 
 export const DataGrid = ({ columns, rows, style, disabled = false, hideFooter = false, onChange }) => {
     const [rowValues, setRowValues] = useState(formatDataGridRows(rows) ?? [])
@@ -80,7 +106,7 @@ export const DataGrid = ({ columns, rows, style, disabled = false, hideFooter = 
         <>
             {rowValues && colValues && (
                 <div style={{ marginTop: 10, height: 210, width: '100%', ...style }}>
-                    <MUIDataGrid
+                    <StyledDataGrid
                         processRowUpdate={handleProcessRowUpdate}
                         isCellEditable={() => {
                             return !disabled

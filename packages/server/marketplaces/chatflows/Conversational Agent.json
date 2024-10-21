@@ -1,7 +1,7 @@
 {
-    "description": "A conversational agent for a chat model which utilize chat specific prompts",
-    "categories": "Calculator Tool,Buffer Memory,SerpAPI,ChatOpenAI,Conversational Agent,Langchain",
-    "framework": "Langchain",
+    "description": "A conversational agent designed to use tools and chat model to provide responses",
+    "usecases": ["Agent"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
@@ -44,7 +44,7 @@
         },
         {
             "width": 300,
-            "height": 376,
+            "height": 253,
             "id": "bufferMemory_1",
             "position": {
                 "x": 607.6260576768354,
@@ -105,7 +105,7 @@
         },
         {
             "width": 300,
-            "height": 277,
+            "height": 276,
             "id": "serpAPI_0",
             "position": {
                 "x": 451.83740798447855,
@@ -152,7 +152,7 @@
         },
         {
             "width": 300,
-            "height": 574,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 97.01321406237057,
@@ -162,7 +162,7 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
-                "version": 6.0,
+                "version": 6,
                 "name": "chatOpenAI",
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
@@ -324,7 +324,7 @@
         },
         {
             "width": 300,
-            "height": 383,
+            "height": 435,
             "id": "conversationalAgent_0",
             "position": {
                 "x": 1191.1524476753796,
@@ -412,6 +412,59 @@
             "positionAbsolute": {
                 "x": 1191.1524476753796,
                 "y": 324.2479396683294
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1190.081066428271,
+                "y": 21.014152635796393
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "This agent works very similar to Tool Agent with slightly higher error rate.\n\nDifference being this agent uses prompt to instruct LLM using tools, as opposed to using LLM's function calling capability.\n\nFor LLMs that support function calling, it is recommended to use Tool Agent.\n\nExample question:\n1. What is the net worth of Elon Musk?\n2. Multiply the net worth by 2"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 284,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1190.081066428271,
+                "y": 21.014152635796393
             },
             "dragging": false
         }

@@ -2,7 +2,7 @@ import axios from 'axios'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { AgentExecutor } from 'langchain/agents'
 import { LLMChain } from 'langchain/chains'
-import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
@@ -28,7 +28,7 @@ class Airtable_Agents implements INode {
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'airtable.svg'
-        this.description = 'Agent used to to answer queries on Airtable table'
+        this.description = 'Agent used to answer queries on Airtable table'
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.credential = {
             label: 'Connect Credential',
@@ -104,10 +104,16 @@ class Airtable_Agents implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                // if (options.shouldStreamResponse) {
+                //     streamResponse(options.sseStreamer, options.chatId, e.message)
+                // }
                 return formatResponse(e.message)
             }
         }
+
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
@@ -123,7 +129,6 @@ class Airtable_Agents implements INode {
         let base64String = Buffer.from(JSON.stringify(airtableData)).toString('base64')
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
-        const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
         const callbacks = await additionalCallbacks(nodeData, options)
 
         const pyodide = await LoadPyodide()
@@ -166,6 +171,8 @@ json.dumps(my_dict)`
             }
             const res = await chain.call(inputs, [loggerHandler, ...callbacks])
             pythonCode = res?.text
+            // Regex to get rid of markdown code blocks syntax
+            pythonCode = pythonCode.replace(/^```[a-z]+\n|\n```$/gm, '')
         }
 
         // Then run the code using Pyodide
@@ -173,6 +180,7 @@ json.dumps(my_dict)`
         if (pythonCode) {
             try {
                 const code = `import pandas as pd\n${pythonCode}`
+                // TODO: get print console output
                 finalResult = await pyodide.runPythonAsync(code)
             } catch (error) {
                 throw new Error(`Sorry, I'm unable to find answer for question: "${input}" using follwoing code: "${pythonCode}"`)
@@ -191,7 +199,8 @@ json.dumps(my_dict)`
                 answer: finalResult
             }
 
-            if (options.socketIO && options.socketIOClientId) {
+            if (options.shouldStreamResponse) {
+                const handler = new CustomChainHandler(shouldStreamResponse ? sseStreamer : undefined, chatId)
                 const result = await chain.call(inputs, [loggerHandler, handler, ...callbacks])
                 return result?.text
             } else {
