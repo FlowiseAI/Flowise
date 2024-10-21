@@ -90,7 +90,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
             onClose={onCancel}
             open={show}
             fullWidth
-            maxWidth={'md'}
+            maxWidth={'lg'}
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
