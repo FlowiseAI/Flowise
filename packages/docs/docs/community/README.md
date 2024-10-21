@@ -10,11 +10,11 @@ We appreciate our community! No matter your skill level or technical background,
 
 ## ⭐ Star
 
-Star and share the [Github Repo](https://github.com/Answers-AI/).
+Star and share the [Github Repo](https://github.com/the-answerai/).
 
 ## 🙌 Share Chatflow
 
-Yes! Sharing how you use AnswerAI is a way of contribution. Export your chatflow as JSON, attach a screenshot and share it in [Show and Tell section](https://github.com/Answers-AI).
+Yes! Sharing how you use AnswerAI is a way of contribution. Export your chatflow as JSON, attach a screenshot and share it in [Show and Tell section](https://github.com/the-answerai).
 
 ## 🐞 Report Bugs
 

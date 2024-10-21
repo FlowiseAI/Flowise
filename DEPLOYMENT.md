@@ -39,7 +39,7 @@ Here are the steps to deploy an environment for an existing application:
 1. **Clone the application repository**. This will get you the application code and configuration.
 
 ```bash
-git clone https://github.com/answers-AI/Flowise
+git clone https://github.com/the-answerai/theanswer
 cd Flowise
 ```
 

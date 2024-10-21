@@ -35,7 +35,7 @@ We value your feedback and want to know about any bugs you encounter. You can su
 
 For technical issues or feature requests, you can also use our GitHub repository:
 
--   Visit our GitHub Issues page: [AnswerAI GitHub Issues](https://github.com/Answers-AI/Flowise/) <!-- TODO: Add actual GitHub Issues link -->
+-   Visit our GitHub Issues page: [AnswerAI GitHub Issues](https://github.com/the-answerai/theanswer/) <!-- TODO: Add actual GitHub Issues link -->
 -   Search existing issues to see if your problem has already been reported.
 -   If not, create a new issue with a clear title and detailed description.
 -   Follow the issue template if provided.

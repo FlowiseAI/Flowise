@@ -286,7 +286,7 @@
                         "label": "Repo Link",
                         "name": "repoLink",
                         "type": "string",
-                        "placeholder": "https://github.com/Answers-AI/daisy",
+                        "placeholder": "https://github.com/the-answerai/daisy",
                         "id": "github_0-input-repoLink-string"
                     },
                     {
@@ -351,7 +351,7 @@
                     }
                 ],
                 "inputs": {
-                    "repoLink": "https://github.com/Answers-AI/daisy",
+                    "repoLink": "https://github.com/the-answerai/daisy",
                     "branch": "main",
                     "recursive": true,
                     "textSplitter": "{{markdownTextSplitter_0.data.instance}}",

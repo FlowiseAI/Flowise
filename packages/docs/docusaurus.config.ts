@@ -97,7 +97,7 @@ const config: Config = {
                     className: 'button button--primary button--sm'
                 },
                 {
-                    href: 'https://github.com/answers-ai/',
+                    href: 'https://github.com/the-answerai',
                     label: 'GitHub',
                     position: 'right'
                 }
@@ -135,11 +135,7 @@ const config: Config = {
                         },
                         {
                             label: 'GitHub',
-                            href: 'https://github.com/answers-AI/'
-                        },
-                        {
-                            label: 'Website',
-                            href: 'https://theanswer.ai'
+                            href: 'https://github.com/the-answerai'
                         }
                     ]
                 },
@@ -157,6 +153,23 @@ const config: Config = {
                         {
                             label: 'Instagram',
                             href: 'https://instagram.com/digitalatscale'
+                        }
+                    ]
+                },
+                {
+                    title: 'Company',
+                    items: [
+                        {
+                            label: 'Website',
+                            href: 'https://theanswer.ai'
+                        },
+                        {
+                            label: 'Privacy Policy',
+                            href: '/privacy-policy'
+                        },
+                        {
+                            label: 'Terms of Service',
+                            href: '/terms-of-service'
                         }
                     ]
                 }
