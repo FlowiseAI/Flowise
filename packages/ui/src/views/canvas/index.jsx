@@ -69,11 +69,10 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     const navigate = useNavigate()
 
     const { state } = useLocation()
-    const templateData = state?.templateData ? JSON.parse(state.templateData) : ''
-    console.log('Template', { templateData })
-    const templateFlowData = templateData?.flowData ? templateData.flowData : ''
-    const templateName = state ? state.templateName : ''
-    const parentChatflowId = state && isNaN(state.parentChatflowId) ? state.parentChatflowId : undefined
+    const templateData = useMemo(() => (state?.templateData ? JSON.parse(state.templateData) : ''), [state?.templateData])
+    const templateFlowData = useMemo(() => (templateData?.flowData ? templateData.flowData : ''), [templateData?.flowData])
+    const templateName = useMemo(() => (state ? state.templateName ?? templateData?.name : ''), [templateData, state])
+    const parentChatflowId = useMemo(() => (state && isNaN(state.parentChatflowId) ? state.parentChatflowId : undefined), [state])
     // console.log({ templateData, chatflowid, templateFlowData, templateName, parentChatflowId })
     const pathname = usePathname()
     // const URLpath = pathname.split('/')
@@ -90,6 +89,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     const [chatflow, setChatflow] = useState(null)
     const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
 
+    console.log('Template', { templateData, templateFlowData, templateName, parentChatflowId, chatflow })
     // ==============================|| Snackbar ||============================== //
 
     useNotifier()
@@ -223,7 +223,6 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                     // User doesn't have access or chatflow doesn't exist, create a new chatflow
                     delete flowData.id
                 }
-
                 const newChatflow = {
                     id: flowData.id, // This will be undefined if we're creating a new chatflow
                     name: `Copy of ${templateData.name ?? templateFlowData.name}`,
@@ -554,7 +553,9 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }, [updateChatflowApi.data, updateChatflowApi.error])
 
     useEffect(() => {
+        console.log('setting parentChatflowId', canvasDataStoreRef.current.chatflow, parentChatflowId)
         setChatflow({ ...canvasDataStoreRef.current.chatflow, parentChatflowId })
+
         if (canvasDataStoreRef.current.chatflow) {
             const flowData = canvasDataStoreRef.current.chatflow.flowData ? JSON.parse(canvasDataStoreRef.current.chatflow.flowData) : []
             checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || [])
@@ -562,7 +563,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canvasDataStoreRef.current.chatflow])
+    }, [])
 
     // Initialization
     useEffect(() => {
@@ -629,8 +630,11 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }, [])
 
     useEffect(() => {
+        console.log('templateFlowData', templateFlowData)
         if (templateFlowData?.includes && templateFlowData.includes('"nodes": [') && templateFlowData.includes('"edges": [')) {
             handleLoadFlow(templateFlowData)
+        } else if (typeof templateFlowData === 'object') {
+            handleLoadFlow(JSON.stringify(templateFlowData))
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

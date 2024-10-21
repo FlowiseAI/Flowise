@@ -138,7 +138,7 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.background.default,
     overflowY: 'auto',
     padding: theme.spacing(2),
-    borderRadius: theme.shape.borderRadius,
+    borderRadius: theme.shape.borderRadius
     // boxShadow: theme.shadows[5]
 }))
 
@@ -196,6 +196,10 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             }
             return res.json()
         } catch (error) {
+            console.log('error', error)
+            if (error instanceof Response && error.status === 401) {
+                window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
+            }
             return { sidekicks: [], categories: { top: [], more: [] } }
         }
     }
@@ -443,21 +447,19 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                         {sidekick.chatflow.description || 'No description available'}
                                     </SidekickDescription>
                                     <SidekickFooter>
-                                        {sidekick.isAvailable && (
+                                        {sidekick.isExecutable && (
                                             <FavoriteButton onClick={(e) => toggleFavorite(sidekick, e)} color='primary' size='small'>
                                                 {favorites.has(sidekick.id) ? <StarIcon /> : <StarBorderIcon />}
                                             </FavoriteButton>
                                         )}
-                                        {sidekick.requiresClone && (
-                                            <CloneButton
-                                                variant='outlined'
-                                                size='small'
-                                                startIcon={<IconCopy />}
-                                                onClick={(e) => handleClone(sidekick, e)}
-                                            >
-                                                Clone
-                                            </CloneButton>
-                                        )}
+                                        <CloneButton
+                                            variant='outlined'
+                                            size='small'
+                                            startIcon={<IconCopy />}
+                                            onClick={(e) => handleClone(sidekick, e)}
+                                        >
+                                            Clone
+                                        </CloneButton>
                                     </SidekickFooter>
                                 </SidekickCard>
                             </Grid>
