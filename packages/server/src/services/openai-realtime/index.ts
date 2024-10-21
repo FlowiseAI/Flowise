@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from 'uuid'
 const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
 
-const buildAndInitTool = async (chatflowid: string, _chatId?: string) => {
+const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessageId?: string) => {
     const appServer = getRunningExpressApp()
     const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
         id: chatflowid
@@ -22,6 +22,7 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string) => {
     }
 
     const chatId = _chatId || uuidv4()
+    const apiMessageId = _apiMessageId || uuidv4()
     const flowData = JSON.parse(chatflow.flowData)
     const nodes = flowData.nodes
     const edges = flowData.edges
@@ -62,6 +63,7 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string) => {
         chatId: chatId,
         sessionId: chatId,
         chatflowid,
+        apiMessageId,
         appDataSource: appServer.AppDataSource
     })
 
@@ -113,9 +115,15 @@ const getAgentTools = async (chatflowid: string): Promise<any> => {
     }
 }
 
-const executeAgentTool = async (chatflowid: string, chatId: string, toolName: string, inputArgs: string): Promise<any> => {
+const executeAgentTool = async (
+    chatflowid: string,
+    chatId: string,
+    toolName: string,
+    inputArgs: string,
+    apiMessageId?: string
+): Promise<any> => {
     try {
-        const agent = await buildAndInitTool(chatflowid, chatId)
+        const agent = await buildAndInitTool(chatflowid, chatId, apiMessageId)
         const tools = agent.tools
         const tool = tools.find((tool: any) => tool.name === toolName)
 
