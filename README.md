@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD030 -->
-
-<img width="100%" src="https://github.com/the-answerai/theanswer/blob/main/images/flowise.png?raw=true"></a>
+<!-- TODO: Add banner for answerAI  -->
+<!-- <img width="100%" src="https://github.com/the-answerai/theanswer/blob/main/images/flowise.png?raw=true"></a> -->
 
 # TheAnswer - Build LLM Apps Easily with Flowise
 
@@ -9,9 +9,9 @@
 [![GitHub star chart](https://img.shields.io/github/stars/the-answerai/theanswer?style=social)](https://star-history.com/#the-answerai/theanswer)
 [![GitHub fork](https://img.shields.io/github/forks/the-answerai/theanswer?style=social)](https://github.com/the-answerai/theanswer/fork)
 
-English | [中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
+<!-- English | [中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md) -->
 
-<h3>Drag & drop UI to build your customized LLM flow with TheAnswer</h3>
+<h3>Drag & drop UI to build your customized LLM Flowise with The AnswerAI</h3>
 <a href="https://github.com/the-answerai/theanswer">
 <img width="100%" src="https://github.com/the-answerai/theanswer/blob/main/images/flowise.gif?raw=true"></a>
 
@@ -19,38 +19,80 @@ English | [中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [�
 
 TheAnswer is a revolutionary AI-powered productivity suite that empowers individuals and organizations to streamline their workflows, enhance decision-making, and boost creativity. Built on top of the popular open-source project Flowise, TheAnswer extends its capabilities to provide a comprehensive set of tools designed to tackle a wide range of tasks with unprecedented efficiency and intelligence.
 
+### TheAnswer and Flowise
+
+TheAnswer builds upon Flowise, a powerful open-source tool for creating customized LLM flows. While Flowise provides the foundation for AI-powered workflows, TheAnswer extends these capabilities and integrates a wide range of additional services to create a comprehensive productivity suite.
+
+Key aspects of TheAnswer's approach:
+
+-   Leverages Flowise's drag-and-drop interface for building AI workflows
+-   Extends Flowise's functionality with additional UI components and features
+-   Integrates seamlessly with Flowise projects
+
+### Integration with Multiple Services
+
+TheAnswer goes beyond Flowise integration, offering a growing ecosystem of services to enhance your AI-powered workflows:
+
+1. **Langfuse**: For LLM observability and analytics
+2. **Make.com**: To create complex automated workflows
+3. **n8n**: For workflow automation and integration
+4. **Auth0**: For robust user management, organizations, and permissions
+5. **Other AI and Productivity Tools**: Continuously expanding integrations with various services
+
+This multi-service approach allows TheAnswer to offer a more versatile and powerful solution, catering to a wide range of business needs and use cases.
+
 ### Key Features
 
-1. **AI Sidekicks (Chatflows)**: Task-specific AI assistants for various purposes.
+1. **AI Sidekicks (Chatflows)**: Task-specific AI assistants for various purposes, built using Flowise and enhanced with TheAnswer's capabilities.
 2. **Document Stores**: Connect and access data from multiple third-party services.
-3. **Powerful Tools Integration**: Leverage various tools to extend AI capabilities.
-4. **Developer-Friendly Platform**: Customizable AI models and workflows with API access.
+3. **Powerful Tools Integration**: Leverage various tools and services to extend AI capabilities beyond Flowise's core functionality.
+4. **Developer-Friendly Platform**: Customizable AI models and workflows with API access, compatible with Flowise and other integrated services.
 5. **Shareable Chatbots**: Easily deploy and share custom AI Sidekicks.
-6. **Integration with Flowise**: Seamless integration with the open-source workflow builder.
+6. **Composable Architecture**: Mix and match services like Flowise, Langfuse, Make.com, and n8n to create tailored solutions.
+7. **Advanced User Management**: Utilize Auth0 for secure user authentication, organization management, and granular permissions control.
 
 ## ⚡Quick Start
 
-Since TheAnswer is built on top of Flowise, you can start by using Flowise and then integrate TheAnswer features.
+There are two main ways to get started with TheAnswer: local development setup and deployment on Render.
 
-Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
+### Local Development Setup
 
-1. Install Flowise
-    ```bash
-    npm install -g flowise
-    ```
-2. Start Flowise
+1. Clone the repository:
 
     ```bash
-    npx flowise start
+    git clone https://github.com/the-answerai/theanswer.git
+    cd theanswer
     ```
 
-    With username & password
+2. Install dependencies:
 
     ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
+    pnpm install
     ```
 
-3. Open [http://localhost:3000](http://localhost:3000)
+3. Start the development server:
+
+    ```bash
+    pnpm dev
+    ```
+
+4. Open [http://localhost:8080](http://localhost:8080) in your browser to access TheAnswer.
+
+### Deploy on Render (Recommended for Easy Setup)
+
+For a quick and easy setup, we recommend deploying TheAnswer on Render:
+
+1. Click the "Deploy to Render" button below:
+
+    [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/the-answerai/theanswer)
+
+2. Follow the prompts on Render to complete the deployment process.
+
+3. Once deployed, you'll receive a URL to access your TheAnswer instance.
+
+For detailed instructions on both local development and Render deployment, please refer to our [documentation](https://docs.theanswer.ai/).
+
+Note: The standalone TheAnswer CLI tool is currently under development. Stay tuned for updates on its release and installation process.
 
 Note: The TheAnswer package is currently under development and not yet published to npm. Stay tuned for updates on when it will be available as a standalone CLI tool.
 
@@ -90,7 +132,7 @@ TheAnswer is built on top of Flowise and extends its functionality. The project 
 All packages inside `packages/*` are from the original Flowise project:
 
 -   `server`: Node backend to serve API logics
--   `ui`: React frontend
+-   `ui`: React frontend for Flowise
 -   `components`: Third-party nodes integrations
 -   `embed`: Embedding functionality
 -   `embed-react`: React components for embedding
@@ -108,7 +150,7 @@ TheAnswer adds additional functionality through the `packages-answers/*` directo
 -   `ui`: TheAnswer-specific UI components
 -   `utils`: Utility functions
 
-This structure allows TheAnswer to build upon Flowise's core functionality while adding its own features and customizations.
+This structure allows TheAnswer to build upon Flowise's core functionality while adding its own features and customizations. The TheAnswer-specific packages extend and enhance the capabilities of the original Flowise project, providing additional tools for AI-powered productivity and workflow management.
 
 ### Prerequisite
 
@@ -217,9 +259,9 @@ Deploy TheAnswer self-hosted in your existing infrastructure. We support various
 
         [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/theanswer)
 
-    -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dtheanswer)
+    -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3Dtheanswer)
 
-        [![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dtheanswer)
+        [![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3Dtheanswer)
 
     -   [RepoCloud](https://repocloud.io/details/?app_id=29)
 
@@ -237,13 +279,37 @@ Feel free to ask any questions, raise problems, and request new features in [dis
 
 ## 🙌 Contributing
 
-Thanks go to these awesome contributors of both TheAnswer and the original Flowise project
+We welcome contributions to TheAnswer! Whether you're fixing bugs, improving documentation, or proposing new features, your efforts are appreciated. Here's how you can contribute:
+
+1. **Fork the Repository**: Start by forking the TheAnswer repository to your GitHub account.
+
+2. **Create a Branch**: Create a new branch for your contribution.
+
+3. **Make Your Changes**:
+
+    - For bug fixes and minor improvements, feel free to submit a pull request directly.
+    - For new features or significant changes, please open an issue first to discuss the proposed changes.
+    - When extending Flowise functionality, ensure your changes are compatible with both Flowise and TheAnswer.
+
+4. **Test Your Changes**: Ensure your changes don't break existing functionality and add tests if applicable.
+
+5. **Submit a Pull Request**: Once you're satisfied with your changes, submit a pull request to the main TheAnswer repository.
+
+6. **Code Review**: Wait for the maintainers to review your pull request. Be open to feedback and make necessary adjustments.
+
+For detailed contribution guidelines, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) file.
+
+### Contribution to Flowise Core
+
+If your contribution is related to Flowise core functionality, consider submitting it to the [Flowise repository](https://github.com/FlowiseAI/Flowise) first. Once accepted, we can integrate it into TheAnswer.
+
+Thanks go to these awesome contributors of both TheAnswer and the original Flowise project:
 
 <a href="https://github.com/the-answerai/theanswer/graphs/contributors">
 <img src="https://contrib.rocks/image?repo=the-answerai/theanswer" />
 </a>
 
-See [contributing guide](CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or issues.
+Reach out to us on [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or need assistance with your contribution.
 
 ## 📄 License
 
