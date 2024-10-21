@@ -1,6 +1,5 @@
 import { Logger } from 'winston'
 import { v4 as uuidv4 } from 'uuid'
-import { Server } from 'socket.io'
 import { Client } from 'langsmith'
 import CallbackHandler from 'langfuse-langchain'
 import lunary from 'lunary'
@@ -15,8 +14,9 @@ import { AgentAction } from '@langchain/core/agents'
 import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 
 import { getCredentialData, getCredentialParam, getEnvironmentVariable } from './utils'
-import { ICommonObject, INodeData } from './Interface'
+import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
 import { LangWatch, LangWatchSpan, LangWatchTrace, autoconvertTypedValues } from 'langwatch'
+import { DataSource } from 'typeorm'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
@@ -91,6 +91,7 @@ export class ConsoleCallbackHandler extends BaseTracer {
 
     onChainStart(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
+
         this.logger.verbose(`[chain/start] [${crumbs}] Entering Chain run with input: ${tryJsonStringify(run.inputs, '[inputs]')}`)
     }
 
@@ -163,16 +164,16 @@ export class ConsoleCallbackHandler extends BaseTracer {
 export class CustomChainHandler extends BaseCallbackHandler {
     name = 'custom_chain_handler'
     isLLMStarted = false
-    socketIO: Server
-    socketIOClientId = ''
     skipK = 0 // Skip streaming for first K numbers of handleLLMStart
     returnSourceDocuments = false
     cachedResponse = true
+    chatId: string = ''
+    sseStreamer: IServerSideEventStreamer | undefined
 
-    constructor(socketIO: Server, socketIOClientId: string, skipK?: number, returnSourceDocuments?: boolean) {
+    constructor(sseStreamer: IServerSideEventStreamer | undefined, chatId: string, skipK?: number, returnSourceDocuments?: boolean) {
         super()
-        this.socketIO = socketIO
-        this.socketIOClientId = socketIOClientId
+        this.sseStreamer = sseStreamer
+        this.chatId = chatId
         this.skipK = skipK ?? this.skipK
         this.returnSourceDocuments = returnSourceDocuments ?? this.returnSourceDocuments
     }
@@ -186,14 +187,20 @@ export class CustomChainHandler extends BaseCallbackHandler {
         if (this.skipK === 0) {
             if (!this.isLLMStarted) {
                 this.isLLMStarted = true
-                this.socketIO.to(this.socketIOClientId).emit('start', token)
+                if (this.sseStreamer) {
+                    this.sseStreamer.streamStartEvent(this.chatId, token)
+                }
             }
-            this.socketIO.to(this.socketIOClientId).emit('token', token)
+            if (this.sseStreamer) {
+                this.sseStreamer.streamTokenEvent(this.chatId, token)
+            }
         }
     }
 
     handleLLMEnd() {
-        this.socketIO.to(this.socketIOClientId).emit('end')
+        if (this.sseStreamer) {
+            this.sseStreamer.streamEndEvent(this.chatId)
+        }
     }
 
     handleChainEnd(outputs: ChainValues, _: string, parentRunId?: string): void | Promise<void> {
@@ -208,19 +215,97 @@ export class CustomChainHandler extends BaseCallbackHandler {
             const result = cachedValue.split(/(\s+)/)
             result.forEach((token: string, index: number) => {
                 if (index === 0) {
-                    this.socketIO.to(this.socketIOClientId).emit('start', token)
+                    if (this.sseStreamer) {
+                        this.sseStreamer.streamStartEvent(this.chatId, token)
+                    }
                 }
-                this.socketIO.to(this.socketIOClientId).emit('token', token)
+                if (this.sseStreamer) {
+                    this.sseStreamer.streamTokenEvent(this.chatId, token)
+                }
             })
-            if (this.returnSourceDocuments) {
-                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+            if (this.returnSourceDocuments && this.sseStreamer) {
+                this.sseStreamer.streamSourceDocumentsEvent(this.chatId, outputs?.sourceDocuments)
             }
-            this.socketIO.to(this.socketIOClientId).emit('end')
+            if (this.sseStreamer) {
+                this.sseStreamer.streamEndEvent(this.chatId)
+            }
         } else {
-            if (this.returnSourceDocuments) {
-                this.socketIO.to(this.socketIOClientId).emit('sourceDocuments', outputs?.sourceDocuments)
+            if (this.returnSourceDocuments && this.sseStreamer) {
+                this.sseStreamer.streamSourceDocumentsEvent(this.chatId, outputs?.sourceDocuments)
             }
         }
+    }
+}
+
+class ExtendedLunaryHandler extends LunaryHandler {
+    chatId: string
+    appDataSource: DataSource
+    databaseEntities: IDatabaseEntity
+    currentRunId: string | null
+    thread: any
+
+    constructor({ flowiseOptions, ...options }: any) {
+        super(options)
+        this.appDataSource = flowiseOptions.appDataSource
+        this.databaseEntities = flowiseOptions.databaseEntities
+        this.chatId = flowiseOptions.chatId
+    }
+
+    async initThread() {
+        const entity = await this.appDataSource.getRepository(this.databaseEntities['Lead']).findOne({
+            where: {
+                chatId: this.chatId
+            }
+        })
+
+        this.thread = lunary.openThread({
+            id: this.chatId,
+            userId: entity?.email ?? entity?.id,
+            userProps: {
+                name: entity?.name ?? undefined,
+                email: entity?.email ?? undefined,
+                phone: entity?.phone ?? undefined
+            }
+        })
+    }
+
+    async handleChainStart(chain: any, inputs: any, runId: string, parentRunId?: string, tags?: string[], metadata?: any): Promise<void> {
+        // First chain (no parent run id) is the user message
+        if (this.chatId && !parentRunId) {
+            if (!this.thread) {
+                await this.initThread()
+            }
+
+            const messageText = inputs.input
+
+            const messageId = this.thread.trackMessage({
+                content: messageText,
+                role: 'user'
+            })
+
+            // Track top level chain id for knowing when we got the final reply
+            this.currentRunId = runId
+
+            // Use the messageId as the parent of the chain for reconciliation
+            super.handleChainStart(chain, inputs, runId, messageId, tags, metadata)
+        } else {
+            super.handleChainStart(chain, inputs, runId, parentRunId, tags, metadata)
+        }
+    }
+
+    async handleChainEnd(outputs: ChainValues, runId: string): Promise<void> {
+        if (this.chatId && runId === this.currentRunId) {
+            const answer = outputs.output
+
+            this.thread.trackMessage({
+                content: answer,
+                role: 'assistant'
+            })
+
+            this.currentRunId = null
+        }
+
+        super.handleChainEnd(outputs, runId)
     }
 }
 
@@ -282,19 +367,22 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     const handler = new CallbackHandler(langFuseOptions)
                     callbacks.push(handler)
                 } else if (provider === 'lunary') {
-                    const lunaryAppId = getCredentialParam('lunaryAppId', credentialData, nodeData)
+                    const lunaryPublicKey = getCredentialParam('lunaryAppId', credentialData, nodeData)
                     const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, nodeData)
 
                     let lunaryFields = {
-                        appId: lunaryAppId,
-                        apiUrl: lunaryEndpoint ?? 'https://app.lunary.ai'
+                        publicKey: lunaryPublicKey,
+                        apiUrl: lunaryEndpoint ?? 'https://api.lunary.ai',
+                        runtime: 'flowise',
+                        flowiseOptions: options
                     }
 
                     if (nodeData?.inputs?.analytics?.lunary) {
                         lunaryFields = { ...lunaryFields, ...nodeData?.inputs?.analytics?.lunary }
                     }
 
-                    const handler = new LunaryHandler(lunaryFields)
+                    const handler = new ExtendedLunaryHandler(lunaryFields)
+
                     callbacks.push(handler)
                 } else if (provider === 'langWatch') {
                     const langWatchApiKey = getCredentialParam('langWatchApiKey', credentialData, nodeData)
@@ -365,12 +453,13 @@ export class AnalyticHandler {
                         })
                         this.handlers['langFuse'] = { client: langfuse }
                     } else if (provider === 'lunary') {
-                        const lunaryAppId = getCredentialParam('lunaryAppId', credentialData, this.nodeData)
+                        const lunaryPublicKey = getCredentialParam('lunaryAppId', credentialData, this.nodeData)
                         const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, this.nodeData)
 
                         lunary.init({
-                            appId: lunaryAppId,
-                            apiUrl: lunaryEndpoint
+                            publicKey: lunaryPublicKey,
+                            apiUrl: lunaryEndpoint,
+                            runtime: 'flowise'
                         })
 
                         this.handlers['lunary'] = { client: lunary }
@@ -476,7 +565,6 @@ export class AnalyticHandler {
                 await monitor.trackEvent('chain', 'start', {
                     runId,
                     name,
-                    userId: this.options.chatId,
                     input,
                     ...this.nodeData?.inputs?.analytics?.lunary
                 })
@@ -675,7 +763,6 @@ export class AnalyticHandler {
                     runId,
                     parentRunId: chainEventId,
                     name,
-                    userId: this.options.chatId,
                     input
                 })
                 this.handlers['lunary'].llmEvent = { [runId]: runId }
@@ -832,7 +919,6 @@ export class AnalyticHandler {
                     runId,
                     parentRunId: chainEventId,
                     name,
-                    userId: this.options.chatId,
                     input
                 })
                 this.handlers['lunary'].toolEvent = { [runId]: runId }

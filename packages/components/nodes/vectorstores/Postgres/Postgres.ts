@@ -72,7 +72,7 @@ class Postgres_VectorStores implements INode {
                 label: 'Port',
                 name: 'port',
                 type: 'number',
-                placeholder: '6432',
+                placeholder: '5432',
                 optional: true
             },
             {
@@ -189,6 +189,18 @@ class Postgres_VectorStores implements INode {
                     // Avoid Illegal invocation error
                     vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
                         return await similaritySearchVectorWithScore(query, k, tableName, postgresConnectionOptions, filter)
+                    }
+
+                    vectorStore.delete = async (params: { ids: string[] }): Promise<void> => {
+                        const { ids } = params
+
+                        if (ids?.length) {
+                            try {
+                                vectorStore.appDataSource.getRepository(vectorStore.documentEntity).delete(ids)
+                            } catch (e) {
+                                console.error('Failed to delete')
+                            }
+                        }
                     }
 
                     await recordManager.createSchema()

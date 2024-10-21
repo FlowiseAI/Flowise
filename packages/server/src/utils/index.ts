@@ -1,7 +1,6 @@
 import path from 'path'
 import fs from 'fs'
 import logger from './logger'
-import { Server } from 'socket.io'
 import {
     IComponentCredentials,
     IComponentNodes,
@@ -39,6 +38,7 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
 import { Assistant } from '../database/entities/Assistant'
+import { Lead } from '../database/entities/Lead'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
 import { Variable } from '../database/entities/Variable'
@@ -56,6 +56,7 @@ export const databaseEntities: IDatabaseEntity = {
     ChatMessage: ChatMessage,
     Tool: Tool,
     Credential: Credential,
+    Lead: Lead,
     Assistant: Assistant,
     Variable: Variable,
     DocumentStore: DocumentStore,
@@ -436,8 +437,6 @@ type BuildFlowParams = {
     stopNodeId?: string
     uploads?: IFileUpload[]
     baseURL?: string
-    socketIO?: Server
-    socketIOClientId?: string
 }
 
 /**
@@ -462,9 +461,7 @@ export const buildFlow = async ({
     isUpsert,
     stopNodeId,
     uploads,
-    baseURL,
-    socketIO,
-    socketIOClientId
+    baseURL
 }: BuildFlowParams) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -533,9 +530,7 @@ export const buildFlow = async ({
                     cachePool,
                     dynamicVariables,
                     uploads,
-                    baseURL,
-                    socketIO,
-                    socketIOClientId
+                    baseURL
                 })
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
@@ -561,8 +556,6 @@ export const buildFlow = async ({
                     dynamicVariables,
                     uploads,
                     baseURL,
-                    socketIO,
-                    socketIOClientId,
                     componentNodes: componentNodes as ICommonObject
                 })
 
@@ -777,14 +770,15 @@ export const getVariableValue = async (
     flowData?: ICommonObject
 ) => {
     const isObject = typeof paramValue === 'object'
-    let returnVal = (isObject ? JSON.stringify(paramValue) : paramValue) ?? ''
+    const initialValue = (isObject ? JSON.stringify(paramValue) : paramValue) ?? ''
+    let returnVal = initialValue
     const variableStack = []
     const variableDict = {} as IVariableDict
     let startIdx = 0
-    const endIdx = returnVal.length - 1
+    const endIdx = initialValue.length - 1
 
     while (startIdx < endIdx) {
-        const substr = returnVal.substring(startIdx, startIdx + 2)
+        const substr = initialValue.substring(startIdx, startIdx + 2)
 
         // Store the opening double curly bracket
         if (substr === '{{') {
@@ -795,7 +789,7 @@ export const getVariableValue = async (
         if (substr === '}}' && variableStack.length > 0 && variableStack[variableStack.length - 1].substr === '{{') {
             const variableStartIdx = variableStack[variableStack.length - 1].startIdx
             const variableEndIdx = startIdx
-            const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
+            const variableFullPath = initialValue.substring(variableStartIdx, variableEndIdx)
 
             /**
              * Apply string transformation to convert special chars:
@@ -1190,6 +1184,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'azureChatOpenAI',
             'chatOpenAI',
             'chatOpenAI_LlamaIndex',
+            'chatOpenAICustom',
             'chatAnthropic',
             'chatAnthropic_LlamaIndex',
             'chatOllama',
@@ -1197,6 +1192,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'awsChatBedrock',
             'chatMistralAI',
             'chatMistral_LlamaIndex',
+            'chatAlibabaTongyi',
             'groqChat',
             'chatGroq_LlamaIndex',
             'chatCohere',
