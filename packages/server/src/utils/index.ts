@@ -430,6 +430,7 @@ type BuildFlowParams = {
     chatId: string
     sessionId: string
     chatflowid: string
+    apiMessageId: string
     appDataSource: DataSource
     overrideConfig?: ICommonObject
     cachePool?: CachePool
@@ -452,6 +453,7 @@ export const buildFlow = async ({
     componentNodes,
     question,
     chatHistory,
+    apiMessageId,
     chatId,
     sessionId,
     chatflowid,
@@ -524,6 +526,7 @@ export const buildFlow = async ({
                     sessionId,
                     chatflowid,
                     chatHistory,
+                    apiMessageId,
                     logger,
                     appDataSource,
                     databaseEntities,
@@ -1192,6 +1195,7 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
             'awsChatBedrock',
             'chatMistralAI',
             'chatMistral_LlamaIndex',
+            'chatAlibabaTongyi',
             'groqChat',
             'chatGroq_LlamaIndex',
             'chatCohere',

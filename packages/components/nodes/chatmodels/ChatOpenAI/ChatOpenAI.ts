@@ -112,6 +112,15 @@ class ChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Stop Sequence',
+                name: 'stopSequence',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                description: 'List of stop words to use when generating. Use comma to separate multiple stop words.',
+                additionalParams: true
+            },
+            {
                 label: 'BaseOptions',
                 name: 'baseOptions',
                 type: 'json',
@@ -168,6 +177,7 @@ class ChatOpenAI_ChatModels implements INode {
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
+        const stopSequence = nodeData.inputs?.stopSequence as string
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
         const proxyUrl = nodeData.inputs?.proxyUrl as string
@@ -199,6 +209,10 @@ class ChatOpenAI_ChatModels implements INode {
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
+        if (stopSequence) {
+            const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
+            obj.stop = stopSequenceArray
+        }
 
         let parsedBaseOptions: any | undefined = undefined
 
