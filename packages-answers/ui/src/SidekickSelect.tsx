@@ -139,7 +139,7 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
     overflowY: 'auto',
     padding: theme.spacing(2),
     borderRadius: theme.shape.borderRadius,
-    boxShadow: theme.shadows[5]
+    // boxShadow: theme.shadows[5]
 }))
 
 const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
