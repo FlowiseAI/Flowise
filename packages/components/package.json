@@ -72,6 +72,7 @@
         "couchbase": "4.4.1",
         "chromadb": "^1.5.11",
         "cohere-ai": "^7.7.5",
+        "couchbase": "4.4.1",
         "crypto-js": "^4.1.1",
         "css-what": "^6.1.0",
         "d3-dsv": "2",
