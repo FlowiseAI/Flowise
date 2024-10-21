@@ -144,7 +144,7 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
 
 const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
     const { setSidekick, sidekick: selectedSidekick, setSidekick: setSelectedSidekick } = useAnswers()
-
+    const router = useRouter()
     const { user } = useUser()
 
     const [searchTerm, setSearchTerm] = useState('')
@@ -414,7 +414,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     <Grid container spacing={2}>
                         {filteredSidekicks.map((sidekick) => (
                             <Grid item xs={12} sm={6} md={4}>
-                                <SidekickCard onClick={sidekick.requiresClone ? undefined : () => handleSidekickSelect(sidekick)}>
+                                <SidekickCard onClick={!sidekick.isExecutable ? undefined : () => handleSidekickSelect(sidekick)}>
                                     <SidekickHeader sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                         <SidekickTitle variant='h6' sx={{ width: '100%' }}>
                                             {sidekick.chatflow.name}

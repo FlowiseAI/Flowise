@@ -15,7 +15,11 @@ export async function GET(req: Request) {
             const chatbotConfig = JSON.parse(sidekick.chatflow.chatbotConfig || '{}')
             return {
                 ...sidekick,
-                requiresClone: chatbotConfig.requiresClone || sidekick.chatflow.visibility?.includes('Marketplace') || false
+                isExecutable:
+                    sidekick.chatflow.isPublic ||
+                    sidekick.chatflow.userId === user.id ||
+                    (sidekick.chatflow.visibility?.includes('Organization') && sidekick.chatflow.organizationId === user.organizationId),
+                requiresClone: chatbotConfig.requiresClone || !sidekick.chatflow.isPublic
             }
         })
         console.log({ sidekicks: sidekicksWithCloneInfo })
