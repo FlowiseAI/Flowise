@@ -1,22 +1,36 @@
 <!-- markdownlint-disable MD030 -->
 
-<img width="100%" src="https://github.com/AnswerAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
+<img width="100%" src="https://github.com/the-answerai/theanswer/blob/main/images/flowise.png?raw=true"></a>
 
-# Flowise - Build LLM Apps Easily
+# TheAnswer - Build LLM Apps Easily with Flowise
 
-[![Release Notes](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/AnswerAI/Flowise/releases)
 [![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
-[![Twitter Follow](https://img.shields.io/twitter/follow/FlowiseAI?style=social)](https://twitter.com/FlowiseAI)
-[![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
-[![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/AnswerAI/Flowise/fork)
+[![Twitter Follow](https://img.shields.io/twitter/follow/TheAnswerAI?style=social)](https://twitter.com/TheAnswerAI)
+[![GitHub star chart](https://img.shields.io/github/stars/the-answerai/theanswer?style=social)](https://star-history.com/#the-answerai/theanswer)
+[![GitHub fork](https://img.shields.io/github/forks/the-answerai/theanswer?style=social)](https://github.com/the-answerai/theanswer/fork)
 
 English | [中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
 
-<h3>Drag & drop UI to build your customized LLM flow</h3>
-<a href="https://github.com/AnswerAI/Flowise">
-<img width="100%" src="https://github.com/AnswerAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
+<h3>Drag & drop UI to build your customized LLM flow with TheAnswer</h3>
+<a href="https://github.com/the-answerai/theanswer">
+<img width="100%" src="https://github.com/the-answerai/theanswer/blob/main/images/flowise.gif?raw=true"></a>
+
+## 🌟 What is TheAnswer?
+
+TheAnswer is a revolutionary AI-powered productivity suite that empowers individuals and organizations to streamline their workflows, enhance decision-making, and boost creativity. Built on top of the popular open-source project Flowise, TheAnswer extends its capabilities to provide a comprehensive set of tools designed to tackle a wide range of tasks with unprecedented efficiency and intelligence.
+
+### Key Features
+
+1. **AI Sidekicks (Chatflows)**: Task-specific AI assistants for various purposes.
+2. **Document Stores**: Connect and access data from multiple third-party services.
+3. **Powerful Tools Integration**: Leverage various tools to extend AI capabilities.
+4. **Developer-Friendly Platform**: Customizable AI models and workflows with API access.
+5. **Shareable Chatbots**: Easily deploy and share custom AI Sidekicks.
+6. **Integration with Flowise**: Seamless integration with the open-source workflow builder.
 
 ## ⚡Quick Start
+
+Since TheAnswer is built on top of Flowise, you can start by using Flowise and then integrate TheAnswer features.
 
 Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
@@ -37,6 +51,8 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
     ```
 
 3. Open [http://localhost:3000](http://localhost:3000)
+
+Note: The TheAnswer package is currently under development and not yet published to npm. Stay tuned for updates on when it will be available as a standalone CLI tool.
 
 ## 🐳 Docker
 
@@ -67,11 +83,32 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
 ## 👨‍💻 Developers
 
-Flowise has 3 different modules in a single mono repository.
+TheAnswer is built on top of Flowise and extends its functionality. The project structure is as follows:
+
+### Packages (from Flowise)
+
+All packages inside `packages/*` are from the original Flowise project:
 
 -   `server`: Node backend to serve API logics
 -   `ui`: React frontend
 -   `components`: Third-party nodes integrations
+-   `embed`: Embedding functionality
+-   `embed-react`: React components for embedding
+-   `flowise-configs`: Configuration files for Flowise
+
+### Packages-Answers (TheAnswer-specific)
+
+TheAnswer adds additional functionality through the `packages-answers/*` directory:
+
+-   `db`: Database interactions
+-   `eslint-config-custom`: Custom ESLint configuration
+-   `experimental-prisma-webpack-plugin`: Experimental Prisma plugin for Webpack
+-   `tsconfig`: TypeScript configuration
+-   `types`: Shared type definitions
+-   `ui`: TheAnswer-specific UI components
+-   `utils`: Utility functions
+
+This structure allows TheAnswer to build upon Flowise's core functionality while adding its own features and customizations.
 
 ### Prerequisite
 
@@ -85,13 +122,13 @@ Flowise has 3 different modules in a single mono repository.
 1.  Clone the repository
 
     ```bash
-    git clone https://github.com/AnswerAI/Flowise.git
+    git clone https://github.com/the-answerai/theanswer.git
     ```
 
 2.  Go into repository folder
 
     ```bash
-    cd Flowise
+    cd theanswer
     ```
 
 3.  Install all dependencies of all modules:
@@ -125,9 +162,9 @@ Flowise has 3 different modules in a single mono repository.
 
 6.  For development build:
 
-    - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
-    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
-    - Run
+    -   Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
+    -   Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
+    -   Run
 
         ```bash
         pnpm dev
@@ -146,43 +183,43 @@ FLOWISE_PASSWORD=1234
 
 ## 🌱 Env Variables
 
-Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/AnswerAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
+TheAnswer supports different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/the-answerai/theanswer/blob/main/CONTRIBUTING.md#-env-variables)
 
 ## 📖 Documentation
 
-[Flowise Docs](https://docs.flowiseai.com/)
+[TheAnswer Docs](https://docs.theanswer.ai/)
 
 ## 🌐 Self Host
 
-Deploy Flowise self-hosted in your existing infrastructure, we support various [deployments](https://docs.flowiseai.com/configuration/deployment)
+Deploy TheAnswer self-hosted in your existing infrastructure. We support various [deployments](https://docs.theanswer.ai/configuration/deployment)
 
 -   [Copilot](./DEPLOYMENT_COPILOT.md)
--   [AWS](https://docs.flowiseai.com/deployment/aws)
--   [Azure](https://docs.flowiseai.com/deployment/azure)
--   [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)
--   [GCP](https://docs.flowiseai.com/deployment/gcp)
+-   [AWS](https://docs.theanswer.ai/deployment/aws)
+-   [Azure](https://docs.theanswer.ai/deployment/azure)
+-   [Digital Ocean](https://docs.theanswer.ai/deployment/digital-ocean)
+-   [GCP](https://docs.theanswer.ai/deployment/gcp)
 -   <details>
       <summary>Others</summary>
 
-    -   [Railway](https://docs.flowiseai.com/deployment/railway)
+    -   [Railway](https://docs.theanswer.ai/deployment/railway)
 
         [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
 
-    -   [Render](https://docs.flowiseai.com/deployment/render)
+    -   [Render](https://docs.theanswer.ai/deployment/render)
 
-        [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
+        [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.theanswer.ai/deployment/render)
 
-    -   [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
+    -   [HuggingFace Spaces](https://docs.theanswer.ai/deployment/hugging-face)
 
-        <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
+        <a href="https://huggingface.co/spaces/TheAnswer/TheAnswer"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
 
-    -   [Elestio](https://elest.io/open-source/flowiseai)
+    -   [Elestio](https://elest.io/open-source/theanswer)
 
-        [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
+        [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/theanswer)
 
-    -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+    -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dtheanswer)
 
-        [![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+        [![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dtheanswer)
 
     -   [RepoCloud](https://repocloud.io/details/?app_id=29)
 
@@ -192,22 +229,21 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 
 ## 💻 Cloud Hosted
 
-Coming soon
+Visit [https://theanswer.ai/](https://theanswer.ai/) to learn more about our cloud-hosted solution.
 
 ## 🙋 Support
 
-Feel free to ask any questions, raise problems, and request new features in [discussion](https://github.com/AnswerAI/Flowise/discussions)
+Feel free to ask any questions, raise problems, and request new features in [discussion](https://github.com/the-answerai/theanswer/discussions)
 
 ## 🙌 Contributing
 
-Thanks go to these awesome contributors
+Thanks go to these awesome contributors of both TheAnswer and the original Flowise project
 
-<a href="https://github.com/AnswerAI/Flowise/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
+<a href="https://github.com/the-answerai/theanswer/graphs/contributors">
+<img src="https://contrib.rocks/image?repo=the-answerai/theanswer" />
 </a>
 
 See [contributing guide](CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or issues.
-[![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 License
 
