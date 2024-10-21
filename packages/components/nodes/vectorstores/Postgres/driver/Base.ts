@@ -10,7 +10,7 @@ export abstract class VectorStoreDriver {
 
     abstract fromDocuments(documents: Document[]): Promise<VectorStore>
 
-    protected adaptInstance(instance: Promise<VectorStore>, _metaDataFilters?: any): Promise<VectorStore> {
+    protected async adaptInstance(instance: VectorStore, _metaDataFilters?: any): Promise<VectorStore> {
         return instance
     }
 

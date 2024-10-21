@@ -50,7 +50,7 @@ export class PGVectorDriver extends VectorStoreDriver {
     }
 
     async instanciate(metadataFilters?: any) {
-        return this.adaptInstance(PGVectorStore.initialize(this.getEmbeddings(), await this.getArgs()), metadataFilters)
+        return this.adaptInstance(await PGVectorStore.initialize(this.getEmbeddings(), await this.getArgs()), metadataFilters)
     }
 
     async fromDocuments(documents: Document[]) {
@@ -58,13 +58,13 @@ export class PGVectorDriver extends VectorStoreDriver {
 
         await instance.addDocuments(documents)
 
-        return this.adaptInstance(Promise.resolve(instance))
+        return this.adaptInstance(instance)
     }
 
-    protected async adaptInstance(instancePromise: Promise<PGVectorStore>, metadataFilters?: any): Promise<PGVectorStore> {
+    protected async adaptInstance(instance: PGVectorStore, metadataFilters?: any): Promise<PGVectorStore> {
         const { $notexists, ...restFilters } = metadataFilters || {}
         const { [$notexists]: chatId, ...pgMetadataFilter } = restFilters
-        const instance = await instancePromise
+
         const baseSimilaritySearchVectorWithScoreFn = instance.similaritySearchVectorWithScore.bind(instance)
 
         instance.similaritySearchVectorWithScore = async (query, k, filter) => {

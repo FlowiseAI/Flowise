@@ -48,11 +48,11 @@ export class TypeORMDriver extends VectorStoreDriver {
     }
 
     async instanciate(metadataFilters?: any) {
-        return this.adaptInstance(TypeORMVectorStore.fromDataSource(this.getEmbeddings(), await this.getArgs()), metadataFilters)
+        return this.adaptInstance(await TypeORMVectorStore.fromDataSource(this.getEmbeddings(), await this.getArgs()), metadataFilters)
     }
 
     async fromDocuments(documents: Document[]) {
-        return this.adaptInstance(TypeORMVectorStore.fromDocuments(documents, this.getEmbeddings(), await this.getArgs()))
+        return this.adaptInstance(await TypeORMVectorStore.fromDocuments(documents, this.getEmbeddings(), await this.getArgs()))
     }
 
     sanitizeDocuments(documents: Document[]) {
@@ -64,8 +64,7 @@ export class TypeORMDriver extends VectorStoreDriver {
         return documents
     }
 
-    protected async adaptInstance(instancePromise: Promise<TypeORMVectorStore>, metadataFilters?: any): Promise<VectorStore> {
-        const instance = await instancePromise
+    protected async adaptInstance(instance: TypeORMVectorStore, metadataFilters?: any): Promise<VectorStore> {
         const _tableName = this.nodeData.inputs?.tableName as string
         const tableName = _tableName ? _tableName : 'documents'
 
