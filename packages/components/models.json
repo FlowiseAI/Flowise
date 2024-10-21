@@ -369,8 +369,28 @@
                     "name": "gemini-1.5-flash-latest"
                 },
                 {
+                    "label": "gemini-1.5-flash-001",
+                    "name": "gemini-1.5-flash-001"
+                },
+                {
+                    "label": "gemini-1.5-flash-002",
+                    "name": "gemini-1.5-flash-002"
+                },
+                {
+                    "label": "gemini-1.5-flash-8b",
+                    "name": "gemini-1.5-flash-8b"
+                },
+                {
                     "label": "gemini-1.5-pro-latest",
                     "name": "gemini-1.5-pro-latest"
+                },
+                {
+                    "label": "gemini-1.5-pro-001",
+                    "name": "gemini-1.5-pro-001"
+                },
+                {
+                    "label": "gemini-1.5-pro-002",
+                    "name": "gemini-1.5-pro-002"
                 },
                 {
                     "label": "gemini-pro",
@@ -388,6 +408,15 @@
                 {
                     "label": "models/chat-bison-001",
                     "name": "models/chat-bison-001"
+                }
+            ]
+        },
+        {
+            "name": "chatAlibabaTongyi",
+            "models": [
+                {
+                    "label": "qwen-plus",
+                    "name": "qwen-plus"
                 }
             ]
         },
@@ -431,6 +460,22 @@
         {
             "name": "groqChat",
             "models": [
+                {
+                    "label": "llama-3.2-1b-preview",
+                    "name": "llama-3.2-1b-preview"
+                },
+                {
+                    "label": "llama-3.2-3b-preview",
+                    "name": "llama-3.2-3b-preview"
+                },
+                {
+                    "label": "llama-3.2-11b-text-preview",
+                    "name": "llama-3.2-11b-text-preview"
+                },
+                {
+                    "label": "llama-3.2-90b-text-preview",
+                    "name": "llama-3.2-90b-text-preview"
+                },
                 {
                     "label": "llama-3.1-405b-reasoning",
                     "name": "llama-3.1-405b-reasoning"

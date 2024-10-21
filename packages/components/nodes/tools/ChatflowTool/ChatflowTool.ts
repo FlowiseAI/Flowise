@@ -7,7 +7,6 @@ import { StructuredTool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { v4 as uuidv4 } from 'uuid'
-import { CustomChainHandler } from '../../../src'
 
 class ChatflowTool_Tools implements INode {
     label: string
@@ -24,7 +23,7 @@ class ChatflowTool_Tools implements INode {
     constructor() {
         this.label = 'Chatflow Tool'
         this.name = 'ChatflowTool'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'ChatflowTool'
         this.icon = 'chatflowTool.svg'
         this.category = 'Tools'
@@ -57,6 +56,12 @@ class ChatflowTool_Tools implements INode {
                 rows: 3,
                 placeholder:
                     'State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.'
+            },
+            {
+                label: 'Return Direct',
+                name: 'returnDirect',
+                type: 'boolean',
+                optional: true
             },
             {
                 label: 'Override Config',
@@ -135,6 +140,7 @@ class ChatflowTool_Tools implements INode {
         const _name = nodeData.inputs?.name as string
         const description = nodeData.inputs?.description as string
         const useQuestionFromChat = nodeData.inputs?.useQuestionFromChat as boolean
+        const returnDirect = nodeData.inputs?.returnDirect as boolean
         const customInput = nodeData.inputs?.customInput as string
         const overrideConfig =
             typeof nodeData.inputs?.overrideConfig === 'string' &&
@@ -168,6 +174,7 @@ class ChatflowTool_Tools implements INode {
             name,
             baseURL,
             description,
+            returnDirect,
             chatflowid: selectedChatflowId,
             startNewSession,
             headers,
@@ -206,6 +213,7 @@ class ChatflowTool extends StructuredTool {
     constructor({
         name,
         description,
+        returnDirect,
         input,
         chatflowid,
         startNewSession,
@@ -215,6 +223,7 @@ class ChatflowTool extends StructuredTool {
     }: {
         name: string
         description: string
+        returnDirect: boolean
         input: string
         chatflowid: string
         startNewSession: boolean
@@ -231,6 +240,7 @@ class ChatflowTool extends StructuredTool {
         this.headers = headers
         this.chatflowid = chatflowid
         this.overrideConfig = overrideConfig
+        this.returnDirect = returnDirect
     }
 
     async call(
@@ -248,15 +258,6 @@ class ChatflowTool extends StructuredTool {
             parsed = await this.schema.parseAsync(arg)
         } catch (e) {
             throw new Error(`Received tool input did not match expected schema: ${JSON.stringify(arg)}`)
-        }
-        // iterate over the callbacks and the sse streamer
-        if (config.callbacks instanceof CallbackManager) {
-            const callbacks = config.callbacks.handlers
-            for (let i = 0; i < callbacks.length; i += 1) {
-                if (callbacks[i] instanceof CustomChainHandler) {
-                    ;(callbacks[i] as any).sseStreamer = undefined
-                }
-            }
         }
         const callbackManager_ = await CallbackManager.configure(
             config.callbacks,
@@ -282,6 +283,9 @@ class ChatflowTool extends StructuredTool {
         } catch (e) {
             await runManager?.handleToolError(e)
             throw e
+        }
+        if (result && typeof result !== 'string') {
+            result = JSON.stringify(result)
         }
         await runManager?.handleToolEnd(result)
         return result
