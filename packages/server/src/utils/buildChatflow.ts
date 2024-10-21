@@ -202,6 +202,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         const nodes = parsedFlowData.nodes
         const edges = parsedFlowData.edges
 
+        const apiMessageId = uuidv4()
+
         /*** Get session ID ***/
         const memoryNode = findMemoryNode(nodes, edges)
         const memoryType = memoryNode?.data.label
@@ -217,6 +219,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 chatflow,
                 isInternal,
                 chatId,
+                apiMessageId,
                 memoryType ?? '',
                 sessionId,
                 userMessageDateTime,
@@ -339,6 +342,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 reactFlowEdges: edges,
                 graph,
                 depthQueue,
+                apiMessageId,
                 componentNodes: appServer.nodesPool.componentNodes,
                 question: incomingInput.question,
                 chatHistory,
@@ -369,6 +373,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 chatflowid,
                 chatId,
                 sessionId,
+                apiMessageId,
                 chatHistory,
                 ...incomingInput.overrideConfig
             }
@@ -394,29 +399,23 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         isStreamValid = (req.body.streaming === 'true' || req.body.streaming === true) && isStreamValid
 
-        let result = isStreamValid
-            ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                  chatId,
-                  chatflowid,
-                  logger,
-                  appDataSource: appServer.AppDataSource,
-                  databaseEntities,
-                  analytic: chatflow.analytic,
-                  uploads: incomingInput.uploads,
-                  prependMessages,
-                  sseStreamer: appServer.sseStreamer,
-                  shouldStreamResponse: isStreamValid
-              })
-            : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                  chatId,
-                  chatflowid,
-                  logger,
-                  appDataSource: appServer.AppDataSource,
-                  databaseEntities,
-                  analytic: chatflow.analytic,
-                  uploads: incomingInput.uploads,
-                  prependMessages
-              })
+        const runParams = {
+            chatId,
+            chatflowid,
+            apiMessageId,
+            logger,
+            appDataSource: appServer.AppDataSource,
+            databaseEntities,
+            analytic: chatflow.analytic,
+            uploads: incomingInput.uploads,
+            prependMessages
+        }
+
+        let result = await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
+            ...runParams,
+            ...(isStreamValid && { sseStreamer: appServer.sseStreamer, shouldStreamResponse: true })
+        })
+
         result = typeof result === 'string' ? { text: result } : result
 
         // Retrieve threadId from assistant if exists
@@ -443,7 +442,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
         else resultText = JSON.stringify(result, null, 2)
 
-        const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
+        const apiMessage: Omit<IChatMessage, 'createdDate'> = {
+            id: apiMessageId,
             role: 'apiMessage',
             content: resultText,
             chatflowid,
@@ -507,6 +507,7 @@ const utilBuildAgentResponse = async (
     agentflow: IChatFlow,
     isInternal: boolean,
     chatId: string,
+    apiMessageId: string,
     memoryType: string,
     sessionId: string,
     userMessageDateTime: Date,
@@ -523,6 +524,7 @@ const utilBuildAgentResponse = async (
         const streamResults = await buildAgentGraph(
             agentflow,
             chatId,
+            apiMessageId,
             sessionId,
             incomingInput,
             isInternal,
@@ -546,7 +548,8 @@ const utilBuildAgentResponse = async (
             }
             await utilAddChatMessage(userMessage)
 
-            const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
+            const apiMessage: Omit<IChatMessage, 'createdDate'> = {
+                id: apiMessageId,
                 role: 'apiMessage',
                 content: finalResult,
                 chatflowid: agentflow.id,

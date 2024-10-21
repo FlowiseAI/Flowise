@@ -57,6 +57,7 @@ import logger from './logger'
 export const buildAgentGraph = async (
     chatflow: IChatFlow,
     chatId: string,
+    apiMessageId: string,
     sessionId: string,
     incomingInput: IncomingInput,
     isInternal: boolean,
@@ -114,6 +115,7 @@ export const buildAgentGraph = async (
             startingNodeIds,
             reactFlowNodes: nodes,
             reactFlowEdges: edges,
+            apiMessageId,
             graph,
             depthQueue,
             componentNodes: appServer.nodesPool.componentNodes,
