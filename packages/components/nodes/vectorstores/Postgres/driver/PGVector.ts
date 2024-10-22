@@ -75,11 +75,12 @@ export class PGVectorDriver extends VectorStoreDriver {
 
         // @ts-ignore
         instance.pool.query = (queryString: string, parameters: any[]) => {
-            // Tweak query to handle $notexists
+            // Match chatflow uploaded file and keep filtering on other files:
+            // https://github.com/FlowiseAI/Flowise/pull/3367#discussion_r1804229295
             if ($notexists) {
-                const chatClause = `${instance.metadataColumnName}->>'${$notexists}' = $${
-                    parameters.length + 1
-                } OR NOT (metadata ? '${$notexists}')`
+                parameters.push({ [$notexists]: chatId })
+
+                const chatClause = `metadata @> $${parameters.length} OR NOT (metadata ? '${$notexists}')`
                 const whereClauseRegex = /WHERE ([^\n]+)/
                 if (queryString.match(whereClauseRegex)) {
                     queryString = queryString.replace(whereClauseRegex, `WHERE $1 AND (${chatClause})`)
@@ -94,8 +95,6 @@ export class PGVectorDriver extends VectorStoreDriver {
                         `
                     )
                 }
-
-                parameters.push(chatId)
             }
 
             // Run base function

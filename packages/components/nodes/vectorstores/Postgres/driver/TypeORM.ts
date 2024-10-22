@@ -113,14 +113,17 @@ export class TypeORMDriver extends VectorStoreDriver {
         filter?: any
     ) => {
         const embeddingString = `[${query.join(',')}]`
-        let _filter = '{}'
         let notExists = ''
-        if (filter && typeof filter === 'object') {
-            if (filter.$notexists) {
-                notExists = `OR NOT (metadata ? '${filter.$notexists}')`
-                delete filter.$notexists
-            }
-            _filter = JSON.stringify(filter)
+        const { $notexists, [$notexists]: chatId, ...restFilters } = filter || {}
+
+        const _filter = JSON.stringify(restFilters || {})
+        const parameters: any[] = [embeddingString, _filter, k]
+
+        // Match chatflow uploaded file and keep filtering on other files:
+        // https://github.com/FlowiseAI/Flowise/pull/3367#discussion_r1804229295
+        if ($notexists) {
+            parameters.push({ [$notexists]: chatId })
+            notExists = `AND (metadata @> $${parameters.length} OR NOT (metadata ? '${$notexists}'))`
         }
 
         const queryString = `
@@ -135,7 +138,7 @@ export class TypeORMDriver extends VectorStoreDriver {
 
         const conn = await pool.connect()
 
-        const documents = await conn.query(queryString, [embeddingString, _filter, k])
+        const documents = await conn.query(queryString, parameters)
 
         conn.release()
 
