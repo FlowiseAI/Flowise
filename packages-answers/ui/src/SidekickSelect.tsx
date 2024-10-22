@@ -287,7 +287,24 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     })
 
     const { sidekicks: allSidekicks = [], categories: chatflowCategories = { top: [], more: [] } } = data
-    const combinedSidekicks = useMemo(() => [...allSidekicks, ...marketplaceSidekicks], [allSidekicks, marketplaceSidekicks])
+    const combinedSidekicks = useMemo(() => {
+        const sidekickMap = new Map<string, Sidekick>()
+
+        // First, add all sidekicks from allSidekicks
+        allSidekicks.forEach((sidekick) => {
+            sidekickMap.set(sidekick.id, sidekick)
+        })
+
+        // Then, add or update with marketplace sidekicks, prioritizing executable ones
+        marketplaceSidekicks.forEach((sidekick) => {
+            const existingSidekick = sidekickMap.get(sidekick.id)
+            if (!existingSidekick || (!existingSidekick.isExecutable && sidekick.isExecutable)) {
+                sidekickMap.set(sidekick.id, sidekick)
+            }
+        })
+
+        return Array.from(sidekickMap.values())
+    }, [allSidekicks, marketplaceSidekicks])
 
     useEffect(() => {
         if (combinedSidekicks.length > 0) {
