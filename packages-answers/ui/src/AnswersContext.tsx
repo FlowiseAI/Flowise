@@ -250,6 +250,7 @@ export function AnswersProvider({
         setChatId(undefined)
         setError(null)
         setIsLoading(false)
+        setSidekick(undefined)
         if (chatId) {
             router.push('/journey/' + journeyId)
         }

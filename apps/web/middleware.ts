@@ -8,7 +8,7 @@ const corsOptions = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 }
 
-export function middleware(request: NextRequest) {
+export const middleware = function middleware(request: NextRequest) {
     // Check the origin from the request
     const origin = request.headers.get('origin') ?? ''
     const isAllowedOrigin = allowedOrigins.includes(origin) || allowedOrigins.includes('*')

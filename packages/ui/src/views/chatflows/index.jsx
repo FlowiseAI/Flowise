@@ -1,5 +1,4 @@
 'use client'
-import PropTypes from 'prop-types'
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from '@/utils/navigation'
 import { Box, Tabs, Tab, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
@@ -8,7 +7,9 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import MainCard from '@/ui-component/cards/MainCard'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { IconPlus } from '@tabler/icons-react'
-
+import { useLocation } from '@/utils/navigation'
+import dynamic from 'next/dynamic'
+const MarketplaceLandingDialog = dynamic(() => import('./MarketplaceLandingDialog'), { ssr: false })
 // API
 import chatflowsApi from '@/api/chatflows'
 import marketplacesApi from '@/api/marketplaces'
@@ -18,7 +19,8 @@ import useApi from '@/hooks/useApi'
 
 // const
 import { baseURL } from '@/store/constant'
-import { useAuth0 } from '@auth0/auth0-react'
+
+import { useUser } from '@auth0/nextjs-auth0/client'
 import { useFlags } from 'flagsmith/react'
 
 function TabPanel(props) {
@@ -36,15 +38,9 @@ function TabPanel(props) {
     )
 }
 
-TabPanel.propTypes = {
-    children: PropTypes.node,
-    index: PropTypes.number.isRequired,
-    value: PropTypes.number.isRequired
-}
-
 const Chatflows = () => {
     const navigate = useNavigate()
-    const { user } = useAuth0()
+    const { user } = useUser()
     const flags = useFlags(['org:manage'])
     const [tabValue, setTabValue] = useState(0)
     const [isLoading, setLoading] = useState(true)
@@ -60,8 +56,23 @@ const Chatflows = () => {
     const [categoryFilter, setCategoryFilter] = useState('All')
     const [categories, setCategories] = useState(['All'])
 
+    const [isMarketplaceDialogOpen, setIsMarketplaceDialogOpen] = useState(false)
+    const [selectedTemplateId, setSelectedTemplateId] = useState(null)
+
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
     const getMarketplaceChatflowsApi = useApi(marketplacesApi.getAllTemplatesFromMarketplaces)
+
+    const location = useLocation()
+
+    useEffect(() => {
+        // Check if there's a templateId in the URL when the component mounts
+        const searchParams = new URLSearchParams(location.search)
+        const templateId = searchParams.get('templateId')
+        if (templateId) {
+            setSelectedTemplateId(templateId)
+            setIsMarketplaceDialogOpen(true)
+        }
+    }, [location])
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue)
@@ -76,9 +87,10 @@ const Chatflows = () => {
     }
 
     const goToMarketplaceCanvas = (selectedChatflow) => {
-        navigate(`/marketplace/${selectedChatflow.id}`, {
-            state: selectedChatflow
-        })
+        setSelectedTemplateId(selectedChatflow.id)
+        setIsMarketplaceDialogOpen(true)
+        // Update the URL without navigating
+        window.history.pushState(null, '', `/sidekick-studio/marketplace/${selectedChatflow.id}`)
     }
 
     const onSearchChange = (event) => {
@@ -90,8 +102,10 @@ const Chatflows = () => {
     }
 
     useEffect(() => {
-        getAllChatflowsApi.request()
-        getMarketplaceChatflowsApi.request()
+        if (user) {
+            getAllChatflowsApi.request()
+            getMarketplaceChatflowsApi.request()
+        }
     }, [user])
 
     useEffect(() => {
@@ -190,6 +204,13 @@ const Chatflows = () => {
         [organizationChatflows, search, categoryFilter]
     )
 
+    const handleCloseMarketplaceDialog = () => {
+        setIsMarketplaceDialogOpen(false)
+        setSelectedTemplateId(null)
+        // Remove the templateId from the URL when closing the dialog
+        window.history.pushState(null, '', window.location.pathname)
+    }
+
     return (
         <MainCard>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -277,6 +298,11 @@ const Chatflows = () => {
                     />
                 </TabPanel>
             </Box>
+            <MarketplaceLandingDialog
+                open={isMarketplaceDialogOpen}
+                onClose={handleCloseMarketplaceDialog}
+                templateId={selectedTemplateId}
+            />
         </MainCard>
     )
 }

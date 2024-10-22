@@ -124,7 +124,6 @@ const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, us
         const { id: userId, organizationId, permissions } = user ?? {}
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
-
         let org
         if (filter?.auth0_org_id) {
             org = await appServer.AppDataSource.getRepository(Organization).findOne({
@@ -133,7 +132,6 @@ const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, us
                 }
             })
         }
-
         if (filter?.visibility) {
             const visibilityConditions = filter.visibility
                 .split(',')
@@ -162,6 +160,7 @@ const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, us
                 queryBuilder.where(`chatFlow.userId = :userId`, { userId })
             }
         }
+
         const response = await queryBuilder.getMany()
         const dbResponse = response.map((chatflow) => ({
             ...chatflow,
@@ -212,27 +211,36 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
     }
 }
 
-const getChatflowById = async (chatflowId: string, user: IUser): Promise<any> => {
+const getChatflowById = async (chatflowId: string, user?: IUser): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('chatFlow')
             .where('chatFlow.id = :id', { id: chatflowId })
             .getOne()
+
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }
 
-        const isUserOrgAdmin = user?.permissions?.includes('org:manage') && user?.organizationId === dbResponse.organizationId
-        const isUsersChatflow = dbResponse.userId === user?.id
-        const isChatflowPublic = dbResponse.isPublic
-        const hasChatflowOrgVisibility = dbResponse.visibility?.includes(ChatflowVisibility.ORGANIZATION)
-        const isUserInSameOrg = dbResponse.organizationId === user?.organizationId
-        const isUsingAPIKey = dbResponse.apikeyid !== null && dbResponse.apikeyid !== undefined
-
-        if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg) || isUsingAPIKey)) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
+        // For unauthenticated users, only allow access to public (Marketplace) chatflows
+        if (!user && !dbResponse.isPublic) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized access to non-public chatflow`)
         }
+
+        // For authenticated users, check permissions
+        if (user) {
+            const isUserOrgAdmin = user.permissions?.includes('org:manage') && user.organizationId === dbResponse.organizationId
+            const isUsersChatflow = dbResponse.userId === user.id
+            const isChatflowPublic = dbResponse.isPublic
+            const hasChatflowOrgVisibility = dbResponse.visibility?.includes(ChatflowVisibility.ORGANIZATION)
+            const isUserInSameOrg = dbResponse.organizationId === user.organizationId
+
+            if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg))) {
+                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
+            }
+        }
+
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -260,6 +268,9 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
                 }
             }
         }
+        newChatFlow.visibility = Array.from(
+            new Set([...(newChatFlow.visibility ?? []), ChatflowVisibility.PRIVATE, ChatflowVisibility.ANSWERAI])
+        )
         if (containsBase64File(newChatFlow)) {
             // we need a 2-step process, as we need to save the chatflow first and then update the file paths
             // this is because we need the chatflow id to create the file paths
@@ -370,7 +381,9 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
 
         // Update the chatbotConfig in the chatflow object
         chatflow.chatbotConfig = JSON.stringify(existingChatbotConfig)
-
+        updateChatFlow.visibility = Array.from(
+            new Set([...(chatflow.visibility ?? []), ChatflowVisibility.PRIVATE, ChatflowVisibility.ANSWERAI])
+        )
         const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
 

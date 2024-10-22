@@ -4,20 +4,45 @@ import React from 'react'
 
 export const usePathname = useNextPathname
 
-export const useNavigate = () => {
-    const nextRouter = useNextRouter()
-    const navigate = (url: string | number, options?: { state?: any; replace?: boolean }) => {
-        // Handle faux history state
-        console.log('navigate', url, options)
-        if (options?.state) {
-            const serializedState = JSON.stringify(options.state)
+export const useNavigationState = () => {
+    const [state, setState] = React.useState<any>(null)
+
+    React.useEffect(() => {
+        const serializedState = sessionStorage.getItem('navigationState')
+        if (serializedState) {
+            try {
+                const parsedState = JSON.parse(serializedState)
+                setState(parsedState)
+            } catch (error) {
+                console.error('Failed to parse state:', error)
+                setState(null)
+            }
+        } else {
+            setState(null)
+        }
+    }, [])
+
+    const setNavigationState = (newState: any) => {
+        if (newState) {
+            const serializedState = JSON.stringify(newState)
             sessionStorage.setItem('navigationState', serializedState)
         } else {
             sessionStorage.removeItem('navigationState')
         }
+        setState(newState)
+    }
+
+    return [state, setNavigationState] as const
+}
+
+export const useNavigate = () => {
+    const nextRouter = useNextRouter()
+    const [, setNavigationState] = useNavigationState()
+
+    const navigate = (url: string | number, options?: { state?: any; replace?: boolean }) => {
+        setNavigationState(options?.state || null)
 
         if (url === -1) {
-            // Go back in history
             nextRouter.back()
             return
         }
@@ -36,26 +61,30 @@ export const useNavigate = () => {
 
     return navigate
 }
+
 export const useLocation = () => {
     const pathname = usePathname()
-    const [state, setState] = React.useState<any>(null)
-
-    React.useEffect(() => {
-        const serializedState = sessionStorage.getItem('navigationState')
-        if (serializedState) {
-            try {
-                const parsedState = JSON.parse(serializedState)
-                setState(parsedState)
-            } catch (error) {
-                console.error('Failed to parse state:', error)
-                setState(null)
-            }
-        } else {
-            setState(null)
-        }
-    }, [pathname])
+    const [state] = useNavigationState()
 
     return { pathname, state }
+}
+
+export const useParams = () => {
+    const pathname = usePathname()
+    const params: { [key: string]: string } = {}
+
+    if (pathname) {
+        const segments = pathname.split('/')
+        const dynamicSegments = segments.filter((segment) => segment.startsWith(':'))
+
+        dynamicSegments.forEach((segment, index) => {
+            const key = segment.slice(1) // Remove the ':' prefix
+            const value = segments[segments.indexOf(`:${key}`)]
+            params[key] = value
+        })
+    }
+
+    return params
 }
 
 interface LinkProps extends Omit<NextLinkProps, 'href'> {

@@ -17,7 +17,8 @@ import { IconMenu2 } from '@tabler/icons-react'
 
 // store
 import { SET_DARKMODE } from '@/store/actions'
-import { useAuth0 } from '@auth0/auth0-react'
+
+import { useUser } from '@auth0/nextjs-auth0/client'
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
@@ -71,7 +72,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 const Header = ({ handleLeftDrawerToggle }) => {
     const theme = useTheme()
 
-    const { user, logout } = useAuth0()
+    const { user } = useUser()
 
     const customization = useSelector((state) => state.customization)
 
@@ -86,9 +87,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
     const signOutClicked = () => {
         sessionStorage.removeItem('access_token')
-        logout({
-            logoutParams: { returnTo: user.answersDomain }
-        })
+        window.location.href = '/api/auth/logout'
     }
 
     return (

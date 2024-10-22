@@ -23,7 +23,7 @@ The GitHub Document Loader is a powerful feature in AnswerAI that allows you to 
 
 2. Configure the loader with the following required settings:
 
-    - Repo Link: Enter the full URL of the GitHub repository (e.g., `https://github.com/Answers-AI/answers-ai`
+    - Repo Link: Enter the full URL of the GitHub repository (e.g., `https://github.com/the-answerai/answers-ai`
     - Branch: Specify the branch you want to load (default is "main")
 
 3. (Optional) Customize your loader with additional settings:

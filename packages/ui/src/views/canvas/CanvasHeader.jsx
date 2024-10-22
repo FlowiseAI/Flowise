@@ -372,7 +372,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                             <IconAdjustmentsHorizontal stroke={1.5} size='1.3rem' />
                         </Avatar>
                     </ButtonBase>
-                    {chatflow?.id && flags?.['chatflow:share:external']?.enabled && (
+                    {chatflow?.id && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
                             <Avatar
                                 variant='rounded'
