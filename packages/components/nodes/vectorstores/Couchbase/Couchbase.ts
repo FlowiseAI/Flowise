@@ -6,6 +6,7 @@ import { Cluster } from 'couchbase'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
+import { index } from '../../../src/indexing'
 
 class Couchbase_VectorStores implements INode {
     label: string
@@ -48,6 +49,13 @@ class Couchbase_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
+            },
+            {
+                label: 'Record Manager',
+                name: 'recordManager',
+                type: 'RecordManager',
+                description: 'Keep track of the record to prevent duplication',
+                optional: true
             },
             {
                 label: 'Bucket Name',
@@ -139,6 +147,7 @@ class Couchbase_VectorStores implements INode {
             let databasePassword = getCredentialParam('password', credentialData, nodeData)
 
             const docs = nodeData.inputs?.document as Document[]
+            const recordManager = nodeData.inputs?.recordManager
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
             const finalDocs = []
@@ -169,8 +178,28 @@ class Couchbase_VectorStores implements INode {
                 if (!textKey || textKey === '') couchbaseConfig.textKey = 'text'
                 if (!embeddingKey || embeddingKey === '') couchbaseConfig.embeddingKey = 'embedding'
 
-                await CouchbaseVectorStore.fromDocuments(finalDocs, embeddings, couchbaseConfig)
-                return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                if (recordManager) {
+                    const vectorStore = await CouchbaseVectorStore.initialize(embeddings, couchbaseConfig)
+
+                    await recordManager.createSchema()
+
+                    const res = await index({
+                        docsSource: finalDocs,
+                        recordManager,
+                        vectorStore,
+                        options: {
+                            cleanup: recordManager?.cleanup,
+                            sourceIdKey: recordManager?.sourceIdKey ?? 'source',
+                            vectorStoreName: [bucketName, scopeName, indexName].join('_')
+                        }
+                    })
+
+                    return res
+                } else {
+                    await CouchbaseVectorStore.fromDocuments(finalDocs, embeddings, couchbaseConfig)
+
+                    return { numAdded: finalDocs.length, addedDocs: finalDocs }
+                }
             } catch (e) {
                 throw new Error(e)
             }
