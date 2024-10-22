@@ -27,7 +27,8 @@ import {
     StarBorder as StarBorderIcon,
     Favorite as FavoriteIcon,
     AccessTime as AccessTimeIcon,
-    MoreHoriz as MoreHorizIcon
+    MoreHoriz as MoreHorizIcon,
+    Edit as EditIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
 import useSWR from 'swr'
@@ -42,6 +43,7 @@ import { useNavigate, useNavigationState } from '@/utils/navigation'
 import { IconCopy } from '@tabler/icons-react'
 import { useTheme } from '@mui/material/styles'
 import useScrollTrigger from '@mui/material/useScrollTrigger'
+import { alpha } from '@mui/material/styles'
 
 // Create a theme that matches shadcn/ui styling
 
@@ -118,7 +120,17 @@ const SidekickFooter = styled(Box)(({ theme }) => ({
     justifyContent: 'flex-end',
     alignItems: 'center',
     marginTop: '8px',
-    gap: theme.spacing(1)
+    gap: theme.spacing(1),
+    '& .MuiSvgIcon-root': {
+        color: theme.palette.common.white
+    },
+    '& .MuiButton-contained': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.7),
+        color: theme.palette.common.white,
+        '&:hover': {
+            backgroundColor: theme.palette.primary.main
+        }
+    }
 }))
 
 const CloneButton = styled(Button)(({ theme }) => ({
@@ -139,6 +151,24 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
     padding: theme.spacing(2),
     borderRadius: theme.shape.borderRadius
     // boxShadow: theme.shadows[5]
+}))
+
+const WhiteButton = styled(Button)(({ theme }) => ({
+    color: theme.palette.common.white,
+    borderColor: theme.palette.common.white,
+    '&:hover': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.08),
+        borderColor: theme.palette.primary.main,
+        color: theme.palette.primary.main
+    }
+}))
+
+const WhiteIconButton = styled(IconButton)(({ theme }) => ({
+    color: theme.palette.common.white,
+    '&:hover': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.08),
+        color: theme.palette.primary.main
+    }
 }))
 
 const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
@@ -357,6 +387,22 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         [navigate, user, setNavigationState]
     )
 
+    const handleEdit = useCallback(
+        (sidekick: Sidekick, e: React.MouseEvent) => {
+            e.stopPropagation()
+
+            if (!sidekick) return
+
+            const isAgentCanvas = (sidekick.flowData?.nodes || []).some(
+                (node: { data: { category: string } }) =>
+                    node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
+            )
+
+            navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${sidekick.id}`)
+        },
+        [navigate]
+    )
+
     const filteredSidekicks = useMemo(() => {
         const filterByTab = (sidekick: Sidekick) => {
             switch (tabValue) {
@@ -427,32 +473,39 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                 {sidekick.chatflow.description || 'No description available'}
                             </SidekickDescription>
                             <SidekickFooter>
-                                <Tooltip
-                                    title={
-                                        sidekick.isExecutable || favorites.has(sidekick.id)
-                                            ? 'Add to favorites'
-                                            : 'Clone this sidekick to use it with your account'
-                                    }
-                                >
+                                {sidekick.chatflow.isOwner ? (
+                                    <>
+                                        <Tooltip title='Edit this sidekick'>
+                                            <WhiteIconButton size='small' onClick={(e) => handleEdit(sidekick, e)}>
+                                                <EditIcon />
+                                            </WhiteIconButton>
+                                        </Tooltip>
+                                    </>
+                                ) : null}
+                                <Tooltip title='Clone this sidekick'>
+                                    <WhiteIconButton size='small' onClick={(e) => handleClone(sidekick, e)}>
+                                        <IconCopy />
+                                    </WhiteIconButton>
+                                </Tooltip>
+
+                                <Tooltip title={favorites.has(sidekick.id) ? 'Remove from favorites' : 'Add to favorites'}>
                                     <span>
-                                        <FavoriteButton
+                                        <WhiteIconButton
                                             onClick={(e) => toggleFavorite(sidekick, e)}
-                                            color='primary'
                                             size='small'
                                             disabled={!sidekick.isExecutable && !favorites.has(sidekick.id)}
                                         >
                                             {favorites.has(sidekick.id) ? <StarIcon /> : <StarBorderIcon />}
-                                        </FavoriteButton>
+                                        </WhiteIconButton>
                                     </span>
                                 </Tooltip>
-                                <CloneButton
-                                    variant='outlined'
-                                    size='small'
-                                    startIcon={<IconCopy />}
-                                    onClick={(e) => handleClone(sidekick, e)}
-                                >
-                                    Clone
-                                </CloneButton>
+                                {sidekick.isExecutable && (
+                                    <Tooltip title='Use this sidekick'>
+                                        <Button variant='contained' size='small' onClick={() => handleSidekickSelect(sidekick)}>
+                                            Use
+                                        </Button>
+                                    </Tooltip>
+                                )}
                             </SidekickFooter>
                         </SidekickCard>
                     </Grid>
@@ -482,7 +535,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 )}
             </>
         )
-    }, [filteredSidekicks, tabValue, favorites, handleSidekickSelect, handleClone, toggleFavorite, trigger])
+    }, [filteredSidekicks, tabValue, favorites, handleSidekickSelect, handleClone, toggleFavorite, trigger, handleEdit])
 
     const content = (
         <>
@@ -518,13 +571,13 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                         disabled={categoryCounts.favorites === 0}
                     />
                     <Tab label='All' value='all' disabled={categoryCounts.all === 0} />
-                    <Tab
+                    {/* <Tab
                         label='Recent'
                         icon={<AccessTimeIcon />}
                         iconPosition='start'
                         value='recent'
                         disabled={categoryCounts.recent === 0}
-                    />
+                    /> */}
                     {visibleTabs.map((category: string) => (
                         <Tab key={category} label={category} value={category} disabled={categoryCounts[category] === 0} />
                     ))}
