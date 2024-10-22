@@ -1,6 +1,6 @@
 import { VectorStoreDriver } from './Base'
 import { getCredentialData, getCredentialParam } from '../../../../src'
-import { PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
+import { DistanceStrategy, PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import { PoolConfig } from 'pg'
 
@@ -45,7 +45,8 @@ export class PGVectorDriver extends VectorStoreDriver {
             tableName: this.getTableName(),
             columns: {
                 contentColumnName: (this.nodeData.inputs?.contentColumnName || PGVectorDriver.CONTENT_COLUMN_NAME_DEFAULT) as string
-            }
+            },
+            distanceStrategy: (this.nodeData.inputs?.distanceStrategy || 'cosine') as DistanceStrategy
         }
     }
 

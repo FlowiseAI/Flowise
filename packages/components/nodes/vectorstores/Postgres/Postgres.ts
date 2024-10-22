@@ -137,6 +137,29 @@ class Postgres_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Distance Strategy',
+                name: 'distanceStrategy',
+                description: 'Strategy  for calculating distances between vectors',
+                type: 'option',
+                options: [
+                    {
+                        label: 'Cosine',
+                        name: 'cosine'
+                    },
+                    {
+                        label: 'Euclidean',
+                        name: 'euclidean'
+                    },
+                    {
+                        label: 'Inner Product',
+                        name: 'innerProduct'
+                    }
+                ],
+                additionalParams: true,
+                default: 'cosine',
+                optional: true
+            },
+            {
                 label: 'Postgres Metadata Filter',
                 name: 'pgMetadataFilter',
                 type: 'json',

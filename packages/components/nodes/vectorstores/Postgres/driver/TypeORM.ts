@@ -80,7 +80,8 @@ export class TypeORMDriver extends VectorStoreDriver {
                 k,
                 tableName,
                 await this.getPostgresConnectionOptions(),
-                filter ?? metadataFilters
+                filter ?? metadataFilters,
+                this.computedOperatorString
             )
         }
 
@@ -105,12 +106,28 @@ export class TypeORMDriver extends VectorStoreDriver {
         return instance
     }
 
+    get computedOperatorString() {
+        const { distanceStrategy = 'cosine' } = this.nodeData.inputs || {}
+
+        switch (distanceStrategy) {
+            case 'cosine':
+                return '<=>'
+            case 'innerProduct':
+                return '<#>'
+            case 'euclidean':
+                return '<->'
+            default:
+                throw new Error(`Unknown distance strategy: ${distanceStrategy}`)
+        }
+    }
+
     static similaritySearchVectorWithScore = async (
         query: number[],
         k: number,
         tableName: string,
         postgresConnectionOptions: ICommonObject,
-        filter?: any
+        filter?: any,
+        distanceOperator: string = '<=>'
     ) => {
         const embeddingString = `[${query.join(',')}]`
         let notExists = ''
@@ -127,7 +144,7 @@ export class TypeORMDriver extends VectorStoreDriver {
         }
 
         const queryString = `
-            SELECT *, embedding <=> $1 as "_distance"
+            SELECT *, embedding ${distanceOperator} $1 as "_distance"
             FROM ${tableName}
             WHERE metadata @> $2
             ${notExists}
