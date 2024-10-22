@@ -20,10 +20,13 @@ import ListItemAvatar from '@mui/material/ListItemAvatar'
 import ListItemText from '@mui/material/ListItemText'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import Snackbar from '@mui/material/Snackbar'
 
 import { useAnswers } from './AnswersContext'
 
 import { User } from 'types'
+import { baseURL } from '@/store/constant'
 
 interface IFormInput {
     chatId: string
@@ -36,13 +39,16 @@ interface ModalProps {
     source?: string
     onSave?: (args?: any) => void
     onClose?: () => void
+    templateId?: string
 }
 
-const ShareModal: React.FC<ModalProps> = ({ title, onSave, onClose, source = 'file' }) => {
+const ShareModal: React.FC<ModalProps> = ({ title, onSave, onClose, source = 'file', templateId }) => {
     const router = useRouter()
     const { chat } = useAnswers()
     const [open, setOpen] = useState(true)
     const [loading, setLoading] = useState(false)
+    const [snackbarOpen, setSnackbarOpen] = useState(false)
+    const [snackbarMessage, setSnackbarMessage] = useState('')
 
     const {
         control,
@@ -79,6 +85,7 @@ const ShareModal: React.FC<ModalProps> = ({ title, onSave, onClose, source = 'fi
             setLoading(false)
         }
     }
+
     const onDelete = async (email: string) => {
         setLoading(true)
         try {
@@ -93,6 +100,23 @@ const ShareModal: React.FC<ModalProps> = ({ title, onSave, onClose, source = 'fi
         } finally {
             setLoading(false)
         }
+    }
+
+    const handleCopyMarketplaceLink = () => {
+        if (templateId) {
+            const encodedDomain = Buffer.from(baseURL).toString('base64')
+            const shareUrl = `${window.location.origin}/org/${encodedDomain}/marketplace/${templateId}`
+            navigator.clipboard.writeText(shareUrl)
+            setSnackbarMessage('Marketplace link copied to clipboard')
+            setSnackbarOpen(true)
+        }
+    }
+
+    const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') {
+            return
+        }
+        setSnackbarOpen(false)
     }
 
     return (
@@ -172,6 +196,15 @@ const ShareModal: React.FC<ModalProps> = ({ title, onSave, onClose, source = 'fi
                         </Button>
                     </Box>
 
+                    {templateId && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant='body2'>Share marketplace link:</Typography>
+                            <IconButton onClick={handleCopyMarketplaceLink} size='small'>
+                                <ContentCopyIcon fontSize='small' />
+                            </IconButton>
+                        </Box>
+                    )}
+
                     <Box>
                         <List dense>
                             {chat?.users?.map((user) => (
@@ -200,6 +233,13 @@ const ShareModal: React.FC<ModalProps> = ({ title, onSave, onClose, source = 'fi
 
                 {loading ? <LinearProgress variant='query' sx={{ position: 'absolute', bottom: 0, left: 0, width: '100%' }} /> : null}
             </Paper>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={handleSnackbarClose}
+                message={snackbarMessage}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            />
         </Modal>
     )
 }

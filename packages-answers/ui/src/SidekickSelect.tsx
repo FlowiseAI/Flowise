@@ -247,10 +247,12 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     const fetcher = async (url: string) => {
         try {
             const res = await fetch(url)
+            console.log('res', res)
             if (res.status === 401) {
-                router.push('/api/auth/login?returnTo=' + encodeURIComponent(window.location.href))
+                window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
+            } else {
+                return res.json()
             }
-            return res.json()
         } catch (error) {
             console.log('error', error)
             if (error instanceof Response && error.status === 401) {
@@ -482,13 +484,28 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                         </Tooltip>
                                     </>
                                 ) : null}
-                                <Tooltip title='Clone this sidekick'>
-                                    <WhiteIconButton size='small' onClick={(e) => handleClone(sidekick, e)}>
-                                        <IconCopy />
-                                    </WhiteIconButton>
-                                </Tooltip>
-
-                                <Tooltip title={favorites.has(sidekick.id) ? 'Remove from favorites' : 'Add to favorites'}>
+                                {sidekick.isExecutable ? (
+                                    <Tooltip title='Clone this sidekick'>
+                                        <WhiteIconButton size='small' onClick={(e) => handleClone(sidekick, e)}>
+                                            <IconCopy />
+                                        </WhiteIconButton>
+                                    </Tooltip>
+                                ) : (
+                                    <Tooltip title='Clone this sidekick'>
+                                        <WhiteButton variant='outlined' endIcon={<IconCopy />} onClick={(e) => handleClone(sidekick, e)}>
+                                            Clone
+                                        </WhiteButton>
+                                    </Tooltip>
+                                )}
+                                <Tooltip
+                                    title={
+                                        !sidekick.isExecutable
+                                            ? 'Clone this sidekick to use it'
+                                            : favorites.has(sidekick.id)
+                                            ? 'Remove from favorites'
+                                            : 'Add to favorites'
+                                    }
+                                >
                                     <span>
                                         <WhiteIconButton
                                             onClick={(e) => toggleFavorite(sidekick, e)}
@@ -579,7 +596,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                         disabled={categoryCounts.recent === 0}
                     /> */}
                     {visibleTabs.map((category: string) => (
-                        <Tab key={category} label={category} value={category} disabled={categoryCounts[category] === 0} />
+                        <Tab key={`${category}-tab`} label={category} value={category} disabled={categoryCounts[category] === 0} />
                     ))}
                     {allCategories.more.length > 0 && (
                         <Tab
