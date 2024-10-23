@@ -4,24 +4,29 @@
             "name": "awsChatBedrock",
             "models": [
                 {
-                    "label": "anthropic.claude-3-haiku",
-                    "name": "anthropic.claude-3-haiku-20240307-v1:0",
-                    "description": "Image to text, conversation, chat optimized"
+                    "label": "anthropic.claude-3.5-sonnet-20241022-v2:0",
+                    "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model"
                 },
                 {
-                    "label": "anthropic.claude-3.5-sonnet",
+                    "label": "anthropic.claude-3.5-sonnet-20240620-v1:0",
                     "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                    "description": "3.5 version of Claude Sonnet model"
-                },
-                {
-                    "label": "anthropic.claude-3-sonnet",
-                    "name": "anthropic.claude-3-sonnet-20240229-v1:0",
-                    "description": "Image to text and code, multilingual conversation, complex reasoning and analysis"
+                    "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5 - most intelligent model"
                 },
                 {
                     "label": "anthropic.claude-3-opus",
                     "name": "anthropic.claude-3-opus-20240229-v1:0",
-                    "description": "Image to text and code, multilingual conversation, complex reasoning and analysis"
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis"
+                },
+                {
+                    "label": "anthropic.claude-3-sonnet",
+                    "name": "anthropic.claude-3-sonnet-20240229-v1:0",
+                    "description": "Balance of intelligence and speed"
+                },
+                {
+                    "label": "anthropic.claude-3-haiku",
+                    "name": "anthropic.claude-3-haiku-20240307-v1:0",
+                    "description": "Fastest and most compact model for near-instant responsiveness"
                 },
                 {
                     "label": "anthropic.claude-instant-v1",
@@ -295,24 +300,34 @@
             "name": "chatAnthropic",
             "models": [
                 {
-                    "label": "claude-3-haiku",
-                    "name": "claude-3-haiku-20240307",
-                    "description": "Fastest and most compact model, designed for near-instant responsiveness"
+                    "label": "claude-3.5-sonnet-latest",
+                    "name": "claude-3-5-sonnet-latest",
+                    "description": "Most recent snapshot version of Claude Sonnet 3.5 model - most intelligent model"
+                },
+                {
+                    "label": "claude-3.5-sonnet-20241022",
+                    "name": "claude-3-5-sonnet-20241022",
+                    "description": "(20241022) specific version of Claude Sonnet 3.5 - most intelligent model"
+                },
+                {
+                    "label": "claude-3.5-sonnet-20240620",
+                    "name": "claude-3-5-sonnet-20240620",
+                    "description": "(20240620) specific version of Claude Sonnet 3.5 - most intelligent model"
                 },
                 {
                     "label": "claude-3-opus",
                     "name": "claude-3-opus-20240229",
-                    "description": "Most powerful model for highly complex tasks"
-                },
-                {
-                    "label": "claude-3.5-sonnet",
-                    "name": "claude-3-5-sonnet-20240620",
-                    "description": "3.5 version of Claude Sonnet model"
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis"
                 },
                 {
                     "label": "claude-3-sonnet",
                     "name": "claude-3-sonnet-20240229",
                     "description": "Ideal balance of intelligence and speed for enterprise workloads"
+                },
+                {
+                    "label": "claude-3-haiku",
+                    "name": "claude-3-haiku-20240307",
+                    "description": "Fastest and most compact model, designed for near-instant responsiveness"
                 },
                 {
                     "label": "claude-2.0 (legacy)",
@@ -438,6 +453,26 @@
                 {
                     "label": "gemini-1.0-pro-vision",
                     "name": "gemini-1.0-pro-vision"
+                },
+                {
+                    "label": "claude-3-5-sonnet-v2@20241022",
+                    "name": "claude-3-5-sonnet-v2@20241022",
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model"
+                },
+                {
+                    "label": "claude-3-opus@20240229",
+                    "name": "claude-3-opus@20240229",
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis"
+                },
+                {
+                    "label": "claude-3-sonnet@20240229",
+                    "name": "claude-3-sonnet@20240229",
+                    "description": "Balance of intelligence and speed"
+                },
+                {
+                    "label": "claude-3-haiku@20240307",
+                    "name": "claude-3-haiku@20240307",
+                    "description": "Fastest and most compact model for near-instant responsiveness"
                 },
                 {
                     "label": "chat-bison",
