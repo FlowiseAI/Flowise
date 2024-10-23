@@ -16,7 +16,7 @@ import {
     getStartingNodes
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
-import { IncomingInput, INodeDirectedGraph, IReactFlowObject, chatType } from '../Interface'
+import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType } from '../Interface'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { UpsertHistory } from '../database/entities/UpsertHistory'
@@ -195,7 +195,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             data: {
                 version: await getAppVersion(),
                 chatlowId: chatflowid,
-                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges),
                 stopNodeId
             }
