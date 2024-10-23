@@ -945,3 +945,19 @@ export const getCustomConditionOutputs = (value, nodeId, existingEdges, isDataGr
 
     return { outputAnchors, toBeRemovedEdgeIds }
 }
+
+export const getBasename = () => {
+    try {
+        const baseTag = document.querySelector('base')
+        let baseHref = baseTag ? baseTag.getAttribute('href') || '/' : '/'
+        if (baseHref === '%BASE_HREF%') {
+            baseHref = '/'
+        }
+        if (baseHref.endsWith('/')) {
+            baseHref = baseHref.slice(0, -1)
+        }
+        return baseHref
+    } catch (error) {
+        throw new Error(`basenameHelper.getBasename ${getErrorMessage(error)}`)
+    }
+}
