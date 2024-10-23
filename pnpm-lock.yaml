@@ -661,10 +661,10 @@ importers:
                 version: 16.4.5
             flowise-embed:
                 specifier: latest
-                version: 2.0.4
+                version: 2.0.6
             flowise-embed-react:
                 specifier: latest
-                version: 1.0.4(@types/node@20.12.12)(flowise-embed@2.0.4)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+                version: 1.0.6(@types/node@20.12.12)(flowise-embed@2.0.6)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
             flowise-react-json-view:
                 specifier: '*'
                 version: 1.21.7(@types/react@18.2.65)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -8381,14 +8381,14 @@ packages:
     flatted@3.3.1:
         resolution: { integrity: sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw== }
 
-    flowise-embed-react@1.0.4:
-        resolution: { integrity: sha512-zvTJW5jBVJo/+WbG4+lpJeqvXZOqoh8UapCnLf+tG3qx1vAMvU7dtfeuUM6Tnk+KipXdHb4jnyNlhyAfLlN2Sw== }
+    flowise-embed-react@1.0.6:
+        resolution: { integrity: sha512-KNt3LoFYav8FTAe/QK6ktIeg8xZN13MBpRSIsw4HMj2CivAvwGnQR6Gl8hGp9FzkJwuMvWO5Z+GQYeM3duITAw== }
         peerDependencies:
             flowise-embed: '*'
             react: 18.x
 
-    flowise-embed@2.0.4:
-        resolution: { integrity: sha512-8oRdHeg5mvKLREb17wEhGYwFFuCPfmRw7JAIdHiQaOhdyOWcH1svNRXbcnMMqREGl6gNbS6ofR6nCA1F2xgqUg== }
+    flowise-embed@2.0.6:
+        resolution: { integrity: sha512-aMO7HNo/CCeZD8UNO5Y/il3ASZe236j0b8RuezCtoK0MG9nkihs/OmZMNdTYoMCUNcVnBEuarK0STZ2a9gggVA== }
 
     flowise-react-json-view@1.21.7:
         resolution: { integrity: sha512-oFjwtSLJkUWk6waLh8heCQ4o9b60FJRA2X8LefaZp5WaJvj/Rr2HILjk+ocf1JkfTcq8jc6t2jfIybg4leWsaQ== }
@@ -26099,10 +26099,10 @@ snapshots:
 
     flatted@3.3.1: {}
 
-    flowise-embed-react@1.0.4(@types/node@20.12.12)(flowise-embed@2.0.4)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+    flowise-embed-react@1.0.6(@types/node@20.12.12)(flowise-embed@2.0.6)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
         dependencies:
             '@ladle/react': 2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-            flowise-embed: 2.0.4
+            flowise-embed: 2.0.6
             react: 18.2.0
         transitivePeerDependencies:
             - '@types/node'
@@ -26116,7 +26116,7 @@ snapshots:
             - terser
             - typescript
 
-    flowise-embed@2.0.4:
+    flowise-embed@2.0.6:
         dependencies:
             '@babel/core': 7.24.0
             '@microsoft/fetch-event-source': 2.0.1
@@ -33410,7 +33410,7 @@ snapshots:
             micromatch: 4.0.5
             normalize-path: 3.0.0
             object-hash: 3.0.0
-            picocolors: 1.0.0
+            picocolors: 1.0.1
             postcss: 8.4.35
             postcss-import: 15.1.0(postcss@8.4.35)
             postcss-js: 4.0.1(postcss@8.4.35)
