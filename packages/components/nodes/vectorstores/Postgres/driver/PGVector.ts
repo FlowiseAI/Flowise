@@ -79,7 +79,7 @@ export class PGVectorDriver extends VectorStoreDriver {
                 instance.client = await instance.pool.connect()
             }
 
-            instance.client.connect()
+            await instance.client.connect()
 
             const whereClauseRegex = /WHERE ([^\n]+)/
             let chatflowOr = ''
