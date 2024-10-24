@@ -74,7 +74,13 @@ export class PGVectorDriver extends VectorStoreDriver {
         const basePoolQueryFn = instance.pool.query.bind(instance.pool)
 
         // @ts-ignore
-        instance.pool.query = (queryString: string, parameters: any[]) => {
+        instance.pool.query = async (queryString: string, parameters: any[]) => {
+            if (!instance.client) {
+                instance.client = await instance.pool.connect()
+            }
+
+            instance.client.connect()
+
             const whereClauseRegex = /WHERE ([^\n]+)/
             let chatflowOr = ''
 
@@ -100,7 +106,12 @@ export class PGVectorDriver extends VectorStoreDriver {
             }
 
             // Run base function
-            return basePoolQueryFn(queryString, parameters)
+            const queryResult = await basePoolQueryFn(queryString, parameters)
+
+            // ensure connection is released
+            instance.client.release()
+
+            return queryResult
         }
 
         return instance
