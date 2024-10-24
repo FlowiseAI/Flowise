@@ -11,7 +11,11 @@ export default (apiFunc) => {
             const result = await apiFunc(...args)
             setData(result.data)
         } catch (err) {
-            setError(err || 'Unexpected Error!')
+            if (err.response && err.response.status === 401) {
+                window.location.href = '/api/auth/login'
+            } else {
+                setError(err || 'Unexpected Error!')
+            }
         } finally {
             setLoading(false)
         }
