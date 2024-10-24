@@ -71,13 +71,14 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     const { state } = useLocation()
     const templateData = useMemo(() => (state?.templateData ? JSON.parse(state.templateData) : ''), [state?.templateData])
     const templateFlowData = useMemo(() => (templateData?.flowData ? templateData.flowData : ''), [templateData?.flowData])
-    const templateName = useMemo(() => (state ? state.templateName ?? templateData?.name : ''), [templateData, state])
+    const templateName = useMemo(() => {
+        if (state) {
+            return state.templateName ?? templateData?.name ?? templateData?.label
+        }
+        return templateData?.label ?? ''
+    }, [templateData, state])
     const parentChatflowId = useMemo(() => (state && isNaN(state.parentChatflowId) ? state.parentChatflowId : undefined), [state])
-    // console.log({ templateData, chatflowid, templateFlowData, templateName, parentChatflowId })
     const pathname = usePathname()
-    // const URLpath = pathname.split('/')
-    // const chatflowId =
-    //     URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
     const isAgentCanvas = pathname.includes('agentcanvas')
     const canvasTitle = isAgentCanvas ? 'Agent' : 'Chatflow'
 
@@ -89,7 +90,6 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     const [chatflow, setChatflow] = useState(null)
     const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
 
-    console.log('Template', { templateData, templateFlowData, templateName, parentChatflowId, chatflow })
     // ==============================|| Snackbar ||============================== //
 
     useNotifier()
@@ -225,7 +225,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                 }
                 const newChatflow = {
                     id: flowData.id, // This will be undefined if we're creating a new chatflow
-                    name: `Copy of ${templateData.name ?? templateFlowData.name}`,
+                    name: `Copy of ${templateName}`,
                     description: flowData.description,
                     chatbotConfig: flowData.chatbotConfig,
                     visibility: flowData.visibility,
@@ -233,13 +233,12 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                     type: flowData.type,
                     flowData: JSON.stringify({ nodes, edges })
                 }
-                // console.log('newChatflow', { existingChatflow, flowData, newChatflow })
                 dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
+                setChatflow(newChatflow)
                 setNodes(nodes)
                 setEdges(edges)
                 setTimeout(() => setDirty(), 0)
             } catch (e) {
-                console.error(e)
                 enqueueSnackbar({
                     message: 'Failed to load chatflow: ' + e.message,
                     options: {
@@ -519,6 +518,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
             setNodes(initialFlow.nodes || [])
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
+            setChatflow(chatflow)
         } else if (getSpecificChatflowApi.error) {
             errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
         }
@@ -531,6 +531,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
         if (createNewChatflowApi.data) {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
+            setChatflow(chatflow)
             saveChatflowSuccess()
             window.history.replaceState(null, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
@@ -544,6 +545,8 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     useEffect(() => {
         if (updateChatflowApi.data) {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
+            setChatflow(updateChatflowApi.data)
+
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
             errorFailed(`Failed to save ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
@@ -553,9 +556,6 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }, [updateChatflowApi.data, updateChatflowApi.error])
 
     useEffect(() => {
-        console.log('setting parentChatflowId', canvasDataStoreRef.current.chatflow, parentChatflowId)
-        setChatflow({ ...canvasDataStoreRef.current.chatflow, parentChatflowId })
-
         if (canvasDataStoreRef.current.chatflow) {
             const flowData = canvasDataStoreRef.current.chatflow.flowData ? JSON.parse(canvasDataStoreRef.current.chatflow.flowData) : []
             checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || [])
@@ -577,12 +577,19 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
 
                 setNodes(duplicatedFlowData.nodes || [])
                 setEdges(duplicatedFlowData.edges || [])
+                setChatflow({
+                    ...duplicatedFlowData,
+                    id: undefined,
+                    name: `Copy of ${duplicatedFlowData.name ?? templateName}`,
+                    deployed: false,
+                    isPublic: false
+                })
                 dispatch({
                     type: SET_CHATFLOW,
                     chatflow: {
                         ...duplicatedFlowData,
                         id: undefined,
-                        name: `Copy of ${duplicatedFlowData.name}`,
+                        name: `Copy of ${duplicatedFlowData.name ?? templateName}`,
                         deployed: false,
                         isPublic: false
                     }
@@ -591,7 +598,9 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
             } else {
                 setNodes([])
                 setEdges([])
-                console.log('no duplicatedFlowData')
+                setChatflow({
+                    name: templateName ? `Copy of ${templateName}` : `Untitled ${canvasTitle}`
+                })
                 dispatch({
                     type: SET_CHATFLOW,
                     chatflow: {
@@ -630,7 +639,6 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }, [])
 
     useEffect(() => {
-        console.log('templateFlowData', templateFlowData)
         if (templateFlowData?.includes && templateFlowData.includes('"nodes": [') && templateFlowData.includes('"edges": [')) {
             handleLoadFlow(templateFlowData)
         } else if (typeof templateFlowData === 'object') {
@@ -651,8 +659,12 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }, [])
 
     // Move useMemo inside the component
-    const nodeTypes = useMemo(() => ({ customNode: CanvasNode, stickyNote: StickyNote }), [])
-    const edgeTypes = useMemo(() => ({ buttonedge: ButtonEdge }), [])
+    const nodeTypes = useMemo(() => {
+        return { customNode: CanvasNode, stickyNote: StickyNote }
+    }, [])
+    const edgeTypes = useMemo(() => {
+        return { buttonedge: ButtonEdge }
+    }, [])
 
     return (
         <>
