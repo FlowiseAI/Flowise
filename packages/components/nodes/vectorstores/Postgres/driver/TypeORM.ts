@@ -1,6 +1,6 @@
 import { DataSourceOptions } from 'typeorm'
 import { VectorStoreDriver } from './Base'
-import { getCredentialData, getCredentialParam, ICommonObject } from '../../../../src'
+import { FLOWISE_CHATID, getCredentialData, getCredentialParam, ICommonObject } from '../../../../src'
 import { TypeORMVectorStore, TypeORMVectorStoreArgs, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
 import { VectorStore } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
@@ -130,24 +130,23 @@ export class TypeORMDriver extends VectorStoreDriver {
         distanceOperator: string = '<=>'
     ) => {
         const embeddingString = `[${query.join(',')}]`
-        let notExists = ''
-        const { $notexists, [$notexists]: chatId, ...restFilters } = filter || {}
+        let chatflowOr = ''
+        const { [FLOWISE_CHATID]: chatId, ...restFilters } = filter || {}
 
         const _filter = JSON.stringify(restFilters || {})
         const parameters: any[] = [embeddingString, _filter, k]
 
         // Match chatflow uploaded file and keep filtering on other files:
         // https://github.com/FlowiseAI/Flowise/pull/3367#discussion_r1804229295
-        if ($notexists) {
-            parameters.push({ [$notexists]: chatId })
-            notExists = `AND (metadata @> $${parameters.length} OR NOT (metadata ? '${$notexists}'))`
+        if (chatId) {
+            parameters.push({ [FLOWISE_CHATID]: chatId })
+            chatflowOr = `OR metadata @> $${parameters.length}`
         }
 
         const queryString = `
             SELECT *, embedding ${distanceOperator} $1 as "_distance"
             FROM ${tableName}
-            WHERE metadata @> $2
-            ${notExists}
+            WHERE ((metadata @> $2) AND NOT (metadata ? '${FLOWISE_CHATID}')) ${chatflowOr}
             ORDER BY "_distance" ASC
             LIMIT $3;`
 

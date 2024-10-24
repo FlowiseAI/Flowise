@@ -269,11 +269,9 @@ class Postgres_VectorStores implements INode {
             pgMetadataFilter = typeof _pgMetadataFilter === 'object' ? _pgMetadataFilter : JSON.parse(_pgMetadataFilter)
         }
         if (isFileUploadEnabled && options.chatId) {
-            pgMetadataFilter = pgMetadataFilter || {}
             pgMetadataFilter = {
-                ...pgMetadataFilter,
-                [FLOWISE_CHATID]: options.chatId,
-                $notexists: FLOWISE_CHATID // special filter to check if the field does not exist
+                ...(pgMetadataFilter || {}),
+                [FLOWISE_CHATID]: options.chatId
             }
         }
 

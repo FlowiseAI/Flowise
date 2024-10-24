@@ -1,5 +1,5 @@
 import { VectorStoreDriver } from './Base'
-import { getCredentialData, getCredentialParam } from '../../../../src'
+import { FLOWISE_CHATID, getCredentialData, getCredentialParam } from '../../../../src'
 import { DistanceStrategy, PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import { PoolConfig } from 'pg'
@@ -63,8 +63,7 @@ export class PGVectorDriver extends VectorStoreDriver {
     }
 
     protected async adaptInstance(instance: PGVectorStore, metadataFilters?: any): Promise<PGVectorStore> {
-        const { $notexists, ...restFilters } = metadataFilters || {}
-        const { [$notexists]: chatId, ...pgMetadataFilter } = restFilters
+        const { [FLOWISE_CHATID]: chatId, ...pgMetadataFilter } = metadataFilters
 
         const baseSimilaritySearchVectorWithScoreFn = instance.similaritySearchVectorWithScore.bind(instance)
 
@@ -76,26 +75,28 @@ export class PGVectorDriver extends VectorStoreDriver {
 
         // @ts-ignore
         instance.pool.query = (queryString: string, parameters: any[]) => {
+            const whereClauseRegex = /WHERE ([^\n]+)/
+            let chatflowOr = ''
+
             // Match chatflow uploaded file and keep filtering on other files:
             // https://github.com/FlowiseAI/Flowise/pull/3367#discussion_r1804229295
-            if ($notexists) {
-                parameters.push({ [$notexists]: chatId })
+            if (chatId) {
+                parameters.push({ [FLOWISE_CHATID]: chatId })
 
-                const chatClause = `metadata @> $${parameters.length} OR NOT (metadata ? '${$notexists}')`
-                const whereClauseRegex = /WHERE ([^\n]+)/
-                if (queryString.match(whereClauseRegex)) {
-                    queryString = queryString.replace(whereClauseRegex, `WHERE $1 AND (${chatClause})`)
-                } else {
-                    const orderByClauseRegex = /ORDER BY (.*)/
-                    // Insert WHERE clause before ORDER BY
-                    queryString = queryString.replace(
-                        orderByClauseRegex,
-                        `
-                        WHERE ${chatClause}
-                        ORDER BY $1
-                        `
-                    )
-                }
+                chatflowOr = `OR metadata @> $${parameters.length}`
+            }
+
+            if (queryString.match(whereClauseRegex)) {
+                queryString = queryString.replace(whereClauseRegex, `WHERE (($1) AND NOT (metadata ? '${FLOWISE_CHATID}')) ${chatflowOr}`)
+            } else {
+                const orderByClauseRegex = /ORDER BY (.*)/
+                // Insert WHERE clause before ORDER BY
+                queryString = queryString.replace(
+                    orderByClauseRegex,
+                    `WHERE (metadata @> '{}' AND NOT (metadata ? '${FLOWISE_CHATID}')) ${chatflowOr}
+                ORDER BY $1
+                `
+                )
             }
 
             // Run base function
