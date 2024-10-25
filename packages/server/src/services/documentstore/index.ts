@@ -9,7 +9,7 @@ import {
     removeSpecificFileFromStorage
 } from 'flowise-components'
 import {
-    chatType,
+    ChatType,
     DocumentStoreStatus,
     IDocumentStoreFileChunkPagedResponse,
     IDocumentStoreLoader,
@@ -58,6 +58,19 @@ const getAllDocumentStores = async () => {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices.getAllDocumentStores - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getAllDocumentFileChunks = async () => {
+    try {
+        const appServer = getRunningExpressApp()
+        const entities = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find()
+        return entities
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getAllDocumentFileChunks - ${getErrorMessage(error)}`
         )
     }
 }
@@ -584,20 +597,36 @@ const processAndSaveChunks = async (data: IDocumentStoreLoaderForPreview) => {
         const newLoaderId = data.id ?? uuidv4()
         const found = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
         if (found) {
-            // clean up the current status and mark the loader as pending_sync
-            found.totalChunks = 0
-            found.totalChars = 0
-            found.status = DocumentStoreStatus.SYNCING
-            entity.loaders = JSON.stringify(existingLoaders)
-            data.loaderId = found.loaderId
-            data.loaderName = found.loaderName
-            data.loaderConfig = found.loaderConfig
-            data.splitterId = found.splitterId
-            data.splitterName = found.splitterName
-            data.splitterConfig = found.splitterConfig
+            const foundIndex = existingLoaders.findIndex((ldr: IDocumentStoreLoader) => ldr.id === newLoaderId)
+
+            if (!data.loaderId) data.loaderId = found.loaderId
+            if (!data.loaderName) data.loaderName = found.loaderName
+            if (!data.loaderConfig) data.loaderConfig = found.loaderConfig
+            if (!data.splitterId) data.splitterId = found.splitterId
+            if (!data.splitterName) data.splitterName = found.splitterName
+            if (!data.splitterConfig) data.splitterConfig = found.splitterConfig
             if (found.credential) {
                 data.credential = found.credential
             }
+
+            let loader: IDocumentStoreLoader = {
+                ...found,
+                loaderId: data.loaderId,
+                loaderName: data.loaderName,
+                loaderConfig: data.loaderConfig,
+                splitterId: data.splitterId,
+                splitterName: data.splitterName,
+                splitterConfig: data.splitterConfig,
+                totalChunks: 0,
+                totalChars: 0,
+                status: DocumentStoreStatus.SYNCING
+            }
+            if (data.credential) {
+                loader.credential = data.credential
+            }
+
+            existingLoaders[foundIndex] = loader
+            entity.loaders = JSON.stringify(existingLoaders)
         } else {
             let loader: IDocumentStoreLoader = {
                 id: newLoaderId,
@@ -966,7 +995,7 @@ const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject) => {
             data: {
                 version: await getAppVersion(),
                 chatlowId: chatflowid,
-                type: chatType.INTERNAL,
+                type: ChatType.INTERNAL,
                 flowGraph: omit(indexResult['result'], ['totalKeys', 'addedDocs'])
             }
         })
@@ -1000,7 +1029,9 @@ const getEmbeddingProviders = async () => {
 const getVectorStoreProviders = async () => {
     try {
         const dbResponse = await nodesService.getAllNodesForCategory('Vector Stores')
-        return dbResponse.filter((node) => !node.tags?.includes('LlamaIndex') && node.name !== 'documentStoreVS')
+        return dbResponse.filter(
+            (node) => !node.tags?.includes('LlamaIndex') && node.name !== 'documentStoreVS' && node.name !== 'memoryVectorStore'
+        )
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -1225,6 +1256,7 @@ export default {
     createDocumentStore,
     deleteLoaderFromDocumentStore,
     getAllDocumentStores,
+    getAllDocumentFileChunks,
     getDocumentStoreById,
     getUsedChatflowNames,
     getDocumentStoreFileChunks,

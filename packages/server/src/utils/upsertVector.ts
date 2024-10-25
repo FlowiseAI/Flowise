@@ -1,7 +1,8 @@
 import { Request } from 'express'
 import * as fs from 'fs'
+import * as path from 'path'
 import { cloneDeep, omit } from 'lodash'
-import { ICommonObject, IMessage, addArrayFilesToStorage, mapMimeTypeToInputField } from 'flowise-components'
+import { ICommonObject, IMessage, addArrayFilesToStorage, mapMimeTypeToInputField, mapExtToInputField } from 'flowise-components'
 import telemetryService from '../services/telemetry'
 import logger from '../utils/logger'
 import {
@@ -15,14 +16,14 @@ import {
     getStartingNodes
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
-import { IncomingInput, INodeDirectedGraph, IReactFlowObject, chatType } from '../Interface'
+import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType } from '../Interface'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { UpsertHistory } from '../database/entities/UpsertHistory'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { getErrorMessage } from '../errors/utils'
-
+import { v4 as uuidv4 } from 'uuid'
 /**
  * Upsert documents
  * @param {Request} req
@@ -52,17 +53,44 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
 
         if (files.length) {
             const overrideConfig: ICommonObject = { ...req.body }
-            const fileNames: string[] = []
             for (const file of files) {
+                const fileNames: string[] = []
                 const fileBuffer = fs.readFileSync(file.path)
 
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
-                const fileInputField = mapMimeTypeToInputField(file.mimetype)
+                const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
 
-                overrideConfig[fileInputField] = storagePath
+                const fileExtension = path.extname(file.originalname)
+
+                const fileInputFieldFromExt = mapExtToInputField(fileExtension)
+
+                let fileInputField = 'txtFile'
+
+                if (fileInputFieldFromExt !== 'txtFile') {
+                    fileInputField = fileInputFieldFromExt
+                } else if (fileInputFieldFromMimeType !== 'txtFile') {
+                    fileInputField = fileInputFieldFromExt
+                }
+
+                if (overrideConfig[fileInputField]) {
+                    const existingFileInputField = overrideConfig[fileInputField].replace('FILE-STORAGE::', '')
+                    const existingFileInputFieldArray = JSON.parse(existingFileInputField)
+
+                    const newFileInputField = storagePath.replace('FILE-STORAGE::', '')
+                    const newFileInputFieldArray = JSON.parse(newFileInputField)
+
+                    const updatedFieldArray = existingFileInputFieldArray.concat(newFileInputFieldArray)
+
+                    overrideConfig[fileInputField] = `FILE-STORAGE::${JSON.stringify(updatedFieldArray)}`
+                } else {
+                    overrideConfig[fileInputField] = storagePath
+                }
 
                 fs.unlinkSync(file.path)
+            }
+            if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
+                overrideConfig.vars = JSON.parse(overrideConfig.vars)
             }
             incomingInput = {
                 question: req.body.question ?? 'hello',
@@ -79,6 +107,8 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
         const nodes = parsedFlowData.nodes
         const edges = parsedFlowData.edges
+
+        const apiMessageId = req.body.apiMessageId ?? uuidv4()
 
         let stopNodeId = incomingInput?.stopNodeId ?? ''
         let chatHistory: IMessage[] = []
@@ -134,6 +164,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             question: incomingInput.question,
             chatHistory,
             chatId,
+            apiMessageId,
             sessionId: sessionId ?? '',
             chatflowid,
             appDataSource: appServer.AppDataSource,
@@ -164,7 +195,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             data: {
                 version: await getAppVersion(),
                 chatlowId: chatflowid,
-                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges),
                 stopNodeId
             }

@@ -1,7 +1,9 @@
-import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { NodeVM } from 'vm2'
+import { flatten } from 'lodash'
+import { type StructuredTool } from '@langchain/core/tools'
+import { NodeVM } from '@flowiseai/nodevm'
 import { DataSource } from 'typeorm'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class CustomFunction_Utilities implements INode {
     label: string
@@ -19,7 +21,7 @@ class CustomFunction_Utilities implements INode {
     constructor() {
         this.label = 'Custom JS Function'
         this.name = 'customFunction'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'CustomFunction'
         this.icon = 'customfunction.svg'
         this.category = 'Utilities'
@@ -42,6 +44,14 @@ class CustomFunction_Utilities implements INode {
                 type: 'string',
                 optional: true,
                 placeholder: 'My Function'
+            },
+            {
+                label: 'Additional Tools',
+                description: 'Tools can be used in the function with $tools.{tool_name}.invoke(args)',
+                name: 'tools',
+                type: 'Tool',
+                list: true,
+                optional: true
             },
             {
                 label: 'Javascript Function',
@@ -71,6 +81,7 @@ class CustomFunction_Utilities implements INode {
         const functionInputVariablesRaw = nodeData.inputs?.functionInputVariables
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const tools = Object.fromEntries((flatten(nodeData.inputs?.tools) as StructuredTool[])?.map((tool) => [tool.name, tool]) ?? [])
 
         const variables = await getVars(appDataSource, databaseEntities, nodeData)
         const flow = {
@@ -109,6 +120,7 @@ class CustomFunction_Utilities implements INode {
         let sandbox: any = { $input: input }
         sandbox['$vars'] = prepareSandboxVars(variables)
         sandbox['$flow'] = flow
+        sandbox['$tools'] = tools
 
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {

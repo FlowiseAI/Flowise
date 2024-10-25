@@ -1,6 +1,7 @@
 import express from 'express'
 import apikeyRouter from './apikey'
 import assistantsRouter from './assistants'
+import attachmentsRouter from './attachments'
 import chatMessageRouter from './chat-messages'
 import chatflowsRouter from './chatflows'
 import chatflowsStreamingRouter from './chatflows-streaming'
@@ -9,6 +10,7 @@ import componentsCredentialsRouter from './components-credentials'
 import componentsCredentialsIconRouter from './components-credentials-icon'
 import credentialsRouter from './credentials'
 import documentStoreRouter from './documentstore'
+import exportImportRouter from './export-import'
 import feedbackRouter from './feedback'
 import fetchLinksRouter from './fetch-links'
 import flowConfigRouter from './flow-config'
@@ -27,6 +29,7 @@ import nodesRouter from './nodes'
 import openaiAssistantsRouter from './openai-assistants'
 import openaiAssistantsFileRouter from './openai-assistants-files'
 import openaiAssistantsVectorStoreRouter from './openai-assistants-vector-store'
+import openaiRealtimeRouter from './openai-realtime'
 import pingRouter from './ping'
 import predictionRouter from './predictions'
 import promptListsRouter from './prompts-lists'
@@ -45,6 +48,7 @@ const router = express.Router()
 router.use('/ping', pingRouter)
 router.use('/apikey', apikeyRouter)
 router.use('/assistants', assistantsRouter)
+router.use('/attachments', attachmentsRouter)
 router.use('/chatflows', chatflowsRouter)
 router.use('/chatflows-streaming', chatflowsStreamingRouter)
 router.use('/chatmessage', chatMessageRouter)
@@ -53,6 +57,7 @@ router.use('/components-credentials-icon', componentsCredentialsIconRouter)
 router.use('/chatflows-uploads', chatflowsUploadsRouter)
 router.use('/credentials', credentialsRouter)
 router.use('/document-store', documentStoreRouter)
+router.use('/export-import', exportImportRouter)
 router.use('/feedback', feedbackRouter)
 router.use('/fetch-links', fetchLinksRouter)
 router.use('/flow-config', flowConfigRouter)
@@ -71,6 +76,7 @@ router.use('/nodes', nodesRouter)
 router.use('/openai-assistants', openaiAssistantsRouter)
 router.use('/openai-assistants-file', openaiAssistantsFileRouter)
 router.use('/openai-assistants-vector-store', openaiAssistantsVectorStoreRouter)
+router.use('/openai-realtime', openaiRealtimeRouter)
 router.use('/prediction', predictionRouter)
 router.use('/prompts-list', promptListsRouter)
 router.use('/public-chatbotConfig', publicChatbotRouter)

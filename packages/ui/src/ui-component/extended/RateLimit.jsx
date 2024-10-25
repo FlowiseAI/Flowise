@@ -8,6 +8,7 @@ import { Box, Typography, Button, OutlinedInput } from '@mui/material'
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+import { SwitchInput } from '@/ui-component/switch/Switch'
 
 // Icons
 import { IconX } from '@tabler/icons-react'
@@ -29,27 +30,45 @@ const RateLimit = () => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
+    const [rateLimitStatus, setRateLimitStatus] = useState(apiConfig?.rateLimit?.status !== undefined ? apiConfig.rateLimit.status : false)
     const [limitMax, setLimitMax] = useState(apiConfig?.rateLimit?.limitMax ?? '')
     const [limitDuration, setLimitDuration] = useState(apiConfig?.rateLimit?.limitDuration ?? '')
     const [limitMsg, setLimitMsg] = useState(apiConfig?.rateLimit?.limitMsg ?? '')
 
     const formatObj = () => {
         const obj = {
-            rateLimit: {}
+            rateLimit: { status: rateLimitStatus }
         }
-        const rateLimitValuesBoolean = [!limitMax, !limitDuration, !limitMsg]
-        const rateLimitFilledValues = rateLimitValuesBoolean.filter((value) => value === false)
-        if (rateLimitFilledValues.length >= 1 && rateLimitFilledValues.length <= 2) {
-            throw new Error('Need to fill all rate limit input fields')
-        } else if (rateLimitFilledValues.length === 3) {
-            obj.rateLimit = {
-                limitMax,
-                limitDuration,
-                limitMsg
+
+        if (rateLimitStatus) {
+            const rateLimitValuesBoolean = [!limitMax, !limitDuration, !limitMsg]
+            const rateLimitFilledValues = rateLimitValuesBoolean.filter((value) => value === false)
+            if (rateLimitFilledValues.length >= 1 && rateLimitFilledValues.length <= 2) {
+                throw new Error('Need to fill all rate limit input fields')
+            } else if (rateLimitFilledValues.length === 3) {
+                obj.rateLimit = {
+                    ...obj.rateLimit,
+                    limitMax,
+                    limitDuration,
+                    limitMsg
+                }
             }
         }
 
         return obj
+    }
+
+    const handleChange = (value) => {
+        setRateLimitStatus(value)
+    }
+
+    const checkDisabled = () => {
+        if (rateLimitStatus) {
+            if (limitMax === '' || limitDuration === '' || limitMsg === '') {
+                return true
+            }
+        }
+        return false
     }
 
     const onSave = async () => {
@@ -139,11 +158,20 @@ const RateLimit = () => {
                     }
                 />
             </Typography>
-            {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number', '5')}
-            {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number', '60')}
-            {textField(limitMsg, 'limitMsg', 'Limit Message', 'string', 'You have reached the quota')}
-
-            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={() => onSave()}>
+            <SwitchInput label='Enable Rate Limit' onChange={handleChange} value={rateLimitStatus} />
+            {rateLimitStatus && (
+                <>
+                    {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number', '5')}
+                    {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number', '60')}
+                    {textField(limitMsg, 'limitMsg', 'Limit Message', 'string', 'You have reached the quota')}
+                </>
+            )}
+            <StyledButton
+                disabled={checkDisabled()}
+                style={{ marginBottom: 10, marginTop: 10 }}
+                variant='contained'
+                onClick={() => onSave()}
+            >
                 Save Changes
             </StyledButton>
         </>
