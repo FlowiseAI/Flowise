@@ -8,6 +8,7 @@ import { decryptCredentialData, getAppVersion } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { DeleteResult } from 'typeorm'
+import { FLOWISE_COUNTER, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 
 const createAssistant = async (requestBody: any): Promise<Assistant> => {
     try {
@@ -111,6 +112,7 @@ const createAssistant = async (requestBody: any): Promise<Assistant> => {
             version: await getAppVersion(),
             assistantId: dbResponse.id
         })
+        appServer.metricsProvider.incrementCounter(FLOWISE_COUNTER.ASSISTANT_CREATED, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(

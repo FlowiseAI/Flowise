@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 5s
+scrape_configs:
+  - job_name: "FlowiseAI"
+    static_configs:
+      - targets: ["localhost:8080","localhost:3000"]
+
+    metrics_path: /api/v1/metrics/
+    scheme: http

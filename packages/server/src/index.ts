@@ -22,6 +22,8 @@ import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { validateAPIKey } from './utils/validateKey'
+import { IMetricsProvider } from './Interface.Metrics'
+import { PrometheusProvider } from './metrics/PrometheusProvider'
 
 declare global {
     namespace Express {
@@ -39,6 +41,7 @@ export class App {
     telemetry: Telemetry
     AppDataSource: DataSource = getDataSource()
     sseStreamer: SSEStreamer
+    metricsProvider: IMetricsProvider
 
     constructor() {
         this.app = express()
@@ -137,7 +140,8 @@ export class App {
             '/api/v1/ip',
             '/api/v1/ping',
             '/api/v1/version',
-            '/api/v1/attachments'
+            '/api/v1/attachments',
+            '/api/v1/metrics'
         ]
         const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
         const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
@@ -201,6 +205,19 @@ export class App {
                     next()
                 }
             })
+        }
+
+        if (process.env.ENABLE_METRICS === 'true') {
+            switch (process.env.METRICS_PROVIDER) {
+                // default to prometheus
+                case 'prometheus':
+                case undefined:
+                    this.metricsProvider = new PrometheusProvider(this.app)
+                    await this.metricsProvider.initializeCounters()
+                    logger.info(`⚡️ [server]: Metrics Collection Enabled with Prometheus`)
+                    break
+                // add more cases for other metrics providers here
+            }
         }
 
         this.app.use('/api/v1', flowiseApiV1Router)
