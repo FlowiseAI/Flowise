@@ -5,7 +5,7 @@ import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
+import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { getFileFromStorage } from './storageUtils'
@@ -609,10 +609,11 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
         if (message.role === 'apiMessage' || message.type === 'apiMessage') {
             chatHistory.push(new AIMessage(message.content || ''))
         } else if (message.role === 'userMessage' || message.role === 'userMessage') {
-            // check for image uploads
+            // check for image/files uploads
             if (message.fileUploads) {
                 // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
                 try {
+                    let messageWithFileUploads = ''
                     const uploads = JSON.parse(message.fileUploads)
                     const imageContents: MessageContentImageUrl[] = []
                     for (const upload of uploads) {
@@ -634,14 +635,32 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                                     url: upload.data
                                 }
                             })
+                        } else if (upload.type === 'stored-file:full') {
+                            const fileLoaderNodeModule = await import('../nodes/documentloaders/File/File')
+                            // @ts-ignore
+                            const fileLoaderNodeInstance = new fileLoaderNodeModule.nodeClass()
+                            const options = {
+                                retrieveAttachmentChatId: true,
+                                chatflowid: message.chatflowid,
+                                chatId: message.chatId
+                            }
+                            const nodeData = {
+                                inputs: {
+                                    txtFile: `FILE-STORAGE::${JSON.stringify([upload.name])}`
+                                }
+                            }
+                            const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
+                            const pageContents = documents.map((doc) => doc.pageContent).join('\n')
+                            messageWithFileUploads += `<doc name='${upload.name}'>${pageContents}</doc>\n\n`
                         }
                     }
+                    const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
                     chatHistory.push(
                         new HumanMessage({
                             content: [
                                 {
                                     type: 'text',
-                                    text: message.content
+                                    text: messageContent
                                 },
                                 ...imageContents
                             ]
@@ -701,14 +720,23 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
         const zodObj: ICommonObject = {}
         for (const sch of parsedSchema) {
             if (sch.type === 'string') {
-                if (sch.required) z.string({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.string().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.string({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.string().describe(sch.description).optional()
+                }
             } else if (sch.type === 'number') {
-                if (sch.required) z.number({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.number().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.number({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.number().describe(sch.description).optional()
+                }
             } else if (sch.type === 'boolean') {
-                if (sch.required) z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.boolean().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.boolean().describe(sch.description).optional()
+                }
             }
         }
         return zodObj
@@ -864,6 +892,35 @@ export const getVersion: () => Promise<{ version: string }> = async () => {
 }
 
 /**
+ * Map Ext to InputField
+ * @param {string} ext
+ * @returns {string}
+ */
+export const mapExtToInputField = (ext: string) => {
+    switch (ext) {
+        case '.txt':
+            return 'txtFile'
+        case '.pdf':
+            return 'pdfFile'
+        case '.json':
+            return 'jsonFile'
+        case '.csv':
+        case '.xls':
+        case '.xlsx':
+            return 'csvFile'
+        case '.jsonl':
+            return 'jsonlinesFile'
+        case '.docx':
+        case '.doc':
+            return 'docxFile'
+        case '.yaml':
+            return 'yamlFile'
+        default:
+            return 'txtFile'
+    }
+}
+
+/**
  * Map MimeType to InputField
  * @param {string} mimeType
  * @returns {string}
@@ -925,4 +982,9 @@ export const mapMimeTypeToExt = (mimeType: string) => {
         default:
             return ''
     }
+}
+
+// remove invalid markdown image pattern: ![<some-string>](<some-string>)
+export const removeInvalidImageMarkdown = (output: string): string => {
+    return typeof output === 'string' ? output.replace(/!\[.*?\]\((?!https?:\/\/).*?\)/g, '') : output
 }

@@ -22,7 +22,7 @@ import {
     IStateWithMessages
 } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX, ARTIFACTS_PREFIX } from '../../../src/agents'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, removeInvalidImageMarkdown } from '../../../src/utils'
 import {
     customGet,
     getVM,
@@ -68,9 +68,9 @@ const howToUseCode = `
         "sourceDocuments": [
             {
                 "pageContent": "This is the page content",
-                "metadata": "{foo: var}",
+                "metadata": "{foo: var}"
             }
-        ],
+        ]
     }
     \`\`\`
 
@@ -102,10 +102,10 @@ const howToUse = `
     |-----------|-----------|
     | user      | john doe  |
 
-2. If you want to use the agent's output as the value to update state, it is available as available as \`$flow.output\` with the following structure:
+2. If you want to use the Agent's output as the value to update state, it is available as available as \`$flow.output\` with the following structure:
     \`\`\`json
     {
-        "output": "Hello! How can I assist you today?",
+        "content": "Hello! How can I assist you today?",
         "usedTools": [
             {
                 "tool": "tool-name",
@@ -116,9 +116,9 @@ const howToUse = `
         "sourceDocuments": [
             {
                 "pageContent": "This is the page content",
-                "metadata": "{foo: var}",
+                "metadata": "{foo: var}"
             }
-        ],
+        ]
     }
     \`\`\`
 
@@ -195,7 +195,7 @@ class Agent_SeqAgents implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'seqAgent'
-        this.version = 3.0
+        this.version = 3.1
         this.type = 'Agent'
         this.icon = 'seqAgent.png'
         this.category = 'Sequential Agents'
@@ -781,9 +781,7 @@ async function agentNode(
         }
 
         let outputContent = typeof result === 'string' ? result : result.content || result.output
-
-        // remove invalid markdown image pattern: ![<some-string>](<some-string>)
-        outputContent = typeof outputContent === 'string' ? outputContent.replace(/!\[.*?\]\(.*?\)/g, '') : outputContent
+        outputContent = removeInvalidImageMarkdown(outputContent)
 
         if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {
             let formattedOutput = {

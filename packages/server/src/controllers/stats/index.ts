@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { Request, Response, NextFunction } from 'express'
 import statsService from '../../services/stats'
-import { ChatMessageRatingType, chatType } from '../../Interface'
+import { ChatMessageRatingType, ChatType } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 
@@ -11,19 +11,19 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: statsController.getChatflowStats - id not provided!`)
         }
         const chatflowid = req.params.id
-        let chatTypeFilter = req.query?.chatType as chatType | undefined
+        let chatTypeFilter = req.query?.chatType as ChatType | undefined
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
         let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
         if (chatTypeFilter) {
             try {
                 const chatTypeFilterArray = JSON.parse(chatTypeFilter)
-                if (chatTypeFilterArray.includes(chatType.EXTERNAL) && chatTypeFilterArray.includes(chatType.INTERNAL)) {
+                if (chatTypeFilterArray.includes(ChatType.EXTERNAL) && chatTypeFilterArray.includes(ChatType.INTERNAL)) {
                     chatTypeFilter = undefined
-                } else if (chatTypeFilterArray.includes(chatType.EXTERNAL)) {
-                    chatTypeFilter = chatType.EXTERNAL
-                } else if (chatTypeFilterArray.includes(chatType.INTERNAL)) {
-                    chatTypeFilter = chatType.INTERNAL
+                } else if (chatTypeFilterArray.includes(ChatType.EXTERNAL)) {
+                    chatTypeFilter = ChatType.EXTERNAL
+                } else if (chatTypeFilterArray.includes(ChatType.INTERNAL)) {
+                    chatTypeFilter = ChatType.INTERNAL
                 }
             } catch (e) {
                 throw new InternalFlowiseError(
