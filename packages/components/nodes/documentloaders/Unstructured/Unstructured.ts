@@ -29,9 +29,9 @@ type Element = {
 export class UnstructuredLoader extends BaseDocumentLoader {
     public filePath: string
 
-    private apiUrl = 'https://api.unstructuredapp.io/general/v0/general'
+    private apiUrl = process.env.UNSTRUCTURED_API_URL || 'https://api.unstructuredapp.io/general/v0/general'
 
-    private apiKey?: string
+    private apiKey: string | undefined = process.env.UNSTRUCTURED_API_KEY
 
     private strategy: StringWithAutocomplete<UnstructuredLoaderStrategy> = 'hi_res'
 
