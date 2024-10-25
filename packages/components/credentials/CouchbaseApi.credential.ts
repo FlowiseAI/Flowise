@@ -32,4 +32,3 @@ class CouchbaseApi implements INodeCredential {
 }
 
 module.exports = { credClass: CouchbaseApi }
-

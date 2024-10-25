@@ -227,4 +227,3 @@ class Couchbase_VectorStores implements INode {
 }
 
 module.exports = { nodeClass: Couchbase_VectorStores }
-
