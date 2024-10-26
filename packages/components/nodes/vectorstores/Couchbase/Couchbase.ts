@@ -190,7 +190,7 @@ class Couchbase_VectorStores implements INode {
                         options: {
                             cleanup: recordManager?.cleanup,
                             sourceIdKey: recordManager?.sourceIdKey ?? 'source',
-                            vectorStoreName: [bucketName, scopeName, indexName].join('_')
+                            vectorStoreName: [bucketName, scopeName, collectionName].join('_')
                         }
                     })
 
