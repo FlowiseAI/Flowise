@@ -10,9 +10,11 @@ baseUrl
 ```json
 {
     "config_id": "bedrock",
-    "messages": [{
-      "role":"user",
-      "content":"Hello! What can you do for me?"
-    }]
+    "messages": [
+        {
+            "role": "user",
+            "content": "Hello! What can you do for me?"
+        }
+    ]
 }
 ```
