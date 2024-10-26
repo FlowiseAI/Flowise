@@ -2,6 +2,10 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchain/community/indexes/base'
 import { DataSource, QueryRunner } from 'typeorm'
+import { getHost } from '../../vectorstores/Postgres/utils'
+import { getDatabase, getPort, getTableName } from './utils'
+
+const serverCredentialsExists = !!process.env.POSTGRES_RECORDMANAGER_USER && !!process.env.POSTGRES_RECORDMANAGER_PASSWORD
 
 class PostgresRecordManager_RecordManager implements INode {
     label: string
@@ -29,18 +33,22 @@ class PostgresRecordManager_RecordManager implements INode {
             {
                 label: 'Host',
                 name: 'host',
-                type: 'string'
+                type: 'string',
+                placeholder: getHost(),
+                optional: !!getHost()
             },
             {
                 label: 'Database',
                 name: 'database',
-                type: 'string'
+                type: 'string',
+                placeholder: getDatabase(),
+                optional: !!getDatabase()
             },
             {
                 label: 'Port',
                 name: 'port',
                 type: 'number',
-                placeholder: '5432',
+                placeholder: getPort(),
                 optional: true
             },
             {
@@ -54,7 +62,7 @@ class PostgresRecordManager_RecordManager implements INode {
                 label: 'Table Name',
                 name: 'tableName',
                 type: 'string',
-                placeholder: 'upsertion_records',
+                placeholder: getTableName(),
                 additionalParams: true,
                 optional: true
             },
@@ -110,16 +118,16 @@ class PostgresRecordManager_RecordManager implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['PostgresApi']
+            credentialNames: ['PostgresApi'],
+            optional: serverCredentialsExists
         }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const user = getCredentialParam('user', credentialData, nodeData)
-        const password = getCredentialParam('password', credentialData, nodeData)
-        const _tableName = nodeData.inputs?.tableName as string
-        const tableName = _tableName ? _tableName : 'upsertion_records'
+        const user = getCredentialParam('user', credentialData, nodeData, process.env.POSTGRES_RECORDMANAGER_USER)
+        const password = getCredentialParam('password', credentialData, nodeData, process.env.POSTGRES_RECORDMANAGER_PASSWORD)
+        const tableName = getTableName(nodeData)
         const additionalConfig = nodeData.inputs?.additionalConfig as string
         const _namespace = nodeData.inputs?.namespace as string
         const namespace = _namespace ? _namespace : options.chatflowid
@@ -139,11 +147,11 @@ class PostgresRecordManager_RecordManager implements INode {
         const postgresConnectionOptions = {
             ...additionalConfiguration,
             type: 'postgres',
-            host: nodeData.inputs?.host as string,
-            port: nodeData.inputs?.port as number,
+            host: getHost(nodeData),
+            port: getPort(nodeData),
             username: user,
             password: password,
-            database: nodeData.inputs?.database as string
+            database: getDatabase(nodeData)
         }
 
         const args = {
@@ -162,7 +170,7 @@ class PostgresRecordManager_RecordManager implements INode {
 
 type PostgresRecordManagerOptions = {
     postgresConnectionOptions: any
-    tableName?: string
+    tableName: string
 }
 
 class PostgresRecordManager implements RecordManagerInterface {
@@ -180,7 +188,7 @@ class PostgresRecordManager implements RecordManagerInterface {
         const { postgresConnectionOptions, tableName } = config
         this.namespace = namespace
         this.datasource = new DataSource(postgresConnectionOptions)
-        this.tableName = tableName || 'upsertion_records'
+        this.tableName = tableName
     }
 
     async createSchema(): Promise<void> {

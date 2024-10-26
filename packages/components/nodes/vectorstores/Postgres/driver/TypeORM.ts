@@ -1,6 +1,6 @@
 import { DataSourceOptions } from 'typeorm'
 import { VectorStoreDriver } from './Base'
-import { FLOWISE_CHATID, getCredentialData, getCredentialParam, ICommonObject } from '../../../../src'
+import { FLOWISE_CHATID, ICommonObject } from '../../../../src'
 import { TypeORMVectorStore, TypeORMVectorStoreArgs, TypeORMVectorStoreDocument } from '@langchain/community/vectorstores/typeorm'
 import { VectorStore } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
@@ -11,9 +11,7 @@ export class TypeORMDriver extends VectorStoreDriver {
 
     protected async getPostgresConnectionOptions() {
         if (!this._postgresConnectionOptions) {
-            const credentialData = await getCredentialData(this.nodeData.credential ?? '', this.options)
-            const user = getCredentialParam('user', credentialData, this.nodeData)
-            const password = getCredentialParam('password', credentialData, this.nodeData)
+            const { user, password } = await this.getCredentials()
             const additionalConfig = this.nodeData.inputs?.additionalConfig as string
 
             let additionalConfiguration = {}
@@ -29,12 +27,12 @@ export class TypeORMDriver extends VectorStoreDriver {
             this._postgresConnectionOptions = {
                 ...additionalConfiguration,
                 type: 'postgres',
-                host: this.nodeData.inputs?.host as string,
-                port: this.nodeData.inputs?.port as number,
+                host: this.getHost(),
+                port: this.getPort(),
                 username: user, // Required by TypeORMVectorStore
                 user: user, // Required by Pool in similaritySearchVectorWithScore
                 password: password,
-                database: this.nodeData.inputs?.database as string
+                database: this.getDatabase()
             } as DataSourceOptions
         }
         return this._postgresConnectionOptions
@@ -65,8 +63,7 @@ export class TypeORMDriver extends VectorStoreDriver {
     }
 
     protected async adaptInstance(instance: TypeORMVectorStore, metadataFilters?: any): Promise<VectorStore> {
-        const _tableName = this.nodeData.inputs?.tableName as string
-        const tableName = _tableName ? _tableName : 'documents'
+        const tableName = this.getTableName()
 
         // Rewrite the method to use pg pool connection instead of the default connection
         /* Otherwise a connection error is displayed when the chain tries to execute the function

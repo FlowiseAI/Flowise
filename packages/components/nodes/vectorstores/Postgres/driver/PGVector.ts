@@ -1,8 +1,9 @@
 import { VectorStoreDriver } from './Base'
-import { FLOWISE_CHATID, getCredentialData, getCredentialParam } from '../../../../src'
+import { FLOWISE_CHATID } from '../../../../src'
 import { DistanceStrategy, PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
 import { Document } from '@langchain/core/documents'
 import { PoolConfig } from 'pg'
+import { getContentColumnName } from '../utils'
 
 export class PGVectorDriver extends VectorStoreDriver {
     static CONTENT_COLUMN_NAME_DEFAULT: string = 'pageContent'
@@ -11,9 +12,7 @@ export class PGVectorDriver extends VectorStoreDriver {
 
     protected async getPostgresConnectionOptions() {
         if (!this._postgresConnectionOptions) {
-            const credentialData = await getCredentialData(this.nodeData.credential ?? '', this.options)
-            const user = getCredentialParam('user', credentialData, this.nodeData)
-            const password = getCredentialParam('password', credentialData, this.nodeData)
+            const { user, password } = await this.getCredentials()
             const additionalConfig = this.nodeData.inputs?.additionalConfig as string
 
             let additionalConfiguration = {}
@@ -28,11 +27,11 @@ export class PGVectorDriver extends VectorStoreDriver {
 
             this._postgresConnectionOptions = {
                 ...additionalConfiguration,
-                host: this.nodeData.inputs?.host as string,
-                port: this.nodeData.inputs?.port as number,
+                host: this.getHost(),
+                port: this.getPort(),
                 user: user,
                 password: password,
-                database: this.nodeData.inputs?.database as string
+                database: this.getDatabase()
             }
         }
 
@@ -44,7 +43,7 @@ export class PGVectorDriver extends VectorStoreDriver {
             postgresConnectionOptions: await this.getPostgresConnectionOptions(),
             tableName: this.getTableName(),
             columns: {
-                contentColumnName: (this.nodeData.inputs?.contentColumnName || PGVectorDriver.CONTENT_COLUMN_NAME_DEFAULT) as string
+                contentColumnName: getContentColumnName(this.nodeData)
             },
             distanceStrategy: (this.nodeData.inputs?.distanceStrategy || 'cosine') as DistanceStrategy
         }

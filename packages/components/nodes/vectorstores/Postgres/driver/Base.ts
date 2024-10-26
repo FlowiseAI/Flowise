@@ -1,7 +1,8 @@
 import { VectorStore } from '@langchain/core/vectorstores'
-import { ICommonObject, INodeData } from '../../../../src'
+import { getCredentialData, getCredentialParam, ICommonObject, INodeData } from '../../../../src'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
+import { getDatabase, getHost, getPort, getTableName } from '../utils'
 
 export abstract class VectorStoreDriver {
     constructor(protected nodeData: INodeData, protected options: ICommonObject) {}
@@ -14,13 +15,34 @@ export abstract class VectorStoreDriver {
         return instance
     }
 
-    getTableName() {
-        const _tableName = this.nodeData.inputs?.tableName as string
+    getHost() {
+        return getHost(this.nodeData) as string
+    }
 
-        return _tableName ? _tableName : 'documents'
+    getPort() {
+        return getPort(this.nodeData) as number
+    }
+
+    getDatabase() {
+        return getDatabase(this.nodeData) as string
+    }
+
+    getTableName() {
+        return getTableName(this.nodeData)
     }
 
     getEmbeddings() {
         return this.nodeData.inputs?.embeddings as Embeddings
+    }
+
+    async getCredentials() {
+        const credentialData = await getCredentialData(this.nodeData.credential ?? '', this.options)
+        const user = getCredentialParam('user', credentialData, this.nodeData, process.env.POSTGRES_VECTORSTORE_USER)
+        const password = getCredentialParam('password', credentialData, this.nodeData, process.env.POSTGRES_VECTORSTORE_PASSWORD)
+
+        return {
+            user,
+            password
+        }
     }
 }

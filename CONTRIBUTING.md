@@ -159,7 +159,19 @@ Flowise support different environment variables to configure your instance. You 
 | S3_ENDPOINT_URL              | Custom Endpoint for S3                                                                          | String                                           |                                     |
 | S3_FORCE_PATH_STYLE          | Set this to true to force the request to use path-style addressing                              | Boolean                                          | false                               |
 | SHOW_COMMUNITY_NODES         | Show nodes created by community                                                                 | Boolean                                          |                                     |
-
+| POSTGRES_VECTORSTORE_HOST    | Default `host` for Postgres Vector Store                                            | String                                                                    |            |
+| POSTGRES_VECTORSTORE_PORT    | Default `port` for Postgres Vector Store                                            | Number                                                                    |  5432          |
+| POSTGRES_VECTORSTORE_USER    | Default `user` for Postgres Vector Store                                            | String                                                                    |            |
+| POSTGRES_VECTORSTORE_PASSWORD    | Default `password` for Postgres Vector Store                                            | String                                                                    |            |
+| POSTGRES_VECTORSTORE_DATABASE | Default `database` for Postgres Vector Store                                            | String                                                                    |            |
+| POSTGRES_VECTORSTORE_TABLE_NAME | Default `tableName` for Postgres Vector Store                                            | String                                                                    |  documents          |
+| POSTGRES_VECTORSTORE_CONTENT_COLUMN_NAME | Default `contentColumnName` for Postgres Vector Store                                            | String                                                                    |  pageContent          |
+| POSTGRES_RECORDMANAGER_HOST    | Default `host` for Postgres Record Manager                                            | String                                                                    |            |
+| POSTGRES_RECORDMANAGER_PORT    | Default `port` for Postgres Record Manager                                            | Number                                                                    |  5432          |
+| POSTGRES_RECORDMANAGER_USER    | Default `user` for Postgres Record Manager                                            | String                                                                    |            |
+| POSTGRES_RECORDMANAGER_PASSWORD    | Default `password` for Postgres Record Manager                                            | String                                                                    |            |
+| POSTGRES_RECORDMANAGER_DATABASE | Default `database` for Postgres Record Manager                                            | String                                                                    |            |
+| POSTGRES_RECORDMANAGER_TABLE_NAME | Default `tableName` for Postgres Record Manager                                            | String                                                                    |  upsertion_records          |
 You can also specify the env variables when using `npx`. For example:
 
 ```

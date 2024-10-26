@@ -8,6 +8,9 @@ import { VectorStore } from '@langchain/core/vectorstores'
 import { VectorStoreDriver } from './driver/Base'
 import { TypeORMDriver } from './driver/TypeORM'
 import { PGVectorDriver } from './driver/PGVector'
+import { getContentColumnName, getDatabase, getHost, getPort, getTableName } from './utils'
+
+const serverCredentialsExists = !!process.env.POSTGRES_VECTORSTORE_USER && !!process.env.POSTGRES_VECTORSTORE_PASSWORD
 
 class Postgres_VectorStores implements INode {
     label: string
@@ -36,7 +39,8 @@ class Postgres_VectorStores implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['PostgresApi']
+            credentialNames: ['PostgresApi'],
+            optional: serverCredentialsExists
         }
         this.inputs = [
             {
@@ -77,34 +81,38 @@ class Postgres_VectorStores implements INode {
             {
                 label: 'Host',
                 name: 'host',
-                type: 'string'
+                type: 'string',
+                placeholder: getHost(),
+                optional: !!getHost()
             },
             {
                 label: 'Database',
                 name: 'database',
-                type: 'string'
+                type: 'string',
+                placeholder: getDatabase(),
+                optional: !!getDatabase()
             },
             {
                 label: 'Port',
                 name: 'port',
                 type: 'number',
-                placeholder: '5432',
+                placeholder: getPort(),
                 optional: true
             },
             {
                 label: 'Table Name',
                 name: 'tableName',
                 type: 'string',
-                placeholder: 'documents',
+                placeholder: getTableName(),
                 additionalParams: true,
                 optional: true
             },
             {
                 label: 'Content Column Name',
                 name: 'contentColumnName',
-                description: 'Column name to store the text content (PGVector Driver only)',
+                description: 'Column name to store the text content (PGVector Driver only, others use pageContent)',
                 type: 'string',
-                placeholder: PGVectorDriver.CONTENT_COLUMN_NAME_DEFAULT,
+                placeholder: getContentColumnName(),
                 additionalParams: true,
                 optional: true
             },
@@ -184,8 +192,7 @@ class Postgres_VectorStores implements INode {
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
-            const _tableName = nodeData.inputs?.tableName as string
-            const tableName = _tableName ? _tableName : 'documents'
+            const tableName = getTableName(nodeData)
             const docs = nodeData.inputs?.document as Document[]
             const recordManager = nodeData.inputs?.recordManager
             const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
@@ -232,8 +239,7 @@ class Postgres_VectorStores implements INode {
         },
         async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
             const vectorStoreDriver: VectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options)
-            const _tableName = nodeData.inputs?.tableName as string
-            const tableName = _tableName ? _tableName : 'documents'
+            const tableName = getTableName(nodeData)
             const recordManager = nodeData.inputs?.recordManager
 
             const vectorStore = await vectorStoreDriver.instanciate()
