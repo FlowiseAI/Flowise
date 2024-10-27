@@ -31,7 +31,7 @@ import { Document } from '@langchain/core/documents'
 import { App } from '../../index'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { cloneDeep, omit } from 'lodash'
-import telemetryService from '../telemetry'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
@@ -990,15 +990,13 @@ const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject) => {
             await appServer.AppDataSource.getRepository(UpsertHistory).save(upsertHistoryItem)
         }
 
-        await telemetryService.createEvent({
-            name: `vector_upserted`,
-            data: {
-                version: await getAppVersion(),
-                chatlowId: chatflowid,
-                type: ChatType.INTERNAL,
-                flowGraph: omit(indexResult['result'], ['totalKeys', 'addedDocs'])
-            }
+        await appServer.telemetry.sendTelemetry('vector_upserted', {
+            version: await getAppVersion(),
+            chatlowId: chatflowid,
+            type: ChatType.INTERNAL,
+            flowGraph: omit(indexResult['result'], ['totalKeys', 'addedDocs'])
         })
+        appServer.metricsProvider.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
 
         entity.status = DocumentStoreStatus.UPSERTED
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)

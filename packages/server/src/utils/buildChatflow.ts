@@ -55,7 +55,7 @@ import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
-import { FLOWISE_COUNTER, FLOWISE_COUNTER_STATUS } from '../Interface.Metrics'
+import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../Interface.Metrics'
 
 /**
  * Build Chatflow
@@ -495,7 +495,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         })
 
         appServer.metricsProvider.incrementCounter(
-            isInternal ? FLOWISE_COUNTER.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_COUNTER.CHATFLOW_PREDICTION_EXTERNAL,
+            isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
             { status: FLOWISE_COUNTER_STATUS.SUCCESS }
         )
         // Prepare response
@@ -513,7 +513,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         return result
     } catch (e) {
         appServer.metricsProvider.incrementCounter(
-            isInternal ? FLOWISE_COUNTER.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_COUNTER.CHATFLOW_PREDICTION_EXTERNAL,
+            isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
             { status: FLOWISE_COUNTER_STATUS.FAILURE }
         )
         logger.error('[server]: Error:', e)
@@ -609,7 +609,7 @@ const utilBuildAgentResponse = async (
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
             appServer.metricsProvider.incrementCounter(
-                isInternal ? FLOWISE_COUNTER.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_COUNTER.AGENTFLOW_PREDICTION_EXTERNAL,
+                isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
                 { status: FLOWISE_COUNTER_STATUS.SUCCESS }
             )
 
@@ -659,7 +659,7 @@ const utilBuildAgentResponse = async (
     } catch (e) {
         logger.error('[server]: Error:', e)
         appServer.metricsProvider.incrementCounter(
-            isInternal ? FLOWISE_COUNTER.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_COUNTER.AGENTFLOW_PREDICTION_EXTERNAL,
+            isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
             { status: FLOWISE_COUNTER_STATUS.FAILURE }
         )
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))

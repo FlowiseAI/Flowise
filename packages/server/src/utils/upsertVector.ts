@@ -3,7 +3,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { cloneDeep, omit } from 'lodash'
 import { ICommonObject, IMessage, addArrayFilesToStorage, mapMimeTypeToInputField, mapExtToInputField } from 'flowise-components'
-import telemetryService from '../services/telemetry'
 import logger from '../utils/logger'
 import {
     buildFlow,
@@ -24,6 +23,7 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { getErrorMessage } from '../errors/utils'
 import { v4 as uuidv4 } from 'uuid'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../Interface.Metrics'
 /**
  * Upsert documents
  * @param {Request} req
@@ -190,16 +190,14 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             await appServer.AppDataSource.getRepository(UpsertHistory).save(upsertHistory)
         }
 
-        await telemetryService.createEvent({
-            name: `vector_upserted`,
-            data: {
-                version: await getAppVersion(),
-                chatlowId: chatflowid,
-                type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
-                flowGraph: getTelemetryFlowObj(nodes, edges),
-                stopNodeId
-            }
+        await appServer.telemetry.sendTelemetry('vector_upserted', {
+            version: await getAppVersion(),
+            chatlowId: chatflowid,
+            type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+            flowGraph: getTelemetryFlowObj(nodes, edges),
+            stopNodeId
         })
+        appServer.metricsProvider.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
 
         return upsertedResult['result'] ?? { result: 'Successfully Upserted' }
     } catch (e) {
