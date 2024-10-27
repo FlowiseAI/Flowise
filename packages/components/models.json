@@ -1189,6 +1189,16 @@
             "name": "voyageAIEmbeddings",
             "models": [
                 {
+                    "label": "voyage-3",
+                    "name": "voyage-3",
+                    "description": "High-performance embedding model with excellent retrieval quality, 32K token context, and 1024 dimension size."
+                },
+                {
+                    "label": "voyage-3-lite",
+                    "name": "voyage-3-lite",
+                    "description": "Lightweight embedding model optimized for low latency and cost, 32K token context, and 512 dimension size."
+                },
+                {
                     "label": "voyage-2",
                     "name": "voyage-2",
                     "description": "General-purpose embedding model optimized for a balance between cost, latency, and retrieval quality."
