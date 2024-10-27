@@ -19,7 +19,6 @@ export class Prometheus implements IMetricsProvider {
         return 'Prometheus'
     }
 
-
     async initializeCounters(): Promise<void> {
         const serviceName: string = process.env.METRICS_SERVICE_NAME || 'FlowiseAI'
         this.register.setDefaultLabels({
