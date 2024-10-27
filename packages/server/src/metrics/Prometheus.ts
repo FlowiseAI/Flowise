@@ -3,7 +3,7 @@ import express from 'express'
 import promClient, { Counter, Histogram, Registry } from 'prom-client'
 import { getVersion } from 'flowise-components'
 
-export class PrometheusProvider implements IMetricsProvider {
+export class Prometheus implements IMetricsProvider {
     private app: express.Application
     private readonly register: Registry
     private counters: Map<string, promClient.Counter<string> | promClient.Gauge<string> | promClient.Histogram<string>>
@@ -14,6 +14,11 @@ export class PrometheusProvider implements IMetricsProvider {
         this.app = app
         this.register = new promClient.Registry()
     }
+
+    public getName(): string {
+        return 'Prometheus'
+    }
+
 
     async initializeCounters(): Promise<void> {
         const serviceName: string = process.env.METRICS_SERVICE_NAME || 'FlowiseAI'

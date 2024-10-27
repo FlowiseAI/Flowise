@@ -1,0 +1,15 @@
+version: "2"
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    command: ["--config=/etc/otelcol-contrib/config.yaml", "--feature-gates=-exporter.datadogexporter.DisableAPMStats", "${OTELCOL_ARGS}"]
+    volumes:
+      - ./otel.config.yml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension

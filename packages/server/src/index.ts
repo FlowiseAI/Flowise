@@ -23,7 +23,8 @@ import errorHandlerMiddleware from './middlewares/errors'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { validateAPIKey } from './utils/validateKey'
 import { IMetricsProvider } from './Interface.Metrics'
-import { PrometheusProvider } from './metrics/PrometheusProvider'
+import { Prometheus } from './metrics/Prometheus'
+import { OpenTelemetry } from './metrics/OpenTelemetry'
 
 declare global {
     namespace Express {
@@ -212,11 +213,20 @@ export class App {
                 // default to prometheus
                 case 'prometheus':
                 case undefined:
-                    this.metricsProvider = new PrometheusProvider(this.app)
-                    await this.metricsProvider.initializeCounters()
-                    logger.info(`⚡️ [server]: Metrics Collection Enabled with Prometheus`)
+                    this.metricsProvider = new Prometheus(this.app)
+                    break
+                case 'open_telemetry':
+                    this.metricsProvider = new OpenTelemetry(this.app)
                     break
                 // add more cases for other metrics providers here
+            }
+            if (this.metricsProvider) {
+                await this.metricsProvider.initializeCounters()
+                logger.info(`📊 [server]: Metrics Provider [${this.metricsProvider.getName()}] has been initialized!`)
+            } else {
+                logger.error(
+                    "❌ [server]: Metrics collection is enabled, but failed to initialize provider (valid values are 'prometheus' or 'open_telemetry'."
+                )
             }
         }
 

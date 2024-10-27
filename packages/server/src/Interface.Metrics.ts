@@ -1,4 +1,5 @@
 export interface IMetricsProvider {
+    getName(): string
     initializeCounters(): void
     setupMetricsEndpoint(): void
     incrementCounter(counter: FLOWISE_COUNTER, payload: any): void
