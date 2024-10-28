@@ -62,7 +62,7 @@ export class PGVectorDriver extends VectorStoreDriver {
     }
 
     protected async adaptInstance(instance: PGVectorStore, metadataFilters?: any): Promise<PGVectorStore> {
-        const { [FLOWISE_CHATID]: chatId, ...pgMetadataFilter } = metadataFilters
+        const { [FLOWISE_CHATID]: chatId, ...pgMetadataFilter } = metadataFilters || {}
 
         const baseSimilaritySearchVectorWithScoreFn = instance.similaritySearchVectorWithScore.bind(instance)
 
