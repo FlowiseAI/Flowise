@@ -85,7 +85,8 @@
         "sqlite3": "^5.1.6",
         "typeorm": "^0.3.6",
         "uuid": "^9.0.1",
-        "winston": "^3.9.0"
+        "winston": "^3.9.0",
+        "global-agent": "^3.0.0"
     },
     "devDependencies": {
         "@types/content-disposition": "0.5.8",
