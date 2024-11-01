@@ -1,0 +1,424 @@
+{
+    "category": "Tools;Agents;Template",
+    "chatbotConfig": "{}",
+    "description": "",
+    "edges": [
+        {
+            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-toolAgent_0-toolAgent_0-input-memory-BaseChatMemory",
+            "source": "bufferMemory_0",
+            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-memory-BaseChatMemory",
+            "type": "buttonedge"
+        },
+        {
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-toolAgent_0-toolAgent_0-input-model-BaseChatModel",
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-model-BaseChatModel",
+            "type": "buttonedge"
+        },
+        {
+            "id": "customTool_1-customTool_1-output-customTool-CustomTool|Tool|StructuredTool|Runnable-toolAgent_0-toolAgent_0-input-tools-Tool",
+            "source": "customTool_1",
+            "sourceHandle": "customTool_1-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+            "target": "toolAgent_0",
+            "targetHandle": "toolAgent_0-input-tools-Tool",
+            "type": "buttonedge"
+        }
+    ],
+    "id": "17bb463a-d6da-4e98-99b7-213ef43f6ddb",
+    "name": "Sidekick Starter",
+    "nodes": [
+        {
+            "data": {
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "category": "Agents",
+                "description": "Agent that uses Function Calling to pick the tools and args to call",
+                "id": "toolAgent_0",
+                "inputAnchors": [
+                    {
+                        "id": "toolAgent_0-input-tools-Tool",
+                        "label": "Tools",
+                        "list": true,
+                        "name": "tools",
+                        "type": "Tool"
+                    },
+                    {
+                        "id": "toolAgent_0-input-memory-BaseChatMemory",
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory"
+                    },
+                    {
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat",
+                        "id": "toolAgent_0-input-model-BaseChatModel",
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel"
+                    },
+                    {
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "id": "toolAgent_0-input-inputModeration-Moderation",
+                        "label": "Input Moderation",
+                        "list": true,
+                        "name": "inputModeration",
+                        "optional": true,
+                        "type": "Moderation"
+                    }
+                ],
+                "inputParams": [
+                    {
+                        "additionalParams": true,
+                        "default": "You are a helpful AI assistant.",
+                        "id": "toolAgent_0-input-systemMessage-string",
+                        "label": "System Message",
+                        "name": "systemMessage",
+                        "optional": true,
+                        "rows": 4,
+                        "type": "string"
+                    },
+                    {
+                        "additionalParams": true,
+                        "id": "toolAgent_0-input-maxIterations-number",
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "optional": true,
+                        "type": "number"
+                    }
+                ],
+                "inputs": {
+                    "inputModeration": "",
+                    "maxIterations": "",
+                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "systemMessage": "You are a basic tool agent with access to a set of tools. Your role is to assist users by selecting and using the appropriate tool based on their query. Here are the tools available to you:\n\n<tools>\ntodays_date_time(): Use this tool when you need to get the current date\ncustom_tool(message): Use this tool to send a message to another workflows\n</tools>\n\nWhen a user presents a query, follow these steps:\n\n1. Analyze the user's query to understand the task or information needed.\n2. Review the list of available tools and identify the most appropriate one(s) for the task.\n3. If a suitable tool is available, use it to address the user's query.\n4. If no suitable tool is available, inform the user that you cannot complete the task and explain why.\n\nGuidelines for tool selection and usage:\n- Choose the tool that best matches the specific requirements of the user's query.\n- If multiple tools could be useful, prioritize the most efficient or comprehensive option and execute them in the order that will result in a response that is most probable to help the user based on their request.\n- Use only the tools listed above. Do not attempt to use or create tools that are not in the provided list.\n\nError handling and limitations:\n- If a tool fails to provide the necessary information, explain the issue and suggest an alternative approach if possible.\n- If the user's query is unclear or lacks sufficient information, ask for clarification before selecting a tool.\n- Always stay within the capabilities of the provided tools. Do not claim to perform actions or access information beyond what the tools allow.\n\nPlease analyze the query and respond using the structure outlined above.",
+                    "tools": ["{{customTool_1.data.instance}}"]
+                },
+                "label": "Tool Agent",
+                "name": "toolAgent",
+                "outputAnchors": [
+                    {
+                        "description": "Agent that uses Function Calling to pick the tools and args to call",
+                        "id": "toolAgent_0-output-toolAgent-AgentExecutor|BaseChain|Runnable",
+                        "label": "AgentExecutor",
+                        "name": "toolAgent",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false,
+                "type": "AgentExecutor",
+                "version": 1
+            },
+            "dragging": false,
+            "height": 435,
+            "id": "toolAgent_0",
+            "position": {
+                "x": 928.0030945621704,
+                "y": 423.1738818845563
+            },
+            "positionAbsolute": {
+                "x": 928.0030945621704,
+                "y": 423.1738818845563
+            },
+            "selected": false,
+            "type": "customNode",
+            "width": 300
+        },
+        {
+            "data": {
+                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Retrieve chat messages stored in database",
+                "id": "bufferMemory_0",
+                "inputAnchors": [],
+                "inputParams": [
+                    {
+                        "additionalParams": true,
+                        "default": "",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "id": "bufferMemory_0-input-sessionId-string",
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "optional": true,
+                        "type": "string"
+                    },
+                    {
+                        "additionalParams": true,
+                        "default": "chat_history",
+                        "id": "bufferMemory_0-input-memoryKey-string",
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string"
+                    }
+                ],
+                "inputs": {
+                    "memoryKey": "chat_history",
+                    "sessionId": "asdg6532rvrrtrtfe-ytrwq12344"
+                },
+                "label": "Buffer Memory",
+                "name": "bufferMemory",
+                "outputAnchors": [
+                    {
+                        "description": "Retrieve chat messages stored in database",
+                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+                        "label": "BufferMemory",
+                        "name": "bufferMemory",
+                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false,
+                "type": "BufferMemory",
+                "version": 2
+            },
+            "dragging": false,
+            "height": 253,
+            "id": "bufferMemory_0",
+            "position": {
+                "x": 507.6647373476537,
+                "y": 602.5272700245671
+            },
+            "positionAbsolute": {
+                "x": 507.6647373476537,
+                "y": 602.5272700245671
+            },
+            "selected": false,
+            "type": "customNode",
+            "width": 300
+        },
+        {
+            "data": {
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "id": "chatOpenAI_0",
+                "inputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-input-cache-BaseCache",
+                        "label": "Cache",
+                        "name": "cache",
+                        "optional": true,
+                        "type": "BaseCache"
+                    }
+                ],
+                "inputParams": [
+                    {
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential",
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential"
+                    },
+                    {
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_0-input-modelName-asyncOptions",
+                        "label": "Model Name",
+                        "loadMethod": "listModels",
+                        "name": "modelName",
+                        "type": "asyncOptions"
+                    },
+                    {
+                        "default": 0.9,
+                        "id": "chatOpenAI_0-input-temperature-number",
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "optional": true,
+                        "step": 0.1,
+                        "type": "number"
+                    },
+                    {
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number",
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "optional": true,
+                        "step": 1,
+                        "type": "number"
+                    },
+                    {
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number",
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "optional": true,
+                        "step": 0.1,
+                        "type": "number"
+                    },
+                    {
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number",
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "optional": true,
+                        "step": 0.1,
+                        "type": "number"
+                    },
+                    {
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number",
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "optional": true,
+                        "step": 0.1,
+                        "type": "number"
+                    },
+                    {
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number",
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "optional": true,
+                        "step": 1,
+                        "type": "number"
+                    },
+                    {
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string",
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "optional": true,
+                        "type": "string"
+                    },
+                    {
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json",
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "optional": true,
+                        "type": "json"
+                    },
+                    {
+                        "default": false,
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean",
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "optional": true,
+                        "type": "boolean"
+                    },
+                    {
+                        "additionalParams": true,
+                        "default": "low",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "id": "chatOpenAI_0-input-imageResolution-options",
+                        "label": "Image Resolution",
+                        "name": "imageResolution",
+                        "optional": false,
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "type": "options"
+                    }
+                ],
+                "inputs": {
+                    "allowImageUploads": "",
+                    "baseOptions": "",
+                    "basepath": "",
+                    "cache": "",
+                    "frequencyPenalty": "",
+                    "imageResolution": "low",
+                    "maxTokens": "",
+                    "modelName": "gpt-4o",
+                    "presencePenalty": "",
+                    "temperature": 0.9,
+                    "timeout": "",
+                    "topP": ""
+                },
+                "label": "ChatOpenAI",
+                "name": "chatOpenAI",
+                "outputAnchors": [
+                    {
+                        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "label": "ChatOpenAI",
+                        "name": "chatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false,
+                "type": "ChatOpenAI",
+                "version": 6
+            },
+            "dragging": false,
+            "height": 670,
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 920.1278912808826,
+                "y": -272.37681543905165
+            },
+            "positionAbsolute": {
+                "x": 920.1278912808826,
+                "y": -272.37681543905165
+            },
+            "selected": false,
+            "type": "customNode",
+            "width": 300
+        },
+        {
+            "data": {
+                "baseClasses": ["CustomTool", "Tool", "StructuredTool", "Runnable"],
+                "category": "Tools",
+                "description": "Use custom tool you've created in Flowise within chatflow",
+                "id": "customTool_1",
+                "inputAnchors": [],
+                "inputParams": [
+                    {
+                        "id": "customTool_1-input-selectedTool-asyncOptions",
+                        "label": "Select Tool",
+                        "loadMethod": "listTools",
+                        "name": "selectedTool",
+                        "type": "asyncOptions"
+                    }
+                ],
+                "inputs": {
+                    "selectedTool": "2ff8d183-8b93-42da-a047-ebe4374d2c6b"
+                },
+                "label": "Custom Tool",
+                "name": "customTool",
+                "outputAnchors": [
+                    {
+                        "description": "Use custom tool you've created in Flowise within chatflow",
+                        "id": "customTool_1-output-customTool-CustomTool|Tool|StructuredTool|Runnable",
+                        "label": "CustomTool",
+                        "name": "customTool",
+                        "type": "CustomTool | Tool | StructuredTool | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false,
+                "type": "CustomTool",
+                "version": 1
+            },
+            "dragging": false,
+            "height": 286,
+            "id": "customTool_1",
+            "position": {
+                "x": 518.4806884993756,
+                "y": 37.90539171362143
+            },
+            "positionAbsolute": {
+                "x": 518.4806884993756,
+                "y": 37.90539171362143
+            },
+            "selected": false,
+            "type": "customNode",
+            "width": 300
+        }
+    ],
+    "type": "CHATFLOW"
+}
