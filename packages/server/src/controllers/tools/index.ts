@@ -5,11 +5,9 @@ import { StatusCodes } from 'http-status-codes'
 
 const createTool = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.body) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.createTool - body not provided!`)
-        }
-        const apiResponse = await toolsService.createTool(req.body)
-        return res.json(apiResponse)
+        if (!req.body) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Body is required')
+        const tool = await toolsService.createTool(req.body, req.user!)
+        return res.json(tool)
     } catch (error) {
         next(error)
     }
@@ -17,11 +15,9 @@ const createTool = async (req: Request, res: Response, next: NextFunction) => {
 
 const deleteTool = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.deleteTool - id not provided!`)
-        }
-        const apiResponse = await toolsService.deleteTool(req.params.id)
-        return res.json(apiResponse)
+        if (!req.params.id) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Tool ID is required')
+        const tool = await toolsService.deleteTool(req.params.id, req.user!)
+        return res.json(tool)
     } catch (error) {
         next(error)
     }
@@ -29,8 +25,8 @@ const deleteTool = async (req: Request, res: Response, next: NextFunction) => {
 
 const getAllTools = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await toolsService.getAllTools()
-        return res.json(apiResponse)
+        const tools = await toolsService.getAllTools(req.user!)
+        return res.json(tools)
     } catch (error) {
         next(error)
     }
@@ -38,11 +34,9 @@ const getAllTools = async (req: Request, res: Response, next: NextFunction) => {
 
 const getToolById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.getToolById - id not provided!`)
-        }
-        const apiResponse = await toolsService.getToolById(req.params.id)
-        return res.json(apiResponse)
+        if (!req.params.id) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Tool ID is required')
+        const tool = await toolsService.getToolById(req.params.id)
+        return res.json(tool)
     } catch (error) {
         next(error)
     }
@@ -50,14 +44,10 @@ const getToolById = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateTool = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.id) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.updateTool - id not provided!`)
-        }
-        if (!req.body) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.deleteTool - body not provided!`)
-        }
-        const apiResponse = await toolsService.updateTool(req.params.id, req.body)
-        return res.json(apiResponse)
+        if (!req.params.id) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Tool ID is required')
+        if (!req.body) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Body is required')
+        const tool = await toolsService.updateTool(req.params.id, req.body, req.user!)
+        return res.json(tool)
     } catch (error) {
         next(error)
     }
