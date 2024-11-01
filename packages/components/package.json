@@ -69,6 +69,7 @@
         "assemblyai": "^4.2.2",
         "axios": "1.6.2",
         "cheerio": "^1.0.0-rc.12",
+        "couchbase": "4.4.1",
         "chromadb": "^1.5.11",
         "cohere-ai": "^7.7.5",
         "crypto-js": "^4.1.1",

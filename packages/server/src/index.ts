@@ -25,6 +25,7 @@ import { validateAPIKey } from './utils/validateKey'
 import { IMetricsProvider } from './Interface.Metrics'
 import { Prometheus } from './metrics/Prometheus'
 import { OpenTelemetry } from './metrics/OpenTelemetry'
+import 'global-agent/bootstrap'
 
 declare global {
     namespace Express {
