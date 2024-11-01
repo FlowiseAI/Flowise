@@ -5,7 +5,22 @@ import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import { cloneDeep } from 'lodash'
 
-import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
+import {
+    Box,
+    Button,
+    Typography,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Stack,
+    OutlinedInput,
+    FormControl,
+    FormGroup,
+    FormControlLabel,
+    Checkbox,
+    Tooltip
+} from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Grid } from '@/ui-component/grid/Grid'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
@@ -29,6 +44,7 @@ import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
 import { generateRandomGradient, formatDataGridRows } from '@/utils/genericHelper'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import { useFlags } from 'flagsmith/react'
 
 const exampleAPIFunc = `/*
 * You can use any libraries imported in AnswerAI
@@ -55,6 +71,8 @@ try {
     return '';
 }`
 
+const TOOL_VISIBILITY_OPTIONS = ['Private', 'Organization']
+
 const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, setError }) => {
     const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
 
@@ -78,6 +96,9 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
     const [toolSchema, setToolSchema] = useState([])
     const [toolFunc, setToolFunc] = useState('')
     const [showHowToDialog, setShowHowToDialog] = useState(false)
+    const [visibility, setVisibility] = useState(['Private'])
+
+    const flags = useFlags(['org:manage'])
 
     const deleteItem = useCallback(
         (id) => () => {
@@ -177,6 +198,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
+            setVisibility(dialogProps.data.visibility || ['Private'])
         } else if (dialogProps.type === 'EDIT' && dialogProps.toolId) {
             // When tool dialog is opened from CustomTool node in canvas
             getSpecificToolApi.request(dialogProps.toolId)
@@ -188,6 +210,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
+            setVisibility(dialogProps.data.visibility || ['Private'])
         } else if (dialogProps.type === 'TEMPLATE' && dialogProps.data) {
             // When tool dialog is a template
             setToolName(dialogProps.data.name)
@@ -196,6 +219,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolSchema(formatDataGridRows(dialogProps.data.schema))
             if (dialogProps.data.func) setToolFunc(dialogProps.data.func)
             else setToolFunc('')
+            setVisibility(['Private'])
         } else if (dialogProps.type === 'ADD') {
             // When tool dialog is to add a new tool
             setToolId('')
@@ -204,6 +228,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             setToolIcon('')
             setToolSchema([])
             setToolFunc('')
+            setVisibility(['Private'])
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -259,7 +284,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 color: generateRandomGradient(),
                 schema: JSON.stringify(toolSchema),
                 func: toolFunc,
-                iconSrc: toolIcon
+                iconSrc: toolIcon,
+                visibility
             }
             const createResp = await toolsApi.createNewTool(obj)
             if (createResp.data) {
@@ -304,7 +330,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 description: toolDesc,
                 schema: JSON.stringify(toolSchema),
                 func: toolFunc,
-                iconSrc: toolIcon
+                iconSrc: toolIcon,
+                visibility
             })
             if (saveResp.data) {
                 enqueueSnackbar({
@@ -389,6 +416,14 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
         }
     }
 
+    const handleChangeVisibility = useCallback(
+        (event, option) => {
+            const updatedVisibility = visibility.includes(option) ? visibility.filter((v) => v !== option) : [...visibility, option]
+            setVisibility(updatedVisibility)
+        },
+        [visibility]
+    )
+
     const component = show ? (
         <Dialog
             fullWidth
@@ -467,18 +502,49 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                             onChange={(e) => setToolIcon(e.target.value)}
                         />
                     </Box>
+                    <Box sx={{ p: 2 }}>
+                        <Typography variant='h4' sx={{ mb: 1 }}>
+                            Tool visibility
+                            <TooltipWithParser
+                                style={{ mb: 1, mt: 2, marginLeft: 10 }}
+                                title={
+                                    'Control visibility and organization permissions. Contact your organization admin to enable more options.'
+                                }
+                            />
+                        </Typography>
+                        <FormControl component='fieldset' sx={{ width: '100%', mb: 2 }}>
+                            <FormGroup>
+                                {TOOL_VISIBILITY_OPTIONS.map((type) => {
+                                    const isDisabled = type === 'Private' || (type === 'Organization' && !flags['org:manage']?.enabled)
+                                    return (
+                                        <FormControlLabel
+                                            key={type}
+                                            control={
+                                                <Tooltip title={isDisabled ? 'Contact your org admin to enable this option' : ''}>
+                                                    <Checkbox
+                                                        checked={visibility.includes(type)}
+                                                        onChange={(event) => handleChangeVisibility(event, type)}
+                                                    />
+                                                </Tooltip>
+                                            }
+                                            label={type}
+                                            disabled={isDisabled}
+                                        />
+                                    )
+                                })}
+                            </FormGroup>
+                        </FormControl>
+                    </Box>
                     <Box>
-                        <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
-                            <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                <Typography variant='overline'>Input Schema</Typography>
-                                <TooltipWithParser title={'What is the input format in JSON?'} />
-                            </Stack>
-                            {dialogProps.type !== 'TEMPLATE' && (
-                                <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
-                                    Add Item
-                                </Button>
-                            )}
+                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                            <Typography variant='overline'>Input Schema</Typography>
+                            <TooltipWithParser title={'What is the input format in JSON?'} />
                         </Stack>
+                        {dialogProps.type !== 'TEMPLATE' && (
+                            <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
+                                Add Item
+                            </Button>
+                        )}
                         <Grid columns={columns} rows={toolSchema} disabled={dialogProps.type === 'TEMPLATE'} onRowUpdate={onRowUpdate} />
                     </Box>
                     <Box>

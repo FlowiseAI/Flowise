@@ -2,6 +2,11 @@
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
 import { ITool } from '../../Interface'
 
+export enum ToolVisibility {
+    PRIVATE = 'Private',
+    ORGANIZATION = 'Organization'
+}
+
 @Entity()
 export class Tool implements ITool {
     @PrimaryGeneratedColumn('uuid')
@@ -40,4 +45,11 @@ export class Tool implements ITool {
     @Index()
     @Column({ type: 'uuid', nullable: true })
     organizationId?: string
+
+    @Column({
+        type: 'simple-array',
+        enum: ToolVisibility,
+        default: 'Private'
+    })
+    visibility?: ToolVisibility[]
 }
