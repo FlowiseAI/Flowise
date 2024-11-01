@@ -499,6 +499,9 @@ importers:
             flowise-ui:
                 specifier: workspace:^
                 version: link:../ui
+            global-agent:
+                specifier: ^3.0.0
+                version: 3.0.0
             http-errors:
                 specifier: ^2.0.0
                 version: 2.0.0
@@ -6377,6 +6380,10 @@ packages:
     boolbase@1.0.0:
         resolution: { integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww== }
 
+    boolean@3.2.0:
+        resolution: { integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw== }
+        deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
     bowser@2.11.0:
         resolution: { integrity: sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA== }
 
@@ -7807,6 +7814,9 @@ packages:
         resolution: { integrity: sha512-p2snDhiLaXe6dahss1LddxqEm+SkuDvV8dnIQG0MWjyHpcMNfXKPE+/Cc0y+PhxJX3A4xGNeFCj5oc0BUh6deg== }
         engines: { node: '>=0.10' }
 
+    es6-error@4.1.1:
+        resolution: { integrity: sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg== }
+
     es6-iterator@2.0.3:
         resolution: { integrity: sha512-zw4SRzoUkd+cl+ZoE15A9o1oQd920Bb0iOJMQkQhl3jNc03YqVjAhG7scf9C5KWRU/R13Orf588uCC6525o02g== }
 
@@ -8741,6 +8751,10 @@ packages:
         resolution: { integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ== }
         engines: { node: '>=12' }
         deprecated: Glob versions prior to v9 are no longer supported
+
+    global-agent@3.0.0:
+        resolution: { integrity: sha512-PT6XReJ+D07JvGoxQMkT6qji/jVNfX/h364XHZOWeRzy64sSFr+xJ5OX7LI3b4MPQzdL4H8Y8M0xzPpsVMwA8Q== }
+        engines: { node: '>=10.0' }
 
     global-dirs@3.0.1:
         resolution: { integrity: sha512-NBcGGFbBA9s1VzD41QXDG+3++t9Mn5t1FpLdhESY6oKY4gYTFpX4wO3sqGUa0Srjtbfj3szX0RnemmrVRUdULA== }
@@ -10848,6 +10862,10 @@ packages:
     matchdep@2.0.0:
         resolution: { integrity: sha512-LFgVbaHIHMqCRuCZyfCtUOq9/Lnzhi7Z0KFUE2fhD54+JN2jLh3hC02RLkqauJ3U4soU6H1J3tfj/Byk7GoEjA== }
         engines: { node: '>= 0.10.0' }
+
+    matcher@3.0.0:
+        resolution: { integrity: sha512-OkeDaAZ/bQCxeFAozM55PKcKU0yJMPGifLwV4Qgjitu+5MoAfSQN4lsLJeXZ1b8w0x+/Emda6MZgXS1jvsapng== }
+        engines: { node: '>=10' }
 
     material-colors@1.2.6:
         resolution: { integrity: sha512-6qE4B9deFBIa9YSpOc9O0Sgc43zTeVYbgDT5veRKSlB2+ZuHNoVVxA1L/ckMUayV9Ay9y7Z/SZCLcGteW9i7bg== }
@@ -13505,6 +13523,10 @@ packages:
         engines: { node: '>=14' }
         hasBin: true
 
+    roarr@2.15.4:
+        resolution: { integrity: sha512-CHhPh+UNHD2GTXNYhPWLnU8ONHdI+5DI+4EYIAOaiD63rHeYlZvyh8P+in5999TTSFgUYuKUAjzRI4mdh/p+2A== }
+        engines: { node: '>=8.0' }
+
     rollup-plugin-terser@7.0.2:
         resolution: { integrity: sha512-w3iIaU4OxcF52UUXiZNsNeuXIMDvFrr+ZXK6bFZ0Q60qyVfq4uLptoS4bbq3paG3x216eQllFZX7zt6TIImguQ== }
         deprecated: This package has been deprecated and is no longer maintained. Please use @rollup/plugin-terser
@@ -13667,6 +13689,9 @@ packages:
         resolution: { integrity: sha512-th5B4L2U+eGLq1TVh7zNRGBapioSORUeymIydxgFpwww9d2qyKvtuPU2jJuHvYAwwqi2Y596QBL3eEqcPEYL8Q== }
         engines: { node: '>=10' }
 
+    semver-compare@1.0.0:
+        resolution: { integrity: sha512-YM3/ITh2MJ5MtzaM429anh+x2jiLVjqILF4m4oyQB18W7Ggea7BfqdH/wGMK7dDiMghv/6WG7znWMwUDzJiXow== }
+
     semver-greatest-satisfied-range@1.1.0:
         resolution: { integrity: sha512-Ny/iyOzSSa8M5ML46IAx3iXc6tfOsYU2R4AXi2UpHk60Zrgyq6eqPj/xiOfS0rRl/iiQ/rdJkVjw/5cdUyCntQ== }
         engines: { node: '>= 0.10' }
@@ -13694,6 +13719,10 @@ packages:
 
     seq-queue@0.0.5:
         resolution: { integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q== }
+
+    serialize-error@7.0.1:
+        resolution: { integrity: sha512-8I8TjW5KMOKsZQTvoxjuSIa7foAwPWGOts+6o7sgjz41/qMD9VQHEDxi6PBvK2l0MXUmqZyNpUK+T2tQaaElvw== }
+        engines: { node: '>=10' }
 
     serialize-javascript@4.0.0:
         resolution: { integrity: sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw== }
@@ -14702,6 +14731,10 @@ packages:
     type-detect@4.0.8:
         resolution: { integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g== }
         engines: { node: '>=4' }
+
+    type-fest@0.13.1:
+        resolution: { integrity: sha512-34R7HTnG0XIJcBSn5XhDd7nNFPRcXYRZrBB2O2jdKqYODldSzBAqzsWoZYYvduky73toYS/ESqxPvkDf/F0XMg== }
+        engines: { node: '>=10' }
 
     type-fest@0.16.0:
         resolution: { integrity: sha512-eaBzG6MxNzEn9kiwvtre90cXaNLkmadMWa1zQMs3XORCXNbsH/OewwbxC5ia9dCxIxnTAsSxXJaa/p5y8DlvJg== }
@@ -23597,6 +23630,8 @@ snapshots:
 
     boolbase@1.0.0: {}
 
+    boolean@3.2.0: {}
+
     bowser@2.11.0: {}
 
     boxen@7.1.1:
@@ -25278,6 +25313,8 @@ snapshots:
             esniff: 2.0.1
             next-tick: 1.1.0
 
+    es6-error@4.1.1: {}
+
     es6-iterator@2.0.3:
         dependencies:
             d: 1.0.2
@@ -26577,6 +26614,15 @@ snapshots:
             inherits: 2.0.4
             minimatch: 5.1.6
             once: 1.4.0
+
+    global-agent@3.0.0:
+        dependencies:
+            boolean: 3.2.0
+            es6-error: 4.1.1
+            matcher: 3.0.0
+            roarr: 2.15.4
+            semver: 7.6.0
+            serialize-error: 7.0.1
 
     global-dirs@3.0.1:
         dependencies:
@@ -29098,6 +29144,10 @@ snapshots:
             stack-trace: 0.0.10
         transitivePeerDependencies:
             - supports-color
+
+    matcher@3.0.0:
+        dependencies:
+            escape-string-regexp: 4.0.0
 
     material-colors@1.2.6: {}
 
@@ -32390,6 +32440,15 @@ snapshots:
         dependencies:
             glob: 10.3.10
 
+    roarr@2.15.4:
+        dependencies:
+            boolean: 3.2.0
+            detect-node: 2.1.0
+            globalthis: 1.0.3
+            json-stringify-safe: 5.0.1
+            semver-compare: 1.0.0
+            sprintf-js: 1.1.3
+
     rollup-plugin-terser@7.0.2(rollup@2.79.1):
         dependencies:
             '@babel/code-frame': 7.23.5
@@ -32564,6 +32623,8 @@ snapshots:
             '@types/node-forge': 1.3.11
             node-forge: 1.3.1
 
+    semver-compare@1.0.0: {}
+
     semver-greatest-satisfied-range@1.1.0:
         dependencies:
             sver-compat: 1.5.0
@@ -32597,6 +32658,10 @@ snapshots:
             - supports-color
 
     seq-queue@0.0.5: {}
+
+    serialize-error@7.0.1:
+        dependencies:
+            type-fest: 0.13.1
 
     serialize-javascript@4.0.0:
         dependencies:
@@ -33785,6 +33850,8 @@ snapshots:
             prelude-ls: 1.2.1
 
     type-detect@4.0.8: {}
+
+    type-fest@0.13.1: {}
 
     type-fest@0.16.0: {}
 

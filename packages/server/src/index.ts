@@ -22,6 +22,7 @@ import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { validateAPIKey } from './utils/validateKey'
+import 'global-agent/bootstrap'
 
 declare global {
     namespace Express {
