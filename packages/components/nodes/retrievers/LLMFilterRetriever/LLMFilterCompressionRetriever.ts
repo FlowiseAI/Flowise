@@ -1,3 +1,6 @@
+/**
+ * Import necessary modules and interfaces for the retriever functionality.
+ */
 import { BaseRetriever } from '@langchain/core/retrievers'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
@@ -5,6 +8,10 @@ import { LLMChainExtractor } from 'langchain/retrievers/document_compressors/cha
 import { handleEscapeCharacters } from '../../../src/utils'
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
+/**
+ * Class representing a retriever that filters and compresses documents
+ * using a language model and a vector store retriever.
+ */
 class LLMFilterCompressionRetriever_Retrievers implements INode {
     label: string
     name: string
@@ -18,6 +25,9 @@ class LLMFilterCompressionRetriever_Retrievers implements INode {
     outputs: INodeOutputsValue[]
     badge: string
 
+    /**
+     * Initializes a new instance of the LLMFilterCompressionRetriever_Retrievers class.
+     */
     constructor() {
         this.label = 'LLM Filter Retriever'
         this.name = 'llmFilterRetriever'
@@ -69,19 +79,26 @@ class LLMFilterCompressionRetriever_Retrievers implements INode {
         ]
     }
 
+    /**
+     * Initializes the retriever with the provided node data and input string.
+     * @param nodeData - The data for the node, including inputs and outputs.
+     * @param input - The input string for the retriever.
+     * @returns The retriever or processed documents based on the output type.
+     */
     async init(nodeData: INodeData, input: string): Promise<any> {
         const baseRetriever = nodeData.inputs?.baseRetriever as BaseRetriever
         const model = nodeData.inputs?.model as BaseLanguageModel
         const query = nodeData.inputs?.query as string
         const output = nodeData.outputs?.output as string
 
-        if (!model) throw new Error('There must be a LLM model connected to LLM Filter Retriever')
+        if (!model) throw new Error('There must be a LLM model connected to LLM Filter Retriever') // Ensure a model is provided
 
         const retriever = new ContextualCompressionRetriever({
             baseCompressor: LLMChainExtractor.fromLLM(model),
             baseRetriever: baseRetriever
         })
 
+        // Return the appropriate output based on the specified output type
         if (output === 'retriever') return retriever
         else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)
         else if (output === 'text') {
