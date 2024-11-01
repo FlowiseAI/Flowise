@@ -29,7 +29,7 @@ class Postgres_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres'
         this.name = 'postgres'
-        this.version = 6.0
+        this.version = 7.0
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
@@ -63,22 +63,6 @@ class Postgres_VectorStores implements INode {
                 optional: true
             },
             {
-                label: 'Driver',
-                name: 'driver',
-                type: 'options',
-                default: 'typeorm',
-                options: [
-                    {
-                        label: 'TypeORM',
-                        name: 'typeorm'
-                    },
-                    {
-                        label: 'PGVector',
-                        name: 'pgvector'
-                    }
-                ]
-            },
-            {
                 label: 'Host',
                 name: 'host',
                 type: 'string',
@@ -108,12 +92,45 @@ class Postgres_VectorStores implements INode {
                 optional: true
             },
             {
-                label: 'Content Column Name',
-                name: 'contentColumnName',
-                description: 'Column name to store the text content (PGVector Driver only, others use pageContent)',
-                type: 'string',
-                placeholder: getContentColumnName(),
+                label: 'Driver',
+                name: 'driver',
+                type: 'options',
+                default: 'typeorm',
+                description: 'Different option to connect to Postgres',
+                options: [
+                    {
+                        label: 'TypeORM',
+                        name: 'typeorm'
+                    },
+                    {
+                        label: 'PGVector',
+                        name: 'pgvector'
+                    }
+                ],
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Distance Strategy',
+                name: 'distanceStrategy',
+                description: 'Strategy for calculating distances between vectors',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Cosine',
+                        name: 'cosine'
+                    },
+                    {
+                        label: 'Euclidean',
+                        name: 'euclidean'
+                    },
+                    {
+                        label: 'Inner Product',
+                        name: 'innerProduct'
+                    }
+                ],
                 additionalParams: true,
+                default: 'cosine',
                 optional: true
             },
             {
@@ -145,32 +162,18 @@ class Postgres_VectorStores implements INode {
                 optional: true
             },
             {
-                label: 'Distance Strategy',
-                name: 'distanceStrategy',
-                description: 'Strategy  for calculating distances between vectors',
-                type: 'option',
-                options: [
-                    {
-                        label: 'Cosine',
-                        name: 'cosine'
-                    },
-                    {
-                        label: 'Euclidean',
-                        name: 'euclidean'
-                    },
-                    {
-                        label: 'Inner Product',
-                        name: 'innerProduct'
-                    }
-                ],
-                additionalParams: true,
-                default: 'cosine',
-                optional: true
-            },
-            {
                 label: 'Postgres Metadata Filter',
                 name: 'pgMetadataFilter',
                 type: 'json',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Content Column Name',
+                name: 'contentColumnName',
+                description: 'Column name to store the text content (PGVector Driver only, others use pageContent)',
+                type: 'string',
+                placeholder: getContentColumnName(),
                 additionalParams: true,
                 optional: true
             }
@@ -302,9 +305,9 @@ class Postgres_VectorStores implements INode {
                 return new TypeORMDriver(nodeData, options)
             case 'pgvector':
                 return new PGVectorDriver(nodeData, options)
+            default:
+                return new TypeORMDriver(nodeData, options)
         }
-
-        throw new Error('Invalid driver')
     }
 }
 
