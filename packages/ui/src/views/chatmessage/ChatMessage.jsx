@@ -83,6 +83,9 @@ import { isValidURL, removeDuplicateURL, setLocalStorageChatflow, getLocalStorag
 import useNotifier from '@/utils/useNotifier'
 import FollowUpPromptsCard from '@/ui-component/cards/FollowUpPromptsCard'
 
+// History
+import { ChatInputHistory } from './ChatInputHistory'
+
 const messageImageStyle = {
     width: '128px',
     height: '128px',
@@ -185,6 +188,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const [uploadedFiles, setUploadedFiles] = useState([])
     const [imageUploadAllowedTypes, setImageUploadAllowedTypes] = useState('')
     const [fileUploadAllowedTypes, setFileUploadAllowedTypes] = useState('')
+    const [inputHistory] = useState(new ChatInputHistory(10))
 
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
@@ -768,6 +772,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
         if (selectedInput !== undefined && selectedInput.trim() !== '') input = selectedInput
 
+        if (input.trim()) {
+            inputHistory.addToHistory(input)
+        }
+
         setLoading(true)
         let uploads = previews.map((item) => {
             return {
@@ -934,7 +942,15 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const handleEnter = (e) => {
         // Check if IME composition is in progress
         const isIMEComposition = e.isComposing || e.keyCode === 229
-        if (e.key === 'Enter' && userInput && !isIMEComposition) {
+        if (e.key === 'ArrowUp' && !isIMEComposition) {
+            e.preventDefault()
+            const previousInput = inputHistory.getPreviousInput(userInput)
+            setUserInput(previousInput)
+        } else if (e.key === 'ArrowDown' && !isIMEComposition) {
+            e.preventDefault()
+            const nextInput = inputHistory.getNextInput()
+            setUserInput(nextInput)
+        } else if (e.key === 'Enter' && userInput && !isIMEComposition) {
             if (!e.shiftKey && userInput) {
                 handleSubmit(e)
             }
@@ -1540,8 +1556,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 ? 'usermessagewaiting-dark'
                                                 : 'usermessagewaiting-light'
                                             : message.type === 'usermessagewaiting'
-                                            ? 'apimessage'
-                                            : 'usermessage'
+                                                ? 'apimessage'
+                                                : 'usermessage'
                                     }
                                 >
                                     {/* Display the correct icon depending on the message type */}
@@ -1817,8 +1833,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                         )}
                                         <div className='markdownanswer'>
                                             {message.type === 'leadCaptureMessage' &&
-                                            !getLocalStorageChatflow(chatflowid)?.lead &&
-                                            leadsConfig.status ? (
+                                                !getLocalStorageChatflow(chatflowid)?.lead &&
+                                                leadsConfig.status ? (
                                                 <Box
                                                     sx={{
                                                         display: 'flex',
@@ -2052,8 +2068,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 >
                                                     <CopyToClipboardButton onClick={() => copyMessageToClipboard(message.message)} />
                                                     {!message.feedback ||
-                                                    message.feedback.rating === '' ||
-                                                    message.feedback.rating === 'THUMBS_UP' ? (
+                                                        message.feedback.rating === '' ||
+                                                        message.feedback.rating === 'THUMBS_UP' ? (
                                                         <ThumbsUpButton
                                                             isDisabled={message.feedback && message.feedback.rating === 'THUMBS_UP'}
                                                             rating={message.feedback ? message.feedback.rating : ''}
@@ -2061,8 +2077,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                         />
                                                     ) : null}
                                                     {!message.feedback ||
-                                                    message.feedback.rating === '' ||
-                                                    message.feedback.rating === 'THUMBS_DOWN' ? (
+                                                        message.feedback.rating === '' ||
+                                                        message.feedback.rating === 'THUMBS_DOWN' ? (
                                                         <ThumbsDownButton
                                                             isDisabled={message.feedback && message.feedback.rating === 'THUMBS_DOWN'}
                                                             rating={message.feedback ? message.feedback.rating : ''}
@@ -2295,8 +2311,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                 getInputDisabled()
                                                                     ? '#9e9e9e'
                                                                     : customization.isDarkMode
-                                                                    ? 'white'
-                                                                    : '#1e88e5'
+                                                                        ? 'white'
+                                                                        : '#1e88e5'
                                                             }
                                                         />
                                                     </IconButton>
