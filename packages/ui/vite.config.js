@@ -11,7 +11,7 @@ export default defineConfig(async ({ mode }) => {
         const serverPort = parseInt(serverEnv?.['PORT'] ?? 3000)
         if (!Number.isNaN(serverPort) && serverPort > 0 && serverPort < 65535) {
             proxy = {
-                '/api': {
+                '^/api(/|$).*': {
                     target: `http://${serverHost}:${serverPort}`,
                     changeOrigin: true
                 },
