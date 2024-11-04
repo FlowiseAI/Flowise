@@ -1556,8 +1556,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 ? 'usermessagewaiting-dark'
                                                 : 'usermessagewaiting-light'
                                             : message.type === 'usermessagewaiting'
-                                                ? 'apimessage'
-                                                : 'usermessage'
+                                            ? 'apimessage'
+                                            : 'usermessage'
                                     }
                                 >
                                     {/* Display the correct icon depending on the message type */}
@@ -1833,8 +1833,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                         )}
                                         <div className='markdownanswer'>
                                             {message.type === 'leadCaptureMessage' &&
-                                                !getLocalStorageChatflow(chatflowid)?.lead &&
-                                                leadsConfig.status ? (
+                                            !getLocalStorageChatflow(chatflowid)?.lead &&
+                                            leadsConfig.status ? (
                                                 <Box
                                                     sx={{
                                                         display: 'flex',
@@ -2068,8 +2068,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 >
                                                     <CopyToClipboardButton onClick={() => copyMessageToClipboard(message.message)} />
                                                     {!message.feedback ||
-                                                        message.feedback.rating === '' ||
-                                                        message.feedback.rating === 'THUMBS_UP' ? (
+                                                    message.feedback.rating === '' ||
+                                                    message.feedback.rating === 'THUMBS_UP' ? (
                                                         <ThumbsUpButton
                                                             isDisabled={message.feedback && message.feedback.rating === 'THUMBS_UP'}
                                                             rating={message.feedback ? message.feedback.rating : ''}
@@ -2077,8 +2077,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                         />
                                                     ) : null}
                                                     {!message.feedback ||
-                                                        message.feedback.rating === '' ||
-                                                        message.feedback.rating === 'THUMBS_DOWN' ? (
+                                                    message.feedback.rating === '' ||
+                                                    message.feedback.rating === 'THUMBS_DOWN' ? (
                                                         <ThumbsDownButton
                                                             isDisabled={message.feedback && message.feedback.rating === 'THUMBS_DOWN'}
                                                             rating={message.feedback ? message.feedback.rating : ''}
@@ -2311,8 +2311,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                 getInputDisabled()
                                                                     ? '#9e9e9e'
                                                                     : customization.isDarkMode
-                                                                        ? 'white'
-                                                                        : '#1e88e5'
+                                                                    ? 'white'
+                                                                    : '#1e88e5'
                                                             }
                                                         />
                                                     </IconButton>
