@@ -48,9 +48,9 @@ const howToUseCode = `
             "sourceDocuments": [
                 {
                     "pageContent": "This is the page content",
-                    "metadata": "{foo: var}",
+                    "metadata": "{foo: var}"
                 }
-            ],
+            ]
         }
     ]
     \`\`\`
@@ -64,7 +64,7 @@ const howToUseCode = `
     */
     
     return {
-        "sources": $flow.output[0].sourceDocuments
+        "sources": $flow.output[0].toolOutput
     }
     \`\`\`
 
@@ -89,17 +89,19 @@ const howToUse = `
     |-----------|-----------|
     | user      | john doe  |
 
-2. If you want to use the agent's output as the value to update state, it is available as available as \`$flow.output\` with the following structure (array):
+2. If you want to use the Tool Node's output as the value to update state, it is available as available as \`$flow.output\` with the following structure (array):
     \`\`\`json
     [
         {
-            "content": "Hello! How can I assist you today?",
+            "tool": "tool's name",
+            "toolInput": {},
+            "toolOutput": "tool's output content",
             "sourceDocuments": [
                 {
                     "pageContent": "This is the page content",
-                    "metadata": "{foo: var}",
+                    "metadata": "{foo: var}"
                 }
-            ],
+            ]
         }
     ]
     \`\`\`
@@ -107,7 +109,7 @@ const howToUse = `
     For example:
     | Key          | Value                                     |
     |--------------|-------------------------------------------|
-    | sources      | \`$flow.output[0].sourceDocuments\`       |
+    | sources      | \`$flow.output[0].toolOutput\`       |
 
 3. You can get default flow config, including the current "state":
     - \`$flow.sessionId\`
@@ -152,7 +154,7 @@ class ToolNode_SeqAgents implements INode {
     constructor() {
         this.label = 'Tool Node'
         this.name = 'seqToolNode'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'ToolNode'
         this.icon = 'toolNode.svg'
         this.category = 'Sequential Agents'
