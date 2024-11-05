@@ -533,7 +533,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
             dispatch({ type: SET_CHATFLOW, chatflow })
             setChatflow(chatflow)
             saveChatflowSuccess()
-            navigate(`/ ${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`, { replace: true })
+            navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`, { replace: true })
         } else if (createNewChatflowApi.error) {
             errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }
