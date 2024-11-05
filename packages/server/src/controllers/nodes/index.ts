@@ -67,12 +67,7 @@ const getSingleNodeAsyncOptions = async (req: Request, res: Response, next: Next
                 `Error: nodesController.getSingleNodeAsyncOptions - name not provided!`
             )
         }
-        const apiResponse = await nodesService.getSingleNodeAsyncOptions(
-            req.params.name,
-            req.body,
-            req.user?.id!,
-            req.user?.organizationId!
-        )
+        const apiResponse = await nodesService.getSingleNodeAsyncOptions(req.params.name, req.body, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

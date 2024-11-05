@@ -2,7 +2,7 @@ import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, IN
 import { convertSchemaToZod, getBaseClasses, getVars } from '../../../src/utils'
 import { DynamicStructuredTool } from './core'
 import { z } from 'zod'
-import { DataSource } from 'typeorm'
+import { DataSource, IsNull, Like } from 'typeorm'
 
 class CustomTool_Tools implements INode {
     label: string
@@ -41,12 +41,29 @@ class CustomTool_Tools implements INode {
 
             const appDataSource = options.appDataSource as DataSource
             const databaseEntities = options.databaseEntities as IDatabaseEntity
+            const userId = options.userId as string
+            const organizationId = options.organizationId as string
+            const isAdmin = options.isAdmin as boolean
 
             if (appDataSource === undefined || !appDataSource) {
                 return returnData
             }
 
-            const tools = await appDataSource.getRepository(databaseEntities['Tool']).find()
+            const toolRepo = appDataSource.getRepository(databaseEntities['Tool'])
+
+            // Match the same visibility logic as the tools service
+            const tools = await toolRepo.find({
+                where: isAdmin
+                    ? [{ organizationId }, { organizationId, userId: IsNull() }]
+                    : [
+                          { organizationId, userId },
+                          { organizationId, userId: IsNull() },
+                          {
+                              organizationId,
+                              visibility: Like('%Organization%')
+                          }
+                      ]
+            })
 
             for (let i = 0; i < tools.length; i += 1) {
                 const data = {
@@ -69,13 +86,33 @@ class CustomTool_Tools implements INode {
 
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
+        const userId = options.userId as string
+        const organizationId = options.organizationId as string
+        const isAdmin = options.isAdmin as boolean
 
         try {
-            const tool = await appDataSource.getRepository(databaseEntities['Tool']).findOneBy({
-                id: selectedToolId
+            const toolRepo = appDataSource.getRepository(databaseEntities['Tool'])
+
+            // Match visibility logic when fetching specific tool
+            const tool = await toolRepo.findOne({
+                where: isAdmin
+                    ? [
+                          { id: selectedToolId, organizationId },
+                          { id: selectedToolId, organizationId, userId: IsNull() }
+                      ]
+                    : [
+                          { id: selectedToolId, organizationId, userId },
+                          { id: selectedToolId, organizationId, userId: IsNull() },
+                          {
+                              id: selectedToolId,
+                              organizationId,
+                              visibility: Like('%Organization%')
+                          }
+                      ]
             })
 
-            if (!tool) throw new Error(`Tool ${selectedToolId} not found`)
+            if (!tool) throw new Error(`Tool ${selectedToolId} not found or access denied`)
+
             const obj = {
                 name: tool.name,
                 description: tool.description,

@@ -22,7 +22,7 @@ export function useBlocker(blocker, when = true) {
 }
 
 export function usePrompt(message, when = true) {
-    const blocker = useCallback(() => message, [message])
+    const blocker = useCallback(message, [message])
 
     useBlocker(blocker, when)
 }
