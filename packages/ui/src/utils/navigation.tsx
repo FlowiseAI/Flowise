@@ -53,7 +53,7 @@ export const useNavigate = () => {
         }
         const fullUrl = `/sidekick-studio${url}`
         if (options?.replace) {
-            nextRouter.replace(fullUrl)
+            nextRouter.push(fullUrl)
         } else {
             nextRouter.push(fullUrl)
         }
