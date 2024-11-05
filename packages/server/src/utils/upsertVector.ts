@@ -16,14 +16,14 @@ import {
     getStartingNodes
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
-import { IncomingInput, INodeDirectedGraph, IReactFlowObject, chatType } from '../Interface'
+import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType } from '../Interface'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { UpsertHistory } from '../database/entities/UpsertHistory'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { getErrorMessage } from '../errors/utils'
-
+import { v4 as uuidv4 } from 'uuid'
 /**
  * Upsert documents
  * @param {Request} req
@@ -108,6 +108,8 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         const nodes = parsedFlowData.nodes
         const edges = parsedFlowData.edges
 
+        const apiMessageId = req.body.apiMessageId ?? uuidv4()
+
         let stopNodeId = incomingInput?.stopNodeId ?? ''
         let chatHistory: IMessage[] = []
         let chatId = incomingInput.chatId ?? ''
@@ -162,6 +164,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             question: incomingInput.question,
             chatHistory,
             chatId,
+            apiMessageId,
             sessionId: sessionId ?? '',
             chatflowid,
             appDataSource: appServer.AppDataSource,
@@ -192,7 +195,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             data: {
                 version: await getAppVersion(),
                 chatlowId: chatflowid,
-                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges),
                 stopNodeId
             }
