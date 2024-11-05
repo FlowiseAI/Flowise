@@ -49,10 +49,10 @@ const getAllTools = async (user: IUser): Promise<any> => {
         const tools = await toolRepo.find({
             // @ts-ignore
             where: isAdmin
-                ? [{ organizationId: user.organizationId }, { userId: IsNull() }]
+                ? [{ organizationId: user.organizationId }, { organizationId: user.organizationId, userId: IsNull() }]
                 : [
-                      { userId: user.id },
-                      { userId: IsNull() },
+                      { organizationId: user.organizationId, userId: user.id },
+                      { organizationId: user.organizationId, userId: IsNull() },
                       {
                           organizationId: user.organizationId,
                           // @ts-ignore

@@ -86,7 +86,11 @@ const getSingleNodeIcon = async (nodeName: string) => {
     }
 }
 
-const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any, userId?: string, organizationId?: string): Promise<any> => {
+const getSingleNodeAsyncOptions = async (
+    nodeName: string,
+    requestBody: any,
+    user?: { id: string; organizationId: string; roles?: string[] }
+): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const nodeData: INodeData = requestBody
@@ -98,8 +102,9 @@ const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any, use
                 const dbResponse: INodeOptionsValue[] = await nodeInstance.loadMethods![methodName]!.call(nodeInstance, nodeData, {
                     appDataSource: appServer.AppDataSource,
                     databaseEntities: databaseEntities,
-                    userId,
-                    organizationId
+                    userId: user?.id,
+                    organizationId: user?.organizationId,
+                    isAdmin: user?.roles?.includes('Admin')
                 })
 
                 return dbResponse
