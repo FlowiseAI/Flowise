@@ -1268,6 +1268,18 @@
             "name": "googlevertexaiEmbeddings",
             "models": [
                 {
+                    "label": "multimodalembedding",
+                    "name": "multimodalembedding"
+                },
+                {
+                    "label": "text-embedding-004",
+                    "name": "text-embedding-004"
+                },
+                {
+                    "label": "text-multilingual-embedding-002",
+                    "name": "text-multilingual-embedding-002"
+                },
+                {
                     "label": "textembedding-gecko@001",
                     "name": "textembedding-gecko@001"
                 },
