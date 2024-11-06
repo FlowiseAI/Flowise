@@ -9,7 +9,7 @@ import {
     removeSpecificFileFromStorage
 } from 'flowise-components'
 import {
-    chatType,
+    ChatType,
     DocumentStoreStatus,
     IDocumentStoreFileChunkPagedResponse,
     IDocumentStoreLoader,
@@ -995,7 +995,7 @@ const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject) => {
             data: {
                 version: await getAppVersion(),
                 chatlowId: chatflowid,
-                type: chatType.INTERNAL,
+                type: ChatType.INTERNAL,
                 flowGraph: omit(indexResult['result'], ['totalKeys', 'addedDocs'])
             }
         })
@@ -1029,7 +1029,9 @@ const getEmbeddingProviders = async () => {
 const getVectorStoreProviders = async () => {
     try {
         const dbResponse = await nodesService.getAllNodesForCategory('Vector Stores')
-        return dbResponse.filter((node) => !node.tags?.includes('LlamaIndex') && node.name !== 'documentStoreVS')
+        return dbResponse.filter(
+            (node) => !node.tags?.includes('LlamaIndex') && node.name !== 'documentStoreVS' && node.name !== 'memoryVectorStore'
+        )
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

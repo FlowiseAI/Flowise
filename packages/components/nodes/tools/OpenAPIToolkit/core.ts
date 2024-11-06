@@ -1,140 +1,256 @@
-import jsonpointer from 'jsonpointer'
-import { Serializable } from '@langchain/core/load/serializable'
-import { Tool, ToolParams } from '@langchain/core/tools'
+import { z } from 'zod'
+import { RequestInit } from 'node-fetch'
+import { NodeVM } from '@flowiseai/nodevm'
+import { RunnableConfig } from '@langchain/core/runnables'
+import { StructuredTool, ToolParams } from '@langchain/core/tools'
+import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
+import { availableDependencies, defaultAllowBuiltInDep, prepareSandboxVars } from '../../../src/utils'
+import { ICommonObject } from '../../../src/Interface'
 
-export type Json = string | number | boolean | null | { [key: string]: Json } | Json[]
+interface HttpRequestObject {
+    PathParameters?: Record<string, any>
+    QueryParameters?: Record<string, any>
+    RequestBody?: Record<string, any>
+}
 
-export type JsonObject = { [key: string]: Json }
+export const defaultCode = `const fetch = require('node-fetch');
+const url = $url;
+const options = $options;
 
-/**
- * Represents a JSON object in the LangChain framework. Provides methods
- * to get keys and values from the JSON object.
- */
-export class JsonSpec extends Serializable {
-    lc_namespace = ['langchain', 'tools', 'json']
+try {
+	const response = await fetch(url, options);
+	const resp = await response.json();
+	return JSON.stringify(resp);
+} catch (error) {
+	console.error(error);
+	return '';
+}
+`
+export const howToUseCode = `- **Libraries:**  
+  You can use any libraries imported in Flowise.
 
-    obj: JsonObject
+- **Tool Input Arguments:**  
+  Tool input arguments are available as the following variables:
+  - \`$PathParameters\`
+  - \`$QueryParameters\`
+  - \`$RequestBody\`
 
-    maxValueLength = 4000
+- **HTTP Requests:**  
+  By default, you can get the following values for making HTTP requests:
+  - \`$url\`
+  - \`$options\`
 
-    constructor(obj: JsonObject, max_value_length = 4000) {
-        super(...arguments)
-        this.obj = obj
-        this.maxValueLength = max_value_length
+- **Default Flow Config:**  
+  You can access the default flow configuration using these variables:
+  - \`$flow.sessionId\`
+  - \`$flow.chatId\`
+  - \`$flow.chatflowId\`
+  - \`$flow.input\`
+  - \`$flow.state\`
+
+- **Custom Variables:**  
+  You can get custom variables using the syntax:
+  - \`$vars.<variable-name>\`
+
+- **Return Value:**  
+  The function must return a **string** value at the end.
+
+\`\`\`js
+${defaultCode}
+\`\`\`
+`
+
+const getUrl = (baseUrl: string, requestObject: HttpRequestObject) => {
+    let url = baseUrl
+
+    // Add PathParameters to URL if present
+    if (requestObject.PathParameters) {
+        for (const [key, value] of Object.entries(requestObject.PathParameters)) {
+            url = url.replace(`{${key}}`, encodeURIComponent(String(value)))
+        }
     }
 
-    /**
-     * Retrieves all keys at a given path in the JSON object.
-     * @param input The path to the keys in the JSON object, provided as a string in JSON pointer syntax.
-     * @returns A string containing all keys at the given path, separated by commas.
-     */
-    public getKeys(input: string): string {
-        const pointer = jsonpointer.compile(input)
-        const res = pointer.get(this.obj) as Json
-        if (typeof res === 'object' && !Array.isArray(res) && res !== null) {
-            return Object.keys(res)
-                .map((i) => i.replaceAll('~', '~0').replaceAll('/', '~1'))
-                .join(', ')
-        }
-
-        throw new Error(`Value at ${input} is not a dictionary, get the value directly instead.`)
+    // Add QueryParameters to URL if present
+    if (requestObject.QueryParameters) {
+        const queryParams = new URLSearchParams(requestObject.QueryParameters as Record<string, string>)
+        url += `?${queryParams.toString()}`
     }
 
-    /**
-     * Retrieves the value at a given path in the JSON object.
-     * @param input The path to the value in the JSON object, provided as a string in JSON pointer syntax.
-     * @returns The value at the given path in the JSON object, as a string. If the value is a large dictionary or exceeds the maximum length, a message is returned instead.
-     */
-    public getValue(input: string): string {
-        const pointer = jsonpointer.compile(input)
-        const res = pointer.get(this.obj) as Json
+    return url
+}
 
-        if (res === null || res === undefined) {
-            throw new Error(`Value at ${input} is null or undefined.`)
-        }
+class ToolInputParsingException extends Error {
+    output?: string
 
-        const str = typeof res === 'object' ? JSON.stringify(res) : res.toString()
-        if (typeof res === 'object' && !Array.isArray(res) && str.length > this.maxValueLength) {
-            return `Value is a large dictionary, should explore its keys directly.`
-        }
-
-        if (str.length > this.maxValueLength) {
-            return `${str.slice(0, this.maxValueLength)}...`
-        }
-        return str
+    constructor(message: string, output?: string) {
+        super(message)
+        this.output = output
     }
 }
 
-export interface JsonToolFields extends ToolParams {
-    jsonSpec: JsonSpec
+export interface BaseDynamicToolInput extends ToolParams {
+    name: string
+    description: string
+    returnDirect?: boolean
 }
 
-/**
- * A tool in the LangChain framework that lists all keys at a given path
- * in a JSON object.
- */
-export class JsonListKeysTool extends Tool {
-    static lc_name() {
-        return 'JsonListKeysTool'
-    }
+export interface DynamicStructuredToolInput<
+    // eslint-disable-next-line
+    T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>
+> extends BaseDynamicToolInput {
+    func?: (input: z.infer<T>, runManager?: CallbackManagerForToolRun) => Promise<string>
+    schema: T
+    baseUrl: string
+    method: string
+    headers: ICommonObject
+    customCode?: string
+}
 
-    name = 'json_list_keys'
+export class DynamicStructuredTool<
+    // eslint-disable-next-line
+    T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>
+> extends StructuredTool {
+    name: string
 
-    jsonSpec: JsonSpec
+    description: string
 
-    constructor(jsonSpec: JsonSpec)
+    baseUrl: string
 
-    constructor(fields: JsonToolFields)
+    method: string
 
-    constructor(fields: JsonSpec | JsonToolFields) {
-        if (!('jsonSpec' in fields)) {
-            // eslint-disable-next-line no-param-reassign
-            fields = { jsonSpec: fields }
-        }
+    headers: ICommonObject
+
+    customCode?: string
+
+    func: DynamicStructuredToolInput['func']
+
+    // @ts-ignore
+    schema: T
+    private variables: any[]
+    private flowObj: any
+
+    constructor(fields: DynamicStructuredToolInput<T>) {
         super(fields)
-
-        this.jsonSpec = fields.jsonSpec
+        this.name = fields.name
+        this.description = fields.description
+        this.func = fields.func
+        this.returnDirect = fields.returnDirect ?? this.returnDirect
+        this.schema = fields.schema
+        this.baseUrl = fields.baseUrl
+        this.method = fields.method
+        this.headers = fields.headers
+        this.customCode = fields.customCode
     }
 
-    /** @ignore */
-    async _call(input: string) {
-        try {
-            return this.jsonSpec.getKeys(input)
-        } catch (error) {
-            return `${error}`
+    async call(
+        arg: z.output<T>,
+        configArg?: RunnableConfig | Callbacks,
+        tags?: string[],
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string; state?: ICommonObject }
+    ): Promise<string> {
+        const config = parseCallbackConfigArg(configArg)
+        if (config.runName === undefined) {
+            config.runName = this.name
         }
-    }
-
-    description = `Can be used to list all keys at a given path.
-    Before calling this you should be SURE that the path to this exists.
-    The input is a text representation of the path to the json as json pointer syntax (e.g. /key1/0/key2).`
-}
-
-/**
- * A tool in the LangChain framework that retrieves the value at a given
- * path in a JSON object.
- */
-export class JsonGetValueTool extends Tool {
-    static lc_name() {
-        return 'JsonGetValueTool'
-    }
-
-    name = 'json_get_value'
-
-    constructor(public jsonSpec: JsonSpec) {
-        super()
-    }
-
-    /** @ignore */
-    async _call(input: string) {
+        let parsed
         try {
-            return this.jsonSpec.getValue(input)
-        } catch (error) {
-            return `${error}`
+            parsed = await this.schema.parseAsync(arg)
+        } catch (e) {
+            throw new ToolInputParsingException(`Received tool input did not match expected schema`, JSON.stringify(arg))
         }
+        const callbackManager_ = await CallbackManager.configure(
+            config.callbacks,
+            this.callbacks,
+            config.tags || tags,
+            this.tags,
+            config.metadata,
+            this.metadata,
+            { verbose: this.verbose }
+        )
+        const runManager = await callbackManager_?.handleToolStart(
+            this.toJSON(),
+            typeof parsed === 'string' ? parsed : JSON.stringify(parsed),
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            config.runName
+        )
+        let result
+        try {
+            result = await this._call(parsed, runManager, flowConfig)
+        } catch (e) {
+            await runManager?.handleToolError(e)
+            throw e
+        }
+        if (result && typeof result !== 'string') {
+            result = JSON.stringify(result)
+        }
+        await runManager?.handleToolEnd(result)
+        return result
     }
 
-    description = `Can be used to see value in string format at a given path.
-    Before calling this you should be SURE that the path to this exists.
-    The input is a text representation of the path to the json as json pointer syntax (e.g. /key1/0/key2).`
+    // @ts-ignore
+    protected async _call(
+        arg: z.output<T>,
+        _?: CallbackManagerForToolRun,
+        flowConfig?: { sessionId?: string; chatId?: string; input?: string; state?: ICommonObject }
+    ): Promise<string> {
+        let sandbox: any = {}
+        if (typeof arg === 'object' && Object.keys(arg).length) {
+            for (const item in arg) {
+                sandbox[`$${item}`] = arg[item]
+            }
+        }
+
+        sandbox['$vars'] = prepareSandboxVars(this.variables)
+
+        // inject flow properties
+        if (this.flowObj) {
+            sandbox['$flow'] = { ...this.flowObj, ...flowConfig }
+        }
+
+        const callOptions: RequestInit = {
+            method: this.method,
+            headers: {
+                'Content-Type': 'application/json',
+                ...this.headers
+            }
+        }
+        if (arg.RequestBody && this.method.toUpperCase() !== 'GET') {
+            callOptions.body = JSON.stringify(arg.RequestBody)
+        }
+        sandbox['$options'] = callOptions
+
+        const completeUrl = getUrl(this.baseUrl, arg)
+        sandbox['$url'] = completeUrl
+
+        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
+            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
+            : defaultAllowBuiltInDep
+        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
+        const deps = availableDependencies.concat(externalDeps)
+
+        const options = {
+            console: 'inherit',
+            sandbox,
+            require: {
+                external: { modules: deps },
+                builtin: builtinDeps
+            }
+        } as any
+
+        const vm = new NodeVM(options)
+        const response = await vm.run(`module.exports = async function() {${this.customCode || defaultCode}}()`, __dirname)
+
+        return response
+    }
+
+    setVariables(variables: any[]) {
+        this.variables = variables
+    }
+
+    setFlowObject(flow: any) {
+        this.flowObj = flow
+    }
 }

@@ -211,6 +211,9 @@ export class SSEStreamer implements IServerSideEventStreamer {
         if (apiResponse.memoryType) {
             metadataJson['memoryType'] = apiResponse.memoryType
         }
+        if (apiResponse.followUpPrompts) {
+            metadataJson['followUpPrompts'] = JSON.parse(apiResponse.followUpPrompts)
+        }
         if (Object.keys(metadataJson).length > 0) {
             this.streamCustomEvent(chatId, 'metadata', metadataJson)
         }

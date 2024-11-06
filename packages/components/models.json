@@ -384,8 +384,28 @@
                     "name": "gemini-1.5-flash-latest"
                 },
                 {
+                    "label": "gemini-1.5-flash-001",
+                    "name": "gemini-1.5-flash-001"
+                },
+                {
+                    "label": "gemini-1.5-flash-002",
+                    "name": "gemini-1.5-flash-002"
+                },
+                {
+                    "label": "gemini-1.5-flash-8b",
+                    "name": "gemini-1.5-flash-8b"
+                },
+                {
                     "label": "gemini-1.5-pro-latest",
                     "name": "gemini-1.5-pro-latest"
+                },
+                {
+                    "label": "gemini-1.5-pro-001",
+                    "name": "gemini-1.5-pro-001"
+                },
+                {
+                    "label": "gemini-1.5-pro-002",
+                    "name": "gemini-1.5-pro-002"
                 },
                 {
                     "label": "gemini-pro",
@@ -403,6 +423,15 @@
                 {
                     "label": "models/chat-bison-001",
                     "name": "models/chat-bison-001"
+                }
+            ]
+        },
+        {
+            "name": "chatAlibabaTongyi",
+            "models": [
+                {
+                    "label": "qwen-plus",
+                    "name": "qwen-plus"
                 }
             ]
         },
@@ -1159,6 +1188,16 @@
         {
             "name": "voyageAIEmbeddings",
             "models": [
+                {
+                    "label": "voyage-3",
+                    "name": "voyage-3",
+                    "description": "High-performance embedding model with excellent retrieval quality, 32K token context, and 1024 dimension size."
+                },
+                {
+                    "label": "voyage-3-lite",
+                    "name": "voyage-3-lite",
+                    "description": "Lightweight embedding model optimized for low latency and cost, 32K token context, and 512 dimension size."
+                },
                 {
                     "label": "voyage-2",
                     "name": "voyage-2",

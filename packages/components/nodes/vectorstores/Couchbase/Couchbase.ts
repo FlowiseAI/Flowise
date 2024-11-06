@@ -1,7 +1,3 @@
-/*
-* Temporary disabled due to the incompatibility with the docker node-alpine:
-* https://github.com/FlowiseAI/Flowise/pull/2303
-
 import { flatten } from 'lodash'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
@@ -231,4 +227,3 @@ class Couchbase_VectorStores implements INode {
 }
 
 module.exports = { nodeClass: Couchbase_VectorStores }
-*/
