@@ -434,6 +434,8 @@ type BuildFlowParams = {
     apiMessageId: string
     appDataSource: DataSource
     overrideConfig?: ICommonObject
+    apiOverrideConfig?: ICommonObject
+    apiOverrideStatus?: boolean
     cachePool?: CachePool
     isUpsert?: boolean
     stopNodeId?: string
@@ -462,6 +464,8 @@ export const buildFlow = async ({
     chatflowid,
     appDataSource,
     overrideConfig,
+    apiOverrideConfig = {},
+    apiOverrideStatus = false,
     cachePool,
     isUpsert,
     stopNodeId,
@@ -509,7 +513,7 @@ export const buildFlow = async ({
             const newNodeInstance = new nodeModule.nodeClass()
 
             let flowNodeData = cloneDeep(reactFlowNode.data)
-            if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
+            if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, apiOverrideConfig)
 
             if (isUpsert) upsertHistory['flowData'] = saveUpsertFlowData(flowNodeData, upsertHistory)
 
@@ -978,10 +982,17 @@ export const resolveVariables = async (
  * Loop through each inputs and replace their value with override config values
  * @param {INodeData} flowNodeData
  * @param {ICommonObject} overrideConfig
+ * @param {ICommonObject} apiOverrideConfig
  * @returns {INodeData}
  */
-export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig: ICommonObject) => {
+export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig: ICommonObject, apiOverrideConfig: ICommonObject) => {
     const types = 'inputs'
+
+    const isParameterEnabled = (nodeType: string, paramName: string): boolean => {
+        if (!apiOverrideConfig[nodeType]) return false
+        const parameter = apiOverrideConfig[nodeType].find((param: any) => param.name === paramName)
+        return parameter?.enabled ?? false
+    }
 
     const getParamValues = (inputsObj: ICommonObject) => {
         for (const config in overrideConfig) {
@@ -989,7 +1000,10 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
             if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
                 const nodeIds = Object.keys(overrideConfig[config])
                 if (nodeIds.includes(flowNodeData.id)) {
-                    inputsObj[config] = overrideConfig[config][flowNodeData.id]
+                    // Check if this parameter is enabled for this node type
+                    if (isParameterEnabled(flowNodeData.label, config)) {
+                        inputsObj[config] = overrideConfig[config][flowNodeData.id]
+                    }
                     continue
                 } else if (nodeIds.some((nodeId) => nodeId.includes(flowNodeData.name))) {
                     /*
@@ -999,6 +1013,11 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
                      */
                     continue
                 }
+            }
+
+            // Only proceed if the parameter is enabled for this node type
+            if (!isParameterEnabled(flowNodeData.label, config)) {
+                continue
             }
 
             let paramValue = inputsObj[config]

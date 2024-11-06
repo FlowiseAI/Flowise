@@ -345,6 +345,9 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
+
+            const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
+
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
             const reactFlowNodes = await buildFlow({
                 startingNodeIds,
@@ -362,6 +365,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 chatflowid,
                 appDataSource: appServer.AppDataSource,
                 overrideConfig: incomingInput?.overrideConfig,
+                apiOverrideConfig: apiConfig.overrideConfig.config,
+                apiOverrideStatus: apiConfig.overrideConfig.status,
                 cachePool: appServer.cachePool,
                 isUpsert: false,
                 uploads: incomingInput.uploads,
@@ -376,8 +381,12 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node not found`)
             }
 
-            if (incomingInput.overrideConfig) {
-                nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
+            if (incomingInput.overrideConfig && apiConfig.overrideConfig && apiConfig.overrideConfig.status) {
+                nodeToExecute.data = replaceInputsWithConfig(
+                    nodeToExecute.data,
+                    incomingInput.overrideConfig,
+                    apiConfig.overrideConfig.config
+                )
             }
 
             const flowData: ICommonObject = {

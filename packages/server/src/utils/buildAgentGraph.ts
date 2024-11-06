@@ -111,6 +111,8 @@ export const buildAgentGraph = async (
             )
         }
 
+        const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
+
         // Initialize nodes like ChatModels, Tools, etc.
         const reactFlowNodes: IReactFlowNode[] = await buildFlow({
             startingNodeIds,
@@ -127,6 +129,8 @@ export const buildAgentGraph = async (
             chatflowid,
             appDataSource: appServer.AppDataSource,
             overrideConfig: incomingInput?.overrideConfig,
+            apiOverrideConfig: apiConfig.overrideConfig.config,
+            apiOverrideStatus: apiConfig.overrideConfig.status,
             cachePool: appServer.cachePool,
             isUpsert: false,
             uploads: incomingInput.uploads,
@@ -367,7 +371,11 @@ export const buildAgentGraph = async (
 
                         // Map raw tool calls to used tools, to be shown on interrupted message
                         const mappedToolCalls = lastMessageRaw.tool_calls.map((toolCall) => {
-                            return { tool: toolCall.name, toolInput: toolCall.args, toolOutput: '' }
+                            return {
+                                tool: toolCall.name,
+                                toolInput: toolCall.args,
+                                toolOutput: ''
+                            }
                         })
 
                         // Emit the interrupt message to the client
@@ -388,7 +396,11 @@ export const buildAgentGraph = async (
                             }
                             finalAction = {
                                 id: uuidv4(),
-                                mapping: { approve: approveButtonText, reject: rejectButtonText, toolCalls: lastMessageRaw.tool_calls },
+                                mapping: {
+                                    approve: approveButtonText,
+                                    reject: rejectButtonText,
+                                    toolCalls: lastMessageRaw.tool_calls
+                                },
                                 elements: [
                                     { type: 'approve-button', label: approveButtonText },
                                     { type: 'reject-button', label: rejectButtonText }
@@ -460,6 +472,8 @@ export const buildAgentGraph = async (
  * @param {string} threadId
  * @param {boolean} summarization
  * @param {string} uploadedFilesContent,
+ * @param {ICommonObject} apiOverrideConfig
+ * @param {boolean} apiOverrideStatus
  */
 const compileMultiAgentsGraph = async (
     chatflow: IChatFlow,
@@ -475,7 +489,9 @@ const compileMultiAgentsGraph = async (
     overrideConfig?: ICommonObject,
     threadId?: string,
     summarization?: boolean,
-    uploadedFilesContent?: string
+    uploadedFilesContent?: string,
+    apiOverrideConfig: ICommonObject = {},
+    apiOverrideStatus: boolean = false
 ) => {
     const appServer = getRunningExpressApp()
     const channels: ITeamState = {
@@ -506,7 +522,7 @@ const compileMultiAgentsGraph = async (
         const newNodeInstance = new nodeModule.nodeClass()
 
         let flowNodeData = cloneDeep(workerNode.data)
-        if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
+        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, apiOverrideConfig)
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
@@ -545,7 +561,7 @@ const compileMultiAgentsGraph = async (
 
         let flowNodeData = cloneDeep(supervisorNode.data)
 
-        if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
+        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, apiOverrideConfig)
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
@@ -616,9 +632,17 @@ const compileMultiAgentsGraph = async (
             if (prependHistoryMessages.length === chatHistory.length) {
                 for (const message of prependHistoryMessages) {
                     if (message.role === 'apiMessage' || message.type === 'apiMessage') {
-                        prependMessages.push(new AIMessage({ content: message.message || message.content || '' }))
+                        prependMessages.push(
+                            new AIMessage({
+                                content: message.message || message.content || ''
+                            })
+                        )
                     } else if (message.role === 'userMessage' || message.type === 'userMessage') {
-                        prependMessages.push(new HumanMessage({ content: message.message || message.content || '' }))
+                        prependMessages.push(
+                            new HumanMessage({
+                                content: message.message || message.content || ''
+                            })
+                        )
                     }
                 }
             }
@@ -629,7 +653,11 @@ const compileMultiAgentsGraph = async (
                 {
                     messages: [...prependMessages, new HumanMessage({ content: finalQuestion })]
                 },
-                { recursionLimit: supervisorResult?.recursionLimit ?? 100, callbacks: [loggerHandler, ...callbacks], configurable: config }
+                {
+                    recursionLimit: supervisorResult?.recursionLimit ?? 100,
+                    callbacks: [loggerHandler, ...callbacks],
+                    configurable: config
+                }
             )
         } catch (e) {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error initialize supervisor nodes - ${getErrorMessage(e)}`)
@@ -650,6 +678,8 @@ const compileMultiAgentsGraph = async (
  * @param {ICommonObject} overrideConfig
  * @param {string} threadId
  * @param {IAction} action
+ * @param {ICommonObject} apiOverrideConfig
+ * @param {boolean} apiOverrideStatus
  */
 const compileSeqAgentsGraph = async (
     depthQueue: IDepthQueue,
@@ -664,7 +694,9 @@ const compileSeqAgentsGraph = async (
     overrideConfig?: ICommonObject,
     threadId?: string,
     action?: IAction,
-    uploadedFilesContent?: string
+    uploadedFilesContent?: string,
+    apiOverrideConfig: ICommonObject = {},
+    apiOverrideStatus: boolean = false
 ) => {
     const appServer = getRunningExpressApp()
 
@@ -715,7 +747,7 @@ const compileSeqAgentsGraph = async (
         const newNodeInstance = new nodeModule.nodeClass()
 
         flowNodeData = cloneDeep(node.data)
-        if (overrideConfig) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig)
+        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, apiOverrideConfig)
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
@@ -799,7 +831,10 @@ const compileSeqAgentsGraph = async (
             if (Object.prototype.hasOwnProperty.call(conditionalEdges, conditionNodeId)) {
                 conditionalEdges[conditionNodeId] = {
                     ...conditionalEdges[conditionNodeId],
-                    nodes: { ...conditionalEdges[conditionNodeId].nodes, [conditionOutputAnchorLabel]: nodeInstance.name }
+                    nodes: {
+                        ...conditionalEdges[conditionNodeId].nodes,
+                        [conditionOutputAnchorLabel]: nodeInstance.name
+                    }
                 }
             } else {
                 conditionalEdges[conditionNodeId] = {
@@ -820,7 +855,10 @@ const compileSeqAgentsGraph = async (
         if (Object.prototype.hasOwnProperty.call(conditionalToolNodes, predecessorAgent.id)) {
             const toolNodes = conditionalToolNodes[predecessorAgent.id].toolNodes
             toolNodes.push(toolNodeInstance)
-            conditionalToolNodes[predecessorAgent.id] = { source: predecessorAgent, toolNodes }
+            conditionalToolNodes[predecessorAgent.id] = {
+                source: predecessorAgent,
+                toolNodes
+            }
         } else {
             conditionalToolNodes[predecessorAgent.id] = {
                 source: predecessorAgent,
@@ -995,7 +1033,6 @@ const compileSeqAgentsGraph = async (
             routeMessage
         )
     }
-
     /*** Add agentflow to pool ***/
     ;(seqGraph as any).signal = options.signal
     appServer.chatflowPool.add(
@@ -1010,7 +1047,10 @@ const compileSeqAgentsGraph = async (
     let memory = startNode?.data.instance?.checkpointMemory
 
     try {
-        const graph = seqGraph.compile({ checkpointer: memory, interruptBefore: interruptToolNodeNames as any })
+        const graph = seqGraph.compile({
+            checkpointer: memory,
+            interruptBefore: interruptToolNodeNames as any
+        })
 
         const loggerHandler = new ConsoleCallbackHandler(logger)
         const callbacks = await additionalCallbacks(flowNodeData as any, options)
@@ -1021,9 +1061,17 @@ const compileSeqAgentsGraph = async (
         if (prependHistoryMessages.length === chatHistory.length) {
             for (const message of prependHistoryMessages) {
                 if (message.role === 'apiMessage' || message.type === 'apiMessage') {
-                    prependMessages.push(new AIMessage({ content: message.message || message.content || '' }))
+                    prependMessages.push(
+                        new AIMessage({
+                            content: message.message || message.content || ''
+                        })
+                    )
                 } else if (message.role === 'userMessage' || message.type === 'userMessage') {
-                    prependMessages.push(new HumanMessage({ content: message.message || message.content || '' }))
+                    prependMessages.push(
+                        new HumanMessage({
+                            content: message.message || message.content || ''
+                        })
+                    )
                 }
             }
         }
@@ -1047,7 +1095,10 @@ const compileSeqAgentsGraph = async (
                 })
             }
         }
-        return await graph.stream(humanMsg, { callbacks: [loggerHandler, ...callbacks], configurable: config })
+        return await graph.stream(humanMsg, {
+            callbacks: [loggerHandler, ...callbacks],
+            configurable: config
+        })
     } catch (e) {
         logger.error('Error compile graph', e)
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error compile graph - ${getErrorMessage(e)}`)

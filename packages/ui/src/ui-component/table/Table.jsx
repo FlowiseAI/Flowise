@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { TableContainer, Table, TableHead, TableCell, TableRow, TableBody, Paper } from '@mui/material'
+import { TableContainer, Table, TableHead, TableCell, TableRow, TableBody, Paper, Chip } from '@mui/material'
 
 export const TableViewOnly = ({ columns, rows, sx }) => {
     return (
@@ -16,9 +16,21 @@ export const TableViewOnly = ({ columns, rows, sx }) => {
                     <TableBody>
                         {rows.map((row, index) => (
                             <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                {Object.keys(row).map((key, index) => (
-                                    <TableCell key={index}>{row[key]}</TableCell>
-                                ))}
+                                {Object.keys(row).map((key, index) => {
+                                    return (
+                                        <TableCell key={index}>
+                                            {key === 'enabled' ? (
+                                                row[key] ? (
+                                                    <Chip label='Enabled' color='primary' />
+                                                ) : (
+                                                    <Chip label='Disabled' />
+                                                )
+                                            ) : (
+                                                row[key]
+                                            )}
+                                        </TableCell>
+                                    )
+                                })}
                             </TableRow>
                         ))}
                     </TableBody>

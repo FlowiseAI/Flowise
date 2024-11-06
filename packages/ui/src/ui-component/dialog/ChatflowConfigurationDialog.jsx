@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
 import { tabsClasses } from '@mui/material/Tabs'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
+import Security from '@/ui-component/extended/Security'
 import RateLimit from '@/ui-component/extended/RateLimit'
 import AllowedDomains from '@/ui-component/extended/AllowedDomains'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
@@ -14,6 +15,10 @@ import FollowUpPrompts from '@/ui-component/extended/FollowUpPrompts'
 import FileUpload from '@/ui-component/extended/FileUpload'
 
 const CHATFLOW_CONFIGURATION_TABS = [
+    {
+        label: 'Security',
+        id: 'security'
+    },
     {
         label: 'Rate Limiting',
         id: 'rateLimiting'
@@ -115,7 +120,14 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                 >
                     {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
                         <Tab
-                            sx={{ minHeight: '40px', height: '40px', textAlign: 'left', display: 'flex', alignItems: 'start', mb: 1 }}
+                            sx={{
+                                minHeight: '40px',
+                                height: '40px',
+                                textAlign: 'left',
+                                display: 'flex',
+                                alignItems: 'start',
+                                mb: 1
+                            }}
                             key={index}
                             label={item.label}
                             {...a11yProps(index)}
@@ -124,6 +136,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                 </Tabs>
                 {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
                     <TabPanel key={index} value={tabValue} index={index}>
+                        {item.id === 'security' && <Security dialogProps={dialogProps} />}
                         {item.id === 'rateLimiting' && <RateLimit />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'followUpPrompts' ? <FollowUpPrompts dialogProps={dialogProps} /> : null}

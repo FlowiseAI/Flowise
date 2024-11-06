@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 
 import {
@@ -83,6 +83,9 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const chatflow = useSelector((state) => state.canvas.chatflow)
+    const apiConfig = chatflow?.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
+    const overrideConfig = apiConfig?.overrideConfig?.config !== undefined ? apiConfig.overrideConfig.config : {}
 
     const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
     const [value, setValue] = useState(0)
@@ -668,8 +671,12 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                     </AccordionSummary>
                                                     <AccordionDetails>
                                                         <TableViewOnly
-                                                            rows={nodeConfig[nodeLabel].params}
-                                                            columns={Object.keys(nodeConfig[nodeLabel].params[0]).slice(-3)}
+                                                            rows={overrideConfig[nodeLabel]}
+                                                            columns={
+                                                                overrideConfig[nodeLabel].length > 0
+                                                                    ? Object.keys(overrideConfig[nodeLabel][0])
+                                                                    : []
+                                                            }
                                                         />
                                                     </AccordionDetails>
                                                 </Accordion>
