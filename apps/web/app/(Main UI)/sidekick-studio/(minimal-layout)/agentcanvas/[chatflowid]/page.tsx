@@ -2,10 +2,10 @@ import React from 'react'
 
 import View from '@/views/canvas/index'
 
-const Page = () => {
+const Page = ({ params }: { params: { chatflowid: string } }) => {
     return (
         <>
-            <View />
+            <View chatflowid={params.chatflowid} />
         </>
     )
 }
