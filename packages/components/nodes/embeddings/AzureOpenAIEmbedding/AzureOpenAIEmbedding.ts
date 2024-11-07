@@ -78,7 +78,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,
             azureOpenAIApiVersion,
-            azureOpenAIBasePath: basePath
+            azureOpenAIBasePath: basePath || undefined
         }
 
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
