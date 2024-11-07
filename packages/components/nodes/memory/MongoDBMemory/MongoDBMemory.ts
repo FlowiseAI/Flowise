@@ -1,5 +1,4 @@
-import { MongoClient, Collection, Document } from 'mongodb'
-import { MongoDBChatMessageHistory } from '@langchain/mongodb'
+import { MongoClient } from 'mongodb'
 import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
 import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import {
@@ -7,28 +6,13 @@ import {
     getBaseClasses,
     getCredentialData,
     getCredentialParam,
+    getVersion,
     mapChatMessageToBaseMessage
 } from '../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, MemoryMethods, MessageType } from '../../../src/Interface'
 
-let mongoClientSingleton: MongoClient
-let mongoUrl: string
+// TODO: Add ability to specify env variable and use singleton pattern (i.e initialize MongoDB on server and pass to component)
 
-const getMongoClient = async (newMongoUrl: string) => {
-    if (!mongoClientSingleton) {
-        // if client does not exist
-        mongoClientSingleton = new MongoClient(newMongoUrl)
-        mongoUrl = newMongoUrl
-        return mongoClientSingleton
-    } else if (mongoClientSingleton && newMongoUrl !== mongoUrl) {
-        // if client exists but url changed
-        mongoClientSingleton.close()
-        mongoClientSingleton = new MongoClient(newMongoUrl)
-        mongoUrl = newMongoUrl
-        return mongoClientSingleton
-    }
-    return mongoClientSingleton
-}
 class MongoDB_Memory implements INode {
     label: string
     name: string
@@ -102,62 +86,43 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
-
-    const client = await getMongoClient(mongoDBConnectUrl)
-    const collection = client.db(databaseName).collection(collectionName)
-
-    const mongoDBChatMessageHistory = new MongoDBChatMessageHistory({
-        collection,
-        sessionId
-    })
-
-    // @ts-ignore
-    mongoDBChatMessageHistory.getMessages = async (): Promise<BaseMessage[]> => {
-        const document = await collection.findOne({
-            sessionId: (mongoDBChatMessageHistory as any).sessionId
-        })
-        const messages = document?.messages || []
-        return messages.map(mapStoredMessageToChatMessage)
-    }
-
-    // @ts-ignore
-    mongoDBChatMessageHistory.addMessage = async (message: BaseMessage): Promise<void> => {
-        const messages = [message].map((msg) => msg.toDict())
-        await collection.updateOne(
-            { sessionId: (mongoDBChatMessageHistory as any).sessionId },
-            {
-                $push: { messages: { $each: messages } }
-            },
-            { upsert: true }
-        )
-    }
-
-    mongoDBChatMessageHistory.clear = async (): Promise<void> => {
-        await collection.deleteOne({ sessionId: (mongoDBChatMessageHistory as any).sessionId })
-    }
+    const driverInfo = { name: 'Flowise', version: (await getVersion()).version }
 
     return new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
-        // @ts-ignore
-        chatHistory: mongoDBChatMessageHistory,
         sessionId,
-        collection
+        mongoConnection: {
+            databaseName,
+            collectionName,
+            mongoDBConnectUrl,
+            driverInfo
+        }
     })
 }
 
 interface BufferMemoryExtendedInput {
-    collection: Collection<Document>
     sessionId: string
+    mongoConnection: {
+        databaseName: string
+        collectionName: string
+        mongoDBConnectUrl: string
+        driverInfo: { name: string; version: string }
+    }
 }
 
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     sessionId = ''
-    collection: Collection<Document>
+    mongoConnection: {
+        databaseName: string
+        collectionName: string
+        mongoDBConnectUrl: string
+        driverInfo: { name: string; version: string }
+    }
 
     constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
         this.sessionId = fields.sessionId
-        this.collection = fields.collection
+        this.mongoConnection = fields.mongoConnection
     }
 
     async getChatMessages(
@@ -165,20 +130,24 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         returnBaseMessages = false,
         prependMessages?: IMessage[]
     ): Promise<IMessage[] | BaseMessage[]> {
-        if (!this.collection) return []
+        const client = new MongoClient(this.mongoConnection.mongoDBConnectUrl, { driverInfo: this.mongoConnection.driverInfo })
+        const collection = client.db(this.mongoConnection.databaseName).collection(this.mongoConnection.collectionName)
 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
-        const document = await this.collection.findOne({ sessionId: id })
+        const document = await collection.findOne({ sessionId: id })
         const messages = document?.messages || []
         const baseMessages = messages.map(mapStoredMessageToChatMessage)
         if (prependMessages?.length) {
             baseMessages.unshift(...(await mapChatMessageToBaseMessage(prependMessages)))
         }
+
+        await client.close()
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
-        if (!this.collection) return
+        const client = new MongoClient(this.mongoConnection.mongoDBConnectUrl, { driverInfo: this.mongoConnection.driverInfo })
+        const collection = client.db(this.mongoConnection.databaseName).collection(this.mongoConnection.collectionName)
 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
@@ -187,7 +156,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         if (input) {
             const newInputMessage = new HumanMessage(input.text)
             const messageToAdd = [newInputMessage].map((msg) => msg.toDict())
-            await this.collection.updateOne(
+            await collection.updateOne(
                 { sessionId: id },
                 {
                     $push: { messages: { $each: messageToAdd } }
@@ -199,7 +168,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         if (output) {
             const newOutputMessage = new AIMessage(output.text)
             const messageToAdd = [newOutputMessage].map((msg) => msg.toDict())
-            await this.collection.updateOne(
+            await collection.updateOne(
                 { sessionId: id },
                 {
                     $push: { messages: { $each: messageToAdd } }
@@ -207,14 +176,19 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
                 { upsert: true }
             )
         }
+
+        await client.close()
     }
 
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
-        if (!this.collection) return
+        const client = new MongoClient(this.mongoConnection.mongoDBConnectUrl, { driverInfo: this.mongoConnection.driverInfo })
+        const collection = client.db(this.mongoConnection.databaseName).collection(this.mongoConnection.collectionName)
 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
-        await this.collection.deleteOne({ sessionId: id })
+        await collection.deleteOne({ sessionId: id })
         await this.clear()
+
+        await client.close()
     }
 }
 
