@@ -1,0 +1,114 @@
+# Exported from Render on 2024-11-07T15:50:51Z
+services:
+    - type: web
+      name: theanswer
+      runtime: docker
+      repo: https://github.com/the-answerai/theanswer
+      branch: staging
+      plan: starter
+      envVars:
+          - key: APIKEY_STORAGE_TYPE
+            sync: false
+          - key: MY_APP_VITE_AUTH_ORGANIZATION_ID
+            sync: false
+          - key: AUTH0_ORGANIZATION_ID
+            sync: false
+          - key: TRIAL_PLAN_EXECUTIONS
+            sync: false
+          - key: PUBLIC_ORG_ID
+            sync: false
+          - key: DEBUG
+            sync: false
+          - key: LOG_LEVEL
+            sync: false
+          - key: DEBUG_LEVEL
+            sync: false
+          - key: DATABASE_USER
+            sync: false
+          - key: DATABASE_TYPE
+            sync: false
+          - key: AUTH0_BASE_URL
+            sync: false
+          - key: MY_APP_VITE_AUTH_DOMAIN
+            sync: false
+          - key: DATABASE_NAME
+            fromService:
+                name: theanswer
+                type: web
+                property: host
+          - key: DATABASE_PORT
+            sync: false
+          - key: DATABASE_HOST
+            sync: false
+          - key: DATABASE_PASSWORD
+            sync: false
+          - key: LOG_PATH
+            sync: false
+          - key: APIKEY_PATH
+            sync: false
+          - key: NODE_VERSION
+            sync: false
+          - key: LANGFUSE_HOST
+            sync: false
+          - key: LANGFUSE_PUBLIC_KEY
+            sync: false
+          - key: LANGFUSE_SECRET_KEY
+            sync: false
+          - key: AUTH0_TOKEN_SIGN_ALG
+            sync: false
+          - key: AUTH0_SCOPE
+            sync: false
+          - key: AUTH0_JWKS_URI
+            sync: false
+          - key: AUTH0_ISSUER_BASE_URL
+            sync: false
+          - key: AUTH0_CLIENT_SECRET
+            sync: false
+          - key: AUTH0_CLIENT_ID
+            sync: false
+          - key: AUTH0_AUDIENCE
+            sync: false
+          - key: ANSWERAI_DOMAIN
+            sync: false
+          - key: DOMAIN
+            sync: false
+          - key: MY_APP_VITE_AUTH_AUDIENCE
+            sync: false
+          - key: MY_APP_VITE_AUTH_CLIENT_ID
+            sync: false
+          - key: FLOWISE_SECRETKEY_OVERWRITE
+            sync: false
+          - key: IFRAME_ORIGINS
+            sync: false
+          - key: DISABLE_FLOWISE_TELEMETRY
+            sync: false
+          - key: SECRETKEY_PATH
+            sync: false
+          - key: PORT
+            sync: false
+      region: oregon
+      dockerContext: .
+      dockerfilePath: ./Dockerfile
+      # domains:
+      #     - prod.studio.theanswer.ai
+      disk:
+          name: disk
+          mountPath: /var/data
+          sizeGB: 1
+    - type: redis
+      name: theanswer
+      plan: free
+      region: oregon
+      maxmemoryPolicy: allkeys-lru
+      ipAllowList: []
+databases:
+    - name: theanswer
+      databaseName: theanswer
+      user: admin
+      plan: free
+      region: oregon
+      ipAllowList:
+          - source: 0.0.0.0/0
+            description: everywhere
+      postgresMajorVersion: '16'
+# Exported from Render on 2024-11-07T15:56:31Z
