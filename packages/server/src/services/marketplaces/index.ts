@@ -30,50 +30,52 @@ const getCategories = (fileDataObj: ITemplate) => {
     return Array.from(new Set(fileDataObj?.nodes?.map((node) => node.data.category).filter((category) => category)))
 }
 
+// Add prefix to file-based template IDs to avoid collisions
+const TEMPLATE_TYPE_PREFIXES = {
+    CHATFLOW: 'cf_',
+    TOOL: 'tool_',
+    AGENTFLOW: 'af_',
+    ANSWERAI: 'ai_'
+}
+
 // Get all templates for marketplaces
 const getAllTemplates = async (user: IUser | undefined) => {
     try {
-        // TODO: Pull from all chatflows and tools in the database that have visibility Marketplace
-        let marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows')
-        let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-
         let templates: any[] = []
 
+        // Database templates (keep existing ID as is since they're UUIDs)
         const appServer = getRunningExpressApp()
-        //**
-        let chatflows = await appServer.AppDataSource.getRepository(ChatFlow).find({
-            // TODO: Figure out why this wher condition doesn't work
-            // where: { visibility: Any(['Marketplace']) }
-        })
-
+        let chatflows = await appServer.AppDataSource.getRepository(ChatFlow).find()
         chatflows = chatflows.filter((chatflow) => chatflow.visibility?.includes(ChatflowVisibility.MARKETPLACE))
         chatflows = chatflows.filter((chatflow) => checkOwnership(chatflow, user))
 
-        if (!chatflows) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflows not found`)
+        if (chatflows) {
+            chatflows.forEach((chatflow) => {
+                const chatbotConfig = JSON.parse(chatflow.chatbotConfig || '{}')
+                const template = {
+                    id: chatflow.id, // UUID from database
+                    templateName: chatflow.name,
+                    flowData: chatflow.flowData,
+                    badge: chatflow.userId === user?.id ? `SHARED BY ME` : `SHARED BY OTHERS`,
+                    categories: chatflow.category,
+                    type: chatflow.type === 'MULTIAGENT' ? 'Agent Community' : 'Chatflow Community',
+                    description: chatflow.description,
+                    requiresClone: chatbotConfig.requiresClone || false
+                }
+                templates.push(template)
+            })
         }
-        chatflows.forEach((chatflow) => {
-            const chatbotConfig = JSON.parse(chatflow.chatbotConfig || '{}')
-            const template = {
-                id: chatflow.id,
-                templateName: chatflow.name,
-                flowData: chatflow.flowData,
-                badge: chatflow.userId === user?.id ? `SHARED BY ME` : `SHARED BY OTHERS`,
-                categories: chatflow.category,
-                type: chatflow.type === 'MULTIAGENT' ? 'Agent Community' : 'Chatflow Community',
-                description: chatflow.description,
-                requiresClone: chatbotConfig.requiresClone || false // Get from chatbotConfig
-            }
-            templates.push(template)
-        })
 
+        // Chatflow templates
+        let marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows')
+        let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file, index) => {
             const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows', file)
             const fileData = fs.readFileSync(filePath)
             const fileDataObj = JSON.parse(fileData.toString()) as ITemplate
 
             const template = {
-                id: index,
+                id: `${TEMPLATE_TYPE_PREFIXES.CHATFLOW}${index}`,
                 templateName: file.split('.json')[0],
                 flowData: fileData.toString(),
                 badge: fileDataObj?.badge,
@@ -88,6 +90,7 @@ const getAllTemplates = async (user: IUser | undefined) => {
             templates.push(template)
         })
 
+        // Tool templates
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools')
         jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file, index) => {
@@ -96,7 +99,7 @@ const getAllTemplates = async (user: IUser | undefined) => {
             const fileDataObj = JSON.parse(fileData.toString())
             const template = {
                 ...fileDataObj,
-                id: index,
+                id: `${TEMPLATE_TYPE_PREFIXES.TOOL}${index}`,
                 type: 'Tool',
                 framework: fileDataObj?.framework,
                 badge: fileDataObj?.badge,
@@ -108,6 +111,7 @@ const getAllTemplates = async (user: IUser | undefined) => {
             templates.push(template)
         })
 
+        // Agentflow templates
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows')
         jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file, index) => {
@@ -115,7 +119,7 @@ const getAllTemplates = async (user: IUser | undefined) => {
             const fileData = fs.readFileSync(filePath)
             const fileDataObj = JSON.parse(fileData.toString())
             const template = {
-                id: index,
+                id: `${TEMPLATE_TYPE_PREFIXES.AGENTFLOW}${index}`,
                 templateName: file.split('.json')[0],
                 flowData: fileData.toString(),
                 badge: fileDataObj?.badge,
@@ -130,6 +134,7 @@ const getAllTemplates = async (user: IUser | undefined) => {
             templates.push(template)
         })
 
+        // AnswerAI templates
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'answerai')
         jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file, index) => {
@@ -137,7 +142,7 @@ const getAllTemplates = async (user: IUser | undefined) => {
             const fileData = fs.readFileSync(filePath)
             const fileDataObj = JSON.parse(fileData.toString())
             const template = {
-                id: index,
+                id: `${TEMPLATE_TYPE_PREFIXES.ANSWERAI}${index}`,
                 templateName: file.split('.json')[0],
                 flowData: fileData.toString(),
                 badge: fileDataObj?.badge,
@@ -151,6 +156,7 @@ const getAllTemplates = async (user: IUser | undefined) => {
             }
             templates.push(template)
         })
+
         const sortedTemplates = templates.sort((a, b) => a.templateName.localeCompare(b.templateName))
         const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')
         if (FlowiseDocsQnAIndex > 0) {
@@ -171,13 +177,16 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
     try {
         const appServer = getRunningExpressApp()
 
+        // Remove any template type prefix before checking if it's a UUID
+        const cleanId = Object.values(TEMPLATE_TYPE_PREFIXES).reduce((id, prefix) => id.replace(prefix, ''), templateIdOrName)
+
         let dbResponse = null
         // Check if the input is a valid UUID
-        if (isUUID(templateIdOrName)) {
+        if (isUUID(cleanId)) {
             // Try to find the template in the database
             dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
                 .createQueryBuilder('chatFlow')
-                .where('chatFlow.id = :id', { id: templateIdOrName })
+                .where('chatFlow.id = :id', { id: cleanId })
                 .getOne()
         }
 
@@ -213,22 +222,25 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
             path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows'),
             path.join(__dirname, '..', '..', '..', 'marketplaces', 'answerai')
         ]
-        console.log(`Searching for template: ${templateIdOrName}`)
+
         for (const dir of marketplaceDirs) {
-            console.log(`Searching in directory: ${dir}`)
             const files = fs.readdirSync(dir).filter((file) => path.extname(file) === '.json')
-            console.log(`Found ${files.length} JSON files in ${dir}`)
             for (const [idx, file] of files.entries()) {
-                console.log(`Checking file: ${file}, index: ${idx}`)
-                if (idx.toString() === templateIdOrName || path.parse(file).name === templateIdOrName) {
-                    console.log(`Match found: ${file}`)
+                const prefix =
+                    path.basename(dir) === 'agentflows'
+                        ? TEMPLATE_TYPE_PREFIXES.AGENTFLOW
+                        : path.basename(dir) === 'answerai'
+                        ? TEMPLATE_TYPE_PREFIXES.ANSWERAI
+                        : TEMPLATE_TYPE_PREFIXES.CHATFLOW
+
+                if (`${prefix}${idx}` === templateIdOrName || path.parse(file).name === templateIdOrName) {
                     const filePath = path.join(dir, file)
                     const fileData = fs.readFileSync(filePath, 'utf8')
                     const fileDataObj = JSON.parse(fileData)
 
                     const result = {
+                        id: `${prefix}${idx}`, // Keep ID for reference
                         isPublic: true,
-                        id: idx.toString(),
                         name: path.parse(file).name,
                         flowData: fileData,
                         description: fileDataObj.description || '',
@@ -239,14 +251,14 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
                         type:
                             path.basename(dir) === 'agentflows' ? 'Agentflow' : path.basename(dir) === 'answerai' ? 'AnswerAI' : 'Chatflow',
                         iconSrc: fileDataObj.iconSrc || '',
-                        requiresClone: true // All marketplace templates require cloning
+                        requiresClone: true,
+                        // Add a flag to indicate this is a template
+                        isTemplate: true
                     }
-                    console.log(`Returning result:`, result)
                     return result
                 }
             }
         }
-        console.log(`No matching template found for: ${templateIdOrName}`)
 
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Template ${templateIdOrName} not found`)
     } catch (error) {

@@ -255,6 +255,12 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
         const appServer = getRunningExpressApp()
         let dbResponse: ChatFlow
 
+        // If this is a template, remove the id before saving
+        if ((newChatFlow as any).isTemplate) {
+            const { id, isTemplate, ...chatflowWithoutId } = newChatFlow as any
+            newChatFlow = chatflowWithoutId
+        }
+
         // Check if the chatflow already exists
         if (newChatFlow.id) {
             const existingChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
