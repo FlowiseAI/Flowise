@@ -54,7 +54,7 @@ exporters:
   datadog/exporter:
     api:
       site: us5.datadoghq.com
-      key: "4f5778c6cf5381df89606004b4cacbc9"
+      key: "replace_api_key"
 
 service:
   pipelines:
