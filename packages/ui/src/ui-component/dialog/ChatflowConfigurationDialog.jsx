@@ -5,8 +5,6 @@ import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/materia
 import { tabsClasses } from '@mui/material/Tabs'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
 import Security from '@/ui-component/extended/Security'
-import RateLimit from '@/ui-component/extended/RateLimit'
-import AllowedDomains from '@/ui-component/extended/AllowedDomains'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
@@ -18,10 +16,6 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Security',
         id: 'security'
-    },
-    {
-        label: 'Rate Limiting',
-        id: 'rateLimiting'
     },
     {
         label: 'Starter Prompts',
@@ -38,10 +32,6 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Chat Feedback',
         id: 'chatFeedback'
-    },
-    {
-        label: 'Allowed Domains',
-        id: 'allowedDomains'
     },
     {
         label: 'Analyse Chatflow',
@@ -137,12 +127,10 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                 {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
                     <TabPanel key={index} value={tabValue} index={index}>
                         {item.id === 'security' && <Security dialogProps={dialogProps} />}
-                        {item.id === 'rateLimiting' && <RateLimit />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'followUpPrompts' ? <FollowUpPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
-                        {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
                         {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
                         {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}
