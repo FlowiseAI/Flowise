@@ -22,7 +22,7 @@ const ChatbotFull = ({ apiHost, chatflowId: defaultChatflowId }) => {
     }, [apiHost])
     const pathname = usePathname()
     const URLpath = pathname.split('/')
-    const chatflowId = defaultChatflowId ?? URLpath[URLpath.length - 1] === 'chatbot' ? '' : URLpath[URLpath.length - 1]
+    const chatflowId = defaultChatflowId
     const navigate = useNavigate()
 
     const [chatflow, setChatflow] = useState(null)
