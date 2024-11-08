@@ -55,6 +55,7 @@ import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
+import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../Interface.Metrics'
 
 /**
  * Build Chatflow
@@ -62,8 +63,8 @@ import { IAction } from 'flowise-components'
  * @param {boolean} isInternal
  */
 export const utilBuildChatflow = async (req: Request, isInternal: boolean = false): Promise<any> => {
+    const appServer = getRunningExpressApp()
     try {
-        const appServer = getRunningExpressApp()
         const chatflowid = req.params.id
 
         const httpProtocol = req.get('x-forwarded-proto') || req.protocol
@@ -493,6 +494,10 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             flowGraph: getTelemetryFlowObj(nodes, edges)
         })
 
+        appServer.metricsProvider.incrementCounter(
+            isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
+            { status: FLOWISE_COUNTER_STATUS.SUCCESS }
+        )
         // Prepare response
         // return the question in the response
         // this is used when input text is empty but question is in audio format
@@ -507,6 +512,10 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         return result
     } catch (e) {
+        appServer.metricsProvider.incrementCounter(
+            isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
+            { status: FLOWISE_COUNTER_STATUS.FAILURE }
+        )
         logger.error('[server]: Error:', e)
         if (e instanceof InternalFlowiseError && e.statusCode === StatusCodes.UNAUTHORIZED) {
             throw e
@@ -533,8 +542,8 @@ const utilBuildAgentResponse = async (
     shouldStreamResponse?: boolean,
     uploadedFilesContent?: string
 ) => {
+    const appServer = getRunningExpressApp()
     try {
-        const appServer = getRunningExpressApp()
         const streamResults = await buildAgentGraph(
             agentflow,
             chatId,
@@ -599,6 +608,10 @@ const utilBuildAgentResponse = async (
                 type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
+            appServer.metricsProvider.incrementCounter(
+                isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
+                { status: FLOWISE_COUNTER_STATUS.SUCCESS }
+            )
 
             // Find the previous chat message with the same action id and remove the action
             if (incomingInput.action && Object.keys(incomingInput.action).length) {
@@ -645,6 +658,10 @@ const utilBuildAgentResponse = async (
         return undefined
     } catch (e) {
         logger.error('[server]: Error:', e)
+        appServer.metricsProvider.incrementCounter(
+            isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
+            { status: FLOWISE_COUNTER_STATUS.FAILURE }
+        )
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
     }
 }
