@@ -18,6 +18,12 @@ class FireCrawlApiCredential implements INodeCredential {
                 label: 'FireCrawl API',
                 name: 'firecrawlApiToken',
                 type: 'password'
+            },
+            {
+                label: 'FireCrawl API URL',
+                name: 'firecrawlApiUrl',
+                type: 'string',
+                default: 'https://api.firecrawl.dev'
             }
         ]
     }
