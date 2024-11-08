@@ -112,6 +112,8 @@ export const buildAgentGraph = async (
         }
 
         const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
+        const apiOverrideConfig = apiConfig.overrideConfig && apiConfig.overrideConfig.config ? apiConfig.overrideConfig.config : {}
+        const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
 
         // Initialize nodes like ChatModels, Tools, etc.
         const reactFlowNodes: IReactFlowNode[] = await buildFlow({
@@ -129,8 +131,8 @@ export const buildAgentGraph = async (
             chatflowid,
             appDataSource: appServer.AppDataSource,
             overrideConfig: incomingInput?.overrideConfig,
-            apiOverrideConfig: apiConfig.overrideConfig.config,
-            apiOverrideStatus: apiConfig.overrideConfig.status,
+            apiOverrideConfig,
+            apiOverrideStatus,
             cachePool: appServer.cachePool,
             isUpsert: false,
             uploads: incomingInput.uploads,

@@ -347,6 +347,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
 
             const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
+            const apiOverrideConfig = apiConfig.overrideConfig && apiConfig.overrideConfig.config ? apiConfig.overrideConfig.config : {}
+            const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
 
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
             const reactFlowNodes = await buildFlow({
@@ -365,8 +367,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 chatflowid,
                 appDataSource: appServer.AppDataSource,
                 overrideConfig: incomingInput?.overrideConfig,
-                apiOverrideConfig: apiConfig.overrideConfig.config,
-                apiOverrideStatus: apiConfig.overrideConfig.status,
+                apiOverrideConfig,
+                apiOverrideStatus,
                 cachePool: appServer.cachePool,
                 isUpsert: false,
                 uploads: incomingInput.uploads,
