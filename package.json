@@ -67,10 +67,11 @@
         "pnpm": ">=9"
     },
     "resolutions": {
-        "@qdrant/openapi-typescript-fetch": "1.2.6",
         "@google/generative-ai": "^0.15.0",
+        "@langchain/core": "0.2.18",
+        "@qdrant/openapi-typescript-fetch": "1.2.6",
         "openai": "4.57.3",
-        "@langchain/core": "0.2.18"
+        "protobufjs": "7.4.0"
     },
     "eslintIgnore": [
         "**/dist",
