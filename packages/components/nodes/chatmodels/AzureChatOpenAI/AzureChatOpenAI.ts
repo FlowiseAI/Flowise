@@ -6,6 +6,12 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
+const serverCredentialsExists =
+    !!process.env.AZURE_OPENAI_API_KEY &&
+    !!process.env.AZURE_OPENAI_API_INSTANCE_NAME &&
+    !!process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME &&
+    !!process.env.AZURE_OPENAI_API_VERSION
+
 class AzureChatOpenAI_ChatModels implements INode {
     label: string
     name: string
@@ -31,7 +37,8 @@ class AzureChatOpenAI_ChatModels implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['azureOpenAIApi']
+            credentialNames: ['azureOpenAIApi'],
+            optional: serverCredentialsExists
         }
         this.inputs = [
             {

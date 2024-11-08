@@ -8,7 +8,7 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 type IUploadConfig = {
     isSpeechToTextEnabled: boolean
     isImageUploadAllowed: boolean
-    isFileUploadAllowed: boolean
+    isRAGFileUploadAllowed: boolean
     imgUploadSizeAndTypes: IUploadFileSizeAndTypes[]
     fileUploadSizeAndTypes: IUploadFileSizeAndTypes[]
 }
@@ -32,7 +32,7 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
 
     let isSpeechToTextEnabled = false
     let isImageUploadAllowed = false
-    let isFileUploadAllowed = false
+    let isRAGFileUploadAllowed = false
 
     /*
      * Check for STT
@@ -51,7 +51,7 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
     }
 
     /*
-     * Condition for isFileUploadAllowed
+     * Condition for isRAGFileUploadAllowed
      * 1.) vector store with fileUpload = true && connected to a document loader with fileType
      */
     const fileUploadSizeAndTypes: IUploadFileSizeAndTypes[] = []
@@ -70,7 +70,7 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
                         fileTypes: fileType.split(', '),
                         maxUploadSize: 500
                     })
-                    isFileUploadAllowed = true
+                    isRAGFileUploadAllowed = true
                 }
             }
             break
@@ -114,7 +114,7 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
     return {
         isSpeechToTextEnabled,
         isImageUploadAllowed,
-        isFileUploadAllowed,
+        isRAGFileUploadAllowed,
         imgUploadSizeAndTypes,
         fileUploadSizeAndTypes
     }

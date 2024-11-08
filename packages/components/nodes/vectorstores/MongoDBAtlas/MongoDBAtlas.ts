@@ -1,13 +1,12 @@
 import { flatten } from 'lodash'
-import { MongoClient } from 'mongodb'
-import { MongoDBAtlasVectorSearch } from '@langchain/mongodb'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam, getVersion } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
-import { VectorStore } from '@langchain/core/vectorstores'
+import { MongoDBAtlasVectorSearch } from './core'
 
+// TODO: Add ability to specify env variable and use singleton pattern (i.e initialize MongoDB on server and pass to component)
 class MongoDBAtlas_VectorStores implements INode {
     label: string
     name: string
@@ -87,6 +86,13 @@ class MongoDBAtlas_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Mongodb Metadata Filter',
+                name: 'mongoMetadataFilter',
+                type: 'json',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Top K',
                 name: 'topK',
                 description: 'Number of top results to fetch. Default to 4',
@@ -135,20 +141,18 @@ class MongoDBAtlas_VectorStores implements INode {
                 }
             }
 
-            const mongoClient = await getMongoClient(mongoDBConnectUrl)
             try {
-                const collection = mongoClient.db(databaseName).collection(collectionName)
-
                 if (!textKey || textKey === '') textKey = 'text'
                 if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
 
                 const mongoDBAtlasVectorSearch = new MongoDBAtlasVectorSearch(embeddings, {
-                    collection,
+                    connectionDetails: { mongoDBConnectUrl, databaseName, collectionName },
                     indexName,
                     textKey,
                     embeddingKey
                 })
                 await mongoDBAtlasVectorSearch.addDocuments(finalDocs)
+
                 return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
@@ -164,48 +168,41 @@ class MongoDBAtlas_VectorStores implements INode {
         let textKey = nodeData.inputs?.textKey as string
         let embeddingKey = nodeData.inputs?.embeddingKey as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
+        const mongoMetadataFilter = nodeData.inputs?.mongoMetadataFilter as object
 
         let mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
 
-        const mongoClient = await getMongoClient(mongoDBConnectUrl)
-        try {
-            const collection = mongoClient.db(databaseName).collection(collectionName)
+        const mongoDbFilter: MongoDBAtlasVectorSearch['FilterType'] = {}
 
+        try {
             if (!textKey || textKey === '') textKey = 'text'
             if (!embeddingKey || embeddingKey === '') embeddingKey = 'embedding'
 
             const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
-                collection,
+                connectionDetails: { mongoDBConnectUrl, databaseName, collectionName },
                 indexName,
                 textKey,
                 embeddingKey
-            }) as unknown as VectorStore
+            })
 
-            return resolveVectorStoreOrRetriever(nodeData, vectorStore)
+            if (mongoMetadataFilter) {
+                const metadataFilter = typeof mongoMetadataFilter === 'object' ? mongoMetadataFilter : JSON.parse(mongoMetadataFilter)
+
+                for (const key in metadataFilter) {
+                    mongoDbFilter.preFilter = {
+                        ...mongoDbFilter.preFilter,
+                        [key]: {
+                            $eq: metadataFilter[key]
+                        }
+                    }
+                }
+            }
+
+            return resolveVectorStoreOrRetriever(nodeData, vectorStore, mongoDbFilter)
         } catch (e) {
             throw new Error(e)
         }
     }
 }
 
-let mongoClientSingleton: MongoClient
-let mongoUrl: string
-
-const getMongoClient = async (newMongoUrl: string) => {
-    const driverInfo = { name: 'Flowise', version: (await getVersion()).version }
-
-    if (!mongoClientSingleton) {
-        // if client does not exist
-        mongoClientSingleton = new MongoClient(newMongoUrl, { driverInfo })
-        mongoUrl = newMongoUrl
-        return mongoClientSingleton
-    } else if (mongoClientSingleton && newMongoUrl !== mongoUrl) {
-        // if client exists but url changed
-        mongoClientSingleton.close()
-        mongoClientSingleton = new MongoClient(newMongoUrl, { driverInfo })
-        mongoUrl = newMongoUrl
-        return mongoClientSingleton
-    }
-    return mongoClientSingleton
-}
 module.exports = { nodeClass: MongoDBAtlas_VectorStores }

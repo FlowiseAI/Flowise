@@ -104,6 +104,17 @@ const Tools = () => {
         getAllToolsApi.request()
     }
 
+    const [search, setSearch] = useState('')
+    const onSearchChange = (event) => {
+        setSearch(event.target.value)
+    }
+
+    function filterTools(data) {
+        return (
+            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 || data.description.toLowerCase().indexOf(search.toLowerCase()) > -1
+        )
+    }
+
     useEffect(() => {
         getAllToolsApi.request()
 
@@ -127,7 +138,7 @@ const Tools = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader title='Tools'>
+                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Tools' title='Tools'>
                             <ToggleButtonGroup
                                 sx={{ borderRadius: 2, maxHeight: 40 }}
                                 value={view}
@@ -200,9 +211,9 @@ const Tools = () => {
                                 ) : (
                                     <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                         {getAllToolsApi.data &&
-                                            getAllToolsApi.data.map((data, index) => (
-                                                <ItemCard data={data} key={index} onClick={() => edit(data)} />
-                                            ))}
+                                            getAllToolsApi.data
+                                                ?.filter(filterTools)
+                                                .map((data, index) => <ItemCard data={data} key={index} onClick={() => edit(data)} />)}
                                     </Box>
                                 )}
                             </>

@@ -29,11 +29,13 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${req.params.id} not found`)
         }
         let isDomainAllowed = true
+        let unauthorizedOriginError = 'This site is not allowed to access this chatbot'
         logger.info(`[server]: Request originated from ${req.headers.origin || 'UNKNOWN ORIGIN'}`)
         if (chatflow.chatbotConfig) {
             const parsedConfig = JSON.parse(chatflow.chatbotConfig)
             // check whether the first one is not empty. if it is empty that means the user set a value and then removed it.
             const isValidAllowedOrigins = parsedConfig.allowedOrigins?.length && parsedConfig.allowedOrigins[0] !== ''
+            unauthorizedOriginError = parsedConfig.allowedOriginsError || 'This site is not allowed to access this chatbot'
             if (isValidAllowedOrigins && req.headers.origin) {
                 const originHeader = req.headers.origin
                 const origin = new URL(originHeader).host
@@ -81,7 +83,11 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                 return res.json(apiResponse)
             }
         } else {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `This site is not allowed to access this chatbot`)
+            const isStreamingRequested = req.body.streaming === 'true' || req.body.streaming === true
+            if (isStreamingRequested) {
+                return res.status(StatusCodes.FORBIDDEN).send(unauthorizedOriginError)
+            }
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, unauthorizedOriginError)
         }
     } catch (error) {
         next(error)

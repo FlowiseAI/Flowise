@@ -25,7 +25,10 @@ import {
     Chip,
     Card,
     CardMedia,
-    CardContent
+    CardContent,
+    FormControlLabel,
+    Checkbox,
+    DialogActions
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import DatePicker from 'react-datepicker'
@@ -84,6 +87,52 @@ const messageImageStyle = {
     objectFit: 'cover'
 }
 
+const ConfirmDeleteMessageDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+    const portalElement = document.getElementById('portal')
+    const [hardDelete, setHardDelete] = useState(false)
+
+    const onSubmit = () => {
+        onConfirm(hardDelete)
+    }
+
+    const component = show ? (
+        <Dialog
+            fullWidth
+            maxWidth='xs'
+            open={show}
+            onClose={onCancel}
+            aria-labelledby='alert-dialog-title'
+            aria-describedby='alert-dialog-description'
+        >
+            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
+                {dialogProps.title}
+            </DialogTitle>
+            <DialogContent>
+                <span style={{ marginTop: '20px', marginBottom: '20px' }}>{dialogProps.description}</span>
+                <FormControlLabel
+                    control={<Checkbox checked={hardDelete} onChange={(event) => setHardDelete(event.target.checked)} />}
+                    label='Remove messages from 3rd party Memory Node'
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
+                <StyledButton variant='contained' onClick={onSubmit}>
+                    {dialogProps.confirmButtonName}
+                </StyledButton>
+            </DialogActions>
+        </Dialog>
+    ) : null
+
+    return createPortal(component, portalElement)
+}
+
+ConfirmDeleteMessageDialog.propTypes = {
+    show: PropTypes.bool,
+    dialogProps: PropTypes.object,
+    onCancel: PropTypes.func,
+    onConfirm: PropTypes.func
+}
+
 const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
@@ -103,6 +152,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [selectedChatId, setSelectedChatId] = useState('')
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
+    const [hardDeleteDialogOpen, setHardDeleteDialogOpen] = useState(false)
+    const [hardDeleteDialogProps, setHardDeleteDialogProps] = useState({})
     const [chatTypeFilter, setChatTypeFilter] = useState([])
     const [feedbackTypeFilter, setFeedbackTypeFilter] = useState([])
     const [startDate, setStartDate] = useState(new Date().setMonth(new Date().getMonth() - 1))
@@ -173,6 +224,83 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             startDate: startDate,
             endDate: endDate
         })
+    }
+
+    const onDeleteMessages = () => {
+        setHardDeleteDialogProps({
+            title: 'Delete Messages',
+            description: 'Are you sure you want to delete messages? This action cannot be undone.',
+            confirmButtonName: 'Delete',
+            cancelButtonName: 'Cancel'
+        })
+        setHardDeleteDialogOpen(true)
+    }
+
+    const deleteMessages = async (hardDelete) => {
+        setHardDeleteDialogOpen(false)
+        const chatflowid = dialogProps.chatflow.id
+        try {
+            const obj = { chatflowid, isClearFromViewMessageDialog: true }
+
+            let _chatTypeFilter = chatTypeFilter
+            if (typeof chatTypeFilter === 'string') {
+                _chatTypeFilter = JSON.parse(chatTypeFilter)
+            }
+            if (_chatTypeFilter.length === 1) {
+                obj.chatType = _chatTypeFilter[0]
+            }
+
+            let _feedbackTypeFilter = feedbackTypeFilter
+            if (typeof feedbackTypeFilter === 'string') {
+                _feedbackTypeFilter = JSON.parse(feedbackTypeFilter)
+            }
+            if (_feedbackTypeFilter.length === 1) {
+                obj.feedbackType = _feedbackTypeFilter[0]
+            }
+
+            if (startDate) obj.startDate = startDate
+            if (endDate) obj.endDate = endDate
+            if (hardDelete) obj.hardDelete = true
+
+            await chatmessageApi.deleteChatmessage(chatflowid, obj)
+            enqueueSnackbar({
+                message: 'Succesfully deleted messages',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            getChatmessageApi.request(chatflowid, {
+                chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+                startDate: startDate,
+                endDate: endDate
+            })
+            getStatsApi.request(chatflowid, {
+                chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+                startDate: startDate,
+                endDate: endDate
+            })
+        } catch (error) {
+            console.error(error)
+            enqueueSnackbar({
+                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
     }
 
     const exportMessages = async () => {
@@ -675,7 +803,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             onClose={onCancel}
             open={show}
             fullWidth
-            maxWidth={chatlogs && chatlogs.length == 0 ? 'md' : 'lg'}
+            maxWidth={'lg'}
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
@@ -781,6 +909,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             />
                         </div>
                         <div style={{ flex: 1 }}></div>
+                        {stats.totalMessages > 0 && (
+                            <Button color='error' variant='outlined' onClick={() => onDeleteMessages()} startIcon={<IconEraser />}>
+                                Delete Messages
+                            </Button>
+                        )}
                     </div>
                     <div
                         style={{
@@ -1375,6 +1508,12 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                         )}
                     </div>
                     <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
+                    <ConfirmDeleteMessageDialog
+                        show={hardDeleteDialogOpen}
+                        dialogProps={hardDeleteDialogProps}
+                        onCancel={() => setHardDeleteDialogOpen(false)}
+                        onConfirm={(hardDelete) => deleteMessages(hardDelete)}
+                    />
                 </>
             </DialogContent>
         </Dialog>
