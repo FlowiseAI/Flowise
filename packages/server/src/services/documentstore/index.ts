@@ -996,7 +996,7 @@ const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject) => {
             type: ChatType.INTERNAL,
             flowGraph: omit(indexResult['result'], ['totalKeys', 'addedDocs'])
         })
-        appServer.metricsProvider.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
+        appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
 
         entity.status = DocumentStoreStatus.UPSERTED
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)

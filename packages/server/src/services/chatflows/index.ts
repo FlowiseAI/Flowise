@@ -192,7 +192,7 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
             chatflowId: dbResponse.id,
             flowGraph: getTelemetryFlowObj(JSON.parse(dbResponse.flowData)?.nodes, JSON.parse(dbResponse.flowData)?.edges)
         })
-        appServer.metricsProvider.incrementCounter(
+        appServer.metricsProvider?.incrementCounter(
             dbResponse?.type === 'MULTIAGENT' ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_CREATED : FLOWISE_METRIC_COUNTERS.CHATFLOW_CREATED,
             { status: FLOWISE_COUNTER_STATUS.SUCCESS }
         )
