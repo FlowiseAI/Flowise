@@ -494,7 +494,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             flowGraph: getTelemetryFlowObj(nodes, edges)
         })
 
-        appServer.metricsProvider.incrementCounter(
+        appServer.metricsProvider?.incrementCounter(
             isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
             { status: FLOWISE_COUNTER_STATUS.SUCCESS }
         )
@@ -512,7 +512,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         return result
     } catch (e) {
-        appServer.metricsProvider.incrementCounter(
+        appServer.metricsProvider?.incrementCounter(
             isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
             { status: FLOWISE_COUNTER_STATUS.FAILURE }
         )
@@ -608,7 +608,7 @@ const utilBuildAgentResponse = async (
                 type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
-            appServer.metricsProvider.incrementCounter(
+            appServer.metricsProvider?.incrementCounter(
                 isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
                 { status: FLOWISE_COUNTER_STATUS.SUCCESS }
             )
@@ -658,7 +658,7 @@ const utilBuildAgentResponse = async (
         return undefined
     } catch (e) {
         logger.error('[server]: Error:', e)
-        appServer.metricsProvider.incrementCounter(
+        appServer.metricsProvider?.incrementCounter(
             isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
             { status: FLOWISE_COUNTER_STATUS.FAILURE }
         )

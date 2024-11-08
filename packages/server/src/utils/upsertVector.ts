@@ -197,7 +197,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             flowGraph: getTelemetryFlowObj(nodes, edges),
             stopNodeId
         })
-        appServer.metricsProvider.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
+        appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
 
         return upsertedResult['result'] ?? { result: 'Successfully Upserted' }
     } catch (e) {
