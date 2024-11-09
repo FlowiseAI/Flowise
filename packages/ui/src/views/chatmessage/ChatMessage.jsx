@@ -83,6 +83,9 @@ import { isValidURL, removeDuplicateURL, setLocalStorageChatflow, getLocalStorag
 import useNotifier from '@/utils/useNotifier'
 import FollowUpPromptsCard from '@/ui-component/cards/FollowUpPromptsCard'
 
+// History
+import { ChatInputHistory } from './ChatInputHistory'
+
 const messageImageStyle = {
     width: '128px',
     height: '128px',
@@ -185,6 +188,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const [uploadedFiles, setUploadedFiles] = useState([])
     const [imageUploadAllowedTypes, setImageUploadAllowedTypes] = useState('')
     const [fileUploadAllowedTypes, setFileUploadAllowedTypes] = useState('')
+    const [inputHistory] = useState(new ChatInputHistory(10))
 
     const inputRef = useRef(null)
     const getChatmessageApi = useApi(chatmessageApi.getInternalChatmessageFromChatflow)
@@ -768,6 +772,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
         if (selectedInput !== undefined && selectedInput.trim() !== '') input = selectedInput
 
+        if (input.trim()) {
+            inputHistory.addToHistory(input)
+        }
+
         setLoading(true)
         let uploads = previews.map((item) => {
             return {
@@ -934,7 +942,15 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const handleEnter = (e) => {
         // Check if IME composition is in progress
         const isIMEComposition = e.isComposing || e.keyCode === 229
-        if (e.key === 'Enter' && userInput && !isIMEComposition) {
+        if (e.key === 'ArrowUp' && !isIMEComposition) {
+            e.preventDefault()
+            const previousInput = inputHistory.getPreviousInput(userInput)
+            setUserInput(previousInput)
+        } else if (e.key === 'ArrowDown' && !isIMEComposition) {
+            e.preventDefault()
+            const nextInput = inputHistory.getNextInput()
+            setUserInput(nextInput)
+        } else if (e.key === 'Enter' && userInput && !isIMEComposition) {
             if (!e.shiftKey && userInput) {
                 handleSubmit(e)
             }
