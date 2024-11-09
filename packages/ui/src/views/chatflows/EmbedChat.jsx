@@ -173,15 +173,6 @@ const chatwindowConfig = (isReact = false) => {
                         // sendSoundLocation: "send_message.mp3", // If this is not used, the default sound effect will be played if sendSoundMessage is true.
                         receiveMessageSound: true,
                         // receiveSoundLocation: "receive_message.mp3", // If this is not used, the default sound effect will be played if receiveSoundMessage is true.
-                        inputHistory: {
-                            enabled: true,
-                            maxHistory: 10, // Store last 10 messages
-                            persistHistory: true, // Optional: save to localStorage
-                        },
-                        keyBindings: {
-                            upArrow: 'previousInput',
-                            downArrow: 'nextInput'
-                        },
                     },
                     feedback: {
                         color: '#303235',
@@ -232,15 +223,6 @@ const chatwindowConfig = (isReact = false) => {
                     // sendSoundLocation: "send_message.mp3", // If this is not used, the default sound effect will be played if sendSoundMessage is true.
                     receiveMessageSound: true,
                     // receiveSoundLocation: "receive_message.mp3", // If this is not used, the default sound effect will be played if receiveSoundMessage is true. 
-                    inputHistory: {
-                        enabled: true,
-                        maxHistory: 10, // Store last 10 messages
-                        persistHistory: true, // Optional: save to localStorage
-                    },
-                    keyBindings: {
-                        upArrow: 'previousInput',
-                        downArrow: 'nextInput'
-                    },
                 },
                 feedback: {
                     color: '#303235',
