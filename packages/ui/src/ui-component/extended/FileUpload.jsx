@@ -2,14 +2,14 @@ import { useDispatch } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
+import parser from 'html-react-parser'
 
 // material-ui
-import { Button, Box, Typography } from '@mui/material'
-import { IconX } from '@tabler/icons-react'
+import { Button, Box } from '@mui/material'
+import { IconX, IconBulb } from '@tabler/icons-react'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
-import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { SwitchInput } from '@/ui-component/switch/Switch'
 
 // store
@@ -18,7 +18,9 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const message = `Allow files to be uploaded from the chat. Uploaded files will be parsed as string and sent to LLM. If File Upload is enabled on Vector Store as well, this will override and takes precedence.`
+const message = `Uploaded files will be parsed as strings and sent to the LLM. If file upload is enabled on the Vector Store as well, this will override and take precedence.
+<br />
+Refer <a href='https://docs.flowiseai.com/using-flowise/uploads#files' target='_blank'>docs</a> for more details.`
 
 const FileUpload = ({ dialogProps }) => {
     const dispatch = useDispatch()
@@ -99,15 +101,41 @@ const FileUpload = ({ dialogProps }) => {
 
     return (
         <>
-            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', mb: 2 }}>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <Typography>
-                        Enable Full File Upload
-                        <TooltipWithParser style={{ marginLeft: 10 }} title={message} />
-                    </Typography>
+            <Box
+                sx={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'start',
+                    justifyContent: 'start',
+                    gap: 3,
+                    mb: 2
+                }}
+            >
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 10,
+                        background: '#d8f3dc',
+                        width: '100%',
+                        padding: 10
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <IconBulb size={30} color='#2d6a4f' />
+                        <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>{parser(message)}</span>
+                    </div>
                 </div>
-                <SwitchInput onChange={handleChange} value={fullFileUpload} />
+                <SwitchInput label='Enable Full File Upload' onChange={handleChange} value={fullFileUpload} />
             </Box>
+            {/* TODO: Allow selection of allowed file types*/}
             <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
                 Save
             </StyledButton>

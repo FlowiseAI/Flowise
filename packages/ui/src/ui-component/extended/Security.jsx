@@ -46,7 +46,7 @@ const OverrideConfigTable = ({ columns, onToggle, rows, sx }) => {
     return (
         <>
             <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650, ...sx }} aria-label='simple table'>
+                <Table size='small' sx={{ minWidth: 650, ...sx }} aria-label='simple table'>
                     <TableHead>
                         <TableRow>
                             {columns.map((col, index) => (
@@ -250,7 +250,7 @@ const Security = ({ dialogProps }) => {
                 </Typography>
                 <SwitchInput label='Enable Override Configuration' onChange={setOverrideConfigStatus} value={overrideConfigStatus} />
                 {overrideConfigStatus && overrideConfig && nodeConfig && getConfigApi.data && getConfigApi.data.length > 0 && (
-                    <>
+                    <Box sx={{ mt: 2, mb: 2 }}>
                         {Object.keys(overrideConfig)
                             .sort()
                             .map((nodeLabel) => (
@@ -303,9 +303,9 @@ const Security = ({ dialogProps }) => {
                                     </AccordionDetails>
                                 </Accordion>
                             ))}
-                    </>
+                    </Box>
                 )}
-                <StyledButton variant='contained' onClick={onOverrideConfigSave}>
+                <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onOverrideConfigSave}>
                     Save
                 </StyledButton>
             </Box>

@@ -113,9 +113,8 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                             sx={{
                                 minHeight: '40px',
                                 height: '40px',
-                                textAlign: 'left',
                                 display: 'flex',
-                                alignItems: 'start',
+                                alignItems: 'center',
                                 mb: 1
                             }}
                             key={index}
