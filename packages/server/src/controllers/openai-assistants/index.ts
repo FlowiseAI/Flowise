@@ -81,6 +81,8 @@ const uploadAssistantFiles = async (req: Request, res: Response, next: NextFunct
 
         if (Array.isArray(files)) {
             for (const file of files) {
+                // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
+                file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 uploadFiles.push({
                     filePath: file.path,
                     fileName: file.originalname
