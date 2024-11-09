@@ -702,7 +702,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
         if (fullFileUpload) {
             const filesWithFullUploadType = uploadedFiles.filter((file) => file.type === 'file:full')
-
             if (filesWithFullUploadType.length > 0) {
                 const formData = new FormData()
                 for (const file of filesWithFullUploadType) {
@@ -712,12 +711,14 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
                 const response = await attachmentsApi.createAttachment(chatflowid, chatId, formData)
                 const data = response.data
+
                 for (const extractedFileData of data) {
                     const content = extractedFileData.content
                     const fileName = extractedFileData.name
 
                     // find matching name in previews and replace data with content
                     const uploadIndex = uploads.findIndex((upload) => upload.name === fileName)
+
                     if (uploadIndex !== -1) {
                         uploads[uploadIndex] = {
                             ...uploads[uploadIndex],
