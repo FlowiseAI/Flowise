@@ -194,19 +194,21 @@ class FirecrawlApp {
 interface FirecrawlLoaderParameters {
     url: string
     apiKey?: string
+    apiUrl?: string
     mode?: 'crawl' | 'scrape'
     params?: Record<string, unknown>
 }
 
 class FireCrawlLoader extends BaseDocumentLoader {
     private apiKey: string
+    private apiUrl: string
     private url: string
     private mode: 'crawl' | 'scrape'
     private params?: Record<string, unknown>
 
     constructor(loaderParams: FirecrawlLoaderParameters) {
         super()
-        const { apiKey, url, mode = 'crawl', params } = loaderParams
+        const { apiKey, apiUrl, url, mode = 'crawl', params } = loaderParams
         if (!apiKey) {
             throw new Error('Firecrawl API key not set. You can set it as FIRECRAWL_API_KEY in your .env file, or pass it to Firecrawl.')
         }
@@ -215,10 +217,11 @@ class FireCrawlLoader extends BaseDocumentLoader {
         this.url = url
         this.mode = mode
         this.params = params
+        this.apiUrl = apiUrl || 'https://api.firecrawl.dev'
     }
 
     public async load(): Promise<DocumentInterface[]> {
-        const app = new FirecrawlApp({ apiKey: this.apiKey })
+        const app = new FirecrawlApp({ apiKey: this.apiKey, apiUrl: this.apiUrl })
         let firecrawlDocs: FirecrawlDocument[]
 
         if (this.mode === 'scrape') {
@@ -319,6 +322,7 @@ class FireCrawl_DocumentLoaders implements INode {
         const onlyMainContent = nodeData.inputs?.onlyMainContent as boolean
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const firecrawlApiToken = getCredentialParam('firecrawlApiToken', credentialData, nodeData)
+        const firecrawlApiUrl = getCredentialParam('firecrawlApiUrl', credentialData, nodeData, 'https://api.firecrawl.dev')
 
         const urlPatternsExcludes = nodeData.inputs?.urlPatternsExcludes
             ? (nodeData.inputs.urlPatternsExcludes.split(',') as string[])
@@ -331,6 +335,7 @@ class FireCrawl_DocumentLoaders implements INode {
             url,
             mode: crawlerType as 'crawl' | 'scrape',
             apiKey: firecrawlApiToken,
+            apiUrl: firecrawlApiUrl,
             params: {
                 crawlerOptions: {
                     includes: urlPatternsIncludes,
@@ -344,7 +349,6 @@ class FireCrawl_DocumentLoaders implements INode {
                 }
             }
         }
-
         const loader = new FireCrawlLoader(input)
 
         let docs = []
