@@ -161,7 +161,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const fileNames: string[] = []
             for (const file of files) {
                 const fileBuffer = fs.readFileSync(file.path)
-
+                // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
+                file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
                 const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
