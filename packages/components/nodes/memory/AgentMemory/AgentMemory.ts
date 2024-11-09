@@ -5,6 +5,7 @@ import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams } from '.
 import { SqliteSaver } from './sqliteSaver'
 import { DataSource } from 'typeorm'
 import { PostgresSaver } from './pgSaver'
+import { MySQLSaver } from './mysqlSaver'
 
 class AgentMemory_Memory implements INode {
     label: string
@@ -32,7 +33,7 @@ class AgentMemory_Memory implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['PostgresApi'],
+            credentialNames: ['PostgresApi', 'MySQLApi'],
             optional: true
         }
         this.inputs = [
@@ -46,8 +47,12 @@ class AgentMemory_Memory implements INode {
                         name: 'sqlite'
                     },
                     {
-                        label: 'Postgres',
+                        label: 'PostgreSQL',
                         name: 'postgres'
+                    },
+                    {
+                        label: 'MySQL',
+                        name: 'mysql'
                     }
                 ],
                 default: 'sqlite'
@@ -66,7 +71,7 @@ class AgentMemory_Memory implements INode {
                 label: 'Host',
                 name: 'host',
                 type: 'string',
-                description: 'If Postgres is selected, provide the host of the Postgres database',
+                description: 'If PostgresQL/MySQL is selected, provide the host of the database',
                 additionalParams: true,
                 optional: true
             },
@@ -74,7 +79,7 @@ class AgentMemory_Memory implements INode {
                 label: 'Database',
                 name: 'database',
                 type: 'string',
-                description: 'If Postgres is selected, provide the name of the Postgres database',
+                description: 'If PostgresQL/MySQL is selected, provide the name of the database',
                 additionalParams: true,
                 optional: true
             },
@@ -82,8 +87,7 @@ class AgentMemory_Memory implements INode {
                 label: 'Port',
                 name: 'port',
                 type: 'number',
-                description: 'If Postgres is selected, provide the port of the Postgres database',
-                placeholder: '5432',
+                description: 'If PostgresQL/MySQL is selected, provide the port of the database',
                 additionalParams: true,
                 optional: true
             },
@@ -157,6 +161,31 @@ class AgentMemory_Memory implements INode {
                 chatflowid
             }
             const recordManager = new PostgresSaver(args)
+            return recordManager
+        } else if (databaseType === 'mysql') {
+            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const user = getCredentialParam('user', credentialData, nodeData)
+            const password = getCredentialParam('password', credentialData, nodeData)
+            const _port = (nodeData.inputs?.port as string) || '3306'
+            const port = parseInt(_port)
+            datasourceOptions = {
+                ...datasourceOptions,
+                host: nodeData.inputs?.host as string,
+                port,
+                database: nodeData.inputs?.database as string,
+                username: user,
+                user: user,
+                password: password,
+                charset: 'utf8mb4'
+            }
+            const args: SaverOptions = {
+                datasourceOptions,
+                threadId,
+                appDataSource,
+                databaseEntities,
+                chatflowid
+            }
+            const recordManager = new MySQLSaver(args)
             return recordManager
         }
 
