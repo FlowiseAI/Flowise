@@ -124,14 +124,14 @@ class AzureChatOpenAI_LlamaIndex_ChatModels implements INode {
         const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
-        const obj: Partial<OpenAI> & { azure?: AzureOpenAIConfig } = {
+        const obj: ConstructorParameters<typeof OpenAI>[0] = {
             temperature: parseFloat(temperature),
             model: modelName,
             azure: {
                 apiKey: azureOpenAIApiKey,
                 endpoint: `https://${azureOpenAIApiInstanceName}.openai.azure.com`,
                 apiVersion: azureOpenAIApiVersion,
-                deploymentName: azureOpenAIApiDeploymentName
+                deployment: azureOpenAIApiDeploymentName
             }
         }
 

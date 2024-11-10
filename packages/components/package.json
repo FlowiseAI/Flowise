@@ -93,7 +93,7 @@
         "langsmith": "0.1.6",
         "langwatch": "^0.1.1",
         "linkifyjs": "^4.1.1",
-        "llamaindex": "^0.3.13",
+        "llamaindex": "^0.8.7",
         "lodash": "^4.17.21",
         "lunary": "^0.7.12",
         "mammoth": "^1.5.1",
