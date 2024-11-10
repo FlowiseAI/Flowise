@@ -92,7 +92,7 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
         'supervisor',
         'seqStart'
     ]
-    const imgUploadLLMNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI', 'chatGoogleGenerativeAI']
+    const imgUploadLLMNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI', 'chatGoogleGenerativeAI', 'chatOllama']
 
     if (nodes.some((node) => imgUploadAllowedNodes.includes(node.data.name))) {
         nodes.forEach((node: IReactFlowNode) => {
