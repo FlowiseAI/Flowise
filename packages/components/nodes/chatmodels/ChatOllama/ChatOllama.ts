@@ -67,7 +67,8 @@ class ChatOllama_ChatModels implements INode {
                 label: 'JSON Mode',
                 name: 'jsonMode',
                 type: 'boolean',
-                description: 'Ollama supports JSON mode for all chat models that coerces model outputs to only return JSON',
+                description:
+                    'Coerces model outputs to only return JSON. Specify in the system prompt to return JSON. Ex: Format all responses as JSON object',
                 optional: true,
                 additionalParams: true
             },
