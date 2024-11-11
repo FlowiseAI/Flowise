@@ -80,7 +80,7 @@ export const ChatDetail = ({
                             justifyContent: 'space-between'
                         }}
                     >
-                        {selectedSidekick ? (
+                        {selectedSidekick || chat ? (
                             <AppBar
                                 position='static'
                                 sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}
@@ -162,7 +162,7 @@ export const ChatDetail = ({
                                 </Toolbar>
                             </AppBar>
                         ) : null}
-                        {!selectedSidekick ? (
+                        {!selectedSidekick && !chat ? (
                             <Box
                                 sx={{
                                     display: 'flex',
