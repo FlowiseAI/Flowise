@@ -16,6 +16,7 @@ import { HelpChatProvider } from '../HelpChatContext'
 import { UserProvider } from '@auth0/nextjs-auth0/client'
 
 import { Auth0Setup } from '@/AppProvider'
+import React from 'react'
 
 export default function AppLayout({
     session,

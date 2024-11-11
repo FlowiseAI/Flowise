@@ -33,7 +33,17 @@ function TabPanel(props) {
             aria-labelledby={`chatflow-tab-${index}`}
             {...other}
         >
-            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+            {value === index && (
+                <Box
+                    sx={
+                        {
+                            // p: 3
+                        }
+                    }
+                >
+                    {children}
+                </Box>
+            )}
         </div>
     )
 }
@@ -90,7 +100,7 @@ const Chatflows = () => {
         setSelectedTemplateId(selectedChatflow.id)
         setIsMarketplaceDialogOpen(true)
         // Update the URL without navigating
-        window.history.pushState(null, '', `/sidekick-studio/marketplace/${selectedChatflow.id}`)
+        // window.history.pushState(null, '', `/sidekick-studio/marketplace/${selectedChatflow.id}`)
     }
 
     const onSearchChange = (event) => {

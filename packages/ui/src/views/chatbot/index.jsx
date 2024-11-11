@@ -13,6 +13,7 @@ import useApi from '@/hooks/useApi'
 
 //Const
 import { baseURL, setBaseURL } from '@/store/constant'
+import { Box } from '@mui/material'
 
 // ==============================|| Chatbot ||============================== //
 
@@ -120,12 +121,14 @@ const ChatbotFull = ({ apiHost, chatflowId: defaultChatflowId }) => {
                     {!chatflow || chatflow.apikeyid ? (
                         <p>Invalid Chatbot</p>
                     ) : (
-                        <FullPageChat
-                            chatflowid={chatflow.id}
-                            apiHost={apiHost ?? baseURL}
-                            chatflowConfig={chatbotOverrideConfig}
-                            theme={{ chatWindow: chatbotTheme }}
-                        />
+                        <Box sx={{ width: '100%', '>*': { width: '100%' } }}>
+                            <FullPageChat
+                                chatflowid={chatflow.id}
+                                apiHost={apiHost ?? baseURL}
+                                chatflowConfig={chatbotOverrideConfig}
+                                theme={{ chatWindow: chatbotTheme }}
+                            />
+                        </Box>
                     )}
                     {/* <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} /> */}
                 </>

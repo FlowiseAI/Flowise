@@ -57,10 +57,13 @@ const getAllTemplates = async (user: IUser | undefined) => {
                     templateName: chatflow.name,
                     flowData: chatflow.flowData,
                     badge: chatflow.userId === user?.id ? `SHARED BY ME` : `SHARED BY OTHERS`,
-                    categories: chatflow.category,
+                    categories: chatflow.category?.includes(';') ? chatflow.category.split(';') : chatflow.category,
                     type: chatflow.type === 'MULTIAGENT' ? 'Agent Community' : 'Chatflow Community',
                     description: chatflow.description,
-                    requiresClone: chatbotConfig.requiresClone || false
+                    requiresClone: chatbotConfig.requiresClone || false,
+                    isExecutable:
+                        chatflow.userId === user?.id ||
+                        (chatflow.visibility?.includes(ChatflowVisibility.ANSWERAI) && chatflow.organizationId === user?.organizationId)
                 }
                 templates.push(template)
             })
@@ -212,7 +215,11 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
             const chatbotConfig = JSON.parse(dbResponse.chatbotConfig || '{}')
             return {
                 ...dbResponse,
-                requiresClone: chatbotConfig.requiresClone || false // Get from chatbotConfig
+                requiresClone: chatbotConfig.requiresClone || false, // Get from chatbotConfig
+                isExecutable:
+                    dbResponse.userId === user?.id ||
+                    (dbResponse.visibility?.includes(ChatflowVisibility.ANSWERAI) && dbResponse.organizationId === user?.organizationId),
+                isOwner: dbResponse.userId === user?.id
             }
         }
 

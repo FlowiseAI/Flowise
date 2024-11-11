@@ -192,22 +192,24 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                 let hasAccess = false
 
                 if (flowData.id) {
+                    console.log('handleLoadFlow - Checking existing chatflow with ID:', flowData.id)
                     try {
                         existingChatflow = await chatflowsApi.getSpecificChatflow(flowData.id)
                         hasAccess = true
+                        console.log('handleLoadFlow - Found existing chatflow:', existingChatflow)
                     } catch (error) {
                         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
                             hasAccess = false
+                            console.log('handleLoadFlow - No access to existing chatflow')
                         } else {
-                            throw error // Re-throw if it's not a 401 or 403 error
+                            console.error('handleLoadFlow - Error checking chatflow:', error)
+                            throw error
                         }
                     }
-                } else {
-                    // No flowData.id provided, will create a new chatflow
                 }
 
                 if (existingChatflow && hasAccess) {
-                    // Ask user if they want to overwrite or create a new chatflow
+                    console.log('handleLoadFlow - Prompting user for overwrite decision')
                     const userChoice = await confirm({
                         title: 'Chatflow already exists',
                         description: 'Do you want to overwrite the existing chatflow or create a new one?',
@@ -216,15 +218,16 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                     })
 
                     if (!userChoice) {
-                        // Create new chatflow
+                        console.log('handleLoadFlow - User chose to create new chatflow')
                         delete flowData.id
                     }
                 } else {
-                    // User doesn't have access or chatflow doesn't exist, create a new chatflow
+                    console.log('handleLoadFlow - Creating new chatflow (no existing access)')
                     delete flowData.id
                 }
+
                 const newChatflow = {
-                    id: flowData.id, // This will be undefined if we're creating a new chatflow
+                    id: flowData.id,
                     name: `Copy of ${templateName}`,
                     description: flowData.description,
                     chatbotConfig: flowData.chatbotConfig,
@@ -233,12 +236,15 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                     type: flowData.type,
                     flowData: JSON.stringify({ nodes, edges })
                 }
+                console.log('handleLoadFlow - Created new chatflow object:', newChatflow)
+
                 dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
                 setChatflow(newChatflow)
                 setNodes(nodes)
                 setEdges(edges)
                 setTimeout(() => setDirty(), 0)
             } catch (e) {
+                console.error('handleLoadFlow - Error:', e)
                 enqueueSnackbar({
                     message: 'Failed to load chatflow: ' + e.message,
                     options: {
@@ -254,7 +260,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                 })
             }
         },
-        [confirm, dispatch, enqueueSnackbar, closeSnackbar, setNodes, setEdges, setDirty, templateData, templateFlowData]
+        [confirm, dispatch, enqueueSnackbar, closeSnackbar, setNodes, setEdges, setDirty, templateName]
     )
 
     const handleDeleteFlow = useCallback(async () => {
@@ -572,28 +578,25 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
         if (chatflowid) {
             getSpecificChatflowApi.request(chatflowid)
         } else {
-            if (localStorage.getItem('duplicatedFlowData')) {
-                const duplicatedFlowData = JSON.parse(localStorage.getItem('duplicatedFlowData'))
+            const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
 
-                setNodes(duplicatedFlowData.nodes || [])
-                setEdges(duplicatedFlowData.edges || [])
-                setChatflow({
-                    ...duplicatedFlowData,
+            if (duplicatedFlowData) {
+                const parsedData = JSON.parse(duplicatedFlowData)
+
+                setNodes(parsedData.nodes || [])
+                setEdges(parsedData.edges || [])
+
+                const newChatflow = {
+                    ...parsedData,
                     id: undefined,
-                    name: `Copy of ${duplicatedFlowData.name ?? templateName}`,
+                    name: `Copy of ${parsedData.name ?? templateName}`,
                     deployed: false,
                     isPublic: false
-                })
-                dispatch({
-                    type: SET_CHATFLOW,
-                    chatflow: {
-                        ...duplicatedFlowData,
-                        id: undefined,
-                        name: `Copy of ${duplicatedFlowData.name ?? templateName}`,
-                        deployed: false,
-                        isPublic: false
-                    }
-                })
+                }
+
+                setChatflow(newChatflow)
+                dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
+
                 setTimeout(() => localStorage.removeItem('duplicatedFlowData'), 0)
             } else {
                 setNodes([])
