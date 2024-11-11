@@ -56,7 +56,8 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             for (const file of files) {
                 const fileNames: string[] = []
                 const fileBuffer = fs.readFileSync(file.path)
-
+                // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
+                file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
                 const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
@@ -197,7 +198,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             flowGraph: getTelemetryFlowObj(nodes, edges),
             stopNodeId
         })
-        appServer.metricsProvider.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
+        appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
 
         return upsertedResult['result'] ?? { result: 'Successfully Upserted' }
     } catch (e) {

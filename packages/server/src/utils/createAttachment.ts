@@ -42,6 +42,10 @@ export const createFileAttachment = async (req: Request) => {
         for (const file of files) {
             const fileBuffer = fs.readFileSync(file.path)
             const fileNames: string[] = []
+
+            // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
+            file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
             const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid, chatId)
 
             const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)

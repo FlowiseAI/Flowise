@@ -161,7 +161,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const fileNames: string[] = []
             for (const file of files) {
                 const fileBuffer = fs.readFileSync(file.path)
-
+                // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
+                file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
                 const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
@@ -494,7 +495,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             flowGraph: getTelemetryFlowObj(nodes, edges)
         })
 
-        appServer.metricsProvider.incrementCounter(
+        appServer.metricsProvider?.incrementCounter(
             isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
             { status: FLOWISE_COUNTER_STATUS.SUCCESS }
         )
@@ -512,7 +513,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         return result
     } catch (e) {
-        appServer.metricsProvider.incrementCounter(
+        appServer.metricsProvider?.incrementCounter(
             isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
             { status: FLOWISE_COUNTER_STATUS.FAILURE }
         )
@@ -608,7 +609,7 @@ const utilBuildAgentResponse = async (
                 type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
-            appServer.metricsProvider.incrementCounter(
+            appServer.metricsProvider?.incrementCounter(
                 isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
                 { status: FLOWISE_COUNTER_STATUS.SUCCESS }
             )
@@ -658,7 +659,7 @@ const utilBuildAgentResponse = async (
         return undefined
     } catch (e) {
         logger.error('[server]: Error:', e)
-        appServer.metricsProvider.incrementCounter(
+        appServer.metricsProvider?.incrementCounter(
             isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
             { status: FLOWISE_COUNTER_STATUS.FAILURE }
         )
