@@ -70,6 +70,7 @@ export default function ChatDrawer({ journeys, chats, defaultOpen }: ChatDrawerP
     }
 
     const chatsByDate = React.useMemo(() => {
+        if (!fetchedChats) return {}
         const sortedChats = fetchedChats?.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         return sortedChats?.reduce((accum: { [key: string]: Chat[] }, chat: Chat) => {
             const dateKey = getDateKey(chat)
