@@ -24,6 +24,7 @@ let nextConfig = withBundleAnalyzer({
                 '@/menu-items/*': '../../packages/ui/src/menu-items/*',
                 '@/store/*': '../../packages/ui/src/store/*',
                 '@/themes/*': '../../packages/ui/src/themes/*',
+                '@/themes': '../../packages/ui/src/themes/index',
                 '@/assets/images/*': '../../packages/ui/src/assets/images/*'
             }
         },

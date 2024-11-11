@@ -84,13 +84,13 @@ export async function findSidekicksForChat(user: User) {
                 categories: getUniqueCategories(sidekicks)
             }
         } else {
-            const result = await response.text()
+            const result = await response.json()
             console.error('Chatflow error:', { result })
+            if (result.statusCode == 401) throw new Error('Unauthorized')
             return { sidekicks: [], categories: { top: [], more: [] } }
         }
     } catch (err) {
         console.error('Error fetching chatflows:', err)
-        return { sidekicks: [], categories: { top: [], more: [] } }
     }
 }
 

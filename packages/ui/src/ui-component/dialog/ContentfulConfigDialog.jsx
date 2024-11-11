@@ -40,7 +40,7 @@ function TabPanel(props) {
 
     return (
         <div role='tabpanel' hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
-            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+            {value === index && <Box sx={{ p: 0 }}>{children}</Box>}
         </div>
     )
 }
@@ -401,13 +401,17 @@ const ContentfulConfigDialog = ({ open, onClose, onSave, initialValue, nodeData 
     const FieldsForCitationSection = () => {
         const mainContentType = contentTypes.find((ct) => ct.sys.id === config.mainContentType.contentType)
         const availableFields = mainContentType ? mainContentType.fields.map((field) => `fields.${field.id}`) : []
-    
+
         return (
             <>
-                <Typography variant='h6' gutterBottom>Fields for Citation</Typography>
+                <Typography variant='h6' gutterBottom>
+                    Fields for Citation
+                </Typography>
                 {Object.entries(config.fieldsForCitation).map(([key, value]) => (
                     <FormControl key={key} fullWidth margin='normal'>
-                        <InputLabel id={`${key}-label`}>{key === 'urlPrefix' ? 'URL Prefix' : key === 'titleField' ? 'Citation Title Field' : 'Citation Slug Field'}</InputLabel>
+                        <InputLabel id={`${key}-label`}>
+                            {key === 'urlPrefix' ? 'URL Prefix' : key === 'titleField' ? 'Citation Title Field' : 'Citation Slug Field'}
+                        </InputLabel>
                         {key === 'urlPrefix' ? (
                             <TextField
                                 label={`${key}-label`}
