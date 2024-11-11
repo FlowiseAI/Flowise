@@ -159,7 +159,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
         }
     ])
 
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
         setAnchorEl(event.currentTarget)
     }
 
@@ -338,8 +338,10 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                             sx={{
                                 bgcolor: 'secondary.main',
                                 height: '32px',
-                                width: '32px'
+                                width: '32px',
+                                cursor: 'pointer'
                             }}
+                            onClick={handleClick}
                         />
                         <Box
                             sx={{

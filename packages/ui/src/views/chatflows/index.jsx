@@ -90,7 +90,7 @@ const Chatflows = () => {
         setSelectedTemplateId(selectedChatflow.id)
         setIsMarketplaceDialogOpen(true)
         // Update the URL without navigating
-        window.history.pushState(null, '', `/sidekick-studio/marketplace/${selectedChatflow.id}`)
+        // window.history.pushState(null, '', `/sidekick-studio/marketplace/${selectedChatflow.id}`)
     }
 
     const onSearchChange = (event) => {
