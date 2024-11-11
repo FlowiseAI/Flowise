@@ -178,7 +178,7 @@ const OverrideConfig = ({ dialogProps }) => {
         setNodeConfig(result)
 
         if (!overrideConfigStatus) {
-            setOverrideConfig(overrideConfig)
+            setOverrideConfig(newOverrideConfig)
         } else {
             const updatedOverrideConfig = { ...overrideConfig }
 

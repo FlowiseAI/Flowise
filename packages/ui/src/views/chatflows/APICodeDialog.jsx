@@ -85,7 +85,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const dispatch = useDispatch()
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const apiConfig = chatflow?.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
-    const overrideConfig = apiConfig?.overrideConfig?.config !== undefined ? apiConfig.overrideConfig.config : {}
+    const overrideConfigStatus = apiConfig?.overrideConfig?.status !== undefined ? apiConfig.overrideConfig.status : false
 
     const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
     const [value, setValue] = useState(0)
@@ -96,6 +96,9 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const [checkboxVal, setCheckbox] = useState(false)
     const [nodeConfig, setNodeConfig] = useState({})
     const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
+    const [overrideConfig, setOverrideConfig] = useState(
+        apiConfig?.overrideConfig?.config !== undefined ? apiConfig.overrideConfig.config : null
+    )
 
     const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -124,9 +127,12 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
 
     const groupByNodeLabel = (nodes) => {
         const result = {}
+        const newOverrideConfig = {}
+        const seenNodes = new Set()
 
         nodes.forEach((item) => {
             const { node, nodeId, label, name, type } = item
+            seenNodes.add(node)
 
             if (!result[node]) {
                 result[node] = {
@@ -135,12 +141,23 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
                 }
             }
 
+            if (!newOverrideConfig[node]) {
+                // If overrideConfigStatus is true, copy existing config for this node
+                newOverrideConfig[node] = overrideConfigStatus ? [...(overrideConfig[node] || [])] : []
+            }
+
             if (!result[node].nodeIds.includes(nodeId)) result[node].nodeIds.push(nodeId)
 
             const param = { label, name, type }
 
             if (!result[node].params.some((existingParam) => JSON.stringify(existingParam) === JSON.stringify(param))) {
                 result[node].params.push(param)
+                const paramExists = newOverrideConfig[node].some(
+                    (existingParam) => existingParam.label === label && existingParam.name === name && existingParam.type === type
+                )
+                if (!paramExists) {
+                    newOverrideConfig[node].push({ ...param, enabled: false })
+                }
             }
         })
 
@@ -148,8 +165,27 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
         for (const node in result) {
             result[node].nodeIds.sort()
         }
-
         setNodeConfig(result)
+
+        if (!overrideConfigStatus) {
+            setOverrideConfig(newOverrideConfig)
+        } else {
+            const updatedOverrideConfig = { ...overrideConfig }
+
+            Object.keys(updatedOverrideConfig).forEach((node) => {
+                if (!seenNodes.has(node)) {
+                    delete updatedOverrideConfig[node]
+                }
+            })
+
+            seenNodes.forEach((node) => {
+                if (!updatedOverrideConfig[node]) {
+                    updatedOverrideConfig[node] = newOverrideConfig[node]
+                }
+            })
+
+            setOverrideConfig(updatedOverrideConfig)
+        }
     }
 
     const handleAccordionChange = (nodeLabel) => (event, isExpanded) => {
@@ -168,6 +204,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
         if (getConfigApi.data) {
             groupByNodeLabel(getConfigApi.data)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getConfigApi.data])
 
     const handleChange = (event, newValue) => {
