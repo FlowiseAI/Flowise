@@ -137,10 +137,12 @@ const OverrideConfig = ({ dialogProps }) => {
 
     const groupByNodeLabel = (nodes) => {
         const result = {}
-        const overrideConfig = {}
+        const newOverrideConfig = {}
+        const seenNodes = new Set()
 
         nodes.forEach((item) => {
             const { node, nodeId, label, name, type } = item
+            seenNodes.add(node)
 
             if (!result[node]) {
                 result[node] = {
@@ -149,8 +151,9 @@ const OverrideConfig = ({ dialogProps }) => {
                 }
             }
 
-            if (!overrideConfig[node]) {
-                overrideConfig[node] = []
+            if (!newOverrideConfig[node]) {
+                // If overrideConfigStatus is true, copy existing config for this node
+                newOverrideConfig[node] = overrideConfigStatus ? [...(overrideConfig[node] || [])] : []
             }
 
             if (!result[node].nodeIds.includes(nodeId)) result[node].nodeIds.push(nodeId)
@@ -159,7 +162,12 @@ const OverrideConfig = ({ dialogProps }) => {
 
             if (!result[node].params.some((existingParam) => JSON.stringify(existingParam) === JSON.stringify(param))) {
                 result[node].params.push(param)
-                overrideConfig[node].push({ ...param, enabled: false })
+                const paramExists = newOverrideConfig[node].some(
+                    (existingParam) => existingParam.label === label && existingParam.name === name && existingParam.type === type
+                )
+                if (!paramExists) {
+                    newOverrideConfig[node].push({ ...param, enabled: false })
+                }
             }
         })
 
@@ -171,6 +179,22 @@ const OverrideConfig = ({ dialogProps }) => {
 
         if (!overrideConfigStatus) {
             setOverrideConfig(overrideConfig)
+        } else {
+            const updatedOverrideConfig = { ...overrideConfig }
+
+            Object.keys(updatedOverrideConfig).forEach((node) => {
+                if (!seenNodes.has(node)) {
+                    delete updatedOverrideConfig[node]
+                }
+            })
+
+            seenNodes.forEach((node) => {
+                if (!updatedOverrideConfig[node]) {
+                    updatedOverrideConfig[node] = newOverrideConfig[node]
+                }
+            })
+
+            setOverrideConfig(updatedOverrideConfig)
         }
     }
 
