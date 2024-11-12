@@ -89,8 +89,8 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>{dialogProps.title}</div>
+            <DialogTitle sx={{ fontSize: '1.25rem' }} id='alert-dialog-title'>
+                {dialogProps.title}
             </DialogTitle>
             <DialogContent>
                 <Tabs

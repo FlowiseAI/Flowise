@@ -5,7 +5,6 @@ import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
-    Box,
     Button,
     Paper,
     Stack,
@@ -33,43 +32,46 @@ import { IconX } from '@tabler/icons-react'
 import useApi from '@/hooks/useApi'
 import chatflowsApi from '@/api/chatflows'
 import configApi from '@/api/config'
+import variablesApi from '@/api/variables'
 
 // utils
 
 const OverrideConfigTable = ({ columns, onToggle, rows, sx }) => {
     const handleChange = (enabled, row) => {
-        onToggle(row.name, enabled)
+        onToggle(row, enabled)
     }
 
     return (
-        <>
-            <TableContainer component={Paper}>
-                <Table size='small' sx={{ minWidth: 650, ...sx }} aria-label='simple table'>
-                    <TableHead>
-                        <TableRow>
-                            {columns.map((col, index) => (
-                                <TableCell key={index}>{col.charAt(0).toUpperCase() + col.slice(1)}</TableCell>
-                            ))}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {rows.map((row, index) => (
-                            <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                {Object.keys(row).map((key, index) => (
-                                    <TableCell key={index}>
-                                        {key === 'enabled' ? (
-                                            <SwitchInput onChange={(enabled) => handleChange(enabled, row)} value={row.enabled} />
-                                        ) : (
-                                            row[key]
-                                        )}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
+        <TableContainer component={Paper}>
+            <Table size='small' sx={{ minWidth: 650, ...sx }} aria-label='simple table'>
+                <TableHead>
+                    <TableRow>
+                        {columns.map((col, index) => (
+                            <TableCell key={index}>{col.charAt(0).toUpperCase() + col.slice(1)}</TableCell>
                         ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {rows.map((row, index) => (
+                        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                            {Object.keys(row).map((key, index) => {
+                                if (key !== 'id') {
+                                    return (
+                                        <TableCell key={index}>
+                                            {key === 'enabled' ? (
+                                                <SwitchInput onChange={(enabled) => handleChange(enabled, row)} value={row.enabled} />
+                                            ) : (
+                                                row[key]
+                                            )}
+                                        </TableCell>
+                                    )
+                                }
+                            })}
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
     )
 }
 
@@ -96,10 +98,13 @@ const OverrideConfig = ({ dialogProps }) => {
     const [overrideConfigStatus, setOverrideConfigStatus] = useState(
         apiConfig?.overrideConfig?.status !== undefined ? apiConfig.overrideConfig.status : false
     )
-    const [overrideConfig, setOverrideConfig] = useState(
-        apiConfig?.overrideConfig?.config !== undefined ? apiConfig.overrideConfig.config : {}
+    const [nodeOverrides, setNodeOverrides] = useState(apiConfig?.overrideConfig?.nodes !== undefined ? apiConfig.overrideConfig.nodes : {})
+    const [variableOverrides, setVariableOverrides] = useState(
+        apiConfig?.overrideConfig?.variables !== undefined ? apiConfig.overrideConfig.variables : []
     )
+
     const getConfigApi = useApi(configApi.getConfig)
+    const getAllVariablesApi = useApi(variablesApi.getAllVariables)
 
     const handleAccordionChange = (nodeLabel) => (event, isExpanded) => {
         const accordianNodes = { ...nodeConfigExpanded }
@@ -115,15 +120,16 @@ const OverrideConfig = ({ dialogProps }) => {
         if (overrideConfigStatus) {
             obj.overrideConfig = {
                 ...obj.overrideConfig,
-                config: overrideConfig
+                nodes: nodeOverrides,
+                variables: variableOverrides
             }
         }
 
         return obj
     }
 
-    const onPropertyToggle = (node, property, status) => {
-        setOverrideConfig((prev) => {
+    const onNodeOverrideToggle = (node, property, status) => {
+        setNodeOverrides((prev) => {
             const newConfig = { ...prev }
             newConfig[node] = newConfig[node].map((item) => {
                 if (item.name === property) {
@@ -135,9 +141,20 @@ const OverrideConfig = ({ dialogProps }) => {
         })
     }
 
+    const onVariableOverrideToggle = (id, status) => {
+        setVariableOverrides((prev) => {
+            return prev.map((item) => {
+                if (item.id === id) {
+                    item.enabled = status
+                }
+                return item
+            })
+        })
+    }
+
     const groupByNodeLabel = (nodes) => {
         const result = {}
-        const newOverrideConfig = {}
+        const newNodeOverrides = {}
         const seenNodes = new Set()
 
         nodes.forEach((item) => {
@@ -151,9 +168,9 @@ const OverrideConfig = ({ dialogProps }) => {
                 }
             }
 
-            if (!newOverrideConfig[node]) {
+            if (!newNodeOverrides[node]) {
                 // If overrideConfigStatus is true, copy existing config for this node
-                newOverrideConfig[node] = overrideConfigStatus ? [...(overrideConfig[node] || [])] : []
+                newNodeOverrides[node] = overrideConfigStatus ? [...(nodeOverrides[node] || [])] : []
             }
 
             if (!result[node].nodeIds.includes(nodeId)) result[node].nodeIds.push(nodeId)
@@ -162,11 +179,11 @@ const OverrideConfig = ({ dialogProps }) => {
 
             if (!result[node].params.some((existingParam) => JSON.stringify(existingParam) === JSON.stringify(param))) {
                 result[node].params.push(param)
-                const paramExists = newOverrideConfig[node].some(
+                const paramExists = newNodeOverrides[node].some(
                     (existingParam) => existingParam.label === label && existingParam.name === name && existingParam.type === type
                 )
                 if (!paramExists) {
-                    newOverrideConfig[node].push({ ...param, enabled: false })
+                    newNodeOverrides[node].push({ ...param, enabled: false })
                 }
             }
         })
@@ -178,24 +195,60 @@ const OverrideConfig = ({ dialogProps }) => {
         setNodeConfig(result)
 
         if (!overrideConfigStatus) {
-            setOverrideConfig(newOverrideConfig)
+            setNodeOverrides(newNodeOverrides)
         } else {
-            const updatedOverrideConfig = { ...overrideConfig }
+            const updatedNodeOverrides = { ...nodeOverrides }
 
-            Object.keys(updatedOverrideConfig).forEach((node) => {
+            Object.keys(updatedNodeOverrides).forEach((node) => {
                 if (!seenNodes.has(node)) {
-                    delete updatedOverrideConfig[node]
+                    delete updatedNodeOverrides[node]
                 }
             })
 
             seenNodes.forEach((node) => {
-                if (!updatedOverrideConfig[node]) {
-                    updatedOverrideConfig[node] = newOverrideConfig[node]
+                if (!updatedNodeOverrides[node]) {
+                    updatedNodeOverrides[node] = newNodeOverrides[node]
                 }
             })
 
-            setOverrideConfig(updatedOverrideConfig)
+            setNodeOverrides(updatedNodeOverrides)
         }
+    }
+
+    const groupByVariableLabel = (variables) => {
+        const newVariables = []
+        const seenVariables = new Set()
+
+        variables.forEach((item) => {
+            const { id, name, type } = item
+            seenVariables.add(id)
+
+            const param = { id, name, type }
+            const existingVariable = variableOverrides?.find((existingParam) => existingParam.id === id)
+
+            if (existingVariable) {
+                if (!newVariables.some((existingVariable) => existingVariable.id === id)) {
+                    newVariables.push({ ...existingVariable })
+                }
+            } else {
+                if (!newVariables.some((existingVariable) => existingVariable.id === id)) {
+                    newVariables.push({ ...param, enabled: false })
+                }
+            }
+        })
+
+        if (variableOverrides) {
+            variableOverrides.forEach((existingVariable) => {
+                if (!seenVariables.has(existingVariable.id)) {
+                    const index = newVariables.findIndex((newVariable) => newVariable.id === existingVariable.id)
+                    if (index !== -1) {
+                        newVariables.splice(index, 1)
+                    }
+                }
+            })
+        }
+
+        setVariableOverrides(newVariables)
     }
 
     const onOverrideConfigSave = async () => {
@@ -240,6 +293,7 @@ const OverrideConfig = ({ dialogProps }) => {
     useEffect(() => {
         if (dialogProps.chatflow) {
             getConfigApi.request(dialogProps.chatflow.id)
+            getAllVariablesApi.request()
         }
 
         return () => {}
@@ -253,9 +307,16 @@ const OverrideConfig = ({ dialogProps }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getConfigApi.data])
 
+    useEffect(() => {
+        if (getAllVariablesApi.data) {
+            groupByVariableLabel(getAllVariablesApi.data)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getAllVariablesApi.data])
+
     return (
         <Stack direction='column' spacing={2} sx={{ alignItems: 'start' }}>
-            <Typography variant='h4'>
+            <Typography variant='h3'>
                 Override Configuration
                 <TooltipWithParser
                     style={{ mb: 1, mt: 2, marginLeft: 10 }}
@@ -264,64 +325,87 @@ const OverrideConfig = ({ dialogProps }) => {
             </Typography>
             <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
                 <SwitchInput label='Enable Override Configuration' onChange={setOverrideConfigStatus} value={overrideConfigStatus} />
-                {overrideConfigStatus && overrideConfig && nodeConfig && getConfigApi.data && getConfigApi.data.length > 0 && (
-                    <Box sx={{ mt: 2, mb: 2 }}>
-                        {Object.keys(overrideConfig)
-                            .sort()
-                            .map((nodeLabel) => (
-                                <Accordion
-                                    expanded={nodeConfigExpanded[nodeLabel] || false}
-                                    onChange={handleAccordionChange(nodeLabel)}
-                                    key={nodeLabel}
-                                    disableGutters
-                                >
-                                    <AccordionSummary
-                                        expandIcon={<ExpandMoreIcon />}
-                                        aria-controls={`nodes-accordian-${nodeLabel}`}
-                                        id={`nodes-accordian-header-${nodeLabel}`}
-                                    >
-                                        <Stack flexDirection='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                                            <Typography variant='h5'>{nodeLabel}</Typography>
-                                            {nodeConfig[nodeLabel].nodeIds.length > 0 &&
-                                                nodeConfig[nodeLabel].nodeIds.map((nodeId, index) => (
-                                                    <div
-                                                        key={index}
-                                                        style={{
-                                                            display: 'flex',
-                                                            flexDirection: 'row',
-                                                            width: 'max-content',
-                                                            borderRadius: 15,
-                                                            background: 'rgb(254,252,191)',
-                                                            padding: 5,
-                                                            paddingLeft: 10,
-                                                            paddingRight: 10
-                                                        }}
-                                                    >
-                                                        <span
-                                                            style={{
-                                                                color: 'rgb(116,66,16)',
-                                                                fontSize: '0.825rem'
-                                                            }}
-                                                        >
-                                                            {nodeId}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                        </Stack>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <OverrideConfigTable
-                                            rows={overrideConfig[nodeLabel]}
-                                            columns={overrideConfig[nodeLabel].length > 0 ? Object.keys(overrideConfig[nodeLabel][0]) : []}
-                                            onToggle={(property, status) => onPropertyToggle(nodeLabel, property, status)}
-                                        />
-                                    </AccordionDetails>
-                                </Accordion>
-                            ))}
-                    </Box>
+                {overrideConfigStatus && (
+                    <>
+                        {nodeOverrides && nodeConfig && (
+                            <Stack direction='column' spacing={1}>
+                                <Typography variant='h4'>Nodes</Typography>
+                                <Stack direction='column'>
+                                    {Object.keys(nodeOverrides)
+                                        .sort()
+                                        .map((nodeLabel) => (
+                                            <Accordion
+                                                expanded={nodeConfigExpanded[nodeLabel] || false}
+                                                onChange={handleAccordionChange(nodeLabel)}
+                                                key={nodeLabel}
+                                                disableGutters
+                                            >
+                                                <AccordionSummary
+                                                    expandIcon={<ExpandMoreIcon />}
+                                                    aria-controls={`nodes-accordian-${nodeLabel}`}
+                                                    id={`nodes-accordian-header-${nodeLabel}`}
+                                                >
+                                                    <Stack flexDirection='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                                                        <Typography variant='h5'>{nodeLabel}</Typography>
+                                                        {nodeConfig[nodeLabel].nodeIds.length > 0 &&
+                                                            nodeConfig[nodeLabel].nodeIds.map((nodeId, index) => (
+                                                                <div
+                                                                    key={index}
+                                                                    style={{
+                                                                        display: 'flex',
+                                                                        flexDirection: 'row',
+                                                                        width: 'max-content',
+                                                                        borderRadius: 15,
+                                                                        background: 'rgb(254,252,191)',
+                                                                        padding: 5,
+                                                                        paddingLeft: 10,
+                                                                        paddingRight: 10
+                                                                    }}
+                                                                >
+                                                                    <span
+                                                                        style={{
+                                                                            color: 'rgb(116,66,16)',
+                                                                            fontSize: '0.825rem'
+                                                                        }}
+                                                                    >
+                                                                        {nodeId}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                    </Stack>
+                                                </AccordionSummary>
+                                                <AccordionDetails sx={{ p: 0 }}>
+                                                    <OverrideConfigTable
+                                                        rows={nodeOverrides[nodeLabel]}
+                                                        columns={
+                                                            nodeOverrides[nodeLabel].length > 0
+                                                                ? Object.keys(nodeOverrides[nodeLabel][0])
+                                                                : []
+                                                        }
+                                                        onToggle={(property, status) =>
+                                                            onNodeOverrideToggle(nodeLabel, property.name, status)
+                                                        }
+                                                    />
+                                                </AccordionDetails>
+                                            </Accordion>
+                                        ))}
+                                </Stack>
+                            </Stack>
+                        )}
+                        {variableOverrides && (
+                            <Stack direction='column' spacing={1} sx={{ width: '100%' }}>
+                                <Typography variant='h4'>Variables</Typography>
+                                <OverrideConfigTable
+                                    rows={variableOverrides}
+                                    columns={['Variable Name', 'Type', 'Enabled']}
+                                    onToggle={(property, status) => onVariableOverrideToggle(property.id, status)}
+                                />
+                            </Stack>
+                        )}
+                    </>
                 )}
             </Stack>
-            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onOverrideConfigSave}>
+            <StyledButton variant='contained' onClick={onOverrideConfigSave}>
                 Save
             </StyledButton>
         </Stack>

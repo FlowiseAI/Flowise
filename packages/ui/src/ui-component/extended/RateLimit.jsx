@@ -126,8 +126,8 @@ const RateLimit = () => {
 
     const textField = (message, fieldName, fieldLabel, fieldType = 'string', placeholder = '') => {
         return (
-            <Stack direction='column'>
-                <Typography sx={{ mb: 1 }}>{fieldLabel}</Typography>
+            <Stack direction='column' spacing={1}>
+                <Typography>{fieldLabel}</Typography>
                 <OutlinedInput
                     id={fieldName}
                     type={fieldType}
@@ -146,7 +146,7 @@ const RateLimit = () => {
 
     return (
         <Stack direction='column' spacing={2} sx={{ alignItems: 'start' }}>
-            <Typography variant='h4'>
+            <Typography variant='h3'>
                 Rate Limit{' '}
                 <TooltipWithParser
                     style={{ marginLeft: 10 }}

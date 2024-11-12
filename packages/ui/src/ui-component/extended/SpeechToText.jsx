@@ -248,9 +248,7 @@ const SpeechToText = ({ dialogProps }) => {
     return (
         <>
             <Box fullWidth sx={{ mb: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography variant='h4' sx={{ mb: 1 }}>
-                    Providers
-                </Typography>
+                <Typography>Providers</Typography>
                 <FormControl fullWidth>
                     <Select size='small' value={selectedProvider} onChange={handleProviderChange}>
                         <MenuItem value='none'>None</MenuItem>
