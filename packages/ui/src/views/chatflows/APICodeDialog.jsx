@@ -110,6 +110,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
         setCheckbox(newVal)
         if (newVal) {
             getConfigApi.request(dialogProps.chatflowid)
+            getAllVariablesApi.request()
         }
     }
 
@@ -198,20 +199,30 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
             seenVariables.add(id)
 
             const param = { id, name, type }
-            const existingVariable = variableOverrides?.find((existingParam) => existingParam.id === id)
 
-            if (existingVariable) {
-                if (!newVariables.some((existingVariable) => existingVariable.id === id)) {
-                    newVariables.push({ ...existingVariable })
+            // If overrideConfigStatus is true, look for existing variable config
+            // Otherwise, create new default config
+            if (overrideConfigStatus) {
+                const existingVariable = variableOverrides?.find((existingParam) => existingParam.id === id)
+                if (existingVariable) {
+                    if (!newVariables.some((variable) => variable.id === id)) {
+                        newVariables.push({ ...existingVariable })
+                    }
+                } else {
+                    if (!newVariables.some((variable) => variable.id === id)) {
+                        newVariables.push({ ...param, enabled: false })
+                    }
                 }
             } else {
-                if (!newVariables.some((existingVariable) => existingVariable.id === id)) {
+                // When no override config exists, create default values
+                if (!newVariables.some((variable) => variable.id === id)) {
                     newVariables.push({ ...param, enabled: false })
                 }
             }
         })
 
-        if (variableOverrides) {
+        // If overrideConfigStatus is true, clean up any variables that no longer exist
+        if (overrideConfigStatus && variableOverrides) {
             variableOverrides.forEach((existingVariable) => {
                 if (!seenVariables.has(existingVariable.id)) {
                     const index = newVariables.findIndex((newVariable) => newVariable.id === existingVariable.id)
