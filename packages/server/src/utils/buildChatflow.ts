@@ -349,7 +349,9 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
 
             const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
-            const apiOverrideConfig = apiConfig.overrideConfig && apiConfig.overrideConfig.config ? apiConfig.overrideConfig.config : {}
+            const nodeOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
+            const variableOverrides =
+                apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
             const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
 
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
@@ -369,8 +371,9 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 chatflowid,
                 appDataSource: appServer.AppDataSource,
                 overrideConfig: incomingInput?.overrideConfig,
-                apiOverrideConfig,
                 apiOverrideStatus,
+                nodeOverrides,
+                variableOverrides,
                 cachePool: appServer.cachePool,
                 isUpsert: false,
                 uploads: incomingInput.uploads,
@@ -386,11 +389,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             }
 
             if (incomingInput.overrideConfig && apiConfig.overrideConfig && apiConfig.overrideConfig.status) {
-                nodeToExecute.data = replaceInputsWithConfig(
-                    nodeToExecute.data,
-                    incomingInput.overrideConfig,
-                    apiConfig.overrideConfig.config
-                )
+                nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig, nodeOverrides)
             }
 
             const flowData: ICommonObject = {
@@ -409,7 +408,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 incomingInput.question,
                 chatHistory,
                 flowData,
-                uploadedFilesContent
+                uploadedFilesContent,
+                variableOverrides
             )
             nodeToExecuteData = reactFlowNodeData
 

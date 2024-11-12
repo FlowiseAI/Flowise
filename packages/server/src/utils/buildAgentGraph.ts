@@ -112,7 +112,8 @@ export const buildAgentGraph = async (
         }
 
         const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
-        const apiOverrideConfig = apiConfig.overrideConfig && apiConfig.overrideConfig.config ? apiConfig.overrideConfig.config : {}
+        const nodeOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
+        const variableOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
         const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
 
         // Initialize nodes like ChatModels, Tools, etc.
@@ -131,8 +132,9 @@ export const buildAgentGraph = async (
             chatflowid,
             appDataSource: appServer.AppDataSource,
             overrideConfig: incomingInput?.overrideConfig,
-            apiOverrideConfig,
             apiOverrideStatus,
+            nodeOverrides,
+            variableOverrides,
             cachePool: appServer.cachePool,
             isUpsert: false,
             uploads: incomingInput.uploads,
@@ -474,8 +476,9 @@ export const buildAgentGraph = async (
  * @param {string} threadId
  * @param {boolean} summarization
  * @param {string} uploadedFilesContent,
- * @param {ICommonObject} apiOverrideConfig
  * @param {boolean} apiOverrideStatus
+ * @param {ICommonObject} nodeOverrides
+ * @param {ICommonObject[]} variableOverrides
  */
 const compileMultiAgentsGraph = async (
     chatflow: IChatFlow,
@@ -492,8 +495,9 @@ const compileMultiAgentsGraph = async (
     threadId?: string,
     summarization?: boolean,
     uploadedFilesContent?: string,
-    apiOverrideConfig: ICommonObject = {},
-    apiOverrideStatus: boolean = false
+    apiOverrideStatus: boolean = false,
+    nodeOverrides: ICommonObject = {},
+    variableOverrides: ICommonObject[] = []
 ) => {
     const appServer = getRunningExpressApp()
     const channels: ITeamState = {
@@ -524,7 +528,7 @@ const compileMultiAgentsGraph = async (
         const newNodeInstance = new nodeModule.nodeClass()
 
         let flowNodeData = cloneDeep(workerNode.data)
-        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, apiOverrideConfig)
+        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides)
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
@@ -532,7 +536,8 @@ const compileMultiAgentsGraph = async (
             question,
             chatHistory,
             overrideConfig,
-            uploadedFilesContent
+            uploadedFilesContent,
+            variableOverrides
         )
 
         try {
@@ -563,7 +568,7 @@ const compileMultiAgentsGraph = async (
 
         let flowNodeData = cloneDeep(supervisorNode.data)
 
-        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, apiOverrideConfig)
+        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides)
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
@@ -571,7 +576,8 @@ const compileMultiAgentsGraph = async (
             question,
             chatHistory,
             overrideConfig,
-            uploadedFilesContent
+            uploadedFilesContent,
+            variableOverrides
         )
 
         if (flowNodeData.inputs) flowNodeData.inputs.workerNodes = supervisorWorkers[supervisor]
@@ -680,8 +686,9 @@ const compileMultiAgentsGraph = async (
  * @param {ICommonObject} overrideConfig
  * @param {string} threadId
  * @param {IAction} action
- * @param {ICommonObject} apiOverrideConfig
  * @param {boolean} apiOverrideStatus
+ * @param {ICommonObject} nodeOverrides
+ * @param {ICommonObject[]} variableOverrides
  */
 const compileSeqAgentsGraph = async (
     depthQueue: IDepthQueue,
@@ -697,8 +704,9 @@ const compileSeqAgentsGraph = async (
     threadId?: string,
     action?: IAction,
     uploadedFilesContent?: string,
-    apiOverrideConfig: ICommonObject = {},
-    apiOverrideStatus: boolean = false
+    apiOverrideStatus: boolean = false,
+    nodeOverrides: ICommonObject = {},
+    variableOverrides: ICommonObject[] = []
 ) => {
     const appServer = getRunningExpressApp()
 
@@ -749,7 +757,7 @@ const compileSeqAgentsGraph = async (
         const newNodeInstance = new nodeModule.nodeClass()
 
         flowNodeData = cloneDeep(node.data)
-        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, apiOverrideConfig)
+        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides)
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
@@ -757,7 +765,8 @@ const compileSeqAgentsGraph = async (
             question,
             chatHistory,
             overrideConfig,
-            uploadedFilesContent
+            uploadedFilesContent,
+            variableOverrides
         )
 
         const seqAgentNode: ISeqAgentNode = await newNodeInstance.init(flowNodeData, question, options)
