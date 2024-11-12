@@ -397,7 +397,7 @@ const OverrideConfig = ({ dialogProps }) => {
                                 <Typography variant='h4'>Variables</Typography>
                                 <OverrideConfigTable
                                     rows={variableOverrides}
-                                    columns={['Variable Name', 'Type', 'Enabled']}
+                                    columns={['name', 'type', 'enabled']}
                                     onToggle={(property, status) => onVariableOverrideToggle(property.id, status)}
                                 />
                             </Stack>
