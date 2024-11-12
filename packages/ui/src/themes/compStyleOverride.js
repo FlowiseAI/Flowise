@@ -56,10 +56,12 @@ export default function componentStyleOverrides(theme) {
             },
             styleOverrides: {
                 root: {
-                    backgroundImage: 'none'
+                    backgroundImage: 'none',
+                    // border: `1px solid`,
+                    borderColor: theme?.palette?.primary?.main ?? 'grey'
                 },
                 rounded: {
-                    borderRadius: `${theme?.customization?.borderRadius}px`
+                    borderRadius: `${theme?.customization?.borderRadius ?? 8}px`
                 }
             }
         },

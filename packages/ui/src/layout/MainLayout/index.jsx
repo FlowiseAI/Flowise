@@ -61,7 +61,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' && pr
 const MainLayout = ({ children }) => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
-    const [isInIframe, setIsInIframe] = useState(false)
+    const [isInIframe, setIsInIframe] = useState(true)
 
     // Handle left drawer
     const leftDrawerOpened = true

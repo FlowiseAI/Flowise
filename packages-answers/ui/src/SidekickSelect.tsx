@@ -28,6 +28,7 @@ import {
     Favorite as FavoriteIcon,
     AccessTime as AccessTimeIcon,
     MoreHoriz as MoreHorizIcon,
+    Visibility as VisibilityIcon,
     Edit as EditIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
@@ -44,6 +45,8 @@ import { IconCopy } from '@tabler/icons-react'
 import { useTheme } from '@mui/material/styles'
 import useScrollTrigger from '@mui/material/useScrollTrigger'
 import { alpha } from '@mui/material/styles'
+import dynamic from 'next/dynamic'
+const MarketplaceLandingDialog = dynamic(() => import('@/views/chatflows/MarketplaceLandingDialog'), { ssr: false })
 
 // Create a theme that matches shadcn/ui styling
 
@@ -66,7 +69,8 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 const ScrollableContent = styled(Box)({
     overflowY: 'auto',
     height: 'calc(100% - 120px)',
-    padding: '16px'
+    paddingTop: '16px',
+    paddingBottom: '16px'
 })
 
 const SidekickCard = styled(Paper)(({ theme, onClick }) => ({
@@ -211,6 +215,9 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     const [tabValue, setTabValue] = useState<string>('favorites')
 
+    const [isMarketplaceDialogOpen, setIsMarketplaceDialogOpen] = useState(false)
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+
     useEffect(() => {
         const storedFavorites = localStorage.getItem('favoriteSidekicks')
         if (storedFavorites) {
@@ -229,7 +236,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         const timer = setTimeout(() => setSearchTerm(debouncedSearchTerm), 300)
         return () => clearTimeout(timer)
     }, [debouncedSearchTerm])
-
     const toggleFavorite = useCallback((sidekick: Sidekick, event: React.MouseEvent) => {
         event.stopPropagation()
         setFavorites((prev) => {
@@ -247,16 +253,17 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     const fetcher = async (url: string) => {
         try {
             const res = await fetch(url)
-            console.log('res', res)
             if (res.status === 401) {
-                window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
+                // window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
+                window.location.href = '/api/auth/login'
             } else {
                 return res.json()
             }
         } catch (error) {
             console.log('error', error)
             if (error instanceof Response && error.status === 401) {
-                window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
+                window.location.href = '/api/auth/login'
+                // window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
             }
             return { sidekicks: [], categories: { top: [], more: [] } }
         }
@@ -347,7 +354,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         setSelectedSidekick(sidekick)
         setSidekick(sidekick)
         setOpen(false)
-
+        setIsMarketplaceDialogOpen(false)
         const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
         sidekickHistory.lastUsed = sidekick
         localStorage.setItem('sidekickHistory', JSON.stringify(sidekickHistory))
@@ -451,6 +458,16 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         return filtered
     }, [combinedSidekicks, searchTerm, tabValue, favorites, fuse])
 
+    const handleCardClick = (sidekick: Sidekick) => {
+        handleSidekickSelect(sidekick)
+    }
+
+    const handlePreviewClick = (sidekick: Sidekick, e: React.MouseEvent) => {
+        e.stopPropagation()
+        setSelectedTemplateId(sidekick.id)
+        setIsMarketplaceDialogOpen(true)
+    }
+
     const renderSidekickGrid = useCallback(() => {
         // Sort function to prioritize executable chatflows
         const sortSidekicks = (sidekicks: Sidekick[]) => {
@@ -465,7 +482,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             <Grid container spacing={2}>
                 {sidekicks.map((sidekick) => (
                     <Grid item xs={12} sm={6} md={6} key={`${tabValue}-${sidekick.id}-${sidekick.chatflow.name}`}>
-                        <SidekickCard onClick={sidekick.isExecutable ? () => handleSidekickSelect(sidekick) : undefined}>
+                        <SidekickCard onClick={() => handleCardClick(sidekick)}>
                             <SidekickHeader sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                 <SidekickTitle variant='h6' sx={{ width: '100%' }}>
                                     {sidekick.chatflow.name}
@@ -530,6 +547,14 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                             disabled={!sidekick.isExecutable && !favorites.has(sidekick.id)}
                                         >
                                             {favorites.has(sidekick.id) ? <StarIcon /> : <StarBorderIcon />}
+                                        </WhiteIconButton>
+                                    </span>
+                                </Tooltip>
+
+                                <Tooltip title='Preview this sidekick'>
+                                    <span>
+                                        <WhiteIconButton onClick={(e) => handlePreviewClick(sidekick, e)} size='small'>
+                                            <VisibilityIcon />
                                         </WhiteIconButton>
                                     </span>
                                 </Tooltip>
@@ -636,6 +661,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 </Menu>
                 <ScrollableContent>{renderSidekickGrid()}</ScrollableContent>
             </Box>
+            <MarketplaceLandingDialog
+                key='marketplace-dialog'
+                open={isMarketplaceDialogOpen}
+                onClose={() => {
+                    setIsMarketplaceDialogOpen(false)
+                    setSelectedTemplateId(null)
+                    // Remove the templateId from the URL when closing the dialog
+                    window.history.pushState(null, '', window.location.pathname)
+                }}
+                templateId={selectedTemplateId}
+                onUse={handleSidekickSelect}
+            />
         </>
     )
 
@@ -643,18 +680,22 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         return <ContentWrapper>{content}</ContentWrapper>
     }
 
+    const handleCreateNewSidekick = () => {
+        navigate('/canvas')
+    }
+
     return (
         <Box>
-            <Button
-                variant='outlined'
-                onClick={() => setOpen(true)}
-                endIcon={<ExpandMoreIcon />}
-                sx={{ width: 200, justifyContent: 'space-between' }}
-            >
+            <Button variant='outlined' onClick={() => setOpen(true)} endIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'space-between' }}>
                 {selectedSidekick && 'chatflow' in selectedSidekick ? selectedSidekick.chatflow.name : 'Select Sidekick'}
             </Button>
             <StyledDialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth='lg' TransitionComponent={Fade}>
-                <DialogTitle sx={{ pb: 0 }}>Select a Sidekick</DialogTitle>
+                <DialogTitle sx={{ pb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Select a Sidekick
+                    <Button variant='contained' color='primary' onClick={handleCreateNewSidekick}>
+                        Create
+                    </Button>
+                </DialogTitle>
                 <DialogContent>
                     <Box sx={{ pb: 2 }}>
                         <TextField
@@ -725,6 +766,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     </Box>
                 </DialogContent>
             </StyledDialog>
+            <MarketplaceLandingDialog
+                key='marketplace-dialog'
+                open={isMarketplaceDialogOpen}
+                onClose={() => {
+                    setIsMarketplaceDialogOpen(false)
+                    setSelectedTemplateId(null)
+                    // Remove the templateId from the URL when closing the dialog
+                    window.history.pushState(null, '', window.location.pathname)
+                }}
+                templateId={selectedTemplateId}
+                onUse={(sidekick) => handleSidekickSelect(sidekick)}
+            />
         </Box>
     )
 }

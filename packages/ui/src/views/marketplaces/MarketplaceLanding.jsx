@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, forwardRef } from 'react'
 import useMarketplaceLanding from '@/hooks/useMarketplaceLanding'
-import marketplacesApi from '@/api/marketplaces'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import {
@@ -15,10 +14,12 @@ import {
     Divider,
     Menu,
     MenuItem,
-    Grid,
     Tabs,
     Tab,
-    useMediaQuery
+    useMediaQuery,
+    Skeleton,
+    Button,
+    IconButton
 } from '@mui/material'
 import { useNavigate } from '@/utils/navigation'
 import { IconCopy, IconDownload, IconShare } from '@tabler/icons-react'
@@ -29,8 +30,81 @@ import { baseURL } from '@/store/constant'
 import { Snackbar } from '@mui/material'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { useNavigationState } from '@/utils/navigation'
+import { Star as StarIcon, StarBorder as StarBorderIcon, Edit as EditIcon } from '@mui/icons-material'
+import { styled, alpha } from '@mui/material/styles'
 
-const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }, ref) {
+const LoadingSkeleton = () => (
+    <Box sx={{ maxWidth: '1080px', width: '100%', mx: 'auto', p: { xs: 2, sm: 3 }, height: '100%' }}>
+        {/* Header Section */}
+        <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Skeleton variant='circular' width={35} height={35} />
+                <Skeleton variant='text' width={200} height={40} />
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <Skeleton variant='rounded' width={120} height={36} />
+                <Skeleton variant='rounded' width={120} height={36} />
+                <Skeleton variant='rounded' width={120} height={36} />
+            </Box>
+            <Divider />
+        </Box>
+
+        {/* Content Section */}
+        <Box sx={{ display: 'flex', height: 'calc(100% - 100px)' }}>
+            {/* Left Panel */}
+            <Box sx={{ width: '30%', pr: 2, borderRight: 1, borderColor: 'divider' }}>
+                <Skeleton variant='text' width={140} height={32} sx={{ mb: 2 }} />
+                <Skeleton variant='text' width='90%' height={100} sx={{ mb: 3 }} />
+                <Skeleton variant='text' width={100} height={24} sx={{ mb: 1 }} />
+                <Skeleton variant='rounded' width={120} height={32} sx={{ mb: 3 }} />
+                <Skeleton variant='text' width={120} height={24} sx={{ mb: 1 }} />
+                <Skeleton variant='text' width={80} height={24} sx={{ mb: 3 }} />
+                <Skeleton variant='text' width={140} height={24} sx={{ mb: 1 }} />
+                <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+                    <Skeleton variant='circular' width={30} height={30} />
+                    <Skeleton variant='circular' width={30} height={30} />
+                    <Skeleton variant='circular' width={30} height={30} />
+                </Box>
+                <Skeleton variant='text' width={80} height={24} sx={{ mb: 1 }} />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Skeleton variant='rounded' width={60} height={24} />
+                    <Skeleton variant='rounded' width={60} height={24} />
+                    <Skeleton variant='rounded' width={60} height={24} />
+                </Box>
+            </Box>
+
+            {/* Right Panel */}
+            <Box sx={{ width: '70%', pl: 2 }}>
+                <Skeleton variant='text' width={140} height={32} sx={{ mb: 2 }} />
+                <Skeleton variant='text' width='90%' height={60} sx={{ mb: 3 }} />
+                <Skeleton variant='rectangular' width='100%' height='calc(100% - 120px)' />
+            </Box>
+        </Box>
+    </Box>
+)
+
+const WhiteButton = styled(Button)(({ theme }) => ({
+    color: theme.palette.common.white,
+    borderColor: theme.palette.common.white,
+    '&:hover': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.08),
+        borderColor: theme.palette.primary.main,
+        color: theme.palette.primary.main
+    }
+}))
+
+const WhiteIconButton = styled(IconButton)(({ theme }) => ({
+    color: theme.palette.common.white,
+    '&:hover': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.08),
+        color: theme.palette.primary.main
+    },
+    '&.Mui-disabled': {
+        color: alpha(theme.palette.common.white, 0.3)
+    }
+}))
+
+const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, isDialog = false, onClose, onUse }, ref) {
     const navigate = useNavigate()
     const { isLoading, error, template } = useMarketplaceLanding(templateId)
     const { user } = useUser()
@@ -40,7 +114,6 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
 
     const [isSignInPromptOpen, setIsSignInPromptOpen] = useState(false)
     const [actionType, setActionType] = useState(null)
-    const [isFavorite, setIsFavorite] = useState(false)
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
     const [anchorEl, setAnchorEl] = useState(null)
@@ -49,11 +122,17 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
     const [tabValue, setTabValue] = useState(0)
     const customization = useSelector((state) => state.customization)
 
+    const [isFavorite, setIsFavorite] = useState(false)
+
     useEffect(() => {
-        if (user && template) {
-            checkFavoriteStatus()
+        if (templateId) {
+            const storedFavorites = localStorage.getItem('favoriteSidekicks')
+            if (storedFavorites) {
+                const parsedFavorites = new Set(JSON.parse(storedFavorites))
+                setIsFavorite(parsedFavorites.has(templateId))
+            }
         }
-    }, [user, template])
+    }, [templateId])
 
     useEffect(() => {
         if (template && template.flowData) {
@@ -75,31 +154,27 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
         }
     }, [template])
 
-    const checkFavoriteStatus = async () => {
-        try {
-            const favorites = await marketplacesApi.getFavorites()
-            setIsFavorite(favorites.some((fav) => fav.chatflowId === templateId))
-        } catch (error) {
-            console.error('Error checking favorite status:', error)
-        }
-    }
-
-    const toggleFavorite = async () => {
+    const toggleFavorite = () => {
         if (!user) {
             setIsSignInPromptOpen(true)
             return
         }
 
         try {
+            const storedFavorites = localStorage.getItem('favoriteSidekicks')
+            const favorites = new Set(storedFavorites ? JSON.parse(storedFavorites) : [])
+
             if (isFavorite) {
-                await marketplacesApi.removeFavorite(templateId)
+                favorites.delete(templateId)
                 setIsFavorite(false)
                 setSnackbarMessage('Removed from favorites')
             } else {
-                await marketplacesApi.addFavorite(templateId)
+                favorites.add(templateId)
                 setIsFavorite(true)
                 setSnackbarMessage('Added to favorites')
             }
+
+            localStorage.setItem('favoriteSidekicks', JSON.stringify(Array.from(favorites)))
             setSnackbarOpen(true)
         } catch (error) {
             console.error('Error toggling favorite:', error)
@@ -116,21 +191,33 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
                 (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
             )
 
-            localStorage.setItem('duplicatedFlowData', JSON.stringify(template.flowData))
+            const flowData = typeof template.flowData === 'string' ? JSON.parse(template.flowData) : template.flowData
+
+            const chatflowData = {
+                ...template,
+                name: template.name,
+                description: template.description,
+                category: template.category,
+                nodes: flowData.nodes || [],
+                edges: flowData.edges || [],
+                flowData: JSON.stringify(flowData)
+            }
+
+            localStorage.setItem('duplicatedFlowData', JSON.stringify(chatflowData))
+
             const state = {
                 templateData: JSON.stringify(template),
-                templateName: template.name,
                 parentChatflowId: template.id
             }
+
             if (!user) {
                 const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
                 const loginUrl = `/api/auth/login?returnTo=${redirectUrl}`
                 setNavigationState(state)
                 window.location.href = loginUrl
             } else {
-                navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, {
-                    state
-                })
+                const targetPath = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
+                navigate(targetPath, { state })
             }
         } else {
             setActionType(type)
@@ -176,7 +263,7 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
         setTabValue(newValue)
     }
 
-    if (isLoading) return <div>Loading...</div>
+    if (isLoading) return <LoadingSkeleton />
     if (error) return <ErrorBoundary error={error} />
     if (!template) return <div>Template not found</div>
 
@@ -259,9 +346,52 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
 
     const renderActionButtons = () => (
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-            <StyledButton color='primary' variant='contained' onClick={() => handleAction('new')} startIcon={<IconCopy />}>
-                Use as New Flow
-            </StyledButton>
+            {template.isExecutable ? (
+                <>
+                    {template.isOwner ? (
+                        <Tooltip title='Edit this sidekick'>
+                            <WhiteIconButton
+                                size='small'
+                                onClick={() => {
+                                    const isAgentCanvas = (template.flowData?.nodes || []).some(
+                                        (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
+                                    )
+                                    navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${template.id}`)
+                                }}
+                            >
+                                <EditIcon />
+                            </WhiteIconButton>
+                        </Tooltip>
+                    ) : null}
+                    <Tooltip title='Clone this sidekick'>
+                        <WhiteIconButton size='small' onClick={() => handleAction('new')}>
+                            <IconCopy />
+                        </WhiteIconButton>
+                    </Tooltip>
+                </>
+            ) : (
+                <Tooltip title='Clone this sidekick'>
+                    <WhiteButton variant='outlined' endIcon={<IconCopy />} onClick={() => handleAction('new')}>
+                        Clone
+                    </WhiteButton>
+                </Tooltip>
+            )}
+            <Tooltip
+                title={!template.isExecutable ? 'Clone this sidekick to use it' : isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            >
+                <span>
+                    <WhiteIconButton onClick={toggleFavorite} size='small' disabled={!template.isExecutable && !isFavorite}>
+                        {isFavorite ? <StarIcon /> : <StarBorderIcon />}
+                    </WhiteIconButton>
+                </span>
+            </Tooltip>
+            {template.isExecutable && (
+                <Tooltip title='Use this sidekick'>
+                    <Button variant='contained' size='small' onClick={() => onUse(template)}>
+                        Use
+                    </Button>
+                </Tooltip>
+            )}
             <StyledButton color='secondary' variant='outlined' onClick={handleExportClick} startIcon={<IconDownload />}>
                 Download
             </StyledButton>
@@ -368,7 +498,26 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId }
 })
 
 MarketplaceLanding.propTypes = {
-    templateId: PropTypes.string.isRequired
+    templateId: PropTypes.string.isRequired,
+    isDialog: PropTypes.bool,
+    onClose: PropTypes.func,
+    onUse: PropTypes.func,
+    template: PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        description: PropTypes.string,
+        category: PropTypes.string,
+        flowData: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
+        isOwner: PropTypes.bool,
+        isExecutable: PropTypes.bool,
+        tags: PropTypes.arrayOf(PropTypes.string)
+    })
+}
+
+MarketplaceLanding.defaultProps = {
+    isDialog: false,
+    onClose: () => {},
+    onUse: () => {}
 }
 
 export default MarketplaceLanding
