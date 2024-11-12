@@ -89,7 +89,7 @@
         "moment": "^2.29.3",
         "moment-timezone": "^0.5.34",
         "multer": "^1.4.5-lts.1",
-        "mysql2": "^3.9.2",
+        "mysql2": "^3.11.3",
         "openai": "^4.57.3",
         "pg": "^8.11.1",
         "posthog-node": "^3.5.0",
