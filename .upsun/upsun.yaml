@@ -8,8 +8,10 @@ applications:
     hooks:
       build: |
         # Install Yarn globally
-        npm install -g yarn
-        # Set the Yarn registry to prevent any issues
+        npm install -g yarn@1.22.19
+        # Clear Yarn's registry cache to ensure the correct settings are applied
+        yarn config delete registry
+        # Set the Yarn registry explicitly to avoid any issues
         yarn config set registry https://registry.yarnpkg.com
         # Use Yarn to install dependencies without creating or modifying the lockfile
         yarn install --frozen-lockfile
