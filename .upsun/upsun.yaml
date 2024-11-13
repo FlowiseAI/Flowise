@@ -14,6 +14,6 @@ applications:
         start: "corepack yarn start"
 
 routes:
-  "https://www.{default}/":
+  "https://main-bvxea6i-btub4saye2uew.eu-5.platformsh.site/":
     type: upstream
     upstream: "app:http"
