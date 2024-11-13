@@ -4,7 +4,7 @@ applications:
 
     hooks:
       build: |
-        npm install     
+        npm install - g flowise     
 
       deploy: |
         npm run
@@ -14,6 +14,6 @@ applications:
         start: "npm start"
 
 routes:
- "https://main-bvxea6i-btub4saye2uew.eu-5.platformsh.site/":
-  type: upstream
-  upstream: "flowise-app:http"
+    "https://{default}":
+        type: upstream
+        upstream: "app:http"
