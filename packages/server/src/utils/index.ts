@@ -2,6 +2,7 @@ import path from 'path'
 import fs from 'fs'
 import logger from './logger'
 import {
+    IChatFlow,
     IComponentCredentials,
     IComponentNodes,
     ICredentialDataDecrypted,
@@ -515,7 +516,11 @@ export const buildFlow = async ({
             const newNodeInstance = new nodeModule.nodeClass()
 
             let flowNodeData = cloneDeep(reactFlowNode.data)
-            if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides)
+
+            // Only override the config if its status is true
+            if (overrideConfig && apiOverrideStatus) {
+                flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides)
+            }
 
             if (isUpsert) upsertHistory['flowData'] = saveUpsertFlowData(flowNodeData, upsertHistory)
 
@@ -726,6 +731,8 @@ const getGlobalVariable = async (appDataSource: DataSource, overrideConfig?: ICo
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
     if (overrideConfig?.vars && variableOverrides) {
+        console.log('overrideConfig.vars', overrideConfig.vars)
+        console.log('variableOverrides', variableOverrides)
         for (const propertyName of Object.getOwnPropertyNames(overrideConfig.vars)) {
             // Check if this variable is enabled for override
             const override = variableOverrides.find((v) => v.name === propertyName)
@@ -1631,4 +1638,17 @@ export const aMonthAgo = () => {
     const date = new Date()
     date.setMonth(new Date().getMonth() - 1)
     return date
+}
+
+export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
+    try {
+        const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
+        const nodeOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
+        const variableOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
+        const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
+
+        return { nodeOverrides, variableOverrides, apiOverrideStatus }
+    } catch (error) {
+        return { nodeOverrides: {}, variableOverrides: [], apiOverrideStatus: false }
+    }
 }

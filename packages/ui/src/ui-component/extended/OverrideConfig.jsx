@@ -14,8 +14,10 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Typography
+    Typography,
+    Card
 } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -26,7 +28,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // Icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconX } from '@tabler/icons-react'
+import { IconX, IconBox, IconVariable } from '@tabler/icons-react'
 
 // API
 import useApi from '@/hooks/useApi'
@@ -89,6 +91,7 @@ const OverrideConfig = ({ dialogProps }) => {
     const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
 
     useNotifier()
+    const theme = useTheme()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -320,7 +323,9 @@ const OverrideConfig = ({ dialogProps }) => {
                 Override Configuration
                 <TooltipWithParser
                     style={{ mb: 1, mt: 2, marginLeft: 10 }}
-                    title={'Enable or disable which properties of the chatbot configuration can be overridden by the user.'}
+                    title={
+                        'Enable or disable which properties of the flow configuration can be overridden. Refer to the <a href="https://docs.flowiseai.com/using-flowise/api#override-config" target="_blank">documentation</a> for more information.'
+                    }
                 />
             </Typography>
             <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
@@ -328,8 +333,11 @@ const OverrideConfig = ({ dialogProps }) => {
                 {overrideConfigStatus && (
                     <>
                         {nodeOverrides && nodeConfig && (
-                            <Stack direction='column' spacing={1}>
-                                <Typography variant='h4'>Nodes</Typography>
+                            <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
+                                <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
+                                    <IconBox />
+                                    <Typography variant='h4'>Nodes</Typography>
+                                </Stack>
                                 <Stack direction='column'>
                                     {Object.keys(nodeOverrides)
                                         .sort()
@@ -390,17 +398,20 @@ const OverrideConfig = ({ dialogProps }) => {
                                             </Accordion>
                                         ))}
                                 </Stack>
-                            </Stack>
+                            </Card>
                         )}
                         {variableOverrides && (
-                            <Stack direction='column' spacing={1} sx={{ width: '100%' }}>
-                                <Typography variant='h4'>Variables</Typography>
+                            <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
+                                <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
+                                    <IconVariable />
+                                    <Typography variant='h4'>Variables</Typography>
+                                </Stack>
                                 <OverrideConfigTable
                                     rows={variableOverrides}
                                     columns={['name', 'type', 'enabled']}
                                     onToggle={(property, status) => onVariableOverrideToggle(property.id, status)}
                                 />
-                            </Stack>
+                            </Card>
                         )}
                     </>
                 )}

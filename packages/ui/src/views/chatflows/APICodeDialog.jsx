@@ -15,10 +15,12 @@ import {
     AccordionSummary,
     AccordionDetails,
     Typography,
-    Stack
+    Stack,
+    Card
 } from '@mui/material'
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { useTheme } from '@mui/material/styles'
 
 // Project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
@@ -36,7 +38,7 @@ import cURLSVG from '@/assets/images/cURL.svg'
 import EmbedSVG from '@/assets/images/embed.svg'
 import ShareChatbotSVG from '@/assets/images/sharing.png'
 import settingsSVG from '@/assets/images/settings.svg'
-import { IconBulb } from '@tabler/icons-react'
+import { IconBulb, IconBox, IconVariable } from '@tabler/icons-react'
 
 // API
 import apiKeyApi from '@/api/apikey'
@@ -84,6 +86,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const theme = useTheme()
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const apiConfig = chatflow?.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
     const overrideConfigStatus = apiConfig?.overrideConfig?.status !== undefined ? apiConfig.overrideConfig.status : false
@@ -720,12 +723,18 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                     showLineNumbers={false}
                                     wrapLines
                                 />
-                                <CheckboxInput label='Show Input Config' value={checkboxVal} onChange={onCheckBoxChanged} />
+                                <CheckboxInput label='Show Override Config' value={checkboxVal} onChange={onCheckBoxChanged} />
                                 {checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
                                     <>
+                                        <Typography sx={{ mt: 2, mb: 3 }}>
+                                            You can override existing input configuration of the chatflow with overrideConfig property.
+                                        </Typography>
                                         <Stack direction='column' spacing={2} sx={{ width: '100%', my: 2 }}>
-                                            <Stack direction='column' spacing={1}>
-                                                <Typography variant='h4'>Nodes</Typography>
+                                            <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
+                                                <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
+                                                    <IconBox />
+                                                    <Typography variant='h4'>Nodes</Typography>
+                                                </Stack>
                                                 {Object.keys(nodeConfig)
                                                     .sort()
                                                     .map((nodeLabel) => (
@@ -784,11 +793,14 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                             </AccordionDetails>
                                                         </Accordion>
                                                     ))}
-                                            </Stack>
-                                            <Stack direction='column' spacing={1} sx={{ width: '100%' }}>
-                                                <Typography variant='h4'>Variables</Typography>
+                                            </Card>
+                                            <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
+                                                <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
+                                                    <IconVariable />
+                                                    <Typography variant='h4'>Variables</Typography>
+                                                </Stack>
                                                 <TableViewOnly rows={variableOverrides} columns={['name', 'type', 'enabled']} />
-                                            </Stack>
+                                            </Card>
                                         </Stack>
                                         <CopyBlock
                                             theme={atomOneDark}

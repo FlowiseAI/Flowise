@@ -37,7 +37,8 @@ import {
     databaseEntities,
     getSessionChatHistory,
     getMemorySessionId,
-    clearSessionMemory
+    clearSessionMemory,
+    getAPIOverrideConfig
 } from '../utils'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { replaceInputsWithConfig, resolveVariables } from '.'
@@ -111,10 +112,8 @@ export const buildAgentGraph = async (
             )
         }
 
-        const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
-        const nodeOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
-        const variableOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
-        const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
+        /*** Get API Config ***/
+        const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
         // Initialize nodes like ChatModels, Tools, etc.
         const reactFlowNodes: IReactFlowNode[] = await buildFlow({
@@ -126,6 +125,7 @@ export const buildAgentGraph = async (
             depthQueue,
             componentNodes: appServer.nodesPool.componentNodes,
             question: incomingInput.question,
+            uploadedFilesContent,
             chatHistory,
             chatId,
             sessionId,
@@ -138,8 +138,7 @@ export const buildAgentGraph = async (
             cachePool: appServer.cachePool,
             isUpsert: false,
             uploads: incomingInput.uploads,
-            baseURL,
-            uploadedFilesContent
+            baseURL
         })
 
         const options = {
@@ -185,39 +184,39 @@ export const buildAgentGraph = async (
 
         try {
             if (!seqAgentNodes.length) {
-                streamResults = await compileMultiAgentsGraph(
+                streamResults = await compileMultiAgentsGraph({
                     chatflow,
                     mapNameToLabel,
                     reactFlowNodes,
-                    endingNodeIds,
-                    appServer.nodesPool.componentNodes,
+                    workerNodeIds: endingNodeIds,
+                    componentNodes: appServer.nodesPool.componentNodes,
                     options,
                     startingNodeIds,
-                    incomingInput.question,
-                    incomingInput.history,
+                    question: incomingInput.question,
+                    prependHistoryMessages: incomingInput.history,
                     chatHistory,
-                    incomingInput?.overrideConfig,
-                    sessionId || chatId,
-                    seqAgentNodes.some((node) => node.data.inputs?.summarization),
+                    overrideConfig: incomingInput?.overrideConfig,
+                    threadId: sessionId || chatId,
+                    summarization: seqAgentNodes.some((node) => node.data.inputs?.summarization),
                     uploadedFilesContent
-                )
+                })
             } else {
                 isSequential = true
-                streamResults = await compileSeqAgentsGraph(
+                streamResults = await compileSeqAgentsGraph({
                     depthQueue,
                     chatflow,
                     reactFlowNodes,
-                    edges,
-                    appServer.nodesPool.componentNodes,
+                    reactFlowEdges: edges,
+                    componentNodes: appServer.nodesPool.componentNodes,
                     options,
-                    incomingInput.question,
-                    incomingInput.history,
+                    question: incomingInput.question,
+                    prependHistoryMessages: incomingInput.history,
                     chatHistory,
-                    incomingInput?.overrideConfig,
-                    sessionId || chatId,
-                    incomingInput.action,
+                    overrideConfig: incomingInput?.overrideConfig,
+                    threadId: sessionId || chatId,
+                    action: incomingInput.action,
                     uploadedFilesContent
-                )
+                })
             }
 
             if (streamResults) {
@@ -462,43 +461,42 @@ export const buildAgentGraph = async (
     }
 }
 
-/**
- * Compile Multi Agents Graph
- * @param {IChatFlow} chatflow
- * @param {Record<string, {label: string, nodeName: string }>} mapNameToLabel
- * @param {IReactFlowNode[]} reactflowNodes
- * @param {string[]} workerNodeIds
- * @param {IComponentNodes} componentNodes
- * @param {ICommonObject} options
- * @param {string[]} startingNodeIds
- * @param {string} question
- * @param {ICommonObject} overrideConfig
- * @param {string} threadId
- * @param {boolean} summarization
- * @param {string} uploadedFilesContent,
- * @param {boolean} apiOverrideStatus
- * @param {ICommonObject} nodeOverrides
- * @param {ICommonObject[]} variableOverrides
- */
-const compileMultiAgentsGraph = async (
-    chatflow: IChatFlow,
-    mapNameToLabel: Record<string, { label: string; nodeName: string }>,
-    reactflowNodes: IReactFlowNode[] = [],
-    workerNodeIds: string[],
-    componentNodes: IComponentNodes,
-    options: ICommonObject,
-    startingNodeIds: string[],
-    question: string,
-    prependHistoryMessages: IMessage[] = [],
-    chatHistory: IMessage[] = [],
-    overrideConfig?: ICommonObject,
-    threadId?: string,
-    summarization?: boolean,
-    uploadedFilesContent?: string,
-    apiOverrideStatus: boolean = false,
-    nodeOverrides: ICommonObject = {},
-    variableOverrides: ICommonObject[] = []
-) => {
+type MultiAgentsGraphParams = {
+    chatflow: IChatFlow
+    mapNameToLabel: Record<string, { label: string; nodeName: string }>
+    reactFlowNodes: IReactFlowNode[]
+    workerNodeIds: string[]
+    componentNodes: IComponentNodes
+    options: ICommonObject
+    startingNodeIds: string[]
+    question: string
+    prependHistoryMessages?: IMessage[]
+    chatHistory?: IMessage[]
+    overrideConfig?: ICommonObject
+    threadId?: string
+    summarization?: boolean
+    uploadedFilesContent?: string
+}
+
+const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
+    const {
+        chatflow,
+        mapNameToLabel,
+        reactFlowNodes,
+        workerNodeIds,
+        componentNodes,
+        options,
+        startingNodeIds,
+        prependHistoryMessages = [],
+        chatHistory = [],
+        overrideConfig = {},
+        threadId,
+        summarization = false,
+        uploadedFilesContent
+    } = params
+
+    let question = params.question
+
     const appServer = getRunningExpressApp()
     const channels: ITeamState = {
         messages: {
@@ -517,7 +515,10 @@ const compileMultiAgentsGraph = async (
         channels
     })
 
-    const workerNodes = reactflowNodes.filter((node) => workerNodeIds.includes(node.data.id))
+    const workerNodes = reactFlowNodes.filter((node) => workerNodeIds.includes(node.data.id))
+
+    /*** Get API Config ***/
+    const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
     let supervisorWorkers: { [key: string]: IMultiAgentNode[] } = {}
 
@@ -532,7 +533,7 @@ const compileMultiAgentsGraph = async (
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
-            reactflowNodes,
+            reactFlowNodes,
             question,
             chatHistory,
             overrideConfig,
@@ -559,7 +560,7 @@ const compileMultiAgentsGraph = async (
     // Init supervisor nodes
     for (const supervisor in supervisorWorkers) {
         const supervisorInputLabel = mapNameToLabel[supervisor].label
-        const supervisorNode = reactflowNodes.find((node) => supervisorInputLabel === node.data.inputs?.supervisorName)
+        const supervisorNode = reactFlowNodes.find((node) => supervisorInputLabel === node.data.inputs?.supervisorName)
         if (!supervisorNode) continue
 
         const nodeInstanceFilePath = componentNodes[supervisorNode.data.name].filePath as string
@@ -572,7 +573,7 @@ const compileMultiAgentsGraph = async (
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
-            reactflowNodes,
+            reactFlowNodes,
             question,
             chatHistory,
             overrideConfig,
@@ -622,7 +623,7 @@ const compileMultiAgentsGraph = async (
             appServer.chatflowPool.add(
                 `${chatflow.id}_${options.chatId}`,
                 workflowGraph as any,
-                reactflowNodes.filter((node) => startingNodeIds.includes(node.id)),
+                reactFlowNodes.filter((node) => startingNodeIds.includes(node.id)),
                 overrideConfig
             )
 
@@ -673,41 +674,40 @@ const compileMultiAgentsGraph = async (
     }
 }
 
-/**
- * Compile Seq Agents Graph
- * @param {IDepthQueue} depthQueue
- * @param {IChatFlow} chatflow
- * @param {IReactFlowNode[]} reactflowNodes
- * @param {IReactFlowEdge[]} reactflowEdges
- * @param {IComponentNodes} componentNodes
- * @param {ICommonObject} options
- * @param {string} question
- * @param {IMessage[]} chatHistory
- * @param {ICommonObject} overrideConfig
- * @param {string} threadId
- * @param {IAction} action
- * @param {boolean} apiOverrideStatus
- * @param {ICommonObject} nodeOverrides
- * @param {ICommonObject[]} variableOverrides
- */
-const compileSeqAgentsGraph = async (
-    depthQueue: IDepthQueue,
-    chatflow: IChatFlow,
-    reactflowNodes: IReactFlowNode[] = [],
-    reactflowEdges: IReactFlowEdge[] = [],
-    componentNodes: IComponentNodes,
-    options: ICommonObject,
-    question: string,
-    prependHistoryMessages: IMessage[] = [],
-    chatHistory: IMessage[] = [],
-    overrideConfig?: ICommonObject,
-    threadId?: string,
-    action?: IAction,
-    uploadedFilesContent?: string,
-    apiOverrideStatus: boolean = false,
-    nodeOverrides: ICommonObject = {},
-    variableOverrides: ICommonObject[] = []
-) => {
+type SeqAgentsGraphParams = {
+    depthQueue: IDepthQueue
+    chatflow: IChatFlow
+    reactFlowNodes: IReactFlowNode[]
+    reactFlowEdges: IReactFlowEdge[]
+    componentNodes: IComponentNodes
+    options: ICommonObject
+    question: string
+    prependHistoryMessages?: IMessage[]
+    chatHistory?: IMessage[]
+    overrideConfig?: ICommonObject
+    threadId?: string
+    action?: IAction
+    uploadedFilesContent?: string
+}
+
+const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
+    const {
+        depthQueue,
+        chatflow,
+        reactFlowNodes,
+        reactFlowEdges,
+        componentNodes,
+        options,
+        prependHistoryMessages = [],
+        chatHistory = [],
+        overrideConfig = {},
+        threadId,
+        action,
+        uploadedFilesContent
+    } = params
+
+    let question = params.question
+
     const appServer = getRunningExpressApp()
 
     let channels: ISeqAgentsState = {
@@ -718,7 +718,7 @@ const compileSeqAgentsGraph = async (
     }
 
     // Get state
-    const seqStateNode = reactflowNodes.find((node: IReactFlowNode) => node.data.name === 'seqState')
+    const seqStateNode = reactFlowNodes.find((node: IReactFlowNode) => node.data.name === 'seqState')
     if (seqStateNode) {
         channels = {
             ...seqStateNode.data.instance.node,
@@ -732,13 +732,13 @@ const compileSeqAgentsGraph = async (
     })
 
     /*** Validate Graph ***/
-    const startAgentNodes: IReactFlowNode[] = reactflowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqStart')
+    const startAgentNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqStart')
     if (!startAgentNodes.length) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Start node not found')
     if (startAgentNodes.length > 1)
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have only one start node')
 
-    const endAgentNodes: IReactFlowNode[] = reactflowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqEnd')
-    const loopNodes: IReactFlowNode[] = reactflowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqLoop')
+    const endAgentNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqEnd')
+    const loopNodes: IReactFlowNode[] = reactFlowNodes.filter((node: IReactFlowNode) => node.data.name === 'seqLoop')
     if (!endAgentNodes.length && !loopNodes.length) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Graph should have at least one End/Loop node')
     }
@@ -750,6 +750,7 @@ const compileSeqAgentsGraph = async (
     let conditionalToolNodes: Record<string, { source: ISeqAgentNode; toolNodes: ISeqAgentNode[] }> = {}
     let bindModel: Record<string, any> = {}
     let interruptToolNodeNames = []
+    const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
     const initiateNode = async (node: IReactFlowNode) => {
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
@@ -761,7 +762,7 @@ const compileSeqAgentsGraph = async (
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
-            reactflowNodes,
+            reactFlowNodes,
             question,
             chatHistory,
             overrideConfig,
@@ -783,16 +784,16 @@ const compileSeqAgentsGraph = async (
      *  2.) With the interruptedRouteMapping object, avoid adding conditional edges to the Interrupted Agent for the nodes that are already interrupted by tools. It will be separately added from the function - agentInterruptToolFunc
      */
     const processInterruptedRouteMapping = (conditionNodeId: string) => {
-        const conditionEdges = reactflowEdges.filter((edge) => edge.source === conditionNodeId) ?? []
+        const conditionEdges = reactFlowEdges.filter((edge) => edge.source === conditionNodeId) ?? []
 
         for (const conditionEdge of conditionEdges) {
             const nextNodeId = conditionEdge.target
             const conditionNodeOutputAnchorId = conditionEdge.sourceHandle
 
-            const nextNode = reactflowNodes.find((node) => node.id === nextNodeId)
+            const nextNode = reactFlowNodes.find((node) => node.id === nextNodeId)
             if (!nextNode) continue
 
-            const conditionNode = reactflowNodes.find((node) => node.id === conditionNodeId)
+            const conditionNode = reactFlowNodes.find((node) => node.id === conditionNodeId)
             if (!conditionNode) continue
 
             const outputAnchors = conditionNode?.data.outputAnchors
@@ -823,13 +824,13 @@ const compileSeqAgentsGraph = async (
      *  }
      */
     const prepareConditionalEdges = (nodeId: string, nodeInstance: ISeqAgentNode) => {
-        const conditionEdges = reactflowEdges.filter((edge) => edge.target === nodeId && edge.source.includes('seqCondition')) ?? []
+        const conditionEdges = reactFlowEdges.filter((edge) => edge.target === nodeId && edge.source.includes('seqCondition')) ?? []
 
         for (const conditionEdge of conditionEdges) {
             const conditionNodeId = conditionEdge.source
             const conditionNodeOutputAnchorId = conditionEdge.sourceHandle
 
-            const conditionNode = reactflowNodes.find((node) => node.id === conditionNodeId)
+            const conditionNode = reactFlowNodes.find((node) => node.id === conditionNodeId)
             const outputAnchors = conditionNode?.data.outputAnchors
 
             if (!outputAnchors || !outputAnchors.length || !outputAnchors[0].options) continue
@@ -886,7 +887,7 @@ const compileSeqAgentsGraph = async (
 
     /*** Start processing every Agent nodes ***/
     for (const agentNodeId of getSortedDepthNodes(depthQueue)) {
-        const agentNode = reactflowNodes.find((node) => node.id === agentNodeId)
+        const agentNode = reactFlowNodes.find((node) => node.id === agentNodeId)
         if (!agentNode) continue
 
         const eligibleSeqNodes = ['seqAgent', 'seqEnd', 'seqLoop', 'seqToolNode', 'seqLLMNode']
@@ -908,8 +909,8 @@ const compileSeqAgentsGraph = async (
                     if (agentInstance.type === 'agent' && agentNode.data.inputs?.interrupt) {
                         interruptToolNodeNames.push(agentInstance.agentInterruptToolNode.name)
 
-                        const nextNodeId = reactflowEdges.find((edge) => edge.source === agentNode.id)?.target
-                        const nextNode = reactflowNodes.find((node) => node.id === nextNodeId)
+                        const nextNodeId = reactFlowEdges.find((edge) => edge.source === agentNode.id)?.target
+                        const nextNode = reactFlowNodes.find((node) => node.id === nextNodeId)
 
                         let nextNodeSeqAgentName = ''
                         if (nextNodeId && nextNode) {
@@ -999,11 +1000,11 @@ const compileSeqAgentsGraph = async (
 
     /*** Add conditional edges to graph for condition nodes ***/
     for (const conditionNodeId in conditionalEdges) {
-        const startConditionEdges = reactflowEdges.filter((edge) => edge.target === conditionNodeId)
+        const startConditionEdges = reactFlowEdges.filter((edge) => edge.target === conditionNodeId)
         if (!startConditionEdges.length) continue
 
         for (const startConditionEdge of startConditionEdges) {
-            const startConditionNode = reactflowNodes.find((node) => node.id === startConditionEdge.source)
+            const startConditionNode = reactFlowNodes.find((node) => node.id === startConditionEdge.source)
             if (!startConditionNode) continue
             seqGraph.addConditionalEdges(
                 startConditionNode.data.instance.name,
@@ -1049,12 +1050,12 @@ const compileSeqAgentsGraph = async (
     appServer.chatflowPool.add(
         `${chatflow.id}_${options.chatId}`,
         seqGraph as any,
-        reactflowNodes.filter((node) => startAgentNodes.map((nd) => nd.id).includes(node.id)),
+        reactFlowNodes.filter((node) => startAgentNodes.map((nd) => nd.id).includes(node.id)),
         overrideConfig
     )
 
     /*** Get memory ***/
-    const startNode = reactflowNodes.find((node: IReactFlowNode) => node.data.name === 'seqStart')
+    const startNode = reactFlowNodes.find((node: IReactFlowNode) => node.data.name === 'seqStart')
     let memory = startNode?.data.instance?.checkpointMemory
 
     try {

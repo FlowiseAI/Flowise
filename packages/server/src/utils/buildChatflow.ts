@@ -42,7 +42,8 @@ import {
     isSameOverrideConfig,
     getEndingNodes,
     constructGraphs,
-    isSameChatId
+    isSameChatId,
+    getAPIOverrideConfig
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
@@ -346,22 +347,19 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
-            logger.debug(`[server]: Start building chatflow ${chatflowid}`)
+            /*** Get API Config ***/
+            const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
-            const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
-            const nodeOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
-            const variableOverrides =
-                apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
-            const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
+            logger.debug(`[server]: Start building chatflow ${chatflowid}`)
 
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
             const reactFlowNodes = await buildFlow({
                 startingNodeIds,
                 reactFlowNodes: nodes,
                 reactFlowEdges: edges,
+                apiMessageId,
                 graph,
                 depthQueue,
-                apiMessageId,
                 componentNodes: appServer.nodesPool.componentNodes,
                 question: incomingInput.question,
                 uploadedFilesContent,
@@ -388,7 +386,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node not found`)
             }
 
-            if (incomingInput.overrideConfig && apiConfig.overrideConfig && apiConfig.overrideConfig.status) {
+            // Only override the config if its status is true
+            if (incomingInput.overrideConfig && apiOverrideStatus) {
                 nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig, nodeOverrides)
             }
 
