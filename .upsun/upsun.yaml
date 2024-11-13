@@ -4,8 +4,8 @@ applications:
 
     hooks:
    
-            build: |
-                corepack yarn install     
+      build: |
+        corepack yarn install     
 
       deploy: |
         corepack yarn run
