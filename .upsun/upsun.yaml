@@ -1,19 +1,21 @@
 applications:
-  name: flowise-app
-    type: "nodejs:18"  # Explicitly set the version to Node.js 18
-
+  flowise-app:
+    type: "nodejs:18"  # Specify the Node.js runtime version
    
-
-     hooks:
+    hooks:
       build: |
-        npm install 
-      start: |
-        npm run start
+        npm install
+      deploy: |
+        npm run build
+    web:
+      commands:
+        start: "npm run start"
+      upstream:
+        socket_family: tcp
+
 
 
 routes:
-  "https://main-bvxea6i-btub4saye2uew.eu-5.platformsh.site/":
+  "https://{default}/":
     type: upstream
     upstream: "flowise-app:http"
-  
-
