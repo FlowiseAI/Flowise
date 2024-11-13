@@ -1,6 +1,6 @@
 applications:
   - name: flowise-app
-    type: "nodejs:18.15"  # Explicitly set the version to Node.js 18.15
+    type: "nodejs:19"  # Explicitly set the version to Node.js 18
 
     source:
       root: "/"  # Root directory of your application
