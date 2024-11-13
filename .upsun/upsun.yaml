@@ -1,5 +1,5 @@
 applications:
-- name: flowise-app
+ - name: flowise-app
     type: "nodejs:22"  # Specify the Node.js runtime version
 
     hooks:
@@ -12,8 +12,8 @@ applications:
     web:
       commands:
         start: "corepack yarn start"
-
-    routes:
+        
+routes:
     "https://{default}/":
         type: upstream
         upstream: app:http
