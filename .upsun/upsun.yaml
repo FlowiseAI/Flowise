@@ -13,7 +13,3 @@ applications:
 
   
 
-routes:
-  https://{default}/":
-    type: upstream
-    upstream: "flowise-app:http"
