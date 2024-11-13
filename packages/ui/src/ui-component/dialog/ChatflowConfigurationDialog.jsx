@@ -4,8 +4,7 @@ import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
 import { tabsClasses } from '@mui/material/Tabs'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
-import RateLimit from '@/ui-component/extended/RateLimit'
-import AllowedDomains from '@/ui-component/extended/AllowedDomains'
+import Security from '@/ui-component/extended/Security'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
@@ -15,8 +14,8 @@ import FileUpload from '@/ui-component/extended/FileUpload'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
-        label: 'Rate Limiting',
-        id: 'rateLimiting'
+        label: 'Security',
+        id: 'security'
     },
     {
         label: 'Starter Prompts',
@@ -33,10 +32,6 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Chat Feedback',
         id: 'chatFeedback'
-    },
-    {
-        label: 'Allowed Domains',
-        id: 'allowedDomains'
     },
     {
         label: 'Analyse Chatflow',
@@ -94,8 +89,8 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>{dialogProps.title}</div>
+            <DialogTitle sx={{ fontSize: '1.25rem' }} id='alert-dialog-title'>
+                {dialogProps.title}
             </DialogTitle>
             <DialogContent>
                 <Tabs
@@ -115,7 +110,13 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                 >
                     {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
                         <Tab
-                            sx={{ minHeight: '40px', height: '40px', textAlign: 'left', display: 'flex', alignItems: 'start', mb: 1 }}
+                            sx={{
+                                minHeight: '40px',
+                                height: '40px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                mb: 1
+                            }}
                             key={index}
                             label={item.label}
                             {...a11yProps(index)}
@@ -124,12 +125,11 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                 </Tabs>
                 {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
                     <TabPanel key={index} value={tabValue} index={index}>
-                        {item.id === 'rateLimiting' && <RateLimit />}
+                        {item.id === 'security' && <Security dialogProps={dialogProps} />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'followUpPrompts' ? <FollowUpPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
-                        {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
                         {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
                         {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}
