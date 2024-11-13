@@ -4,14 +4,14 @@ applications:
 
     hooks:
       build: |
-        corepack yarn install     
+        npm install     
 
       deploy: |
-        corepack yarn run
+        npm run
 
     web:
       commands:
-        start: "corepack yarn start"
+        start: "npm start"
 
 routes:
  "https://main-bvxea6i-btub4saye2uew.eu-5.platformsh.site/":
