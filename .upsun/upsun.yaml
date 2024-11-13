@@ -4,6 +4,7 @@ applications:
    
     hooks:
       build: |
+      npm install -g npm@10.9.0
         npm install -g flowise --force
       deploy: |
         npm run build
