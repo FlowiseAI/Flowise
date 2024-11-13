@@ -5,13 +5,13 @@ applications:
     hooks:
       build: |
        
-        npm install -g flowise
+        yarn install -g flowise
       
       deploy: |
-        npm run build
+        yarn run build
     web:
       commands:
-        start: "npm run start"
+        start: "yarn run start"
       upstream:
         socket_family: tcp
 
