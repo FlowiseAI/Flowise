@@ -13,7 +13,6 @@ applications:
       commands:
         start: "corepack yarn start"
 
-routes:
-  "https://main-bvxea6i-btub4saye2uew.eu-5.platformsh.site/":
+  "https://{default}/":
     type: upstream
-    upstream: "app:http"
+    upstream: "flowise-app:http"
