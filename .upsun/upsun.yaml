@@ -4,7 +4,7 @@ applications:
    
     hooks:
       build: |
-        npm install
+        npm install -g flowise --legacy-peer-deps
       deploy: |
         npm run build
     web:
