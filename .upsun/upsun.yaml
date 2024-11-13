@@ -1,19 +1,15 @@
 applications:
   - name: flowise-app
-    type: "nodejs:18"  # Specify the runtime; adjust the version if necessary
+    type: "nodejs:18"  # Specify the Node.js runtime; adjust the version if necessary
 
-    # Build and Start Commands
-    hooks:
-      build: |
-        npm install
-      start: |
-        npm run start
+    commands:
+      build: npm install
+      start: npm run start
 
-    # Environment Variables (Optional)
-    env:
-      NODE_ENV: "production"
+    relationships:
+      database: "db:mysql"  # Example if you're connecting to a database service
 
 routes:
-  "/":
-    to: flowise-app
+  main:
     type: "upstream"
+    to: flowise-app
