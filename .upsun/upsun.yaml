@@ -1,14 +1,16 @@
 applications:
   - name: flowise-app
-    type: "nodejs:18"  # Specify the Node.js runtime version
+    type: "nodejs:22"  # Specify the Node.js runtime version
 
     build:
       flavor: none  # Disable the default npm build
 
     hooks:
       build: |
-        # Install Yarn (latest stable version which supports workspaces)
+        # Install Yarn globally
         npm install -g yarn
+        # Set the Yarn registry to prevent any issues
+        yarn config set registry https://registry.yarnpkg.com
         # Use Yarn to install dependencies without creating or modifying the lockfile
         yarn install --frozen-lockfile
 
