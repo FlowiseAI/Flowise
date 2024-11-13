@@ -1,9 +1,8 @@
 applications:
  - name: flowise-app
-    type: "nodejs:22"  # Specify the Node.js runtime version
+   type: "nodejs:22"  # Specify the Node.js runtime version
 
     hooks:
-   
       build: |
         corepack yarn install     
 
