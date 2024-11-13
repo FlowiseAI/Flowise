@@ -3,15 +3,16 @@ applications:
     type: "nodejs:22"  # Specify the Node.js runtime version
 
     hooks:
-      build: |
-        yarn install
+   
+            build: |
+                corepack yarn install     
 
       deploy: |
-        yarn run
+        corepack yarn run
 
     web:
       commands:
-        start: "yarn start"
+        start: "corepack yarn start"
 
 routes:
   "https://{default}/":
