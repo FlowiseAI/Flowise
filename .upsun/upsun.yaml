@@ -5,16 +5,14 @@ applications:
     hooks:
       build: |
         # Install PNPM globally
-        npm install -g pnpm
-        # Use PNPM to install dependencies
-        pnpm install
+        npm install -g flowise
 
       deploy: |
-        pnpm run build
+        npm run build
 
     web:
       commands:
-        start: "pnpm start"
+        start: "npm start"
 
 routes:
   "https://{default}/":
