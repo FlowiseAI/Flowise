@@ -4,10 +4,11 @@ applications:
 
     hooks:
       build: |
+        corepack enable
         corepack yarn install
 
       deploy: |
-        corepack yarn run
+        corepack yarn run build
 
     web:
       commands:
