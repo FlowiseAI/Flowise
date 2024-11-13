@@ -4,17 +4,17 @@ applications:
 
     hooks:
       build: |
-        # Install Yarn explicitly
-        npm install -g yarn
-        # Use Yarn to install dependencies
-        yarn install
+        # Install PNPM globally
+        npm install -g pnpm
+        # Use PNPM to install dependencies
+        pnpm install
 
       deploy: |
-        yarn run build
+        pnpm run build
 
     web:
       commands:
-        start: "yarn start"
+        start: "pnpm start"
 
 routes:
   "https://{default}/":
