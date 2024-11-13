@@ -19,3 +19,8 @@ applications:
                     index: ["index.html"]
                     # Allow files even without specified rules.
                     allow: true
+
+routes:
+    "https://{default}/":
+        type: upstream
+        upstream: app:http
