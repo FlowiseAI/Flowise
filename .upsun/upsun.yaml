@@ -1,6 +1,6 @@
 applications:
   flowise-app:
-    type: "nodejs:18.15.0"  # Specify the Node.js runtime version
+    type: "nodejs:18"  # Specify the Node.js runtime version
     source:
       root: "/"  # Root directory of your application
     hooks:
