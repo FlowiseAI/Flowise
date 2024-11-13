@@ -1,13 +1,12 @@
 applications:
-  - name: flowise-app
+  name: flowise-app
     type: "nodejs:18"  # Explicitly set the version to Node.js 18
 
-    source:
-      root: "/"  # Root directory of your application
+   
 
      hooks:
       build: |
-        npm install --legacy-peer-deps
+        npm install 
       start: |
         npm run start
 
