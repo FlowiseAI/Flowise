@@ -51,6 +51,7 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
+
         let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
         if (feedbackTypeFilters) {
             try {
@@ -78,6 +79,7 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             )
         }
         const apiResponse = await chatMessagesService.getAllChatMessages(
+            req.user!,
             chatflowId,
             chatTypeFilter,
             sortOrder,
@@ -109,6 +111,7 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
         const endDate = req.query?.endDate as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
         const apiResponse = await chatMessagesService.getAllInternalChatMessages(
+            req.user!,
             req.params.id,
             chatType.INTERNAL,
             sortOrder,
