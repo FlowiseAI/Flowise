@@ -16,4 +16,4 @@ applications:
 routes:
   "https://www.{default}/":
     type: upstream
-    to: flowise-app
+    upstream: "app:http"
