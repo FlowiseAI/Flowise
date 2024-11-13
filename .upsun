@@ -1,9 +1,0 @@
-name: flowise-app
-type: nodejs
-
-dependencies:
-  - nodejs
-
-hooks:
-  build: npm install
-  start: npm run start
