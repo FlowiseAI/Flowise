@@ -1,9 +1,18 @@
-name: flowise-app
-type: nodejs
+applications:
+  - name: flowise-app
+    type: "nodejs:18"  # Specify the runtime; adjust the version if necessary
 
-dependencies:
-  - nodejs
+    # Build and Start Commands
+    hooks:
+      build: |
+        npm install
+      start: |
+        npm run start
 
-hooks:
-  build: npm install
-  start: npm run start
+    # Environment Variables (Optional)
+    env:
+      NODE_ENV: "production"
+
+routes:
+  - type: "upstream"
+    to: flowise-app
