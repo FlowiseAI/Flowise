@@ -7,14 +7,15 @@ applications:
 
     hooks:
       build: |
-        # Install Yarn version 3 explicitly
-        npm install -g yarn@3
+        # Install Yarn (latest stable version which supports workspaces)
+        npm install -g yarn
         # Use Yarn to install dependencies
-        yarn install --frozen-lockfile
+        yarn set version berry
+        yarn install --immutable
 
       deploy: |
         # Use Yarn to build the application
-        yarn run build
+        yarn build
 
     web:
       commands:
