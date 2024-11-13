@@ -1,24 +1,24 @@
 applications:
   - name: flowise-app
-    type: "nodejs:18"  # Specify the Node.js runtime version
+    type: "nodejs:22"  # Specify the Node.js runtime version
 
     build:
       flavor: none  # Disable the default npm build
 
     hooks:
       build: |
-        # Enable Corepack to make Yarn available
-        corepack enable
+        # Install Yarn version 3 explicitly
+        npm install -g yarn@3
         # Use Yarn to install dependencies
-        corepack yarn install --frozen-lockfile
+        yarn install --frozen-lockfile
 
       deploy: |
         # Use Yarn to build the application
-        corepack yarn run build
+        yarn run build
 
     web:
       commands:
-        start: "corepack yarn start"
+        start: "yarn start"
 
 routes:
   "https://{default}/":
