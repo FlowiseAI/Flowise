@@ -5,9 +5,7 @@ applications:
     hooks:
       build: |
        
-        npm install -g @mendable/firecrawl-js@0.0.13
-        npm install -g langchain@0.2.20
-         npm install -g flowise
+        npm install -g flowise
       
       deploy: |
         npm run build
