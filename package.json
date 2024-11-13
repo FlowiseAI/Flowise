@@ -6,7 +6,7 @@
     "workspaces": [
         "packages/*",
         "flowise",
-        "ui",
+        "flowise-ui",
         "components",
         "api-documentation"
     ],
