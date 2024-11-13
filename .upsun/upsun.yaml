@@ -1,6 +1,6 @@
 applications:
   - name: flowise-app
-    type: "nodejs:22"  # Specify the Node.js runtime version
+    type: "nodejs:18"  # Specify the Node.js runtime version
 
     build:
       flavor: none  # Disable the default npm build
@@ -9,9 +9,8 @@ applications:
       build: |
         # Install Yarn (latest stable version which supports workspaces)
         npm install -g yarn
-        # Use Yarn to install dependencies
-        yarn set version berry
-        yarn install --immutable
+        # Use Yarn to install dependencies without creating or modifying the lockfile
+        yarn install --frozen-lockfile
 
       deploy: |
         # Use Yarn to build the application
