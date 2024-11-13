@@ -13,7 +13,7 @@ export const TableViewOnly = ({ columns, rows, sx }) => {
                                 <TableCell key={index}>
                                     {col === 'enabled' ? (
                                         <>
-                                            Status
+                                            Override
                                             <TooltipWithParser
                                                 style={{ mb: 1, mt: 2, marginLeft: 10 }}
                                                 title={

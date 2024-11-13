@@ -731,8 +731,6 @@ const getGlobalVariable = async (appDataSource: DataSource, overrideConfig?: ICo
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
     if (overrideConfig?.vars && variableOverrides) {
-        console.log('overrideConfig.vars', overrideConfig.vars)
-        console.log('variableOverrides', variableOverrides)
         for (const propertyName of Object.getOwnPropertyNames(overrideConfig.vars)) {
             // Check if this variable is enabled for override
             const override = variableOverrides.find((v) => v.name === propertyName)
