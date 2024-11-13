@@ -1,19 +1,21 @@
+# Top-level key, which contains configurations for all app containers.
 applications:
-name: flowise-app
-   type: "nodejs:22"  # Specify the Node.js runtime version
+    # The app's name, which must be unique within the project.
+    myapp: flowise
+        # The language and version for your app.
+        type: 'nodejs:22'
 
-    hooks:
-      build: |
-        npm install - g flowise     
-
-      deploy: |
-        npm run
-
-    web:
-      commands:
-        start: "npm start"
-
-routes:
-    "https://{default}":
-        type: upstream
-        upstream: "app:http"
+        # The app's configuration when it's exposed to the web.
+        web:
+            commands:
+                start: npm start
+            locations:
+                '/':
+                    # The public directory relative to the app root.
+                    root: 'public'
+                    # Forward resources to the app.
+                    passthru: true
+                    # What files to use when serving a directory.
+                    index: ["index.html"]
+                    # Allow files even without specified rules.
+                    allow: true
