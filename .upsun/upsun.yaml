@@ -14,5 +14,6 @@ applications:
       NODE_ENV: "production"
 
 routes:
-  - type: "upstream"
+  "/":
     to: flowise-app
+    type: "upstream"
