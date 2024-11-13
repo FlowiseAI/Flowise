@@ -1,15 +1,23 @@
 applications:
-  - name: flowise-app
-    type: "nodejs:18"  # Specify the Node.js runtime; adjust the version if necessary
+  flowise-app:
+    type: "nodejs:18"  # Specify the Node.js runtime version
+    source:
+      root: "/"  # Root directory of your application
+    hooks:
+      build: |
+        npm install
+      deploy: |
+        npm run build
+    web:
+      commands:
+        start: "npm run start"
+      upstream:
+        socket_family: tcp
 
-    commands:
-      build: npm install
-      start: npm run start
-
-    relationships:
-      database: "db:mysql"  # Example if you're connecting to a database service
+services:
+  
 
 routes:
-  main:
-    type: "upstream"
-    to: flowise-app
+  "https://{default}/":
+    type: upstream
+    upstream: "flowise-app:http"
