@@ -1,21 +1,17 @@
 applications:
-  flowise-app:
+    name: flowise-app
     type: "nodejs:22"  # Specify the Node.js runtime version
-   
+
     hooks:
       build: |
-       
         yarn install
-      
+
       deploy: |
         yarn run
+
     web:
       commands:
         start: "yarn start"
-      upstream:
-        socket_family: tcp
-
-
 
 routes:
   "https://{default}/":
