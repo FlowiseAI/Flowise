@@ -4,15 +4,17 @@ applications:
 
     hooks:
       build: |
-        corepack enable
-        corepack yarn install
+        # Install Yarn explicitly
+        npm install -g yarn
+        # Use Yarn to install dependencies
+        yarn install
 
       deploy: |
-        corepack yarn run build
+        yarn run build
 
     web:
       commands:
-        start: "corepack yarn start"
+        start: "yarn start"
 
 routes:
   "https://{default}/":
