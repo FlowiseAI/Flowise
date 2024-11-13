@@ -1,6 +1,6 @@
 applications:
   - name: flowise-app
-    type: "nodejs:22"  # Specify the Node.js runtime version
+    type: "nodejs:19"  # Specify the Node.js runtime version
 
     build:
       flavor: none  # Disable the default npm build
