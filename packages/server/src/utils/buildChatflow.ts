@@ -42,7 +42,8 @@ import {
     isSameOverrideConfig,
     getEndingNodes,
     constructGraphs,
-    isSameChatId
+    isSameChatId,
+    getAPIOverrideConfig
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
@@ -346,15 +347,19 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
+            /*** Get API Config ***/
+            const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
+
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
             const reactFlowNodes = await buildFlow({
                 startingNodeIds,
                 reactFlowNodes: nodes,
                 reactFlowEdges: edges,
+                apiMessageId,
                 graph,
                 depthQueue,
-                apiMessageId,
                 componentNodes: appServer.nodesPool.componentNodes,
                 question: incomingInput.question,
                 uploadedFilesContent,
@@ -364,6 +369,9 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 chatflowid,
                 appDataSource: appServer.AppDataSource,
                 overrideConfig: incomingInput?.overrideConfig,
+                apiOverrideStatus,
+                nodeOverrides,
+                variableOverrides,
                 cachePool: appServer.cachePool,
                 isUpsert: false,
                 uploads: incomingInput.uploads,
@@ -378,8 +386,9 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node not found`)
             }
 
-            if (incomingInput.overrideConfig) {
-                nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
+            // Only override the config if its status is true
+            if (incomingInput.overrideConfig && apiOverrideStatus) {
+                nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig, nodeOverrides)
             }
 
             const flowData: ICommonObject = {
@@ -398,7 +407,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 incomingInput.question,
                 chatHistory,
                 flowData,
-                uploadedFilesContent
+                uploadedFilesContent,
+                variableOverrides
             )
             nodeToExecuteData = reactFlowNodeData
 
