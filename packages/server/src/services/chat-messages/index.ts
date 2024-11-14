@@ -1,6 +1,6 @@
 import { DeleteResult, FindOptionsWhere } from 'typeorm'
 import { StatusCodes } from 'http-status-codes'
-import { ChatMessageRatingType, chatType, IChatMessage } from '../../Interface'
+import { ChatMessageRatingType, chatType, IChatMessage, IUser } from '../../Interface'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { utilAddChatMessage } from '../../utils/addChatMesage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -26,6 +26,7 @@ const createChatMessage = async (chatMessage: Partial<IChatMessage>, userId?: st
 
 // Get all chatmessages from chatflowid
 const getAllChatMessages = async (
+    user: IUser,
     chatflowId: string,
     chatTypeFilter: chatType | undefined,
     sortOrder: string = 'ASC',
@@ -41,6 +42,7 @@ const getAllChatMessages = async (
 ): Promise<ChatMessage[]> => {
     try {
         const dbResponse = await utilGetChatMessage(
+            user,
             chatflowId,
             chatTypeFilter,
             sortOrder,
@@ -65,6 +67,7 @@ const getAllChatMessages = async (
 
 // Get internal chatmessages from chatflowid
 const getAllInternalChatMessages = async (
+    user: IUser,
     chatflowId: string,
     chatTypeFilter: chatType | undefined,
     sortOrder: string = 'ASC',
@@ -80,6 +83,7 @@ const getAllInternalChatMessages = async (
 ): Promise<ChatMessage[]> => {
     try {
         const dbResponse = await utilGetChatMessage(
+            user,
             chatflowId,
             chatTypeFilter,
             sortOrder,

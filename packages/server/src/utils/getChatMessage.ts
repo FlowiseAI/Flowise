@@ -1,5 +1,5 @@
 import { MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
-import { ChatMessageRatingType, chatType } from '../Interface'
+import { ChatMessageRatingType, chatType, IUser } from '../Interface'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
@@ -18,6 +18,7 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
  * @param {ChatMessageRatingType[]} feedbackTypes
  */
 export const utilGetChatMessage = async (
+    user: IUser,
     chatflowid: string,
     chatType: chatType | undefined,
     sortOrder: string = 'ASC',
@@ -74,7 +75,7 @@ export const utilGetChatMessage = async (
         if (sessionId) {
             query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
         }
-        if (userId) {
+        if (userId && !user.roles?.includes('Admin')) {
             query.andWhere('chat_message.userId = :userId', { userId })
         }
 
@@ -113,7 +114,7 @@ export const utilGetChatMessage = async (
             chatId,
             memoryType: memoryType ?? undefined,
             sessionId: sessionId ?? undefined,
-            userId: userId ?? undefined,
+            userId: user.roles?.includes('Admin') ? undefined : userId,
             ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
             ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
             id: messageId ?? undefined

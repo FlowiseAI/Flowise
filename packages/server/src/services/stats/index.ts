@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import { ChatMessageRatingType, chatType } from '../../Interface'
+import { ChatMessageRatingType, chatType, IUser } from '../../Interface'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
@@ -8,6 +8,7 @@ import { getErrorMessage } from '../../errors/utils'
 
 // get stats for showing in chatflow
 const getChatflowStats = async (
+    user: IUser,
     chatflowid: string,
     chatTypeFilter: chatType | undefined,
     startDate?: string,
@@ -18,6 +19,7 @@ const getChatflowStats = async (
 ): Promise<any> => {
     try {
         const chatmessages = (await utilGetChatMessage(
+            user,
             chatflowid,
             chatTypeFilter,
             undefined,
