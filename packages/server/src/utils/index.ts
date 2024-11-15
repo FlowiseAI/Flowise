@@ -1014,28 +1014,31 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
 
     const getParamValues = (inputsObj: ICommonObject) => {
         for (const config in overrideConfig) {
-            // If overrideConfig[key] is object
-            if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
-                const nodeIds = Object.keys(overrideConfig[config])
-                if (nodeIds.includes(flowNodeData.id)) {
-                    // Check if this parameter is enabled for this node type
-                    if (isParameterEnabled(flowNodeData.label, config)) {
-                        inputsObj[config] = overrideConfig[config][flowNodeData.id]
+            // Always allow analytics config: https://docs.flowiseai.com/using-flowise/analytic#api
+            if (config !== 'analytics') {
+                // If overrideConfig[key] is object
+                if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
+                    const nodeIds = Object.keys(overrideConfig[config])
+                    if (nodeIds.includes(flowNodeData.id)) {
+                        // Check if this parameter is enabled for this node type
+                        if (isParameterEnabled(flowNodeData.label, config)) {
+                            inputsObj[config] = overrideConfig[config][flowNodeData.id]
+                        }
+                        continue
+                    } else if (nodeIds.some((nodeId) => nodeId.includes(flowNodeData.name))) {
+                        /*
+                         * "systemMessagePrompt": {
+                         *   "chatPromptTemplate_0": "You are an assistant" <---- continue for loop if current node is chatPromptTemplate_1
+                         * }
+                         */
+                        continue
                     }
-                    continue
-                } else if (nodeIds.some((nodeId) => nodeId.includes(flowNodeData.name))) {
-                    /*
-                     * "systemMessagePrompt": {
-                     *   "chatPromptTemplate_0": "You are an assistant" <---- continue for loop if current node is chatPromptTemplate_1
-                     * }
-                     */
+                }
+
+                // Only proceed if the parameter is enabled for this node type
+                if (!isParameterEnabled(flowNodeData.label, config)) {
                     continue
                 }
-            }
-
-            // Only proceed if the parameter is enabled for this node type
-            if (!isParameterEnabled(flowNodeData.label, config)) {
-                continue
             }
 
             let paramValue = inputsObj[config]
