@@ -1,5 +1,4 @@
-import { GoogleAuthOptions } from 'google-auth-library'
-import { GoogleVertexAIEmbeddings, GoogleVertexAIEmbeddingsParams } from '@langchain/community/embeddings/googlevertexai'
+import { VertexAIEmbeddings, GoogleVertexAIEmbeddingsInput } from '@langchain/google-vertexai'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
@@ -24,7 +23,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         this.icon = 'GoogleVertex.svg'
         this.category = 'Embeddings'
         this.description = 'Google vertexAI API to generate embeddings for a given text'
-        this.baseClasses = [this.type, ...getBaseClasses(GoogleVertexAIEmbeddings)]
+        this.baseClasses = [this.type, ...getBaseClasses(VertexAIEmbeddings)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -59,7 +58,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
-        const authOptions: GoogleAuthOptions = {}
+        const authOptions: any = {}
         if (Object.keys(credentialData).length !== 0) {
             if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
                 throw new Error('Please specify your Google Application Credential')
@@ -75,11 +74,12 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
 
             if (projectID) authOptions.projectId = projectID
         }
-        const obj: GoogleVertexAIEmbeddingsParams = {}
-        if (modelName) obj.model = modelName
+        const obj: GoogleVertexAIEmbeddingsInput = {
+            model: modelName
+        }
         if (Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
 
-        const model = new GoogleVertexAIEmbeddings(obj)
+        const model = new VertexAIEmbeddings(obj)
         return model
     }
 }
