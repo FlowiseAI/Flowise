@@ -7,8 +7,8 @@ import {
     HiResModelName,
     UnstructuredLoader as LCUnstructuredLoader
 } from '@langchain/community/document_loaders/fs/unstructured'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
-import { getFileFromStorage } from '../../../src'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
+import { getFileFromStorage, INodeOutputsValue } from '../../../src'
 import { UnstructuredLoader } from './Unstructured'
 
 class UnstructuredFile_DocumentLoaders implements INode {
@@ -22,11 +22,12 @@ class UnstructuredFile_DocumentLoaders implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Unstructured File Loader'
         this.name = 'unstructuredFileLoader'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Document'
         this.icon = 'unstructured-file.svg'
         this.category = 'Document Loaders'
@@ -421,6 +422,20 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -444,6 +459,7 @@ class UnstructuredFile_DocumentLoaders implements INode {
         const newAfterNChars = nodeData.inputs?.newAfterNChars as number
         const maxCharacters = nodeData.inputs?.maxCharacters as number
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const output = nodeData.outputs?.output as string
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -560,7 +576,15 @@ class UnstructuredFile_DocumentLoaders implements INode {
             }))
         }
 
-        return docs
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 
