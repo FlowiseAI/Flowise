@@ -1,31 +1,24 @@
 applications:
-  - name: flowise-app
+  flowise-app:
     type: "nodejs:18"  # Specify the Node.js runtime version
-    
-    build:
-      flavor: none  # Disable the default npm build
-
+    source:
+      root: "/"  # Root directory of your application
     hooks:
       build: |
-        # Install Yarn globally
-        npm install -g yarn@1.22.19
-        # Clear Yarn's registry cache to ensure the correct settings are applied
-        yarn config delete registry
-        # Set the Yarn registry explicitly to avoid any issues
-        yarn config set registry https://registry.yarnpkg.com
-        # Use Yarn to install dependencies without creating or modifying the lockfile
-        yarn install --frozen-lockfile
-
+        npm install
       deploy: |
-        # Use Yarn to build the application
-        yarn build
-
+        npm run build
     web:
       commands:
-        start: "yarn start"
+        start: "npm run start"
+      upstream:
+        socket_family: tcp
+
+services:
+  db:
+    type: "mariadb:10.6"  # Database service; adjust version as needed
 
 routes:
   "https://{default}/":
     type: upstream
-    upstream: flowise-app:http
-
+    upstream: "flowise-app:http"
