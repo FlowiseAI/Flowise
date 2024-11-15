@@ -14,10 +14,6 @@ applications:
       upstream:
         socket_family: tcp
 
-services:
-  db:
-    type: "mariadb:10.6"  # Database service; adjust version as needed
-
 routes:
   "https://{default}/":
     type: upstream
