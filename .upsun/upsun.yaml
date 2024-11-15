@@ -1,7 +1,7 @@
 applications:
   - name: flowise-app
     type: "nodejs:18"  # Specify the Node.js runtime version
-
+    
     build:
       flavor: none  # Disable the default npm build
 
@@ -28,3 +28,4 @@ routes:
   "https://{default}/":
     type: upstream
     upstream: flowise-app:http
+
