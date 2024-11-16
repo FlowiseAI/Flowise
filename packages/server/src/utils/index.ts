@@ -519,7 +519,7 @@ export const buildFlow = async ({
 
             // Only override the config if its status is true
             if (overrideConfig && apiOverrideStatus) {
-                flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides)
+                flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, variableOverrides)
             }
 
             if (isUpsert) upsertHistory['flowData'] = saveUpsertFlowData(flowNodeData, upsertHistory)
@@ -1001,9 +1001,15 @@ export const resolveVariables = async (
  * @param {INodeData} flowNodeData
  * @param {ICommonObject} overrideConfig
  * @param {ICommonObject} nodeOverrides
+ * @param {ICommonObject[]} variableOverrides
  * @returns {INodeData}
  */
-export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig: ICommonObject, nodeOverrides: ICommonObject) => {
+export const replaceInputsWithConfig = (
+    flowNodeData: INodeData,
+    overrideConfig: ICommonObject,
+    nodeOverrides: ICommonObject,
+    variableOverrides: ICommonObject[]
+) => {
     const types = 'inputs'
 
     const isParameterEnabled = (nodeType: string, paramName: string): boolean => {
@@ -1014,28 +1020,54 @@ export const replaceInputsWithConfig = (flowNodeData: INodeData, overrideConfig:
 
     const getParamValues = (inputsObj: ICommonObject) => {
         for (const config in overrideConfig) {
-            // Always allow analytics config: https://docs.flowiseai.com/using-flowise/analytic#api
-            if (config !== 'analytics') {
-                // If overrideConfig[key] is object
-                if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
-                    const nodeIds = Object.keys(overrideConfig[config])
-                    if (nodeIds.includes(flowNodeData.id)) {
-                        // Check if this parameter is enabled for this node type
-                        if (isParameterEnabled(flowNodeData.label, config)) {
-                            inputsObj[config] = overrideConfig[config][flowNodeData.id]
-                        }
-                        continue
-                    } else if (nodeIds.some((nodeId) => nodeId.includes(flowNodeData.name))) {
-                        /*
-                         * "systemMessagePrompt": {
-                         *   "chatPromptTemplate_0": "You are an assistant" <---- continue for loop if current node is chatPromptTemplate_1
-                         * }
-                         */
-                        continue
-                    }
-                }
+            /**
+             * Several conditions:
+             * 1. If config is 'analytics', always allow it
+             * 2. If config is 'vars', check its object and filter out the variables that are not enabled for override
+             * 3. If typeof config is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
+             * Example:
+             * "systemMessagePrompt": {
+             *  "chatPromptTemplate_0": "You are an assistant"
+             * }
+             * 4. If typeof config is a string, check if the parameter is enabled
+             * Example:
+             * "systemMessagePrompt": "You are an assistant"
+             */
 
-                // Only proceed if the parameter is enabled for this node type
+            if (config === 'analytics') {
+                // pass
+            } else if (config === 'vars') {
+                if (typeof overrideConfig[config] === 'object') {
+                    const filteredVars: ICommonObject = {}
+
+                    const vars = overrideConfig[config]
+                    for (const variable in vars) {
+                        const override = variableOverrides.find((v) => v.name === variable)
+                        if (!override?.enabled) {
+                            continue // Skip this variable if it's not enabled for override
+                        }
+                        filteredVars[variable] = vars[variable]
+                    }
+                    overrideConfig[config] = filteredVars
+                }
+            } else if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
+                const nodeIds = Object.keys(overrideConfig[config])
+                if (nodeIds.includes(flowNodeData.id)) {
+                    // Check if this parameter is enabled
+                    if (isParameterEnabled(flowNodeData.label, config)) {
+                        inputsObj[config] = overrideConfig[config][flowNodeData.id]
+                    }
+                    continue
+                } else if (nodeIds.some((nodeId) => nodeId.includes(flowNodeData.name))) {
+                    /*
+                     * "systemMessagePrompt": {
+                     *   "chatPromptTemplate_0": "You are an assistant" <---- continue for loop if current node is chatPromptTemplate_1
+                     * }
+                     */
+                    continue
+                }
+            } else {
+                // Only proceed if the parameter is enabled
                 if (!isParameterEnabled(flowNodeData.label, config)) {
                     continue
                 }
