@@ -12,7 +12,8 @@ import {
     getMemorySessionId,
     getAppVersion,
     getTelemetryFlowObj,
-    getStartingNodes
+    getStartingNodes,
+    getAPIOverrideConfig
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
 import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType } from '../Interface'
@@ -155,6 +156,9 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
 
         const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
+        /*** Get API Config ***/
+        const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+
         const upsertedResult = await buildFlow({
             startingNodeIds,
             reactFlowNodes: nodes,
@@ -170,6 +174,9 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             chatflowid,
             appDataSource: appServer.AppDataSource,
             overrideConfig: incomingInput?.overrideConfig,
+            apiOverrideStatus,
+            nodeOverrides,
+            variableOverrides,
             cachePool: appServer.cachePool,
             isUpsert,
             stopNodeId
