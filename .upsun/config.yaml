@@ -84,9 +84,9 @@ applications:
     # are available in the PATH during the build process and in the runtime environment. They’re installed before
     # the build hook runs using a package manager for the language.
     # More information: https://docs.upsun.com/create-apps/app-reference.html#dependencies
-    # dependencies:
-    #   nodejs: # Specify one NPM package per line.
-    #     pm2: '^4.5.0'
+    dependencies:
+      nodejs: # Specify one NPM package per line.
+        pnpm: "*"
 
     # Hooks allow you to customize your code/environment as the project moves through the build and deploy stages
     # More information: https://docs.upsun.com/create-apps/app-reference.html#hooks
