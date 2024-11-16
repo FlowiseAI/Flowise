@@ -388,7 +388,12 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
             // Only override the config if its status is true
             if (incomingInput.overrideConfig && apiOverrideStatus) {
-                nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig, nodeOverrides)
+                nodeToExecute.data = replaceInputsWithConfig(
+                    nodeToExecute.data,
+                    incomingInput.overrideConfig,
+                    nodeOverrides,
+                    variableOverrides
+                )
             }
 
             const flowData: ICommonObject = {
