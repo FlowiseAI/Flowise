@@ -70,7 +70,6 @@ applications:
         variables:
             env:
                 #   # Add environment variables here that are static.
-                PORT: 3000
                 APIKEY_PATH: /app/.flowise
                 BLOB_STORAGE_PATH: /app/.flowise/uploads
                 LOG_PATH: /app/.flowise/log
