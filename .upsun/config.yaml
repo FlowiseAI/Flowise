@@ -80,10 +80,10 @@ applications:
     # access:
 
     # Variables to control the environment. More information: https://docs.upsun.com/create-apps/app-reference.html#variables
-    # variables:
-    # env:
+    variables:
+     env:
     #   # Add environment variables here that are static.
-    #   PORT: 80
+       PORT: 3000
 
     # Outbound firewall rules for the application. More information: https://docs.upsun.com/create-apps/app-reference.html#firewall
     # firewall:
