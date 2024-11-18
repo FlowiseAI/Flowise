@@ -7,8 +7,6 @@ import { CopyBlock, atomOneDark } from 'react-code-blocks'
 // Project import
 
 // Const
-import { gaitURL } from '@/store/constant'
-
 function TabPanel(props) {
     const { children, value, index, ...other } = props
     return (
@@ -38,7 +36,7 @@ function a11yProps(index) {
 }
 
 const embedPopupHtmlCode = (chatflowid) => {
-    const iframeURL = `${gaitURL}/app-frame/${chatflowid}`
+    const iframeURL = `${import.meta.env.VITE_GAIT_URL}/app-frame/${chatflowid}`
     return `<div style="height: 100%; width: 100%; position: fixed; z-index: 9999">
     <iframe 
         style="width: 100%; height: 100%" 

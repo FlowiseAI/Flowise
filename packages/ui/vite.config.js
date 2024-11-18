@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
 import dotenv from 'dotenv'
+import { resolve } from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig(async ({ mode }) => {
     let proxy = undefined
@@ -34,6 +34,7 @@ export default defineConfig(async ({ mode }) => {
         build: {
             outDir: './build'
         },
+        envPrefix: 'VITE_', // this ensures Vite picks up variables like VITE_API_URL
         server: {
             open: true,
             proxy,
