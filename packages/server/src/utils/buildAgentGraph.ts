@@ -529,7 +529,8 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
         const newNodeInstance = new nodeModule.nodeClass()
 
         let flowNodeData = cloneDeep(workerNode.data)
-        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides)
+        if (overrideConfig && apiOverrideStatus)
+            flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, variableOverrides)
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
@@ -569,7 +570,8 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
 
         let flowNodeData = cloneDeep(supervisorNode.data)
 
-        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides)
+        if (overrideConfig && apiOverrideStatus)
+            flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, variableOverrides)
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
@@ -758,7 +760,8 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
         const newNodeInstance = new nodeModule.nodeClass()
 
         flowNodeData = cloneDeep(node.data)
-        if (overrideConfig && apiOverrideStatus) flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides)
+        if (overrideConfig && apiOverrideStatus)
+            flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, variableOverrides)
         flowNodeData = await resolveVariables(
             appServer.AppDataSource,
             flowNodeData,
