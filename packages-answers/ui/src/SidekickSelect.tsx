@@ -344,7 +344,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         }
         allCategories.top.concat(allCategories.more).forEach((category) => {
             counts[category] = combinedSidekicks.filter(
-                (s) => s.chatflow.category === category || s.chatflow.categories?.includes(category)
+                (s) => s.chatflow.category === category || s.chatflow.categories?.includes(category) || s.categories?.includes(category)
             ).length
         })
         return counts
@@ -376,7 +376,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     }
 
     const visibleTabs = useMemo(() => {
-        const topTabs = allCategories.top
+        const topTabs = allCategories.top?.map((category) => category.split(';').join(' | '))
         if (!topTabs.includes(activeTab) && allCategories.more.includes(activeTab)) {
             return [...topTabs, activeTab]
         }
@@ -439,7 +439,11 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 case 'all':
                     return true
                 default:
-                    return sidekick.chatflow.categories?.includes(tabValue) || sidekick.chatflow.category === tabValue
+                    return (
+                        sidekick.chatflow.categories?.includes(tabValue) ||
+                        sidekick.chatflow.category === tabValue ||
+                        sidekick.categories?.includes(tabValue)
+                    )
             }
         }
 
@@ -489,11 +493,15 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                 </SidekickTitle>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', width: '100%', gap: 1 }}>
                                     {sidekick.categories?.length > 0 && sidekick.categories?.map ? (
-                                        <Tooltip title={sidekick.categories.join(', ')}>
+                                        <Tooltip
+                                            title={sidekick.categories
+                                                .map((category: string, index: number) => category.trim().split(';').join(', '))
+                                                .join(', ')}
+                                        >
                                             <Chip
                                                 // icon={<CategoryIcon />}
                                                 label={sidekick.categories
-                                                    .map((category: string, index: number) => category.trim())
+                                                    .map((category: string, index: number) => category.trim().split(';').join(' | '))
                                                     .join(' | ')}
                                                 size='small'
                                                 variant='outlined'
@@ -638,7 +646,17 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                         disabled={categoryCounts.recent === 0}
                     /> */}
                     {visibleTabs.map((category: string) => (
-                        <Tab key={`${category}-tab`} label={category} value={category} disabled={categoryCounts[category] === 0} />
+                        <Tab
+                            key={`${category}-tab`}
+                            label={category}
+                            value={category}
+                            disabled={categoryCounts[category] === 0}
+                            style={{
+                                textWrap: 'nowrap',
+                                maxWidth: 'fit-content',
+                                display: 'inline-block'
+                            }}
+                        />
                     ))}
                     {allCategories.more.length > 0 && (
                         <Tab
