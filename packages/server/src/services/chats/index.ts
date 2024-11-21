@@ -4,16 +4,13 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { Chat } from '../../database/entities/Chat'
-import { Not } from 'typeorm'
-import { IsNull } from 'typeorm'
+import { Not, IsNull } from 'typeorm'
 
 const getAllChats = async (user: IUser) => {
     try {
-        console.debug('getAllChats...')
         const appServer = getRunningExpressApp()
         const chats = await appServer.AppDataSource.getRepository(Chat).find({
             where: {
-                // users: { some: { email: user.email } },
                 owner: { id: user.id },
                 organization: { id: user.organizationId },
                 chatflowChatId: Not(IsNull())
@@ -21,17 +18,45 @@ const getAllChats = async (user: IUser) => {
             order: {
                 createdDate: 'DESC'
             }
-            // relations: ['prompt', 'messages']
         })
-        console.log('chats', chats)
-        // Convert to plain objects to avoid circular references
         return JSON.parse(JSON.stringify(chats))
     } catch (error) {
-        console.log('error', error)
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatsService.getAllChats - ${getErrorMessage(error)}`)
     }
 }
 
+const getChatById = async (chatId: string, user: IUser) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const chat = await appServer.AppDataSource.getRepository(Chat).findOne({
+            where: {
+                id: chatId,
+                owner: { id: user.id },
+                organization: { id: user.organizationId }
+            },
+            relations: {
+                // users: true,
+                // messages: true
+            },
+            order: {
+                updatedDate: 'DESC'
+                // messages: {
+                //     createdDate: 'ASC'
+                // }
+            }
+        })
+
+        if (!chat) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chat ${chatId} not found`)
+        }
+
+        return JSON.parse(JSON.stringify(chat))
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatsService.getChatById - ${getErrorMessage(error)}`)
+    }
+}
+
 export default {
-    getAllChats
+    getAllChats,
+    getChatById
 }

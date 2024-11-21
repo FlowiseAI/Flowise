@@ -15,6 +15,22 @@ const getAllChats = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
+const getChatById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: chatsController.getChatById - Unauthorized')
+        }
+        if (!req.params.id) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Error: chatsController.getChatById - Missing chat ID')
+        }
+        const apiResponse = await chatsService.getChatById(req.params.id, req.user)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
-    getAllChats
+    getAllChats,
+    getChatById
 }

@@ -17,10 +17,6 @@ import { MessageCard } from './Message'
 import { useAnswers } from './AnswersContext'
 import ChatInput from './ChatInput'
 import DrawerFilters from './DrawerFilters/DrawerFilters'
-import NextLink from 'next/link'
-import Toolbar from '@mui/material/Toolbar'
-
-import ShareIcon from '@mui/icons-material/IosShare'
 
 import type { AppSettings, Document, Sidekick } from 'types'
 import SidekickSelect from './SidekickSelect'
