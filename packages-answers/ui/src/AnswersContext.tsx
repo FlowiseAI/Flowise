@@ -89,6 +89,51 @@ interface AnswersContextType {
     setSocketIOClientId: (id: string) => void
     isChatFlowAvailableToStream: boolean
     handleAbort: () => Promise<void>
+    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+    handleDrop: (e: React.DragEvent) => void
+    handleDrag: (e: React.DragEvent) => void
+    handleUploadClick: () => void
+    clearPreviews: () => void
+    handleDeletePreview: (preview: any) => void
+    previews: any[]
+    setPreviews: (previews: any[]) => void
+    isDragActive: boolean
+    setIsDragActive: (isDragActive: boolean) => void
+    fileUploadRef: React.RefObject<HTMLInputElement>
+    onMicrophonePressed: () => void
+    onRecordingCancelled: () => void
+    onRecordingStopped: () => void
+    addRecordingToPreviews: (blob: Blob) => void
+    isRecording: boolean
+    setIsRecording: (isRecording: boolean) => void
+    recordingNotSupported: boolean
+    setRecordingNotSupported: (notSupported: boolean) => void
+    isLoadingRecording: boolean
+    setIsLoadingRecording: (isLoading: boolean) => void
+    onThumbsUpClick: (messageId: string) => Promise<void>
+    onThumbsDownClick: (messageId: string) => Promise<void>
+    submitFeedbackContent: (text: string) => Promise<void>
+    chatFeedbackStatus: boolean
+    setChatFeedbackStatus: (status: boolean) => void
+    feedbackId: string
+    setFeedbackId: (id: string) => void
+    showFeedbackContentDialog: boolean
+    setShowFeedbackContentDialog: (show: boolean) => void
+    handleLeadCaptureSubmit: (event?: React.FormEvent) => Promise<void>
+    leadsConfig: any
+    setLeadsConfig: (config: any) => void
+    leadName: string
+    setLeadName: (name: string) => void
+    leadEmail: string
+    setLeadEmail: (email: string) => void
+    leadPhone: string
+    setLeadPhone: (phone: string) => void
+    isLeadSaving: boolean
+    setIsLeadSaving: (isSaving: boolean) => void
+    isLeadSaved: boolean
+    setIsLeadSaved: (isSaved: boolean) => void
+    downloadFile: (fileAnnotation: any) => Promise<void>
+    copyMessageToClipboard: (text?: string) => Promise<void>
 }
 // @ts-ignore
 const AnswersContext = createContext<AnswersContextType>({
@@ -118,7 +163,52 @@ const AnswersContext = createContext<AnswersContextType>({
     socketIOClientId: '',
     setSocketIOClientId: () => {},
     isChatFlowAvailableToStream: false,
-    handleAbort: async () => {}
+    handleAbort: async () => {},
+    handleFileChange: () => {},
+    handleDrop: () => {},
+    handleDrag: () => {},
+    handleUploadClick: () => {},
+    clearPreviews: () => {},
+    handleDeletePreview: () => {},
+    previews: [],
+    setPreviews: () => {},
+    isDragActive: false,
+    setIsDragActive: () => {},
+    fileUploadRef: React.createRef(),
+    onMicrophonePressed: () => {},
+    onRecordingCancelled: () => {},
+    onRecordingStopped: () => {},
+    addRecordingToPreviews: (blob: Blob) => {},
+    isRecording: false,
+    setIsRecording: () => {},
+    recordingNotSupported: false,
+    setRecordingNotSupported: () => {},
+    isLoadingRecording: false,
+    setIsLoadingRecording: () => {},
+    onThumbsUpClick: async () => {},
+    onThumbsDownClick: async () => {},
+    submitFeedbackContent: async () => {},
+    chatFeedbackStatus: false,
+    setChatFeedbackStatus: () => {},
+    feedbackId: '',
+    setFeedbackId: () => {},
+    showFeedbackContentDialog: false,
+    setShowFeedbackContentDialog: () => {},
+    handleLeadCaptureSubmit: async () => {},
+    leadsConfig: {},
+    setLeadsConfig: () => {},
+    leadName: '',
+    setLeadName: () => {},
+    leadEmail: '',
+    setLeadEmail: () => {},
+    leadPhone: '',
+    setLeadPhone: () => {},
+    isLeadSaving: false,
+    setIsLeadSaving: () => {},
+    isLeadSaved: false,
+    setIsLeadSaved: () => {},
+    downloadFile: async () => {},
+    copyMessageToClipboard: async () => {}
 })
 
 export function useAnswers() {
@@ -199,13 +289,11 @@ export function AnswersProvider({
     const [useStreaming, setUseStreaming] = useState(initialUseStreaming)
 
     const [journeyId, setJourneyId] = useState<string | undefined>(journey?.id)
-    const [sidekick, setSidekick] = useState<SidekickListItem>()
 
     const [gptModel, setGptModel] = useState('gpt-3.5-turbo')
     const messageIdx = useRef(0)
     // const { mutateActiveUserPlan } = useUserPlans();
-    const chatbotConfig = React.useMemo(() => sidekick?.chatbotConfig, [sidekick])
-    const flowData = React.useMemo(() => sidekick?.flowData, [sidekick])
+
     const { isStreaming, generateResponse } = useStreamedResponse({
         apiUrl,
         onError: (err) => {
@@ -265,7 +353,11 @@ export function AnswersProvider({
             // setMessages(data.messages!);
         }
     })
-
+    const [sidekick, setSidekick] = useState<SidekickListItem>(
+        sidekicks?.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid)
+    )
+    const chatbotConfig = React.useMemo(() => sidekick?.chatbotConfig, [sidekick])
+    const flowData = React.useMemo(() => sidekick?.flowData, [sidekick])
     const [messages, setMessages] = useState<Array<Message>>(chat?.messages ?? [])
     const [filters, setFilters] = useState<AnswersFilters>(deepmerge({}, appSettings?.filters, journey?.filters, chat?.filters))
 
@@ -583,12 +675,116 @@ export function AnswersProvider({
                 }
             }
         }
-    }, [sidekick?.id])
+    }, [chat?.id, sidekick?.id])
 
     React.useEffect(() => {
         setJourney(initialJourney)
         setFilters(deepmerge({}, initialJourney?.filters, initialChat?.filters))
     }, [initialChat, initialJourney, appSettings])
+
+    const [previews, setPreviews] = useState<any[]>([])
+    const [isDragActive, setIsDragActive] = useState(false)
+    const fileUploadRef = useRef<HTMLInputElement>(null)
+
+    const handleDrop = async (e: React.DragEvent) => {
+        e.preventDefault()
+        setIsDragActive(false)
+        let files = []
+        if (e.dataTransfer.files.length > 0) {
+            for (const file of e.dataTransfer.files) {
+                const reader = new FileReader()
+                const { name } = file
+                files.push(
+                    new Promise((resolve) => {
+                        reader.onload = (evt) => {
+                            if (!evt?.target?.result) {
+                                return
+                            }
+                            const { result } = evt.target
+                            let previewUrl
+                            if (file.type.startsWith('audio/')) {
+                                previewUrl = '/audio-upload.svg' // You'll need to add this asset
+                            } else if (file.type.startsWith('image/')) {
+                                previewUrl = URL.createObjectURL(file)
+                            }
+                            resolve({
+                                data: result,
+                                preview: previewUrl,
+                                type: 'file',
+                                name: name,
+                                mime: file.type
+                            })
+                        }
+                        reader.readAsDataURL(file)
+                    })
+                )
+            }
+
+            const newFiles = await Promise.all(files)
+            setPreviews((prevPreviews) => [...prevPreviews, ...newFiles])
+        }
+    }
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setIsDragActive(true)
+        } else if (e.type === 'dragleave') {
+            setIsDragActive(false)
+        }
+    }
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const fileObj = event.target.files && event.target.files[0]
+        if (!fileObj) {
+            return
+        }
+        let files = []
+        for (const file of event.target.files) {
+            const reader = new FileReader()
+            const { name } = file
+            files.push(
+                new Promise((resolve) => {
+                    reader.onload = (evt) => {
+                        if (!evt?.target?.result) {
+                            return
+                        }
+                        const { result } = evt.target
+                        resolve({
+                            data: result,
+                            preview: URL.createObjectURL(file),
+                            type: 'file',
+                            name: name,
+                            mime: file.type
+                        })
+                    }
+                    reader.readAsDataURL(file)
+                })
+            )
+        }
+
+        const newFiles = await Promise.all(files)
+        setPreviews((prevPreviews) => [...prevPreviews, ...newFiles])
+        // Reset file input
+        event.target.value = ''
+    }
+
+    const handleUploadClick = () => {
+        fileUploadRef.current?.click()
+    }
+
+    const clearPreviews = () => {
+        previews.forEach((file) => URL.revokeObjectURL(file.preview))
+        setPreviews([])
+    }
+
+    const handleDeletePreview = (itemToDelete: any) => {
+        if (itemToDelete.type === 'file') {
+            URL.revokeObjectURL(itemToDelete.preview)
+        }
+        setPreviews(previews.filter((item) => item !== itemToDelete))
+    }
 
     const contextValue = {
         user,
@@ -639,7 +835,52 @@ export function AnswersProvider({
         socketIOClientId,
         setSocketIOClientId,
         isChatFlowAvailableToStream,
-        handleAbort
+        handleAbort,
+        handleFileChange: () => {},
+        handleDrop: () => {},
+        handleDrag: () => {},
+        handleUploadClick: () => {},
+        clearPreviews: () => {},
+        handleDeletePreview: () => {},
+        previews: [],
+        setPreviews: () => {},
+        isDragActive: false,
+        setIsDragActive: () => {},
+        fileUploadRef: React.createRef(),
+        onMicrophonePressed: () => {},
+        onRecordingCancelled: () => {},
+        onRecordingStopped: () => {},
+        addRecordingToPreviews: (blob: Blob) => {},
+        isRecording: false,
+        setIsRecording: () => {},
+        recordingNotSupported: false,
+        setRecordingNotSupported: () => {},
+        isLoadingRecording: false,
+        setIsLoadingRecording: () => {},
+        onThumbsUpClick: async () => {},
+        onThumbsDownClick: async () => {},
+        submitFeedbackContent: async () => {},
+        chatFeedbackStatus: false,
+        setChatFeedbackStatus: () => {},
+        feedbackId: '',
+        setFeedbackId: () => {},
+        showFeedbackContentDialog: false,
+        setShowFeedbackContentDialog: () => {},
+        handleLeadCaptureSubmit: async () => {},
+        leadsConfig: {},
+        setLeadsConfig: () => {},
+        leadName: '',
+        setLeadName: () => {},
+        leadEmail: '',
+        setLeadEmail: () => {},
+        leadPhone: '',
+        setLeadPhone: () => {},
+        isLeadSaving: false,
+        setIsLeadSaving: () => {},
+        isLeadSaved: false,
+        setIsLeadSaved: () => {},
+        downloadFile: async () => {},
+        copyMessageToClipboard: async () => {}
     }
     // @ts-ignore
     return <AnswersContext.Provider value={contextValue}>{children}</AnswersContext.Provider>

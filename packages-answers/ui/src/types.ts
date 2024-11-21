@@ -1,7 +1,7 @@
 export interface Message {
-    role: 'user' | 'assistant'
-    content: string
     id?: string
+    role: string
+    content: string
     isLoading?: boolean
     sourceDocuments?: any[]
     usedTools?: any[]
@@ -9,7 +9,8 @@ export interface Message {
     agentReasoning?: any[]
     action?: any
     fileUploads?: any[]
-    chat?: any
+    feedback?: any
+    type?: string
 }
 
 export interface ChatbotConfig {

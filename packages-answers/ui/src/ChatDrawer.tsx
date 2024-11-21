@@ -60,7 +60,7 @@ export default function ChatDrawer({ journeys, chats, defaultOpen }: ChatDrawerP
 
     const { data: fetchedChats } = useSWR<Chat[]>('/api/chats', fetcher, { fallback: chats })
     const getDateKey = (chat: Chat) => {
-        const date = new Date(chat.createdAt)
+        const date = new Date(chat.createdAt ?? chat.createdDate)
         const now = new Date()
         if (date.toDateString() === now.toDateString()) return 'Today'
         if (date.toDateString() === new Date(now.setDate(now.getDate() - 1)).toDateString()) return 'Yesterday'
@@ -71,7 +71,9 @@ export default function ChatDrawer({ journeys, chats, defaultOpen }: ChatDrawerP
 
     const chatsByDate = React.useMemo(() => {
         if (!fetchedChats) return {}
-        const sortedChats = fetchedChats?.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        const sortedChats = fetchedChats?.sort(
+            (a, b) => new Date(b.createdAt ?? b.createdDate).getTime() - new Date(a.createdAt ?? a.createdDate).getTime()
+        )
         return sortedChats?.reduce((accum: { [key: string]: Chat[] }, chat: Chat) => {
             const dateKey = getDateKey(chat)
             return { ...accum, [dateKey]: [...(accum[dateKey] || []), chat] }

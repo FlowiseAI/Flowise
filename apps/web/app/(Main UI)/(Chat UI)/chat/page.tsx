@@ -17,7 +17,7 @@ const ChatDetailPage = async ({ params }: any) => {
         return <Chat {...params} />
     }
     try {
-        const sidekicks = await findSidekicksForChat(user)
+        const { sidekicks } = (await findSidekicksForChat(user)) ?? {}
         // @ts-expect-error Async Server Component
         return <Chat {...params} sidekicks={sidekicks} />
     } catch (error) {
