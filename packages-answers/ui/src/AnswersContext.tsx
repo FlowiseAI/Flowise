@@ -1,12 +1,15 @@
 'use client'
-import React, { SetStateAction, createContext, useCallback, useContext, useRef, useState } from 'react'
+import React, { SetStateAction, createContext, useCallback, useContext, useRef, useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
-
+import { cloneDeep } from 'lodash'
+import socketIOClient from 'socket.io-client'
+// @ts-ignore
 import { deepmerge } from '@utils/deepmerge'
 import { useStreamedResponse } from './useStreamedResponse'
 import { clearEmptyValues } from './clearEmptyValues'
+import predictionApi from '@/api/prediction'
 
 import {
     AnswersFilters,
@@ -23,6 +26,16 @@ import {
     FlowData
 } from 'types'
 // import { useUserPlans } from './hooks/useUserPlan';
+
+interface PredictionParams {
+    question: string
+    chatId?: string
+    journeyId?: string
+    history?: { message: string; type: string }[]
+    uploads?: string[]
+    audio?: File | null
+    socketIOClientId?: string
+}
 
 interface AnswersContextType {
     user: User
@@ -72,6 +85,10 @@ interface AnswersContextType {
     gptModel: string
     setGptModel: (arg: SetStateAction<string>) => void
     sendMessageFeedback: (args: Partial<MessageFeedback>) => void
+    socketIOClientId?: string
+    setSocketIOClientId: (id: string) => void
+    isChatFlowAvailableToStream: boolean
+    handleAbort: () => Promise<void>
 }
 // @ts-ignore
 const AnswersContext = createContext<AnswersContextType>({
@@ -97,7 +114,11 @@ const AnswersContext = createContext<AnswersContextType>({
     deletePrompt: async () => {},
     deleteJourney: async () => {},
     startNewChat: async () => {},
-    sendMessageFeedback: async () => {}
+    sendMessageFeedback: async () => {},
+    socketIOClientId: '',
+    setSocketIOClientId: () => {},
+    isChatFlowAvailableToStream: false,
+    handleAbort: async () => {}
 })
 
 export function useAnswers() {
@@ -122,6 +143,39 @@ interface AnswersProviderProps {
 }
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data)
+
+// Add axios interceptor setup
+const setupAxiosInterceptors = (apiUrl: string) => {
+    // Create axios instance
+    const axiosInstance = axios.create({
+        baseURL: apiUrl
+    })
+
+    // Request interceptor
+    axiosInstance.interceptors.request.use(
+        (config) => {
+            // Get token from session storage
+            const token = sessionStorage.getItem('access_token')
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`
+            }
+
+            // Get chatflow domain from user
+            const baseURL = sessionStorage.getItem('baseURL') || ''
+            if (baseURL) {
+                config.baseURL = `${baseURL}/api/v1`
+            }
+
+            return config
+        },
+        (error) => {
+            return Promise.reject(error)
+        }
+    )
+
+    return axiosInstance
+}
+
 export function AnswersProvider({
     chat: initialChat,
     journey: initialJourney,
@@ -134,6 +188,7 @@ export function AnswersProvider({
     apiUrl = '/api'
 }: AnswersProviderProps) {
     const router = useRouter()
+    const axiosInstance = React.useMemo(() => setupAxiosInterceptors(apiUrl), [apiUrl])
     const [error, setError] = useState(null)
     const [inputValue, setInputValue] = useState('')
     // const [chat, setChat] = useState<Chat | undefined>(initialChat);
@@ -281,74 +336,254 @@ export function AnswersProvider({
         setMessages([])
         setFilters({})
     }
+    const [socketIOClientId, setSocketIOClientId] = useState('')
+    const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
+    const [isMessageStopping, setIsMessageStopping] = useState(false)
+
+    const updateLastMessage = (text: string) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            allMessages[allMessages.length - 1].content += text
+            return allMessages
+        })
+    }
+
+    const updateLastMessageSourceDocuments = (sourceDocuments: any) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            allMessages[allMessages.length - 1].sourceDocuments = sourceDocuments
+            return allMessages
+        })
+    }
+
+    const updateLastMessageUsedTools = (usedTools: any) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            allMessages[allMessages.length - 1].usedTools = usedTools
+            return allMessages
+        })
+    }
+
+    const updateLastMessageFileAnnotations = (fileAnnotations: any) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            allMessages[allMessages.length - 1].fileAnnotations = fileAnnotations
+            return allMessages
+        })
+    }
+
+    const updateLastMessageAgentReasoning = (agentReasoning: any) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            allMessages[allMessages.length - 1].agentReasoning = agentReasoning
+            return allMessages
+        })
+    }
+
+    const updateLastMessageAction = (action: any) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            allMessages[allMessages.length - 1].action = action
+            return allMessages
+        })
+    }
+
+    const updateLastMessageNextAgent = (nextAgent: any) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            const lastAgentReasoning = allMessages[allMessages.length - 1].agentReasoning
+            if (lastAgentReasoning && lastAgentReasoning.length > 0) {
+                lastAgentReasoning.push({ nextAgent })
+            }
+            allMessages[allMessages.length - 1].agentReasoning = lastAgentReasoning
+            return allMessages
+        })
+    }
+
+    const abortMessage = () => {
+        setIsMessageStopping(false)
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            const lastAgentReasoning = allMessages[allMessages.length - 1].agentReasoning
+            if (lastAgentReasoning && lastAgentReasoning.length > 0) {
+                allMessages[allMessages.length - 1].agentReasoning = lastAgentReasoning.filter(
+                    (reasoning: { nextAgent?: any }) => !reasoning.nextAgent
+                )
+            }
+            return allMessages
+        })
+    }
+
+    const handleAbort = async () => {
+        setIsMessageStopping(true)
+        try {
+            await abortMessage(sidekick?.id!, chatId!)
+        } catch (error: any) {
+            setIsMessageStopping(false)
+            setError(error.response?.data?.message || 'Error aborting message')
+        }
+    }
+
     const sendMessage = useCallback(
         async ({
             content,
             sidekick,
             gptModel,
-            retry
+            retry,
+            files,
+            audio
         }: {
             content: string
             sidekick?: SidekickListItem
             gptModel?: string
             retry?: boolean
+            files?: string[]
+            audio?: File | null
         }) => {
-            const sidekickValue = sidekick?.id || 'defaultPrompt'
-            if (!retry) addMessage({ role: 'user', content: content } as Message)
+            if (!retry) {
+                const fileUploads = files?.map((file) => ({
+                    data: file,
+                    type: 'file'
+                }))
+                addMessage({ role: 'user', content, fileUploads } as Message)
+            }
             setError(null)
             setIsLoading(true)
+
             try {
-                if (useStreaming) {
-                    await generateResponse({
-                        content,
-                        sidekick,
-                        gptModel,
-                        chatId,
-                        journeyId,
-                        messages,
-                        filters
-                    }) // Pass sidekick and gptModel here
-                } else {
-                    const { data } = await axios.post(`${apiUrl}/ai/query`, {
-                        journeyId,
-                        chatId,
-                        content,
-                        messages,
-                        filters,
-                        sidekickValue,
-                        gptModel
-                    })
-                    if (chatId !== data?.chat.chatflowChatId) {
-                        setChatId(data?.chat.chatflowChatId)
-                        setJourneyId(data?.chat.journeyId)
-                        mutate('/api/chats')
-                    }
-                    addMessage(data)
-                    setIsLoading(false)
-                    // mutateActiveUserPlan();
+                const params = {
+                    question: content,
+                    chatId,
+                    journeyId,
+                    history: messages?.map(({ content, role }) => ({
+                        message: content,
+                        type: role === 'assistant' ? 'apiMessage' : 'userMessage'
+                    })),
+                    uploads: files,
+                    audio,
+                    socketIOClientId: isChatFlowAvailableToStream ? socketIOClientId : undefined
                 }
+
+                if (isChatFlowAvailableToStream && socketIOClientId) {
+                    await predictionApi.sendMessageAndGetPrediction(sidekick?.id!, params)
+                } else {
+                    const { data } = await predictionApi.sendMessageAndGetPrediction(sidekick?.id!, params)
+
+                    if (data?.chat?.id && data.chat.id !== chatId) {
+                        setChatId(data.chat.id)
+                        if (data.chat.journeyId) {
+                            setJourneyId(data.chat.journeyId)
+                        }
+                    }
+
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        {
+                            role: 'assistant',
+                            content: data.text || JSON.stringify(data.json || data, null, 2),
+                            id: data?.chatMessageId,
+                            sourceDocuments: data?.sourceDocuments,
+                            usedTools: data?.usedTools,
+                            fileAnnotations: data?.fileAnnotations,
+                            agentReasoning: data?.agentReasoning,
+                            action: data?.action,
+                            isLoading: false,
+                            chat: data.chat
+                        } as Message
+                    ])
+
+                    mutate('/api/chats')
+                    setIsLoading(false)
+                }
+
+                setInputValue('')
             } catch (err: any) {
-                setError(err)
+                const errorMessage = err.response?.data?.message || 'Error sending message'
+                setError(errorMessage)
                 setIsLoading(false)
-                // mutateActiveUserPlan();
+                setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: errorMessage } as Message])
             }
         },
         [
             addMessage,
-            useStreaming,
-            generateResponse,
-            apiUrl,
-            journeyId,
             chatId,
+            journeyId,
             messages,
-            filters,
+            socketIOClientId,
+            isChatFlowAvailableToStream,
+            setInputValue,
+            setMessages,
             setChatId,
             setJourneyId,
-            setError,
-            setIsLoading
-            // mutateActiveUserPlan
+            mutate
         ]
     )
+
+    useEffect(() => {
+        let socket: any
+        if (sidekick?.id) {
+            const baseURL = sessionStorage.getItem('baseURL') || ''
+            socket = socketIOClient(baseURL, {
+                path: '/socket.io',
+                transports: ['websocket', 'polling']
+            })
+
+            socket.on('connect', () => {
+                setSocketIOClientId(socket.id)
+                setIsChatFlowAvailableToStream(true)
+            })
+
+            socket.on('start', () => {
+                setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '', isLoading: true } as Message])
+            })
+
+            socket.on('token', updateLastMessage)
+            socket.on('sourceDocuments', updateLastMessageSourceDocuments)
+            socket.on('usedTools', updateLastMessageUsedTools)
+            socket.on('fileAnnotations', updateLastMessageFileAnnotations)
+            socket.on('agentReasoning', updateLastMessageAgentReasoning)
+            socket.on('action', updateLastMessageAction)
+            socket.on('nextAgent', updateLastMessageNextAgent)
+            socket.on('abort', abortMessage)
+
+            socket.on('end', () => {
+                setMessages((prevMessages) => {
+                    const allMessages = [...cloneDeep(prevMessages)]
+                    const lastMessage = allMessages[allMessages.length - 1]
+                    if (lastMessage?.role === 'user') return allMessages
+                    lastMessage.isLoading = false
+                    return allMessages
+                })
+                setIsLoading(false)
+            })
+
+            socket.on('disconnect', () => {
+                setIsChatFlowAvailableToStream(false)
+                setSocketIOClientId('')
+            })
+
+            socket.on('error', (error: any) => {
+                setError(error?.message || 'Error during streaming')
+                setIsLoading(false)
+            })
+
+            return () => {
+                if (socket) {
+                    socket.disconnect()
+                    setSocketIOClientId('')
+                    setIsChatFlowAvailableToStream(false)
+                }
+            }
+        }
+    }, [sidekick?.id])
 
     React.useEffect(() => {
         setJourney(initialJourney)
@@ -400,7 +635,11 @@ export function AnswersProvider({
         upsertJourney,
         updateMessage,
         startNewChat,
-        sendMessageFeedback
+        sendMessageFeedback,
+        socketIOClientId,
+        setSocketIOClientId,
+        isChatFlowAvailableToStream,
+        handleAbort
     }
     // @ts-ignore
     return <AnswersContext.Provider value={contextValue}>{children}</AnswersContext.Provider>

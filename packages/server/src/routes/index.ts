@@ -40,6 +40,7 @@ import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
 import planRouter from './plan'
+import chatsRouter from './chats'
 
 const router = express.Router()
 
@@ -84,5 +85,6 @@ router.use('/vector', vectorRouter)
 router.use('/verify', verifyRouter)
 router.use('/version', versionRouter)
 router.use('/upsert-history', upsertHistoryRouter)
+router.use('/chats', chatsRouter)
 
 export default router
