@@ -111,7 +111,7 @@ const ChatDetailPage = async ({ params }: { params: { chatId: string } }) => {
 
     try {
         // Fetch chat, messages and sidekicks in parallel
-        const [chat, sidekicks] = await Promise.all([getChat(params.chatId, user), findSidekicksForChat(user)])
+        const [chat, { sidekicks } = {}] = await Promise.all([getChat(params.chatId, user), findSidekicksForChat(user)])
 
         if (!chat) {
             return <ChatNotFound />
