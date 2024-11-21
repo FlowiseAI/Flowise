@@ -51,6 +51,7 @@ export const ChatDetail = ({
 
     const scrollRef = useRef<HTMLDivElement>(null)
     const [selectedDocuments, setSelectedDocuments] = React.useState<Document[] | undefined>()
+    const [uploadedFiles, setUploadedFiles] = React.useState<FileUpload[]>([])
 
     const messages = clientMessages || chat?.messages
 
@@ -237,7 +238,13 @@ export const ChatDetail = ({
                                     </Suspense>
                                 </Box>
 
-                                <ChatInput sidekicks={sidekicks} scrollRef={scrollRef} />
+                                <ChatInput
+                                    sidekicks={sidekicks}
+                                    scrollRef={scrollRef}
+                                    uploadedFiles={uploadedFiles}
+                                    setUploadedFiles={setUploadedFiles}
+                                    isWidget={false}
+                                />
                             </>
                         ) : (
                             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

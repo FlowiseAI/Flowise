@@ -48,6 +48,7 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
 import checkOwnership from './checkOwnership'
 import PlansService from '../services/plans'
+import { Chat } from '../database/entities/Chat'
 
 /**
  * Build Chatflow
@@ -74,6 +75,35 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
         const userMessageDateTime = new Date()
+
+        const chatRepository = appServer.AppDataSource.getRepository(Chat)
+
+        let chat = await chatRepository.findOne({ where: { id: chatId } })
+
+        if (!chat) {
+            const chatData = {
+                id: chatId,
+                title: incomingInput.question,
+                chatflowChatId: chatId,
+                chatflow: { id: chatflowid },
+                owner: { id: req.user?.id },
+                ownerId: req.user?.id,
+                organizationId: req.user?.organizationId
+            }
+
+            chat = await chatRepository.save(chatData)
+
+            if (socketIO && incomingInput.socketIOClientId) {
+                socketIO.to(incomingInput.socketIOClientId).emit('newChat', {
+                    chat: {
+                        id: chat.id,
+                        title: chat.title,
+                        chatflowChatId: chat.chatflowChatId,
+                        createdDate: chat.createdDate
+                    }
+                })
+            }
+        }
 
         if (!isInternal && !chatflow?.isPublic) {
             const isOwner = await checkOwnership(chatflow, req.user)

@@ -6,7 +6,8 @@
             "@utils/*": ["../../packages/utils/src/*"],
             "@ui/*": ["../../packages/ui/src/*"],
             "@themes/*": ["../../packages/themes/src/*"],
-            "@db/*": ["../../packages/db/src/*"]
+            "@db/*": ["../../packages/db/src/*"],
+            "@services/*": ["../../packages/ui/services/*"]
         }
     },
     "extends": "tsconfig/react-library.json",
