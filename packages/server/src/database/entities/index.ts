@@ -14,7 +14,7 @@ import { User } from './User'
 import { Organization } from './Organization'
 import { PaidPlan } from './PaidPlan'
 import { TrialPlan } from './TrialPlan'
-
+import { Chat } from './Chat'
 export const entities = {
     ChatFlow,
     ChatMessage,
@@ -31,5 +31,6 @@ export const entities = {
     User,
     Organization,
     PaidPlan,
-    TrialPlan
+    TrialPlan,
+    Chat
 }

@@ -67,6 +67,23 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks = [] }: { scrollRef?: any; i
         }
     }
 
+    const handleAbort = async () => {
+        setIsMessageStopping(true)
+        try {
+            // Need to implement abort functionality in AnswersContext
+            await abortMessage(chat?.id)
+            setIsMessageStopping(false)
+        } catch (error) {
+            setIsMessageStopping(false)
+            // Handle error
+        }
+    }
+
+    const onSourceDialogClick = (data: any, title: string) => {
+        setSourceDialogProps({ data, title })
+        setSourceDialogOpen(true)
+    }
+
     return (
         <Box display='flex' position='relative' sx={{ gap: 1, flexDirection: 'column', pb: 2, px: 2 }}>
             <Box sx={{ display: 'flex', gap: 2 }}>

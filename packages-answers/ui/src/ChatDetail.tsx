@@ -17,6 +17,10 @@ import { MessageCard } from './Message'
 import { useAnswers } from './AnswersContext'
 import ChatInput from './ChatInput'
 import DrawerFilters from './DrawerFilters/DrawerFilters'
+import NextLink from 'next/link'
+import Toolbar from '@mui/material/Toolbar'
+
+import ShareIcon from '@mui/icons-material/IosShare'
 
 import type { AppSettings, Document, Sidekick } from 'types'
 import SidekickSelect from './SidekickSelect'
@@ -51,6 +55,7 @@ export const ChatDetail = ({
 
     const scrollRef = useRef<HTMLDivElement>(null)
     const [selectedDocuments, setSelectedDocuments] = React.useState<Document[] | undefined>()
+    const [uploadedFiles, setUploadedFiles] = React.useState<FileUpload[]>([])
 
     const messages = clientMessages || chat?.messages
 
@@ -237,7 +242,13 @@ export const ChatDetail = ({
                                     </Suspense>
                                 </Box>
 
-                                <ChatInput sidekicks={sidekicks} scrollRef={scrollRef} />
+                                <ChatInput
+                                    sidekicks={sidekicks}
+                                    scrollRef={scrollRef}
+                                    uploadedFiles={uploadedFiles}
+                                    setUploadedFiles={setUploadedFiles}
+                                    isWidget={false}
+                                />
                             </>
                         ) : (
                             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>

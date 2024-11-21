@@ -6,7 +6,7 @@ import getCachedSession from '@ui/getCachedSession'
 
 import { findSidekicksForChat } from '@utils/findSidekicksForChat'
 import auth0 from '@utils/auth/auth0'
-import { User } from 'types'
+import { Chat, User } from 'types'
 
 const getMessages = async ({ chat, user }: { chat: Partial<Chat>; user: User }) => {
     try {
