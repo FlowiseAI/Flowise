@@ -203,6 +203,8 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     ): Promise<IMessage[] | BaseMessage[]> {
         if (!this.redisClient) return []
 
+        if (this.redisClient.status == 'end' || this.redisClient.status == 'close') await this.redisClient.connect()
+
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         const rawStoredMessages = await this.redisClient.lrange(id, this.windowSize ? this.windowSize * -1 : 0, -1)
         const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
