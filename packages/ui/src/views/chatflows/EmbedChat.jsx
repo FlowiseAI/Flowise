@@ -117,7 +117,7 @@ export const defaultThemeConfig = {
         blurredBackgroundColor: 'rgba(0, 0, 0, 0.4)',
         backgroundColor: 'white'
     },
-    customCSS: '',
+    customCSS: ``,
     chatWindow: {
         showTitle: true,
         showAgentMessages: true,
@@ -179,11 +179,9 @@ export const defaultThemeConfig = {
 const customStringify = (obj) => {
     return JSON.stringify(obj, null, 2)
         .replace(/"([^"]+)":/g, '$1:')
-        .replace(/: "([^"]+)"/g, (_, p1) => {
-            if (p1.includes('<')) return `: "${p1}"`
-            return `: '${p1}'`
-        })
+        .replace(/: "([^"]+)"/g, (match, value) => (value.includes('<') ? `: "${value}"` : `: '${value}'`))
         .replace(/: "(true|false|\d+)"/g, ': $1')
+        .replace(/customCSS: ""/g, 'customCSS: ``')
 }
 
 const embedPopupHtmlCodeCustomization = (chatflowid) => {
