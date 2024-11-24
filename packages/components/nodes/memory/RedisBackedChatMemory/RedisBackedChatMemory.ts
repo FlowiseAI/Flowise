@@ -196,7 +196,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         this.sessionTTL = fields.sessionTTL
     }
 
-    async checkRedisConnection() {
+    async openClosedConnection() {
         if (this.redisClient.status == 'end' || this.redisClient.status == 'close') await this.redisClient.connect()
     }
 
@@ -207,7 +207,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     ): Promise<IMessage[] | BaseMessage[]> {
         if (!this.redisClient) return []
 
-        this.checkRedisConnection()
+        this.openClosedConnection()
 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         const rawStoredMessages = await this.redisClient.lrange(id, this.windowSize ? this.windowSize * -1 : 0, -1)
@@ -222,7 +222,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
         if (!this.redisClient) return
 
-        this.checkRedisConnection()
+        this.openClosedConnection()
 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         const input = msgArray.find((msg) => msg.type === 'userMessage')
@@ -246,7 +246,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
         if (!this.redisClient) return
 
-        this.checkRedisConnection()
+        this.openClosedConnection()
 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         await this.redisClient.del(id)
