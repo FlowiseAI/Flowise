@@ -62,22 +62,28 @@ export async function findSidekicksForChat(user: User) {
         if (response.ok) {
             const result = await response.json()
 
-            const sidekicks: Sidekick[] = result.map((chatflow: any) => ({
-                id: chatflow.id || '',
-                label: chatflow.name || '',
-                visibility: chatflow.visibility || [],
-                chatflow: chatflow,
-                answersConfig: chatflow.answersConfig,
-                chatflowId: chatflow.id || '',
-                chatflowDomain: chatflowDomain,
-                chatbotConfig: parseChatbotConfig(chatflow.chatbotConfig),
-                flowData: parseFlowData(chatflow.flowData),
-                isRecent: userChats.some((chat) => chat.chatflowId === chatflow.id),
-                category: chatflow.category,
-                categories: chatflow.categories || chatflow.category ? [chatflow.category] : [],
-                isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
-                isFavorite: false // This will be managed client-side
-            }))
+            const sidekicks: Sidekick[] = result.map((chatflow: any) => {
+                const categories = (chatflow.categories || chatflow.category ? [chatflow.category] : [])
+                    .filter(Boolean)
+                    .map((c) => c.trim().split(';'))
+                    .flat()
+                return {
+                    id: chatflow.id || '',
+                    label: chatflow.name || '',
+                    visibility: chatflow.visibility || [],
+                    chatflow: chatflow,
+                    answersConfig: chatflow.answersConfig,
+                    chatflowId: chatflow.id || '',
+                    chatflowDomain: chatflowDomain,
+                    chatbotConfig: parseChatbotConfig(chatflow.chatbotConfig),
+                    flowData: parseFlowData(chatflow.flowData),
+                    isRecent: userChats.some((chat) => chat.chatflowId === chatflow.id),
+                    category: chatflow.category,
+                    categories,
+                    isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
+                    isFavorite: false // This will be managed client-side
+                }
+            })
 
             return {
                 sidekicks,
@@ -95,7 +101,10 @@ export async function findSidekicksForChat(user: User) {
 }
 
 function getUniqueCategories(sidekicks: Sidekick[]) {
-    const categories = [...new Set(sidekicks.map((s) => s.category))].filter(Boolean)
+    const categories = [...new Set(sidekicks.map((s) => s.category))]
+        .filter(Boolean)
+        .map((c) => c.trim().split(';'))
+        .flat()
     const topCategories = categories.slice(0, 3)
     const moreCategories = categories.slice(3)
 
