@@ -177,11 +177,18 @@ export const defaultThemeConfig = {
 }
 
 const customStringify = (obj) => {
-    return JSON.stringify(obj, null, 2)
+    let stringified = JSON.stringify(obj, null, 4)
         .replace(/"([^"]+)":/g, '$1:')
         .replace(/: "([^"]+)"/g, (match, value) => (value.includes('<') ? `: "${value}"` : `: '${value}'`))
         .replace(/: "(true|false|\d+)"/g, ': $1')
         .replace(/customCSS: ""/g, 'customCSS: ``')
+    return stringified
+        .split('\n')
+        .map((line, index) => {
+            if (index === 0) return line
+            return ' '.repeat(8) + line
+        })
+        .join('\n')
 }
 
 const embedPopupHtmlCodeCustomization = (chatflowid) => {
@@ -191,15 +198,12 @@ const embedPopupHtmlCodeCustomization = (chatflowid) => {
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
         chatflowConfig: {
-            // Chatflow Config
+            /* Chatflow Config */
         },
         observersConfig: {
-            // Observers Config
+            /* Observers Config */
         },
-        theme: ${customStringify(defaultThemeConfig)
-            .split('\n')
-            .map((line) => ' '.repeat(8) + line)
-            .join('\n')}
+        theme: ${customStringify(defaultThemeConfig)}
     })
 </script>`
 }
@@ -212,7 +216,16 @@ const App = () => {
         <BubbleChat
             chatflowid="${chatflowid}"
             apiHost="${baseURL}"
-            theme={${customStringify(defaultThemeConfig)}}
+            chatflowConfig={{
+                /* Chatflow Config */
+            }}
+            observersConfig={{
+                /* Observers Config */
+            }}
+            theme={${customStringify(defaultThemeConfig)
+                .split('\n')
+                .map((line) => ' '.repeat(4) + line)
+                .join('\n')}
         />
     )
 }`
@@ -237,15 +250,12 @@ const embedFullpageHtmlCodeCustomization = (chatflowid) => {
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
         chatflowConfig: {
-            // Chatflow Config
+            /* Chatflow Config */
         },
         observersConfig: {
-            // Observers Config
+            /* Observers Config */
         },
-        theme: ${customStringify(getFullPageThemeConfig())
-            .split('\n')
-            .map((line) => ' '.repeat(8) + line)
-            .join('\n')}
+        theme: ${customStringify(getFullPageThemeConfig())}
     })
 </script>`
 }
@@ -259,12 +269,15 @@ const App = () => {
             chatflowid="${chatflowid}"
             apiHost="${baseURL}"
             chatflowConfig={{
-                // Chatflow Config
+                /* Chatflow Config */
             }}
             observersConfig={{
-                // Observers Config
+                /* Observers Config */
             }}
-            theme={${customStringify(getFullPageThemeConfig())}}
+            theme={${customStringify(getFullPageThemeConfig())
+                .split('\n')
+                .map((line) => ' '.repeat(4) + line)
+                .join('\n')}
         />
     )
 }`
