@@ -12,11 +12,13 @@ import {
     INodeData,
     INodeDependencies,
     INodeDirectedGraph,
+    INodeOverrides,
     INodeQueue,
     IOverrideConfig,
     IReactFlowEdge,
     IReactFlowNode,
     IVariableDict,
+    IVariableOverride,
     IncomingInput
 } from '../Interface'
 import { cloneDeep, get, isEqual } from 'lodash'
@@ -436,8 +438,8 @@ type BuildFlowParams = {
     appDataSource: DataSource
     overrideConfig?: ICommonObject
     apiOverrideStatus?: boolean
-    nodeOverrides?: ICommonObject
-    variableOverrides?: ICommonObject[]
+    nodeOverrides?: INodeOverrides
+    variableOverrides?: IVariableOverride[]
     cachePool?: CachePool
     isUpsert?: boolean
     stopNodeId?: string
@@ -1000,15 +1002,15 @@ export const resolveVariables = async (
  * Loop through each inputs and replace their value with override config values
  * @param {INodeData} flowNodeData
  * @param {ICommonObject} overrideConfig
- * @param {ICommonObject} nodeOverrides
- * @param {ICommonObject[]} variableOverrides
+ * @param {INodeOverrides} nodeOverrides
+ * @param {IVariableOverride[]} variableOverrides
  * @returns {INodeData}
  */
 export const replaceInputsWithConfig = (
     flowNodeData: INodeData,
     overrideConfig: ICommonObject,
-    nodeOverrides: ICommonObject,
-    variableOverrides: ICommonObject[]
+    nodeOverrides: INodeOverrides,
+    variableOverrides: IVariableOverride[]
 ) => {
     const types = 'inputs'
 
@@ -1676,9 +1678,12 @@ export const aMonthAgo = () => {
 export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
     try {
         const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
-        const nodeOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
-        const variableOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
-        const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
+        const nodeOverrides: INodeOverrides =
+            apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
+        const variableOverrides: IVariableOverride[] =
+            apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
+        const apiOverrideStatus: boolean =
+            apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
 
         return { nodeOverrides, variableOverrides, apiOverrideStatus }
     } catch (error) {
