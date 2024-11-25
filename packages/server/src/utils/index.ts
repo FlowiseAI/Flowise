@@ -793,7 +793,7 @@ export const getVariableValue = async (
     question: string,
     chatHistory: IMessage[],
     isAcceptVariable = false,
-    flowData?: ICommonObject,
+    flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
     variableOverrides: ICommonObject[] = []
 ) => {
@@ -837,7 +837,7 @@ export const getVariableValue = async (
             }
 
             if (variableFullPath.startsWith('$vars.')) {
-                const vars = await getGlobalVariable(appDataSource, flowData, variableOverrides)
+                const vars = await getGlobalVariable(appDataSource, flowConfig, variableOverrides)
                 const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
                 if (variableValue) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
@@ -845,8 +845,8 @@ export const getVariableValue = async (
                 }
             }
 
-            if (variableFullPath.startsWith('$flow.') && flowData) {
-                const variableValue = get(flowData, variableFullPath.replace('$flow.', ''))
+            if (variableFullPath.startsWith('$flow.') && flowConfig) {
+                const variableValue = get(flowConfig, variableFullPath.replace('$flow.', ''))
                 if (variableValue) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
@@ -945,7 +945,7 @@ export const resolveVariables = async (
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
-    flowData?: ICommonObject,
+    flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
     variableOverrides: ICommonObject[] = []
 ): Promise<INodeData> => {
@@ -965,7 +965,7 @@ export const resolveVariables = async (
                         question,
                         chatHistory,
                         undefined,
-                        flowData,
+                        flowConfig,
                         uploadedFilesContent,
                         variableOverrides
                     )
@@ -981,7 +981,7 @@ export const resolveVariables = async (
                     question,
                     chatHistory,
                     isAcceptVariable,
-                    flowData,
+                    flowConfig,
                     uploadedFilesContent,
                     variableOverrides
                 )

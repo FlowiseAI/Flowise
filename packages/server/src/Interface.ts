@@ -1,4 +1,15 @@
-import { IAction, ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import {
+    IAction,
+    ICommonObject,
+    IFileUpload,
+    INode,
+    INodeData as INodeDataFromComponent,
+    INodeParams,
+    IServerSideEventStreamer
+} from 'flowise-components'
+import { DataSource } from 'typeorm'
+import { CachePool } from './CachePool'
+import { Telemetry } from './utils/telemetry'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
@@ -26,6 +37,7 @@ export interface IChatFlow {
     isPublic?: boolean
     apikeyid?: string
     analytic?: string
+    speechToText?: string
     chatbotConfig?: string
     followUpPrompts?: string
     apiConfig?: string
@@ -286,6 +298,42 @@ export interface ICustomTemplate {
     badge?: string
     framework?: string
     usecases?: string
+}
+
+export interface IFlowConfig {
+    chatflowid: string
+    chatId: string
+    sessionId: string
+    chatHistory: IMessage[]
+    apiMessageId: string
+    overrideConfig?: ICommonObject
+}
+
+export interface IExecuteFlowParams {
+    startingNodeIds: string[]
+    endingNodeIds: string[]
+    nodes: IReactFlowNode[]
+    edges: IReactFlowEdge[]
+    graph: INodeDirectedGraph
+    depthQueue: IDepthQueue
+    componentNodes: IComponentNodes
+    incomingInput: IncomingInput
+    flowConfig: IFlowConfig
+    chatflow: IChatFlow
+    memoryType: string
+    fileUploads: IFileUpload[]
+    uploadedFilesContent: string
+    userMessageDateTime: Date
+    appDataSource: DataSource
+    apiOverrideStatus: boolean
+    nodeOverrides: ICommonObject
+    variableOverrides: ICommonObject[]
+    sseStreamer: IServerSideEventStreamer
+    telemetry: Telemetry
+    cachePool: CachePool
+    baseURL: string
+    isStreamValid: boolean
+    isInternal: boolean
 }
 
 // DocumentStore related

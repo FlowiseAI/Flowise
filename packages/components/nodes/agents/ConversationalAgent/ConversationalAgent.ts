@@ -21,7 +21,7 @@ import {
 } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
-import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
@@ -124,10 +124,9 @@ class ConversationalAgent_Agents implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                // if (options.shouldStreamResponse) {
-                //     streamResponse(options.sseStreamer, options.chatId, e.message)
-                // }
-                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (options.shouldStreamResponse) {
+                    streamResponse(sseStreamer, chatId, e.message)
+                }
                 return formatResponse(e.message)
             }
         }
