@@ -222,7 +222,8 @@ const App = () => {
             observersConfig={{
                 /* Observers Config */
             }}
-            theme={${customStringify(defaultThemeConfig)
+            theme={{${customStringify(defaultThemeConfig)
+                .substring(1)
                 .split('\n')
                 .map((line) => ' '.repeat(4) + line)
                 .join('\n')}
@@ -274,7 +275,8 @@ const App = () => {
             observersConfig={{
                 /* Observers Config */
             }}
-            theme={${customStringify(getFullPageThemeConfig())
+            theme={{${customStringify(getFullPageThemeConfig())
+                .substring(1)
                 .split('\n')
                 .map((line) => ' '.repeat(4) + line)
                 .join('\n')}
