@@ -43,6 +43,11 @@ const Assistants = () => {
         setShowLoadDialog(true)
     }
 
+    const [search, setSearch] = useState('')
+    const onSearchChange = (event) => {
+        setSearch(event.target.value)
+    }
+
     const onAssistantSelected = (selectedOpenAIAssistantId, credential) => {
         setShowLoadDialog(false)
         addNew(selectedOpenAIAssistantId, credential)
@@ -78,6 +83,11 @@ const Assistants = () => {
         getAllAssistantsApi.request()
     }
 
+    function filterAssistants(data) {
+        const parsedData = JSON.parse(data.details)
+        return parsedData && parsedData.name && parsedData.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+    }
+
     useEffect(() => {
         getAllAssistantsApi.request()
 
@@ -101,7 +111,12 @@ const Assistants = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader title='OpenAI Assistants'>
+                        <ViewHeader
+                            onSearchChange={onSearchChange}
+                            search={true}
+                            searchPlaceholder='Search Assistants'
+                            title='OpenAI Assistants'
+                        >
                             <Button
                                 variant='outlined'
                                 onClick={loadExisting}
@@ -128,7 +143,7 @@ const Assistants = () => {
                         ) : (
                             <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                 {getAllAssistantsApi.data &&
-                                    getAllAssistantsApi.data.map((data, index) => (
+                                    getAllAssistantsApi.data?.filter(filterAssistants).map((data, index) => (
                                         <ItemCard
                                             data={{
                                                 name: JSON.parse(data.details)?.name,

@@ -121,11 +121,22 @@ class File_DocumentLoaders implements INode {
             }
             const chatflowid = options.chatflowid
 
-            for (const file of files) {
-                if (!file) continue
-                const fileData = await getFileFromStorage(file, chatflowid)
-                const blob = new Blob([fileData])
-                fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
+            // specific to createAttachment to get files from chatId
+            const retrieveAttachmentChatId = options.retrieveAttachmentChatId
+            if (retrieveAttachmentChatId) {
+                for (const file of files) {
+                    if (!file) continue
+                    const fileData = await getFileFromStorage(file, chatflowid, options.chatId)
+                    const blob = new Blob([fileData])
+                    fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
+                }
+            } else {
+                for (const file of files) {
+                    if (!file) continue
+                    const fileData = await getFileFromStorage(file, chatflowid)
+                    const blob = new Blob([fileData])
+                    fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
+                }
             }
         } else {
             if (totalFiles.startsWith('[') && totalFiles.endsWith(']')) {
@@ -288,7 +299,12 @@ class MultiFileLoader extends BaseDocumentLoader {
                 const loader = loaderFactory(fileBlob.blob)
                 documents.push(...(await loader.load()))
             } else {
-                throw new Error(`Error loading file`)
+                const loader = new TextLoader(fileBlob.blob)
+                try {
+                    documents.push(...(await loader.load()))
+                } catch (error) {
+                    throw new Error(`Error loading file`)
+                }
             }
         }
 

@@ -16,7 +16,7 @@ class SetVariable_Utilities implements INode {
     constructor() {
         this.label = 'Set Variable'
         this.name = 'setVariable'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'SetVariable'
         this.icon = 'setvar.svg'
         this.category = 'Utilities'
@@ -36,6 +36,14 @@ class SetVariable_Utilities implements INode {
                 name: 'variableName',
                 type: 'string',
                 placeholder: 'var1'
+            },
+            {
+                label: 'Show Output',
+                name: 'showOutput',
+                description: 'Show the output result in the Prediction API response',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.outputs = [

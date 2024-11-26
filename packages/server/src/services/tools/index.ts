@@ -4,6 +4,8 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getAppVersion } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
+import { QueryRunner } from 'typeorm'
 
 const createTool = async (requestBody: any): Promise<any> => {
     try {
@@ -17,6 +19,7 @@ const createTool = async (requestBody: any): Promise<any> => {
             toolId: dbResponse.id,
             toolName: dbResponse.name
         })
+        appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.TOOL_CREATED, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.createTool - ${getErrorMessage(error)}`)
@@ -79,9 +82,10 @@ const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
     }
 }
 
-const importTools = async (newTools: Partial<Tool>[]) => {
+const importTools = async (newTools: Partial<Tool>[], queryRunner?: QueryRunner) => {
     try {
         const appServer = getRunningExpressApp()
+        const repository = queryRunner ? queryRunner.manager.getRepository(Tool) : appServer.AppDataSource.getRepository(Tool)
 
         // step 1 - check whether file tools array is zero
         if (newTools.length == 0) return
@@ -97,11 +101,7 @@ const importTools = async (newTools: Partial<Tool>[]) => {
             count += 1
         })
 
-        const selectResponse = await appServer.AppDataSource.getRepository(Tool)
-            .createQueryBuilder('t')
-            .select('t.id')
-            .where(`t.id IN ${ids}`)
-            .getMany()
+        const selectResponse = await repository.createQueryBuilder('t').select('t.id').where(`t.id IN ${ids}`).getMany()
         const foundIds = selectResponse.map((response) => {
             return response.id
         })
@@ -118,7 +118,7 @@ const importTools = async (newTools: Partial<Tool>[]) => {
         })
 
         // step 4 - transactional insert array of entities
-        const insertResponse = await appServer.AppDataSource.getRepository(Tool).insert(prepTools)
+        const insertResponse = await repository.insert(prepTools)
 
         return insertResponse
     } catch (error) {

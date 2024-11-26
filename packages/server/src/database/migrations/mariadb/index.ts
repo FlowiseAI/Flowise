@@ -17,6 +17,7 @@ import { AddFeedback1707213626553 } from './1707213626553-AddFeedback'
 import { AddUpsertHistoryEntity1709814301358 } from './1709814301358-AddUpsertHistoryEntity'
 import { AddLead1710832127079 } from './1710832127079-AddLead'
 import { AddLeadToChatMessage1711538023578 } from './1711538023578-AddLeadToChatMessage'
+import { AddVectorStoreConfigToDocStore1715861032479 } from './1715861032479-AddVectorStoreConfigToDocStore'
 import { AddDocumentStore1711637331047 } from './1711637331047-AddDocumentStore'
 import { AddAgentReasoningToChatMessage1714679514451 } from './1714679514451-AddAgentReasoningToChatMessage'
 import { AddTypeToChatFlow1716300000000 } from './1716300000000-AddTypeToChatFlow'
@@ -25,6 +26,7 @@ import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionTo
 import { LongTextColumn1722301395521 } from './1722301395521-LongTextColumn'
 import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
 import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
+import { AddFollowUpPrompts1726666318346 } from './1726666318346-AddFollowUpPrompts'
 
 export const mariadbMigrations = [
     Init1693840429259,
@@ -49,9 +51,11 @@ export const mariadbMigrations = [
     AddLeadToChatMessage1711538023578,
     AddAgentReasoningToChatMessage1714679514451,
     AddTypeToChatFlow1716300000000,
+    AddVectorStoreConfigToDocStore1715861032479,
     AddApiKey1720230151480,
     AddActionToChatMessage1721078251523,
     LongTextColumn1722301395521,
     AddCustomTemplate1725629836652,
-    AddArtifactsToChatMessage1726156258465
+    AddArtifactsToChatMessage1726156258465,
+    AddFollowUpPrompts1726666318346
 ]

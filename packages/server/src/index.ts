@@ -22,6 +22,10 @@ import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { validateAPIKey } from './utils/validateKey'
+import { IMetricsProvider } from './Interface.Metrics'
+import { Prometheus } from './metrics/Prometheus'
+import { OpenTelemetry } from './metrics/OpenTelemetry'
+import 'global-agent/bootstrap'
 
 declare global {
     namespace Express {
@@ -39,6 +43,7 @@ export class App {
     telemetry: Telemetry
     AppDataSource: DataSource = getDataSource()
     sseStreamer: SSEStreamer
+    metricsProvider: IMetricsProvider
 
     constructor() {
         this.app = express()
@@ -135,7 +140,10 @@ export class App {
             '/api/v1/leads',
             '/api/v1/get-upload-file',
             '/api/v1/ip',
-            '/api/v1/ping'
+            '/api/v1/ping',
+            '/api/v1/version',
+            '/api/v1/attachments',
+            '/api/v1/metrics'
         ]
         const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
         const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
@@ -199,6 +207,28 @@ export class App {
                     next()
                 }
             })
+        }
+
+        if (process.env.ENABLE_METRICS === 'true') {
+            switch (process.env.METRICS_PROVIDER) {
+                // default to prometheus
+                case 'prometheus':
+                case undefined:
+                    this.metricsProvider = new Prometheus(this.app)
+                    break
+                case 'open_telemetry':
+                    this.metricsProvider = new OpenTelemetry(this.app)
+                    break
+                // add more cases for other metrics providers here
+            }
+            if (this.metricsProvider) {
+                await this.metricsProvider.initializeCounters()
+                logger.info(`📊 [server]: Metrics Provider [${this.metricsProvider.getName()}] has been initialized!`)
+            } else {
+                logger.error(
+                    "❌ [server]: Metrics collection is enabled, but failed to initialize provider (valid values are 'prometheus' or 'open_telemetry'."
+                )
+            }
         }
 
         this.app.use('/api/v1', flowiseApiV1Router)

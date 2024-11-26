@@ -303,6 +303,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                         ) : (
                             <Stack flexDirection='row' sx={{ width: '100%' }}>
                                 <TextField
+                                    //eslint-disable-next-line jsx-a11y/no-autofocus
+                                    autoFocus
                                     size='small'
                                     inputRef={flowNameRef}
                                     sx={{
@@ -310,6 +312,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                         ml: 2
                                     }}
                                     defaultValue={flowName}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            submitFlowName()
+                                        } else if (e.key === 'Escape') {
+                                            setEditingFlowName(false)
+                                        }
+                                    }}
                                 />
                                 <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
                                     <Avatar
@@ -440,7 +449,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={onConfirmSaveName}
             />
-            <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
+            {apiDialogOpen && <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />}
             <ViewMessagesDialog
                 show={viewMessagesDialogOpen}
                 dialogProps={viewMessagesDialogProps}
