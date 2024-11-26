@@ -249,6 +249,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         // Get prepend messages
         const prependMessages = incomingInput.history
 
+        const flowVariables = {} as Record<string, unknown>
+
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
          * - Reuse of flows is not disabled
          * - Node Data already exists in pool
@@ -377,6 +379,18 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 uploads: incomingInput.uploads,
                 baseURL
             })
+
+            // Show output of setVariable nodes in the response
+            for (const node of reactFlowNodes) {
+                if (
+                    node.data.name === 'setVariable' &&
+                    (node.data.inputs?.showOutput === true || node.data.inputs?.showOutput === 'true')
+                ) {
+                    const outputResult = node.data.instance
+                    const variableKey = node.data.inputs?.variableName
+                    flowVariables[variableKey] = outputResult
+                }
+            }
 
             const nodeToExecute =
                 endingNodeIds.length === 1
@@ -525,6 +539,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
+        if (Object.keys(flowVariables).length) result.flowVariables = flowVariables
 
         return result
     } catch (e) {
