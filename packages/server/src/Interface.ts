@@ -288,5 +288,21 @@ export interface ICustomTemplate {
     usecases?: string
 }
 
+export interface INodeOverrides {
+    [key: string]: {
+        label: string
+        name: string
+        type: string
+        enabled: boolean
+    }[]
+}
+
+export interface IVariableOverride {
+    id: string
+    name: string
+    type: 'static' | 'runtime'
+    enabled: boolean
+}
+
 // DocumentStore related
 export * from './Interface.DocumentStore'
