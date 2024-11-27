@@ -1,8 +1,9 @@
-import { ChatOllama, ChatOllamaInput } from '@langchain/ollama'
+import { ChatOllamaInput } from '@langchain/ollama'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 import { BaseCache } from '@langchain/core/caches'
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { ChatOllama } from './FlowiseChatOllama'
 
 class ChatOllama_ChatModels implements INode {
     label: string
@@ -19,7 +20,7 @@ class ChatOllama_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOllama'
         this.name = 'chatOllama'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'ChatOllama'
         this.icon = 'Ollama.svg'
         this.category = 'Chat Models'
@@ -53,6 +54,23 @@ class ChatOllama_ChatModels implements INode {
                 step: 0.1,
                 default: 0.9,
                 optional: true
+            },
+            {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description: 'Allow image uploads for multimodal models. e.g. llama3.2-vision',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'JSON Mode',
+                name: 'jsonMode',
+                type: 'boolean',
+                description:
+                    'Coerces model outputs to only return JSON. Specify in the system prompt to return JSON. Ex: Format all responses as JSON object',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Keep Alive',
@@ -203,6 +221,8 @@ class ChatOllama_ChatModels implements INode {
         const repeatLastN = nodeData.inputs?.repeatLastN as string
         const repeatPenalty = nodeData.inputs?.repeatPenalty as string
         const tfsZ = nodeData.inputs?.tfsZ as string
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const jsonMode = nodeData.inputs?.jsonMode as boolean
 
         const cache = nodeData.inputs?.cache as BaseCache
 
@@ -225,8 +245,16 @@ class ChatOllama_ChatModels implements INode {
         if (tfsZ) obj.tfsZ = parseFloat(tfsZ)
         if (keepAlive) obj.keepAlive = keepAlive
         if (cache) obj.cache = cache
+        if (jsonMode) obj.format = 'json'
 
-        const model = new ChatOllama(obj)
+        const multiModalOption: IMultiModalOption = {
+            image: {
+                allowImageUploads: allowImageUploads ?? false
+            }
+        }
+
+        const model = new ChatOllama(nodeData.id, obj)
+        model.setMultiModalOption(multiModalOption)
         return model
     }
 }

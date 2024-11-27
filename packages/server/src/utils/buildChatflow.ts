@@ -42,7 +42,8 @@ import {
     isSameOverrideConfig,
     getEndingNodes,
     constructGraphs,
-    isSameChatId
+    isSameChatId,
+    getAPIOverrideConfig
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
@@ -55,6 +56,7 @@ import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
+import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../Interface.Metrics'
 
 /**
  * Build Chatflow
@@ -62,8 +64,8 @@ import { IAction } from 'flowise-components'
  * @param {boolean} isInternal
  */
 export const utilBuildChatflow = async (req: Request, isInternal: boolean = false): Promise<any> => {
+    const appServer = getRunningExpressApp()
     try {
-        const appServer = getRunningExpressApp()
         const chatflowid = req.params.id
 
         const httpProtocol = req.get('x-forwarded-proto') || req.protocol
@@ -160,7 +162,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const fileNames: string[] = []
             for (const file of files) {
                 const fileBuffer = fs.readFileSync(file.path)
-
+                // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
+                file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
                 const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
@@ -245,6 +248,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         // Get prepend messages
         const prependMessages = incomingInput.history
+
+        const flowVariables = {} as Record<string, unknown>
 
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
          * - Reuse of flows is not disabled
@@ -344,15 +349,19 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
+            /*** Get API Config ***/
+            const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
+
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
             const reactFlowNodes = await buildFlow({
                 startingNodeIds,
                 reactFlowNodes: nodes,
                 reactFlowEdges: edges,
+                apiMessageId,
                 graph,
                 depthQueue,
-                apiMessageId,
                 componentNodes: appServer.nodesPool.componentNodes,
                 question: incomingInput.question,
                 uploadedFilesContent,
@@ -362,11 +371,26 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 chatflowid,
                 appDataSource: appServer.AppDataSource,
                 overrideConfig: incomingInput?.overrideConfig,
+                apiOverrideStatus,
+                nodeOverrides,
+                variableOverrides,
                 cachePool: appServer.cachePool,
                 isUpsert: false,
                 uploads: incomingInput.uploads,
                 baseURL
             })
+
+            // Show output of setVariable nodes in the response
+            for (const node of reactFlowNodes) {
+                if (
+                    node.data.name === 'setVariable' &&
+                    (node.data.inputs?.showOutput === true || node.data.inputs?.showOutput === 'true')
+                ) {
+                    const outputResult = node.data.instance
+                    const variableKey = node.data.inputs?.variableName
+                    flowVariables[variableKey] = outputResult
+                }
+            }
 
             const nodeToExecute =
                 endingNodeIds.length === 1
@@ -376,8 +400,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node not found`)
             }
 
-            if (incomingInput.overrideConfig) {
-                nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
+            // Only override the config if its status is true
+            if (incomingInput.overrideConfig && apiOverrideStatus) {
+                nodeToExecute.data = replaceInputsWithConfig(
+                    nodeToExecute.data,
+                    incomingInput.overrideConfig,
+                    nodeOverrides,
+                    variableOverrides
+                )
             }
 
             const flowData: ICommonObject = {
@@ -396,7 +426,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 incomingInput.question,
                 chatHistory,
                 flowData,
-                uploadedFilesContent
+                uploadedFilesContent,
+                variableOverrides
             )
             nodeToExecuteData = reactFlowNodeData
 
@@ -493,6 +524,10 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             flowGraph: getTelemetryFlowObj(nodes, edges)
         })
 
+        appServer.metricsProvider?.incrementCounter(
+            isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
+            { status: FLOWISE_COUNTER_STATUS.SUCCESS }
+        )
         // Prepare response
         // return the question in the response
         // this is used when input text is empty but question is in audio format
@@ -504,9 +539,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
+        if (Object.keys(flowVariables).length) result.flowVariables = flowVariables
 
         return result
     } catch (e) {
+        appServer.metricsProvider?.incrementCounter(
+            isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
+            { status: FLOWISE_COUNTER_STATUS.FAILURE }
+        )
         logger.error('[server]: Error:', e)
         if (e instanceof InternalFlowiseError && e.statusCode === StatusCodes.UNAUTHORIZED) {
             throw e
@@ -533,8 +573,8 @@ const utilBuildAgentResponse = async (
     shouldStreamResponse?: boolean,
     uploadedFilesContent?: string
 ) => {
+    const appServer = getRunningExpressApp()
     try {
-        const appServer = getRunningExpressApp()
         const streamResults = await buildAgentGraph(
             agentflow,
             chatId,
@@ -599,6 +639,10 @@ const utilBuildAgentResponse = async (
                 type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
+            appServer.metricsProvider?.incrementCounter(
+                isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
+                { status: FLOWISE_COUNTER_STATUS.SUCCESS }
+            )
 
             // Find the previous chat message with the same action id and remove the action
             if (incomingInput.action && Object.keys(incomingInput.action).length) {
@@ -645,6 +689,10 @@ const utilBuildAgentResponse = async (
         return undefined
     } catch (e) {
         logger.error('[server]: Error:', e)
+        appServer.metricsProvider?.incrementCounter(
+            isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
+            { status: FLOWISE_COUNTER_STATUS.FAILURE }
+        )
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
     }
 }

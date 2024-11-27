@@ -29,9 +29,9 @@ type Element = {
 export class UnstructuredLoader extends BaseDocumentLoader {
     public filePath: string
 
-    private apiUrl = 'https://api.unstructuredapp.io/general/v0/general'
+    private apiUrl = process.env.UNSTRUCTURED_API_URL || 'https://api.unstructuredapp.io/general/v0/general'
 
-    private apiKey?: string
+    private apiKey: string | undefined = process.env.UNSTRUCTURED_API_KEY
 
     private strategy: StringWithAutocomplete<UnstructuredLoaderStrategy> = 'hi_res'
 
@@ -66,10 +66,10 @@ export class UnstructuredLoader extends BaseDocumentLoader {
 
         const options = optionsOrLegacyFilePath
         this.apiKey = options.apiKey
-        this.apiUrl = options.apiUrl ?? this.apiUrl
-        this.strategy = options.strategy ?? this.strategy
+        this.apiUrl = options.apiUrl || this.apiUrl
+        this.strategy = options.strategy || this.strategy
         this.encoding = options.encoding
-        this.ocrLanguages = options.ocrLanguages ?? this.ocrLanguages
+        this.ocrLanguages = options.ocrLanguages || this.ocrLanguages
         this.coordinates = options.coordinates
         this.pdfInferTableStructure = options.pdfInferTableStructure
         this.xmlKeepTags = options.xmlKeepTags
@@ -128,7 +128,7 @@ export class UnstructuredLoader extends BaseDocumentLoader {
         }
 
         const headers = {
-            'UNSTRUCTURED-API-KEY': this.apiKey ?? ''
+            'UNSTRUCTURED-API-KEY': this.apiKey || ''
         }
 
         const response = await fetch(this.apiUrl, {
