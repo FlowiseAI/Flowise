@@ -12,7 +12,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // Icons
-import { IconX, IconCopy, IconArrowUpRightCircle } from '@tabler/icons-react'
+import { IconX, IconCopy, IconExternalLink } from '@tabler/icons-react'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -95,6 +95,8 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
         chatbotConfig?.textInput?.sendButtonColor ?? defaultConfig.textInput.sendButtonColor
     )
 
+    const [customCSS, setCustomCSS] = useState(chatbotConfig?.customCSS ?? '')
+
     const [colorAnchorEl, setColorAnchorEl] = useState(null)
     const [selectedColorConfig, setSelectedColorConfig] = useState('')
     const [sketchPickerColor, setSketchPickerColor] = useState('')
@@ -136,6 +138,8 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
         if (textInputTextColor) obj.textInput.textColor = textInputTextColor
         if (textInputPlaceholder) obj.textInput.placeholder = textInputPlaceholder
         if (textInputSendButtonColor) obj.textInput.sendButtonColor = textInputSendButtonColor
+
+        if (customCSS) obj.customCSS = customCSS
 
         if (isSessionMemory) obj.overrideConfig.generateNewSession = generateNewSession
 
@@ -395,7 +399,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                 <Typography
                     sx={{
                         p: 1,
-                        borderRadius: 10,
+                        borderRadius: 2,
                         backgroundColor: theme.palette.primary.light,
                         width: 'max-content',
                         height: 'max-content'
@@ -418,7 +422,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                     <IconCopy />
                 </IconButton>
                 <IconButton title='Open New Tab' color='primary' onClick={() => window.open(`${baseURL}/chatbot/${chatflowid}`, '_blank')}>
-                    <IconArrowUpRightCircle />
+                    <IconExternalLink />
                 </IconButton>
                 <div style={{ flex: 1 }} />
                 <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -489,6 +493,24 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             {colorField(textInputTextColor, 'textInputTextColor', 'Text Color')}
             {textField(textInputPlaceholder, 'textInputPlaceholder', 'TextInput Placeholder', 'string', `Type question..`)}
             {colorField(textInputSendButtonColor, 'textInputSendButtonColor', 'TextIntput Send Button Color')}
+
+            {/*Custom CSS*/}
+            <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
+                Custom CSS
+            </Typography>
+            <Box sx={{ pt: 2, pb: 2 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <Typography sx={{ mb: 1 }}>Use !important to override default styles</Typography>
+                    <OutlinedInput
+                        fullWidth
+                        multiline
+                        rows={4}
+                        placeholder='Enter your custom CSS here'
+                        value={customCSS}
+                        onChange={(e) => setCustomCSS(e.target.value)}
+                    />
+                </div>
+            </Box>
 
             <>
                 <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
