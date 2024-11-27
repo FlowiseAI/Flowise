@@ -192,15 +192,12 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                 let hasAccess = false
 
                 if (flowData.id) {
-                    console.log('handleLoadFlow - Checking existing chatflow with ID:', flowData.id)
                     try {
                         existingChatflow = await chatflowsApi.getSpecificChatflow(flowData.id)
                         hasAccess = true
-                        console.log('handleLoadFlow - Found existing chatflow:', existingChatflow)
                     } catch (error) {
                         if (error.response && (error.response.status === 401 || error.response.status === 403)) {
                             hasAccess = false
-                            console.log('handleLoadFlow - No access to existing chatflow')
                         } else {
                             console.error('handleLoadFlow - Error checking chatflow:', error)
                             throw error
@@ -209,7 +206,6 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                 }
 
                 if (existingChatflow && hasAccess) {
-                    console.log('handleLoadFlow - Prompting user for overwrite decision')
                     const userChoice = await confirm({
                         title: 'Chatflow already exists',
                         description: 'Do you want to overwrite the existing chatflow or create a new one?',
@@ -218,11 +214,9 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                     })
 
                     if (!userChoice) {
-                        console.log('handleLoadFlow - User chose to create new chatflow')
                         delete flowData.id
                     }
                 } else {
-                    console.log('handleLoadFlow - Creating new chatflow (no existing access)')
                     delete flowData.id
                 }
 
@@ -236,7 +230,6 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                     type: flowData.type,
                     flowData: JSON.stringify({ nodes, edges })
                 }
-                console.log('handleLoadFlow - Created new chatflow object:', newChatflow)
 
                 dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
                 setChatflow(newChatflow)
@@ -515,6 +508,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }
 
     // ==============================|| useEffect ||============================== //
+    useEffect(() => setChatflow(canvasDataStoreRef.current.chatflow), [canvasDataStoreRef.current.chatflow])
 
     // Get specific chatflow successful
     useEffect(() => {
