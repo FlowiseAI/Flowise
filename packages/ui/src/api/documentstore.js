@@ -14,7 +14,9 @@ const editChunkFromStore = (storeId, loaderId, chunkId, body) =>
 
 const getFileChunks = (storeId, fileId, pageNo) => client.get(`/document-store/chunks/${storeId}/${fileId}/${pageNo}`)
 const previewChunks = (body) => client.post('/document-store/loader/preview', body)
-const processChunks = (body) => client.post(`/document-store/loader/process`, body)
+const processLoader = (body, loaderId) => client.post(`/document-store/loader/process/${loaderId}`, body)
+const saveProcessingLoader = (body) => client.post(`/document-store/loader/save`, body)
+const refreshLoader = (storeId) => client.post(`/document-store/refresh/${storeId}`)
 
 const insertIntoVectorStore = (body) => client.post(`/document-store/vectorstore/insert`, body)
 const saveVectorStoreConfig = (body) => client.post(`/document-store/vectorstore/save`, body)
@@ -33,7 +35,7 @@ export default {
     getFileChunks,
     updateDocumentStore,
     previewChunks,
-    processChunks,
+    processLoader,
     getDocumentLoaders,
     deleteChunkFromStore,
     editChunkFromStore,
@@ -45,5 +47,7 @@ export default {
     saveVectorStoreConfig,
     queryVectorStore,
     deleteVectorStoreDataFromStore,
-    updateVectorStoreConfig
+    updateVectorStoreConfig,
+    saveProcessingLoader,
+    refreshLoader
 }

@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "2.1.3",
+    "version": "2.1.5",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -61,6 +61,7 @@
         "@opensearch-project/opensearch": "^1.2.0",
         "@pinecone-database/pinecone": "2.2.2",
         "@qdrant/js-client-rest": "^1.9.0",
+        "@stripe/agent-toolkit": "^0.1.20",
         "@supabase/supabase-js": "^2.29.0",
         "@types/js-yaml": "^4.0.5",
         "@types/jsdom": "^21.1.1",

@@ -231,6 +231,14 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "o1-preview",
+                    "name": "o1-preview"
+                },
+                {
+                    "label": "o1-mini",
+                    "name": "o1-mini"
+                },
+                {
                     "label": "gpt-4o-mini",
                     "name": "gpt-4o-mini"
                 },
@@ -570,6 +578,10 @@
                 {
                     "label": "gpt-4o (latest)",
                     "name": "gpt-4o"
+                },
+                {
+                    "label": "gpt-4o-2024-11-20",
+                    "name": "gpt-4o-2024-11-20"
                 },
                 {
                     "label": "gpt-4o-2024-08-06",
