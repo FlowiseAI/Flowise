@@ -1,9 +1,9 @@
 import { BaseCache } from '@langchain/core/caches'
-import { ChatBaiduQianfan } from '@langchain/baidu-qianfan'
+import { ChatXAI, ChatXAIInput } from '@langchain/xai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
-class ChatBaiduWenxin_ChatModels implements INode {
+class ChatXAI_ChatModels implements INode {
     label: string
     name: string
     version: number
@@ -16,19 +16,19 @@ class ChatBaiduWenxin_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatBaiduWenxin'
-        this.name = 'chatBaiduWenxin'
-        this.version = 2.0
-        this.type = 'ChatBaiduWenxin'
-        this.icon = 'baiduwenxin.svg'
+        this.label = 'ChatXAI'
+        this.name = 'chatXAI'
+        this.version = 1.0
+        this.type = 'ChatXAI'
+        this.icon = 'xai.png'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around BaiduWenxin Chat Endpoints'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatBaiduQianfan)]
+        this.description = 'Wrapper around Grok from XAI'
+        this.baseClasses = [this.type, ...getBaseClasses(ChatXAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['baiduQianfanApi']
+            credentialNames: ['xaiApi']
         }
         this.inputs = [
             {
@@ -41,7 +41,7 @@ class ChatBaiduWenxin_ChatModels implements INode {
                 label: 'Model',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'ERNIE-Bot-turbo'
+                placeholder: 'grok-beta'
             },
             {
                 label: 'Temperature',
@@ -56,7 +56,24 @@ class ChatBaiduWenxin_ChatModels implements INode {
                 name: 'streaming',
                 type: 'boolean',
                 default: true,
-                optional: true
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Max Tokens',
+                name: 'maxTokens',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Max Tokens',
+                name: 'maxTokens',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -65,24 +82,24 @@ class ChatBaiduWenxin_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
+        const maxTokens = nodeData.inputs?.maxTokens as string
         const streaming = nodeData.inputs?.streaming as boolean
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const qianfanAccessKey = getCredentialParam('qianfanAccessKey', credentialData, nodeData)
-        const qianfanSecretKey = getCredentialParam('qianfanSecretKey', credentialData, nodeData)
+        const xaiApiKey = getCredentialParam('xaiApiKey', credentialData, nodeData)
 
-        const obj: Partial<ChatBaiduQianfan> = {
+        const obj: ChatXAIInput = {
+            apiKey: xaiApiKey,
             streaming: streaming ?? true,
-            qianfanAccessKey,
-            qianfanSecretKey,
-            modelName,
+            model: modelName,
             temperature: temperature ? parseFloat(temperature) : undefined
         }
         if (cache) obj.cache = cache
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
 
-        const model = new ChatBaiduQianfan(obj)
+        const model = new ChatXAI(obj)
         return model
     }
 }
 
-module.exports = { nodeClass: ChatBaiduWenxin_ChatModels }
+module.exports = { nodeClass: ChatXAI_ChatModels }

@@ -35,7 +35,6 @@ class ToolAgent_Agents implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
-    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Tool Agent'
@@ -191,6 +190,7 @@ class ToolAgent_Agents implements INode {
         output = removeInvalidImageMarkdown(output)
 
         // Claude 3 Opus tends to spit out <thinking>..</thinking> as well, discard that in final output
+        // https://docs.anthropic.com/en/docs/build-with-claude/tool-use#chain-of-thought
         const regexPattern: RegExp = /<thinking>[\s\S]*?<\/thinking>/
         const matches: RegExpMatchArray | null = output.match(regexPattern)
         if (matches) {

@@ -92,11 +92,11 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
         'supervisor',
         'seqStart'
     ]
-    const imgUploadLLMNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI', 'chatGoogleGenerativeAI', 'chatOllama']
 
     if (nodes.some((node) => imgUploadAllowedNodes.includes(node.data.name))) {
         nodes.forEach((node: IReactFlowNode) => {
-            if (imgUploadLLMNodes.indexOf(node.data.name) > -1) {
+            const data = node.data
+            if (data.category === 'Chat Models' && data.inputs?.['allowImageUploads'] === true) {
                 // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
                 node.data.inputParams.map((param: INodeParams) => {
                     if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
