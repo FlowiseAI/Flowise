@@ -18,7 +18,7 @@ class ChatTogetherAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatTogetherAI'
         this.name = 'chatTogetherAI'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatTogetherAI'
         this.icon = 'togetherai.png'
         this.category = 'Chat Models'
@@ -50,6 +50,13 @@ class ChatTogetherAI_ChatModels implements INode {
                 type: 'number',
                 step: 0.1,
                 default: 0.9,
+                optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
                 optional: true
             }
         ]
