@@ -218,7 +218,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         /*** Get session ID ***/
         const memoryNode = findMemoryNode(nodes, edges)
-        const memoryType = memoryNode?.data.label
+        const memoryType = memoryNode?.data?.label
         let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         /*** Get Ending Node with Directed Graph  ***/

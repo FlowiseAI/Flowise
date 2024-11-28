@@ -325,7 +325,7 @@ export const buildAgentGraph = async (
                                 // Send loading next agent indicator
                                 if (reasoning.next && reasoning.next !== 'FINISH' && reasoning.next !== 'END') {
                                     if (sseStreamer) {
-                                        sseStreamer.streamNextAgentEvent(chatId, mapNameToLabel[reasoning.next].label || reasoning.next)
+                                        sseStreamer.streamNextAgentEvent(chatId, mapNameToLabel[reasoning.next]?.label || reasoning.next)
                                     }
                                 }
                             }
