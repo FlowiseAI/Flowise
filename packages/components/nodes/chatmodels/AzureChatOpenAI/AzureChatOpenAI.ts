@@ -6,6 +6,12 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
+const serverCredentialsExists =
+    !!process.env.AZURE_OPENAI_API_KEY &&
+    !!process.env.AZURE_OPENAI_API_INSTANCE_NAME &&
+    !!process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME &&
+    !!process.env.AZURE_OPENAI_API_VERSION
+
 class AzureChatOpenAI_ChatModels implements INode {
     label: string
     name: string
@@ -21,7 +27,7 @@ class AzureChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'Azure ChatOpenAI'
         this.name = 'azureChatOpenAI'
-        this.version = 5.0
+        this.version = 6.0
         this.type = 'AzureChatOpenAI'
         this.icon = 'Azure.svg'
         this.category = 'Chat Models'
@@ -31,7 +37,8 @@ class AzureChatOpenAI_ChatModels implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['azureOpenAIApi']
+            credentialNames: ['azureOpenAIApi'],
+            optional: serverCredentialsExists
         }
         this.inputs = [
             {
@@ -59,6 +66,14 @@ class AzureChatOpenAI_ChatModels implements INode {
                 name: 'maxTokens',
                 type: 'number',
                 step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
                 optional: true,
                 additionalParams: true
             },
@@ -106,7 +121,7 @@ class AzureChatOpenAI_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, Conversational Agent, Tool Agent',
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             },

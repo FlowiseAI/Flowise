@@ -18,7 +18,6 @@ class MeilisearchRetriever_node implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
-    badge: string
     outputs: INodeOutputsValue[]
     author?: string
 
@@ -29,7 +28,6 @@ class MeilisearchRetriever_node implements INode {
         this.type = 'Meilisearch'
         this.icon = 'Meilisearch.png'
         this.category = 'Vector Stores'
-        this.badge = 'NEW'
         this.description = `Upsert embedded data and perform similarity search upon query using Meilisearch hybrid search functionality`
         this.baseClasses = ['BaseRetriever']
         this.credential = {

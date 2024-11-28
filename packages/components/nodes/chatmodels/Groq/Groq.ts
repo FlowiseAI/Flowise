@@ -19,7 +19,7 @@ class Groq_ChatModels implements INode {
     constructor() {
         this.label = 'GroqChat'
         this.name = 'groqChat'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'GroqChat'
         this.icon = 'groq.png'
         this.category = 'Chat Models'
@@ -52,6 +52,13 @@ class Groq_ChatModels implements INode {
                 type: 'number',
                 step: 0.1,
                 default: 0.9,
+                optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
                 optional: true
             }
         ]

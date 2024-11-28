@@ -7,7 +7,8 @@ import { Credential } from '../../database/entities/Credential'
 import { decryptCredentialData, getAppVersion } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { DeleteResult } from 'typeorm'
+import { DeleteResult, QueryRunner } from 'typeorm'
+import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 
 const createAssistant = async (requestBody: any): Promise<Assistant> => {
     try {
@@ -111,6 +112,7 @@ const createAssistant = async (requestBody: any): Promise<Assistant> => {
             version: await getAppVersion(),
             assistantId: dbResponse.id
         })
+        appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.ASSISTANT_CREATED, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -289,9 +291,10 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
     }
 }
 
-const importAssistants = async (newAssistants: Partial<Assistant>[]): Promise<any> => {
+const importAssistants = async (newAssistants: Partial<Assistant>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
+        const repository = queryRunner ? queryRunner.manager.getRepository(Assistant) : appServer.AppDataSource.getRepository(Assistant)
 
         // step 1 - check whether array is zero
         if (newAssistants.length == 0) return
@@ -307,7 +310,7 @@ const importAssistants = async (newAssistants: Partial<Assistant>[]): Promise<an
             count += 1
         })
 
-        const selectResponse = await appServer.AppDataSource.getRepository(Assistant)
+        const selectResponse = await repository
             .createQueryBuilder('assistant')
             .select('assistant.id')
             .where(`assistant.id IN ${ids}`)
@@ -327,7 +330,7 @@ const importAssistants = async (newAssistants: Partial<Assistant>[]): Promise<an
         })
 
         // step 4 - transactional insert array of entities
-        const insertResponse = await appServer.AppDataSource.getRepository(Assistant).insert(prepVariables)
+        const insertResponse = await repository.insert(prepVariables)
 
         return insertResponse
     } catch (error) {
