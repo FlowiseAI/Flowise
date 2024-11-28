@@ -4,7 +4,6 @@ import createTheme from '@mui/material/styles/createTheme'
 import { teal, grey, deepOrange } from '@mui/material/colors'
 import { theme as studioTheme } from '@/themes'
 import { deepmerge } from '@mui/utils'
-
 declare module '@mui/material/Avatar' {
     interface AvatarPropsVariantOverrides {
         source: true
@@ -12,22 +11,22 @@ declare module '@mui/material/Avatar' {
 }
 
 const getDesignTokens = (mode: PaletteMode) => ({
-    // typography: {
-    //     fontFamily: ['var(--font-poppins)']
-    // },
-    // shape: {
-    //     borderRadius: 12
-    // },
-    // breakpoints: {
-    //     values: {
-    //         xs: 0,
-    //         sm: 600,
-    //         md: 900,
-    //         lg: 1200,
-    //         xl: 1536,
-    //         xxl: 1920
-    //     }
-    // },
+    typography: {
+        fontFamily: ['var(--font-poppins)']
+    },
+    shape: {
+        borderRadius: 12
+    },
+    breakpoints: {
+        values: {
+            xs: 0,
+            sm: 600,
+            md: 900,
+            lg: 1200,
+            xl: 1536,
+            xxl: 1920
+        }
+    },
     palette: {
         mode,
         primary: {
@@ -65,30 +64,34 @@ declare module '@mui/material/styles' {
         xxl: true
     }
 }
-
-const baseTheme = createTheme({
+// @ts-ignore
+const theme = createTheme({
     ...getDesignTokens('dark')
 })
-
 const studioThemeDark = studioTheme({ isDarkMode: true })
-const { background, ...studioPalette } = studioThemeDark.palette
+
+const { background, paper, ...studioPalette } = studioThemeDark.palette
+// @ts-ignore
 export const darkModeTheme = createTheme(
     deepmerge(
-        baseTheme,
-        // studioTheme({ isDarkMode: true }),
         {
-            // ...studioThemeDark,
+            // customization: studioThemeDark.customization,
+            // colors:{},
             palette: {
-                ...studioPalette
+                // ...studioPalette
+                asyncSelect: studioPalette.asyncSelect,
+                card: studioPalette.card,
+                nodeToolTip: studioPalette.nodeToolTip
             }
         },
         {
+            ...getDesignTokens('dark'),
             components: {
                 MuiTypography: {
                     styleOverrides: {
                         root: {
                             'ul, ol': {
-                                paddingLeft: baseTheme.spacing(3)
+                                paddingLeft: theme.spacing(3)
                             }
                         }
                     }
@@ -111,7 +114,8 @@ export const darkModeTheme = createTheme(
                     defaultProps: {},
                     styleOverrides: {
                         root: {
-                            padding: baseTheme.spacing(0.5, 1)
+                            // borderRadius: theme.spacing(0),
+                            padding: theme.spacing(0.5, 1)
                         }
                     }
                 },
@@ -124,8 +128,8 @@ export const darkModeTheme = createTheme(
                         root: {
                             display: 'flex',
                             flexDirection: 'column',
-                            padding: baseTheme.spacing(1),
-                            gap: baseTheme.spacing(1)
+                            padding: theme.spacing(1),
+                            gap: theme.spacing(1)
                         }
                     }
                 },
@@ -133,7 +137,7 @@ export const darkModeTheme = createTheme(
                     styleOverrides: {
                         root: {
                             backgroundColor: 'transparent',
-                            paddingLeft: baseTheme.spacing(0)
+                            paddingLeft: theme.spacing(0)
                         }
                     }
                 },
@@ -141,7 +145,7 @@ export const darkModeTheme = createTheme(
                     styleOverrides: {
                         root: {
                             borderRadius: 8,
-                            padding: baseTheme.spacing(0.5, 1)
+                            padding: theme.spacing(0.5, 1)
                         }
                     }
                 },
@@ -164,9 +168,9 @@ export const darkModeTheme = createTheme(
                         }
                     }
                 },
-                // MuiTextField: {
-                //     // defaultProps: { size: 'small' }
-                // },
+                MuiTextField: {
+                    defaultProps: { size: 'small' }
+                },
                 MuiAvatar: {
                     variants: [
                         {

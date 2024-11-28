@@ -3,63 +3,30 @@ import { prisma } from '@db/client'
 import Chat from '@ui/Chat'
 import ChatNotFound from '@ui/ChatNotFound'
 import getCachedSession from '@ui/getCachedSession'
-
 import { findSidekicksForChat } from '@utils/findSidekicksForChat'
 import auth0 from '@utils/auth/auth0'
-import { User } from 'types'
+import type { Chat as ChatType, User } from 'types'
 
-const getMessages = async ({ chat, user }: { chat: Partial<Chat>; user: User }) => {
+async function getChat(chatId: string, user: User) {
+    // Get auth token for chatflow API
+    let token
     try {
-        const { id, chatflowChatId } = chat
         const { accessToken } = await auth0.getAccessToken({
             authorizationParams: { organization: user.org_name }
         })
         if (!accessToken) throw new Error('No access token found')
-        const { chatflowDomain } = user
-        if (!chatflowChatId) throw new Error('No chatflow chat id found')
-        console.log('FetchFlowise', chatflowDomain + `/api/v1/chatmessage?chatId=${chatflowChatId}`)
-        const result = await fetch(chatflowDomain + `/api/v1/chatmessage?chatId=${chatflowChatId}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`
-            }
-        })
-        const messages = await result.json()
-        if (!result.ok) {
-            const error = new Error(messages.message)
-            error.status = messages.status
-            throw error
-        }
-        return messages?.map((m: any) => ({
-            ...m,
-            contextDocuments: m.sourceDocuments ? JSON.parse(m.sourceDocuments) : []
-        }))
+        token = accessToken
     } catch (err) {
-        console.error('Error fetching messages', err)
-        throw err
-    }
-}
-export const metadata = {
-    title: 'Chats | Answers AI',
-    description: 'Your current Answers AI chat'
-}
-
-const ChatDetailPage = async ({ params }: any) => {
-    const session = await getCachedSession()
-
-    if (!session?.user?.email) {
-        return <ChatNotFound />
+        console.error('Auth error:', err)
     }
 
-    const user = session?.user
-    const userId = user?.id
-
-    const getChatPromise = prisma.chat.findUnique({
+    // Fetch local chat
+    const localChatPromise = prisma.chat.findUnique({
         where: {
-            id: params.chatId,
+            id: chatId,
             users: {
                 some: {
-                    id: userId
+                    id: user.id
                 }
             }
         },
@@ -67,16 +34,97 @@ const ChatDetailPage = async ({ params }: any) => {
             users: { select: { id: true, email: true, image: true, name: true } }
         }
     })
+
+    // Fetch chatflow chat
+    const chatflowChatPromise = token
+        ? fetch(`${user.chatflowDomain}/api/v1/chats/${chatId}`, {
+              headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`
+              }
+          })
+              .then((res) => (res.ok ? res.json() : null))
+              .catch((err) => {
+                  console.error('Error fetching chatflow chat:', err)
+                  return null
+              })
+        : Promise.resolve(null)
+
+    const [localChat, chatflowChat] = await Promise.all([localChatPromise, chatflowChatPromise])
+
+    // Return chatflow chat if local chat doesn't exist
+    if (!localChat && chatflowChat) {
+        return {
+            ...chatflowChat,
+            chatflowChatId: chatflowChat.id
+        }
+    }
+
+    return localChat
+}
+
+async function getMessages(chat: Partial<ChatType>, user: User) {
+    if (!chat?.chatflowChatId) return []
+
     try {
-        const [chat, sidekicks] = await Promise.all([getChatPromise, findSidekicksForChat(user)])
+        const { accessToken } = await auth0.getAccessToken({
+            authorizationParams: { organization: user.org_name }
+        })
+        if (!accessToken) throw new Error('No access token found')
+
+        const result = await fetch(`${user.chatflowDomain}/api/v1/chatmessage?chatId=${chat.chatflowChatId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`
+            }
+        })
+
+        if (!result.ok) {
+            const error = new Error('Failed to fetch messages')
+            throw error
+        }
+
+        const messages = await result.json()
+        return messages?.map((m: any) => ({
+            ...m,
+            contextDocuments: m.sourceDocuments ? JSON.parse(m.sourceDocuments) : []
+        }))
+    } catch (err) {
+        console.error('Error fetching messages:', err)
+        return []
+    }
+}
+
+export const metadata = {
+    title: 'Chats | Answers AI',
+    description: 'Your current Answers AI chat'
+}
+
+const ChatDetailPage = async ({ params }: { params: { chatId: string } }) => {
+    const session = await getCachedSession()
+
+    if (!session?.user?.email) {
+        return <ChatNotFound />
+    }
+
+    const user = session.user
+
+    try {
+        // Fetch chat, messages and sidekicks in parallel
+        const [chat, { sidekicks } = {}] = await Promise.all([getChat(params.chatId, user), findSidekicksForChat(user)])
 
         if (!chat) {
             return <ChatNotFound />
         }
-        // @ts-ignore
-        chat.messages = await getMessages({ user, chat })
-        // @ts-expect-error Async Server Component
-        return <Chat {...params} chat={chat} journey={(chat as any)?.journey} sidekicks={sidekicks} />
+
+        // Fetch messages after we have the chat
+        const messages = await getMessages(chat, user)
+        const chatWithMessages = {
+            ...chat,
+            messages
+        }
+
+        return <Chat {...params} chat={chatWithMessages} journey={chatWithMessages?.journey} sidekicks={sidekicks} />
     } catch (error) {
         console.error(error)
         return <Chat {...params} />

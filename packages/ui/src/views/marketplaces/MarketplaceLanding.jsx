@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, forwardRef } from 'react'
 import useMarketplaceLanding from '@/hooks/useMarketplaceLanding'
-import marketplacesApi from '@/api/marketplaces'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import {
@@ -15,7 +14,6 @@ import {
     Divider,
     Menu,
     MenuItem,
-    Grid,
     Tabs,
     Tab,
     useMediaQuery,
@@ -24,7 +22,7 @@ import {
     IconButton
 } from '@mui/material'
 import { useNavigate } from '@/utils/navigation'
-import { IconCopy, IconDownload, IconShare, IconCheck } from '@tabler/icons-react'
+import { IconCopy, IconDownload, IconShare } from '@tabler/icons-react'
 import MarketplaceCanvas from './MarketplaceCanvas'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import ErrorBoundary from '@/ErrorBoundary'
@@ -32,7 +30,7 @@ import { baseURL } from '@/store/constant'
 import { Snackbar } from '@mui/material'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { useNavigationState } from '@/utils/navigation'
-import { StarIcon, StarBorderIcon, EditIcon, VisibilityIcon } from '@mui/icons-material'
+import { Star as StarIcon, StarBorder as StarBorderIcon, Edit as EditIcon } from '@mui/icons-material'
 import { styled, alpha } from '@mui/material/styles'
 
 const LoadingSkeleton = () => (
@@ -116,7 +114,6 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
 
     const [isSignInPromptOpen, setIsSignInPromptOpen] = useState(false)
     const [actionType, setActionType] = useState(null)
-    const [isFavorite, setIsFavorite] = useState(false)
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
     const [anchorEl, setAnchorEl] = useState(null)
@@ -125,11 +122,17 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
     const [tabValue, setTabValue] = useState(0)
     const customization = useSelector((state) => state.customization)
 
+    const [isFavorite, setIsFavorite] = useState(false)
+
     useEffect(() => {
-        if (user && template) {
-            checkFavoriteStatus()
+        if (templateId) {
+            const storedFavorites = localStorage.getItem('favoriteSidekicks')
+            if (storedFavorites) {
+                const parsedFavorites = new Set(JSON.parse(storedFavorites))
+                setIsFavorite(parsedFavorites.has(templateId))
+            }
         }
-    }, [user, template])
+    }, [templateId])
 
     useEffect(() => {
         if (template && template.flowData) {
@@ -151,31 +154,27 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
         }
     }, [template])
 
-    const checkFavoriteStatus = async () => {
-        try {
-            const favorites = await marketplacesApi.getFavorites()
-            setIsFavorite(favorites.some((fav) => fav.chatflowId === templateId))
-        } catch (error) {
-            console.error('Error checking favorite status:', error)
-        }
-    }
-
-    const toggleFavorite = async () => {
+    const toggleFavorite = () => {
         if (!user) {
             setIsSignInPromptOpen(true)
             return
         }
 
         try {
+            const storedFavorites = localStorage.getItem('favoriteSidekicks')
+            const favorites = new Set(storedFavorites ? JSON.parse(storedFavorites) : [])
+
             if (isFavorite) {
-                await marketplacesApi.removeFavorite(templateId)
+                favorites.delete(templateId)
                 setIsFavorite(false)
                 setSnackbarMessage('Removed from favorites')
             } else {
-                await marketplacesApi.addFavorite(templateId)
+                favorites.add(templateId)
                 setIsFavorite(true)
                 setSnackbarMessage('Added to favorites')
             }
+
+            localStorage.setItem('favoriteSidekicks', JSON.stringify(Array.from(favorites)))
             setSnackbarOpen(true)
         } catch (error) {
             console.error('Error toggling favorite:', error)
@@ -347,15 +346,10 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
 
     const renderActionButtons = () => (
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-            {isDialog && (
-                <StyledButton color='primary' variant='contained' onClick={() => onUse(template)} startIcon={<IconCheck />}>
-                    Use This Sidekick
-                </StyledButton>
-            )}
             {template.isExecutable ? (
                 <>
-                    <Tooltip title='Edit this sidekick'>
-                        {template.isOwner ? (
+                    {template.isOwner ? (
+                        <Tooltip title='Edit this sidekick'>
                             <WhiteIconButton
                                 size='small'
                                 onClick={() => {
@@ -367,8 +361,8 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
                             >
                                 <EditIcon />
                             </WhiteIconButton>
-                        ) : null}
-                    </Tooltip>
+                        </Tooltip>
+                    ) : null}
                     <Tooltip title='Clone this sidekick'>
                         <WhiteIconButton size='small' onClick={() => handleAction('new')}>
                             <IconCopy />
@@ -391,12 +385,7 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
                     </WhiteIconButton>
                 </span>
             </Tooltip>
-            <Tooltip title='Preview this sidekick'>
-                <WhiteIconButton size='small' onClick={() => setTabValue(1)}>
-                    <VisibilityIcon />
-                </WhiteIconButton>
-            </Tooltip>
-            {template.isExecutable && !isDialog && (
+            {template.isExecutable && (
                 <Tooltip title='Use this sidekick'>
                     <Button variant='contained' size='small' onClick={() => onUse(template)}>
                         Use

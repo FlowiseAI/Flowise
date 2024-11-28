@@ -576,16 +576,12 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
         setIsSyncNodesButtonEnabled(false)
         setIsUpsertButtonEnabled(false)
         if (chatflowid) {
-            console.log('Canvas initialization - Loading existing chatflow:', chatflowid)
             getSpecificChatflowApi.request(chatflowid)
         } else {
             const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
-            console.log('Canvas initialization - Checking duplicatedFlowData:', duplicatedFlowData)
 
             if (duplicatedFlowData) {
-                console.log('Canvas initialization - Found duplicatedFlowData')
                 const parsedData = JSON.parse(duplicatedFlowData)
-                console.log('Canvas initialization - Parsed duplicatedFlowData:', parsedData)
 
                 setNodes(parsedData.nodes || [])
                 setEdges(parsedData.edges || [])
@@ -597,15 +593,12 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                     deployed: false,
                     isPublic: false
                 }
-                console.log('Canvas initialization - Created new chatflow from duplicated data:', newChatflow)
 
                 setChatflow(newChatflow)
                 dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
 
-                console.log('Canvas initialization - Removing duplicatedFlowData from localStorage')
                 setTimeout(() => localStorage.removeItem('duplicatedFlowData'), 0)
             } else {
-                console.log('Canvas initialization - No duplicatedFlowData, creating empty chatflow')
                 setNodes([])
                 setEdges([])
                 setChatflow({

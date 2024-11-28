@@ -52,6 +52,7 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
             }
         }
         const apiResponse = await statsService.getChatflowStats(
+            req.user!,
             chatflowid,
             chatTypeFilter,
             startDate,

@@ -15,6 +15,7 @@ import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import checkOwnership from '../../utils/checkOwnership'
 import { Organization } from '../../database/entities/Organization'
+import { Chat } from '../../database/entities/Chat'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -481,6 +482,53 @@ const _checkAndUpdateDocumentStoreUsage = async (chatflow: ChatFlow) => {
     }
 }
 
+const upsertChat = async ({
+    id,
+    user,
+    filters = {},
+    prompt,
+    chatflowChatId,
+    chatflowId
+}: {
+    id?: string
+    user: IUser
+    filters?: object
+    prompt: string
+    chatflowChatId: string
+    chatflowId: string
+}): Promise<Chat> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const chatRepository = appServer.AppDataSource.getRepository(Chat)
+
+        const chatProperties = {
+            title: prompt,
+            chatflowChatId,
+            filters,
+            owner: { id: user.id },
+            organization: { id: user.organizationId },
+            chatflow: { id: chatflowId }
+        }
+
+        let chat: Chat
+        if (!id) {
+            // Create new chat
+            chat = chatRepository.create(chatProperties)
+        } else {
+            // Update existing chat
+            const existingChat = await chatRepository.findOneBy({ id })
+            if (!existingChat) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chat ${id} not found`)
+            }
+            chat = chatRepository.merge(existingChat, chatProperties)
+        }
+
+        return await chatRepository.save(chat)
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.upsertChat - ${getErrorMessage(error)}`)
+    }
+}
+
 export default {
     checkIfChatflowIsValidForStreaming,
     checkIfChatflowIsValidForUploads,
@@ -492,5 +540,6 @@ export default {
     importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
-    getSinglePublicChatbotConfig
+    getSinglePublicChatbotConfig,
+    upsertChat
 }

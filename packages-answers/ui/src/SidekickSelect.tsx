@@ -218,7 +218,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     const [isMarketplaceDialogOpen, setIsMarketplaceDialogOpen] = useState(false)
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
 
-    console.log('SidekickSelect', { isMarketplaceDialogOpen, selectedTemplateId })
     useEffect(() => {
         const storedFavorites = localStorage.getItem('favoriteSidekicks')
         if (storedFavorites) {
@@ -254,7 +253,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     const fetcher = async (url: string) => {
         try {
             const res = await fetch(url)
-            console.log('res', res)
             if (res.status === 401) {
                 // window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
                 window.location.href = '/api/auth/login'
@@ -346,7 +344,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         }
         allCategories.top.concat(allCategories.more).forEach((category) => {
             counts[category] = combinedSidekicks.filter(
-                (s) => s.chatflow.category === category || s.chatflow.categories?.includes(category)
+                (s) => s.chatflow.category === category || s.chatflow.categories?.includes(category) || s.categories?.includes(category)
             ).length
         })
         return counts
@@ -356,7 +354,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         setSelectedSidekick(sidekick)
         setSidekick(sidekick)
         setOpen(false)
-
+        setIsMarketplaceDialogOpen(false)
         const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
         sidekickHistory.lastUsed = sidekick
         localStorage.setItem('sidekickHistory', JSON.stringify(sidekickHistory))
@@ -378,7 +376,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     }
 
     const visibleTabs = useMemo(() => {
-        const topTabs = allCategories.top
+        const topTabs = allCategories.top?.map((category) => category.split(';').join(' | '))
         if (!topTabs.includes(activeTab) && allCategories.more.includes(activeTab)) {
             return [...topTabs, activeTab]
         }
@@ -441,7 +439,11 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 case 'all':
                     return true
                 default:
-                    return sidekick.chatflow.categories?.includes(tabValue) || sidekick.chatflow.category === tabValue
+                    return (
+                        sidekick.chatflow.categories?.includes(tabValue) ||
+                        sidekick.chatflow.category === tabValue ||
+                        sidekick.categories?.includes(tabValue)
+                    )
             }
         }
 
@@ -491,11 +493,15 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                 </SidekickTitle>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', width: '100%', gap: 1 }}>
                                     {sidekick.categories?.length > 0 && sidekick.categories?.map ? (
-                                        <Tooltip title={sidekick.categories.join(', ')}>
+                                        <Tooltip
+                                            title={sidekick.categories
+                                                .map((category: string, index: number) => category.trim().split(';').join(', '))
+                                                .join(', ')}
+                                        >
                                             <Chip
                                                 // icon={<CategoryIcon />}
                                                 label={sidekick.categories
-                                                    .map((category: string, index: number) => category.trim())
+                                                    .map((category: string, index: number) => category.trim().split(';').join(' | '))
                                                     .join(' | ')}
                                                 size='small'
                                                 variant='outlined'
@@ -640,7 +646,17 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                         disabled={categoryCounts.recent === 0}
                     /> */}
                     {visibleTabs.map((category: string) => (
-                        <Tab key={`${category}-tab`} label={category} value={category} disabled={categoryCounts[category] === 0} />
+                        <Tab
+                            key={`${category}-tab`}
+                            label={category}
+                            value={category}
+                            disabled={categoryCounts[category] === 0}
+                            style={{
+                                textWrap: 'nowrap',
+                                maxWidth: 'fit-content',
+                                display: 'inline-block'
+                            }}
+                        />
                     ))}
                     {allCategories.more.length > 0 && (
                         <Tab
@@ -664,6 +680,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 <ScrollableContent>{renderSidekickGrid()}</ScrollableContent>
             </Box>
             <MarketplaceLandingDialog
+                key='marketplace-dialog'
                 open={isMarketplaceDialogOpen}
                 onClose={() => {
                     setIsMarketplaceDialogOpen(false)
@@ -681,13 +698,22 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         return <ContentWrapper>{content}</ContentWrapper>
     }
 
+    const handleCreateNewSidekick = () => {
+        navigate('/canvas')
+    }
+
     return (
         <Box>
             <Button variant='outlined' onClick={() => setOpen(true)} endIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'space-between' }}>
                 {selectedSidekick && 'chatflow' in selectedSidekick ? selectedSidekick.chatflow.name : 'Select Sidekick'}
             </Button>
             <StyledDialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth='lg' TransitionComponent={Fade}>
-                <DialogTitle sx={{ pb: 0 }}>Select a Sidekick</DialogTitle>
+                <DialogTitle sx={{ pb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Select a Sidekick
+                    <Button variant='contained' color='primary' onClick={handleCreateNewSidekick}>
+                        Create
+                    </Button>
+                </DialogTitle>
                 <DialogContent>
                     <Box sx={{ pb: 2 }}>
                         <TextField
@@ -758,6 +784,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     </Box>
                 </DialogContent>
             </StyledDialog>
+            <MarketplaceLandingDialog
+                key='marketplace-dialog'
+                open={isMarketplaceDialogOpen}
+                onClose={() => {
+                    setIsMarketplaceDialogOpen(false)
+                    setSelectedTemplateId(null)
+                    // Remove the templateId from the URL when closing the dialog
+                    window.history.pushState(null, '', window.location.pathname)
+                }}
+                templateId={selectedTemplateId}
+                onUse={(sidekick) => handleSidekickSelect(sidekick)}
+            />
         </Box>
     )
 }
