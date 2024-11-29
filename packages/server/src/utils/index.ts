@@ -1680,3 +1680,9 @@ export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
         return { nodeOverrides: {}, variableOverrides: [], apiOverrideStatus: false }
     }
 }
+
+export const getUploadPath = (): string => {
+    return process.env.BLOB_STORAGE_PATH
+        ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads')
+        : path.join(getUserHome(), '.flowise', 'uploads')
+}
