@@ -11,7 +11,6 @@ class CustomDocumentLoader_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
-    badge: string
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]

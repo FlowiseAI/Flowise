@@ -140,9 +140,9 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
         if (isSessionMemory) obj.overrideConfig.generateNewSession = generateNewSession
 
         if (renderHTML) {
-            obj.overrideConfig.renderHTML = true
+            obj.renderHTML = true
         } else {
-            obj.overrideConfig.renderHTML = false
+            obj.renderHTML = false
         }
 
         if (chatbotConfig?.starterPrompts) obj.starterPrompts = chatbotConfig.starterPrompts

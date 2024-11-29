@@ -87,22 +87,22 @@ const importData = async (importData: ExportData) => {
         const queryRunner = appServer.AppDataSource.createQueryRunner()
 
         try {
-            queryRunner.startTransaction()
+            await queryRunner.startTransaction()
 
-            // step 1 - importTools
-            if (importData.Tool.length > 0) await toolsService.importTools(importData.Tool)
-            // step 2 - importChatflows
-            if (importData.ChatFlow.length > 0) await chatflowService.importChatflows(importData.ChatFlow)
-            // step 3 - importAgentlows
-            if (importData.AgentFlow.length > 0) await chatflowService.importChatflows(importData.AgentFlow)
-            if (importData.Variable.length > 0) await variableService.importVariables(importData.Variable)
-            if (importData.Assistant.length > 0) await assistantService.importAssistants(importData.Assistant)
-            queryRunner.commitTransaction()
+            if (importData.Tool.length > 0) await toolsService.importTools(importData.Tool, queryRunner)
+            if (importData.ChatFlow.length > 0) await chatflowService.importChatflows(importData.ChatFlow, queryRunner)
+            if (importData.AgentFlow.length > 0) await chatflowService.importChatflows(importData.AgentFlow, queryRunner)
+            if (importData.Variable.length > 0) await variableService.importVariables(importData.Variable, queryRunner)
+            if (importData.Assistant.length > 0) await assistantService.importAssistants(importData.Assistant, queryRunner)
+
+            await queryRunner.commitTransaction()
         } catch (error) {
-            queryRunner.rollbackTransaction()
+            await queryRunner.rollbackTransaction()
             throw error
         } finally {
-            queryRunner.release()
+            if (!queryRunner.isReleased) {
+                await queryRunner.release()
+            }
         }
     } catch (error) {
         throw new InternalFlowiseError(
