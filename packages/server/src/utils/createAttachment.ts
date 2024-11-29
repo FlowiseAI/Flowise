@@ -69,7 +69,8 @@ export const createFileAttachment = async (req: Request) => {
                 const nodeData = {
                     inputs: {
                         [fileInputField]: storagePath
-                    }
+                    },
+                    outputs: { output: 'document' }
                 }
 
                 let content = ''
