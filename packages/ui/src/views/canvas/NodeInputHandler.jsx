@@ -515,6 +515,20 @@ const NodeInputHandler = ({
                                 {inputParam.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />}
                             </Typography>
                             <div style={{ flexGrow: 1 }}></div>
+                            {inputParam.hint && !isAdditionalParams && (
+                                <IconButton
+                                    size='small'
+                                    sx={{
+                                        height: 25,
+                                        width: 25
+                                    }}
+                                    title={inputParam.hint.label}
+                                    color='secondary'
+                                    onClick={() => onInputHintDialogClicked(inputParam.hint)}
+                                >
+                                    <IconBulb />
+                                </IconButton>
+                            )}
                             {inputParam.hint && isAdditionalParams && (
                                 <Button
                                     sx={{ p: 0, px: 2 }}

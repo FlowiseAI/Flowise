@@ -17,7 +17,7 @@ class Loop_SeqAgents implements INode {
     constructor() {
         this.label = 'Loop'
         this.name = 'seqLoop'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'Loop'
         this.icon = 'loop.svg'
         this.category = 'Sequential Agents'
@@ -26,9 +26,9 @@ class Loop_SeqAgents implements INode {
         this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-9.-loop-node'
         this.inputs = [
             {
-                label: 'Agent | Condition | LLM | Tool Node',
+                label: 'Agent | Condition | LLM | Tool Node | CustomFunction',
                 name: 'sequentialNode',
-                type: 'Agent | Condition | LLMNode | ToolNode',
+                type: 'Agent | Condition | LLMNode | ToolNode | CustomFunction',
                 list: true
             },
             {

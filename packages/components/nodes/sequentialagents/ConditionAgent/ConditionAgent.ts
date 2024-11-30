@@ -149,7 +149,7 @@ class ConditionAgent_SeqAgents implements INode {
     constructor() {
         this.label = 'Condition Agent'
         this.name = 'seqConditionAgent'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'ConditionAgent'
         this.icon = 'condition.svg'
         this.category = 'Sequential Agents'
@@ -164,9 +164,9 @@ class ConditionAgent_SeqAgents implements INode {
                 placeholder: 'Condition Agent'
             },
             {
-                label: 'Start | Agent | LLM | Tool Node',
+                label: 'Start | Agent | LLM | Tool Node | CustomFunction',
                 name: 'sequentialNode',
-                type: 'Start | Agent | LLMNode | ToolNode',
+                type: 'Start | Agent | LLMNode | ToolNode | CustomFunction',
                 list: true
             },
             {

@@ -195,7 +195,7 @@ class Agent_SeqAgents implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'seqAgent'
-        this.version = 3.1
+        this.version = 3.2
         this.type = 'Agent'
         this.icon = 'seqAgent.png'
         this.category = 'Sequential Agents'
@@ -245,9 +245,9 @@ class Agent_SeqAgents implements INode {
                 optional: true
             },
             {
-                label: 'Start | Agent | Condition | LLM | Tool Node',
+                label: 'Start | Agent | Condition | LLM | Tool Node | CustomFunction',
                 name: 'sequentialNode',
-                type: 'Start | Agent | Condition | LLMNode | ToolNode',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode | CustomFunction',
                 list: true
             },
             {

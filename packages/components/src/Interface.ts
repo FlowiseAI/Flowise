@@ -182,7 +182,7 @@ export interface IMultiAgentNode {
     checkpointMemory?: any
 }
 
-type SeqAgentType = 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state' | 'llm'
+type SeqAgentType = 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state' | 'llm' | 'utilities'
 
 export interface ISeqAgentNode {
     id: string
