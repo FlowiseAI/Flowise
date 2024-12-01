@@ -49,12 +49,21 @@ import { DocumentStore } from '../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
-
+import { GetSecretValueCommand, PutSecretValueCommand } from '@aws-sdk/client-secrets-manager';
+import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 const QUESTION_VAR_PREFIX = 'question'
 const FILE_ATTACHMENT_PREFIX = 'file_attachment'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
+const USE_AWS_SECRETS_MANAGER = process.env.USE_AWS_SECRETS_MANAGER === 'true';
+const AWS_SECRET__NAME = process.env.AWS_SECRET__NAME;
+const AWS_REGION = process.env.AWS_REGION || 'us-east-1'; // Default region if not provided
+
+let secretsManagerClient: SecretsManagerClient | null = null;
+if (USE_AWS_SECRETS_MANAGER) {
+    secretsManagerClient = new SecretsManagerClient({ region: AWS_REGION });
+}
 export const databaseEntities: IDatabaseEntity = {
     ChatFlow: ChatFlow,
     ChatMessage: ChatMessage,
@@ -1346,14 +1355,6 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
 }
 
 /**
- * Generate an encryption key
- * @returns {string}
- */
-export const generateEncryptKey = (): string => {
-    return randomBytes(24).toString('base64')
-}
-
-/**
  * Returns the encryption key
  * @returns {Promise<string>}
  */
@@ -1373,18 +1374,30 @@ export const getEncryptionKey = async (): Promise<string> => {
     }
 }
 
+
 /**
- * Encrypt credential data
+ * Encrypt credential data using AWS Secrets Manager if USE_AWS_SECRETS_MANAGER is set to true.
  * @param {ICredentialDataDecrypted} plainDataObj
  * @returns {Promise<string>}
  */
 export const encryptCredentialData = async (plainDataObj: ICredentialDataDecrypted): Promise<string> => {
-    const encryptKey = await getEncryptionKey()
-    return AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString()
+    if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
+        const secretName = `FlowiseCredential_${randomBytes(12).toString('hex')}`;
+        const putCommand = new PutSecretValueCommand({
+            SecretId: secretName,
+            SecretString: JSON.stringify({ ...plainDataObj })
+        });
+        await secretsManagerClient.send(putCommand);
+        return secretName;
+    }
+    const encryptKey = await getEncryptionKey();
+
+    // Fallback to existing code
+    return AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString();
 }
 
 /**
- * Decrypt credential data
+ * Decrypt credential data using AWS Secrets Manager if USE_AWS_SECRETS_MANAGER is set to true.
  * @param {string} encryptedData
  * @param {string} componentCredentialName
  * @param {IComponentCredentials} componentCredentials
@@ -1395,20 +1408,49 @@ export const decryptCredentialData = async (
     componentCredentialName?: string,
     componentCredentials?: IComponentCredentials
 ): Promise<ICredentialDataDecrypted> => {
-    const encryptKey = await getEncryptionKey()
-    const decryptedData = AES.decrypt(encryptedData, encryptKey)
-    const decryptedDataStr = decryptedData.toString(enc.Utf8)
-    if (!decryptedDataStr) return {}
+    let decryptedDataStr: string;
+
+    if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
+        try {
+            const command = new GetSecretValueCommand({ SecretId: encryptedData });
+            const response = await secretsManagerClient.send(command);
+            
+            if (response.SecretString) {
+                const secretObj = JSON.parse(response.SecretString);
+                decryptedDataStr = JSON.stringify(secretObj);
+            } else {
+                throw new Error('Failed to retrieve secret value.');
+            }
+        } catch (error) {
+            console.error(error);
+            throw new Error('Failed to decrypt credential data.');
+        }
+    } else {
+        // Fallback to existing code
+        const encryptKey = await getEncryptionKey();
+        const decryptedData = AES.decrypt(encryptedData, encryptKey);
+        decryptedDataStr = decryptedData.toString(enc.Utf8);
+    }
+
+    if (!decryptedDataStr) return {};
     try {
         if (componentCredentialName && componentCredentials) {
-            const plainDataObj = JSON.parse(decryptedData.toString(enc.Utf8))
-            return redactCredentialWithPasswordType(componentCredentialName, plainDataObj, componentCredentials)
+            const plainDataObj = JSON.parse(decryptedDataStr);
+            return redactCredentialWithPasswordType(componentCredentialName, plainDataObj, componentCredentials);
         }
-        return JSON.parse(decryptedData.toString(enc.Utf8))
+        return JSON.parse(decryptedDataStr);
     } catch (e) {
-        console.error(e)
-        return {}
+        console.error(e);
+        return {};
     }
+}
+
+/**
+ * Generate an encryption key
+ * @returns {string}
+ */
+export const generateEncryptKey = (): string => {
+    return randomBytes(24).toString('base64')
 }
 
 /**
