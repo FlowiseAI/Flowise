@@ -145,7 +145,7 @@ const Documents = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name' title='Document Store'>
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name' title='Vector Store'>
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={view}
