@@ -1,0 +1,13 @@
+services:
+    flowise:
+        build: .
+        restart: always
+        environment:
+            - VITE_PORT=8080
+            - PORT=3000
+        env_file:
+            - packages/server/.env
+        ports:
+            - '3000:3000'
+        volumes:
+            - ~/.flowise:/root/.flowise
