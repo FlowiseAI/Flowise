@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD030 -->
 
-# Flowise - Low-Code LLM apps builder
+# Vygor - Health & Wellness Planner
 
 English | [中文](./README-ZH.md)
 
