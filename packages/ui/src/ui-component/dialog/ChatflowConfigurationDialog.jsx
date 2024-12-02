@@ -7,7 +7,6 @@ import SpeechToText from '@/ui-component/extended/SpeechToText'
 import RateLimit from '@/ui-component/extended/RateLimit'
 import AllowedDomains from '@/ui-component/extended/AllowedDomains'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
-import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 import Leads from '@/ui-component/extended/Leads'
 import VisibilitySettings from '@/ui-component/extended/VisibilitySettings'
@@ -42,10 +41,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
         label: 'Allowed Domains',
         id: 'allowedDomains'
     },
-    {
-        label: 'Analyse Chatflow',
-        id: 'analyseChatflow'
-    },
+    // {
+    //     label: 'Analyse Chatflow',
+    //     id: 'analyseChatflow'
+    // },
     {
         label: 'Leads',
         id: 'leads'
@@ -129,7 +128,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
                         {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
-                        {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
+                        {/* {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null} */}
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
                         {item.id === 'visibilitySettings' ? <VisibilitySettings dialogProps={dialogProps} /> : null}
                         {item.id === 'generalSettings' ? <GeneralSettings dialogProps={dialogProps} /> : null}
