@@ -61,6 +61,7 @@
         "react-markdown": "^8.0.7",
         "react-syntax-highlighter": "^15.5.0",
         "react-window": "^1.8.9",
+        "remark-gfm": "^3.0.1",
         "stripe": "^12.17.0",
         "swr": "^2.2.0",
         "types": "workspace:*",
