@@ -1,8 +1,7 @@
 'use client'
-import dynamic from 'next/dynamic'
-import * as React from 'react'
-import { useEffect, useRef, useState, useCallback, useContext, useMemo, useTransition } from 'react'
-import { addEdge, Controls, Background, useNodesState, useEdgesState } from 'reactflow'
+import { useEffect, useRef, useState, useCallback, useContext, useMemo } from 'react'
+import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState } from 'reactflow'
+import PropTypes from 'prop-types'
 
 import 'reactflow/dist/style.css'
 
@@ -58,13 +57,12 @@ import { usePrompt } from '@/utils/usePrompt'
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
-// Add prop validation for 'chatflowid'
-import PropTypes from 'prop-types'
+const nodeTypes = { customNode: CanvasNode, stickyNote: StickyNote }
+const edgeTypes = { buttonedge: ButtonEdge }
 
 // ==============================|| CANVAS ||============================== //
-const ReactFlow = dynamic(() => import('reactflow').then((mod) => mod.default), { ssr: false })
 
-const Canvas = React.memo(function Canvas({ chatflowid }) {
+const Canvas = ({ chatflowid: chatflowId }) => {
     const theme = useTheme()
     const navigate = useNavigate()
 
@@ -86,25 +84,15 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
 
     const dispatch = useDispatch()
     const canvas = useSelector((state) => state.canvas)
-    const canvasDataStoreRef = useRef(canvas)
+    const [canvasDataStore, setCanvasDataStore] = useState(canvas)
     const [chatflow, setChatflow] = useState(null)
     const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
 
     // ==============================|| Snackbar ||============================== //
 
     useNotifier()
-    const enqueueSnackbar = useCallback(
-        (message, options) => {
-            dispatch(enqueueSnackbarAction(message, options))
-        },
-        [dispatch]
-    )
-    const closeSnackbar = useCallback(
-        (key) => {
-            dispatch(closeSnackbarAction(key))
-        },
-        [dispatch]
-    )
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     // ==============================|| ReactFlow ||============================== //
 
@@ -125,145 +113,127 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
 
     // ==============================|| Events & Actions ||============================== //
-    const setDirty = useCallback(
-        (value) => {
-            dispatch({ type: SET_DIRTY, value })
-        },
-        [dispatch]
-    )
-    const onConnect = useCallback(
-        (params) => {
-            const newEdge = {
-                ...params,
-                type: 'buttonedge',
-                id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
-            }
 
-            const targetNodeId = params.targetHandle.split('-')[0]
-            const sourceNodeId = params.sourceHandle.split('-')[0]
-            const targetInput = params.targetHandle.split('-')[2]
+    const onConnect = (params) => {
+        const newEdge = {
+            ...params,
+            type: 'buttonedge',
+            id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
+        }
 
-            setNodes((nds) =>
-                nds.map((node) => {
-                    if (node.id === targetNodeId) {
-                        setTimeout(() => setDirty(), 0)
-                        let value
-                        const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
-                        const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+        const targetNodeId = params.targetHandle.split('-')[0]
+        const sourceNodeId = params.sourceHandle.split('-')[0]
+        const targetInput = params.targetHandle.split('-')[2]
 
-                        if (inputAnchor && inputAnchor.list) {
-                            const newValues = node.data.inputs[targetInput] || []
-                            if (targetInput === 'tools') {
-                                rearrangeToolsOrdering(newValues, sourceNodeId)
-                            } else {
-                                newValues.push(`{{${sourceNodeId}.data.instance}}`)
-                            }
-                            value = newValues
-                        } else if (inputParam && inputParam.acceptVariable) {
-                            value = node.data.inputs[targetInput] || ''
+        setNodes((nds) =>
+            nds.map((node) => {
+                if (node.id === targetNodeId) {
+                    setTimeout(() => setDirty(), 0)
+                    let value
+                    const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
+                    const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+
+                    if (inputAnchor && inputAnchor.list) {
+                        const newValues = node.data.inputs[targetInput] || []
+                        if (targetInput === 'tools') {
+                            rearrangeToolsOrdering(newValues, sourceNodeId)
                         } else {
-                            value = `{{${sourceNodeId}.data.instance}}`
+                            newValues.push(`{{${sourceNodeId}.data.instance}}`)
                         }
-                        node.data = {
-                            ...node.data,
-                            inputs: {
-                                ...node.data.inputs,
-                                [targetInput]: value
-                            }
-                        }
+                        value = newValues
+                    } else if (inputParam && inputParam.acceptVariable) {
+                        value = node.data.inputs[targetInput] || ''
+                    } else {
+                        value = `{{${sourceNodeId}.data.instance}}`
                     }
-                    return node
-                })
-            )
-
-            setEdges((eds) => addEdge(newEdge, eds))
-        },
-        [setDirty, setNodes, setEdges]
-    )
-
-    const handleLoadFlow = useCallback(
-        async (file) => {
-            try {
-                const flowData = JSON.parse(file)
-                const nodes = flowData.nodes || []
-                const edges = flowData.edges || []
-
-                let existingChatflow = null
-                let hasAccess = false
-
-                if (flowData.id) {
-                    console.log('handleLoadFlow - Checking existing chatflow with ID:', flowData.id)
-                    try {
-                        existingChatflow = await chatflowsApi.getSpecificChatflow(flowData.id)
-                        hasAccess = true
-                        console.log('handleLoadFlow - Found existing chatflow:', existingChatflow)
-                    } catch (error) {
-                        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-                            hasAccess = false
-                            console.log('handleLoadFlow - No access to existing chatflow')
-                        } else {
-                            console.error('handleLoadFlow - Error checking chatflow:', error)
-                            throw error
+                    node.data = {
+                        ...node.data,
+                        inputs: {
+                            ...node.data.inputs,
+                            [targetInput]: value
                         }
                     }
                 }
+                return node
+            })
+        )
 
-                if (existingChatflow && hasAccess) {
-                    console.log('handleLoadFlow - Prompting user for overwrite decision')
-                    const userChoice = await confirm({
-                        title: 'Chatflow already exists',
-                        description: 'Do you want to overwrite the existing chatflow or create a new one?',
-                        confirmButtonName: 'Overwrite',
-                        cancelButtonName: 'Create New'
-                    })
+        setEdges((eds) => addEdge(newEdge, eds))
+    }
 
-                    if (!userChoice) {
-                        console.log('handleLoadFlow - User chose to create new chatflow')
-                        delete flowData.id
+    const handleLoadFlow = async (file) => {
+        try {
+            const flowData = JSON.parse(file)
+            const nodes = flowData.nodes || []
+            const edges = flowData.edges || []
+
+            let existingChatflow = null
+            let hasAccess = false
+
+            if (flowData.id) {
+                try {
+                    existingChatflow = await chatflowsApi.getSpecificChatflow(flowData.id)
+                    hasAccess = true
+                } catch (error) {
+                    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+                        hasAccess = false
+                    } else {
+                        console.error('handleLoadFlow - Error checking chatflow:', error)
+                        throw error
                     }
-                } else {
-                    console.log('handleLoadFlow - Creating new chatflow (no existing access)')
+                }
+            }
+
+            if (existingChatflow && hasAccess) {
+                const userChoice = await confirm({
+                    title: 'Chatflow already exists',
+                    description: 'Do you want to overwrite the existing chatflow or create a new one?',
+                    confirmButtonName: 'Overwrite',
+                    cancelButtonName: 'Create New'
+                })
+
+                if (!userChoice) {
                     delete flowData.id
                 }
-
-                const newChatflow = {
-                    id: flowData.id,
-                    name: `Copy of ${templateName}`,
-                    description: flowData.description,
-                    chatbotConfig: flowData.chatbotConfig,
-                    visibility: flowData.visibility,
-                    category: flowData.category,
-                    type: flowData.type,
-                    flowData: JSON.stringify({ nodes, edges })
-                }
-                console.log('handleLoadFlow - Created new chatflow object:', newChatflow)
-
-                dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
-                setChatflow(newChatflow)
-                setNodes(nodes)
-                setEdges(edges)
-                setTimeout(() => setDirty(), 0)
-            } catch (e) {
-                console.error('handleLoadFlow - Error:', e)
-                enqueueSnackbar({
-                    message: 'Failed to load chatflow: ' + e.message,
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'error',
-                        persist: true,
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
+            } else {
+                delete flowData.id
             }
-        },
-        [confirm, dispatch, enqueueSnackbar, closeSnackbar, setNodes, setEdges, setDirty, templateName]
-    )
 
-    const handleDeleteFlow = useCallback(async () => {
+            const newChatflow = {
+                id: flowData.id,
+                name: `Copy of ${templateName}`,
+                description: flowData.description,
+                chatbotConfig: flowData.chatbotConfig,
+                visibility: flowData.visibility,
+                category: flowData.category,
+                type: flowData.type,
+                flowData: JSON.stringify({ nodes, edges })
+            }
+
+            dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
+            setChatflow(newChatflow)
+            setNodes(nodes)
+            setEdges(edges)
+            setTimeout(() => setDirty(), 0)
+        } catch (e) {
+            console.error('handleLoadFlow - Error:', e)
+            enqueueSnackbar({
+                message: 'Failed to load chatflow: ' + e.message,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+    }
+
+    const handleDeleteFlow = async () => {
         const confirmPayload = {
             title: `Delete`,
             description: `Delete ${canvasTitle} ${chatflow.name}?`,
@@ -293,71 +263,68 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                 })
             }
         }
-    }, [chatflow, confirm, navigate, isAgentCanvas, enqueueSnackbar, closeSnackbar])
+    }
 
-    const handleSaveFlow = useCallback(
-        (chatflowName) => {
-            if (reactFlowInstance) {
-                const nodes = reactFlowInstance.getNodes().map((node) => {
-                    const nodeData = cloneDeep(node.data)
-                    if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
-                        nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
-                        nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID])
-                    }
-                    node.data = {
-                        ...nodeData,
-                        selected: false
-                    }
-                    return node
-                })
+    const handleSaveFlow = (chatflowName) => {
+        if (reactFlowInstance) {
+            const nodes = reactFlowInstance.getNodes().map((node) => {
+                const nodeData = cloneDeep(node.data)
+                if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
+                    nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
+                    nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID])
+                }
+                node.data = {
+                    ...nodeData,
+                    selected: false
+                }
+                return node
+            })
 
-                const rfInstanceObject = reactFlowInstance.toObject()
-                rfInstanceObject.nodes = nodes
-                const flowData = JSON.stringify(rfInstanceObject)
+            const rfInstanceObject = reactFlowInstance.toObject()
+            rfInstanceObject.nodes = nodes
+            const flowData = JSON.stringify(rfInstanceObject)
 
-                if (!chatflow.id) {
-                    const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
-                    let newChatflowBody
-                    if (duplicatedFlowData) {
-                        const parsedData = JSON.parse(duplicatedFlowData)
-                        newChatflowBody = {
-                            ...parsedData,
-                            name: chatflowName,
-                            flowData,
-                            deployed: false,
-                            isPublic: false
-                        }
-                        localStorage.removeItem('duplicatedFlowData')
-                    } else {
-                        newChatflowBody = {
-                            name: chatflowName,
-                            parentChatflowId,
-                            deployed: false,
-                            isPublic: false,
-                            flowData,
-                            type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW',
-                            description: chatflow.description || '',
-                            visibility: chatflow.visibility || [],
-                            category: chatflow.category || '',
-                            chatbotConfig: chatflow.chatbotConfig || ''
-                        }
-                    }
-                    createNewChatflowApi.request(newChatflowBody)
-                } else {
-                    const updateBody = {
+            if (!chatflow.id) {
+                const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
+                let newChatflowBody
+                if (duplicatedFlowData) {
+                    const parsedData = JSON.parse(duplicatedFlowData)
+                    newChatflowBody = {
+                        ...parsedData,
                         name: chatflowName,
                         flowData,
-                        description: chatflow.description,
-                        visibility: chatflow.visibility,
-                        category: chatflow.category,
-                        chatbotConfig: chatflow.chatbotConfig
+                        deployed: false,
+                        isPublic: false
                     }
-                    updateChatflowApi.request(chatflow.id, updateBody)
+                    localStorage.removeItem('duplicatedFlowData')
+                } else {
+                    newChatflowBody = {
+                        name: chatflowName,
+                        parentChatflowId,
+                        deployed: false,
+                        isPublic: false,
+                        flowData,
+                        type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW',
+                        description: chatflow.description || '',
+                        visibility: chatflow.visibility || [],
+                        category: chatflow.category || '',
+                        chatbotConfig: chatflow.chatbotConfig || ''
+                    }
                 }
+                createNewChatflowApi.request(newChatflowBody)
+            } else {
+                const updateBody = {
+                    name: chatflowName,
+                    flowData,
+                    description: chatflow.description,
+                    visibility: chatflow.visibility,
+                    category: chatflow.category,
+                    chatbotConfig: chatflow.chatbotConfig
+                }
+                updateChatflowApi.request(chatflow.id, updateBody)
             }
-        },
-        [reactFlowInstance, chatflow, createNewChatflowApi, updateChatflowApi]
-    )
+        }
+    }
 
     // eslint-disable-next-line
     const onNodeClick = useCallback((event, clickedNode) => {
@@ -439,7 +406,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     )
 
     const syncNodes = () => {
-        const componentNodes = canvasDataStoreRef.current.componentNodes
+        const componentNodes = canvas.componentNodes
 
         const cloneNodes = cloneDeep(nodes)
         const cloneEdges = cloneDeep(edges)
@@ -493,6 +460,10 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
         })
     }
 
+    const setDirty = () => {
+        dispatch({ type: SET_DIRTY })
+    }
+
     const checkIfUpsertAvailable = (nodes, edges) => {
         const upsertNodeDetails = getUpsertDetails(nodes, edges)
         if (upsertNodeDetails.length) setIsUpsertButtonEnabled(true)
@@ -500,7 +471,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }
 
     const checkIfSyncNodesAvailable = (nodes) => {
-        const componentNodes = canvasDataStoreRef.current.componentNodes
+        const componentNodes = canvas.componentNodes
 
         for (let i = 0; i < nodes.length; i++) {
             const node = nodes[i]
@@ -524,7 +495,6 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
             setNodes(initialFlow.nodes || [])
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
-            setChatflow(chatflow)
         } else if (getSpecificChatflowApi.error) {
             errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
         }
@@ -537,7 +507,6 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
         if (createNewChatflowApi.data) {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
-            setChatflow(chatflow)
             saveChatflowSuccess()
             navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`, { replace: true })
         } else if (createNewChatflowApi.error) {
@@ -551,8 +520,6 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     useEffect(() => {
         if (updateChatflowApi.data) {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
-            setChatflow(updateChatflowApi.data)
-
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
             errorFailed(`Failed to save ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
@@ -562,21 +529,23 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }, [updateChatflowApi.data, updateChatflowApi.error])
 
     useEffect(() => {
-        if (canvasDataStoreRef.current.chatflow) {
-            const flowData = canvasDataStoreRef.current.chatflow.flowData ? JSON.parse(canvasDataStoreRef.current.chatflow.flowData) : []
+        setChatflow(canvasDataStore.chatflow)
+        if (canvasDataStore.chatflow) {
+            const flowData = canvasDataStore.chatflow.flowData ? JSON.parse(canvasDataStore.chatflow.flowData) : []
             checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || [])
             checkIfSyncNodesAvailable(flowData.nodes || [])
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [canvasDataStore.chatflow])
 
     // Initialization
     useEffect(() => {
+        console.log('Init', { chatflowId })
         setIsSyncNodesButtonEnabled(false)
         setIsUpsertButtonEnabled(false)
-        if (chatflowid) {
-            getSpecificChatflowApi.request(chatflowid)
+        if (chatflowId) {
+            getSpecificChatflowApi.request(chatflowId)
         } else {
             const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
 
@@ -614,13 +583,16 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
         }
         getNodesApi.request()
 
+        // Clear dirty state before leaving and remove any ongoing test triggers and webhooks
         return () => {
             setTimeout(() => dispatch({ type: REMOVE_DIRTY }), 0)
         }
-    }, [chatflowid]) // Only re-run if chatflowId changes
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [chatflowId])
 
     useEffect(() => {
-        canvasDataStoreRef.current = canvas
+        setCanvasDataStore(canvas)
     }, [canvas])
 
     useEffect(() => {
@@ -642,7 +614,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
     }, [])
 
     useEffect(() => {
-        if (templateFlowData?.includes && templateFlowData.includes('"nodes": [') && templateFlowData.includes('"edges": [')) {
+        if (templateFlowData?.includes && templateFlowData.includes('"nodes":[') && templateFlowData.includes('],"edges":[')) {
             handleLoadFlow(templateFlowData)
         } else if (typeof templateFlowData === 'object') {
             handleLoadFlow(JSON.stringify(templateFlowData))
@@ -651,23 +623,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateFlowData])
 
-    usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStoreRef.current.isDirty)
-
-    const [isPending, startTransition] = useTransition()
-
-    const handleSomeStateUpdate = useCallback(() => {
-        startTransition(() => {
-            // State update here
-        })
-    }, [])
-
-    // Move useMemo inside the component
-    const nodeTypes = useMemo(() => {
-        return { customNode: CanvasNode, stickyNote: StickyNote }
-    }, [])
-    const edgeTypes = useMemo(() => {
-        return { buttonedge: ButtonEdge }
-    }, [])
+    usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
 
     return (
         <>
@@ -708,7 +664,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                                 onConnect={onConnect}
                                 onInit={setReactFlowInstance}
                                 fitView
-                                deleteKeyCode={canvasDataStoreRef.current.canvasDialogShow ? null : ['Delete']}
+                                deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                                 minZoom={0.1}
                             >
                                 <Controls
@@ -741,8 +697,8 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
                                         <IconRefreshAlert />
                                     </Fab>
                                 )}
-                                {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowid} />}
-                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowid} />
+                                {isUpsertButtonEnabled && <VectorStorePopUp chatflowId={chatflowId} />}
+                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowId={chatflowId} />
                             </ReactFlow>
                         </div>
                     </div>
@@ -751,7 +707,7 @@ const Canvas = React.memo(function Canvas({ chatflowid }) {
             </Box>
         </>
     )
-})
+}
 
 Canvas.propTypes = {
     chatflowid: PropTypes.string
