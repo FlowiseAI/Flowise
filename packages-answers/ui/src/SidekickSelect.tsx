@@ -29,7 +29,8 @@ import {
     AccessTime as AccessTimeIcon,
     MoreHoriz as MoreHorizIcon,
     Visibility as VisibilityIcon,
-    Edit as EditIcon
+    Edit as EditIcon,
+    Cancel as CancelIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
 import useSWR from 'swr'
@@ -628,6 +629,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     key={'search-term-input'}
                     fullWidth
                     variant='outlined'
+                    style={{ position: 'relative' }}
                     placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
                     // value={debouncedSearchTerm}
                     onChange={(e) => {
@@ -639,14 +641,14 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                         setPreviousActiveTab(tabValue)
                     }}
                     InputProps={{
-                        startAdornment: <SearchIcon color='action' />
+                        startAdornment: <SearchIcon color='action' />,
+                        endAdornment: debouncedSearchTerm.length > 0 && (
+                            <Button onClick={clearSearchField} style={{ position: 'absolute', right: 10, padding: 0, minWidth: 'auto' }}>
+                                <CancelIcon color='action' />
+                            </Button>
+                        )
                     }}
                 />
-                {debouncedSearchTerm.length > 0 && (
-                    <Button variant='contained' color='primary' onClick={clearSearchField}>
-                        Clear
-                    </Button>
-                )}
             </Box>
             <Box>
                 <Tabs
