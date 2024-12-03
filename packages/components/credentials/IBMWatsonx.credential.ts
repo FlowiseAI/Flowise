@@ -8,7 +8,7 @@ class IBMWatsonxCredential implements INodeCredential {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'IBM Watsonx'
+        this.label = 'IBM WatsonX'
         this.name = 'ibmWatsonx'
         this.version = 1.0
         this.inputs = [
@@ -22,7 +22,8 @@ class IBMWatsonxCredential implements INodeCredential {
                 label: 'Service URL',
                 name: 'serviceUrl',
                 type: 'string',
-                placeholder: '<SERVICE_URL>'
+                placeholder: '<SERVICE_URL>',
+                optional: true
             },
             {
                 label: 'Project ID',
@@ -31,7 +32,7 @@ class IBMWatsonxCredential implements INodeCredential {
                 placeholder: '<PROJECT_ID>'
             },
             {
-                label: 'Watsonx AI Auth Type',
+                label: 'WatsonX AI Auth Type',
                 name: 'watsonxAIAuthType',
                 type: 'options',
                 options: [
@@ -47,18 +48,18 @@ class IBMWatsonxCredential implements INodeCredential {
                 default: 'iam'
             },
             {
-                label: 'Watsonx AI IAM API Key',
+                label: 'WatsonX AI IAM API Key',
                 name: 'watsonxAIApikey',
                 type: 'password',
-                description: 'API Key for Watsonx AI when using IAM',
+                description: 'API Key for WatsonX AI when using IAM',
                 placeholder: '<YOUR-APIKEY>',
                 optional: true
             },
             {
-                label: 'Watsonx AI Bearer Token',
+                label: 'WatsonX AI Bearer Token',
                 name: 'watsonxAIBearerToken',
                 type: 'password',
-                description: 'Bearer Token for Watsonx AI when using Bearer Token',
+                description: 'Bearer Token for WatsonX AI when using Bearer Token',
                 placeholder: '<YOUR-BEARER-TOKEN>',
                 optional: true
             }
