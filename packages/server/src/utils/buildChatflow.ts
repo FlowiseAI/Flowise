@@ -49,6 +49,7 @@ import { IAction } from 'flowise-components'
 import checkOwnership from './checkOwnership'
 import PlansService from '../services/plans'
 import { Chat } from '../database/entities/Chat'
+import { validateNodeConnections } from './validateNodeConnections'
 
 /**
  * Build Chatflow
@@ -399,6 +400,14 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const nodeInstanceFilePath = appServer.nodesPool.componentNodes[nodeToExecuteData.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const nodeInstance = new nodeModule.nodeClass({ sessionId })
+
+        const missingInputs = validateNodeConnections(nodeToExecuteData)
+        if (missingInputs) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `Oops! It looks like some required inputs are missing: ${missingInputs}.\n Please double-check your node connections and ensure all necessary inputs are linked before proceeding.`
+            )
+        }
 
         let result = isStreamValid
             ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {

@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
     Button,
     TextField,
@@ -29,7 +29,8 @@ import {
     AccessTime as AccessTimeIcon,
     MoreHoriz as MoreHorizIcon,
     Visibility as VisibilityIcon,
-    Edit as EditIcon
+    Edit as EditIcon,
+    Cancel as CancelIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
 import useSWR from 'swr'
@@ -179,9 +180,11 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     const { setSidekick, sidekick: selectedSidekick, setSidekick: setSelectedSidekick } = useAnswers()
     const router = useRouter()
     const { user } = useUser()
+    const searchbarRef = useRef<HTMLInputElement>(null)
 
     const [searchTerm, setSearchTerm] = useState('')
     const [activeTab, setActiveTab] = useState<string>('all')
+    const [previousActiveTab, setPreviousActiveTab] = useState<string>('all')
     const [open, setOpen] = useState(false || noDialog)
     // const [selectedSidekick, setSelectedSidekick] = useState<Sidekick | null>(null)
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -438,6 +441,8 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     return sidekick.isRecent
                 case 'all':
                     return true
+                case 'search':
+                    return true
                 default:
                     return (
                         sidekick.chatflow.categories?.includes(tabValue) ||
@@ -470,6 +475,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         e.stopPropagation()
         setSelectedTemplateId(sidekick.id)
         setIsMarketplaceDialogOpen(true)
+    }
+
+    const clearSearchField = () => {
+        if (searchbarRef.current) {
+            const inputElement = searchbarRef.current.querySelector('input')
+            if (inputElement) {
+                inputElement.value = ''
+                setDebouncedSearchTerm('')
+                setSearchTerm('')
+                setTabValue(previousActiveTab)
+            }
+        }
     }
 
     const renderSidekickGrid = useCallback(() => {
@@ -606,15 +623,30 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     const content = (
         <>
-            <Box sx={{ pb: 2 }}>
+            <Box sx={{ pb: 2, display: 'flex', gap: 1 }}>
                 <TextField
+                    ref={searchbarRef}
                     key={'search-term-input'}
                     fullWidth
                     variant='outlined'
+                    style={{ position: 'relative' }}
                     placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
-                    onChange={(e) => setDebouncedSearchTerm(e.target.value)}
+                    // value={debouncedSearchTerm}
+                    onChange={(e) => {
+                        // if (debouncedSearchTerm.length > 0) setTabValue('search')
+                        setDebouncedSearchTerm(e.target.value)
+                    }}
+                    onFocus={() => {
+                        setTabValue('search')
+                        setPreviousActiveTab(tabValue)
+                    }}
                     InputProps={{
-                        startAdornment: <SearchIcon color='action' />
+                        startAdornment: <SearchIcon color='action' />,
+                        endAdornment: debouncedSearchTerm.length > 0 && (
+                            <Button onClick={clearSearchField} style={{ position: 'absolute', right: 10, padding: 0, minWidth: 'auto' }}>
+                                <CancelIcon color='action' />
+                            </Button>
+                        )
                     }}
                 />
             </Box>
@@ -625,11 +657,15 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                         if (newValue !== null) {
                             setTabValue(newValue)
                         }
+                        if (newValue === 'search') {
+                            setPreviousActiveTab(tabValue)
+                        }
                     }}
                     variant='scrollable'
                     scrollButtons='auto'
                     sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
                 >
+                    <Tab label='Search' value='search' icon={<SearchIcon />} iconPosition='start' disabled={categoryCounts.all === 0} />
                     <Tab
                         label='Favorites'
                         icon={<FavoriteIcon />}

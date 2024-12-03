@@ -1,11 +1,52 @@
 import { TextSplitter } from 'langchain/text_splitter'
-import { omit } from 'lodash'
+import omit from 'lodash/omit'
 import { CheerioWebBaseLoader, WebBaseLoaderParams } from '@langchain/community/document_loaders/web/cheerio'
+import { Document } from '@langchain/core/documents'
 import { test } from 'linkifyjs'
 import { parse } from 'css-what'
 import { webCrawl, xmlScrape } from '../../../src'
 import { SelectorType } from 'cheerio'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
+
+class CustomCheerioLoader extends CheerioWebBaseLoader {
+    // Additional parameters for customizing the loader's behavior
+    private otherParams: { outputFormat?: string; excludeSelector?: string }
+
+    /**
+     * Constructs a new instance of CustomCheerioLoader.
+     * @param webPath - The URL or path to the web resource.
+     * @param fields - Parameters for the web base loader.
+     * @param otherParams - Additional parameters including output format and exclude selector.
+     */
+    constructor(webPath: string, fields: WebBaseLoaderParams, otherParams: { outputFormat?: string; excludeSelector?: string }) {
+        super(webPath, fields)
+        this.otherParams = otherParams
+    }
+
+    /**
+     * Loads the document from the web resource.
+     * This function overrides the default load function of CheerioWebBaseLoader.
+     * It adds functionality to exclude certain selectors and supports multiple output formats, which the Langchain load function does not currently allow.
+     * @returns A promise that resolves to an array of Document objects.
+     */
+    async load(): Promise<Document[]> {
+        const $ = await this.scrape()
+
+        // Remove elements matching the exclude selector if specified
+        if (this.otherParams?.excludeSelector) {
+            $(this.otherParams.excludeSelector).remove()
+        }
+
+        // Determine the content format based on the specified output format
+        const content = this.otherParams?.outputFormat === 'html' ? $(this.selector).html() ?? '' : $(this.selector).text()
+
+        // Create metadata for the document
+        const metadata = { source: this.webPath }
+
+        // Return the document with the extracted content and metadata
+        return [new Document({ pageContent: content, metadata })]
+    }
+}
 
 class Cheerio_DocumentLoaders implements INode {
     label: string
@@ -80,6 +121,36 @@ class Cheerio_DocumentLoaders implements INode {
                 additionalParams: true
             },
             {
+                label: 'Excluded Selectors (CSS)',
+                name: 'excludeSelector',
+                type: 'string',
+                description: 'Specify a CSS selector to select the content to NOT be extracted',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Output Format (Pre-Split)',
+                name: 'outputFormat',
+                type: 'options',
+                description:
+                    'What format should it return the webpage content prior to splitting?   Useful for the HTML to Markdown Splitter',
+                options: [
+                    {
+                        label: 'Text',
+                        name: 'text',
+                        description: 'Returns the text of the webpage'
+                    },
+                    {
+                        label: 'HTML',
+                        name: 'html',
+                        description: 'Returns the HTML of the webpage'
+                    }
+                ],
+                default: 'text',
+                optional: false,
+                additionalParams: true
+            },
+            {
                 label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -106,6 +177,10 @@ class Cheerio_DocumentLoaders implements INode {
         const metadata = nodeData.inputs?.metadata
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
         const selectedLinks = nodeData.inputs?.selectedLinks as string[]
+        const outputFormat = nodeData.inputs?.outputFormat as string
+        const excludeSelector: SelectorType = nodeData.inputs?.excludeSelector as SelectorType
+
+        const outputParams = { outputFormat, excludeSelector }
         let limit = parseInt(nodeData.inputs?.limit as string)
 
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
@@ -121,9 +196,9 @@ class Cheerio_DocumentLoaders implements INode {
             throw new Error('Invalid URL')
         }
 
-        const selector: SelectorType = nodeData.inputs?.selector as SelectorType
-
         let params: WebBaseLoaderParams = {}
+
+        const selector: SelectorType = nodeData.inputs?.selector as SelectorType
         if (selector) {
             parse(selector) // comes with cheerio - will throw error if invalid
             params['selector'] = selector
@@ -136,12 +211,12 @@ class Cheerio_DocumentLoaders implements INode {
                     if (process.env.DEBUG === 'true') options.logger.info(`CheerioWebBaseLoader does not support PDF files: ${url}`)
                     return docs
                 }
-                const loader = new CheerioWebBaseLoader(url, params)
+
+                const loader: CustomCheerioLoader = new CustomCheerioLoader(url, params, outputParams)
+                docs = await loader.load()
+
                 if (textSplitter) {
-                    docs = await loader.load()
                     docs = await textSplitter.splitDocuments(docs)
-                } else {
-                    docs = await loader.load()
                 }
                 return docs
             } catch (err) {

@@ -394,6 +394,7 @@ export function getURLsFromXML(xmlBody: string, limit: number): string[] {
     return urls
 }
 
+// TODO: Update this to handle nested XML Sitemaps
 export async function xmlScrape(currentURL: string, limit: number): Promise<string[]> {
     let urls: string[] = []
     if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`)
