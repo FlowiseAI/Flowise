@@ -1417,7 +1417,7 @@ const upsertDocStoreMiddleware = async (
 
     recordManagerName = newRecordManager?.name || recordManagerName
     recordManagerConfig = {
-        recordManagerConfig,
+        ...recordManagerConfig,
         ...newRecordManager?.config
     }
 
