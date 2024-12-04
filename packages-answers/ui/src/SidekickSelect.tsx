@@ -631,14 +631,12 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     variant='outlined'
                     style={{ position: 'relative' }}
                     placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
-                    // value={debouncedSearchTerm}
                     onChange={(e) => {
-                        // if (debouncedSearchTerm.length > 0) setTabValue('search')
+                        if (debouncedSearchTerm.length > 0 && filteredSidekicks.length > 0 && tabValue !== 'search') {
+                            setTabValue('search')
+                            setPreviousActiveTab(tabValue)
+                        }
                         setDebouncedSearchTerm(e.target.value)
-                    }}
-                    onFocus={() => {
-                        setTabValue('search')
-                        setPreviousActiveTab(tabValue)
                     }}
                     InputProps={{
                         startAdornment: <SearchIcon color='action' />,
@@ -665,7 +663,9 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     scrollButtons='auto'
                     sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
                 >
-                    <Tab label='Search' value='search' icon={<SearchIcon />} iconPosition='start' disabled={categoryCounts.all === 0} />
+                    {searchTerm.length > 0 && filteredSidekicks.length > 0 && (
+                        <Tab label='Search' value='search' icon={<SearchIcon />} iconPosition='start' disabled={categoryCounts.all === 0} />
+                    )}
                     <Tab
                         label='Favorites'
                         icon={<FavoriteIcon />}
