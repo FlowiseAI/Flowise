@@ -17,21 +17,22 @@ import CardContent from '@mui/material/CardContent'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
+import CardMedia from '@mui/material/CardMedia'
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ThumbUpIcon from '@mui/icons-material/ThumbUp'
 import ThumbDownIcon from '@mui/icons-material/ThumbDown'
 import ContentCopy from '@mui/icons-material/ContentCopy'
+import LinkIcon from '@mui/icons-material/Link'
 
 import { countTokens } from '@utils/utilities/countTokens'
 
 import { useAnswers } from '../AnswersContext'
 import { Accordion, AccordionSummary, AccordionDetails } from '../Accordion'
 import FeedbackModal from '@ui/FeedbackModal'
-import { AppService, Document, Message } from 'types'
+import { AppService, Document, Message, FileUpload } from 'types'
 import { Rating } from 'db/generated/prisma-client'
 import { CircularProgress, Tooltip } from '@mui/material'
-import remarkGfm from 'remark-gfm'
 
 interface MessageExtra {
     prompt?: string
@@ -50,6 +51,7 @@ interface MessageExtra {
     selectedDocuments?: Document[]
     setSelectedDocuments?: (documents: Document[]) => void
     isLoading?: boolean
+    fileUploads?: string | FileUpload[]
 }
 interface MessageCardProps extends Partial<Message>, MessageExtra {
     error?: AxiosError<MessageExtra>
@@ -80,6 +82,7 @@ export const MessageCard = ({
     selectedDocuments,
     setSelectedDocuments,
     isLoading,
+    fileUploads,
     ...other
 }: MessageCardProps) => {
     other = { ...other, role, user } as any
@@ -171,9 +174,23 @@ export const MessageCard = ({
         )
     }
 
+    const parsedFileUploads = React.useMemo(() => {
+        if (!fileUploads) return []
+        if (typeof fileUploads === 'string') {
+            try {
+                return JSON.parse(fileUploads) as FileUpload[]
+            } catch (err) {
+                console.error('Error parsing fileUploads:', err)
+                return []
+            }
+        }
+        return fileUploads
+    }, [fileUploads])
+
     return (
-        <>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {showFeedback && id ? <FeedbackModal messageId={id} rating={lastInteraction!} onClose={() => setShowFeedback(false)} /> : null}
+
             <Card
                 data-cy='message'
                 data-role={role}
@@ -240,6 +257,48 @@ export const MessageCard = ({
                             </Box>
                             {hasContent && content ? (
                                 <>
+                                    {parsedFileUploads.length > 0 && (
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                                            {parsedFileUploads.map((file, index) => (
+                                                <React.Fragment key={index}>
+                                                    {file.mime?.startsWith('image/') ? (
+                                                        <Card
+                                                            sx={{
+                                                                p: 0,
+                                                                m: 0,
+                                                                maxWidth: 128,
+                                                                marginRight: '10px',
+                                                                flex: '0 0 auto'
+                                                            }}
+                                                        >
+                                                            <CardMedia
+                                                                component='img'
+                                                                image={file.data}
+                                                                sx={{ height: 64 }}
+                                                                alt={'preview'}
+                                                                style={{ objectFit: 'cover' }}
+                                                            />
+                                                        </Card>
+                                                    ) : file.mime?.startsWith('audio/') ? (
+                                                        <audio controls='controls'>
+                                                            Your browser does not support the <code>audio</code> tag.
+                                                            <source src={file.data} type={file.mime} />
+                                                        </audio>
+                                                    ) : file.type === 'url' ? (
+                                                        <Button
+                                                            variant='outlined'
+                                                            href={file.data}
+                                                            target='_blank'
+                                                            rel='noopener noreferrer'
+                                                            startIcon={<LinkIcon />}
+                                                        >
+                                                            {file.name}
+                                                        </Button>
+                                                    ) : null}
+                                                </React.Fragment>
+                                            ))}
+                                        </Box>
+                                    )}
                                     <Typography
                                         variant='body1'
                                         color='text.secondary'
@@ -264,7 +323,6 @@ export const MessageCard = ({
                                         }}
                                     >
                                         <ReactMarkdown
-                                            remarkPlugins={[remarkGfm]}
                                             components={{
                                                 p: (paragraph: any) => {
                                                     const { node } = paragraph
@@ -312,12 +370,6 @@ export const MessageCard = ({
                                                     }
                                                     return <p>{paragraph.children}</p>
                                                 },
-
-                                                a: ({ node, ...props }) => (
-                                                    <a {...props} target='_blank' rel='noopener noreferrer'>
-                                                        {props.children}
-                                                    </a>
-                                                ),
 
                                                 code({ node, inline, className, children, ...props }) {
                                                     const codeExample = String(children).replace(/\n$/, '')
@@ -471,7 +523,7 @@ export const MessageCard = ({
                 {developer_mode?.enabled ? (
                     <Box>
                         {contextDocuments?.length ? (
-                            <Accordion slotProps={{ transition: { unmountOnExit: true } }}>
+                            <Accordion TransitionProps={{ unmountOnExit: true }}>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                     <Typography variant='overline'>
                                         Context ({countTokens(contextDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
@@ -574,7 +626,7 @@ export const MessageCard = ({
 
                         {Object.keys(other)?.length ? (
                             // Use the @mui accordion component to wrap the extra and response
-                            <Accordion slotProps={{ transition: { unmountOnExit: true } }}>
+                            <Accordion TransitionProps={{ unmountOnExit: true }}>
                                 <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                     <Typography variant='overline'>Extra</Typography>
                                 </AccordionSummary>
@@ -592,6 +644,6 @@ export const MessageCard = ({
                     </Box>
                 ) : null}
             </Card>
-        </>
+        </Box>
     )
 }

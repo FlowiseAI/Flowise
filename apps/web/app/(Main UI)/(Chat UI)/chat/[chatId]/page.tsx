@@ -87,7 +87,11 @@ async function getMessages(chat: Partial<ChatType>, user: User) {
         const messages = await result.json()
         return messages?.map((m: any) => ({
             ...m,
-            contextDocuments: m.sourceDocuments ? JSON.parse(m.sourceDocuments) : []
+            contextDocuments: m.sourceDocuments ? JSON.parse(m.sourceDocuments) : [],
+            fileUploads: (m.fileUploads ? JSON.parse(m.fileUploads) : [])?.map((f: any) => ({
+                ...f,
+                data: `${user.chatflowDomain}/api/v1/get-upload-file?chatflowId=${m.chatflowid}&chatId=${chat.chatflowChatId}&fileName=${f.name}`
+            }))
         }))
     } catch (err) {
         console.error('Error fetching messages:', err)

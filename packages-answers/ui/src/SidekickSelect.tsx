@@ -416,21 +416,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         [navigate, user, setNavigationState]
     )
 
-    const handleEdit = useCallback(
-        (sidekick: Sidekick, e: React.MouseEvent) => {
-            e.stopPropagation()
+    const handleEdit = useCallback((sidekick: Sidekick, e: React.MouseEvent) => {
+        e.stopPropagation()
 
-            if (!sidekick) return
+        if (!sidekick) return
 
-            const isAgentCanvas = (sidekick.flowData?.nodes || []).some(
-                (node: { data: { category: string } }) =>
-                    node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
-            )
+        const isAgentCanvas = (sidekick.flowData?.nodes || []).some(
+            (node: { data: { category: string } }) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
+        )
 
-            navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${sidekick.id}`)
-        },
-        [navigate]
-    )
+        const url = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${sidekick.id}`
+        window.open(url, '_blank')
+    }, [])
 
     const filteredSidekicks = useMemo(() => {
         const filterByTab = (sidekick: Sidekick) => {
