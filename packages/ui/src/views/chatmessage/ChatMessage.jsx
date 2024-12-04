@@ -700,8 +700,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const handleFileUploads = async (uploads) => {
         if (!uploadedFiles.length) return uploads
 
-        console.log('uploadedFiles', uploadedFiles)
-
         if (fullFileUpload) {
             const filesWithFullUploadType = uploadedFiles.filter((file) => file.type === 'file:full')
             if (filesWithFullUploadType.length > 0) {
@@ -795,8 +793,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             handleError('Unable to upload documents')
             return
         }
-
-        console.log('uploads', uploads)
 
         clearPreviews()
         setMessages((prevMessages) => [...prevMessages, { message: input, type: 'userMessage', fileUploads: uploads }])
