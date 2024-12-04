@@ -61,4 +61,7 @@ router.get('/components/recordmanager', documentStoreController.getRecordManager
 // update the selected vector store from the playground
 router.post('/vectorstore/update', documentStoreController.updateVectorStoreConfigOnly)
 
+// generate docstore tool description
+router.post('/generate-tool-desc/:id', documentStoreController.generateDocStoreToolDesc)
+
 export default router

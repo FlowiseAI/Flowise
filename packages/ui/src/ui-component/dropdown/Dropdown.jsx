@@ -40,11 +40,48 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                     onSelect(value)
                 }}
                 PopperComponent={StyledPopper}
-                renderInput={(params) => (
-                    <TextField {...params} value={internalValue} sx={{ height: '100%', '& .MuiInputBase-root': { height: '100%' } }} />
-                )}
+                renderInput={(params) => {
+                    const matchingOption = findMatchingOptions(options, internalValue)
+                    return (
+                        <TextField
+                            {...params}
+                            value={internalValue}
+                            sx={{
+                                height: '100%',
+                                '& .MuiInputBase-root': { height: '100%' }
+                            }}
+                            InputProps={{
+                                ...params.InputProps,
+                                startAdornment: matchingOption?.imageSrc ? (
+                                    <Box
+                                        component='img'
+                                        src={matchingOption.imageSrc}
+                                        alt={matchingOption.label || 'Selected Option'}
+                                        sx={{
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: '50%'
+                                        }}
+                                    />
+                                ) : null
+                            }}
+                        />
+                    )
+                }}
                 renderOption={(props, option) => (
-                    <Box component='li' {...props}>
+                    <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {option.imageSrc && (
+                            <img
+                                src={option.imageSrc}
+                                alt={option.description}
+                                style={{
+                                    width: 30,
+                                    height: 30,
+                                    padding: 1,
+                                    borderRadius: '50%'
+                                }}
+                            />
+                        )}
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <Typography variant='h5'>{option.label}</Typography>
                             {option.description && (
