@@ -436,13 +436,14 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                     />
                 </div>
             </Stack>
-            {textField(title, 'title', 'Title', 'string', 'Flowise Assistant')}
+            {textField(title, 'title', 'Title', 'string', 'CMCAI Assistant')}
             {textField(
                 titleAvatarSrc,
                 'titleAvatarSrc',
                 'Title Avatar Link',
                 'string',
-                `https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png`
+                // `https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png`
+                `CMCAI.png`
             )}
             {textField(welcomeMessage, 'welcomeMessage', 'Welcome Message', 'string', 'Hello! This is custom welcome message')}
             {textField(errorMessage, 'errorMessage', 'Error Message', 'string', 'This is custom error message')}

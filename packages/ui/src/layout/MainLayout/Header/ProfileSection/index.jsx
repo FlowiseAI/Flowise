@@ -12,22 +12,22 @@ import {
     Box,
     Button,
     ButtonBase,
+    Checkbox,
     ClickAwayListener,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Divider,
+    FormControlLabel,
     List,
     ListItemButton,
     ListItemIcon,
     ListItemText,
     Paper,
     Popper,
-    Typography,
-    Dialog,
-    DialogTitle,
-    DialogContent,
     Stack,
-    FormControlLabel,
-    Checkbox,
-    DialogActions
+    Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -40,7 +40,7 @@ import AboutDialog from '@/ui-component/dialog/AboutDialog'
 import Transitions from '@/ui-component/extended/Transitions'
 
 // assets
-import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconX } from '@tabler/icons-react'
+import { IconFileExport, IconFileUpload, IconLogout, IconSettings, IconX } from '@tabler/icons-react'
 import './index.css'
 import ExportingGIF from '@/assets/images/Exporting.gif'
 
@@ -367,7 +367,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                                     )}
                                     <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 250px)', overflowX: 'hidden' }}>
                                         <Box sx={{ p: 2 }}>
-                                            <Divider />
+                                            {username && <Divider />}
                                             <List
                                                 component='nav'
                                                 sx={{
@@ -407,18 +407,18 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     <ListItemText primary={<Typography variant='body2'>Import</Typography>} />
                                                 </ListItemButton>
                                                 <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={() => {
-                                                        setOpen(false)
-                                                        setAboutDialogOpen(true)
-                                                    }}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconInfoCircle stroke={1.5} size='1.3rem' />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
-                                                </ListItemButton>
+                                                {/*<ListItemButton*/}
+                                                {/*    sx={{ borderRadius: `${customization.borderRadius}px` }}*/}
+                                                {/*    onClick={() => {*/}
+                                                {/*        setOpen(false)*/}
+                                                {/*        setAboutDialogOpen(true)*/}
+                                                {/*    }}*/}
+                                                {/*>*/}
+                                                {/*    <ListItemIcon>*/}
+                                                {/*        <IconInfoCircle stroke={1.5} size='1.3rem' />*/}
+                                                {/*    </ListItemIcon>*/}
+                                                {/*    <ListItemText primary={<Typography variant='body2'>About CMCAI</Typography>} />*/}
+                                                {/*</ListItemButton>*/}
                                                 {localStorage.getItem('username') && localStorage.getItem('password') && (
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}

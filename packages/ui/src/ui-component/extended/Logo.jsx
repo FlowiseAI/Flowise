@@ -1,5 +1,5 @@
-import logo from '@/assets/images/flowise_logo.png'
-import logoDark from '@/assets/images/flowise_logo_dark.png'
+import logo from '@/assets/images/cmc_logo.png'
+import logoDark from '@/assets/images/cmc_logo.png'
 
 import { useSelector } from 'react-redux'
 
@@ -13,7 +13,7 @@ const Logo = () => {
             <img
                 style={{ objectFit: 'contain', height: 'auto', width: 150 }}
                 src={customization.isDarkMode ? logoDark : logo}
-                alt='Flowise'
+                alt='CMCAI'
             />
         </div>
     )
