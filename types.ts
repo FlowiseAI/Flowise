@@ -9,6 +9,7 @@ export interface Message {
     agentReasoning?: any[]
     action?: any
     chat?: any
+    chatflowid?: string
     fileUploads?: Array<{
         data: string
         type: string
@@ -17,9 +18,12 @@ export interface Message {
 }
 
 export interface ChatbotConfig {
-    // Add required fields
+    starterPrompts?: any
+    chatFeedback?: any
+    leads?: any
 }
 
 export interface FlowData {
-    // Add required fields
+    nodes?: any[]
+    edges?: any[]
 }

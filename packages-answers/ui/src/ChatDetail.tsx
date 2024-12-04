@@ -1,26 +1,25 @@
 'use client'
 import React, { Suspense, useRef } from 'react'
 
-import NextLink from 'next/link'
-
-import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
-import IconButton from '@mui/material/IconButton'
-import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import Button from '@mui/material/Button'
 import SourceDocumentModal from '@ui/SourceDocumentModal'
 
-import ShareIcon from '@mui/icons-material/IosShare'
-
-import { MessageCard } from './Message'
 import { useAnswers } from './AnswersContext'
 import ChatInput from './ChatInput'
 import DrawerFilters from './DrawerFilters/DrawerFilters'
+import NextLink from 'next/link'
+import Toolbar from '@mui/material/Toolbar'
+
+import ShareIcon from '@mui/icons-material/IosShare'
 
 import type { AppSettings, Document, Sidekick } from 'types'
 import SidekickSelect from './SidekickSelect'
 import Drawer from './Drawer'
+import { ChatRoom } from './ChatRoom'
+import { FileUpload } from './AnswersContext'
+import AppBar from '@mui/material/AppBar'
+import { IconButton } from '@mui/material'
 
 const DISPLAY_MODES = {
     CHATBOT: 'chatbot',
@@ -123,46 +122,11 @@ export const ChatDetail = ({
                                                 <ShareIcon />
                                             </IconButton>
                                         ) : null}
-
-                                        {/* {!showFilters ? (
-                  <Tooltip
-                    PopperProps={{ placement: 'top-end' }}
-                    title={!Object.keys(services)?.length ? null : <Filters />}>
-                    <Button
-                      size="large"
-                      color="inherit"
-                      aria-label="manage sources"
-                      onClick={() => setShowFilters(!showFilters)}
-                      sx={{ display: 'flex', minWidth: 0, borderRadius: 20 }}>
-                      {!Object.keys(services)?.length ? 'Select sources' : null}
-
-                      <AvatarGroup
-                        max={4}
-                        sx={{ '.MuiAvatar-root': { ml: -2, width: 28, height: 28 } }}>
-                        {(Object.keys(services)?.length
-                          ? Object.values(services)
-                          : appSettings.services
-                        )?.map((service) => (
-                          <Avatar key={service.id} variant="source" src={service.imageURL} />
-                        ))}
-                      </AvatarGroup>
-                    </Button>
-                  </Tooltip>
-                ) : (
-                  <IconButton
-                    size="large"
-                    color="inherit"
-                    aria-label="manage sources"
-                    edge="end"
-                    onClick={() => setShowFilters(!showFilters)}
-                    sx={{}}>
-                    <ArrowBackIcon />
-                  </IconButton>
-                )} */}
                                     </Box>
                                 </Toolbar>
                             </AppBar>
                         ) : null}
+                        {selectedSidekick || chat ? <></> : null}
                         {!selectedSidekick && !chat ? (
                             <Box
                                 sx={{
@@ -181,62 +145,16 @@ export const ChatDetail = ({
                             </Box>
                         ) : displayMode === DISPLAY_MODES.CHATBOT ? (
                             <>
-                                <Box ref={scrollRef} sx={{ height: '100%', overflow: 'auto', px: 2, py: 3 }}>
-                                    <Suspense fallback={<div>Loading...</div>}>
-                                        <Box
-                                            sx={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: 2
-                                            }}
-                                        >
-                                            {messages?.map((message, index) => (
-                                                <MessageCard
-                                                    {...message}
-                                                    key={`message_${index}`}
-                                                    setSelectedDocuments={setSelectedDocuments}
-                                                />
-                                            ))}
-
-                                            {error ? (
-                                                <>
-                                                    <MessageCard id='error' role='status' content={`${error.message} `} error={error} />
-
-                                                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                                        <Button
-                                                            onClick={() => regenerateAnswer()}
-                                                            variant='contained'
-                                                            color='primary'
-                                                            sx={{ margin: 'auto' }}
-                                                        >
-                                                            Retry
-                                                        </Button>
-                                                    </Box>
-                                                </>
-                                            ) : null}
-
-                                            {isLoading && messages?.[messages?.length - 1]?.role === 'user' ? (
-                                                <MessageCard role='status' isLoading content={'...'} />
-                                            ) : null}
-
-                                            {!messages?.length && !isLoading ? (
-                                                <MessageCard
-                                                    id='placeholder'
-                                                    role='status'
-                                                    content={chatbotConfig?.welcomeMessage ?? 'Welcome! Try asking me something!'}
-                                                />
-                                            ) : null}
-
-                                            {!isLoading && !error && messages?.length ? (
-                                                <Box sx={{ py: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                                    <Button onClick={() => regenerateAnswer()} variant='outlined' color='primary'>
-                                                        Regenerate answer
-                                                    </Button>
-                                                </Box>
-                                            ) : null}
-                                        </Box>
-                                    </Suspense>
-                                </Box>
+                                <ChatRoom
+                                    messages={messages}
+                                    error={error}
+                                    isLoading={isLoading}
+                                    regenerateAnswer={regenerateAnswer}
+                                    chatbotConfig={chatbotConfig}
+                                    setSelectedDocuments={() => {}}
+                                    sidekicks={sidekicks}
+                                    scrollRef={scrollRef}
+                                />
 
                                 <ChatInput
                                     sidekicks={sidekicks}
@@ -248,7 +166,8 @@ export const ChatDetail = ({
                             </>
                         ) : (
                             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                                <iframe src={embeddedUrl} style={{ flex: 1, border: 'none' }} title='Embedded Form' allowFullScreen />
+                                Supposed to be the form
+                                {/* <iframe src={embeddedUrl} style={{ flex: 1, border: 'none' }} title='Embedded Form' allowFullScreen /> */}
                             </Box>
                         )}
                     </Box>

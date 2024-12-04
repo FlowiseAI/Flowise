@@ -11,6 +11,7 @@ export interface Message {
     fileUploads?: any[]
     feedback?: any
     type?: string
+    chat?: any
 }
 
 export interface ChatbotConfig {
