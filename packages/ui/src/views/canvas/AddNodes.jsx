@@ -21,7 +21,6 @@ import {
   OutlinedInput,
   Paper,
   Popper,
-  Stack,
   Tab,
   Tabs,
   Typography
@@ -247,12 +246,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
   return (
     <>
       <StyledFab
-        sx={{
-          left: 20,
-          top: 20,
-          minWidth: '150px',
-          borderRadius: '24px'
-        }}
+        className='left-5 top-5 min-w-[150px] rounded shadow-none'
         ref={anchorRef}
         size='small'
         color='primary'
@@ -292,17 +286,14 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
               <ClickAwayListener onClickAway={handleClose}>
                 <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
                   <Box sx={{ p: 2 }}>
-                    <Stack>
-                      <Typography variant='h4'>Add Nodes</Typography>
-                    </Stack>
                     <OutlinedInput
                       // eslint-disable-next-line
                       autoFocus
-                      sx={{ width: '100%', pr: 2, pl: 2, my: 2 }}
+                      className='w-full'
                       id='input-search-node'
                       value={searchValue}
                       onChange={(e) => filterSearch(e.target.value)}
-                      placeholder='Search nodes'
+                      placeholder='Tìm kiếm nodes'
                       startAdornment={
                         <InputAdornment position='start'>
                           <IconSearch stroke={1.5} size='1rem' color={theme.palette.grey[500]} />
