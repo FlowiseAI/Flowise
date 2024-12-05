@@ -65,6 +65,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
 
+    const isInIframe = window.self !== window.top
+
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
 
@@ -237,30 +239,34 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
         <>
             <Stack flexDirection='row' justifyContent='space-between' sx={{ width: '100%' }}>
                 <Stack flexDirection='row' sx={{ width: '100%', maxWidth: '50%' }}>
-                    <Box>
-                        <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
-                            <Avatar
-                                variant='rounded'
-                                sx={{
-                                    ...theme.typography.commonAvatar,
-                                    ...theme.typography.mediumAvatar,
-                                    transition: 'all .2s ease-in-out',
-                                    background: theme.palette.secondary.light,
-                                    color: theme.palette.secondary.dark,
-                                    '&:hover': {
-                                        background: theme.palette.secondary.dark,
-                                        color: theme.palette.secondary.light
+                    {!isInIframe && (
+                        <Box>
+                            <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
+                                <Avatar
+                                    variant='rounded'
+                                    sx={{
+                                        ...theme.typography.commonAvatar,
+                                        ...theme.typography.mediumAvatar,
+                                        transition: 'all .2s ease-in-out',
+                                        background: theme.palette.secondary.light,
+                                        color: theme.palette.secondary.dark,
+                                        '&:hover': {
+                                            background: theme.palette.secondary.dark,
+                                            color: theme.palette.secondary.light
+                                        }
+                                    }}
+                                    color='inherit'
+                                    onClick={() =>
+                                        window.history.state && window.history.state.idx > 0
+                                            ? navigate(-1)
+                                            : navigate('/', { replace: true })
                                     }
-                                }}
-                                color='inherit'
-                                onClick={() =>
-                                    window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
-                                }
-                            >
-                                <IconChevronLeft stroke={1.5} size='1.3rem' />
-                            </Avatar>
-                        </ButtonBase>
-                    </Box>
+                                >
+                                    <IconChevronLeft stroke={1.5} size='1.3rem' />
+                                </Avatar>
+                            </ButtonBase>
+                        </Box>
+                    )}
                     <Box sx={{ width: '100%' }}>
                         {!isEditingFlowName ? (
                             <Stack flexDirection='row'>
@@ -409,25 +415,27 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                             <IconDeviceFloppy stroke={1.5} size='1.3rem' />
                         </Avatar>
                     </ButtonBase>
-                    <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
-                        <Avatar
-                            variant='rounded'
-                            sx={{
-                                ...theme.typography.commonAvatar,
-                                ...theme.typography.mediumAvatar,
-                                transition: 'all .2s ease-in-out',
-                                background: theme.palette.canvasHeader.settingsLight,
-                                color: theme.palette.canvasHeader.settingsDark,
-                                '&:hover': {
-                                    background: theme.palette.canvasHeader.settingsDark,
-                                    color: theme.palette.canvasHeader.settingsLight
-                                }
-                            }}
-                            onClick={() => setSettingsOpen(!isSettingsOpen)}
-                        >
-                            <IconSettings stroke={1.5} size='1.3rem' />
-                        </Avatar>
-                    </ButtonBase>
+                    {!isInIframe && (
+                        <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
+                            <Avatar
+                                variant='rounded'
+                                sx={{
+                                    ...theme.typography.commonAvatar,
+                                    ...theme.typography.mediumAvatar,
+                                    transition: 'all .2s ease-in-out',
+                                    background: theme.palette.canvasHeader.settingsLight,
+                                    color: theme.palette.canvasHeader.settingsDark,
+                                    '&:hover': {
+                                        background: theme.palette.canvasHeader.settingsDark,
+                                        color: theme.palette.canvasHeader.settingsLight
+                                    }
+                                }}
+                                onClick={() => setSettingsOpen(!isSettingsOpen)}
+                            >
+                                <IconSettings stroke={1.5} size='1.3rem' />
+                            </Avatar>
+                        </ButtonBase>
+                    )}
                 </Box>
             </Stack>
             <Settings

@@ -71,6 +71,7 @@ const Canvas = () => {
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
     const isAgentCanvas = URLpath.includes('agentcanvas') ? true : false
     const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
+    const isInIframe = window.self !== window.top
 
     const { confirm } = useConfirm()
 
@@ -587,7 +588,7 @@ const Canvas = () => {
                                     </Fab>
                                 )}
                                 {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
-                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
+                                {!isInIframe && <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />}
                             </ReactFlow>
                         </div>
                     </div>
