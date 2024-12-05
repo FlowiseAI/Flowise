@@ -37,9 +37,7 @@ import Transitions from '@/ui-component/extended/Transitions'
 import { StyledFab } from '@/ui-component/button/StyledFab'
 
 // icons
-import { IconMinus, IconPlus, IconSearch, IconX } from '@tabler/icons-react'
-import LangChainPNG from '@/assets/images/langchain.png'
-import utilNodesPNG from '@/assets/images/utilNodes.png'
+import { IconApps, IconMinus, IconPlus, IconSearch, IconTool, IconX } from '@tabler/icons-react'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -225,14 +223,6 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     event.dataTransfer.effectAllowed = 'move'
   }
 
-  const getImage = (tabValue) => {
-    if (tabValue === 0) {
-      return LangChainPNG
-    } else {
-      return utilNodesPNG
-    }
-  }
-
   useEffect(() => {
     if (prevOpen.current === true && open === false) {
       anchorRef.current.focus()
@@ -343,32 +333,18 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                         onChange={handleTabChange}
                         aria-label='tabs'
                       >
-                        {['LangChain', 'Utilities'].map((item, index) => (
+                        {[
+                          { label: 'All', icon: <IconApps size={20} /> },
+                          { label: 'Utilities', icon: <IconTool size={20} /> }
+                        ].map((item, index) => (
                           <Tab
-                            icon={
-                              <div
-                                style={{
-                                  borderRadius: '50%'
-                                }}
-                              >
-                                <img
-                                  style={{
-                                    width: '20px',
-                                    height: '20px',
-                                    borderRadius: '50%',
-                                    objectFit: 'contain'
-                                  }}
-                                  src={getImage(index)}
-                                  alt={item}
-                                />
-                              </div>
-                            }
+                            icon={item.icon}
                             iconPosition='start'
                             sx={{ minHeight: '50px', height: '50px' }}
                             key={index}
-                            label={item}
+                            label={item.label}
                             {...a11yProps(index)}
-                          ></Tab>
+                          />
                         ))}
                       </Tabs>
                     )}
