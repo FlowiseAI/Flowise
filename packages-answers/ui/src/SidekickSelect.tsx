@@ -112,12 +112,12 @@ const SidekickTitle = styled(Typography)({
 })
 
 const SidekickDescription = styled(Typography)({
-    flexGrow: 1,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     display: '-webkit-box',
     WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical'
+    WebkitBoxOrient: 'vertical',
+    minHeight: '2.5em'
 })
 
 const SidekickFooter = styled(Box)(({ theme }) => ({
@@ -509,22 +509,22 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                     {sidekick.categories?.length > 0 && sidekick.categories?.map ? (
                                         <Tooltip
                                             title={sidekick.categories
-                                                .map((category: string, index: number) => category.trim().split(';').join(', '))
+                                                .map((category: string) => category.trim().split(';').join(', '))
                                                 .join(', ')}
                                         >
                                             <Chip
-                                                // icon={<CategoryIcon />}
                                                 label={sidekick.categories
-                                                    .map((category: string, index: number) => category.trim().split(';').join(' | '))
+                                                    .map((category: string) => category.trim().split(';').join(' | '))
                                                     .join(' | ')}
                                                 size='small'
                                                 variant='outlined'
                                                 sx={{ marginRight: 0.5 }}
                                             />
                                         </Tooltip>
-                                    ) : // <Chip icon={<CategoryIcon />} label='Uncategorized' size='small' variant='outlined' />
-                                    null}
-                                    {sidekick.chatflow.isOwner && <Chip label='Owner' size='small' color='primary' variant='outlined' />}
+                                    ) : null}
+                                    {sidekick.chatflow.isOwner && (
+                                        <Chip label='Owner' size='small' color='primary' variant='outlined' />
+                                    )}
                                 </Box>
                             </SidekickHeader>
                             <SidekickDescription variant='body2' color='text.secondary'>
@@ -628,12 +628,14 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     variant='outlined'
                     style={{ position: 'relative' }}
                     placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
+                    // value={debouncedSearchTerm}
                     onChange={(e) => {
-                        if (debouncedSearchTerm.length > 0 && filteredSidekicks.length > 0 && tabValue !== 'search') {
-                            setTabValue('search')
-                            setPreviousActiveTab(tabValue)
-                        }
+                        // if (debouncedSearchTerm.length > 0) setTabValue('search')
                         setDebouncedSearchTerm(e.target.value)
+                    }}
+                    onFocus={() => {
+                        setTabValue('search')
+                        setPreviousActiveTab(tabValue)
                     }}
                     InputProps={{
                         startAdornment: <SearchIcon color='action' />,
@@ -660,9 +662,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     scrollButtons='auto'
                     sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
                 >
-                    {searchTerm.length > 0 && filteredSidekicks.length > 0 && (
-                        <Tab label='Search' value='search' icon={<SearchIcon />} iconPosition='start' disabled={categoryCounts.all === 0} />
-                    )}
+                    <Tab label='Search' value='search' icon={<SearchIcon />} iconPosition='start' disabled={categoryCounts.all === 0} />
                     <Tab
                         label='Favorites'
                         icon={<FavoriteIcon />}

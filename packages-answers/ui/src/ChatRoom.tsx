@@ -2,6 +2,7 @@ import React, { Suspense } from 'react'
 import { Box, Button } from '@mui/material'
 import type { Message, Sidekick } from 'types'
 import { MessageCard } from './Message'
+import AssistantInfoCard from './AssistantInfoCard'
 
 interface ChatRoomProps {
     messages: Message[] | null | undefined
@@ -9,10 +10,10 @@ interface ChatRoomProps {
     isLoading: boolean
     regenerateAnswer: () => void
     chatbotConfig: any
-    // setSelectedDocuments: (documents: Document[]) => void
     setSelectedDocuments: any
     sidekicks: Sidekick[]
     scrollRef: React.RefObject<HTMLDivElement>
+    selectedSidekick?: Sidekick
 }
 
 export const ChatRoom: React.FC<ChatRoomProps> = ({
@@ -23,11 +24,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     chatbotConfig,
     setSelectedDocuments,
     sidekicks,
-    scrollRef
+    scrollRef,
+    selectedSidekick
 }) => {
     return (
-        <Box ref={scrollRef} sx={{ height: '100%', overflow: 'auto', px: 2, py: 3 }}>
+        <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: 3,
+            p: 2,
+        }}>
             <Suspense fallback={<div>Loading...</div>}>
+                <Box sx={{ bgcolor: 'background.paper' }}>
+                    <AssistantInfoCard sidekick={selectedSidekick} followers={208000} onShare={() => {}} onSearch={() => {}} />
+                </Box>
+
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {messages?.map((message, index) => (
                         <MessageCard {...message} key={`message_${index}`} setSelectedDocuments={setSelectedDocuments} />

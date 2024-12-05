@@ -11,9 +11,6 @@ import { JsonViewer } from '@textea/json-viewer'
 import Avatar from '@mui/material/Avatar'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardActions from '@mui/material/CardActions'
-import CardContent from '@mui/material/CardContent'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
@@ -24,6 +21,7 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp'
 import ThumbDownIcon from '@mui/icons-material/ThumbDown'
 import ContentCopy from '@mui/icons-material/ContentCopy'
 import LinkIcon from '@mui/icons-material/Link'
+import AttachFileIcon from '@mui/icons-material/AttachFile'
 
 import { countTokens } from '@utils/utilities/countTokens'
 
@@ -57,6 +55,12 @@ interface MessageCardProps extends Partial<Message>, MessageExtra {
     error?: AxiosError<MessageExtra>
 
     role: string
+}
+
+const getLanguageFromClassName = (className: string | undefined) => {
+    if (!className) return 'text'
+    const match = className.match(/language-(\w+)/)
+    return match ? match[1] : 'text'
 }
 
 export const MessageCard = ({
@@ -188,355 +192,366 @@ export const MessageCard = ({
     }, [fileUploads])
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {showFeedback && id ? <FeedbackModal messageId={id} rating={lastInteraction!} onClose={() => setShowFeedback(false)} /> : null}
-
-            <Card
-                data-cy='message'
-                data-role={role}
-                sx={{
-                    borderRadius: 0,
-                    position: 'relative',
-                    ...(isLoading && {
-                        mb: 10
-                    })
+        <Box
+            data-cy='message'
+            data-role={role}
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignSelf: isUserMessage ? 'flex-end' : 'flex-start',
+                maxWidth: isUserMessage ? '70%': '100%',
+                width: '100%',
+                position: 'relative',
+                mb: 3,
+                minWidth: 0,
+            }}
+        >
+            <Box 
+                sx={{ 
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isUserMessage ? 'flex-end' : 'flex-start',
+                    width: '100%',
+                    gap: 1,
+                    minWidth: 0,
                 }}
             >
-                <Box
-                    sx={{
-                        position: 'relative',
-                        display: 'flex',
-                        gap: 1,
-                        // px: isWidget ? 1 : 1,
-                        // py: isWidget ? 1 : 1,
-                        width: '100%',
-                        flexDirection: isWidget ? 'column' : 'row'
-                    }}
-                >
-                    <CardContent
+                {!isUserMessage && (
+                    <Avatar
+                        src='/static/images/logos/answerai-logo.png'
                         sx={{
-                            position: 'relative',
-                            gap: 2,
-                            width: '100%',
+                            bgcolor: 'primary.main',
+                            height: '24px',
+                            width: '24px',
+                            padding: 0.5,
+                            background: 'white'
+                        }}
+                        title='AI'
+                    />
+                )}
+
+                {/* Files and Audio section */}
+                {parsedFileUploads?.length > 0 && (
+                    <Box
+                        sx={{
                             display: 'flex',
-                            flexDirection: 'column'
-                            // p: 0
+                            flexDirection: 'column',
+                            gap: 1,
+                            width: '100%'
                         }}
                     >
-                        <Box sx={{ gap: 2, display: 'flex' }}>
-                            <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-                                <Avatar
-                                    src={
-                                        isUserMessage
-                                            ? currentUser?.picture ?? currentUser?.image!
-                                            : '/static/images/logos/answerai-logo.png'
-                                    }
-                                    sx={{
-                                        bgcolor: isUserMessage ? 'secondary.main' : 'primary.main',
-                                        height: isWidget ? '24px' : '32px',
-                                        width: isWidget ? '24px' : '32px',
-                                        ...(!isUserMessage && {
-                                            padding: 1,
-                                            background: 'white'
-                                        })
-                                    }}
-                                    title={!isUserMessage ? 'AI' : user?.name?.charAt(0)}
-                                />
-                                {isLoading && (
-                                    <CircularProgress
-                                        size={isWidget ? 26 : 36}
+                        {parsedFileUploads.map((file: FileUpload, index: number) => (
+                            <Box
+                                key={index}
+                                sx={{
+                                    position: 'relative',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    maxWidth: '100%',
+                                    borderRadius: 1,
+                                    overflow: 'hidden',
+                                    ...(file.mime?.startsWith('audio/') ? {} : {
+                                        bgcolor: 'background.paper',
+                                        boxShadow: 1
+                                    })
+                                }}
+                            >
+                                {file.mime?.startsWith('image/') ? (
+                                    <Box
                                         sx={{
-                                            color: 'primary.main',
-                                            position: 'absolute',
-                                            top: -2,
-                                            left: -2,
-                                            zIndex: 1
+                                            position: 'relative',
+                                            width: '100%',
+                                            height: '200px',
+                                            borderRadius: 1,
+                                            overflow: 'hidden'
                                         }}
-                                    />
+                                    >
+                                        <Image
+                                            src={file.preview || file.data}
+                                            alt={file.name || 'Uploaded image'}
+                                            layout="fill"
+                                            objectFit="contain"
+                                        />
+                                    </Box>
+                                ) : file.mime?.startsWith('audio/') ? (
+                                    <Box sx={{ width: '100%' }}>
+                                        <audio 
+                                            controls 
+                                            src={file.data} 
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Box>
+                                ) : (
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                            p: 1,
+                                            width: '100%'
+                                        }}
+                                    >
+                                        <AttachFileIcon />
+                                        <Typography variant="body2" noWrap>
+                                            {file.name}
+                                        </Typography>
+                                    </Box>
                                 )}
                             </Box>
-                            {hasContent && content ? (
-                                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                    {parsedFileUploads.length > 0 && (
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                            {parsedFileUploads.map((file, index) => (
-                                                <React.Fragment key={index}>
-                                                    {file.mime?.startsWith('image/') ? (
-                                                        <Card
-                                                            sx={{
-                                                                p: 0,
-                                                                m: 0,
-                                                                maxWidth: 128,
-                                                                marginRight: '10px',
-                                                                flex: '0 0 auto'
-                                                            }}
-                                                        >
-                                                            <CardMedia
-                                                                component='img'
-                                                                image={file.data}
-                                                                sx={{ height: 64 }}
-                                                                alt={'preview'}
-                                                                style={{ objectFit: 'cover' }}
-                                                            />
-                                                        </Card>
-                                                    ) : file.mime?.startsWith('audio/') ? (
-                                                        <audio controls='controls'>
-                                                            Your browser does not support the <code>audio</code> tag.
-                                                            <source src={file.data} type={file.mime} />
-                                                        </audio>
-                                                    ) : file.type === 'url' ? (
-                                                        <Button
-                                                            variant='outlined'
-                                                            href={file.data}
-                                                            target='_blank'
-                                                            rel='noopener noreferrer'
-                                                            startIcon={<LinkIcon />}
-                                                        >
-                                                            {file.name}
-                                                        </Button>
-                                                    ) : null}
-                                                </React.Fragment>
-                                            ))}
-                                        </Box>
-                                    )}
-                                    <Typography
-                                        variant='body1'
-                                        color='text.secondary'
-                                        component='div'
-                                        sx={{
-                                            overflow: 'hidden',
-                                            img: {
-                                                maxWidth: '100%',
-                                                margin: 'auto',
-                                                mt: 2
-                                            },
-                                            'p,pre,h1,h2,h3,h4,h5,h6,ul,ol': {
-                                                ':not(:first-of-type)': {
-                                                    mt: 2
-                                                }
-                                            },
-                                            'ul,ol': {
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: 1
-                                            }
-                                        }}
-                                    >
-                                        <ReactMarkdown
-                                            components={{
-                                                p: (paragraph: any) => {
-                                                    const { node } = paragraph
+                        ))}
+                    </Box>
+                )}
 
-                                                    if (node.children[0].tagName === 'img') {
-                                                        const image = node.children[0]
-                                                        const metastring = image.properties.alt
-                                                        const alt = metastring?.replace(/ *\{[^)]*\} */g, '')
-                                                        const metaWidth = metastring.match(/{([^}]+)x/)
-                                                        const metaHeight = metastring.match(/x([^}]+)}/)
-                                                        const width = metaWidth ? metaWidth[1] : undefined
-                                                        const height = metaHeight ? metaHeight[1] : undefined
-                                                        const isPriority = metastring?.toLowerCase().match('{priority}')
-                                                        const hasCaption = metastring?.toLowerCase().includes('{caption:')
-                                                        const caption = metastring?.match(/{caption: (.*?)}/)?.pop()
-
-                                                        return (
-                                                            <Box
-                                                                component='a'
-                                                                href={image.properties.src}
-                                                                target='_blank'
-                                                                sx={{
-                                                                    display: 'block',
-                                                                    height: '40vh',
-                                                                    width: '100%',
-                                                                    img: { objectFit: 'contain' }
-                                                                }}
-                                                            >
-                                                                <Image
-                                                                    src={image.properties.src}
-                                                                    // width={width}
-                                                                    // height={height}
-                                                                    layout='fill'
-                                                                    className='postImg'
-                                                                    alt={alt}
-                                                                    priority={isPriority}
-                                                                />
-                                                                {hasCaption ? (
-                                                                    <div className='caption' aria-label={caption}>
-                                                                        {caption}
-                                                                    </div>
-                                                                ) : null}
-                                                            </Box>
-                                                        )
-                                                    }
-                                                    return <p>{paragraph.children}</p>
-                                                },
-
-                                                code({ node, inline, className, children, ...props }) {
-                                                    const codeExample = String(children).replace(/\n$/, '')
-                                                    return !inline ? (
-                                                        <Box sx={{ position: 'relative' }}>
-                                                            <SyntaxHighlighter style={duotoneDark as any} PreTag='div' {...props}>
-                                                                {codeExample}
-                                                            </SyntaxHighlighter>
-                                                            <IconButton
-                                                                sx={{ position: 'absolute', bottom: 16, right: 16 }}
-                                                                onClick={() => handleCopyCodeClick(codeExample)}
-                                                            >
-                                                                <ContentCopy />
-                                                            </IconButton>
-                                                        </Box>
-                                                    ) : (
-                                                        <code className={className} {...props}>
-                                                            {children}
-                                                        </code>
-                                                    )
-                                                }
-                                            }}
-                                        >
-                                            {content}
-                                        </ReactMarkdown>
-                                    </Typography>
-                                </Box>
-                            ) : null}
-                        </Box>
-
-                        {Object.keys(contextDocumentsBySource)?.length ? (
-                            <>
-                                <Divider />
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        flexWrap: 'wrap',
-                                        gap: 1
-                                    }}
-                                >
-                                    <Typography variant='body2'>References:</Typography>
-                                    {Object.entries(contextDocumentsBySource)?.map(([source, documents]) => {
-                                        const doc = documents?.[0]
-                                        return (
-                                            <Tooltip
-                                                key={`references-${doc.metadata.url ?? doc.metadata.source}`}
-                                                title={'Click to view details'}
-                                            >
-                                                <Button
-                                                    onClick={() => setSelectedDocuments(documents)}
-                                                    size='small'
-                                                    // disabled={!doc.metadata.url}
-                                                    variant='outlined'
-                                                    color='inherit'
-                                                    sx={{
-                                                        textTransform: 'none',
-                                                        borderRadius: 20,
-                                                        color: 'text.secondary',
-                                                        borderColor: 'text.secondary',
-                                                        '&:hover': { textDecoration: 'none' }
-                                                    }}
-                                                    startIcon={
-                                                        services[doc.source ?? doc.metadata?.source]?.imageURL ? (
-                                                            <Avatar
-                                                                variant='source'
-                                                                src={services[doc.source ?? doc.metadata?.source]?.imageURL}
-                                                                sx={{ width: 20, height: 20 }}
-                                                            />
-                                                        ) : (
-                                                            <Avatar
-                                                                variant='source'
-                                                                src={services['document']?.imageURL}
-                                                                sx={{ width: 20, height: 20 }}
-                                                            />
-                                                        )
-                                                    }
-                                                >
-                                                    {getDocumentLabel(doc)}
-                                                </Button>
-                                            </Tooltip>
-                                        )
-                                    })}
-                                </Box>
-                            </>
-                        ) : null}
-                    </CardContent>
-
-                    {!isUserMessage ? (
-                        <CardActions
+                {/* Message content bubble */}
+                {hasContent && content ? (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 1,
+                            bgcolor: isUserMessage ? 'primary.main' : 'transparent',
+                            borderRadius: isUserMessage ? 2 : 0,
+                            px: isUserMessage ? 2 : 0,
+                            py: isUserMessage ? 1 : 0,
+                            width: '100%',
+                            maxWidth: '100%',
+                            minWidth: 0,
+                            overflowX: 'hidden',
+                            '& > *': {
+                                maxWidth: '100%'
+                            }
+                        }}
+                    >
+                        <Typography
+                            variant='body1'
+                            color={isUserMessage ? 'white' : '#E0E0E0'}
+                            component='div'
                             sx={{
-                                zIndex: 1000,
-                                position: 'absolute',
-                                bottom: isWidget ? 'auto' : 0,
-                                top: isWidget ? 0 : '100%',
-                                right: 8
+                                overflow: 'hidden',
+                                fontSize: '0.875rem',
+                                lineHeight: 1.5,
+                                width: '100%',
+                                '& > *': {
+                                    maxWidth: '100%'
+                                },
+                                img: {
+                                    maxWidth: '100%',
+                                    margin: 'auto',
+                                    mt: 2
+                                },
+                                'p,pre,h1,h2,h3,h4,h5,h6,ul,ol': {
+                                    ':not(:first-of-type)': {
+                                        mt: 2
+                                    }
+                                },
+                                'ul,ol': {
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 1
+                                }
                             }}
                         >
-                            {lastInteraction ? (
-                                <IconButton disabled size='small'>
-                                    {lastInteraction == 'thumbsUp' ? (
-                                        <ThumbUpIcon sx={{ fontSize: 16 }} />
-                                    ) : (
-                                        <ThumbDownIcon sx={{ fontSize: 16 }} />
-                                    )}
-                                </IconButton>
-                            ) : (
-                                <>
-                                    <IconButton
-                                        color={lastInteraction === 'like' ? 'secondary' : 'default'}
-                                        size='small'
-                                        data-cy='like-button'
-                                        onClick={handleLike}
-                                    >
-                                        <ThumbUpIcon sx={{ fontSize: 16 }} />
-                                    </IconButton>
-                                    <IconButton
-                                        size='small'
-                                        color={lastInteraction === 'dislike' ? 'secondary' : 'default'}
-                                        onClick={handleDislike}
-                                    >
-                                        <ThumbDownIcon sx={{ fontSize: 16 }} />
-                                    </IconButton>
-                                </>
-                            )}
-                        </CardActions>
-                    ) : null}
-                </Box>
+                            <ReactMarkdown
+                                components={{
+                                    p: (paragraph: any) => {
+                                        const { node } = paragraph
 
-                {/* {context ? (
-          // Use the @mui accordion component to wrap the context and response
-          <Accordion TransitionProps={{ unmountOnExit: true }}>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header">
-              <Typography variant="overline">Context ({countTokens(context)} Tokens)</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography
-                sx={{ whiteSpace: 'pre-line' }}
-                variant="body1"
-                color="text.secondary"
-                component="div">
-                {context}
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
-        ) : null} */}
-                {developer_mode?.enabled ? (
-                    <Box>
-                        {contextDocuments?.length ? (
-                            <Accordion TransitionProps={{ unmountOnExit: true }}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                                    <Typography variant='overline'>
-                                        Context ({countTokens(contextDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
-                                    </Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <Typography sx={{ whiteSpace: 'pre-line' }} variant='body1' color='text.secondary' component='div'>
-                                        {contextDocuments?.map((d) => d.pageContent)?.join('/n')}
-                                    </Typography>
-                                </AccordionDetails>
-                            </Accordion>
-                        ) : null}
-                        {/* {error ? (
+                                        if (node.children[0].tagName === 'img') {
+                                            const image = node.children[0]
+                                            const metastring = image.properties.alt
+                                            const alt = metastring?.replace(/ *\{[^)]*\} */g, '')
+                                            const metaWidth = metastring.match(/{([^}]+)x/)
+                                            const metaHeight = metastring.match(/x([^}]+)}/)
+                                            const width = metaWidth ? metaWidth[1] : undefined
+                                            const height = metaHeight ? metaHeight[1] : undefined
+                                            const isPriority = metastring?.toLowerCase().match('{priority}')
+                                            const hasCaption = metastring?.toLowerCase().includes('{caption:')
+                                            const caption = metastring?.match(/{caption: (.*?)}/)?.pop()
+
+                                            return (
+                                                <Box
+                                                    component='a'
+                                                    href={image.properties.src}
+                                                    target='_blank'
+                                                    sx={{
+                                                        display: 'block',
+                                                        height: '40vh',
+                                                        width: '100%',
+                                                        img: { objectFit: 'contain' }
+                                                    }}
+                                                >
+                                                    <Image
+                                                        src={image.properties.src}
+                                                        // width={width}
+                                                        // height={height}
+                                                        layout='fill'
+                                                        className='postImg'
+                                                        alt={alt}
+                                                        priority={isPriority}
+                                                    />
+                                                    {hasCaption ? (
+                                                        <div className='caption' aria-label={caption}>
+                                                            {caption}
+                                                        </div>
+                                                    ) : null}
+                                                </Box>
+                                            )
+                                        }
+                                        return <p>{paragraph.children}</p>
+                                    },
+
+                                    code({ node, inline, className, children, ...props }) {
+                                        const codeExample = String(children).replace(/\n$/, '')
+                                        
+                                        if (!inline) {
+                                            const language = getLanguageFromClassName(className)
+                                            return (
+                                                <Box 
+                                                    sx={{ 
+                                                        position: 'relative',
+                                                        borderRadius: 1,
+                                                        overflow: 'hidden',
+                                                        width: '100%',
+                                                        '& pre': {
+                                                            m: 0,
+                                                            borderRadius: 0,
+                                                            backgroundColor: '#1E1E1E !important',
+                                                            overflowX: 'auto',
+                                                            width: '100%',
+                                                            '& > div': {
+                                                                minWidth: 'fit-content'
+                                                            }
+                                                        }
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            px: 2,
+                                                            py: 1,
+                                                            backgroundColor: '#2D2D2D',
+                                                            borderBottom: '1px solid rgba(255,255,255,0.1)'
+                                                        }}
+                                                    >
+                                                        <Typography 
+                                                            variant="caption" 
+                                                            sx={{ 
+                                                                color: 'rgba(255,255,255,0.7)',
+                                                                textTransform: 'lowercase',
+                                                                fontFamily: 'monospace'
+                                                            }}
+                                                        >
+                                                            {language}
+                                                        </Typography>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => handleCopyCodeClick(codeExample)}
+                                                            sx={{
+                                                                color: 'rgba(255,255,255,0.7)',
+                                                                '&:hover': {
+                                                                    color: 'white',
+                                                                    backgroundColor: 'rgba(255,255,255,0.1)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            <ContentCopy fontSize="small" />
+                                                        </IconButton>
+                                                    </Box>
+                                                    <SyntaxHighlighter 
+                                                        language={language}
+                                                        style={duotoneDark as any} 
+                                                        customStyle={{
+                                                            margin: 0,
+                                                            padding: '16px',
+                                                            backgroundColor: '#1E1E1E'
+                                                        }}
+                                                        PreTag='div'
+                                                        {...props}
+                                                    >
+                                                        {codeExample}
+                                                    </SyntaxHighlighter>
+                                                </Box>
+                                            )
+                                        }
+
+                                        return (
+                                            <code className={className} {...props}>
+                                                {children}
+                                            </code>
+                                        )
+                                    }
+                                }}
+                            >
+                                {content}
+                            </ReactMarkdown>
+                        </Typography>
+                    </Box>
+                ) : null}
+            </Box>
+
+            {/* 
+            // TODO: Add feedback buttons
+            {!isUserMessage ? (
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        display: 'flex',
+                        gap: 0.5
+                    }}
+                >
+                    {lastInteraction ? (
+                        <IconButton disabled size='small' sx={{ p: 0.5 }}>
+                            {lastInteraction == 'thumbsUp' ? (
+                                <ThumbUpIcon sx={{ fontSize: 14 }} />
+                            ) : (
+                                <ThumbDownIcon sx={{ fontSize: 14 }} />
+                            )}
+                        </IconButton>
+                    ) : (
+                        <>
+                            <IconButton
+                                color={lastInteraction === 'like' ? 'secondary' : 'default'}
+                                size='small'
+                                data-cy='like-button'
+                                onClick={handleLike}
+                                sx={{ p: 0.5 }}
+                            >
+                                <ThumbUpIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                            <IconButton
+                                size='small'
+                                color={lastInteraction === 'dislike' ? 'secondary' : 'default'}
+                                onClick={handleDislike}
+                                sx={{ p: 0.5 }}
+                            >
+                                <ThumbDownIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                        </>
+                    )}
+                </Box>
+            ) : null} */}
+
+            {developer_mode?.enabled ? (
+                <Box>
+                    {contextDocuments?.length ? (
+                        <Accordion TransitionProps={{ unmountOnExit: true }}>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                                <Typography variant='overline'>
+                                    Context ({countTokens(contextDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
+                                </Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography sx={{ whiteSpace: 'pre-line' }} variant='body1' color='text.secondary' component='div'>
+                                    {contextDocuments?.map((d) => d.pageContent)?.join('/n')}
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                    ) : null}
+                    {/* {error ? (
               <>
                 <Accordion TransitionProps={{ unmountOnExit: true }}>
                   <AccordionSummary
@@ -557,93 +572,92 @@ export const MessageCard = ({
               </>
             ) : null} */}
 
-                        {summary ? (
-                            <Accordion TransitionProps={{ unmountOnExit: true }}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                                    <Typography variant='overline'>Summary ({summary?.length})</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <Typography sx={{ whiteSpace: 'pre-line' }} variant='body1' color='text.secondary' component='div'>
-                                        {summary}
-                                    </Typography>
-                                </AccordionDetails>
-                            </Accordion>
-                        ) : null}
+                    {summary ? (
+                        <Accordion TransitionProps={{ unmountOnExit: true }}>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                                <Typography variant='overline'>Summary ({summary?.length})</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography sx={{ whiteSpace: 'pre-line' }} variant='body1' color='text.secondary' component='div'>
+                                    {summary}
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+                    ) : null}
 
-                        {pineconeData ? (
-                            <Accordion TransitionProps={{ unmountOnExit: true }}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                                    <Typography variant='overline'>Pinecone Data</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <JsonViewer
-                                        rootName='pineconeData'
-                                        value={{
-                                            filters,
-                                            pineconeData
-                                        }}
-                                        theme={'dark'}
-                                        // defaultInspectDepth={0}
-                                        collapseStringsAfterLength={100}
-                                    />
-                                </AccordionDetails>
-                            </Accordion>
-                        ) : null}
+                    {pineconeData ? (
+                        <Accordion TransitionProps={{ unmountOnExit: true }}>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                                <Typography variant='overline'>Pinecone Data</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <JsonViewer
+                                    rootName='pineconeData'
+                                    value={{
+                                        filters,
+                                        pineconeData
+                                    }}
+                                    theme={'dark'}
+                                    // defaultInspectDepth={0}
+                                    collapseStringsAfterLength={100}
+                                />
+                            </AccordionDetails>
+                        </Accordion>
+                    ) : null}
 
-                        {completionRequest ? (
-                            <Accordion TransitionProps={{ unmountOnExit: true }}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                                    <Typography variant='overline'>Completion request</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <JsonViewer
-                                        rootName='completionRequest'
-                                        value={completionRequest}
-                                        theme={'dark'}
-                                        // defaultInspectDepth={0}
-                                        collapseStringsAfterLength={100}
-                                    />
-                                </AccordionDetails>
-                            </Accordion>
-                        ) : null}
+                    {completionRequest ? (
+                        <Accordion TransitionProps={{ unmountOnExit: true }}>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                                <Typography variant='overline'>Completion request</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <JsonViewer
+                                    rootName='completionRequest'
+                                    value={completionRequest}
+                                    theme={'dark'}
+                                    // defaultInspectDepth={0}
+                                    collapseStringsAfterLength={100}
+                                />
+                            </AccordionDetails>
+                        </Accordion>
+                    ) : null}
 
-                        {completionData ? (
-                            <Accordion TransitionProps={{ unmountOnExit: true }}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                                    <Typography variant='overline'>Completion</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <JsonViewer
-                                        rootName=''
-                                        value={completionData}
-                                        theme={'dark'}
-                                        // defaultInspectDepth={0}
-                                        collapseStringsAfterLength={100}
-                                    />
-                                </AccordionDetails>
-                            </Accordion>
-                        ) : null}
+                    {completionData ? (
+                        <Accordion TransitionProps={{ unmountOnExit: true }}>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                                <Typography variant='overline'>Completion</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <JsonViewer
+                                    rootName=''
+                                    value={completionData}
+                                    theme={'dark'}
+                                    // defaultInspectDepth={0}
+                                    collapseStringsAfterLength={100}
+                                />
+                            </AccordionDetails>
+                        </Accordion>
+                    ) : null}
 
-                        {Object.keys(other)?.length ? (
-                            // Use the @mui accordion component to wrap the extra and response
-                            <Accordion TransitionProps={{ unmountOnExit: true }}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
-                                    <Typography variant='overline'>Extra</Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <JsonViewer
-                                        rootName=''
-                                        value={other}
-                                        theme={'dark'}
-                                        // defaultInspectDepth={0}
-                                        collapseStringsAfterLength={100}
-                                    />
-                                </AccordionDetails>
-                            </Accordion>
-                        ) : null}
-                    </Box>
-                ) : null}
-            </Card>
+                    {Object.keys(other)?.length ? (
+                        // Use the @mui accordion component to wrap the extra and response
+                        <Accordion TransitionProps={{ unmountOnExit: true }}>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                                <Typography variant='overline'>Extra</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <JsonViewer
+                                    rootName=''
+                                    value={other}
+                                    theme={'dark'}
+                                    // defaultInspectDepth={0}
+                                    collapseStringsAfterLength={100}
+                                />
+                            </AccordionDetails>
+                        </Accordion>
+                    ) : null}
+                </Box>
+            ) : null}
         </Box>
     )
 }

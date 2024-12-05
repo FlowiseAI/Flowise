@@ -337,41 +337,45 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
     const handleStopAndSend = () => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
             setIsLoadingRecording(true)
-            mediaRecorderRef.current.addEventListener('dataavailable', async (event) => {
-                const audioBlob = event.data
-                const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/webm' })
-                setRecordedAudio(audioFile)
-                const reader = new FileReader()
-                reader.readAsDataURL(audioFile)
-                reader.onload = (evt) => {
-                    if (!evt?.target?.result) return
-                    const files = uploadedFiles.map((file: FileUpload) => ({
-                        data: file.data,
-                        type: file.type,
-                        name: file.name,
-                        mime: file.mime
-                    }))
-                    files.push({
-                        data: evt.target.result as string,
-                        type: 'file',
-                        name: `audio_${Date.now()}.wav`,
-                        mime: audioFile.type
-                    })
-                    sendMessage({
-                        content: inputValue,
-                        chatId: chat?.id,
-                        files,
-                        sidekick,
-                        gptModel
-                    })
-                    setInputValue('')
-                    setUploadedFiles([])
-                    setRecordedAudio(null)
-                    setRecordingStatus('')
-                    setIsLoadingRecording(false)
-                    setRecordingTime(0)
-                }
-            }, { once: true })
+            mediaRecorderRef.current.addEventListener(
+                'dataavailable',
+                async (event) => {
+                    const audioBlob = event.data
+                    const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/webm' })
+                    setRecordedAudio(audioFile)
+                    const reader = new FileReader()
+                    reader.readAsDataURL(audioFile)
+                    reader.onload = (evt) => {
+                        if (!evt?.target?.result) return
+                        const files = uploadedFiles.map((file: FileUpload) => ({
+                            data: file.data,
+                            type: file.type,
+                            name: file.name,
+                            mime: file.mime
+                        }))
+                        files.push({
+                            data: evt.target.result as string,
+                            type: 'file',
+                            name: `audio_${Date.now()}.wav`,
+                            mime: audioFile.type
+                        })
+                        sendMessage({
+                            content: inputValue,
+                            chatId: chat?.id,
+                            files,
+                            sidekick,
+                            gptModel
+                        })
+                        setInputValue('')
+                        setUploadedFiles([])
+                        setRecordedAudio(null)
+                        setRecordingStatus('')
+                        setIsLoadingRecording(false)
+                        setRecordingTime(0)
+                    }
+                },
+                { once: true }
+            )
             mediaRecorderRef.current.stop()
         } else if (recordedAudio) {
             handleSubmit()
@@ -393,7 +397,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         <Box
             display='flex'
             position='relative'
-            sx={{ gap: 1, flexDirection: 'column', pb: 2, px: 2 }}
+            sx={{ gap: 1, flexDirection: 'column', pb: 2 }}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -425,7 +429,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                     flexDirection: 'row',
                     gap: 1,
                     overflowX: 'auto',
-                    padding: 1,
+                    padding: 0,
                     maxHeight: '80px',
                     alignItems: 'center'
                 }}
@@ -437,7 +441,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                             position: 'relative',
                             display: 'flex',
                             alignItems: 'center',
-                            padding: '8px',
+                            padding: 0,
                             borderRadius: 2,
                             maxWidth: '80px'
                         }}
@@ -463,8 +467,9 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                                 style={{
                                     width: '60px',
                                     height: '60px',
-                                    objectFit: 'cover',
-                                    borderRadius: 8
+                                    objectFit: 'contain',
+                                    borderRadius: 8,
+                                    backgroundColor: '#fff'
                                 }}
                             />
                         ) : (
@@ -513,38 +518,29 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                             : `Recording: ${formatTime(recordingTime)}${isLoadingRecording ? ' • Sending...' : ''}`
                     }
                     InputProps={{
+                        sx: {
+                            gap: 1,
+                            display: 'flex',
+                            paddingBottom: 1
+                        },
                         startAdornment: (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1 }}>
                                 <IconCircleDot sx={{ color: 'red', animation: 'pulse 1.5s infinite' }} />
                             </Box>
                         ),
                         endAdornment: (
-                            <Box sx={{ display: 'flex', gap: 1 }}>
+                            <>
                                 <Tooltip title='Cancel Recording'>
                                     <Button onClick={handleStopAndCancel}>
                                         <CloseIcon />
                                     </Button>
                                 </Tooltip>
-                                {!isWidget && messages?.length ? (
-                                    <Tooltip title='Start new chat'>
-                                        <Button 
-                                            variant='outlined' 
-                                            color='primary' 
-                                            onClick={startNewChat}
-                                            data-test-id='new-chat-button'
-                                        >
-                                            Start New Chat
-                                        </Button>
-                                    </Tooltip>
-                                ) : null}
-                                <Button 
-                                    variant='contained' 
-                                    color='primary' 
-                                    onClick={handleStopAndSend}
-                                >
+                                
+                                
+                                <Button variant='contained' color='primary' onClick={handleStopAndSend}>
                                     Send
                                 </Button>
-                            </Box>
+                            </>
                         )
                     }}
                 />
@@ -560,28 +556,27 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                     onChange={handleInputChange}
                     onKeyDown={handleKeyPress}
                     InputProps={{
+                        sx: {
+                            gap: 1,
+                            display: 'flex',
+                            paddingBottom: 2
+                        },
                         startAdornment: (
                             <Tooltip title='Attach File'>
-                                <Button component='label' sx={{ minWidth: 0 }}>
+                                <IconButton component='label' sx={{ minWidth: 0 }}>
                                     <AttachFileIcon />
                                     <input type='file' hidden multiple onChange={handleFileUpload} />
-                                </Button>
+                                </IconButton>
                             </Tooltip>
                         ),
                         endAdornment: (
                             <Box sx={{ display: 'flex', gap: 1 }}>
                                 <Tooltip title={isRecording ? 'Stop Recording' : 'Record Audio'}>
-                                    <Button onClick={handleAudioRecordStart}>
+                                    <IconButton onClick={handleAudioRecordStart}>
                                         <MicIcon />
-                                    </Button>
+                                    </IconButton>
                                 </Tooltip>
-                                {!isWidget && messages?.length ? (
-                                    <Tooltip title='Start new chat'>
-                                        <Button variant='outlined' color='primary' onClick={startNewChat} data-test-id='new-chat-button'>
-                                            Start New Chat
-                                        </Button>
-                                    </Tooltip>
-                                ) : null}
+                                
                                 <Button variant='contained' color='primary' onClick={handleSubmit}>
                                     Send
                                 </Button>

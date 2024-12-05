@@ -19,7 +19,7 @@ import Drawer from './Drawer'
 import { ChatRoom } from './ChatRoom'
 import { FileUpload } from './AnswersContext'
 import AppBar from '@mui/material/AppBar'
-import { IconButton } from '@mui/material'
+import { Button, Ic, Tooltip, TooltiponButton } from '@mui/material'
 
 const DISPLAY_MODES = {
     CHATBOT: 'chatbot',
@@ -45,7 +45,8 @@ export const ChatDetail = ({
         regenerateAnswer,
         showFilters,
         chatbotConfig,
-        sidekick: selectedSidekick
+        sidekick: selectedSidekick,
+        startNewChat
     } = useAnswers()
 
     const scrollRef = useRef<HTMLDivElement>(null)
@@ -77,7 +78,8 @@ export const ChatDetail = ({
                             width: '100%',
                             height: '100%',
                             flex: 1,
-                            justifyContent: 'space-between'
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start'
                         }}
                     >
                         {selectedSidekick || chat ? (
@@ -110,6 +112,17 @@ export const ChatDetail = ({
                                     </Box>
 
                                     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                        <Tooltip title='Start new chat'>
+                                            <Button
+                                                variant='outlined'
+                                                color='primary'
+                                                onClick={startNewChat}
+                                                data-test-id='new-chat-button'
+                                            >
+                                                Start New Chat
+                                            </Button>
+                                        </Tooltip>
+
                                         {chat ? (
                                             <IconButton
                                                 size='large'
@@ -144,26 +157,67 @@ export const ChatDetail = ({
                                 <SidekickSelect noDialog sidekicks={sidekicks} />
                             </Box>
                         ) : displayMode === DISPLAY_MODES.CHATBOT ? (
-                            <>
-                                <ChatRoom
-                                    messages={messages}
-                                    error={error}
-                                    isLoading={isLoading}
-                                    regenerateAnswer={regenerateAnswer}
-                                    chatbotConfig={chatbotConfig}
-                                    setSelectedDocuments={() => {}}
-                                    sidekicks={sidekicks}
-                                    scrollRef={scrollRef}
-                                />
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                        height: '100%',
+                                        overflow: 'auto',
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}
+                                    ref={scrollRef}
+                                >
+                                    <Box
+                                        sx={{
+                                            width: '100%',
+                                            maxWidth: 768,
+                                            margin: '0 auto',
+                                            flex: 1,
+                                            display: 'flex', 
+                                            flexDirection: 'column',
+                                            px: { xs: 2, sm: 3 },
+                                        }}
+                                    >
+                                        <ChatRoom
+                                            messages={messages}
+                                            error={error}
+                                            isLoading={isLoading}
+                                            regenerateAnswer={regenerateAnswer}
+                                            chatbotConfig={chatbotConfig}
+                                            setSelectedDocuments={() => {}}
+                                            sidekicks={sidekicks}
+                                            scrollRef={scrollRef}
+                                            selectedSidekick={selectedSidekick}
+                                        />
+                                    </Box>
+                                </Box>
 
-                                <ChatInput
-                                    sidekicks={sidekicks}
-                                    scrollRef={scrollRef}
-                                    uploadedFiles={uploadedFiles}
-                                    setUploadedFiles={setUploadedFiles}
-                                    isWidget={false}
-                                />
-                            </>
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                        maxWidth: 768,
+                                        margin: '0 auto',
+                                        px: { xs: 2, sm: 3 },
+                                    }}
+                                >
+                                    <ChatInput
+                                        sidekicks={sidekicks}
+                                        scrollRef={scrollRef}
+                                        uploadedFiles={uploadedFiles}
+                                        setUploadedFiles={setUploadedFiles}
+                                        isWidget={false}
+                                    />
+                                </Box>
+                            </Box>
                         ) : (
                             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                                 Supposed to be the form
