@@ -158,25 +158,25 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     }
 
     async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
-        await this.withRedisClient(async (client) => {
-            const id = overrideSessionId ? overrideSessionId : this.sessionId
-            const input = msgArray.find((msg) => msg.type === 'userMessage')
-            const output = msgArray.find((msg) => msg.type === 'apiMessage')
+        // await this.withRedisClient(async (client) => {
+        //     const id = overrideSessionId ? overrideSessionId : this.sessionId
+        //     const input = msgArray.find((msg) => msg.type === 'userMessage')
+        //     const output = msgArray.find((msg) => msg.type === 'apiMessage')
 
-            if (input) {
-                const newInputMessage = new HumanMessage(input.text)
-                const messageToAdd = [newInputMessage].map((msg) => msg.toDict())
-                await client.lpush(id, JSON.stringify(messageToAdd[0]))
-                if (this.sessionTTL) await client.expire(id, this.sessionTTL)
-            }
+        //     if (input) {
+        //         const newInputMessage = new HumanMessage(input.text)
+        //         const messageToAdd = [newInputMessage].map((msg) => msg.toDict())
+        //         await client.lpush(id, JSON.stringify(messageToAdd[0]))
+        //         if (this.sessionTTL) await client.expire(id, this.sessionTTL)
+        //     }
 
-            if (output) {
-                const newOutputMessage = new AIMessage(output.text)
-                const messageToAdd = [newOutputMessage].map((msg) => msg.toDict())
-                await client.lpush(id, JSON.stringify(messageToAdd[0]))
-                if (this.sessionTTL) await client.expire(id, this.sessionTTL)
-            }
-        })
+        //     if (output) {
+        //         const newOutputMessage = new AIMessage(output.text)
+        //         const messageToAdd = [newOutputMessage].map((msg) => msg.toDict())
+        //         await client.lpush(id, JSON.stringify(messageToAdd[0]))
+        //         if (this.sessionTTL) await client.expire(id, this.sessionTTL)
+        //     }
+        // })
     }
 
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
