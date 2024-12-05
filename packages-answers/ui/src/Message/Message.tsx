@@ -22,6 +22,8 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown'
 import ContentCopy from '@mui/icons-material/ContentCopy'
 import LinkIcon from '@mui/icons-material/Link'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
+import PlayArrowIcon from '@mui/icons-material/PlayArrow'
+import OpenInFullIcon from '@mui/icons-material/OpenInFull'
 
 import { countTokens } from '@utils/utilities/countTokens'
 
@@ -31,6 +33,10 @@ import FeedbackModal from '@ui/FeedbackModal'
 import { AppService, Document, Message, FileUpload } from 'types'
 import { Rating } from 'db/generated/prisma-client'
 import { CircularProgress, Tooltip } from '@mui/material'
+import { CodePreview } from './CodePreview'
+import { PreviewDialog } from './PreviewDialog'
+import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
+import { CodeCard } from './CodeCard'
 
 interface MessageExtra {
     prompt?: string
@@ -55,6 +61,14 @@ interface MessageCardProps extends Partial<Message>, MessageExtra {
     error?: AxiosError<MessageExtra>
 
     role: string
+    setPreviewCode?: (
+        preview: {
+            code: string
+            language: string
+            getHTMLPreview: (code: string) => string
+            getReactPreview: (code: string) => string
+        } | null
+    ) => void
 }
 
 const getLanguageFromClassName = (className: string | undefined) => {
@@ -87,11 +101,12 @@ export const MessageCard = ({
     setSelectedDocuments,
     isLoading,
     fileUploads,
+    setPreviewCode,
     ...other
 }: MessageCardProps) => {
     other = { ...other, role, user } as any
     const { developer_mode } = useFlags(['developer_mode']) // only causes re-render if specified flag values / traits change
-    const { user: currentUser, sendMessageFeedback, appSettings } = useAnswers()
+    const { user: currentUser, sendMessageFeedback, appSettings, messages } = useAnswers()
     const contextDocumentsBySource: Record<string, Document[]> = React.useMemo(
         () =>
             contextDocuments?.reduce((uniqueDocuments: Record<string, Document[]>, current) => {
@@ -191,6 +206,53 @@ export const MessageCard = ({
         return fileUploads
     }, [fileUploads])
 
+    // Update the isLastMessage check to use content instead of ID
+    const isLastMessage = React.useMemo(() => {
+        if (!messages || !content) return false
+
+        // Get the last non-user message
+        const lastAiMessage = [...messages].reverse().find((msg) => msg.role !== 'userMessage' && msg.role !== 'user')
+
+        // Compare content to identify if this is the last message
+        return lastAiMessage?.content === content
+    }, [messages, content])
+
+    // Modify the effect to detect partial code blocks
+    React.useEffect(() => {
+        if (content && !isUserMessage && setPreviewCode && isLastMessage) {
+            // Split by code block markers and get the last block
+            const blocks = content.split('```')
+
+            // If we have an odd number of ```, we have a complete code block
+            // If even, we're in the middle of a code block
+            const isInCodeBlock = blocks.length % 2 === 0
+
+            // Get the potential code block (last complete block or current incomplete block)
+            const potentialCodeBlock = isInCodeBlock ? blocks[blocks.length - 1] : blocks[blocks.length - 2]
+
+            if (potentialCodeBlock) {
+                // Try to extract language and code
+                const lines = potentialCodeBlock.trim().split('\n')
+                const language = lines[0].trim()
+                const code = lines.slice(1).join('\n')
+
+                if (['html', 'jsx', 'tsx', 'javascript'].includes(language)) {
+                    setPreviewCode({
+                        code: code.trim(),
+                        language,
+                        getHTMLPreview,
+                        getReactPreview
+                    })
+                }
+            }
+        }
+        return () => {
+            if (!isLastMessage && setPreviewCode) {
+                setPreviewCode(null)
+            }
+        }
+    }, [content, isUserMessage, setPreviewCode, isLastMessage])
+
     return (
         <Box
             data-cy='message'
@@ -199,21 +261,22 @@ export const MessageCard = ({
                 display: 'flex',
                 flexDirection: 'column',
                 alignSelf: isUserMessage ? 'flex-end' : 'flex-start',
-                maxWidth: isUserMessage ? '70%': '100%',
-                width: '100%',
+                maxWidth: isUserMessage ? '70%' : '100%',
+                width: isUserMessage ? 'fit-content' : '100%',
                 position: 'relative',
                 mb: 3,
-                minWidth: 0,
+                minWidth: 0
             }}
         >
-            <Box 
-                sx={{ 
+            <Box
+                sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: isUserMessage ? 'flex-end' : 'flex-start',
                     width: '100%',
                     gap: 1,
                     minWidth: 0,
+                    maxWidth: '100%'
                 }}
             >
                 {!isUserMessage && (
@@ -250,10 +313,12 @@ export const MessageCard = ({
                                     maxWidth: '100%',
                                     borderRadius: 1,
                                     overflow: 'hidden',
-                                    ...(file.mime?.startsWith('audio/') ? {} : {
-                                        bgcolor: 'background.paper',
-                                        boxShadow: 1
-                                    })
+                                    ...(file.mime?.startsWith('audio/')
+                                        ? {}
+                                        : {
+                                              bgcolor: 'background.paper',
+                                              boxShadow: 1
+                                          })
                                 }}
                             >
                                 {file.mime?.startsWith('image/') ? (
@@ -269,17 +334,13 @@ export const MessageCard = ({
                                         <Image
                                             src={file.preview || file.data}
                                             alt={file.name || 'Uploaded image'}
-                                            layout="fill"
-                                            objectFit="contain"
+                                            layout='fill'
+                                            objectFit='contain'
                                         />
                                     </Box>
                                 ) : file.mime?.startsWith('audio/') ? (
                                     <Box sx={{ width: '100%' }}>
-                                        <audio 
-                                            controls 
-                                            src={file.data} 
-                                            style={{ width: '100%' }}
-                                        />
+                                        <audio controls src={file.data} style={{ width: '100%' }} />
                                     </Box>
                                 ) : (
                                     <Box
@@ -292,7 +353,7 @@ export const MessageCard = ({
                                         }}
                                     >
                                         <AttachFileIcon />
-                                        <Typography variant="body2" noWrap>
+                                        <Typography variant='body2' noWrap>
                                             {file.name}
                                         </Typography>
                                     </Box>
@@ -402,25 +463,49 @@ export const MessageCard = ({
 
                                     code({ node, inline, className, children, ...props }) {
                                         const codeExample = String(children).replace(/\n$/, '')
-                                        
+
                                         if (!inline) {
                                             const language = getLanguageFromClassName(className)
+                                            const canPreview =
+                                                ['html', 'jsx', 'tsx'].includes(language) ||
+                                                (language === 'javascript' && isReactComponent(codeExample))
+
+                                            if (canPreview) {
+                                                return (
+                                                    <Box sx={{ my: 2 }}>
+                                                        <CodeCard
+                                                            code={codeExample}
+                                                            language={language}
+                                                            title='Generated Code'
+                                                            onCopy={() => handleCopyCodeClick(codeExample)}
+                                                            onPreview={() =>
+                                                                setPreviewCode?.({
+                                                                    code: codeExample,
+                                                                    language,
+                                                                    getHTMLPreview,
+                                                                    getReactPreview,
+                                                                    title: 'Interactive Preview'
+                                                                })
+                                                            }
+                                                        />
+                                                    </Box>
+                                                )
+                                            }
+
+                                            // For non-previewable code, show the regular syntax highlighted code block
                                             return (
-                                                <Box 
-                                                    sx={{ 
+                                                <Box
+                                                    sx={{
                                                         position: 'relative',
                                                         borderRadius: 1,
                                                         overflow: 'hidden',
                                                         width: '100%',
+                                                        my: 1.5,
                                                         '& pre': {
                                                             m: 0,
                                                             borderRadius: 0,
                                                             backgroundColor: '#1E1E1E !important',
-                                                            overflowX: 'auto',
-                                                            width: '100%',
-                                                            '& > div': {
-                                                                minWidth: 'fit-content'
-                                                            }
+                                                            width: '100%'
                                                         }
                                                     }}
                                                 >
@@ -435,9 +520,9 @@ export const MessageCard = ({
                                                             borderBottom: '1px solid rgba(255,255,255,0.1)'
                                                         }}
                                                     >
-                                                        <Typography 
-                                                            variant="caption" 
-                                                            sx={{ 
+                                                        <Typography
+                                                            variant='caption'
+                                                            sx={{
                                                                 color: 'rgba(255,255,255,0.7)',
                                                                 textTransform: 'lowercase',
                                                                 fontFamily: 'monospace'
@@ -446,7 +531,7 @@ export const MessageCard = ({
                                                             {language}
                                                         </Typography>
                                                         <IconButton
-                                                            size="small"
+                                                            size='small'
                                                             onClick={() => handleCopyCodeClick(codeExample)}
                                                             sx={{
                                                                 color: 'rgba(255,255,255,0.7)',
@@ -456,22 +541,43 @@ export const MessageCard = ({
                                                                 }
                                                             }}
                                                         >
-                                                            <ContentCopy fontSize="small" />
+                                                            <ContentCopy fontSize='small' />
                                                         </IconButton>
                                                     </Box>
-                                                    <SyntaxHighlighter 
-                                                        language={language}
-                                                        style={duotoneDark as any} 
-                                                        customStyle={{
-                                                            margin: 0,
-                                                            padding: '16px',
-                                                            backgroundColor: '#1E1E1E'
-                                                        }}
-                                                        PreTag='div'
-                                                        {...props}
-                                                    >
-                                                        {codeExample}
-                                                    </SyntaxHighlighter>
+
+                                                    <Box className='syntax-highlighter-wrapper'>
+                                                        <SyntaxHighlighter
+                                                            language={language}
+                                                            style={{
+                                                                ...duotoneDark,
+                                                                'pre[class*="language-"]': {
+                                                                    ...duotoneDark['pre[class*="language-"]'],
+                                                                    background: '#1E1E1E',
+                                                                    selection: 'none'
+                                                                },
+                                                                'code[class*="language-"]': {
+                                                                    ...duotoneDark['code[class*="language-"]'],
+                                                                    background: '#1E1E1E',
+                                                                    textShadow: 'none'
+                                                                }
+                                                            }}
+                                                            customStyle={{
+                                                                margin: 0,
+                                                                padding: '16px',
+                                                                backgroundColor: '#1E1E1E',
+                                                                whiteSpace: 'pre-wrap',
+                                                                wordBreak: 'break-word',
+                                                                width: '100%',
+                                                                overflow: 'auto',
+                                                                textShadow: 'none'
+                                                            }}
+                                                            PreTag='div'
+                                                            wrapLongLines={true}
+                                                            {...props}
+                                                        >
+                                                            {codeExample}
+                                                        </SyntaxHighlighter>
+                                                    </Box>
                                                 </Box>
                                             )
                                         }
