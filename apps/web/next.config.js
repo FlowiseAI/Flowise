@@ -51,6 +51,12 @@ let nextConfig = withBundleAnalyzer({
                 hostname: 'replicate.delivery',
                 port: '',
                 pathname: '/**'
+            },
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+                port: '4000',
+                pathname: '/**'
             }
         ]
     },

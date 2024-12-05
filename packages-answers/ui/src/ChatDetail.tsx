@@ -20,6 +20,7 @@ import { ChatRoom } from './ChatRoom'
 import { FileUpload } from './AnswersContext'
 import AppBar from '@mui/material/AppBar'
 import { Button, Ic, Tooltip, TooltiponButton } from '@mui/material'
+import { CodePreview } from './Message/CodePreview'
 
 const DISPLAY_MODES = {
     CHATBOT: 'chatbot',
@@ -52,7 +53,12 @@ export const ChatDetail = ({
     const scrollRef = useRef<HTMLDivElement>(null)
     const [selectedDocuments, setSelectedDocuments] = React.useState<Document[] | undefined>()
     const [uploadedFiles, setUploadedFiles] = React.useState<FileUpload[]>([])
-
+    const [previewCode, setPreviewCode] = React.useState<{
+        code: string
+        language: string
+        getHTMLPreview: (code: string) => string
+        getReactPreview: (code: string) => string
+    } | null>(null)
     const messages = clientMessages || chat?.messages
 
     const displayMode = chatbotConfig?.displayMode || DISPLAY_MODES.CHATBOT
@@ -123,7 +129,7 @@ export const ChatDetail = ({
                                             </Button>
                                         </Tooltip>
 
-                                        {chat ? (
+                                        {/* {chat ? (
                                             <IconButton
                                                 size='large'
                                                 edge='start'
@@ -134,7 +140,7 @@ export const ChatDetail = ({
                                             >
                                                 <ShareIcon />
                                             </IconButton>
-                                        ) : null}
+                                        ) : null} */}
                                     </Box>
                                 </Toolbar>
                             </AppBar>
@@ -182,9 +188,9 @@ export const ChatDetail = ({
                                             maxWidth: 768,
                                             margin: '0 auto',
                                             flex: 1,
-                                            display: 'flex', 
+                                            display: 'flex',
                                             flexDirection: 'column',
-                                            px: { xs: 2, sm: 3 },
+                                            px: { xs: 2, sm: 3 }
                                         }}
                                     >
                                         <ChatRoom
@@ -193,7 +199,8 @@ export const ChatDetail = ({
                                             isLoading={isLoading}
                                             regenerateAnswer={regenerateAnswer}
                                             chatbotConfig={chatbotConfig}
-                                            setSelectedDocuments={() => {}}
+                                            setSelectedDocuments={setSelectedDocuments}
+                                            setPreviewCode={setPreviewCode}
                                             sidekicks={sidekicks}
                                             scrollRef={scrollRef}
                                             selectedSidekick={selectedSidekick}
@@ -206,7 +213,7 @@ export const ChatDetail = ({
                                         width: '100%',
                                         maxWidth: 768,
                                         margin: '0 auto',
-                                        px: { xs: 2, sm: 3 },
+                                        px: { xs: 2, sm: 3 }
                                     }}
                                 >
                                     <ChatInput
@@ -220,8 +227,7 @@ export const ChatDetail = ({
                             </Box>
                         ) : (
                             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                                Supposed to be the form
-                                {/* <iframe src={embeddedUrl} style={{ flex: 1, border: 'none' }} title='Embedded Form' allowFullScreen /> */}
+                                <iframe src={embeddedUrl} style={{ flex: 1, border: 'none' }} title='Embedded Form' allowFullScreen />
                             </Box>
                         )}
                     </Box>
@@ -233,20 +239,27 @@ export const ChatDetail = ({
                         position: { md: 'relative', xs: 'absolute' },
                         '& .MuiDrawer-paper': {
                             position: 'absolute',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
+                            height: '100%'
                         },
                         display: 'flex',
                         flexDirection: 'column',
                         height: '100%'
                     }}
+                    PaperProps={{
+                        sx: {
+                            height: '100%'
+                        }
+                    }}
                     variant='permanent'
                     anchor='left'
-                    open={!!showFilters || !!selectedDocuments}
+                    open={!!showFilters || !!selectedDocuments || !!previewCode}
                 >
                     {selectedDocuments ? (
                         <SourceDocumentModal documents={selectedDocuments} onClose={() => setSelectedDocuments(undefined)} />
-                    ) : null}
-                    {showFilters ? (
+                    ) : previewCode ? (
+                        <CodePreview {...previewCode} onClose={() => setPreviewCode(null)} />
+                    ) : showFilters ? (
                         <Suspense fallback={<div>Loading...</div>}>
                             <DrawerFilters appSettings={appSettings} />
                         </Suspense>
