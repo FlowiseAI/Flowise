@@ -444,12 +444,12 @@ const NodeInputHandler = ({
               style={{
                 height: 10,
                 width: 10,
-                backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                backgroundColor: data.selected ? theme.palette.primary.main : '#D0D5DD',
                 top: position
               }}
             />
           </CustomWidthTooltip>
-          <Box sx={{ p: 2 }}>
+          <Box sx={{ p: 1, px: 2 }} className={'hover:bg-[rgba(0,0,0,0.05)] rounded-lg'}>
             <Typography>
               {inputAnchor.label}
               {!inputAnchor.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
@@ -472,7 +472,7 @@ const NodeInputHandler = ({
                 style={{
                   height: 10,
                   width: 10,
-                  backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                  backgroundColor: data.selected ? theme.palette.primary.main : '#D0D5DD',
                   top: position
                 }}
               />

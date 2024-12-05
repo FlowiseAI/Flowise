@@ -557,6 +557,9 @@ const Canvas = () => {
                 deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                 minZoom={0.1}
                 className='chatflow-canvas'
+                defaultEdgeOptions={{
+                  style: { strokeWidth: 2, stroke: '#D0D5DD' }
+                }}
               >
                 <Controls
                   style={{

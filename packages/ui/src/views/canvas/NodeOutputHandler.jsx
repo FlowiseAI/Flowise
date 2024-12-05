@@ -80,7 +80,7 @@ const NodeOutputHandler = ({ outputAnchor, data, disabled = false }) => {
               style={{
                 height: 10,
                 width: 10,
-                backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                backgroundColor: data.selected ? theme.palette.primary.main : '#D0D5DD',
                 top: position
               }}
             />
@@ -108,7 +108,7 @@ const NodeOutputHandler = ({ outputAnchor, data, disabled = false }) => {
                       style={{
                         height: 10,
                         width: 10,
-                        backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                        backgroundColor: data.selected ? theme.palette.primary.main : '#D0D5DD',
                         top: getAnchorPosition(outputAnchor.options, index)
                       }}
                     />
@@ -138,7 +138,7 @@ const NodeOutputHandler = ({ outputAnchor, data, disabled = false }) => {
                 style={{
                   height: 10,
                   width: 10,
-                  backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                  backgroundColor: data.selected ? theme.palette.primary.main : '#D0D5DD',
                   top: position - 25
                 }}
               />
@@ -162,7 +162,7 @@ const NodeOutputHandler = ({ outputAnchor, data, disabled = false }) => {
                 style={{
                   height: 10,
                   width: 10,
-                  backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                  backgroundColor: data.selected ? theme.palette.primary.main : '#D0D5DD',
                   top: position + 25
                 }}
               />
@@ -191,7 +191,7 @@ const NodeOutputHandler = ({ outputAnchor, data, disabled = false }) => {
                 style={{
                   height: 10,
                   width: 10,
-                  backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                  backgroundColor: data.selected ? theme.palette.primary.main : '#D0D5DD',
                   top: position
                 }}
               />

@@ -231,7 +231,7 @@ const CanvasNode = ({ data }) => {
                   marginTop:
                     data.inputParams.filter((param) => param.additionalParams).length === data.inputParams.length + data.inputAnchors.length
                       ? 20
-                      : 0
+                      : 5
                 }}
               >
                 <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
