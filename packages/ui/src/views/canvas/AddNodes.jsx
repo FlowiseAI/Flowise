@@ -1,30 +1,30 @@
-import { useState, useRef, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
 import {
     Accordion,
-    AccordionSummary,
     AccordionDetails,
+    AccordionSummary,
     Box,
+    Chip,
     ClickAwayListener,
     Divider,
     InputAdornment,
     List,
-    ListItemButton,
     ListItem,
     ListItemAvatar,
+    ListItemButton,
     ListItemText,
     OutlinedInput,
     Paper,
     Popper,
     Stack,
-    Typography,
-    Chip,
     Tab,
-    Tabs
+    Tabs,
+    Typography
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
@@ -37,8 +37,7 @@ import Transitions from '@/ui-component/extended/Transitions'
 import { StyledFab } from '@/ui-component/button/StyledFab'
 
 // icons
-import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons-react'
-import LlamaindexPNG from '@/assets/images/llamaindex.png'
+import { IconMinus, IconPlus, IconSearch, IconX } from '@tabler/icons-react'
 import LangChainPNG from '@/assets/images/langchain.png'
 import utilNodesPNG from '@/assets/images/utilNodes.png'
 
@@ -229,8 +228,6 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const getImage = (tabValue) => {
         if (tabValue === 0) {
             return LangChainPNG
-        } else if (tabValue === 1) {
-            return LlamaindexPNG
         } else {
             return utilNodesPNG
         }
@@ -346,7 +343,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                 onChange={handleTabChange}
                                                 aria-label='tabs'
                                             >
-                                                {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
+                                                {['LangChain', 'Utilities'].map((item, index) => (
                                                     <Tab
                                                         icon={
                                                             <div
