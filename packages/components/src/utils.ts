@@ -501,11 +501,15 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
  * @returns {Promise<ICommonObject>}
  */
 export const getCredentialData = async (selectedCredentialId: string, options: ICommonObject): Promise<ICommonObject> => {
+    if (!options?.appDataSource || !options?.databaseEntities || !selectedCredentialId) {
+        return {}
+    }
+
     const appDataSource = options.appDataSource as DataSource
     const databaseEntities = options.databaseEntities as IDatabaseEntity
 
     try {
-        if (!selectedCredentialId) {
+        if (!appDataSource || !databaseEntities) {
             return {}
         }
 
