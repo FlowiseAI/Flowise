@@ -25,15 +25,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     setSelectedDocuments,
     sidekicks,
     scrollRef,
-    selectedSidekick
+    selectedSidekick,
+    setPreviewCode
 }) => {
     return (
-        <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            gap: 3,
-            p: 2,
-        }}>
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 3,
+                p: 2
+            }}
+        >
             <Suspense fallback={<div>Loading...</div>}>
                 <Box sx={{ bgcolor: 'background.paper' }}>
                     <AssistantInfoCard sidekick={selectedSidekick} followers={208000} onShare={() => {}} onSearch={() => {}} />
@@ -41,7 +44,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {messages?.map((message, index) => (
-                        <MessageCard {...message} key={`message_${index}`} setSelectedDocuments={setSelectedDocuments} />
+                        <MessageCard
+                            {...message}
+                            key={`message_${index}`}
+                            setSelectedDocuments={setSelectedDocuments}
+                            setPreviewCode={setPreviewCode}
+                        />
                     ))}
 
                     {error ? (

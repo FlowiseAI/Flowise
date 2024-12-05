@@ -5,7 +5,7 @@ import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
-import AttachFileIcon from '@mui/icons-material/AttachFile'
+import AttachFileIcon from '@mui/icons-material/PermMedia'
 import MicIcon from '@mui/icons-material/Mic'
 import StopIcon from '@mui/icons-material/Stop'
 import IconButton from '@mui/material/IconButton'
@@ -535,8 +535,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                                         <CloseIcon />
                                     </Button>
                                 </Tooltip>
-                                
-                                
+
                                 <Button variant='contained' color='primary' onClick={handleStopAndSend}>
                                     Send
                                 </Button>
@@ -562,10 +561,10 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                             paddingBottom: 2
                         },
                         startAdornment: (
-                            <Tooltip title='Attach File'>
+                            <Tooltip title='Attach image'>
                                 <IconButton component='label' sx={{ minWidth: 0 }}>
                                     <AttachFileIcon />
-                                    <input type='file' hidden multiple onChange={handleFileUpload} />
+                                    <input type='file' accept='image/*' hidden multiple onChange={handleFileUpload} />
                                 </IconButton>
                             </Tooltip>
                         ),
@@ -576,7 +575,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                                         <MicIcon />
                                     </IconButton>
                                 </Tooltip>
-                                
+
                                 <Button variant='contained' color='primary' onClick={handleSubmit}>
                                     Send
                                 </Button>
