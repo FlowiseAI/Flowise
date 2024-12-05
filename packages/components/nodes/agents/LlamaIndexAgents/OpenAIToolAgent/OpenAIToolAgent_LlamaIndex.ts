@@ -24,7 +24,6 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
     tags: string[]
     inputs: INodeParams[]
     sessionId?: string
-    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'OpenAI Tool Agent'

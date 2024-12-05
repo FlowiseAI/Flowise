@@ -50,6 +50,10 @@ const VectorStoreConfigure = () => {
     useNotifier()
     const customization = useSelector((state) => state.customization)
 
+    const pathSegments = document.location.pathname.toString().split('/')
+    const storeId = pathSegments[3] || null
+    const docId = pathSegments[4] || null
+
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
@@ -213,7 +217,8 @@ const VectorStoreConfigure = () => {
 
     const prepareConfigData = () => {
         const data = {
-            storeId: storeId
+            storeId: storeId,
+            docId: docId
         }
         // Set embedding config
         if (selectedEmbeddingsProvider.inputs) {
@@ -365,8 +370,6 @@ const VectorStoreConfigure = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [saveVectorStoreConfigApi.error])
 
-    const URLpath = document.location.pathname.toString().split('/')
-    const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
     useEffect(() => {
         getSpecificDocumentStoreApi.request(storeId)
 
@@ -432,420 +435,426 @@ const VectorStoreConfigure = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            isBackButton={true}
-                            search={false}
-                            title={getSpecificDocumentStoreApi.data?.name}
-                            description='Configure Embeddings, Vector Store and Record Manager'
-                            onBack={() => navigate(-1)}
-                        >
-                            {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
-                                Object.keys(selectedVectorStoreProvider).length > 0) && (
-                                <Button
-                                    variant='outlined'
-                                    color='error'
-                                    sx={{
-                                        borderRadius: 2,
-                                        height: '100%'
-                                    }}
-                                    startIcon={<IconRefresh />}
-                                    onClick={() => resetVectorStoreConfig()}
+                    <>
+                        {!storeId && <div></div>}
+                        {storeId && (
+                            <Stack flexDirection='column' sx={{ gap: 3 }}>
+                                <ViewHeader
+                                    isBackButton={true}
+                                    search={false}
+                                    title={getSpecificDocumentStoreApi.data?.name}
+                                    description='Configure Embeddings, Vector Store and Record Manager'
+                                    onBack={() => navigate(-1)}
                                 >
-                                    Reset
-                                </Button>
-                            )}
-                            {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
-                                Object.keys(selectedVectorStoreProvider).length > 0) && (
-                                <Button
-                                    variant='outlined'
-                                    color='secondary'
-                                    sx={{
-                                        borderRadius: 2,
-                                        height: '100%'
-                                    }}
-                                    startIcon={<IconDeviceFloppy />}
-                                    onClick={() => saveVectorStoreConfig()}
-                                >
-                                    Save Config
-                                </Button>
-                            )}
-                            {Object.keys(selectedEmbeddingsProvider).length > 0 && Object.keys(selectedVectorStoreProvider).length > 0 && (
-                                <Button
-                                    variant='contained'
-                                    sx={{
-                                        borderRadius: 2,
-                                        height: '100%',
-                                        backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
-                                        '&:hover': {
-                                            backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
-                                        }
-                                    }}
-                                    startIcon={<IconRowInsertTop />}
-                                    onClick={() => tryAndInsertIntoStore()}
-                                >
-                                    Upsert
-                                </Button>
-                            )}
-                            <IconButton onClick={showUpsertHistoryDrawer} size='small' color='inherit' title='Upsert History'>
-                                <IconClock />
-                            </IconButton>
-                        </ViewHeader>
-                        <Steps />
-                        <Grid container spacing={1}>
-                            <Grid item xs={12} sm={4} md={4}>
-                                {Object.keys(selectedEmbeddingsProvider).length === 0 ? (
-                                    <Button
-                                        onClick={showEmbeddingsList}
-                                        fullWidth={true}
-                                        startIcon={<Embeddings style={{ background: 'transparent', height: 32, width: 32 }} />}
-                                        sx={{
-                                            color: customization?.isDarkMode ? 'white' : 'inherit',
-                                            borderRadius: '10px',
-                                            minHeight: '200px',
-                                            boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)',
-                                            backgroundImage: customization?.isDarkMode
-                                                ? `linear-gradient(to right, #e654bc, #4b86e7)`
-                                                : `linear-gradient(to right, #fadef2, #cfdcf1)`,
-                                            '&:hover': {
-                                                backgroundImage: customization?.isDarkMode
-                                                    ? `linear-gradient(to right, #de32ac, #2d73e7)`
-                                                    : `linear-gradient(to right, #f6c2e7, #b4cbf1)`
-                                            }
-                                        }}
-                                    >
-                                        Select Embeddings
-                                    </Button>
-                                ) : (
-                                    <Box>
-                                        <Grid container spacing='2'>
-                                            <Grid item xs={12} md={12} lg={12} sm={12}>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        paddingRight: 15
-                                                    }}
-                                                >
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            flexDirection: 'row',
-                                                            p: 1
-                                                        }}
-                                                    >
+                                    {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
+                                        Object.keys(selectedVectorStoreProvider).length > 0) && (
+                                        <Button
+                                            variant='outlined'
+                                            color='error'
+                                            sx={{
+                                                borderRadius: 2,
+                                                height: '100%'
+                                            }}
+                                            startIcon={<IconRefresh />}
+                                            onClick={() => resetVectorStoreConfig()}
+                                        >
+                                            Reset
+                                        </Button>
+                                    )}
+                                    {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
+                                        Object.keys(selectedVectorStoreProvider).length > 0) && (
+                                        <Button
+                                            variant='outlined'
+                                            color='secondary'
+                                            sx={{
+                                                borderRadius: 2,
+                                                height: '100%'
+                                            }}
+                                            startIcon={<IconDeviceFloppy />}
+                                            onClick={() => saveVectorStoreConfig()}
+                                        >
+                                            Save Config
+                                        </Button>
+                                    )}
+                                    {Object.keys(selectedEmbeddingsProvider).length > 0 &&
+                                        Object.keys(selectedVectorStoreProvider).length > 0 && (
+                                            <Button
+                                                variant='contained'
+                                                sx={{
+                                                    borderRadius: 2,
+                                                    height: '100%',
+                                                    backgroundImage: `linear-gradient(to right, #13547a, #2f9e91)`,
+                                                    '&:hover': {
+                                                        backgroundImage: `linear-gradient(to right, #0b3d5b, #1a8377)`
+                                                    }
+                                                }}
+                                                startIcon={<IconRowInsertTop />}
+                                                onClick={() => tryAndInsertIntoStore()}
+                                            >
+                                                Upsert
+                                            </Button>
+                                        )}
+                                    <IconButton onClick={showUpsertHistoryDrawer} size='small' color='inherit' title='Upsert History'>
+                                        <IconClock />
+                                    </IconButton>
+                                </ViewHeader>
+                                <Steps />
+                                <Grid container spacing={1}>
+                                    <Grid item xs={12} sm={4} md={4}>
+                                        {Object.keys(selectedEmbeddingsProvider).length === 0 ? (
+                                            <Button
+                                                onClick={showEmbeddingsList}
+                                                fullWidth={true}
+                                                startIcon={<Embeddings style={{ background: 'transparent', height: 32, width: 32 }} />}
+                                                sx={{
+                                                    color: customization?.isDarkMode ? 'white' : 'inherit',
+                                                    borderRadius: '10px',
+                                                    minHeight: '200px',
+                                                    boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)',
+                                                    backgroundImage: customization?.isDarkMode
+                                                        ? `linear-gradient(to right, #e654bc, #4b86e7)`
+                                                        : `linear-gradient(to right, #fadef2, #cfdcf1)`,
+                                                    '&:hover': {
+                                                        backgroundImage: customization?.isDarkMode
+                                                            ? `linear-gradient(to right, #de32ac, #2d73e7)`
+                                                            : `linear-gradient(to right, #f6c2e7, #b4cbf1)`
+                                                    }
+                                                }}
+                                            >
+                                                Select Embeddings
+                                            </Button>
+                                        ) : (
+                                            <Box>
+                                                <Grid container spacing='2'>
+                                                    <Grid item xs={12} md={12} lg={12} sm={12}>
                                                         <div
                                                             style={{
-                                                                width: 40,
-                                                                height: 40,
-                                                                borderRadius: '50%',
-                                                                backgroundColor: 'white',
                                                                 display: 'flex',
-                                                                boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
+                                                                flexDirection: 'column',
+                                                                paddingRight: 15
                                                             }}
                                                         >
-                                                            {selectedEmbeddingsProvider.label ? (
-                                                                <img
+                                                            <Box
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    flexDirection: 'row',
+                                                                    p: 1
+                                                                }}
+                                                            >
+                                                                <div
                                                                     style={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        padding: 7,
+                                                                        width: 40,
+                                                                        height: 40,
                                                                         borderRadius: '50%',
-                                                                        objectFit: 'contain'
+                                                                        backgroundColor: 'white',
+                                                                        display: 'flex',
+                                                                        boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
                                                                     }}
-                                                                    alt={selectedEmbeddingsProvider.label ?? 'embeddings'}
-                                                                    src={`${baseURL}/api/v1/node-icon/${selectedEmbeddingsProvider?.name}`}
-                                                                />
-                                                            ) : (
-                                                                <Embeddings color='black' />
-                                                            )}
-                                                        </div>
-                                                        <Typography sx={{ ml: 2 }} variant='h3'>
-                                                            {selectedEmbeddingsProvider.label}
-                                                        </Typography>
-                                                        <div style={{ flex: 1 }}></div>
-                                                        <div
-                                                            style={{
-                                                                display: 'flex',
-                                                                alignContent: 'center',
-                                                                flexDirection: 'row'
-                                                            }}
-                                                        >
-                                                            {Object.keys(selectedEmbeddingsProvider).length > 0 && (
-                                                                <>
-                                                                    <IconButton
-                                                                        variant='outlined'
-                                                                        sx={{ ml: 1 }}
-                                                                        color='secondary'
-                                                                        onClick={showEmbeddingsList}
-                                                                    >
-                                                                        <IconEditCircle />
-                                                                    </IconButton>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </Box>
-                                                    {selectedEmbeddingsProvider &&
-                                                        Object.keys(selectedEmbeddingsProvider).length > 0 &&
-                                                        (selectedEmbeddingsProvider.inputParams ?? [])
-                                                            .filter((inputParam) => !inputParam.hidden)
-                                                            .map((inputParam, index) => (
-                                                                <DocStoreInputHandler
-                                                                    key={index}
-                                                                    data={selectedEmbeddingsProvider}
-                                                                    inputParam={inputParam}
-                                                                    isAdditionalParams={inputParam.additionalParams}
-                                                                />
-                                                            ))}
-                                                </div>
-                                            </Grid>
-                                        </Grid>
-                                    </Box>
-                                )}
-                            </Grid>
-                            <Grid item xs={12} sm={4} md={4}>
-                                {Object.keys(selectedVectorStoreProvider).length === 0 ? (
-                                    <Button
-                                        onClick={showVectorStoreList}
-                                        fullWidth={true}
-                                        startIcon={<Storage style={{ background: 'transparent', height: 32, width: 32 }} />}
-                                        sx={{
-                                            color: customization?.isDarkMode ? 'white' : 'inherit',
-                                            borderRadius: '10px',
-                                            minHeight: '200px',
-                                            opacity: isVectorStoreDisabled() ? 0.7 : 1,
-                                            boxShadow: isVectorStoreDisabled() ? 'none' : '0 2px 14px 0 rgb(32 40 45 / 20%)',
-                                            backgroundImage: customization?.isDarkMode
-                                                ? `linear-gradient(to right, #4d8ef1, #f1de5c)`
-                                                : `linear-gradient(to right, #b9d0f4, #fef9d7)`,
-                                            '&:hover': {
-                                                backgroundImage: customization?.isDarkMode
-                                                    ? `linear-gradient(to right, #2576f2, #f0d72e)`
-                                                    : `linear-gradient(to right, #9cbdf2, #fcf3b6)`
-                                            }
-                                        }}
-                                        disabled={isVectorStoreDisabled()}
-                                    >
-                                        Select Vector Store
-                                    </Button>
-                                ) : (
-                                    <Box>
-                                        <Grid container spacing='2'>
-                                            <Grid item xs={12} md={12} lg={12} sm={12}>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        paddingRight: 15
-                                                    }}
-                                                >
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            flexDirection: 'row',
-                                                            p: 1
-                                                        }}
-                                                    >
-                                                        <div
-                                                            style={{
-                                                                width: 40,
-                                                                height: 40,
-                                                                borderRadius: '50%',
-                                                                backgroundColor: 'white',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
-                                                            }}
-                                                        >
-                                                            {selectedVectorStoreProvider.label ? (
-                                                                <img
+                                                                >
+                                                                    {selectedEmbeddingsProvider.label ? (
+                                                                        <img
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                height: '100%',
+                                                                                padding: 7,
+                                                                                borderRadius: '50%',
+                                                                                objectFit: 'contain'
+                                                                            }}
+                                                                            alt={selectedEmbeddingsProvider.label ?? 'embeddings'}
+                                                                            src={`${baseURL}/api/v1/node-icon/${selectedEmbeddingsProvider?.name}`}
+                                                                        />
+                                                                    ) : (
+                                                                        <Embeddings color='black' />
+                                                                    )}
+                                                                </div>
+                                                                <Typography sx={{ ml: 2 }} variant='h3'>
+                                                                    {selectedEmbeddingsProvider.label}
+                                                                </Typography>
+                                                                <div style={{ flex: 1 }}></div>
+                                                                <div
                                                                     style={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        padding: 7,
-                                                                        borderRadius: '50%',
-                                                                        objectFit: 'contain'
+                                                                        display: 'flex',
+                                                                        alignContent: 'center',
+                                                                        flexDirection: 'row'
                                                                     }}
-                                                                    alt={selectedVectorStoreProvider.label ?? 'embeddings'}
-                                                                    src={`${baseURL}/api/v1/node-icon/${selectedVectorStoreProvider?.name}`}
-                                                                />
-                                                            ) : (
-                                                                <Embeddings color='black' />
-                                                            )}
+                                                                >
+                                                                    {Object.keys(selectedEmbeddingsProvider).length > 0 && (
+                                                                        <>
+                                                                            <IconButton
+                                                                                variant='outlined'
+                                                                                sx={{ ml: 1 }}
+                                                                                color='secondary'
+                                                                                onClick={showEmbeddingsList}
+                                                                            >
+                                                                                <IconEditCircle />
+                                                                            </IconButton>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </Box>
+                                                            {selectedEmbeddingsProvider &&
+                                                                Object.keys(selectedEmbeddingsProvider).length > 0 &&
+                                                                (selectedEmbeddingsProvider.inputParams ?? [])
+                                                                    .filter((inputParam) => !inputParam.hidden)
+                                                                    .map((inputParam, index) => (
+                                                                        <DocStoreInputHandler
+                                                                            key={index}
+                                                                            data={selectedEmbeddingsProvider}
+                                                                            inputParam={inputParam}
+                                                                            isAdditionalParams={inputParam.additionalParams}
+                                                                        />
+                                                                    ))}
                                                         </div>
-                                                        <Typography sx={{ ml: 2 }} variant='h3'>
-                                                            {selectedVectorStoreProvider.label}
-                                                        </Typography>
-                                                        <div style={{ flex: 1 }}></div>
+                                                    </Grid>
+                                                </Grid>
+                                            </Box>
+                                        )}
+                                    </Grid>
+                                    <Grid item xs={12} sm={4} md={4}>
+                                        {Object.keys(selectedVectorStoreProvider).length === 0 ? (
+                                            <Button
+                                                onClick={showVectorStoreList}
+                                                fullWidth={true}
+                                                startIcon={<Storage style={{ background: 'transparent', height: 32, width: 32 }} />}
+                                                sx={{
+                                                    color: customization?.isDarkMode ? 'white' : 'inherit',
+                                                    borderRadius: '10px',
+                                                    minHeight: '200px',
+                                                    opacity: isVectorStoreDisabled() ? 0.7 : 1,
+                                                    boxShadow: isVectorStoreDisabled() ? 'none' : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+                                                    backgroundImage: customization?.isDarkMode
+                                                        ? `linear-gradient(to right, #4d8ef1, #f1de5c)`
+                                                        : `linear-gradient(to right, #b9d0f4, #fef9d7)`,
+                                                    '&:hover': {
+                                                        backgroundImage: customization?.isDarkMode
+                                                            ? `linear-gradient(to right, #2576f2, #f0d72e)`
+                                                            : `linear-gradient(to right, #9cbdf2, #fcf3b6)`
+                                                    }
+                                                }}
+                                                disabled={isVectorStoreDisabled()}
+                                            >
+                                                Select Vector Store
+                                            </Button>
+                                        ) : (
+                                            <Box>
+                                                <Grid container spacing='2'>
+                                                    <Grid item xs={12} md={12} lg={12} sm={12}>
                                                         <div
                                                             style={{
                                                                 display: 'flex',
-                                                                alignContent: 'center',
-                                                                flexDirection: 'row'
+                                                                flexDirection: 'column',
+                                                                paddingRight: 15
                                                             }}
                                                         >
-                                                            {Object.keys(selectedVectorStoreProvider).length > 0 && (
-                                                                <>
-                                                                    <IconButton
-                                                                        variant='outlined'
-                                                                        sx={{ ml: 1 }}
-                                                                        color='secondary'
-                                                                        onClick={showVectorStoreList}
-                                                                    >
-                                                                        <IconEditCircle />
-                                                                    </IconButton>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </Box>
-                                                    {selectedVectorStoreProvider &&
-                                                        Object.keys(selectedVectorStoreProvider).length > 0 &&
-                                                        (selectedVectorStoreProvider.inputParams ?? [])
-                                                            .filter((inputParam) => !inputParam.hidden)
-                                                            .map((inputParam, index) => (
-                                                                <DocStoreInputHandler
-                                                                    key={index}
-                                                                    data={selectedVectorStoreProvider}
-                                                                    inputParam={inputParam}
-                                                                    isAdditionalParams={inputParam.additionalParams}
-                                                                />
-                                                            ))}
-                                                </div>
-                                            </Grid>
-                                        </Grid>
-                                    </Box>
-                                )}
-                            </Grid>
-                            <Grid item xs={12} sm={4} md={4}>
-                                {Object.keys(selectedRecordManagerProvider).length === 0 ? (
-                                    <Button
-                                        onClick={showRecordManagerList}
-                                        fullWidth={true}
-                                        startIcon={
-                                            isRecordManagerUnavailable ? (
-                                                <></>
-                                            ) : (
-                                                <DynamicFeed style={{ background: 'transparent', height: 32, width: 32 }} />
-                                            )
-                                        }
-                                        sx={{
-                                            color: customization?.isDarkMode ? 'white' : 'inherit',
-                                            borderRadius: '10px',
-                                            minHeight: '200px',
-                                            opacity: isRecordManagerDisabled() ? 0.7 : 1,
-                                            boxShadow: isRecordManagerDisabled() ? 'none' : '0 2px 14px 0 rgb(32 40 45 / 20%)',
-                                            backgroundImage: customization?.isDarkMode
-                                                ? `linear-gradient(to right, #f5db3f, #42daa7)`
-                                                : `linear-gradient(to right, #f9f1c0, #c7f1e3)`,
-                                            '&:hover': {
-                                                backgroundImage: customization?.isDarkMode
-                                                    ? `linear-gradient(to right, #d9c238, #3dc295)`
-                                                    : `linear-gradient(to right, #f6e99b, #a0f2d7)`
-                                            }
-                                        }}
-                                        disabled={isRecordManagerDisabled()}
-                                    >
-                                        {isRecordManagerUnavailable
-                                            ? 'Record Manager is not applicable for selected Vector Store'
-                                            : 'Select Record Manager'}
-                                    </Button>
-                                ) : (
-                                    <Box>
-                                        <Grid container spacing='2'>
-                                            <Grid item xs={12} md={12} lg={12} sm={12}>
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        paddingRight: 15
-                                                    }}
-                                                >
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            flexDirection: 'row',
-                                                            p: 1
-                                                        }}
-                                                    >
-                                                        <div
-                                                            style={{
-                                                                width: 40,
-                                                                height: 40,
-                                                                borderRadius: '50%',
-                                                                backgroundColor: 'white',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
-                                                            }}
-                                                        >
-                                                            {selectedRecordManagerProvider.label ? (
-                                                                <img
+                                                            <Box
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    flexDirection: 'row',
+                                                                    p: 1
+                                                                }}
+                                                            >
+                                                                <div
                                                                     style={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        padding: 7,
+                                                                        width: 40,
+                                                                        height: 40,
                                                                         borderRadius: '50%',
-                                                                        objectFit: 'contain'
+                                                                        backgroundColor: 'white',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
                                                                     }}
-                                                                    alt={selectedRecordManagerProvider.label ?? 'embeddings'}
-                                                                    src={`${baseURL}/api/v1/node-icon/${selectedRecordManagerProvider?.name}`}
-                                                                />
-                                                            ) : (
-                                                                <Embeddings color='black' />
-                                                            )}
+                                                                >
+                                                                    {selectedVectorStoreProvider.label ? (
+                                                                        <img
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                height: '100%',
+                                                                                padding: 7,
+                                                                                borderRadius: '50%',
+                                                                                objectFit: 'contain'
+                                                                            }}
+                                                                            alt={selectedVectorStoreProvider.label ?? 'embeddings'}
+                                                                            src={`${baseURL}/api/v1/node-icon/${selectedVectorStoreProvider?.name}`}
+                                                                        />
+                                                                    ) : (
+                                                                        <Embeddings color='black' />
+                                                                    )}
+                                                                </div>
+                                                                <Typography sx={{ ml: 2 }} variant='h3'>
+                                                                    {selectedVectorStoreProvider.label}
+                                                                </Typography>
+                                                                <div style={{ flex: 1 }}></div>
+                                                                <div
+                                                                    style={{
+                                                                        display: 'flex',
+                                                                        alignContent: 'center',
+                                                                        flexDirection: 'row'
+                                                                    }}
+                                                                >
+                                                                    {Object.keys(selectedVectorStoreProvider).length > 0 && (
+                                                                        <>
+                                                                            <IconButton
+                                                                                variant='outlined'
+                                                                                sx={{ ml: 1 }}
+                                                                                color='secondary'
+                                                                                onClick={showVectorStoreList}
+                                                                            >
+                                                                                <IconEditCircle />
+                                                                            </IconButton>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </Box>
+                                                            {selectedVectorStoreProvider &&
+                                                                Object.keys(selectedVectorStoreProvider).length > 0 &&
+                                                                (selectedVectorStoreProvider.inputParams ?? [])
+                                                                    .filter((inputParam) => !inputParam.hidden)
+                                                                    .map((inputParam, index) => (
+                                                                        <DocStoreInputHandler
+                                                                            key={index}
+                                                                            data={selectedVectorStoreProvider}
+                                                                            inputParam={inputParam}
+                                                                            isAdditionalParams={inputParam.additionalParams}
+                                                                        />
+                                                                    ))}
                                                         </div>
-                                                        <Typography sx={{ ml: 2 }} variant='h3'>
-                                                            {selectedRecordManagerProvider.label}
-                                                        </Typography>
-                                                        <div style={{ flex: 1 }}></div>
+                                                    </Grid>
+                                                </Grid>
+                                            </Box>
+                                        )}
+                                    </Grid>
+                                    <Grid item xs={12} sm={4} md={4}>
+                                        {Object.keys(selectedRecordManagerProvider).length === 0 ? (
+                                            <Button
+                                                onClick={showRecordManagerList}
+                                                fullWidth={true}
+                                                startIcon={
+                                                    isRecordManagerUnavailable ? (
+                                                        <></>
+                                                    ) : (
+                                                        <DynamicFeed style={{ background: 'transparent', height: 32, width: 32 }} />
+                                                    )
+                                                }
+                                                sx={{
+                                                    color: customization?.isDarkMode ? 'white' : 'inherit',
+                                                    borderRadius: '10px',
+                                                    minHeight: '200px',
+                                                    opacity: isRecordManagerDisabled() ? 0.7 : 1,
+                                                    boxShadow: isRecordManagerDisabled() ? 'none' : '0 2px 14px 0 rgb(32 40 45 / 20%)',
+                                                    backgroundImage: customization?.isDarkMode
+                                                        ? `linear-gradient(to right, #f5db3f, #42daa7)`
+                                                        : `linear-gradient(to right, #f9f1c0, #c7f1e3)`,
+                                                    '&:hover': {
+                                                        backgroundImage: customization?.isDarkMode
+                                                            ? `linear-gradient(to right, #d9c238, #3dc295)`
+                                                            : `linear-gradient(to right, #f6e99b, #a0f2d7)`
+                                                    }
+                                                }}
+                                                disabled={isRecordManagerDisabled()}
+                                            >
+                                                {isRecordManagerUnavailable
+                                                    ? 'Record Manager is not applicable for selected Vector Store'
+                                                    : 'Select Record Manager'}
+                                            </Button>
+                                        ) : (
+                                            <Box>
+                                                <Grid container spacing='2'>
+                                                    <Grid item xs={12} md={12} lg={12} sm={12}>
                                                         <div
                                                             style={{
                                                                 display: 'flex',
-                                                                alignContent: 'center',
-                                                                flexDirection: 'row'
+                                                                flexDirection: 'column',
+                                                                paddingRight: 15
                                                             }}
                                                         >
-                                                            {Object.keys(selectedRecordManagerProvider).length > 0 && (
-                                                                <>
-                                                                    <IconButton
-                                                                        variant='outlined'
-                                                                        sx={{ ml: 1 }}
-                                                                        color='secondary'
-                                                                        onClick={showRecordManagerList}
-                                                                    >
-                                                                        <IconEditCircle />
-                                                                    </IconButton>
-                                                                </>
-                                                            )}
+                                                            <Box
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    flexDirection: 'row',
+                                                                    p: 1
+                                                                }}
+                                                            >
+                                                                <div
+                                                                    style={{
+                                                                        width: 40,
+                                                                        height: 40,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: 'white',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        boxShadow: '0 2px 14px 0 rgb(32 40 45 / 25%)'
+                                                                    }}
+                                                                >
+                                                                    {selectedRecordManagerProvider.label ? (
+                                                                        <img
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                height: '100%',
+                                                                                padding: 7,
+                                                                                borderRadius: '50%',
+                                                                                objectFit: 'contain'
+                                                                            }}
+                                                                            alt={selectedRecordManagerProvider.label ?? 'embeddings'}
+                                                                            src={`${baseURL}/api/v1/node-icon/${selectedRecordManagerProvider?.name}`}
+                                                                        />
+                                                                    ) : (
+                                                                        <Embeddings color='black' />
+                                                                    )}
+                                                                </div>
+                                                                <Typography sx={{ ml: 2 }} variant='h3'>
+                                                                    {selectedRecordManagerProvider.label}
+                                                                </Typography>
+                                                                <div style={{ flex: 1 }}></div>
+                                                                <div
+                                                                    style={{
+                                                                        display: 'flex',
+                                                                        alignContent: 'center',
+                                                                        flexDirection: 'row'
+                                                                    }}
+                                                                >
+                                                                    {Object.keys(selectedRecordManagerProvider).length > 0 && (
+                                                                        <>
+                                                                            <IconButton
+                                                                                variant='outlined'
+                                                                                sx={{ ml: 1 }}
+                                                                                color='secondary'
+                                                                                onClick={showRecordManagerList}
+                                                                            >
+                                                                                <IconEditCircle />
+                                                                            </IconButton>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </Box>
+                                                            {selectedRecordManagerProvider &&
+                                                                Object.keys(selectedRecordManagerProvider).length > 0 &&
+                                                                (selectedRecordManagerProvider.inputParams ?? [])
+                                                                    .filter((inputParam) => !inputParam.hidden)
+                                                                    .map((inputParam, index) => (
+                                                                        <>
+                                                                            <DocStoreInputHandler
+                                                                                key={index}
+                                                                                data={selectedRecordManagerProvider}
+                                                                                inputParam={inputParam}
+                                                                                isAdditionalParams={inputParam.additionalParams}
+                                                                            />
+                                                                        </>
+                                                                    ))}
                                                         </div>
-                                                    </Box>
-                                                    {selectedRecordManagerProvider &&
-                                                        Object.keys(selectedRecordManagerProvider).length > 0 &&
-                                                        (selectedRecordManagerProvider.inputParams ?? [])
-                                                            .filter((inputParam) => !inputParam.hidden)
-                                                            .map((inputParam, index) => (
-                                                                <>
-                                                                    <DocStoreInputHandler
-                                                                        key={index}
-                                                                        data={selectedRecordManagerProvider}
-                                                                        inputParam={inputParam}
-                                                                        isAdditionalParams={inputParam.additionalParams}
-                                                                    />
-                                                                </>
-                                                            ))}
-                                                </div>
-                                            </Grid>
-                                        </Grid>
-                                    </Box>
-                                )}
-                            </Grid>
-                        </Grid>
-                    </Stack>
+                                                    </Grid>
+                                                </Grid>
+                                            </Box>
+                                        )}
+                                    </Grid>
+                                </Grid>
+                            </Stack>
+                        )}
+                    </>
                 )}
             </MainCard>
 

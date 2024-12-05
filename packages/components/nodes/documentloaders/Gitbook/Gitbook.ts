@@ -1,7 +1,8 @@
 import { omit } from 'lodash'
-import { IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { IDocument, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { GitbookLoader } from '@langchain/community/document_loaders/web/gitbook'
+import { handleEscapeCharacters } from '../../../src/utils'
 
 class Gitbook_DocumentLoaders implements INode {
     label: string
@@ -13,11 +14,12 @@ class Gitbook_DocumentLoaders implements INode {
     category: string
     baseClasses: string[]
     inputs?: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'GitBook'
         this.name = 'gitbook'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'gitbook.svg'
         this.category = 'Document Loaders'
@@ -64,6 +66,20 @@ class Gitbook_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
     async init(nodeData: INodeData): Promise<any> {
         const webPath = nodeData.inputs?.webPath as string
@@ -71,6 +87,7 @@ class Gitbook_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const output = nodeData.outputs?.output as string
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -120,7 +137,15 @@ class Gitbook_DocumentLoaders implements INode {
             }))
         }
 
-        return docs
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 

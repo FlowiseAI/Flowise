@@ -12,11 +12,13 @@ import {
     INodeData,
     INodeDependencies,
     INodeDirectedGraph,
+    INodeOverrides,
     INodeQueue,
     IOverrideConfig,
     IReactFlowEdge,
     IReactFlowNode,
     IVariableDict,
+    IVariableOverride,
     IncomingInput
 } from '../Interface'
 import { cloneDeep, get, isEqual } from 'lodash'
@@ -436,8 +438,8 @@ type BuildFlowParams = {
     appDataSource: DataSource
     overrideConfig?: ICommonObject
     apiOverrideStatus?: boolean
-    nodeOverrides?: ICommonObject
-    variableOverrides?: ICommonObject[]
+    nodeOverrides?: INodeOverrides
+    variableOverrides?: IVariableOverride[]
     cachePool?: CachePool
     isUpsert?: boolean
     stopNodeId?: string
@@ -1000,15 +1002,15 @@ export const resolveVariables = async (
  * Loop through each inputs and replace their value with override config values
  * @param {INodeData} flowNodeData
  * @param {ICommonObject} overrideConfig
- * @param {ICommonObject} nodeOverrides
- * @param {ICommonObject[]} variableOverrides
+ * @param {INodeOverrides} nodeOverrides
+ * @param {IVariableOverride[]} variableOverrides
  * @returns {INodeData}
  */
 export const replaceInputsWithConfig = (
     flowNodeData: INodeData,
     overrideConfig: ICommonObject,
-    nodeOverrides: ICommonObject,
-    variableOverrides: ICommonObject[]
+    nodeOverrides: INodeOverrides,
+    variableOverrides: IVariableOverride[]
 ) => {
     const types = 'inputs'
 
@@ -1267,6 +1269,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
  * @returns {boolean}
  */
 export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
+    /** Deprecated, add streaming input param to the component instead **/
     const streamAvailableLLMs = {
         'Chat Models': [
             'azureChatOpenAI',
@@ -1297,9 +1300,18 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
     for (const flowNode of reactFlowNodes) {
         const data = flowNode.data
         if (data.category === 'Chat Models' || data.category === 'LLMs') {
-            isChatOrLLMsExist = true
-            const validLLMs = streamAvailableLLMs[data.category]
-            if (!validLLMs.includes(data.name)) return false
+            if (data.inputs?.streaming === false || data.inputs?.streaming === 'false') {
+                return false
+            }
+            if (data.inputs?.streaming === true || data.inputs?.streaming === 'true') {
+                isChatOrLLMsExist = true // passed, proceed to next check
+            }
+            /** Deprecated, add streaming input param to the component instead **/
+            if (!Object.prototype.hasOwnProperty.call(data.inputs, 'streaming') && !data.inputs?.streaming) {
+                isChatOrLLMsExist = true
+                const validLLMs = streamAvailableLLMs[data.category]
+                if (!validLLMs.includes(data.name)) return false
+            }
         }
     }
 
@@ -1310,28 +1322,8 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Agents') {
         // Agent that are available to stream
-        const whitelistAgents = [
-            'openAIFunctionAgent',
-            'mistralAIToolAgent',
-            'csvAgent',
-            'airtableAgent',
-            'conversationalRetrievalAgent',
-            'openAIToolAgent',
-            'toolAgent',
-            'conversationalRetrievalToolAgent',
-            'openAIToolAgentLlamaIndex'
-        ]
+        const whitelistAgents = ['csvAgent', 'airtableAgent', 'toolAgent', 'conversationalRetrievalToolAgent', 'openAIToolAgentLlamaIndex']
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
-
-        // Anthropic streaming has some bug where the log is being sent, temporarily disabled
-        const model = endingNodeData.inputs?.model
-        if (endingNodeData.name.includes('toolAgent')) {
-            if (typeof model === 'string' && model.includes('chatAnthropic')) {
-                return false
-            } else if (typeof model === 'object' && 'id' in model && model['id'].includes('chatAnthropic')) {
-                return false
-            }
-        }
 
         // If agent is openAIAssistant, streaming is enabled
         if (endingNodeData.name === 'openAIAssistant') return true
@@ -1676,12 +1668,21 @@ export const aMonthAgo = () => {
 export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
     try {
         const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
-        const nodeOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
-        const variableOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
-        const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
+        const nodeOverrides: INodeOverrides =
+            apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
+        const variableOverrides: IVariableOverride[] =
+            apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
+        const apiOverrideStatus: boolean =
+            apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
 
         return { nodeOverrides, variableOverrides, apiOverrideStatus }
     } catch (error) {
         return { nodeOverrides: {}, variableOverrides: [], apiOverrideStatus: false }
     }
+}
+
+export const getUploadPath = (): string => {
+    return process.env.BLOB_STORAGE_PATH
+        ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads')
+        : path.join(getUserHome(), '.flowise', 'uploads')
 }

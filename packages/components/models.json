@@ -231,6 +231,14 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "o1-preview",
+                    "name": "o1-preview"
+                },
+                {
+                    "label": "o1-mini",
+                    "name": "o1-mini"
+                },
+                {
                     "label": "gpt-4o-mini",
                     "name": "gpt-4o-mini"
                 },
@@ -418,21 +426,8 @@
                     "name": "gemini-1.5-pro-002"
                 },
                 {
-                    "label": "gemini-pro",
-                    "name": "gemini-pro"
-                },
-                {
-                    "label": "gemini-pro-vision",
-                    "name": "gemini-pro-vision"
-                }
-            ]
-        },
-        {
-            "name": "chatGooglePaLM",
-            "models": [
-                {
-                    "label": "models/chat-bison-001",
-                    "name": "models/chat-bison-001"
+                    "label": "gemini-1.0-pro-latest (deprecated)",
+                    "name": "gemini-1.0-pro-latest"
                 }
             ]
         },
@@ -449,12 +444,20 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
-                    "label": "gemini-1.5-flash",
-                    "name": "gemini-1.5-flash-preview-0514"
+                    "label": "gemini-1.5-flash-002",
+                    "name": "gemini-1.5-flash-002"
                 },
                 {
-                    "label": "gemini-1.5-pro",
-                    "name": "gemini-1.5-pro-preview-0409"
+                    "label": "gemini-1.5-flash-001",
+                    "name": "gemini-1.5-flash-001"
+                },
+                {
+                    "label": "gemini-1.5-pro-002",
+                    "name": "gemini-1.5-pro-002"
+                },
+                {
+                    "label": "gemini-1.5-pro-001",
+                    "name": "gemini-1.5-pro-001"
                 },
                 {
                     "label": "gemini-1.0-pro",
@@ -488,22 +491,6 @@
                     "label": "claude-3-haiku@20240307",
                     "name": "claude-3-haiku@20240307",
                     "description": "Fastest and most compact model for near-instant responsiveness"
-                },
-                {
-                    "label": "chat-bison",
-                    "name": "chat-bison"
-                },
-                {
-                    "label": "codechat-bison",
-                    "name": "codechat-bison"
-                },
-                {
-                    "label": "chat-bison-32k",
-                    "name": "chat-bison-32k"
-                },
-                {
-                    "label": "codechat-bison-32k",
-                    "name": "codechat-bison-32k"
                 }
             ]
         },
@@ -591,6 +578,10 @@
                 {
                     "label": "gpt-4o (latest)",
                     "name": "gpt-4o"
+                },
+                {
+                    "label": "gpt-4o-2024-11-20",
+                    "name": "gpt-4o-2024-11-20"
                 },
                 {
                     "label": "gpt-4o-2024-08-06",
@@ -1101,15 +1092,6 @@
             ]
         },
         {
-            "name": "GooglePaLM",
-            "models": [
-                {
-                    "label": "models/text-bison-001",
-                    "name": "models/text-bison-001"
-                }
-            ]
-        },
-        {
             "name": "googlevertexai",
             "models": [
                 {
@@ -1252,15 +1234,6 @@
                     "label": "voyage-multilingual-2",
                     "name": "voyage-multilingual-2",
                     "description": "Optimized for multilingual retrieval and RAG."
-                }
-            ]
-        },
-        {
-            "name": "googlePaLMEmbeddings",
-            "models": [
-                {
-                    "label": "models/embedding-gecko-001",
-                    "name": "models/embedding-gecko-001"
                 }
             ]
         },
