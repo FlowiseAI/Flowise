@@ -1,20 +1,20 @@
-import { useEffect, useRef, useState, useCallback, useContext } from 'react'
-import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState } from 'reactflow'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import ReactFlow, { addEdge, Background, Controls, useEdgesState, useNodesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  REMOVE_DIRTY,
-  SET_DIRTY,
-  SET_CHATFLOW,
+  closeSnackbar as closeSnackbarAction,
   enqueueSnackbar as enqueueSnackbarAction,
-  closeSnackbar as closeSnackbarAction
+  REMOVE_DIRTY,
+  SET_CHATFLOW,
+  SET_DIRTY
 } from '@/store/actions'
-import { omit, cloneDeep } from 'lodash'
+import { cloneDeep, omit } from 'lodash'
 
 // material-ui
-import { Toolbar, Box, AppBar, Button, Fab } from '@mui/material'
+import { AppBar, Box, Button, Fab, Toolbar } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -37,14 +37,14 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
 // icons
-import { IconX, IconRefreshAlert } from '@tabler/icons-react'
+import { IconRefreshAlert, IconX } from '@tabler/icons-react'
 
 // utils
 import {
   getUniqueNodeId,
+  getUpsertDetails,
   initNode,
   rearrangeToolsOrdering,
-  getUpsertDetails,
   updateOutdatedNodeData,
   updateOutdatedNodeEdge
 } from '@/utils/genericHelper'
@@ -61,6 +61,8 @@ const edgeTypes = { buttonedge: ButtonEdge }
 
 const Canvas = () => {
   const theme = useTheme()
+  const customization = useSelector((state) => state.customization)
+  const [isDark] = useState(customization.isDarkMode)
   const navigate = useNavigate()
 
   const { state } = useLocation()
@@ -520,7 +522,7 @@ const Canvas = () => {
           enableColorOnDark
           position='fixed'
           color='inherit'
-          elevation={1}
+          elevation={0}
           sx={{
             bgcolor: theme.palette.background.default
           }}
@@ -535,7 +537,7 @@ const Canvas = () => {
             />
           </Toolbar>
         </AppBar>
-        <Box sx={{ pt: '70px', height: '100vh', width: '100%' }}>
+        <Box sx={{ pt: '67px', height: '100vh', width: '100%' }}>
           <div className='reactflow-parent-wrapper'>
             <div className='reactflow-wrapper' ref={reactFlowWrapper}>
               <ReactFlow
@@ -564,7 +566,13 @@ const Canvas = () => {
                     transform: 'translate(-50%, -50%)'
                   }}
                 />
-                <Background color='#aaa' gap={16} />
+                <Background
+                  color='#aaa'
+                  gap={24}
+                  style={{
+                    background: isDark ? '#1B2531' : '#F0F2F7'
+                  }}
+                />
                 <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
                 {isSyncNodesButtonEnabled && (
                   <Fab
