@@ -5,23 +5,23 @@ import { useDispatch } from 'react-redux'
 
 // material-ui
 import {
-    Box,
-    Stack,
     Badge,
-    ToggleButton,
-    InputLabel,
-    FormControl,
-    Select,
-    OutlinedInput,
-    Checkbox,
-    ListItemText,
-    Skeleton,
-    FormControlLabel,
-    ToggleButtonGroup,
-    MenuItem,
+    Box,
     Button,
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    InputLabel,
+    ListItemText,
+    MenuItem,
+    OutlinedInput,
+    Select,
+    Skeleton,
+    Stack,
+    Tab,
     Tabs,
-    Tab
+    ToggleButton,
+    ToggleButtonGroup
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconLayoutGrid, IconList, IconX } from '@tabler/icons-react'
@@ -46,13 +46,12 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
 // const
-import { baseURL } from '@/store/constant'
-import { gridSpacing } from '@/store/constant'
+import { baseURL, gridSpacing } from '@/store/constant'
 import useNotifier from '@/utils/useNotifier'
 
 const badges = ['POPULAR', 'NEW']
 const types = ['Chatflow', 'Agentflow', 'Tool']
-const framework = ['Langchain', 'LlamaIndex']
+const framework = ['Langchain']
 const MenuProps = {
     PaperProps: {
         style: {
@@ -242,6 +241,9 @@ const Marketplace = () => {
     }
 
     function filterByFramework(data) {
+        if (frameworkFilter.length === 0) {
+            return !(data.framework || []).includes('LlamaIndex')
+        }
         return frameworkFilter.length > 0 ? (data.framework || []).some((item) => frameworkFilter.includes(item)) : true
     }
 
