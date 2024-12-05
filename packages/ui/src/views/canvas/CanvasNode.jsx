@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types'
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { IconButton, Box, Typography, Divider, Button } from '@mui/material'
+import { Box, Button, Divider, IconButton, Typography } from '@mui/material'
 import Tooltip from '@mui/material/Tooltip'
 
 // project imports
@@ -17,7 +17,7 @@ import NodeInfoDialog from '@/ui-component/dialog/NodeInfoDialog'
 
 // const
 import { baseURL } from '@/store/constant'
-import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
+import { IconAlertTriangle, IconCopy, IconInfoCircle, IconTrash } from '@tabler/icons-react'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 
