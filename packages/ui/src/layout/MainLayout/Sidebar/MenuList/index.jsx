@@ -13,6 +13,7 @@ const MenuList = () => {
             case 'group':
                 return <NavGroup key={item.id} item={item} />
             default:
+                console.log('item', item)
                 return (
                     <Typography key={item.id} variant='h6' color='error' align='center'>
                         Menu Items Error
