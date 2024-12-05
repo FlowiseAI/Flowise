@@ -7,6 +7,7 @@ import {
   IconLock,
   IconRobot,
   IconSettings,
+  IconTemplate,
   IconTool,
   IconUsersGroup,
   IconVariable
@@ -23,7 +24,8 @@ const icons = {
   IconRobot,
   IconVariable,
   IconFiles,
-  IconSettings
+  IconSettings,
+  IconTemplate
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -63,7 +65,7 @@ const dashboard = {
       title: 'Mẫu',
       type: 'item',
       url: '/marketplaces',
-      icon: icons.IconBuildingStore,
+      icon: icons.IconTemplate,
       breadcrumbs: true
     },
     {
