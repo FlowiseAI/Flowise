@@ -256,9 +256,9 @@ export const MessageCard = ({
                                 )}
                             </Box>
                             {hasContent && content ? (
-                                <>
+                                <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
                                     {parsedFileUploads.length > 0 && (
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                             {parsedFileUploads.map((file, index) => (
                                                 <React.Fragment key={index}>
                                                     {file.mime?.startsWith('image/') ? (
@@ -396,7 +396,7 @@ export const MessageCard = ({
                                             {content}
                                         </ReactMarkdown>
                                     </Typography>
-                                </>
+                                </Box>
                             ) : null}
                         </Box>
 
