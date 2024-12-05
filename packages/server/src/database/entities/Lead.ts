@@ -4,24 +4,24 @@ import { ILead } from '../../Interface'
 
 @Entity()
 export class Lead implements ILead {
-    @PrimaryGeneratedColumn('uuid')
-    id: string
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
-    @Column()
-    name?: string
+  @Column()
+  name?: string
 
-    @Column()
-    email?: string
+  @Column()
+  email?: string
 
-    @Column()
-    phone?: string
+  @Column()
+  phone?: string
 
-    @Column()
-    chatflowid: string
+  @Column()
+  chatflowid: string
 
-    @Column()
-    chatId: string
+  @Column()
+  chatId: string
 
-    @CreateDateColumn()
-    createdDate: Date
+  @CreateDateColumn()
+  createdDate: Date
 }

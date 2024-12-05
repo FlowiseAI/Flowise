@@ -9,15 +9,15 @@ A list of Flowise public APIs, allowing users to programmatically execute many o
 To run this standalone:
 
 1. Spin up Flowise server:
-    ```sh
-    cd Flowise
-    pnpm start
-    ```
+   ```sh
+   cd Flowise
+   pnpm start
+   ```
 2. Start API Docs server:
-    ```sh
-    cd packages/api-documentation
-    pnpm start
-    ```
+   ```sh
+   cd packages/api-documentation
+   pnpm start
+   ```
 
 To run in dev mode:
 

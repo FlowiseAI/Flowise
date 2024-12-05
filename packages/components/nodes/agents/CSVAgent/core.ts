@@ -5,14 +5,14 @@ import { getUserHome } from '../../../src/utils'
 let pyodideInstance: PyodideInterface | undefined
 
 export async function LoadPyodide(): Promise<PyodideInterface> {
-    if (pyodideInstance === undefined) {
-        const { loadPyodide } = await import('pyodide')
-        const obj: any = { packageCacheDir: path.join(getUserHome(), '.flowise', 'pyodideCacheDir') }
-        pyodideInstance = await loadPyodide(obj)
-        await pyodideInstance.loadPackage(['pandas', 'numpy'])
-    }
+  if (pyodideInstance === undefined) {
+    const { loadPyodide } = await import('pyodide')
+    const obj: any = { packageCacheDir: path.join(getUserHome(), '.flowise', 'pyodideCacheDir') }
+    pyodideInstance = await loadPyodide(obj)
+    await pyodideInstance.loadPackage(['pandas', 'numpy'])
+  }
 
-    return pyodideInstance
+  return pyodideInstance
 }
 
 export const systemPrompt = `You are working with a pandas dataframe in Python. The name of the dataframe is df.

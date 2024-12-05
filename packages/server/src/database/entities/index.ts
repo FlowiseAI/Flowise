@@ -13,17 +13,17 @@ import { ApiKey } from './ApiKey'
 import { CustomTemplate } from './CustomTemplate'
 
 export const entities = {
-    ChatFlow,
-    ChatMessage,
-    ChatMessageFeedback,
-    Credential,
-    Tool,
-    Assistant,
-    Variable,
-    DocumentStore,
-    DocumentStoreFileChunk,
-    Lead,
-    UpsertHistory,
-    ApiKey,
-    CustomTemplate
+  ChatFlow,
+  ChatMessage,
+  ChatMessageFeedback,
+  Credential,
+  Tool,
+  Assistant,
+  Variable,
+  DocumentStore,
+  DocumentStoreFileChunk,
+  Lead,
+  UpsertHistory,
+  ApiKey,
+  CustomTemplate
 }

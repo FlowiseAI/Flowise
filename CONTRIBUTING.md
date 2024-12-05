@@ -30,24 +30,24 @@ Found an issue? [Report it](https://github.com/FlowiseAI/Flowise/issues/new/choo
 
 Not sure what to contribute? Some ideas:
 
--   Create new components from `packages/components`
--   Update existing components such as extending functionality, fixing bugs
--   Add new chatflow ideas
+- Create new components from `packages/components`
+- Update existing components such as extending functionality, fixing bugs
+- Add new chatflow ideas
 
 ### Developers
 
 Flowise has 3 different modules in a single mono repository.
 
--   `server`: Node backend to serve API logics
--   `ui`: React frontend
--   `components`: Third-party nodes integrations
+- `server`: Node backend to serve API logics
+- `ui`: React frontend
+- `components`: Third-party nodes integrations
 
 #### Prerequisite
 
--   Install [PNPM](https://pnpm.io/installation). The project is configured to use pnpm v9.
-    ```bash
-    npm i -g pnpm
-    ```
+- Install [PNPM](https://pnpm.io/installation). The project is configured to use pnpm v9.
+  ```bash
+  npm i -g pnpm
+  ```
 
 #### Step by step
 
@@ -57,48 +57,48 @@ Flowise has 3 different modules in a single mono repository.
 
 3. Create a new branch, see [guide](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository). Naming conventions:
 
-    - For feature branch: `feature/<Your New Feature>`
-    - For bug fix branch: `bugfix/<Your New Bugfix>`.
+   - For feature branch: `feature/<Your New Feature>`
+   - For bug fix branch: `bugfix/<Your New Bugfix>`.
 
 4. Switch to the newly created branch.
 
 5. Go into repository folder
 
-    ```bash
-    cd Flowise
-    ```
+   ```bash
+   cd Flowise
+   ```
 
 6. Install all dependencies of all modules:
 
-    ```bash
-    pnpm install
-    ```
+   ```bash
+   pnpm install
+   ```
 
 7. Build all the code:
 
-    ```bash
-    pnpm build
-    ```
+   ```bash
+   pnpm build
+   ```
 
 8. Start the app on [http://localhost:3000](http://localhost:3000)
 
-    ```bash
-    pnpm start
-    ```
+   ```bash
+   pnpm start
+   ```
 
 9. For development:
 
-    - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
-    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
-    - Run
+   - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
+   - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
+   - Run
 
-    ```bash
-    pnpm dev
-    ```
+   ```bash
+   pnpm dev
+   ```
 
-    Any changes made in `packages/ui` or `packages/server` will be reflected on [http://localhost:8080](http://localhost:8080)
+   Any changes made in `packages/ui` or `packages/server` will be reflected on [http://localhost:8080](http://localhost:8080)
 
-    For changes made in `packages/components`, run `pnpm build` again to pickup the changes.
+   For changes made in `packages/components`, run `pnpm build` again to pickup the changes.
 
 10. After making all the changes, run
 

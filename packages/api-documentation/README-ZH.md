@@ -9,15 +9,15 @@
 独立运行：
 
 1. 启动 Flowise 服务器：
-    ```sh
-    cd Flowise
-    pnpm start
-    ```
+   ```sh
+   cd Flowise
+   pnpm start
+   ```
 2. 启动 API 文档服务器：
-    ```sh
-    cd packages/api-documentation
-    pnpm start
-    ```
+   ```sh
+   cd packages/api-documentation
+   pnpm start
+   ```
 
 开发模式下运行：
 

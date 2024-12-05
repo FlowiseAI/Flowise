@@ -11,7 +11,7 @@ import { appConfig } from '../AppConfig'
  * @returns {string}
  */
 export const getAPIKeyPath = (): string => {
-    return process.env.APIKEY_PATH ? path.join(process.env.APIKEY_PATH, 'api.json') : path.join(__dirname, '..', '..', 'api.json')
+  return process.env.APIKEY_PATH ? path.join(process.env.APIKEY_PATH, 'api.json') : path.join(__dirname, '..', '..', 'api.json')
 }
 
 /**
@@ -19,8 +19,8 @@ export const getAPIKeyPath = (): string => {
  * @returns {string}
  */
 export const generateAPIKey = (): string => {
-    const buffer = randomBytes(32)
-    return buffer.toString('base64url')
+  const buffer = randomBytes(32)
+  return buffer.toString('base64url')
 }
 
 /**
@@ -29,9 +29,9 @@ export const generateAPIKey = (): string => {
  * @returns {string}
  */
 export const generateSecretHash = (apiKey: string): string => {
-    const salt = randomBytes(8).toString('hex')
-    const buffer = scryptSync(apiKey, salt, 64) as Buffer
-    return `${buffer.toString('hex')}.${salt}`
+  const salt = randomBytes(8).toString('hex')
+  const buffer = scryptSync(apiKey, salt, 64) as Buffer
+  return `${buffer.toString('hex')}.${salt}`
 }
 
 /**
@@ -41,9 +41,9 @@ export const generateSecretHash = (apiKey: string): string => {
  * @returns {boolean}
  */
 export const compareKeys = (storedKey: string, suppliedKey: string): boolean => {
-    const [hashedPassword, salt] = storedKey.split('.')
-    const buffer = scryptSync(suppliedKey, salt, 64) as Buffer
-    return timingSafeEqual(Buffer.from(hashedPassword, 'hex'), buffer)
+  const [hashedPassword, salt] = storedKey.split('.')
+  const buffer = scryptSync(suppliedKey, salt, 64) as Buffer
+  return timingSafeEqual(Buffer.from(hashedPassword, 'hex'), buffer)
 }
 
 /**
@@ -51,28 +51,28 @@ export const compareKeys = (storedKey: string, suppliedKey: string): boolean => 
  * @returns {Promise<ICommonObject[]>}
  */
 export const getAPIKeys = async (): Promise<ICommonObject[]> => {
-    if (appConfig.apiKeys.storageType !== 'json') {
-        return []
-    }
-    try {
-        const content = await fs.promises.readFile(getAPIKeyPath(), 'utf8')
-        return JSON.parse(content)
-    } catch (error) {
-        const keyName = 'DefaultKey'
-        const apiKey = generateAPIKey()
-        const apiSecret = generateSecretHash(apiKey)
-        const content = [
-            {
-                keyName,
-                apiKey,
-                apiSecret,
-                createdAt: moment().format('DD-MMM-YY'),
-                id: randomBytes(16).toString('hex')
-            }
-        ]
-        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
-        return content
-    }
+  if (appConfig.apiKeys.storageType !== 'json') {
+    return []
+  }
+  try {
+    const content = await fs.promises.readFile(getAPIKeyPath(), 'utf8')
+    return JSON.parse(content)
+  } catch (error) {
+    const keyName = 'DefaultKey'
+    const apiKey = generateAPIKey()
+    const apiSecret = generateSecretHash(apiKey)
+    const content = [
+      {
+        keyName,
+        apiKey,
+        apiSecret,
+        createdAt: moment().format('DD-MMM-YY'),
+        id: randomBytes(16).toString('hex')
+      }
+    ]
+    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
+    return content
+  }
 }
 
 /**
@@ -81,21 +81,21 @@ export const getAPIKeys = async (): Promise<ICommonObject[]> => {
  * @returns {Promise<ICommonObject[]>}
  */
 export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
-    const existingAPIKeys = await getAPIKeys()
-    const apiKey = generateAPIKey()
-    const apiSecret = generateSecretHash(apiKey)
-    const content = [
-        ...existingAPIKeys,
-        {
-            keyName,
-            apiKey,
-            apiSecret,
-            createdAt: moment().format('DD-MMM-YY'),
-            id: randomBytes(16).toString('hex')
-        }
-    ]
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
-    return content
+  const existingAPIKeys = await getAPIKeys()
+  const apiKey = generateAPIKey()
+  const apiSecret = generateSecretHash(apiKey)
+  const content = [
+    ...existingAPIKeys,
+    {
+      keyName,
+      apiKey,
+      apiSecret,
+      createdAt: moment().format('DD-MMM-YY'),
+      id: randomBytes(16).toString('hex')
+    }
+  ]
+  await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
+  return content
 }
 
 /**
@@ -104,39 +104,39 @@ export const addAPIKey = async (keyName: string): Promise<ICommonObject[]> => {
  * @returns {Promise<ICommonObject[]>}
  */
 export const importKeys = async (keys: any[], importMode: string): Promise<ICommonObject[]> => {
-    const allApiKeys = await getAPIKeys()
-    // if importMode is errorIfExist, check for existing keys and raise error before any modification to the file
-    if (importMode === 'errorIfExist') {
-        for (const key of keys) {
-            const keyNameExists = allApiKeys.find((k) => k.keyName === key.keyName)
-            if (keyNameExists) {
-                throw new Error(`Key with name ${key.keyName} already exists`)
-            }
-        }
-    }
+  const allApiKeys = await getAPIKeys()
+  // if importMode is errorIfExist, check for existing keys and raise error before any modification to the file
+  if (importMode === 'errorIfExist') {
     for (const key of keys) {
-        // Check if keyName already exists, if overwrite is false, raise an error else overwrite the key
-        const keyNameExists = allApiKeys.find((k) => k.keyName === key.keyName)
-        if (keyNameExists) {
-            const keyIndex = allApiKeys.findIndex((k) => k.keyName === key.keyName)
-            switch (importMode) {
-                case 'overwriteIfExist':
-                    allApiKeys[keyIndex] = key
-                    continue
-                case 'ignoreIfExist':
-                    // ignore this key and continue
-                    continue
-                case 'errorIfExist':
-                    // should not reach here as we have already checked for existing keys
-                    throw new Error(`Key with name ${key.keyName} already exists`)
-                default:
-                    throw new Error(`Unknown overwrite option ${importMode}`)
-            }
-        }
-        allApiKeys.push(key)
+      const keyNameExists = allApiKeys.find((k) => k.keyName === key.keyName)
+      if (keyNameExists) {
+        throw new Error(`Key with name ${key.keyName} already exists`)
+      }
     }
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(allApiKeys), 'utf8')
-    return allApiKeys
+  }
+  for (const key of keys) {
+    // Check if keyName already exists, if overwrite is false, raise an error else overwrite the key
+    const keyNameExists = allApiKeys.find((k) => k.keyName === key.keyName)
+    if (keyNameExists) {
+      const keyIndex = allApiKeys.findIndex((k) => k.keyName === key.keyName)
+      switch (importMode) {
+        case 'overwriteIfExist':
+          allApiKeys[keyIndex] = key
+          continue
+        case 'ignoreIfExist':
+          // ignore this key and continue
+          continue
+        case 'errorIfExist':
+          // should not reach here as we have already checked for existing keys
+          throw new Error(`Key with name ${key.keyName} already exists`)
+        default:
+          throw new Error(`Unknown overwrite option ${importMode}`)
+      }
+    }
+    allApiKeys.push(key)
+  }
+  await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(allApiKeys), 'utf8')
+  return allApiKeys
 }
 
 /**
@@ -145,10 +145,10 @@ export const importKeys = async (keys: any[], importMode: string): Promise<IComm
  * @returns {Promise<ICommonObject[]>}
  */
 export const getApiKey = async (apiKey: string) => {
-    const existingAPIKeys = await getAPIKeys()
-    const keyIndex = existingAPIKeys.findIndex((key) => key.apiKey === apiKey)
-    if (keyIndex < 0) return undefined
-    return existingAPIKeys[keyIndex]
+  const existingAPIKeys = await getAPIKeys()
+  const keyIndex = existingAPIKeys.findIndex((key) => key.apiKey === apiKey)
+  if (keyIndex < 0) return undefined
+  return existingAPIKeys[keyIndex]
 }
 
 /**
@@ -158,12 +158,12 @@ export const getApiKey = async (apiKey: string) => {
  * @returns {Promise<ICommonObject[]>}
  */
 export const updateAPIKey = async (keyIdToUpdate: string, newKeyName: string): Promise<ICommonObject[]> => {
-    const existingAPIKeys = await getAPIKeys()
-    const keyIndex = existingAPIKeys.findIndex((key) => key.id === keyIdToUpdate)
-    if (keyIndex < 0) return []
-    existingAPIKeys[keyIndex].keyName = newKeyName
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(existingAPIKeys), 'utf8')
-    return existingAPIKeys
+  const existingAPIKeys = await getAPIKeys()
+  const keyIndex = existingAPIKeys.findIndex((key) => key.id === keyIdToUpdate)
+  if (keyIndex < 0) return []
+  existingAPIKeys[keyIndex].keyName = newKeyName
+  await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(existingAPIKeys), 'utf8')
+  return existingAPIKeys
 }
 
 /**
@@ -172,10 +172,10 @@ export const updateAPIKey = async (keyIdToUpdate: string, newKeyName: string): P
  * @returns {Promise<ICommonObject[]>}
  */
 export const deleteAPIKey = async (keyIdToDelete: string): Promise<ICommonObject[]> => {
-    const existingAPIKeys = await getAPIKeys()
-    const result = existingAPIKeys.filter((key) => key.id !== keyIdToDelete)
-    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(result), 'utf8')
-    return result
+  const existingAPIKeys = await getAPIKeys()
+  const result = existingAPIKeys.filter((key) => key.id !== keyIdToDelete)
+  await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(result), 'utf8')
+  return result
 }
 
 /**
@@ -184,9 +184,9 @@ export const deleteAPIKey = async (keyIdToDelete: string): Promise<ICommonObject
  * @returns {Promise<void>}
  */
 export const replaceAllAPIKeys = async (content: ICommonObject[]): Promise<void> => {
-    try {
-        await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
-    } catch (error) {
-        logger.error(error)
-    }
+  try {
+    await fs.promises.writeFile(getAPIKeyPath(), JSON.stringify(content), 'utf8')
+  } catch (error) {
+    logger.error(error)
+  }
 }

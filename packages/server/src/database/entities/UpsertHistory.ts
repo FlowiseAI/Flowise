@@ -4,19 +4,19 @@ import { IUpsertHistory } from '../../Interface'
 
 @Entity()
 export class UpsertHistory implements IUpsertHistory {
-    @PrimaryGeneratedColumn('uuid')
-    id: string
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
-    @Index()
-    @Column()
-    chatflowid: string
+  @Index()
+  @Column()
+  chatflowid: string
 
-    @Column()
-    result: string
+  @Column()
+  result: string
 
-    @Column()
-    flowData: string
+  @Column()
+  flowData: string
 
-    @CreateDateColumn()
-    date: Date
+  @CreateDateColumn()
+  date: Date
 }

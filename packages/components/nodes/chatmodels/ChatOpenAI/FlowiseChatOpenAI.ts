@@ -4,35 +4,35 @@ import { BaseChatModelParams } from '@langchain/core/language_models/chat_models
 import { IMultiModalOption, IVisionChatModal } from '../../../src'
 
 export class ChatOpenAI extends LangchainChatOpenAI implements IVisionChatModal {
-    configuredModel: string
-    configuredMaxToken?: number
-    multiModalOption: IMultiModalOption
-    id: string
+  configuredModel: string
+  configuredMaxToken?: number
+  multiModalOption: IMultiModalOption
+  id: string
 
-    constructor(
-        id: string,
-        fields?: Partial<OpenAIChatInput> &
-            Partial<AzureOpenAIInput> &
-            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput },
-        /** @deprecated */
-        configuration?: ClientOptions & LegacyOpenAIInput
-    ) {
-        super(fields, configuration)
-        this.id = id
-        this.configuredModel = fields?.modelName ?? ''
-        this.configuredMaxToken = fields?.maxTokens
-    }
+  constructor(
+    id: string,
+    fields?: Partial<OpenAIChatInput> &
+      Partial<AzureOpenAIInput> &
+      BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput },
+    /** @deprecated */
+    configuration?: ClientOptions & LegacyOpenAIInput
+  ) {
+    super(fields, configuration)
+    this.id = id
+    this.configuredModel = fields?.modelName ?? ''
+    this.configuredMaxToken = fields?.maxTokens
+  }
 
-    revertToOriginalModel(): void {
-        this.modelName = this.configuredModel
-        this.maxTokens = this.configuredMaxToken
-    }
+  revertToOriginalModel(): void {
+    this.modelName = this.configuredModel
+    this.maxTokens = this.configuredMaxToken
+  }
 
-    setMultiModalOption(multiModalOption: IMultiModalOption): void {
-        this.multiModalOption = multiModalOption
-    }
+  setMultiModalOption(multiModalOption: IMultiModalOption): void {
+    this.multiModalOption = multiModalOption
+  }
 
-    setVisionModel(): void {
-        // pass
-    }
+  setVisionModel(): void {
+    // pass
+  }
 }

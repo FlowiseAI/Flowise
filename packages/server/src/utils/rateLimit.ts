@@ -7,49 +7,49 @@ let rateLimiters: Record<string, RateLimitRequestHandler> = {}
 const rateLimiterMutex = new Mutex()
 
 async function addRateLimiter(id: string, duration: number, limit: number, message: string) {
-    const release = await rateLimiterMutex.acquire()
-    try {
-        rateLimiters[id] = rateLimit({
-            windowMs: duration * 1000,
-            max: limit,
-            handler: (_, res) => {
-                res.status(429).send(message)
-            }
-        })
-    } finally {
-        release()
-    }
+  const release = await rateLimiterMutex.acquire()
+  try {
+    rateLimiters[id] = rateLimit({
+      windowMs: duration * 1000,
+      max: limit,
+      handler: (_, res) => {
+        res.status(429).send(message)
+      }
+    })
+  } finally {
+    release()
+  }
 }
 
 function removeRateLimit(id: string) {
-    if (rateLimiters[id]) {
-        delete rateLimiters[id]
-    }
+  if (rateLimiters[id]) {
+    delete rateLimiters[id]
+  }
 }
 
 export function getRateLimiter(req: Request, res: Response, next: NextFunction) {
-    const id = req.params.id
-    if (!rateLimiters[id]) return next()
-    const idRateLimiter = rateLimiters[id]
-    return idRateLimiter(req, res, next)
+  const id = req.params.id
+  if (!rateLimiters[id]) return next()
+  const idRateLimiter = rateLimiters[id]
+  return idRateLimiter(req, res, next)
 }
 
 export async function updateRateLimiter(chatFlow: IChatFlow) {
-    if (!chatFlow.apiConfig) return
-    const apiConfig = JSON.parse(chatFlow.apiConfig)
+  if (!chatFlow.apiConfig) return
+  const apiConfig = JSON.parse(chatFlow.apiConfig)
 
-    const rateLimit: { limitDuration: number; limitMax: number; limitMsg: string; status?: boolean } = apiConfig.rateLimit
-    if (!rateLimit) return
+  const rateLimit: { limitDuration: number; limitMax: number; limitMsg: string; status?: boolean } = apiConfig.rateLimit
+  if (!rateLimit) return
 
-    const { limitDuration, limitMax, limitMsg, status } = rateLimit
-    if (status === false) removeRateLimit(chatFlow.id)
-    else if (limitMax && limitDuration && limitMsg) await addRateLimiter(chatFlow.id, limitDuration, limitMax, limitMsg)
+  const { limitDuration, limitMax, limitMsg, status } = rateLimit
+  if (status === false) removeRateLimit(chatFlow.id)
+  else if (limitMax && limitDuration && limitMsg) await addRateLimiter(chatFlow.id, limitDuration, limitMax, limitMsg)
 }
 
 export async function initializeRateLimiter(chatFlowPool: IChatFlow[]) {
-    await Promise.all(
-        chatFlowPool.map(async (chatFlow) => {
-            await updateRateLimiter(chatFlow)
-        })
-    )
+  await Promise.all(
+    chatFlowPool.map(async (chatFlow) => {
+      await updateRateLimiter(chatFlow)
+    })
+  )
 }

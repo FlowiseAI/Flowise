@@ -3,35 +3,35 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 
 @Entity('custom_template')
 export class CustomTemplate implements ICustomTemplate {
-    @PrimaryGeneratedColumn('uuid')
-    id: string
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
-    @Column()
-    name: string
+  @Column()
+  name: string
 
-    @Column({ type: 'text' })
-    flowData: string
+  @Column({ type: 'text' })
+  flowData: string
 
-    @Column({ nullable: true, type: 'text' })
-    description?: string
+  @Column({ nullable: true, type: 'text' })
+  description?: string
 
-    @Column({ nullable: true, type: 'text' })
-    badge?: string
+  @Column({ nullable: true, type: 'text' })
+  badge?: string
 
-    @Column({ nullable: true, type: 'text' })
-    framework?: string
+  @Column({ nullable: true, type: 'text' })
+  framework?: string
 
-    @Column({ nullable: true, type: 'text' })
-    usecases?: string
+  @Column({ nullable: true, type: 'text' })
+  usecases?: string
 
-    @Column({ nullable: true, type: 'text' })
-    type?: string
+  @Column({ nullable: true, type: 'text' })
+  type?: string
 
-    @Column({ type: 'timestamp' })
-    @CreateDateColumn()
-    createdDate: Date
+  @Column({ type: 'timestamp' })
+  @CreateDateColumn()
+  createdDate: Date
 
-    @Column({ type: 'timestamp' })
-    @UpdateDateColumn()
-    updatedDate: Date
+  @Column({ type: 'timestamp' })
+  @UpdateDateColumn()
+  updatedDate: Date
 }

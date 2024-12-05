@@ -4,59 +4,59 @@ import { IChatMessage, MessageType } from '../../Interface'
 
 @Entity()
 export class ChatMessage implements IChatMessage {
-    @PrimaryGeneratedColumn('uuid')
-    id: string
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
-    @Column()
-    role: MessageType
+  @Column()
+  role: MessageType
 
-    @Index()
-    @Column({ type: 'uuid' })
-    chatflowid: string
+  @Index()
+  @Column({ type: 'uuid' })
+  chatflowid: string
 
-    @Column({ type: 'text' })
-    content: string
+  @Column({ type: 'text' })
+  content: string
 
-    @Column({ nullable: true, type: 'text' })
-    sourceDocuments?: string
+  @Column({ nullable: true, type: 'text' })
+  sourceDocuments?: string
 
-    @Column({ nullable: true, type: 'text' })
-    usedTools?: string
+  @Column({ nullable: true, type: 'text' })
+  usedTools?: string
 
-    @Column({ nullable: true, type: 'text' })
-    fileAnnotations?: string
+  @Column({ nullable: true, type: 'text' })
+  fileAnnotations?: string
 
-    @Column({ nullable: true, type: 'text' })
-    agentReasoning?: string
+  @Column({ nullable: true, type: 'text' })
+  agentReasoning?: string
 
-    @Column({ nullable: true, type: 'text' })
-    fileUploads?: string
+  @Column({ nullable: true, type: 'text' })
+  fileUploads?: string
 
-    @Column({ nullable: true, type: 'text' })
-    artifacts?: string
+  @Column({ nullable: true, type: 'text' })
+  artifacts?: string
 
-    @Column({ nullable: true, type: 'text' })
-    action?: string | null
+  @Column({ nullable: true, type: 'text' })
+  action?: string | null
 
-    @Column()
-    chatType: string
+  @Column()
+  chatType: string
 
-    @Column({ type: 'varchar' })
-    chatId: string
+  @Column({ type: 'varchar' })
+  chatId: string
 
-    @Column({ nullable: true })
-    memoryType?: string
+  @Column({ nullable: true })
+  memoryType?: string
 
-    @Column({ type: 'varchar', nullable: true })
-    sessionId?: string
+  @Column({ type: 'varchar', nullable: true })
+  sessionId?: string
 
-    @Column({ type: 'timestamp' })
-    @CreateDateColumn()
-    createdDate: Date
+  @Column({ type: 'timestamp' })
+  @CreateDateColumn()
+  createdDate: Date
 
-    @Column({ nullable: true, type: 'text' })
-    leadEmail?: string
+  @Column({ nullable: true, type: 'text' })
+  leadEmail?: string
 
-    @Column({ nullable: true, type: 'text' })
-    followUpPrompts?: string
+  @Column({ nullable: true, type: 'text' })
+  followUpPrompts?: string
 }

@@ -21,20 +21,20 @@
 下载并安装 [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
 1. 安装 Flowise
-    ```bash
-    npm install -g flowise
-    ```
+   ```bash
+   npm install -g flowise
+   ```
 2. 启动 Flowise
 
-    ```bash
-    npx flowise start
-    ```
+   ```bash
+   npx flowise start
+   ```
 
-    使用用户名和密码
+   使用用户名和密码
 
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
-    ```
+   ```bash
+   npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
+   ```
 
 3. 打开 [http://localhost:3000](http://localhost:3000)
 
@@ -51,80 +51,80 @@
 ### Docker 镜像
 
 1. 本地构建镜像：
-    ```bash
-    docker build --no-cache -t flowise .
-    ```
+   ```bash
+   docker build --no-cache -t flowise .
+   ```
 2. 运行镜像：
 
-    ```bash
-    docker run -d --name flowise -p 3000:3000 flowise
-    ```
+   ```bash
+   docker run -d --name flowise -p 3000:3000 flowise
+   ```
 
 3. 停止镜像：
-    ```bash
-    docker stop flowise
-    ```
+   ```bash
+   docker stop flowise
+   ```
 
 ## 👨‍💻 开发者
 
 Flowise 在一个单一的代码库中有 3 个不同的模块。
 
--   `server`：用于提供 API 逻辑的 Node 后端
--   `ui`：React 前端
--   `components`：第三方节点集成
+- `server`：用于提供 API 逻辑的 Node 后端
+- `ui`：React 前端
+- `components`：第三方节点集成
 
 ### 先决条件
 
--   安装 [PNPM](https://pnpm.io/installation)
-    ```bash
-    npm i -g pnpm
-    ```
+- 安装 [PNPM](https://pnpm.io/installation)
+  ```bash
+  npm i -g pnpm
+  ```
 
 ### 设置
 
 1. 克隆仓库
 
-    ```bash
-    git clone https://github.com/FlowiseAI/Flowise.git
-    ```
+   ```bash
+   git clone https://github.com/FlowiseAI/Flowise.git
+   ```
 
 2. 进入仓库文件夹
 
-    ```bash
-    cd Flowise
-    ```
+   ```bash
+   cd Flowise
+   ```
 
 3. 安装所有模块的依赖：
 
-    ```bash
-    pnpm install
-    ```
+   ```bash
+   pnpm install
+   ```
 
 4. 构建所有代码：
 
-    ```bash
-    pnpm build
-    ```
+   ```bash
+   pnpm build
+   ```
 
 5. 启动应用：
 
-    ```bash
-    pnpm start
-    ```
+   ```bash
+   pnpm start
+   ```
 
-    现在可以在 [http://localhost:3000](http://localhost:3000) 访问应用
+   现在可以在 [http://localhost:3000](http://localhost:3000) 访问应用
 
 6. 用于开发构建：
 
-    - 在 `packages/ui` 中创建 `.env` 文件并指定 `VITE_PORT`（参考 `.env.example`）
-    - 在 `packages/server` 中创建 `.env` 文件并指定 `PORT`（参考 `.env.example`）
-    - 运行
+   - 在 `packages/ui` 中创建 `.env` 文件并指定 `VITE_PORT`（参考 `.env.example`）
+   - 在 `packages/server` 中创建 `.env` 文件并指定 `PORT`（参考 `.env.example`）
+   - 运行
 
-        ```bash
-        pnpm dev
-        ```
+     ```bash
+     pnpm dev
+     ```
 
-    任何代码更改都会自动重新加载应用程序，访问 [http://localhost:8080](http://localhost:8080)
+   任何代码更改都会自动重新加载应用程序，访问 [http://localhost:8080](http://localhost:8080)
 
 ## 🔒 认证
 
@@ -147,38 +147,38 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 
 在您现有的基础设施中部署自托管的 Flowise，我们支持各种[部署](https://docs.flowiseai.com/configuration/deployment)
 
--   [AWS](https://docs.flowiseai.com/deployment/aws)
--   [Azure](https://docs.flowiseai.com/deployment/azure)
--   [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)
--   [GCP](https://docs.flowiseai.com/deployment/gcp)
--   <details>
-      <summary>其他</summary>
+- [AWS](https://docs.flowiseai.com/deployment/aws)
+- [Azure](https://docs.flowiseai.com/deployment/azure)
+- [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)
+- [GCP](https://docs.flowiseai.com/deployment/gcp)
+- <details>
+    <summary>其他</summary>
 
-    -   [Railway](https://docs.flowiseai.com/deployment/railway)
+  - [Railway](https://docs.flowiseai.com/deployment/railway)
 
-        [![在 Railway 上部署](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
+    [![在 Railway 上部署](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
 
-    -   [Render](https://docs.flowiseai.com/deployment/render)
+  - [Render](https://docs.flowiseai.com/deployment/render)
 
-        [![部署到 Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
+    [![部署到 Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
 
-    -   [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
+  - [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
 
-        <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
+    <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
 
-    -   [Elestio](https://elest.io/open-source/flowiseai)
+  - [Elestio](https://elest.io/open-source/flowiseai)
 
-        [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
+    [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
 
-    -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+  - [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
 
-        [![部署到 Sealos](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+    [![部署到 Sealos](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
 
-    -   [RepoCloud](https://repocloud.io/details/?app_id=29)
+  - [RepoCloud](https://repocloud.io/details/?app_id=29)
 
-        [![部署到 RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
+    [![部署到 RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
 
-      </details>
+    </details>
 
 ## ☁️ 云托管
 

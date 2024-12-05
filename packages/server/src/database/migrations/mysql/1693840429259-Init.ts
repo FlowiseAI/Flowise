@@ -1,9 +1,9 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
 
 export class Init1693840429259 implements MigrationInterface {
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(
-            `CREATE TABLE IF NOT EXISTS \`chat_flow\` (
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `CREATE TABLE IF NOT EXISTS \`chat_flow\` (
                 \`id\` varchar(36) NOT NULL,
                 \`name\` varchar(255) NOT NULL,
                 \`flowData\` text NOT NULL,
@@ -15,9 +15,9 @@ export class Init1693840429259 implements MigrationInterface {
                 \`updatedDate\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                 PRIMARY KEY (\`id\`)
               ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;`
-        )
-        await queryRunner.query(
-            `CREATE TABLE IF NOT EXISTS \`chat_message\` (
+    )
+    await queryRunner.query(
+      `CREATE TABLE IF NOT EXISTS \`chat_message\` (
                 \`id\` varchar(36) NOT NULL,
                 \`role\` varchar(255) NOT NULL,
                 \`chatflowid\` varchar(255) NOT NULL,
@@ -27,9 +27,9 @@ export class Init1693840429259 implements MigrationInterface {
                 PRIMARY KEY (\`id\`),
                 KEY \`IDX_e574527322272fd838f4f0f3d3\` (\`chatflowid\`)
               ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;`
-        )
-        await queryRunner.query(
-            `CREATE TABLE IF NOT EXISTS \`credential\` (
+    )
+    await queryRunner.query(
+      `CREATE TABLE IF NOT EXISTS \`credential\` (
                 \`id\` varchar(36) NOT NULL,
                 \`name\` varchar(255) NOT NULL,
                 \`credentialName\` varchar(255) NOT NULL,
@@ -38,9 +38,9 @@ export class Init1693840429259 implements MigrationInterface {
                 \`updatedDate\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                 PRIMARY KEY (\`id\`)
               ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;`
-        )
-        await queryRunner.query(
-            `CREATE TABLE IF NOT EXISTS \`tool\` (
+    )
+    await queryRunner.query(
+      `CREATE TABLE IF NOT EXISTS \`tool\` (
                 \`id\` varchar(36) NOT NULL,
                 \`name\` varchar(255) NOT NULL,
                 \`description\` text NOT NULL,
@@ -52,13 +52,13 @@ export class Init1693840429259 implements MigrationInterface {
                 \`updatedDate\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                 PRIMARY KEY (\`id\`)
               ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;`
-        )
-    }
+    )
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE chat_flow`)
-        await queryRunner.query(`DROP TABLE chat_message`)
-        await queryRunner.query(`DROP TABLE credential`)
-        await queryRunner.query(`DROP TABLE tool`)
-    }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP TABLE chat_flow`)
+    await queryRunner.query(`DROP TABLE chat_message`)
+    await queryRunner.query(`DROP TABLE credential`)
+    await queryRunner.query(`DROP TABLE tool`)
+  }
 }

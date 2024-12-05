@@ -21,20 +21,20 @@ English | [中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [�
 Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
 1. Install Flowise
-    ```bash
-    npm install -g flowise
-    ```
+   ```bash
+   npm install -g flowise
+   ```
 2. Start Flowise
 
-    ```bash
-    npx flowise start
-    ```
+   ```bash
+   npx flowise start
+   ```
 
-    With username & password
+   With username & password
 
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
-    ```
+   ```bash
+   npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
+   ```
 
 3. Open [http://localhost:3000](http://localhost:3000)
 
@@ -52,35 +52,35 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 ### Docker Image
 
 1. Build the image locally:
-    ```bash
-    docker build --no-cache -t flowise .
-    ```
+   ```bash
+   docker build --no-cache -t flowise .
+   ```
 2. Run image:
 
-    ```bash
-    docker run -d --name flowise -p 3000:3000 flowise
-    ```
+   ```bash
+   docker run -d --name flowise -p 3000:3000 flowise
+   ```
 
 3. Stop image:
-    ```bash
-    docker stop flowise
-    ```
+   ```bash
+   docker stop flowise
+   ```
 
 ## 👨‍💻 Developers
 
 Flowise has 3 different modules in a single mono repository.
 
--   `server`: Node backend to serve API logics
--   `ui`: React frontend
--   `components`: Third-party nodes integrations
--   `api-documentation`: Auto-generated swagger-ui API docs from express
+- `server`: Node backend to serve API logics
+- `ui`: React frontend
+- `components`: Third-party nodes integrations
+- `api-documentation`: Auto-generated swagger-ui API docs from express
 
 ### Prerequisite
 
--   Install [PNPM](https://pnpm.io/installation)
-    ```bash
-    npm i -g pnpm
-    ```
+- Install [PNPM](https://pnpm.io/installation)
+  ```bash
+  npm i -g pnpm
+  ```
 
 ### Setup
 
@@ -127,13 +127,13 @@ Flowise has 3 different modules in a single mono repository.
 
 6.  For development build:
 
-    -   Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
-    -   Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
-    -   Run
+    - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
+    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
+    - Run
 
-        ```bash
-        pnpm dev
-        ```
+      ```bash
+      pnpm dev
+      ```
 
     Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)
 
@@ -158,39 +158,39 @@ Flowise support different environment variables to configure your instance. You 
 
 Deploy Flowise self-hosted in your existing infrastructure, we support various [deployments](https://docs.flowiseai.com/configuration/deployment)
 
--   [AWS](https://docs.flowiseai.com/deployment/aws)
--   [Azure](https://docs.flowiseai.com/deployment/azure)
--   [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)
--   [GCP](https://docs.flowiseai.com/deployment/gcp)
--   [Alibaba Cloud](https://computenest.console.aliyun.com/service/instance/create/default?type=user&ServiceName=Flowise社区版)
--   <details>
-      <summary>Others</summary>
+- [AWS](https://docs.flowiseai.com/deployment/aws)
+- [Azure](https://docs.flowiseai.com/deployment/azure)
+- [Digital Ocean](https://docs.flowiseai.com/deployment/digital-ocean)
+- [GCP](https://docs.flowiseai.com/deployment/gcp)
+- [Alibaba Cloud](https://computenest.console.aliyun.com/service/instance/create/default?type=user&ServiceName=Flowise社区版)
+- <details>
+    <summary>Others</summary>
 
-    -   [Railway](https://docs.flowiseai.com/deployment/railway)
+  - [Railway](https://docs.flowiseai.com/deployment/railway)
 
-        [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
+    [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
 
-    -   [Render](https://docs.flowiseai.com/deployment/render)
+  - [Render](https://docs.flowiseai.com/deployment/render)
 
-        [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
+    [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/deployment/render)
 
-    -   [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
+  - [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
 
-        <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
+    <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
 
-    -   [Elestio](https://elest.io/open-source/flowiseai)
+  - [Elestio](https://elest.io/open-source/flowiseai)
 
-        [![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/flowiseai)
+    [![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/flowiseai)
 
-    -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+  - [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
 
-        [![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+    [![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
 
-    -   [RepoCloud](https://repocloud.io/details/?app_id=29)
+  - [RepoCloud](https://repocloud.io/details/?app_id=29)
 
-        [![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
+    [![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
 
-      </details>
+    </details>
 
 ## ☁️ Flowise Cloud
 

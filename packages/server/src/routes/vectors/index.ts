@@ -9,10 +9,10 @@ const upload = multer({ dest: getUploadPath() })
 
 // CREATE
 router.post(
-    ['/upsert/', '/upsert/:id'],
-    upload.array('files'),
-    vectorsController.getRateLimiterMiddleware,
-    vectorsController.upsertVectorMiddleware
+  ['/upsert/', '/upsert/:id'],
+  upload.array('files'),
+  vectorsController.getRateLimiterMiddleware,
+  vectorsController.upsertVectorMiddleware
 )
 router.post(['/internal-upsert/', '/internal-upsert/:id'], upload.array('files'), vectorsController.createInternalUpsert)
 
