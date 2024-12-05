@@ -1,9 +1,11 @@
-import { getBezierPath, EdgeText } from 'reactflow'
+import { EdgeText, getBezierPath } from 'reactflow'
 import PropTypes from 'prop-types'
 import { useDispatch } from 'react-redux'
 import { useContext } from 'react'
 import { SET_DIRTY } from '@/store/actions'
 import { flowContext } from '@/store/context/ReactFlowContext'
+import CloseIcon from '@mui/icons-material/Close'
+import { IconButton } from '@mui/material'
 
 import './index.css'
 
@@ -52,9 +54,20 @@ const ButtonEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
         requiredExtensions='http://www.w3.org/1999/xhtml'
       >
         <div>
-          <button className='edgebutton' onClick={(event) => onEdgeClick(event, id)}>
-            ×
-          </button>
+          <IconButton
+            size='small'
+            onClick={(event) => onEdgeClick(event, id)}
+            sx={{
+              padding: '4px',
+              backgroundColor: 'background.paper',
+              '&:hover': {
+                backgroundColor: 'action.hover'
+              }
+            }}
+            className='shadow-xl'
+          >
+            <CloseIcon fontSize='small' />
+          </IconButton>
         </div>
       </foreignObject>
     </>
