@@ -200,18 +200,9 @@ const CanvasNode = ({ data }) => {
             </div>
             {(data.inputAnchors.length > 0 || data.inputParams.length > 0) && (
               <>
-                <Divider />
-                <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
-                  <Typography
-                    sx={{
-                      fontWeight: 500,
-                      textAlign: 'center'
-                    }}
-                  >
-                    Inputs
-                  </Typography>
-                </Box>
-                <Divider />
+                <Divider textAlign='left'>
+                  <span className='opacity-50'>Inputs</span>
+                </Divider>
               </>
             )}
             {data.inputAnchors.map((inputAnchor, index) => (
@@ -248,20 +239,11 @@ const CanvasNode = ({ data }) => {
                 </Button>
               </div>
             )}
-            {data.outputAnchors.length > 0 && <Divider />}
             {data.outputAnchors.length > 0 && (
-              <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
-                <Typography
-                  sx={{
-                    fontWeight: 500,
-                    textAlign: 'center'
-                  }}
-                >
-                  Output
-                </Typography>
-              </Box>
+              <Divider textAlign='right'>
+                <span className='opacity-50'>Output</span>
+              </Divider>
             )}
-            {data.outputAnchors.length > 0 && <Divider />}
             {data.outputAnchors.length > 0 &&
               data.outputAnchors.map((outputAnchor) => (
                 <NodeOutputHandler key={JSON.stringify(data)} outputAnchor={outputAnchor} data={data} />
