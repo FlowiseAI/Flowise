@@ -6,7 +6,7 @@ import lunary from 'lunary'
 import { RunTree, RunTreeConfig, Client as LangsmithClient } from 'langsmith'
 import { Langfuse, LangfuseTraceClient, LangfuseSpanClient, LangfuseGenerationClient } from 'langfuse'
 
-import { BaseCallbackHandler } from '@langchain/core/callbacks/base'
+import { BaseCallbackHandler, NewTokenIndices, HandleLLMNewTokenCallbackFields } from '@langchain/core/callbacks/base'
 import { LangChainTracer, LangChainTracerFields } from '@langchain/core/tracers/tracer_langchain'
 import { BaseTracer, Run } from '@langchain/core/tracers/base'
 import { ChainValues } from '@langchain/core/utils/types'
@@ -17,6 +17,8 @@ import { getCredentialData, getCredentialParam, getEnvironmentVariable } from '.
 import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
 import { LangWatch, LangWatchSpan, LangWatchTrace, autoconvertTypedValues } from 'langwatch'
 import { DataSource } from 'typeorm'
+import { ChatGenerationChunk } from '@langchain/core/outputs'
+import { AIMessageChunk } from '@langchain/core/messages'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
@@ -183,7 +185,14 @@ export class CustomChainHandler extends BaseCallbackHandler {
         if (this.skipK > 0) this.skipK -= 1
     }
 
-    handleLLMNewToken(token: string) {
+    handleLLMNewToken(
+        token: string,
+        idx?: NewTokenIndices,
+        runId?: string,
+        parentRunId?: string,
+        tags?: string[],
+        fields?: HandleLLMNewTokenCallbackFields
+    ): void | Promise<void> {
         if (this.skipK === 0) {
             if (!this.isLLMStarted) {
                 this.isLLMStarted = true
@@ -192,7 +201,16 @@ export class CustomChainHandler extends BaseCallbackHandler {
                 }
             }
             if (this.sseStreamer) {
-                this.sseStreamer.streamTokenEvent(this.chatId, token)
+                if (token) {
+                    const chunk = fields?.chunk as ChatGenerationChunk
+                    const message = chunk?.message as AIMessageChunk
+                    const toolCalls = message?.tool_call_chunks || []
+
+                    // Only stream when token is not empty and not a tool call
+                    if (toolCalls.length === 0) {
+                        this.sseStreamer.streamTokenEvent(this.chatId, token)
+                    }
+                }
             }
         }
     }

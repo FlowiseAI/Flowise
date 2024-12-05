@@ -3,7 +3,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { cloneDeep, omit } from 'lodash'
 import { ICommonObject, IMessage, addArrayFilesToStorage, mapMimeTypeToInputField, mapExtToInputField } from 'flowise-components'
-import telemetryService from '../services/telemetry'
 import logger from '../utils/logger'
 import {
     buildFlow,
@@ -13,7 +12,8 @@ import {
     getMemorySessionId,
     getAppVersion,
     getTelemetryFlowObj,
-    getStartingNodes
+    getStartingNodes,
+    getAPIOverrideConfig
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
 import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType } from '../Interface'
@@ -24,6 +24,7 @@ import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { getErrorMessage } from '../errors/utils'
 import { v4 as uuidv4 } from 'uuid'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../Interface.Metrics'
 /**
  * Upsert documents
  * @param {Request} req
@@ -56,7 +57,8 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             for (const file of files) {
                 const fileNames: string[] = []
                 const fileBuffer = fs.readFileSync(file.path)
-
+                // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
+                file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
                 const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
@@ -154,21 +156,40 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
 
         const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
+        /*** Get API Config ***/
+        const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+
+        // For "files" input, add a new node override with the actual input name such as pdfFile, txtFile, etc.
+        for (const nodeLabel in nodeOverrides) {
+            const params = nodeOverrides[nodeLabel]
+            const enabledFileParam = params.find((param) => param.enabled && param.name === 'files')
+            if (enabledFileParam) {
+                const fileInputFieldFromExt = mapExtToInputField(enabledFileParam.type)
+                nodeOverrides[nodeLabel].push({
+                    ...enabledFileParam,
+                    name: fileInputFieldFromExt
+                })
+            }
+        }
+
         const upsertedResult = await buildFlow({
             startingNodeIds,
             reactFlowNodes: nodes,
             reactFlowEdges: edges,
+            apiMessageId,
             graph: filteredGraph,
             depthQueue,
             componentNodes: appServer.nodesPool.componentNodes,
             question: incomingInput.question,
             chatHistory,
             chatId,
-            apiMessageId,
             sessionId: sessionId ?? '',
             chatflowid,
             appDataSource: appServer.AppDataSource,
             overrideConfig: incomingInput?.overrideConfig,
+            apiOverrideStatus,
+            nodeOverrides,
+            variableOverrides,
             cachePool: appServer.cachePool,
             isUpsert,
             stopNodeId
@@ -190,16 +211,14 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             await appServer.AppDataSource.getRepository(UpsertHistory).save(upsertHistory)
         }
 
-        await telemetryService.createEvent({
-            name: `vector_upserted`,
-            data: {
-                version: await getAppVersion(),
-                chatlowId: chatflowid,
-                type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
-                flowGraph: getTelemetryFlowObj(nodes, edges),
-                stopNodeId
-            }
+        await appServer.telemetry.sendTelemetry('vector_upserted', {
+            version: await getAppVersion(),
+            chatlowId: chatflowid,
+            type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+            flowGraph: getTelemetryFlowObj(nodes, edges),
+            stopNodeId
         })
+        appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
 
         return upsertedResult['result'] ?? { result: 'Successfully Upserted' }
     } catch (e) {

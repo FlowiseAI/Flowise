@@ -2,8 +2,8 @@ import { omit } from 'lodash'
 import { TextSplitter } from 'langchain/text_splitter'
 import { Document, DocumentInterface } from '@langchain/core/documents'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
-import { INode, INodeData, INodeParams, ICommonObject } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from '../../../src/Interface'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import SpiderApp from './SpiderApp'
 
 interface SpiderLoaderParameters {
@@ -85,11 +85,12 @@ class Spider_DocumentLoaders implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Spider Document Loaders'
         this.name = 'spiderDocumentLoaders'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'spider.svg'
         this.category = 'Document Loaders'
@@ -168,6 +169,20 @@ class Spider_DocumentLoaders implements INode {
             type: 'credential',
             credentialNames: ['spiderApi']
         }
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -180,6 +195,7 @@ class Spider_DocumentLoaders implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const spiderApiKey = getCredentialParam('spiderApiKey', credentialData, nodeData)
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const output = nodeData.outputs?.output as string
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -244,7 +260,15 @@ class Spider_DocumentLoaders implements INode {
                       )
         }))
 
-        return docs
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 

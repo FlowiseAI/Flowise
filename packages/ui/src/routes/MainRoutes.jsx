@@ -99,6 +99,10 @@ const MainRoutes = {
             element: <VectorStoreConfigure />
         },
         {
+            path: '/document-stores/vector/:id/:docId',
+            element: <VectorStoreConfigure />
+        },
+        {
             path: '/document-stores/query/:id',
             element: <VectorStoreQuery />
         }

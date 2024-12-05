@@ -1,7 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { buildFlow, constructGraphs, databaseEntities, getEndingNodes, getStartingNodes, resolveVariables } from '../../utils'
+import {
+    buildFlow,
+    constructGraphs,
+    databaseEntities,
+    getAPIOverrideConfig,
+    getEndingNodes,
+    getStartingNodes,
+    resolveVariables
+} from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { IDepthQueue, IReactFlowNode } from '../../Interface'
@@ -51,6 +59,8 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     }
     startingNodeIds = [...new Set(startingNodeIds)]
 
+    const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+
     const reactFlowNodes = await buildFlow({
         startingNodeIds,
         reactFlowNodes: nodes,
@@ -64,7 +74,10 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
         sessionId: chatId,
         chatflowid,
         apiMessageId,
-        appDataSource: appServer.AppDataSource
+        appDataSource: appServer.AppDataSource,
+        apiOverrideStatus,
+        nodeOverrides,
+        variableOverrides
     })
 
     const nodeToExecute =
@@ -77,13 +90,16 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     }
 
     const flowDataObj: ICommonObject = { chatflowid, chatId }
+
     const reactFlowNodeData: INodeData = await resolveVariables(
         appServer.AppDataSource,
         nodeToExecute.data,
         reactFlowNodes,
         '',
         [],
-        flowDataObj
+        flowDataObj,
+        '',
+        variableOverrides
     )
     let nodeToExecuteData = reactFlowNodeData
 
