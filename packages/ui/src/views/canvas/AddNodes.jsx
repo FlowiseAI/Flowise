@@ -247,7 +247,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
   return (
     <>
       <StyledFab
-        className='left-5 top-5 min-w-[150px] rounded shadow-none'
+        className='left-5 top-5 min-w-[150px] rounded'
         ref={anchorRef}
         size='small'
         color='primary'

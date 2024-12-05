@@ -1,12 +1,11 @@
 import PropTypes from 'prop-types'
-import { useSelector, useDispatch } from 'react-redux'
-import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
+import { styled, useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Switch } from '@mui/material'
-import { styled } from '@mui/material/styles'
 
 // project imports
 import LogoSection from '../LogoSection'
@@ -89,6 +88,13 @@ const Header = ({ handleLeftDrawerToggle }) => {
     navigate(0)
   }
 
+  // TODO: disable dark mode
+  useEffect(() => {
+    if (isDark) {
+      changeDarkMode()
+    }
+  }, [isDark])
+
   return (
     <>
       {/* logo & toggler button */}
@@ -126,7 +132,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
         </ButtonBase>
       </Box>
       <Box sx={{ flexGrow: 1 }} />
-      <MaterialUISwitch checked={isDark} onChange={changeDarkMode} />
+      {/*<MaterialUISwitch checked={isDark} onChange={changeDarkMode} />*/}
       <Box sx={{ ml: 2 }}></Box>
       <ProfileSection handleLogout={signOutClicked} username={localStorage.getItem('username') ?? ''} />
     </>
