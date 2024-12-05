@@ -10,6 +10,9 @@ import MicIcon from '@mui/icons-material/Mic'
 import StopIcon from '@mui/icons-material/Stop'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
+import { IconCircleDot } from '@tabler/icons-react'
+import Typography from '@mui/material/Typography'
+import SendIcon from '@mui/icons-material/Send'
 
 import { throttle } from '@utils/throttle'
 import { useAnswers } from './AnswersContext'
@@ -43,6 +46,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
     const [recordingStatus, setRecordingStatus] = useState('')
     const [recordedAudio, setRecordedAudio] = useState<File | null>(null)
     const [recordingTime, setRecordingTime] = useState(0)
+    const [isLoadingRecording, setIsLoadingRecording] = useState(false)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const recordingIntervalRef = useRef<number | undefined>(undefined)
     const { chat, journey, messages, sendMessage, isLoading, sidekick, gptModel, startNewChat, chatbotConfig } = useAnswers()
@@ -79,7 +83,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         setInputValue(event.target.value)
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!inputValue && uploadedFiles.length === 0 && !recordedAudio) return
 
         const files = uploadedFiles.map((file: FileUpload) => ({
@@ -123,6 +127,8 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         setUploadedFiles([])
         setRecordedAudio(null)
         setRecordingStatus('')
+        setIsLoadingRecording(false)
+        setRecordingTime(0)
     }
 
     const isFileAllowedForUpload = (file: File) => {
@@ -257,23 +263,28 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                 mediaRecorderRef.current = new MediaRecorder(stream)
                 mediaRecorderRef.current.start()
                 setIsRecording(true)
-                setRecordingStatus('Recording audio...')
                 setRecordingTime(0)
+                setRecordingStatus('')
 
                 mediaRecorderRef.current.ondataavailable = (event) => {
                     const audioBlob = event.data
                     const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/webm' })
                     setRecordedAudio(audioFile)
-                    setRecordingStatus('Audio ready to send')
+                    if (isLoadingRecording) {
+                        handleSubmit()
+                    }
                 }
 
                 mediaRecorderRef.current.onstop = () => {
                     setIsRecording(false)
-                    setRecordingStatus('')
                     stream.getTracks().forEach((track) => track.stop())
                 }
             })
-            .catch((error) => console.error('Error accessing microphone:', error))
+            .catch((error) => {
+                console.error('Error accessing microphone:', error)
+                setRecordingStatus('To record audio, use modern browsers like Chrome or Firefox that support audio recording.')
+                setIsRecording(true)
+            })
     }
 
     const handleAudioRecordStop = () => {
@@ -322,6 +333,61 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
     //     }
     //     return '*';
     //   };
+
+    const handleStopAndSend = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            setIsLoadingRecording(true)
+            mediaRecorderRef.current.addEventListener('dataavailable', async (event) => {
+                const audioBlob = event.data
+                const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/webm' })
+                setRecordedAudio(audioFile)
+                const reader = new FileReader()
+                reader.readAsDataURL(audioFile)
+                reader.onload = (evt) => {
+                    if (!evt?.target?.result) return
+                    const files = uploadedFiles.map((file: FileUpload) => ({
+                        data: file.data,
+                        type: file.type,
+                        name: file.name,
+                        mime: file.mime
+                    }))
+                    files.push({
+                        data: evt.target.result as string,
+                        type: 'file',
+                        name: `audio_${Date.now()}.wav`,
+                        mime: audioFile.type
+                    })
+                    sendMessage({
+                        content: inputValue,
+                        chatId: chat?.id,
+                        files,
+                        sidekick,
+                        gptModel
+                    })
+                    setInputValue('')
+                    setUploadedFiles([])
+                    setRecordedAudio(null)
+                    setRecordingStatus('')
+                    setIsLoadingRecording(false)
+                    setRecordingTime(0)
+                }
+            }, { once: true })
+            mediaRecorderRef.current.stop()
+        } else if (recordedAudio) {
+            handleSubmit()
+        }
+    }
+
+    const handleStopAndCancel = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.stop()
+        }
+        setRecordingStatus('')
+        setRecordingTime(0)
+        setIsRecording(false)
+        setRecordedAudio(null)
+        setIsLoadingRecording(false)
+    }
 
     return (
         <Box
@@ -434,71 +500,96 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                 )}
             </Box>
 
-            <Box sx={{ color: 'red', marginTop: 1, marginBottom: 1 }}>
-                {isRecording ? `Recording: ${formatTime(recordingTime)}` : recordingStatus}
-            </Box>
-
-            <Box sx={{ display: 'flex', gap: 2 }}>
-                <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', alignItems: 'flex-end' }}>
-                    {/* <SidekickSelect onSidekickSelected={handleSidekickSelected} sidekicks={sidekicks} /> */}
-                    {/* {!messages?.length ? (
-                        <DefaultPrompts prompts={chatbotConfig?.starterPrompts} onPromptSelected={handlePromptSelected} />
-                    ) : null} */}
-                </Box>
-                {/* <RemainingTokensCounter /> */}
-            </Box>
-
-            <TextField
-                id='user-chat-input'
-                inputRef={inputRef}
-                variant='filled'
-                fullWidth
-                placeholder={chatbotConfig?.textInput?.placeholder ?? 'Send a question or task'}
-                value={inputValue}
-                multiline
-                onChange={handleInputChange}
-                onKeyDown={handleKeyPress}
-                InputProps={{
-                    startAdornment: (
-                        <Tooltip title='Attach File'>
-                            <Button component='label' sx={{ minWidth: 0 }}>
-                                <AttachFileIcon />
-                                <input type='file' hidden multiple onChange={handleFileUpload} />
-                            </Button>
-                        </Tooltip>
-                    )
-                }}
-            />
-
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    position: 'absolute',
-                    gap: 1,
-                    bottom: 25,
-                    right: 28,
-                    alignItems: 'center'
-                }}
-            >
-                <Tooltip title={isRecording ? 'Stop Recording' : 'Record Audio'}>
-                    <Button onClick={isRecording ? handleAudioRecordStop : handleAudioRecordStart}>
-                        {isRecording ? <StopIcon /> : <MicIcon />}
-                    </Button>
-                </Tooltip>
-
-                {!isWidget && messages?.length ? (
-                    <Tooltip title='Start new chat'>
-                        <Button variant='outlined' color='primary' onClick={startNewChat} data-test-id='new-chat-button'>
-                            Start New Chat
-                        </Button>
-                    </Tooltip>
-                ) : null}
-
-                <Button variant='contained' color='primary' onClick={handleSubmit}>
-                    Send
-                </Button>
-            </Box>
+            {isRecording ? (
+                <TextField
+                    id='user-chat-input'
+                    inputRef={inputRef}
+                    variant='filled'
+                    fullWidth
+                    disabled
+                    value={
+                        recordingStatus === 'To record audio, use modern browsers like Chrome or Firefox that support audio recording.'
+                            ? recordingStatus
+                            : `Recording: ${formatTime(recordingTime)}${isLoadingRecording ? ' • Sending...' : ''}`
+                    }
+                    InputProps={{
+                        startAdornment: (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1 }}>
+                                <IconCircleDot sx={{ color: 'red', animation: 'pulse 1.5s infinite' }} />
+                            </Box>
+                        ),
+                        endAdornment: (
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Tooltip title='Cancel Recording'>
+                                    <Button onClick={handleStopAndCancel}>
+                                        <CloseIcon />
+                                    </Button>
+                                </Tooltip>
+                                {!isWidget && messages?.length ? (
+                                    <Tooltip title='Start new chat'>
+                                        <Button 
+                                            variant='outlined' 
+                                            color='primary' 
+                                            onClick={startNewChat}
+                                            data-test-id='new-chat-button'
+                                        >
+                                            Start New Chat
+                                        </Button>
+                                    </Tooltip>
+                                ) : null}
+                                <Button 
+                                    variant='contained' 
+                                    color='primary' 
+                                    onClick={handleStopAndSend}
+                                >
+                                    Send
+                                </Button>
+                            </Box>
+                        )
+                    }}
+                />
+            ) : (
+                <TextField
+                    id='user-chat-input'
+                    inputRef={inputRef}
+                    variant='filled'
+                    fullWidth
+                    placeholder={chatbotConfig?.textInput?.placeholder ?? 'Send a question or task'}
+                    value={inputValue}
+                    multiline
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyPress}
+                    InputProps={{
+                        startAdornment: (
+                            <Tooltip title='Attach File'>
+                                <Button component='label' sx={{ minWidth: 0 }}>
+                                    <AttachFileIcon />
+                                    <input type='file' hidden multiple onChange={handleFileUpload} />
+                                </Button>
+                            </Tooltip>
+                        ),
+                        endAdornment: (
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Tooltip title={isRecording ? 'Stop Recording' : 'Record Audio'}>
+                                    <Button onClick={handleAudioRecordStart}>
+                                        <MicIcon />
+                                    </Button>
+                                </Tooltip>
+                                {!isWidget && messages?.length ? (
+                                    <Tooltip title='Start new chat'>
+                                        <Button variant='outlined' color='primary' onClick={startNewChat} data-test-id='new-chat-button'>
+                                            Start New Chat
+                                        </Button>
+                                    </Tooltip>
+                                ) : null}
+                                <Button variant='contained' color='primary' onClick={handleSubmit}>
+                                    Send
+                                </Button>
+                            </Box>
+                        )
+                    }}
+                />
+            )}
         </Box>
     )
 }

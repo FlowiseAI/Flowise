@@ -150,15 +150,12 @@ interface AnswersProviderProps {
 }
 
 const fetcher = (url: string) => {
-    console.log(`Fetching data from: ${url}`)
     return axios
         .get(url)
         .then((res) => {
-            console.log('Data fetched successfully:', res.data)
             return res.data
         })
         .catch((error) => {
-            console.error('Error fetching data:', error)
             throw error
         })
 }
@@ -206,7 +203,6 @@ export function AnswersProvider({
     useStreaming: initialUseStreaming = true,
     apiUrl = '/api'
 }: AnswersProviderProps) {
-    console.log('AnswersProvider', { user, initialChat })
     const router = useRouter()
     const axiosInstance = React.useMemo(() => setupAxiosInterceptors(apiUrl), [apiUrl])
     const [error, setError] = useState(null)
@@ -272,7 +268,6 @@ export function AnswersProvider({
         }
     })
     const [chatId, setChatId] = useState<string | undefined>(initialChat?.id)
-    console.log('ChatId', { isStreaming, chatId, check: !isStreaming && !!chatId })
     // false to disable for now
     const { data: chat } = useSWR<Chat>(!isStreaming && chatId && false ? `${apiUrl}/chats/${chatId}` : null, fetcher, {
         revalidateOnFocus: false,
@@ -280,7 +275,6 @@ export function AnswersProvider({
         // refreshInterval: isStreaming ? 0 : 1000,
         fallbackData: initialChat,
         onSuccess(data, key, config) {
-            console.log('ChatId onSuccess', { data, key, config })
             // TODO: re enable once polling is fixed for shared chats
             // setMessages(data.messages!);
         }
@@ -494,7 +488,6 @@ export function AnswersProvider({
                     audio,
                     socketIOClientId: isChatFlowAvailableToStream ? socketIOClientId : undefined
                 }
-                console.log('[AnswersContext] sendMessage', params)
 
                 const response = await predictionApi.sendMessageAndGetPrediction(sidekick?.id!, params)
                 const data = response.data
