@@ -17,12 +17,12 @@ const updateCredential = (id, body) => client.put(`/credentials/${id}`, body)
 const deleteCredential = (id) => client.delete(`/credentials/${id}`)
 
 export default {
-    getAllCredentials,
-    getCredentialsByName,
-    getAllComponentsCredentials,
-    getSpecificCredential,
-    getSpecificComponentCredential,
-    createCredential,
-    updateCredential,
-    deleteCredential
+  getAllCredentials,
+  getCredentialsByName,
+  getAllComponentsCredentials,
+  getSpecificCredential,
+  getSpecificComponentCredential,
+  createCredential,
+  updateCredential,
+  deleteCredential
 }

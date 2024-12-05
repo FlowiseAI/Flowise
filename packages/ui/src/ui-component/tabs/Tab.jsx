@@ -4,7 +4,7 @@ import { Tab as BaseTab, tabClasses } from '@mui/base/Tab'
 import { blue } from './tabColors'
 
 export const Tab = styled(BaseTab)(
-    ({ ...props }) => `
+  ({ ...props }) => `
   font-family: 'IBM Plex Sans', sans-serif;
   color: white;
   cursor: pointer;

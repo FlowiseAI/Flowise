@@ -39,74 +39,74 @@ const VectorStoreQuery = Loadable(lazy(() => import('@/views/docstore/VectorStor
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
-    path: '/',
-    element: <MainLayout />,
-    children: [
-        {
-            path: '/',
-            element: <Chatflows />
-        },
-        {
-            path: '/chatflows',
-            element: <Chatflows />
-        },
-        {
-            path: '/agentflows',
-            element: <Agentflows />
-        },
-        {
-            path: '/marketplaces',
-            element: <Marketplaces />
-        },
-        {
-            path: '/apikey',
-            element: <APIKey />
-        },
-        {
-            path: '/tools',
-            element: <Tools />
-        },
-        {
-            path: '/assistants',
-            element: <Assistants />
-        },
-        {
-            path: '/credentials',
-            element: <Credentials />
-        },
-        {
-            path: '/variables',
-            element: <Variables />
-        },
-        {
-            path: '/document-stores',
-            element: <Documents />
-        },
-        {
-            path: '/document-stores/:id',
-            element: <DocumentStoreDetail />
-        },
-        {
-            path: '/document-stores/chunks/:id/:id',
-            element: <ShowStoredChunks />
-        },
-        {
-            path: '/document-stores/:id/:name',
-            element: <LoaderConfigPreviewChunks />
-        },
-        {
-            path: '/document-stores/vector/:id',
-            element: <VectorStoreConfigure />
-        },
-        {
-            path: '/document-stores/vector/:id/:docId',
-            element: <VectorStoreConfigure />
-        },
-        {
-            path: '/document-stores/query/:id',
-            element: <VectorStoreQuery />
-        }
-    ]
+  path: '/',
+  element: <MainLayout />,
+  children: [
+    {
+      path: '/',
+      element: <Chatflows />
+    },
+    {
+      path: '/chatflows',
+      element: <Chatflows />
+    },
+    {
+      path: '/agentflows',
+      element: <Agentflows />
+    },
+    {
+      path: '/marketplaces',
+      element: <Marketplaces />
+    },
+    {
+      path: '/apikey',
+      element: <APIKey />
+    },
+    {
+      path: '/tools',
+      element: <Tools />
+    },
+    {
+      path: '/assistants',
+      element: <Assistants />
+    },
+    {
+      path: '/credentials',
+      element: <Credentials />
+    },
+    {
+      path: '/variables',
+      element: <Variables />
+    },
+    {
+      path: '/document-stores',
+      element: <Documents />
+    },
+    {
+      path: '/document-stores/:id',
+      element: <DocumentStoreDetail />
+    },
+    {
+      path: '/document-stores/chunks/:id/:id',
+      element: <ShowStoredChunks />
+    },
+    {
+      path: '/document-stores/:id/:name',
+      element: <LoaderConfigPreviewChunks />
+    },
+    {
+      path: '/document-stores/vector/:id',
+      element: <VectorStoreConfigure />
+    },
+    {
+      path: '/document-stores/vector/:id/:docId',
+      element: <VectorStoreConfigure />
+    },
+    {
+      path: '/document-stores/query/:id',
+      element: <VectorStoreQuery />
+    }
+  ]
 }
 
 export default MainRoutes

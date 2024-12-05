@@ -18,78 +18,78 @@ import NodeInputHandler from '@/views/canvas/NodeInputHandler'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const ConditionDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
+  const portalElement = document.getElementById('portal')
 
-    const dispatch = useDispatch()
+  const dispatch = useDispatch()
 
-    const [inputParam, setInputParam] = useState(null)
-    const [tabValue, setTabValue] = useState(0)
-    const [data, setData] = useState({})
+  const [inputParam, setInputParam] = useState(null)
+  const [tabValue, setTabValue] = useState(0)
+  const [data, setData] = useState({})
 
-    useEffect(() => {
-        if (dialogProps.inputParam) {
-            setInputParam(dialogProps.inputParam)
-        }
+  useEffect(() => {
+    if (dialogProps.inputParam) {
+      setInputParam(dialogProps.inputParam)
+    }
 
-        if (dialogProps.data) setData(dialogProps.data)
+    if (dialogProps.data) setData(dialogProps.data)
 
-        return () => {
-            setInputParam(null)
-            setData({})
-        }
-    }, [dialogProps])
+    return () => {
+      setInputParam(null)
+      setData({})
+    }
+  }, [dialogProps])
 
-    useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+  useEffect(() => {
+    if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
+    else dispatch({ type: HIDE_CANVAS_DIALOG })
+    return () => dispatch({ type: HIDE_CANVAS_DIALOG })
+  }, [show, dispatch])
 
-    const component = show ? (
-        <Dialog open={show} fullWidth maxWidth='md' aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
-            <DialogContent>
-                <>
-                    {inputParam && inputParam.type.includes('conditionFunction') && (
-                        <>
-                            <Tabs value={tabValue} onChange={(event, val) => setTabValue(val)} aria-label='tabs' variant='fullWidth'>
-                                <TabsList>
-                                    {inputParam.tabs.map((inputChildParam, index) => (
-                                        <Tab key={index}>{inputChildParam.label}</Tab>
-                                    ))}
-                                </TabsList>
-                            </Tabs>
-                            {inputParam.tabs.map((inputChildParam, index) => (
-                                <TabPanel key={index} value={tabValue} index={index}>
-                                    <NodeInputHandler
-                                        disabled={inputChildParam.disabled}
-                                        inputParam={inputChildParam}
-                                        data={data}
-                                        isAdditionalParams={true}
-                                        disablePadding={true}
-                                    />
-                                </TabPanel>
-                            ))}
-                        </>
-                    )}
-                </>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
-                <StyledButton disabled={dialogProps.disabled} variant='contained' onClick={() => onConfirm(data, inputParam, tabValue)}>
-                    {dialogProps.confirmButtonName}
-                </StyledButton>
-            </DialogActions>
-        </Dialog>
-    ) : null
+  const component = show ? (
+    <Dialog open={show} fullWidth maxWidth='md' aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
+      <DialogContent>
+        <>
+          {inputParam && inputParam.type.includes('conditionFunction') && (
+            <>
+              <Tabs value={tabValue} onChange={(event, val) => setTabValue(val)} aria-label='tabs' variant='fullWidth'>
+                <TabsList>
+                  {inputParam.tabs.map((inputChildParam, index) => (
+                    <Tab key={index}>{inputChildParam.label}</Tab>
+                  ))}
+                </TabsList>
+              </Tabs>
+              {inputParam.tabs.map((inputChildParam, index) => (
+                <TabPanel key={index} value={tabValue} index={index}>
+                  <NodeInputHandler
+                    disabled={inputChildParam.disabled}
+                    inputParam={inputChildParam}
+                    data={data}
+                    isAdditionalParams={true}
+                    disablePadding={true}
+                  />
+                </TabPanel>
+              ))}
+            </>
+          )}
+        </>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
+        <StyledButton disabled={dialogProps.disabled} variant='contained' onClick={() => onConfirm(data, inputParam, tabValue)}>
+          {dialogProps.confirmButtonName}
+        </StyledButton>
+      </DialogActions>
+    </Dialog>
+  ) : null
 
-    return createPortal(component, portalElement)
+  return createPortal(component, portalElement)
 }
 
 ConditionDialog.propTypes = {
-    show: PropTypes.bool,
-    dialogProps: PropTypes.object,
-    onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+  show: PropTypes.bool,
+  dialogProps: PropTypes.object,
+  onCancel: PropTypes.func,
+  onConfirm: PropTypes.func
 }
 
 export default ConditionDialog

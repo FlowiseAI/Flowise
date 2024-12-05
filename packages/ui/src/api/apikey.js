@@ -11,9 +11,9 @@ const deleteAPI = (id) => client.delete(`/apikey/${id}`)
 const importAPI = (body) => client.post(`/apikey/import`, body)
 
 export default {
-    getAllAPIKeys,
-    createNewAPI,
-    updateAPI,
-    deleteAPI,
-    importAPI
+  getAllAPIKeys,
+  createNewAPI,
+  updateAPI,
+  deleteAPI,
+  importAPI
 }

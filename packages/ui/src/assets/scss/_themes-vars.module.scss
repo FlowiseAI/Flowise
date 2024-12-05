@@ -86,88 +86,88 @@ $darkTextSecondary: #8492c4;
 // ==============================|| JAVASCRIPT ||============================== //
 
 :export {
-    // paper & background
-    paper: $paper;
+  // paper & background
+  paper: $paper;
 
-    // primary
-    primaryLight: $primaryLight;
-    primary200: $primary200;
-    primaryMain: $primaryMain;
-    primaryDark: $primaryDark;
-    primary800: $primary800;
+  // primary
+  primaryLight: $primaryLight;
+  primary200: $primary200;
+  primaryMain: $primaryMain;
+  primaryDark: $primaryDark;
+  primary800: $primary800;
 
-    // secondary
-    secondaryLight: $secondaryLight;
-    secondary200: $secondary200;
-    secondaryMain: $secondaryMain;
-    secondaryDark: $secondaryDark;
-    secondary800: $secondary800;
+  // secondary
+  secondaryLight: $secondaryLight;
+  secondary200: $secondary200;
+  secondaryMain: $secondaryMain;
+  secondaryDark: $secondaryDark;
+  secondary800: $secondary800;
 
-    // success
-    successLight: $successLight;
-    success200: $success200;
-    successMain: $successMain;
-    successDark: $successDark;
+  // success
+  successLight: $successLight;
+  success200: $success200;
+  successMain: $successMain;
+  successDark: $successDark;
 
-    // error
-    errorLight: $errorLight;
-    errorMain: $errorMain;
-    errorDark: $errorDark;
+  // error
+  errorLight: $errorLight;
+  errorMain: $errorMain;
+  errorDark: $errorDark;
 
-    // orange
-    orangeLight: $orangeLight;
-    orangeMain: $orangeMain;
-    orangeDark: $orangeDark;
+  // orange
+  orangeLight: $orangeLight;
+  orangeMain: $orangeMain;
+  orangeDark: $orangeDark;
 
-    // orange
-    tealLight: $tealLight;
-    tealMain: $tealMain;
-    tealDark: $tealDark;
+  // orange
+  tealLight: $tealLight;
+  tealMain: $tealMain;
+  tealDark: $tealDark;
 
-    // warning
-    warningLight: $warningLight;
-    warningMain: $warningMain;
-    warningDark: $warningDark;
+  // warning
+  warningLight: $warningLight;
+  warningMain: $warningMain;
+  warningDark: $warningDark;
 
-    // grey
-    grey50: $grey50;
-    grey100: $grey100;
-    grey200: $grey200;
-    grey300: $grey300;
-    grey500: $grey500;
-    grey600: $grey600;
-    grey700: $grey700;
-    grey900: $grey900;
+  // grey
+  grey50: $grey50;
+  grey100: $grey100;
+  grey200: $grey200;
+  grey300: $grey300;
+  grey500: $grey500;
+  grey600: $grey600;
+  grey700: $grey700;
+  grey900: $grey900;
 
-    // ==============================|| DARK THEME VARIANTS ||============================== //
+  // ==============================|| DARK THEME VARIANTS ||============================== //
 
-    // paper & background
-    darkPaper: $darkPaper;
-    darkBackground: $darkBackground;
+  // paper & background
+  darkPaper: $darkPaper;
+  darkBackground: $darkBackground;
 
-    // dark 800 & 900
-    darkLevel1: $darkLevel1;
-    darkLevel2: $darkLevel2;
+  // dark 800 & 900
+  darkLevel1: $darkLevel1;
+  darkLevel2: $darkLevel2;
 
-    // text variants
-    darkTextTitle: $darkTextTitle;
-    darkTextPrimary: $darkTextPrimary;
-    darkTextSecondary: $darkTextSecondary;
+  // text variants
+  darkTextTitle: $darkTextTitle;
+  darkTextPrimary: $darkTextPrimary;
+  darkTextSecondary: $darkTextSecondary;
 
-    // primary dark
-    darkPrimaryLight: $darkPrimaryLight;
-    darkPrimaryMain: $darkPrimaryMain;
-    darkPrimaryDark: $darkPrimaryDark;
-    darkPrimary200: $darkPrimary200;
-    darkPrimary800: $darkPrimary800;
+  // primary dark
+  darkPrimaryLight: $darkPrimaryLight;
+  darkPrimaryMain: $darkPrimaryMain;
+  darkPrimaryDark: $darkPrimaryDark;
+  darkPrimary200: $darkPrimary200;
+  darkPrimary800: $darkPrimary800;
 
-    // secondary dark
-    darkSecondaryLight: $darkSecondaryLight;
-    darkSecondaryMain: $darkSecondaryMain;
-    darkSecondaryDark: $darkSecondaryDark;
-    darkSecondary200: $darkSecondary200;
-    darkSecondary800: $darkSecondary800;
+  // secondary dark
+  darkSecondaryLight: $darkSecondaryLight;
+  darkSecondaryMain: $darkSecondaryMain;
+  darkSecondaryDark: $darkSecondaryDark;
+  darkSecondary200: $darkSecondary200;
+  darkSecondary800: $darkSecondary800;
 
-    // transparent
-    transparent: $transparent;
+  // transparent
+  transparent: $transparent;
 }

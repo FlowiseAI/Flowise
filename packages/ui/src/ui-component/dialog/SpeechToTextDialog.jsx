@@ -14,43 +14,43 @@ import useNotifier from '@/utils/useNotifier'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
 
 const SpeechToTextDialog = ({ show, dialogProps, onCancel }) => {
-    const portalElement = document.getElementById('portal')
-    const dispatch = useDispatch()
+  const portalElement = document.getElementById('portal')
+  const dispatch = useDispatch()
 
-    useNotifier()
+  useNotifier()
 
-    useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
-        return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+  useEffect(() => {
+    if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
+    else dispatch({ type: HIDE_CANVAS_DIALOG })
+    return () => dispatch({ type: HIDE_CANVAS_DIALOG })
+  }, [show, dispatch])
 
-    const component = show ? (
-        <Dialog
-            onClose={onCancel}
-            open={show}
-            fullWidth
-            maxWidth='sm'
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title || 'Allowed Domains'}
-            </DialogTitle>
-            <DialogContent>
-                <SpeechToText dialogProps={dialogProps} />
-            </DialogContent>
-        </Dialog>
-    ) : null
+  const component = show ? (
+    <Dialog
+      onClose={onCancel}
+      open={show}
+      fullWidth
+      maxWidth='sm'
+      aria-labelledby='alert-dialog-title'
+      aria-describedby='alert-dialog-description'
+    >
+      <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
+        {dialogProps.title || 'Allowed Domains'}
+      </DialogTitle>
+      <DialogContent>
+        <SpeechToText dialogProps={dialogProps} />
+      </DialogContent>
+    </Dialog>
+  ) : null
 
-    return createPortal(component, portalElement)
+  return createPortal(component, portalElement)
 }
 
 SpeechToTextDialog.propTypes = {
-    show: PropTypes.bool,
-    dialogProps: PropTypes.object,
-    onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+  show: PropTypes.bool,
+  dialogProps: PropTypes.object,
+  onCancel: PropTypes.func,
+  onConfirm: PropTypes.func
 }
 
 export default SpeechToTextDialog

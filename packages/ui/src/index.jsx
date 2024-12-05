@@ -17,17 +17,17 @@ const container = document.getElementById('root')
 const root = createRoot(container)
 
 root.render(
-    <React.StrictMode>
-        <Provider store={store}>
-            <BrowserRouter>
-                <SnackbarProvider>
-                    <ConfirmContextProvider>
-                        <ReactFlowContext>
-                            <App />
-                        </ReactFlowContext>
-                    </ConfirmContextProvider>
-                </SnackbarProvider>
-            </BrowserRouter>
-        </Provider>
-    </React.StrictMode>
+  <React.StrictMode>
+    <Provider store={store}>
+      <BrowserRouter>
+        <SnackbarProvider>
+          <ConfirmContextProvider>
+            <ReactFlowContext>
+              <App />
+            </ReactFlowContext>
+          </ConfirmContextProvider>
+        </SnackbarProvider>
+      </BrowserRouter>
+    </Provider>
+  </React.StrictMode>
 )

@@ -9,8 +9,8 @@ const updateVariable = (id, body) => client.put(`/variables/${id}`, body)
 const deleteVariable = (id) => client.delete(`/variables/${id}`)
 
 export default {
-    getAllVariables,
-    createVariable,
-    updateVariable,
-    deleteVariable
+  getAllVariables,
+  createVariable,
+  updateVariable,
+  deleteVariable
 }

@@ -4,6 +4,6 @@ const sendMessageAndGetPrediction = (id, input) => client.post(`/internal-predic
 const sendMessageAndStreamPrediction = (id, input) => client.post(`/internal-prediction/stream/${id}`, input)
 
 export default {
-    sendMessageAndGetPrediction,
-    sendMessageAndStreamPrediction
+  sendMessageAndGetPrediction,
+  sendMessageAndStreamPrediction
 }

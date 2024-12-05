@@ -10,7 +10,7 @@ const deleteDocumentStore = (id) => client.delete(`/document-store/store/${id}`)
 const deleteLoaderFromStore = (id, fileId) => client.delete(`/document-store/loader/${id}/${fileId}`)
 const deleteChunkFromStore = (storeId, loaderId, chunkId) => client.delete(`/document-store/chunks/${storeId}/${loaderId}/${chunkId}`)
 const editChunkFromStore = (storeId, loaderId, chunkId, body) =>
-    client.put(`/document-store/chunks/${storeId}/${loaderId}/${chunkId}`, body)
+  client.put(`/document-store/chunks/${storeId}/${loaderId}/${chunkId}`, body)
 
 const getFileChunks = (storeId, fileId, pageNo) => client.get(`/document-store/chunks/${storeId}/${fileId}/${pageNo}`)
 const previewChunks = (body) => client.post('/document-store/loader/preview', body)
@@ -28,26 +28,26 @@ const getEmbeddingProviders = () => client.get('/document-store/components/embed
 const getRecordManagerProviders = () => client.get('/document-store/components/recordmanager')
 
 export default {
-    getAllDocumentStores,
-    getSpecificDocumentStore,
-    createDocumentStore,
-    deleteLoaderFromStore,
-    getFileChunks,
-    updateDocumentStore,
-    previewChunks,
-    processLoader,
-    getDocumentLoaders,
-    deleteChunkFromStore,
-    editChunkFromStore,
-    deleteDocumentStore,
-    insertIntoVectorStore,
-    getVectorStoreProviders,
-    getEmbeddingProviders,
-    getRecordManagerProviders,
-    saveVectorStoreConfig,
-    queryVectorStore,
-    deleteVectorStoreDataFromStore,
-    updateVectorStoreConfig,
-    saveProcessingLoader,
-    refreshLoader
+  getAllDocumentStores,
+  getSpecificDocumentStore,
+  createDocumentStore,
+  deleteLoaderFromStore,
+  getFileChunks,
+  updateDocumentStore,
+  previewChunks,
+  processLoader,
+  getDocumentLoaders,
+  deleteChunkFromStore,
+  editChunkFromStore,
+  deleteDocumentStore,
+  insertIntoVectorStore,
+  getVectorStoreProviders,
+  getEmbeddingProviders,
+  getRecordManagerProviders,
+  saveVectorStoreConfig,
+  queryVectorStore,
+  deleteVectorStoreDataFromStore,
+  updateVectorStoreConfig,
+  saveProcessingLoader,
+  refreshLoader
 }

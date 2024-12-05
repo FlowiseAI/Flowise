@@ -9,10 +9,10 @@ import dialogReducer from './reducers/dialogReducer'
 // ==============================|| COMBINE REDUCER ||============================== //
 
 const reducer = combineReducers({
-    customization: customizationReducer,
-    canvas: canvasReducer,
-    notifier: notifierReducer,
-    dialog: dialogReducer
+  customization: customizationReducer,
+  canvas: canvasReducer,
+  notifier: notifierReducer,
+  dialog: dialogReducer
 })
 
 export default reducer

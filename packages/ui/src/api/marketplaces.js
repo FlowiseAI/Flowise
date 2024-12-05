@@ -9,11 +9,11 @@ const saveAsCustomTemplate = (body) => client.post('/marketplaces/custom', body)
 const deleteCustomTemplate = (id) => client.delete(`/marketplaces/custom/${id}`)
 
 export default {
-    getAllChatflowsMarketplaces,
-    getAllToolsMarketplaces,
-    getAllTemplatesFromMarketplaces,
+  getAllChatflowsMarketplaces,
+  getAllToolsMarketplaces,
+  getAllTemplatesFromMarketplaces,
 
-    getAllCustomTemplates,
-    saveAsCustomTemplate,
-    deleteCustomTemplate
+  getAllCustomTemplates,
+  saveAsCustomTemplate,
+  deleteCustomTemplate
 }

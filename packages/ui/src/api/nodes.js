@@ -8,8 +8,8 @@ const getNodesByCategory = (name) => client.get(`/nodes/category/${name}`)
 const executeCustomFunctionNode = (body) => client.post(`/node-custom-function`, body)
 
 export default {
-    getAllNodes,
-    getSpecificNode,
-    executeCustomFunctionNode,
-    getNodesByCategory
+  getAllNodes,
+  getSpecificNode,
+  executeCustomFunctionNode,
+  getNodesByCategory
 }

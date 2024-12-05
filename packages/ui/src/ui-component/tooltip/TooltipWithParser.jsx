@@ -5,26 +5,26 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
 export const TooltipWithParser = ({ title, sx }) => {
-    const customization = useSelector((state) => state.customization)
+  const customization = useSelector((state) => state.customization)
 
-    return (
-        <Tooltip title={parser(title)} placement='right'>
-            <IconButton sx={{ height: 15, width: 15, ml: 2, mt: -0.5 }}>
-                <Info
-                    sx={{
-                        ...sx,
-                        background: 'transparent',
-                        color: customization.isDarkMode ? 'white' : 'inherit',
-                        height: 15,
-                        width: 15
-                    }}
-                />
-            </IconButton>
-        </Tooltip>
-    )
+  return (
+    <Tooltip title={parser(title)} placement='right'>
+      <IconButton sx={{ height: 15, width: 15, ml: 2, mt: -0.5 }}>
+        <Info
+          sx={{
+            ...sx,
+            background: 'transparent',
+            color: customization.isDarkMode ? 'white' : 'inherit',
+            height: 15,
+            width: 15
+          }}
+        />
+      </IconButton>
+    </Tooltip>
+  )
 }
 
 TooltipWithParser.propTypes = {
-    title: PropTypes.node,
-    sx: PropTypes.any
+  title: PropTypes.node,
+  sx: PropTypes.any
 }

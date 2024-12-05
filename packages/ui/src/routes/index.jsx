@@ -9,5 +9,5 @@ import config from '@/config'
 // ==============================|| ROUTING RENDER ||============================== //
 
 export default function ThemeRoutes() {
-    return useRoutes([MainRoutes, CanvasRoutes, ChatbotRoutes], config.basename)
+  return useRoutes([MainRoutes, CanvasRoutes, ChatbotRoutes], config.basename)
 }

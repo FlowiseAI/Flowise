@@ -10,14 +10,14 @@ const ChatbotFull = Loadable(lazy(() => import('@/views/chatbot')))
 // ==============================|| CANVAS ROUTING ||============================== //
 
 const ChatbotRoutes = {
-    path: '/',
-    element: <MinimalLayout />,
-    children: [
-        {
-            path: '/chatbot/:id',
-            element: <ChatbotFull />
-        }
-    ]
+  path: '/',
+  element: <MinimalLayout />,
+  children: [
+    {
+      path: '/chatbot/:id',
+      element: <ChatbotFull />
+    }
+  ]
 }
 
 export default ChatbotRoutes

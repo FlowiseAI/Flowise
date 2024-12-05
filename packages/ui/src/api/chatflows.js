@@ -21,14 +21,14 @@ const getIsChatflowStreaming = (id) => client.get(`/chatflows-streaming/${id}`)
 const getAllowChatflowUploads = (id) => client.get(`/chatflows-uploads/${id}`)
 
 export default {
-    getAllChatflows,
-    getAllAgentflows,
-    getSpecificChatflow,
-    getSpecificChatflowFromPublicEndpoint,
-    createNewChatflow,
-    importChatflows,
-    updateChatflow,
-    deleteChatflow,
-    getIsChatflowStreaming,
-    getAllowChatflowUploads
+  getAllChatflows,
+  getAllAgentflows,
+  getSpecificChatflow,
+  getSpecificChatflowFromPublicEndpoint,
+  createNewChatflow,
+  importChatflows,
+  updateChatflow,
+  deleteChatflow,
+  getIsChatflowStreaming,
+  getAllowChatflowUploads
 }

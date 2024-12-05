@@ -247,7 +247,12 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
   return (
     <>
       <StyledFab
-        sx={{ left: 20, top: 20 }}
+        sx={{
+          left: 20,
+          top: 20,
+          minWidth: '150px',
+          borderRadius: '24px'
+        }}
         ref={anchorRef}
         size='small'
         color='primary'
@@ -255,7 +260,12 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         title='Add Node'
         onClick={handleToggle}
       >
-        {open ? <IconMinus /> : <IconPlus />}
+        <Box className='flex flex-row items-center gap-2'>
+          {open ? <IconMinus /> : <IconPlus />}
+          <Typography variant='button' className='pr-4 whitespace-nowrap'>
+            Thêm Node
+          </Typography>
+        </Box>
       </StyledFab>
       <Popper
         placement='bottom-end'

@@ -11,9 +11,9 @@ const updateTool = (id, body) => client.put(`/tools/${id}`, body)
 const deleteTool = (id) => client.delete(`/tools/${id}`)
 
 export default {
-    getAllTools,
-    getSpecificTool,
-    createNewTool,
-    updateTool,
-    deleteTool
+  getAllTools,
+  getSpecificTool,
+  createNewTool,
+  updateTool,
+  deleteTool
 }

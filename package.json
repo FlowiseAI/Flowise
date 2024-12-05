@@ -19,7 +19,7 @@
     "start:default": "cd packages/server/bin && ./run start",
     "clean": "pnpm --filter \"./packages/**\" clean",
     "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
-    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,js,jsx,css,scss}\"",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "lint-fix": "pnpm lint --fix",
     "quick": "pretty-quick --staged",

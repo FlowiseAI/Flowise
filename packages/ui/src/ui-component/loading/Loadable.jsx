@@ -6,12 +6,12 @@ import Loader from './Loader'
 // ==============================|| LOADABLE - LAZY LOADING ||============================== //
 
 const Loadable = (Component) =>
-    function WithLoader(props) {
-        return (
-            <Suspense fallback={<Loader />}>
-                <Component {...props} />
-            </Suspense>
-        )
-    }
+  function WithLoader(props) {
+    return (
+      <Suspense fallback={<Loader />}>
+        <Component {...props} />
+      </Suspense>
+    )
+  }
 
 export default Loadable
