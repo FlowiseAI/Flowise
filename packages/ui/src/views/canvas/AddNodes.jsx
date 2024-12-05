@@ -23,6 +23,7 @@ import {
   Popper,
   Tab,
   Tabs,
+  Tooltip,
   Typography
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -427,80 +428,84 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                               <AccordionDetails>
                                 {nodes[category].map((node, index) => (
                                   <div key={node.name} onDragStart={(event) => onDragStart(event, node)} draggable>
-                                    <ListItemButton
-                                      sx={{
-                                        p: 0,
-                                        borderRadius: `${customization.borderRadius}px`,
-                                        cursor: 'move'
-                                      }}
-                                    >
-                                      <ListItem alignItems='center'>
-                                        <ListItemAvatar>
-                                          <div
-                                            style={{
-                                              width: 50,
-                                              height: 50,
-                                              borderRadius: '50%',
-                                              backgroundColor: 'white'
-                                            }}
-                                          >
-                                            <img
+                                    <Tooltip title={node.description} placement='right' arrow={true}>
+                                      <ListItemButton
+                                        sx={{
+                                          p: 0,
+                                          borderRadius: `${customization.borderRadius}px`,
+                                          cursor: 'move'
+                                        }}
+                                      >
+                                        <ListItem alignItems='center' dense={true}>
+                                          <ListItemAvatar>
+                                            <div
                                               style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                padding: 10,
-                                                objectFit: 'contain'
+                                                width: 50,
+                                                height: 50,
+                                                borderRadius: '50%',
+                                                backgroundColor: 'white'
                                               }}
-                                              alt={node.name}
-                                              src={`${baseURL}/api/v1/node-icon/${node.name}`}
-                                            />
-                                          </div>
-                                        </ListItemAvatar>
-                                        <ListItemText
-                                          sx={{ ml: 1 }}
-                                          primary={
-                                            <>
-                                              <div
+                                            >
+                                              <img
                                                 style={{
-                                                  display: 'flex',
-                                                  flexDirection: 'row',
-                                                  alignItems: 'center'
+                                                  width: '100%',
+                                                  height: '100%',
+                                                  padding: 10,
+                                                  objectFit: 'contain'
                                                 }}
-                                              >
-                                                <span>{node.label}</span>
-                                                &nbsp;
-                                                {node.badge && (
-                                                  <Chip
-                                                    sx={{
-                                                      width: 'max-content',
-                                                      fontWeight: 700,
-                                                      fontSize: '0.65rem',
-                                                      background:
-                                                        node.badge === 'DEPRECATING' ? theme.palette.warning.main : theme.palette.teal.main,
-                                                      color: node.badge !== 'DEPRECATING' ? 'white' : 'inherit'
-                                                    }}
-                                                    size='small'
-                                                    label={node.badge}
-                                                  />
-                                                )}
-                                              </div>
-                                              {node.author && (
-                                                <span
+                                                alt={node.name}
+                                                src={`${baseURL}/api/v1/node-icon/${node.name}`}
+                                              />
+                                            </div>
+                                          </ListItemAvatar>
+                                          <ListItemText
+                                            sx={{ ml: 1 }}
+                                            primary={
+                                              <>
+                                                <div
                                                   style={{
-                                                    fontSize: '0.65rem',
-                                                    fontWeight: 700
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center'
                                                   }}
                                                 >
-                                                  By {node.author}
-                                                </span>
-                                              )}
-                                            </>
-                                          }
-                                          secondary={node.description}
-                                        />
-                                      </ListItem>
-                                    </ListItemButton>
-                                    {index === nodes[category].length - 1 ? null : <Divider />}
+                                                  <span>{node.label}</span>
+                                                  &nbsp;
+                                                  {node.badge && (
+                                                    <Chip
+                                                      sx={{
+                                                        width: 'max-content',
+                                                        fontWeight: 700,
+                                                        fontSize: '0.65rem',
+                                                        background:
+                                                          node.badge === 'DEPRECATING'
+                                                            ? theme.palette.warning.main
+                                                            : theme.palette.teal.main,
+                                                        color: node.badge !== 'DEPRECATING' ? 'white' : 'inherit'
+                                                      }}
+                                                      size='small'
+                                                      label={node.badge}
+                                                    />
+                                                  )}
+                                                </div>
+                                                {node.author && (
+                                                  <span
+                                                    style={{
+                                                      fontSize: '0.65rem',
+                                                      fontWeight: 700
+                                                    }}
+                                                  >
+                                                    By {node.author}
+                                                  </span>
+                                                )}
+                                              </>
+                                            }
+                                            secondary={<span className='text-xs line-clamp-1'>{node.description}</span>}
+                                          />
+                                        </ListItem>
+                                      </ListItemButton>
+                                      {index === nodes[category].length - 1 ? null : <Divider />}
+                                    </Tooltip>
                                   </div>
                                 ))}
                               </AccordionDetails>
