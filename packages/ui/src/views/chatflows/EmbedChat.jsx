@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { baseURL } from '@/store/constant'
 import { Box, Tab, Tabs } from '@mui/material'
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
-
 // Project import
 
 // Const
@@ -35,273 +35,71 @@ function a11yProps(index) {
     }
 }
 
-const embedPopupHtmlCode = (chatflowid) => {
-    return `<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
-    Chatbot.init({
-        chatflowid: "${chatflowid}",
-        apiHost: "${baseURL}",
-    })
-</script>`
-}
-
-const embedPopupReactCode = (chatflowid) => {
-    return `import { BubbleChat } from 'flowise-embed-react'
-
-const App = () => {
-    return (
-        <BubbleChat
-            chatflowid="${chatflowid}"
-            apiHost="${baseURL}"
-        />
-    );
-};`
-}
-
-const embedFullpageHtmlCode = (chatflowid) => {
-    return `<flowise-fullchatbot></flowise-fullchatbot>
-<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
-    Chatbot.initFull({
-        chatflowid: "${chatflowid}",
-        apiHost: "${baseURL}",
-    })
-</script>`
-}
-
-const embedFullpageReactCode = (chatflowid) => {
-    return `import { FullPageChat } from "flowise-embed-react"
-
-const App = () => {
-    return (
-        <FullPageChat
-            chatflowid="${chatflowid}"
-            apiHost="${baseURL}"
-        />
-    );
-};`
-}
-
-export const defaultThemeConfig = {
-    button: {
-        backgroundColor: '#3B81F6',
-        right: 20,
-        bottom: 20,
-        size: 48,
-        dragAndDrop: true,
-        iconColor: 'white',
-        customIconSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
-        autoWindowOpen: {
-            autoOpen: true,
-            openDelay: 2,
-            autoOpenOnMobile: false
-        }
-    },
-    tooltip: {
-        showTooltip: true,
-        tooltipMessage: 'Hi There 👋!',
-        tooltipBackgroundColor: 'black',
-        tooltipTextColor: 'white',
-        tooltipFontSize: 16
-    },
-    disclaimer: {
-        title: 'Disclaimer',
-        message: 'By using this chatbot, you agree to the <a target="_blank" href="https://flowiseai.com/terms">Terms & Condition</a>',
-        textColor: 'black',
-        buttonColor: '#3b82f6',
-        buttonText: 'Start Chatting',
-        buttonTextColor: 'white',
-        blurredBackgroundColor: 'rgba(0, 0, 0, 0.4)',
-        backgroundColor: 'white'
-    },
-    customCSS: ``,
-    chatWindow: {
-        showTitle: true,
-        showAgentMessages: true,
-        title: 'Flowise Bot',
-        titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
-        welcomeMessage: 'Hello! This is custom welcome message',
-        errorMessage: 'This is a custom error message',
-        backgroundColor: '#ffffff',
-        backgroundImage: 'enter image path or link',
-        height: 700,
-        width: 400,
-        fontSize: 16,
-        starterPrompts: ['What is a bot?', 'Who are you?'],
-        starterPromptFontSize: 15,
-        clearChatOnReload: false,
-        sourceDocsTitle: 'Sources:',
-        renderHTML: true,
-        botMessage: {
-            backgroundColor: '#f7f8ff',
-            textColor: '#303235',
-            showAvatar: true,
-            avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
-        },
-        userMessage: {
-            backgroundColor: '#3B81F6',
-            textColor: '#ffffff',
-            showAvatar: true,
-            avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
-        },
-        textInput: {
-            placeholder: 'Type your question',
-            backgroundColor: '#ffffff',
-            textColor: '#303235',
-            sendButtonColor: '#3B81F6',
-            maxChars: 50,
-            maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
-            autoFocus: true,
-            sendMessageSound: true,
-            sendSoundLocation: 'send_message.mp3',
-            receiveMessageSound: true,
-            receiveSoundLocation: 'receive_message.mp3'
-        },
-        feedback: {
-            color: '#303235'
-        },
-        dateTimeToggle: {
-            date: true,
-            time: true
-        },
-        footer: {
-            textColor: '#303235',
-            text: 'Powered by',
-            company: 'Flowise',
-            companyLink: 'https://flowiseai.com'
-        }
-    }
-}
-
-const customStringify = (obj) => {
-    let stringified = JSON.stringify(obj, null, 4)
-        .replace(/"([^"]+)":/g, '$1:')
-        .replace(/: "([^"]+)"/g, (match, value) => (value.includes('<') ? `: "${value}"` : `: '${value}'`))
-        .replace(/: "(true|false|\d+)"/g, ': $1')
-        .replace(/customCSS: ""/g, 'customCSS: ``')
-    return stringified
-        .split('\n')
-        .map((line, index) => {
-            if (index === 0) return line
-            return ' '.repeat(8) + line
-        })
-        .join('\n')
-}
-
-const embedPopupHtmlCodeCustomization = (chatflowid) => {
-    return `<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
-    Chatbot.init({
-        chatflowid: "${chatflowid}",
-        apiHost: "${baseURL}",
-        chatflowConfig: {
-            /* Chatflow Config */
-        },
-        observersConfig: {
-            /* Observers Config */
-        },
-        theme: ${customStringify(defaultThemeConfig)}
-    })
-</script>`
-}
-
-const embedPopupReactCodeCustomization = (chatflowid) => {
-    return `import { BubbleChat } from 'flowise-embed-react'
-
-const App = () => {
-    return (
-        <BubbleChat
-            chatflowid="${chatflowid}"
-            apiHost="${baseURL}"
-            chatflowConfig={{
-                /* Chatflow Config */
-            }}
-            observersConfig={{
-                /* Observers Config */
-            }}
-            theme={{${customStringify(defaultThemeConfig)
-                .substring(1)
-                .split('\n')
-                .map((line) => ' '.repeat(4) + line)
-                .join('\n')}
-        />
-    )
-}`
-}
-
-const getFullPageThemeConfig = () => {
-    return {
-        ...defaultThemeConfig,
-        chatWindow: {
-            ...defaultThemeConfig.chatWindow,
-            height: '100%',
-            width: '100%'
-        }
-    }
-}
-
-const embedFullpageHtmlCodeCustomization = (chatflowid) => {
-    return `<flowise-fullchatbot></flowise-fullchatbot>
-<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
-    Chatbot.initFull({
-        chatflowid: "${chatflowid}",
-        apiHost: "${baseURL}",
-        chatflowConfig: {
-            /* Chatflow Config */
-        },
-        observersConfig: {
-            /* Observers Config */
-        },
-        theme: ${customStringify(getFullPageThemeConfig())}
-    })
-</script>`
-}
-
-const embedFullpageReactCodeCustomization = (chatflowid) => {
-    return `import { FullPageChat } from 'flowise-embed-react'
-
-const App = () => {
-    return (
-        <FullPageChat
-            chatflowid="${chatflowid}"
-            apiHost="${baseURL}"
-            chatflowConfig={{
-                /* Chatflow Config */
-            }}
-            observersConfig={{
-                /* Observers Config */
-            }}
-            theme={{${customStringify(getFullPageThemeConfig())
-                .substring(1)
-                .split('\n')
-                .map((line) => ' '.repeat(4) + line)
-                .join('\n')}
-        />
-    )
-}`
-}
-
 const EmbedChat = ({ chatflowid }) => {
     const codes = ['Popup Html']
     const [value, setValue] = useState(0)
-    const [embedChatCheckboxVal, setEmbedChatCheckbox] = useState(false)
 
-    const onCheckBoxEmbedChatChanged = (newVal) => {
-        setEmbedChatCheckbox(newVal)
-    }
+    const [content, setContent] = useState('')
+
+    useEffect(() => {
+        const isInIframe = window.self !== window.top
+
+        if (isInIframe) {
+            console.log('hi')
+            // Inside an iframe: request uitype from parent
+            window.parent.postMessage({ type: 'REQUEST_UITYPE' }, '*')
+
+            const messageHandler = (event) => {
+                if (event.data.type === 'RESPONSE_UITYPE') {
+                    const { uitype, hostAppURL } = event.data
+
+                    if (uitype === 'gait') {
+                        // uitype is "gait", return iframe HTML
+                        const iframeURL = `${hostAppURL}/app-frame/${chatflowid}`
+                        const htmlContent = `<div style="height: 100%; width: 100%; position: fixed; z-index: 9999">
+                <iframe 
+                  style="width: 100%; height: 100%" 
+                  src="${iframeURL}" 
+                  frameborder="0">
+                </iframe>
+              </div>
+            `
+                        setContent(htmlContent)
+                    } else {
+                        // uitype is not "gait", return script tag
+                        const htmlContent = `<script type="module">
+                            import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js";
+                            Chatbot.init({
+                                chatflowid: "${chatflowid}",
+                                apiHost: "${baseURL}",
+                            });
+                        </script>
+            `
+                        setContent(htmlContent)
+                    }
+
+                    window.removeEventListener('message', messageHandler)
+                }
+            }
+
+            window.addEventListener('message', messageHandler)
+        } else {
+            // Not inside an iframe, return script tag
+            const htmlContent = `
+        <script type="module">
+          import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js";
+          Chatbot.init({
+            chatflowid: "${chatflowid}",
+            apiHost: "${baseURL}",
+          });
+        </script>
+      `
+            setContent(htmlContent)
+        }
+    }, [chatflowid])
 
     const handleChange = (event, newValue) => {
         setValue(newValue)
-    }
-
-    const getCode = (codeLang) => {
-        switch (codeLang) {
-            case 'Popup Html':
-                return embedPopupHtmlCode(chatflowid)
-            default:
-                return embedPopupHtmlCodeCustomization(chatflowid)
-        }
     }
 
     return (
@@ -326,7 +124,7 @@ const EmbedChat = ({ chatflowid }) => {
                             <div style={{ height: 10 }}></div>
                         </>
                     )}
-                    <CopyBlock theme={atomOneDark} text={getCode(codeLang)} language='javascript' showLineNumbers={false} wrapLines />
+                    <CopyBlock theme={atomOneDark} text={content} language='javascript' showLineNumbers={false} wrapLines />
                 </TabPanel>
             ))}
         </>
