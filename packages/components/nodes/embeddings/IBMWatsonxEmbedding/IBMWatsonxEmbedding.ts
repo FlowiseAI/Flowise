@@ -19,7 +19,7 @@ class IBMWatsonx_Embeddings implements INode {
         this.label = 'IBM Watsonx Embeddings'
         this.name = 'ibmEmbedding'
         this.version = 1.0
-        this.type = 'IBMWatonxEmbeddings'
+        this.type = 'WatsonxEmbeddings'
         this.icon = 'ibm.png'
         this.category = 'Embeddings'
         this.description = 'Generate embeddings for a given text using open source model on IBM Watsonx'
