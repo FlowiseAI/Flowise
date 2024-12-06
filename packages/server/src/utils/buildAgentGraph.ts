@@ -98,7 +98,8 @@ export const buildAgentGraph = async (
 
         /*** Get Memory Node for Chat History ***/
         let chatHistory: IMessage[] = []
-        const memoryNode = nodes.find((node) => node.data.name === 'agentMemory')
+        const agentMemoryList = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory']
+        const memoryNode = nodes.find((node) => agentMemoryList.includes(node.data.name))
         if (memoryNode) {
             chatHistory = await getSessionChatHistory(
                 chatflowid,

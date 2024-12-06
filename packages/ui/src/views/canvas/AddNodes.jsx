@@ -56,15 +56,17 @@ function a11yProps(index) {
 
 const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager', 'Utilities']
 
+const agentMemoryNodes = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory']
+
 // Show blacklisted nodes (exceptions) for agent canvas
 const exceptionsForAgentCanvas = {
-    Memory: ['agentMemory'],
+    Memory: agentMemoryNodes,
     Utilities: ['getVariable', 'setVariable', 'stickyNote']
 }
 
 // Hide some nodes from the chatflow canvas
 const blacklistForChatflowCanvas = {
-    Memory: ['agentMemory']
+    Memory: agentMemoryNodes
 }
 
 const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
