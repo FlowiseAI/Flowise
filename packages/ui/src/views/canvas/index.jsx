@@ -545,7 +545,7 @@ const Canvas = () => {
           enableColorOnDark
           position='fixed'
           color='inherit'
-          elevation={0}
+          elevation={1}
           sx={{
             bgcolor: theme.palette.background.default
           }}
@@ -641,9 +641,11 @@ const Canvas = () => {
                 <Background
                   color='#aaa'
                   gap={24}
-                  style={{
-                    background: isDark ? '#1B2531' : '#F0F2F7'
-                  }}
+                  style={
+                    {
+                      // background: isDark ? '#1B2531' : '#F0F2F7'
+                    }
+                  }
                 />
                 <AddNodes isAgentCanvas={isAgentCanvas} nodesData={nodesData} node={selectedNode} />
                 {isSyncNodesButtonEnabled && (

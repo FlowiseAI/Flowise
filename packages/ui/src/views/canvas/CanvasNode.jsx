@@ -87,8 +87,9 @@ const CanvasNode = ({ data }) => {
         content={false}
         sx={{
           padding: 0,
-          borderColor: data.selected ? theme.palette.primary.main : 'transparent'
+          // borderColor: data.selected ? theme.palette.primary.main : 'transparent'
           // borderColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary
+          borderColor: data.selected ? theme.palette.primary.main : '#D0D5DD'
         }}
         border={false}
         className='shadow hover:shadow-xl'
