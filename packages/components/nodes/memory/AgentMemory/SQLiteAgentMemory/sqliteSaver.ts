@@ -2,9 +2,9 @@ import { BaseCheckpointSaver, Checkpoint, CheckpointMetadata } from '@langchain/
 import { RunnableConfig } from '@langchain/core/runnables'
 import { BaseMessage } from '@langchain/core/messages'
 import { DataSource, QueryRunner } from 'typeorm'
-import { CheckpointTuple, SaverOptions, SerializerProtocol } from './interface'
-import { IMessage, MemoryMethods } from '../../../src/Interface'
-import { mapChatMessageToBaseMessage } from '../../../src/utils'
+import { CheckpointTuple, SaverOptions, SerializerProtocol } from '../interface'
+import { IMessage, MemoryMethods } from '../../../../src/Interface'
+import { mapChatMessageToBaseMessage } from '../../../../src/utils'
 
 export class SqliteSaver extends BaseCheckpointSaver implements MemoryMethods {
     protected isSetup: boolean
