@@ -602,7 +602,8 @@ const Canvas = () => {
                         layoutOptions: {
                           'elk.algorithm': 'layered',
                           'elk.layered.spacing.nodeNodeBetweenLayers': '128',
-                          'elk.spacing.nodeNode': '64'
+                          'elk.spacing.nodeNode': '64',
+                          'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX'
                         },
                         children: nodes.map((node) => ({
                           id: node.id,
