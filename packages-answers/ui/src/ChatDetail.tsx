@@ -1,26 +1,26 @@
 'use client'
 import React, { Suspense, useRef } from 'react'
 
-import NextLink from 'next/link'
-
-import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
-import IconButton from '@mui/material/IconButton'
-import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import Button from '@mui/material/Button'
 import SourceDocumentModal from '@ui/SourceDocumentModal'
 
-import ShareIcon from '@mui/icons-material/IosShare'
-
-import { MessageCard } from './Message'
 import { useAnswers } from './AnswersContext'
 import ChatInput from './ChatInput'
 import DrawerFilters from './DrawerFilters/DrawerFilters'
+import NextLink from 'next/link'
+import Toolbar from '@mui/material/Toolbar'
+
+import ShareIcon from '@mui/icons-material/IosShare'
 
 import type { AppSettings, Document, Sidekick } from 'types'
 import SidekickSelect from './SidekickSelect'
 import Drawer from './Drawer'
+import { ChatRoom } from './ChatRoom'
+import { FileUpload } from './AnswersContext'
+import AppBar from '@mui/material/AppBar'
+import { Button, Ic, Tooltip, TooltiponButton } from '@mui/material'
+import { CodePreview } from './Message/CodePreview'
 
 const DISPLAY_MODES = {
     CHATBOT: 'chatbot',
@@ -46,13 +46,19 @@ export const ChatDetail = ({
         regenerateAnswer,
         showFilters,
         chatbotConfig,
-        sidekick: selectedSidekick
+        sidekick: selectedSidekick,
+        startNewChat
     } = useAnswers()
 
     const scrollRef = useRef<HTMLDivElement>(null)
     const [selectedDocuments, setSelectedDocuments] = React.useState<Document[] | undefined>()
     const [uploadedFiles, setUploadedFiles] = React.useState<FileUpload[]>([])
-
+    const [previewCode, setPreviewCode] = React.useState<{
+        code: string
+        language: string
+        getHTMLPreview: (code: string) => string
+        getReactPreview: (code: string) => string
+    } | null>(null)
     const messages = clientMessages || chat?.messages
 
     const displayMode = chatbotConfig?.displayMode || DISPLAY_MODES.CHATBOT
@@ -78,7 +84,8 @@ export const ChatDetail = ({
                             width: '100%',
                             height: '100%',
                             flex: 1,
-                            justifyContent: 'space-between'
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start'
                         }}
                     >
                         {selectedSidekick || chat ? (
@@ -111,7 +118,18 @@ export const ChatDetail = ({
                                     </Box>
 
                                     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                                        {chat ? (
+                                        <Tooltip title='Start new chat'>
+                                            <Button
+                                                variant='outlined'
+                                                color='primary'
+                                                onClick={startNewChat}
+                                                data-test-id='new-chat-button'
+                                            >
+                                                Start New Chat
+                                            </Button>
+                                        </Tooltip>
+
+                                        {/* {chat ? (
                                             <IconButton
                                                 size='large'
                                                 edge='start'
@@ -122,47 +140,12 @@ export const ChatDetail = ({
                                             >
                                                 <ShareIcon />
                                             </IconButton>
-                                        ) : null}
-
-                                        {/* {!showFilters ? (
-                  <Tooltip
-                    PopperProps={{ placement: 'top-end' }}
-                    title={!Object.keys(services)?.length ? null : <Filters />}>
-                    <Button
-                      size="large"
-                      color="inherit"
-                      aria-label="manage sources"
-                      onClick={() => setShowFilters(!showFilters)}
-                      sx={{ display: 'flex', minWidth: 0, borderRadius: 20 }}>
-                      {!Object.keys(services)?.length ? 'Select sources' : null}
-
-                      <AvatarGroup
-                        max={4}
-                        sx={{ '.MuiAvatar-root': { ml: -2, width: 28, height: 28 } }}>
-                        {(Object.keys(services)?.length
-                          ? Object.values(services)
-                          : appSettings.services
-                        )?.map((service) => (
-                          <Avatar key={service.id} variant="source" src={service.imageURL} />
-                        ))}
-                      </AvatarGroup>
-                    </Button>
-                  </Tooltip>
-                ) : (
-                  <IconButton
-                    size="large"
-                    color="inherit"
-                    aria-label="manage sources"
-                    edge="end"
-                    onClick={() => setShowFilters(!showFilters)}
-                    sx={{}}>
-                    <ArrowBackIcon />
-                  </IconButton>
-                )} */}
+                                        ) : null} */}
                                     </Box>
                                 </Toolbar>
                             </AppBar>
                         ) : null}
+                        {selectedSidekick || chat ? <></> : null}
                         {!selectedSidekick && !chat ? (
                             <Box
                                 sx={{
@@ -180,72 +163,68 @@ export const ChatDetail = ({
                                 <SidekickSelect noDialog sidekicks={sidekicks} />
                             </Box>
                         ) : displayMode === DISPLAY_MODES.CHATBOT ? (
-                            <>
-                                <Box ref={scrollRef} sx={{ height: '100%', overflow: 'auto', px: 2, py: 3 }}>
-                                    <Suspense fallback={<div>Loading...</div>}>
-                                        <Box
-                                            sx={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: 2
-                                            }}
-                                        >
-                                            {messages?.map((message, index) => (
-                                                <MessageCard
-                                                    {...message}
-                                                    key={`message_${index}`}
-                                                    setSelectedDocuments={setSelectedDocuments}
-                                                />
-                                            ))}
-
-                                            {error ? (
-                                                <>
-                                                    <MessageCard id='error' role='status' content={`${error.message} `} error={error} />
-
-                                                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                                        <Button
-                                                            onClick={() => regenerateAnswer()}
-                                                            variant='contained'
-                                                            color='primary'
-                                                            sx={{ margin: 'auto' }}
-                                                        >
-                                                            Retry
-                                                        </Button>
-                                                    </Box>
-                                                </>
-                                            ) : null}
-
-                                            {isLoading && messages?.[messages?.length - 1]?.role === 'user' ? (
-                                                <MessageCard role='status' isLoading content={'...'} />
-                                            ) : null}
-
-                                            {!messages?.length && !isLoading ? (
-                                                <MessageCard
-                                                    id='placeholder'
-                                                    role='status'
-                                                    content={chatbotConfig?.welcomeMessage ?? 'Welcome! Try asking me something!'}
-                                                />
-                                            ) : null}
-
-                                            {!isLoading && !error && messages?.length ? (
-                                                <Box sx={{ py: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                                    <Button onClick={() => regenerateAnswer()} variant='outlined' color='primary'>
-                                                        Regenerate answer
-                                                    </Button>
-                                                </Box>
-                                            ) : null}
-                                        </Box>
-                                    </Suspense>
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                        height: '100%',
+                                        overflow: 'auto',
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}
+                                    ref={scrollRef}
+                                >
+                                    <Box
+                                        sx={{
+                                            width: '100%',
+                                            maxWidth: 768,
+                                            margin: '0 auto',
+                                            flex: 1,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            px: { xs: 2, sm: 3 }
+                                        }}
+                                    >
+                                        <ChatRoom
+                                            messages={messages}
+                                            error={error}
+                                            isLoading={isLoading}
+                                            regenerateAnswer={regenerateAnswer}
+                                            chatbotConfig={chatbotConfig}
+                                            setSelectedDocuments={setSelectedDocuments}
+                                            setPreviewCode={setPreviewCode}
+                                            sidekicks={sidekicks}
+                                            scrollRef={scrollRef}
+                                            selectedSidekick={selectedSidekick}
+                                        />
+                                    </Box>
                                 </Box>
 
-                                <ChatInput
-                                    sidekicks={sidekicks}
-                                    scrollRef={scrollRef}
-                                    uploadedFiles={uploadedFiles}
-                                    setUploadedFiles={setUploadedFiles}
-                                    isWidget={false}
-                                />
-                            </>
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                        maxWidth: 768,
+                                        margin: '0 auto',
+                                        px: { xs: 2, sm: 3 }
+                                    }}
+                                >
+                                    <ChatInput
+                                        sidekicks={sidekicks}
+                                        scrollRef={scrollRef}
+                                        uploadedFiles={uploadedFiles}
+                                        setUploadedFiles={setUploadedFiles}
+                                        isWidget={false}
+                                    />
+                                </Box>
+                            </Box>
                         ) : (
                             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                                 <iframe src={embeddedUrl} style={{ flex: 1, border: 'none' }} title='Embedded Form' allowFullScreen />
@@ -260,20 +239,27 @@ export const ChatDetail = ({
                         position: { md: 'relative', xs: 'absolute' },
                         '& .MuiDrawer-paper': {
                             position: 'absolute',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
+                            height: '100%'
                         },
                         display: 'flex',
                         flexDirection: 'column',
                         height: '100%'
                     }}
+                    PaperProps={{
+                        sx: {
+                            height: '100%'
+                        }
+                    }}
                     variant='permanent'
                     anchor='left'
-                    open={!!showFilters || !!selectedDocuments}
+                    open={!!showFilters || !!selectedDocuments || !!previewCode}
                 >
                     {selectedDocuments ? (
                         <SourceDocumentModal documents={selectedDocuments} onClose={() => setSelectedDocuments(undefined)} />
-                    ) : null}
-                    {showFilters ? (
+                    ) : previewCode ? (
+                        <CodePreview {...previewCode} onClose={() => setPreviewCode(null)} />
+                    ) : showFilters ? (
                         <Suspense fallback={<div>Loading...</div>}>
                             <DrawerFilters appSettings={appSettings} />
                         </Suspense>

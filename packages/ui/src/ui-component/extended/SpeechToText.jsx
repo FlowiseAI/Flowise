@@ -275,7 +275,7 @@ const SpeechToText = ({ dialogProps }) => {
                                     backgroundColor: 'white'
                                 }}
                             >
-                                <Image
+                                <img
                                     style={{
                                         width: '100%',
                                         height: '100%',

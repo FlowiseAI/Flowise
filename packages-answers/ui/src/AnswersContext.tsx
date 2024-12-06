@@ -48,7 +48,14 @@ interface AnswersContextType {
     messages?: Array<Message>
     prompts?: Array<Prompt>
     chats?: Array<Chat>
-    sendMessage: (args: { content: string; isNewJourney?: boolean; sidekick?: Sidekick; gptModel?: string }) => void
+    sendMessage: (args: {
+        content: string
+        isNewJourney?: boolean
+        sidekick?: Sidekick | SidekickListItem
+        gptModel?: string
+        files?: string[]
+        audio?: File | null
+    }) => void
     clearMessages: () => void
     regenerateAnswer: () => void
     isLoading: boolean
@@ -89,51 +96,6 @@ interface AnswersContextType {
     setSocketIOClientId: (id: string) => void
     isChatFlowAvailableToStream: boolean
     handleAbort: () => Promise<void>
-    handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-    handleDrop: (e: React.DragEvent) => void
-    handleDrag: (e: React.DragEvent) => void
-    handleUploadClick: () => void
-    clearPreviews: () => void
-    handleDeletePreview: (preview: any) => void
-    previews: any[]
-    setPreviews: (previews: any[]) => void
-    isDragActive: boolean
-    setIsDragActive: (isDragActive: boolean) => void
-    fileUploadRef: React.RefObject<HTMLInputElement>
-    onMicrophonePressed: () => void
-    onRecordingCancelled: () => void
-    onRecordingStopped: () => void
-    addRecordingToPreviews: (blob: Blob) => void
-    isRecording: boolean
-    setIsRecording: (isRecording: boolean) => void
-    recordingNotSupported: boolean
-    setRecordingNotSupported: (notSupported: boolean) => void
-    isLoadingRecording: boolean
-    setIsLoadingRecording: (isLoading: boolean) => void
-    onThumbsUpClick: (messageId: string) => Promise<void>
-    onThumbsDownClick: (messageId: string) => Promise<void>
-    submitFeedbackContent: (text: string) => Promise<void>
-    chatFeedbackStatus: boolean
-    setChatFeedbackStatus: (status: boolean) => void
-    feedbackId: string
-    setFeedbackId: (id: string) => void
-    showFeedbackContentDialog: boolean
-    setShowFeedbackContentDialog: (show: boolean) => void
-    handleLeadCaptureSubmit: (event?: React.FormEvent) => Promise<void>
-    leadsConfig: any
-    setLeadsConfig: (config: any) => void
-    leadName: string
-    setLeadName: (name: string) => void
-    leadEmail: string
-    setLeadEmail: (email: string) => void
-    leadPhone: string
-    setLeadPhone: (phone: string) => void
-    isLeadSaving: boolean
-    setIsLeadSaving: (isSaving: boolean) => void
-    isLeadSaved: boolean
-    setIsLeadSaved: (isSaved: boolean) => void
-    downloadFile: (fileAnnotation: any) => Promise<void>
-    copyMessageToClipboard: (text?: string) => Promise<void>
 }
 // @ts-ignore
 const AnswersContext = createContext<AnswersContextType>({
@@ -163,52 +125,7 @@ const AnswersContext = createContext<AnswersContextType>({
     socketIOClientId: '',
     setSocketIOClientId: () => {},
     isChatFlowAvailableToStream: false,
-    handleAbort: async () => {},
-    handleFileChange: () => {},
-    handleDrop: () => {},
-    handleDrag: () => {},
-    handleUploadClick: () => {},
-    clearPreviews: () => {},
-    handleDeletePreview: () => {},
-    previews: [],
-    setPreviews: () => {},
-    isDragActive: false,
-    setIsDragActive: () => {},
-    fileUploadRef: React.createRef(),
-    onMicrophonePressed: () => {},
-    onRecordingCancelled: () => {},
-    onRecordingStopped: () => {},
-    addRecordingToPreviews: (blob: Blob) => {},
-    isRecording: false,
-    setIsRecording: () => {},
-    recordingNotSupported: false,
-    setRecordingNotSupported: () => {},
-    isLoadingRecording: false,
-    setIsLoadingRecording: () => {},
-    onThumbsUpClick: async () => {},
-    onThumbsDownClick: async () => {},
-    submitFeedbackContent: async () => {},
-    chatFeedbackStatus: false,
-    setChatFeedbackStatus: () => {},
-    feedbackId: '',
-    setFeedbackId: () => {},
-    showFeedbackContentDialog: false,
-    setShowFeedbackContentDialog: () => {},
-    handleLeadCaptureSubmit: async () => {},
-    leadsConfig: {},
-    setLeadsConfig: () => {},
-    leadName: '',
-    setLeadName: () => {},
-    leadEmail: '',
-    setLeadEmail: () => {},
-    leadPhone: '',
-    setLeadPhone: () => {},
-    isLeadSaving: false,
-    setIsLeadSaving: () => {},
-    isLeadSaved: false,
-    setIsLeadSaved: () => {},
-    downloadFile: async () => {},
-    copyMessageToClipboard: async () => {}
+    handleAbort: async () => {}
 })
 
 export function useAnswers() {
@@ -232,7 +149,16 @@ interface AnswersProviderProps {
     // chats?: Chat[];
 }
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data)
+const fetcher = (url: string) => {
+    return axios
+        .get(url)
+        .then((res) => {
+            return res.data
+        })
+        .catch((error) => {
+            throw error
+        })
+}
 
 // Add axios interceptor setup
 const setupAxiosInterceptors = (apiUrl: string) => {
@@ -269,11 +195,11 @@ const setupAxiosInterceptors = (apiUrl: string) => {
 export function AnswersProvider({
     chat: initialChat,
     journey: initialJourney,
+    sidekicks,
     user,
     appSettings,
     children,
     prompts,
-    sidekicks,
     useStreaming: initialUseStreaming = true,
     apiUrl = '/api'
 }: AnswersProviderProps) {
@@ -342,7 +268,7 @@ export function AnswersProvider({
         }
     })
     const [chatId, setChatId] = useState<string | undefined>(initialChat?.id)
-
+    // false to disable for now
     const { data: chat } = useSWR<Chat>(!isStreaming && chatId && false ? `${apiUrl}/chats/${chatId}` : null, fetcher, {
         revalidateOnFocus: false,
         revalidateIfStale: false,
@@ -353,7 +279,7 @@ export function AnswersProvider({
             // setMessages(data.messages!);
         }
     })
-    const [sidekick, setSidekick] = useState<SidekickListItem>(
+    const [sidekick, setSidekick] = useState<SidekickListItem | undefined>(
         sidekicks?.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid)
     )
     const chatbotConfig = React.useMemo(() => sidekick?.chatbotConfig, [sidekick])
@@ -397,7 +323,7 @@ export function AnswersProvider({
         setChatId(undefined)
         setError(null)
         setIsLoading(false)
-        setSidekick(undefined)
+        setSidekick(undefined as SidekickListItem | undefined)
         if (chatId) {
             router.push('/journey/' + journeyId)
         }
@@ -517,7 +443,9 @@ export function AnswersProvider({
     const handleAbort = async () => {
         setIsMessageStopping(true)
         try {
-            await abortMessage(sidekick?.id!, chatId!)
+            if (sidekick?.id && chatId) {
+                await predictionApi.abortMessage(sidekick.id, chatId)
+            }
         } catch (error: any) {
             setIsMessageStopping(false)
             setError(error.response?.data?.message || 'Error aborting message')
@@ -541,10 +469,7 @@ export function AnswersProvider({
             audio?: File | null
         }) => {
             if (!retry) {
-                const fileUploads = files?.map((file) => ({
-                    data: file,
-                    type: 'file'
-                }))
+                const fileUploads = files
                 addMessage({ role: 'user', content, fileUploads } as Message)
             }
             setError(null)
@@ -564,37 +489,79 @@ export function AnswersProvider({
                     socketIOClientId: isChatFlowAvailableToStream ? socketIOClientId : undefined
                 }
 
-                if (isChatFlowAvailableToStream && socketIOClientId) {
-                    await predictionApi.sendMessageAndGetPrediction(sidekick?.id!, params)
-                } else {
-                    const { data } = await predictionApi.sendMessageAndGetPrediction(sidekick?.id!, params)
-
-                    if (data?.chat?.id && data.chat.id !== chatId) {
-                        setChatId(data.chat.id)
-                        if (data.chat.journeyId) {
-                            setJourneyId(data.chat.journeyId)
-                        }
+                const response = await predictionApi.sendMessageAndGetPrediction(sidekick?.id!, params)
+                const data = response.data
+                setMessages((prevMessages) => {
+                    let allMessages = [...cloneDeep(prevMessages)]
+                    if (allMessages[allMessages.length - 1].type === 'apiMessage') {
+                        allMessages[allMessages.length - 1].id = data?.chatMessageId
                     }
+                    return allMessages
+                })
+                setChatId(data.chatId)
+
+                if (content === '' && data.question) {
+                    // the response contains the question even if it was in an audio format
+                    // so if input is empty but the response contains the question, update the user message to show the question
+                    setMessages((prevMessages) => {
+                        let allMessages = [...cloneDeep(prevMessages)]
+                        if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
+                        allMessages[allMessages.length - 2].content = data.question
+                        return allMessages
+                    })
+                }
+                if (!isChatFlowAvailableToStream) {
+                    let text = ''
+                    if (data.text) text = data.text
+                    else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
+                    else text = JSON.stringify(data, null, 2)
 
                     setMessages((prevMessages) => [
                         ...prevMessages,
                         {
                             role: 'assistant',
-                            content: data.text || JSON.stringify(data.json || data, null, 2),
+                            content: text,
                             id: data?.chatMessageId,
                             sourceDocuments: data?.sourceDocuments,
                             usedTools: data?.usedTools,
                             fileAnnotations: data?.fileAnnotations,
                             agentReasoning: data?.agentReasoning,
                             action: data?.action,
+                            type: 'apiMessage',
+                            feedback: null,
                             isLoading: false,
                             chat: data.chat
-                        } as Message
+                        }
                     ])
-
-                    mutate('/api/chats')
-                    setIsLoading(false)
                 }
+                // if (!isChatFlowAvailableToStream || !socketIOClientId) {
+
+                //     if (data?.chatId) {
+                //         setChatId(data.chatId)
+                //     }
+
+                //     setMessages((prevMessages) => [
+                //         ...prevMessages,
+                //         {
+                //             role: 'assistant',
+                //             content: data.text || JSON.stringify(data.json || data, null, 2),
+                //             id: data?.chatMessageId,
+                //             sourceDocuments: data?.sourceDocuments,
+                //             usedTools: data?.usedTools,
+                //             fileAnnotations: data?.fileAnnotations,
+                //             agentReasoning: data?.agentReasoning,
+                //             action: data?.action,
+                //             isLoading: false,
+                //             chat: data.chat
+                //         } as Message
+                //     ])
+
+                mutate('/api/chats')
+                setIsLoading(false)
+                // } else {
+                //     // For streaming, the socket connection will handle message updates
+                //     setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '', isLoading: true } as Message])
+                // }
 
                 setInputValue('')
             } catch (err: any) {
@@ -675,7 +642,7 @@ export function AnswersProvider({
                 }
             }
         }
-    }, [chat?.id, sidekick?.id])
+    }, [sidekick?.id])
 
     React.useEffect(() => {
         setJourney(initialJourney)
@@ -691,7 +658,7 @@ export function AnswersProvider({
         setIsDragActive(false)
         let files = []
         if (e.dataTransfer.files.length > 0) {
-            for (const file of e.dataTransfer.files) {
+            for (const file of Array.from(e.dataTransfer.files)) {
                 const reader = new FileReader()
                 const { name } = file
                 files.push(
@@ -741,27 +708,29 @@ export function AnswersProvider({
             return
         }
         let files = []
-        for (const file of event.target.files) {
-            const reader = new FileReader()
-            const { name } = file
-            files.push(
-                new Promise((resolve) => {
-                    reader.onload = (evt) => {
-                        if (!evt?.target?.result) {
-                            return
+        if (event.target.files) {
+            for (const file of Array.from(event.target.files)) {
+                const reader = new FileReader()
+                const { name } = file
+                files.push(
+                    new Promise((resolve) => {
+                        reader.onload = (evt) => {
+                            if (!evt?.target?.result) {
+                                return
+                            }
+                            const { result } = evt.target
+                            resolve({
+                                data: result,
+                                preview: URL.createObjectURL(file),
+                                type: 'file',
+                                name: name,
+                                mime: file.type
+                            })
                         }
-                        const { result } = evt.target
-                        resolve({
-                            data: result,
-                            preview: URL.createObjectURL(file),
-                            type: 'file',
-                            name: name,
-                            mime: file.type
-                        })
-                    }
-                    reader.readAsDataURL(file)
-                })
-            )
+                        reader.readAsDataURL(file)
+                    })
+                )
+            }
         }
 
         const newFiles = await Promise.all(files)
@@ -835,52 +804,7 @@ export function AnswersProvider({
         socketIOClientId,
         setSocketIOClientId,
         isChatFlowAvailableToStream,
-        handleAbort,
-        handleFileChange: () => {},
-        handleDrop: () => {},
-        handleDrag: () => {},
-        handleUploadClick: () => {},
-        clearPreviews: () => {},
-        handleDeletePreview: () => {},
-        previews: [],
-        setPreviews: () => {},
-        isDragActive: false,
-        setIsDragActive: () => {},
-        fileUploadRef: React.createRef(),
-        onMicrophonePressed: () => {},
-        onRecordingCancelled: () => {},
-        onRecordingStopped: () => {},
-        addRecordingToPreviews: (blob: Blob) => {},
-        isRecording: false,
-        setIsRecording: () => {},
-        recordingNotSupported: false,
-        setRecordingNotSupported: () => {},
-        isLoadingRecording: false,
-        setIsLoadingRecording: () => {},
-        onThumbsUpClick: async () => {},
-        onThumbsDownClick: async () => {},
-        submitFeedbackContent: async () => {},
-        chatFeedbackStatus: false,
-        setChatFeedbackStatus: () => {},
-        feedbackId: '',
-        setFeedbackId: () => {},
-        showFeedbackContentDialog: false,
-        setShowFeedbackContentDialog: () => {},
-        handleLeadCaptureSubmit: async () => {},
-        leadsConfig: {},
-        setLeadsConfig: () => {},
-        leadName: '',
-        setLeadName: () => {},
-        leadEmail: '',
-        setLeadEmail: () => {},
-        leadPhone: '',
-        setLeadPhone: () => {},
-        isLeadSaving: false,
-        setIsLeadSaving: () => {},
-        isLeadSaved: false,
-        setIsLeadSaved: () => {},
-        downloadFile: async () => {},
-        copyMessageToClipboard: async () => {}
+        handleAbort
     }
     // @ts-ignore
     return <AnswersContext.Provider value={contextValue}>{children}</AnswersContext.Provider>

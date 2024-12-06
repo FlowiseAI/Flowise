@@ -491,7 +491,7 @@ const upsertChat = async ({
     chatflowId
 }: {
     id?: string
-    user: IUser
+    user?: IUser
     filters?: object
     prompt: string
     chatflowChatId: string
@@ -505,8 +505,8 @@ const upsertChat = async ({
             title: prompt,
             chatflowChatId,
             filters,
-            owner: { id: user.id },
-            organization: { id: user.organizationId },
+            owner: { id: user?.id },
+            organization: { id: user?.organizationId },
             chatflow: { id: chatflowId }
         }
 

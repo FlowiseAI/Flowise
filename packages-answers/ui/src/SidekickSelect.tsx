@@ -18,7 +18,8 @@ import {
     MenuItem,
     Chip,
     Tooltip,
-    Divider
+    Divider,
+    Snackbar
 } from '@mui/material'
 import {
     ExpandMore as ExpandMoreIcon,
@@ -30,7 +31,8 @@ import {
     MoreHoriz as MoreHorizIcon,
     Visibility as VisibilityIcon,
     Edit as EditIcon,
-    Cancel as CancelIcon
+    Cancel as CancelIcon,
+    Share as ShareIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
 import useSWR from 'swr'
@@ -112,12 +114,12 @@ const SidekickTitle = styled(Typography)({
 })
 
 const SidekickDescription = styled(Typography)({
-    flexGrow: 1,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     display: '-webkit-box',
     WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical'
+    WebkitBoxOrient: 'vertical',
+    minHeight: '2.5em'
 })
 
 const SidekickFooter = styled(Box)(({ theme }) => ({
@@ -220,6 +222,8 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     const [isMarketplaceDialogOpen, setIsMarketplaceDialogOpen] = useState(false)
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+
+    const [showCopyMessage, setShowCopyMessage] = useState(false)
 
     useEffect(() => {
         const storedFavorites = localStorage.getItem('favoriteSidekicks')
@@ -416,21 +420,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         [navigate, user, setNavigationState]
     )
 
-    const handleEdit = useCallback(
-        (sidekick: Sidekick, e: React.MouseEvent) => {
-            e.stopPropagation()
+    const handleEdit = useCallback((sidekick: Sidekick, e: React.MouseEvent) => {
+        e.stopPropagation()
 
-            if (!sidekick) return
+        if (!sidekick) return
 
-            const isAgentCanvas = (sidekick.flowData?.nodes || []).some(
-                (node: { data: { category: string } }) =>
-                    node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
-            )
+        const isAgentCanvas = (sidekick.flowData?.nodes || []).some(
+            (node: { data: { category: string } }) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
+        )
 
-            navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${sidekick.id}`)
-        },
-        [navigate]
-    )
+        const url = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${sidekick.id}`
+        window.open(url, '_blank')
+    }, [])
 
     const filteredSidekicks = useMemo(() => {
         const filterByTab = (sidekick: Sidekick) => {
@@ -512,21 +513,19 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                     {sidekick.categories?.length > 0 && sidekick.categories?.map ? (
                                         <Tooltip
                                             title={sidekick.categories
-                                                .map((category: string, index: number) => category.trim().split(';').join(', '))
+                                                .map((category: string) => category.trim().split(';').join(', '))
                                                 .join(', ')}
                                         >
                                             <Chip
-                                                // icon={<CategoryIcon />}
                                                 label={sidekick.categories
-                                                    .map((category: string, index: number) => category.trim().split(';').join(' | '))
+                                                    .map((category: string) => category.trim().split(';').join(' | '))
                                                     .join(' | ')}
                                                 size='small'
                                                 variant='outlined'
                                                 sx={{ marginRight: 0.5 }}
                                             />
                                         </Tooltip>
-                                    ) : // <Chip icon={<CategoryIcon />} label='Uncategorized' size='small' variant='outlined' />
-                                    null}
+                                    ) : null}
                                     {sidekick.chatflow.isOwner && <Chip label='Owner' size='small' color='primary' variant='outlined' />}
                                 </Box>
                             </SidekickHeader>
@@ -738,6 +737,19 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         navigate('/canvas')
     }
 
+    const handleShare = useCallback((sidekick: Sidekick, e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (!sidekick) return
+
+        // Create the share URL
+        const shareUrl = `${window.location.origin}/sidekick/${sidekick.id}`
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            setShowCopyMessage(true)
+        })
+    }, [])
+
     return (
         <Box>
             <Button variant='outlined' onClick={() => setOpen(true)} endIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'space-between' }}>
@@ -831,6 +843,13 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 }}
                 templateId={selectedTemplateId}
                 onUse={(sidekick) => handleSidekickSelect(sidekick)}
+            />
+            <Snackbar
+                open={showCopyMessage}
+                autoHideDuration={2000}
+                onClose={() => setShowCopyMessage(false)}
+                message='Link copied to clipboard'
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             />
         </Box>
     )

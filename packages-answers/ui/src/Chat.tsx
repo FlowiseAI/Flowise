@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import { Suspense } from 'react'
 
 import { getAppSettings } from './getAppSettings'
 import { ChatDetail } from './ChatDetail'
@@ -6,10 +6,10 @@ import { AnswersProvider } from './AnswersContext'
 import Modal from './Modal'
 import getCachedSession from './getCachedSession'
 
-import type { Sidekick, Chat, Journey } from 'types'
+import type { Sidekick, Chat as ChatType, Journey } from 'types'
 
 export interface Params {
-    chat?: Chat
+    chat?: ChatType
     journey?: Journey
     sidekicks?: Sidekick[]
 }
