@@ -1195,6 +1195,22 @@ const CustomAssistantConfigurePreview = () => {
                                                 Add Tool
                                             </Button>
                                         </Box>
+                                        {selectedChatModel && Object.keys(selectedChatModel).length > 0 && (
+                                            <Button
+                                                fullWidth
+                                                title='Save Assistant'
+                                                sx={{
+                                                    mt: 1,
+                                                    mb: 1,
+                                                    borderRadius: 20,
+                                                    background: 'linear-gradient(45deg, #673ab7 30%, #1e88e5 90%)'
+                                                }}
+                                                variant='contained'
+                                                onClick={onSaveAndProcess}
+                                            >
+                                                Save Assistant
+                                            </Button>
+                                        )}
                                     </div>
                                 </Grid>
                                 {customAssistantFlowId && !loadingAssistant && (
