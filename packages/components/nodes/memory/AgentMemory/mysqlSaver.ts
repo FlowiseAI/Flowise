@@ -97,6 +97,8 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
 
     async *list(config: RunnableConfig, limit?: number, before?: RunnableConfig): AsyncGenerator<CheckpointTuple, void, unknown> {
         const dataSource = await this.getDataSource()
+        await this.setup(dataSource)
+        const queryRunner = dataSource.createQueryRunner()
         try {
             const threadId = config.configurable?.thread_id || this.threadId
             let sql = `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${this.tableName} WHERE thread_id = ? ${
@@ -107,7 +109,9 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
             }
             const args = [threadId, before?.configurable?.checkpoint_id].filter(Boolean)
 
-            const rows = await dataSource.manager.query(sql, args)
+            const rows = await queryRunner.manager.query(sql, args)
+            await queryRunner.release()
+
             if (rows && rows.length > 0) {
                 for (const row of rows) {
                     yield {
@@ -142,6 +146,7 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
         const dataSource = await this.getDataSource()
         await this.setup(dataSource)
 
+        if (!config.configurable?.checkpoint_id) return {}
         try {
             const queryRunner = dataSource.createQueryRunner()
             const row = [
@@ -170,6 +175,24 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
                 thread_id: config.configurable?.thread_id || this.threadId,
                 checkpoint_id: checkpoint.id
             }
+        }
+    }
+
+    async delete(threadId: string): Promise<void> {
+        if (!threadId) return
+
+        const dataSource = await this.getDataSource()
+        await this.setup(dataSource)
+
+        try {
+            const queryRunner = dataSource.createQueryRunner()
+            const query = `DELETE FROM ${this.tableName} WHERE thread_id = ?;`
+            await queryRunner.manager.query(query, [threadId])
+            await queryRunner.release()
+        } catch (error) {
+            console.error(`Error deleting thread_id ${threadId}`, error)
+        } finally {
+            await dataSource.destroy()
         }
     }
 
@@ -209,26 +232,8 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
         return returnIMessages
     }
 
-    async delete(threadId: string): Promise<void> {
-        if (!threadId) return
-
-        const dataSource = await this.getDataSource()
-        await this.setup(dataSource)
-
-        try {
-            const queryRunner = dataSource.createQueryRunner()
-            const query = `DELETE FROM ${this.tableName} WHERE thread_id = ?;`
-            await queryRunner.manager.query(query, [threadId])
-            await queryRunner.release()
-        } catch (error) {
-            console.error(`Error deleting thread_id ${threadId}`, error)
-        } finally {
-            await dataSource.destroy()
-        }
-    }
-
     async addChatMessages(): Promise<void> {
-        // Implementação vazia porque o método não está sendo usado
+        // Empty as it's not being used
     }
 
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
