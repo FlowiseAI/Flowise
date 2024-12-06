@@ -46,6 +46,7 @@ const uploadFilesToAssistant = (credentialId, formData) =>
 
 const getChatModels = () => client.get('/assistants/components/chatmodels')
 const getDocStores = () => client.get('/assistants/components/docstores')
+const getTools = () => client.get('/assistants/components/tools')
 
 const generateAssistantInstruction = (body) => client.post(`/assistants/generate/instruction`, body)
 
@@ -67,5 +68,6 @@ export default {
     deleteAssistantVectorStore,
     getChatModels,
     getDocStores,
+    getTools,
     generateAssistantInstruction
 }

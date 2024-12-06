@@ -98,6 +98,15 @@ const getDocumentStores = async (req: Request, res: Response, next: NextFunction
     }
 }
 
+const getTools = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await assistantsService.getTools()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const generateAssistantInstruction = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.body) {
@@ -121,5 +130,6 @@ export default {
     updateAssistant,
     getChatModels,
     getDocumentStores,
+    getTools,
     generateAssistantInstruction
 }

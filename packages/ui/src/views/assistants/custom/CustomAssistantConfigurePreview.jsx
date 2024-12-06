@@ -1,6 +1,5 @@
 import { cloneDeep, set } from 'lodash'
 import { memo, useEffect, useState, useRef } from 'react'
-import { v4 as uuidv4 } from 'uuid'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { FullPageChat } from 'flowise-embed-react'
@@ -74,6 +73,7 @@ const CustomAssistantConfigurePreview = () => {
     const getSpecificAssistantApi = useApi(assistantsApi.getSpecificAssistant)
     const getChatModelsApi = useApi(assistantsApi.getChatModels)
     const getDocStoresApi = useApi(assistantsApi.getDocStores)
+    const getToolsApi = useApi(assistantsApi.getTools)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
 
     const URLpath = document.location.pathname.toString().split('/')
@@ -87,6 +87,9 @@ const CustomAssistantConfigurePreview = () => {
     const [customAssistantFlowId, setCustomAssistantFlowId] = useState()
     const [documentStoreOptions, setDocumentStoreOptions] = useState([])
     const [selectedDocumentStores, setSelectedDocumentStores] = useState([])
+    const [toolComponents, setToolComponents] = useState([])
+    const [toolOptions, setToolOptions] = useState([])
+    const [selectedTools, setSelectedTools] = useState([])
 
     const [apiDialogOpen, setAPIDialogOpen] = useState(false)
     const [apiDialogProps, setAPIDialogProps] = useState({})
@@ -139,6 +142,24 @@ const CustomAssistantConfigurePreview = () => {
                 } else if (inputParam.type !== 'credential' && !selectedChatModel.inputs[inputParam.name]) {
                     canSubmit = false
                     break
+                }
+            }
+        }
+
+        if (selectedTools.length > 0) {
+            for (let i = 0; i < selectedTools.length; i++) {
+                const tool = selectedTools[i]
+                const inputParams = (tool.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
+                for (const inputParam of inputParams) {
+                    if (!inputParam.optional && (!tool.inputs[inputParam.name] || !tool.credential)) {
+                        if (inputParam.type === 'credential' && !tool.credential) {
+                            canSubmit = false
+                            break
+                        } else if (inputParam.type !== 'credential' && !tool.inputs[inputParam.name]) {
+                            canSubmit = false
+                            break
+                        }
+                    }
                 }
             }
         }
@@ -199,7 +220,8 @@ const CustomAssistantConfigurePreview = () => {
                         chatModel: selectedChatModel,
                         instruction: customAssistantInstruction,
                         flowId: saveResp.data.id,
-                        documentStores: selectedDocumentStores
+                        documentStores: selectedDocumentStores,
+                        tools: selectedTools
                     }
 
                     const saveAssistantResp = await assistantsApi.updateAssistant(customAssistantId, {
@@ -240,6 +262,43 @@ const CustomAssistantConfigurePreview = () => {
                 })
             }
         }
+    }
+
+    const addTools = async (toolAgentId) => {
+        const nodes = []
+        const edges = []
+
+        for (let i = 0; i < selectedTools.length; i++) {
+            try {
+                const tool = selectedTools[i]
+                const toolId = `${tool.name}_${i}`
+                const toolNodeData = cloneDeep(tool)
+                set(toolNodeData, 'inputs', tool.inputs)
+
+                const toolNodeObj = {
+                    id: toolId,
+                    data: {
+                        ...toolNodeData,
+                        id: toolId
+                    }
+                }
+                nodes.push(toolNodeObj)
+
+                const toolEdge = {
+                    source: toolId,
+                    sourceHandle: `${toolId}-output-${tool.name}-Tool`,
+                    target: toolAgentId,
+                    targetHandle: `${toolAgentId}-input-tools-Tool`,
+                    type: 'buttonedge',
+                    id: `${toolId}-${toolId}-output-${tool.name}-Tool-${toolAgentId}-${toolAgentId}-input-tools-Tool`
+                }
+                edges.push(toolEdge)
+            } catch (error) {
+                console.error('Error adding tool', error)
+            }
+        }
+
+        return { nodes, edges }
     }
 
     const addDocStore = async (toolAgentId) => {
@@ -341,10 +400,18 @@ const CustomAssistantConfigurePreview = () => {
             const toolAgentId = toolAgentNode.id
             set(toolAgentNode.data.inputs, 'model', `{{${chatModelId}}}`)
             set(toolAgentNode.data.inputs, 'systemMessage', `${customAssistantInstruction}`)
+
+            const agentTools = []
             if (selectedDocumentStores.length > 0) {
                 const retrieverTools = selectedDocumentStores.map((_, index) => `{{retrieverTool_${index}}}`)
-                set(toolAgentNode.data.inputs, 'tools', retrieverTools)
+                agentTools.push(...retrieverTools)
             }
+            if (selectedTools.length > 0) {
+                const tools = selectedTools.map((_, index) => `{{${selectedTools[index].id}}}`)
+                agentTools.push(...tools)
+            }
+            set(toolAgentNode.data.inputs, 'tools', agentTools)
+
             filteredNodes = filteredNodes.map((node) => (node.id === toolAgentNode.id ? toolAgentNode : node))
 
             // Go through each edge and loop through each key. Check if the string value of each key includes/contains existingChatModelId, if yes replace with chatModelId
@@ -361,6 +428,13 @@ const CustomAssistantConfigurePreview = () => {
             // Add Doc Store
             if (selectedDocumentStores.length > 0) {
                 const { nodes: newNodes, edges: newEdges } = await addDocStore(toolAgentId)
+                filteredNodes = [...filteredNodes, ...newNodes]
+                filteredEdges = [...filteredEdges, ...newEdges]
+            }
+
+            // Add Tools
+            if (selectedTools.length > 0) {
+                const { nodes: newNodes, edges: newEdges } = await addTools(toolAgentId)
                 filteredNodes = [...filteredNodes, ...newNodes]
                 filteredEdges = [...filteredEdges, ...newEdges]
             }
@@ -561,6 +635,7 @@ const CustomAssistantConfigurePreview = () => {
     useEffect(() => {
         getChatModelsApi.request()
         getDocStoresApi.request()
+        getToolsApi.request()
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -578,6 +653,22 @@ const CustomAssistantConfigurePreview = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getDocStoresApi.data])
+
+    useEffect(() => {
+        if (getToolsApi.data) {
+            setToolComponents(getToolsApi.data)
+
+            // Set options
+            const options = getToolsApi.data.map((ds) => ({
+                label: ds.label,
+                name: ds.name,
+                description: ds.description
+            }))
+            setToolOptions(options)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getToolsApi.data])
 
     useEffect(() => {
         if (getChatModelsApi.data) {
@@ -622,6 +713,10 @@ const CustomAssistantConfigurePreview = () => {
 
                 if (assistantDetails.documentStores) {
                     setSelectedDocumentStores(assistantDetails.documentStores)
+                }
+
+                if (assistantDetails.tools) {
+                    setSelectedTools(assistantDetails.tools)
                 }
             } catch (error) {
                 console.error('Error parsing assistant details', error)
@@ -833,7 +928,7 @@ const CustomAssistantConfigurePreview = () => {
                                                             (chatModel) => chatModel.name === newValue
                                                         )
                                                         if (foundChatComponent) {
-                                                            const chatModelId = uuidv4()
+                                                            const chatModelId = `${foundChatComponent.name}_0`
                                                             const clonedComponent = cloneDeep(foundChatComponent)
                                                             const initChatModelData = initNode(clonedComponent, chatModelId)
                                                             setSelectedChatModel(initChatModelData)
@@ -996,6 +1091,110 @@ const CustomAssistantConfigurePreview = () => {
                                                     ))}
                                             </Box>
                                         )}
+                                        <Box
+                                            sx={{
+                                                p: 2,
+                                                mt: 1,
+                                                mb: 1,
+                                                border: 1,
+                                                borderColor: theme.palette.grey[900] + 25,
+                                                borderRadius: 2
+                                            }}
+                                        >
+                                            <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                                                <Typography>Tools</Typography>
+                                                <TooltipWithParser title='Tools are actions that your assistant can perform' />
+                                            </Stack>
+                                            {selectedTools.map((tool, index) => {
+                                                return (
+                                                    <Box
+                                                        sx={{
+                                                            border: 1,
+                                                            borderColor: theme.palette.grey[900] + 25,
+                                                            borderRadius: 2,
+                                                            mt: 2,
+                                                            mb: 2
+                                                        }}
+                                                        key={index}
+                                                    >
+                                                        <Box sx={{ pl: 2, pr: 2, pt: 2, pb: 0 }}>
+                                                            <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                                                <Typography>
+                                                                    Tool<span style={{ color: 'red' }}>&nbsp;*</span>
+                                                                </Typography>
+                                                                <div style={{ flex: 1 }}></div>
+                                                                <IconButton
+                                                                    color='error'
+                                                                    sx={{ height: 15, width: 15, p: 0 }}
+                                                                    onClick={() => {
+                                                                        const newSelectedTools = selectedTools.filter((t, i) => i !== index)
+                                                                        setSelectedTools(newSelectedTools)
+                                                                    }}
+                                                                >
+                                                                    <IconTrash />
+                                                                </IconButton>
+                                                            </div>
+                                                            <Dropdown
+                                                                key={JSON.stringify(tool)}
+                                                                name={tool.name}
+                                                                options={toolOptions ?? []}
+                                                                onSelect={(newValue) => {
+                                                                    if (!newValue) {
+                                                                        const newSelectedTools = [...selectedTools]
+                                                                        newSelectedTools[index] = {}
+                                                                        setSelectedTools(newSelectedTools)
+                                                                    } else {
+                                                                        const foundToolComponent = toolComponents.find(
+                                                                            (tool) => tool.name === newValue
+                                                                        )
+                                                                        if (foundToolComponent) {
+                                                                            const toolId = `${foundToolComponent.name}_${index}`
+                                                                            const clonedComponent = cloneDeep(foundToolComponent)
+                                                                            const initToolData = initNode(clonedComponent, toolId)
+                                                                            const newSelectedTools = [...selectedTools]
+                                                                            newSelectedTools[index] = initToolData
+                                                                            setSelectedTools(newSelectedTools)
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                value={tool?.name || 'choose an option'}
+                                                            />
+                                                        </Box>
+                                                        {tool && Object.keys(tool).length === 0 && (
+                                                            <Box sx={{ pl: 2, pr: 2, pt: 0, pb: 2 }} />
+                                                        )}
+                                                        {tool && Object.keys(tool).length > 0 && (
+                                                            <Box
+                                                                sx={{
+                                                                    p: 0,
+                                                                    mt: 2,
+                                                                    mb: 1
+                                                                }}
+                                                            >
+                                                                {(tool.inputParams ?? [])
+                                                                    .filter((inputParam) => !inputParam.hidden)
+                                                                    .map((inputParam, index) => (
+                                                                        <DocStoreInputHandler
+                                                                            key={index}
+                                                                            inputParam={inputParam}
+                                                                            data={tool}
+                                                                        />
+                                                                    ))}
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+                                                )
+                                            })}
+                                            <Button
+                                                fullWidth
+                                                title='Add Tool'
+                                                sx={{ mt: 1, mb: 1, borderRadius: 20 }}
+                                                variant='outlined'
+                                                onClick={() => setSelectedTools([...selectedTools, {}])}
+                                            >
+                                                Add Tool
+                                            </Button>
+                                        </Box>
                                     </div>
                                 </Grid>
                                 {customAssistantFlowId && !loadingAssistant && (

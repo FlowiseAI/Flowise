@@ -422,6 +422,36 @@ const getDocumentStores = async (): Promise<any> => {
     }
 }
 
+const getTools = async (): Promise<any> => {
+    try {
+        const tools = await nodesService.getAllNodesForCategory('Tools')
+        const whitelistTypes = [
+            'asyncOptions',
+            'options',
+            'multiOptions',
+            'datagrid',
+            'string',
+            'number',
+            'boolean',
+            'password',
+            'json',
+            'code',
+            'date',
+            'file',
+            'folder',
+            'tabs'
+        ]
+        // filter out those tools that input params type are not in the list
+        const filteredTools = tools.filter((tool) => {
+            const inputs = tool.inputs || []
+            return inputs.every((input) => whitelistTypes.includes(input.type))
+        })
+        return filteredTools
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: assistantsService.getTools - ${getErrorMessage(error)}`)
+    }
+}
+
 const generateAssistantInstruction = async (task: string, selectedChatModel: ICommonObject): Promise<ICommonObject> => {
     try {
         const appServer = getRunningExpressApp()
@@ -473,5 +503,6 @@ export default {
     importAssistants,
     getChatModels,
     getDocumentStores,
+    getTools,
     generateAssistantInstruction
 }
