@@ -1,7 +1,7 @@
 import { BaseCheckpointSaver, Checkpoint, CheckpointMetadata } from '@langchain/langgraph'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { BaseMessage } from '@langchain/core/messages'
-import { DataSource, QueryRunner } from 'typeorm'
+import { DataSource } from 'typeorm'
 import { CheckpointTuple, SaverOptions, SerializerProtocol } from './interface'
 import { IMessage, MemoryMethods } from '../../../src/Interface'
 import { mapChatMessageToBaseMessage } from '../../../src/utils'
@@ -18,7 +18,7 @@ export class PostgresSaver extends BaseCheckpointSaver implements MemoryMethods 
         const { threadId } = config
         this.threadId = threadId
     }
-    
+
     private async getDataSource(): Promise<DataSource> {
         const { datasourceOptions } = this.config
         const dataSource = new DataSource(datasourceOptions)
@@ -108,11 +108,11 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
                         metadata: (await this.serde.parse(rows[0].metadata)) as CheckpointMetadata,
                         parentConfig: rows[0].parent_id
                             ? {
-                                configurable: {
-                                    thread_id: rows[0].thread_id,
-                                    checkpoint_id: rows[0].parent_id
-                                }
-                            }
+                                  configurable: {
+                                      thread_id: rows[0].thread_id,
+                                      checkpoint_id: rows[0].parent_id
+                                  }
+                              }
                             : undefined
                     }
                 }
@@ -220,7 +220,7 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
         if (!threadId) {
             return
         }
-        
+
         const dataSource = await this.getDataSource()
         await this.setup(dataSource)
 
