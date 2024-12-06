@@ -1,5 +1,5 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import ReactFlow, { addEdge, Background, Controls, useEdgesState, useNodesState } from 'reactflow'
+import ReactFlow, { addEdge, Background, ControlButton, Controls, useEdgesState, useNodesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 
 import { useDispatch, useSelector } from 'react-redux'
@@ -27,7 +27,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { ChatPopUp } from '@/views/chatmessage/ChatPopUp'
 import { VectorStorePopUp } from '@/views/vectorstore/VectorStorePopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
-
+import ELK from 'elkjs/lib/elk.bundled'
 // API
 import nodesApi from '@/api/nodes'
 import chatflowsApi from '@/api/chatflows'
@@ -37,7 +37,7 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
 // icons
-import { IconRefreshAlert, IconX } from '@tabler/icons-react'
+import { IconArrowsShuffle, IconRefreshAlert, IconX } from '@tabler/icons-react'
 
 // utils
 import {
@@ -591,7 +591,52 @@ const Canvas = () => {
                     left: '50%',
                     transform: 'translate(-50%, -50%)'
                   }}
-                />
+                >
+                  <ControlButton
+                    onClick={async () => {
+                      const elk = new ELK()
+                      const nodes = reactFlowInstance.getNodes()
+                      const edges = reactFlowInstance.getEdges()
+                      const elkGraph = {
+                        id: 'root',
+                        layoutOptions: {
+                          'elk.algorithm': 'layered',
+                          'elk.layered.spacing.nodeNodeBetweenLayers': '128',
+                          'elk.spacing.nodeNode': '64'
+                        },
+                        children: nodes.map((node) => ({
+                          id: node.id,
+                          width: node.width,
+                          height: node.height,
+                          targetPosition: 'left',
+                          sourcePosition: 'right',
+                          labels: [{ text: node.id }]
+                        })),
+                        edges: edges.map((edge) => ({
+                          id: edge.id,
+                          sources: [edge.source],
+                          targets: [edge.target]
+                        }))
+                      }
+
+                      const layout = await elk.layout(elkGraph)
+
+                      layout.children?.forEach((child) => {
+                        const index = nodes.findIndex((e) => e.id === child.id)
+                        if (index > -1) {
+                          nodes[index].position = {
+                            x: child.x,
+                            y: child.y
+                          }
+                        }
+                      })
+
+                      reactFlowInstance.setNodes(nodes)
+                    }}
+                  >
+                    <IconArrowsShuffle size={14} />
+                  </ControlButton>
+                </Controls>
                 <Background
                   color='#aaa'
                   gap={24}

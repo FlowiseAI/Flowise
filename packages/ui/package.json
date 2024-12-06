@@ -27,6 +27,7 @@
     "axios": "1.6.2",
     "clsx": "^1.1.1",
     "dotenv": "^16.0.0",
+    "elkjs": "^0.9.3",
     "flowise-embed": "latest",
     "flowise-embed-react": "latest",
     "flowise-react-json-view": "*",
