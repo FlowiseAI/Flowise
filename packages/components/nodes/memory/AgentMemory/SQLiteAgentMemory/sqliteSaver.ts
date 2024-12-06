@@ -15,7 +15,7 @@ export class SqliteSaver extends BaseCheckpointSaver implements MemoryMethods {
     constructor(config: SaverOptions, serde?: SerializerProtocol<Checkpoint>) {
         super(serde)
         this.config = config
-        const { datasourceOptions, threadId } = config
+        const { threadId } = config
         this.threadId = threadId
     }
 

@@ -40,6 +40,7 @@ import { App } from '../../index'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { cloneDeep, omit } from 'lodash'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
+import { DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR } from '../../utils/prompt'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
@@ -1568,6 +1569,63 @@ const refreshDocStoreMiddleware = async (storeId: string, data?: IDocumentStoreR
     }
 }
 
+const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: ICommonObject): Promise<string> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // get matching DocumentStoreFileChunk storeId with docStoreId, and only the first 4 chunks sorted by chunkNo
+        const chunks = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).findBy({
+            storeId: docStoreId
+        })
+
+        if (!chunks?.length) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `DocumentStore ${docStoreId} chunks not found`)
+        }
+
+        // sort the chunks by chunkNo
+        chunks.sort((a, b) => a.chunkNo - b.chunkNo)
+
+        // get the first 4 chunks
+        const chunksPageContent = chunks
+            .slice(0, 4)
+            .map((chunk) => {
+                return chunk.pageContent
+            })
+            .join('\n')
+
+        if (selectedChatModel && Object.keys(selectedChatModel).length > 0) {
+            const nodeInstanceFilePath = appServer.nodesPool.componentNodes[selectedChatModel.name].filePath as string
+            const nodeModule = await import(nodeInstanceFilePath)
+            const newNodeInstance = new nodeModule.nodeClass()
+            const nodeData = {
+                credential: selectedChatModel.credential || selectedChatModel.inputs['FLOWISE_CREDENTIAL_ID'] || undefined,
+                inputs: selectedChatModel.inputs,
+                id: `${selectedChatModel.name}_0`
+            }
+            const options: ICommonObject = {
+                appDataSource: appServer.AppDataSource,
+                databaseEntities,
+                logger
+            }
+            const llmNodeInstance = await newNodeInstance.init(nodeData, '', options)
+            const response = await llmNodeInstance.invoke(
+                DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR.replace('{context}', chunksPageContent)
+            )
+            return response
+        }
+
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.generateDocStoreToolDesc - Error generating tool description`
+        )
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.generateDocStoreToolDesc - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     updateDocumentStoreUsage,
     deleteDocumentStore,
@@ -1594,5 +1652,6 @@ export default {
     deleteVectorStoreFromStore,
     updateVectorStoreConfigOnly,
     upsertDocStoreMiddleware,
-    refreshDocStoreMiddleware
+    refreshDocStoreMiddleware,
+    generateDocStoreToolDesc
 }

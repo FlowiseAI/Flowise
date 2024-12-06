@@ -410,6 +410,24 @@ const refreshDocStoreMiddleware = async (req: Request, res: Response, next: Next
     }
 }
 
+const generateDocStoreToolDesc = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.generateDocStoreToolDesc - storeId not provided!`
+            )
+        }
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.generateDocStoreToolDesc - body not provided!')
+        }
+        const apiResponse = await documentStoreService.generateDocStoreToolDesc(req.params.id, req.body.selectedChatModel)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     deleteDocumentStore,
     createDocumentStore,
@@ -434,5 +452,6 @@ export default {
     getRateLimiterMiddleware,
     upsertDocStoreMiddleware,
     refreshDocStoreMiddleware,
-    saveProcessingLoader
+    saveProcessingLoader,
+    generateDocStoreToolDesc
 }

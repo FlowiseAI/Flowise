@@ -27,6 +27,7 @@ import { AddActionToChatMessage1721078251523 } from './1721078251523-AddActionTo
 import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
 import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
 import { AddFollowUpPrompts1726666309552 } from './1726666309552-AddFollowUpPrompts'
+import { AddTypeToAssistant1733011290987 } from './1733011290987-AddTypeToAssistant'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -57,5 +58,6 @@ export const postgresMigrations = [
     AddActionToChatMessage1721078251523,
     AddCustomTemplate1725629836652,
     AddArtifactsToChatMessage1726156258465,
-    AddFollowUpPrompts1726666309552
+    AddFollowUpPrompts1726666309552,
+    AddTypeToAssistant1733011290987
 ]

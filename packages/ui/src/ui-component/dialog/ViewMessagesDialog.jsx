@@ -372,7 +372,9 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         }
 
         const dataStr = JSON.stringify(exportMessages, null, 2)
-        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+        //const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+        const blob = new Blob([dataStr], { type: 'application/json' })
+        const dataUri = URL.createObjectURL(blob)
 
         const exportFileDefaultName = `${dialogProps.chatflow.id}-Message.json`
 

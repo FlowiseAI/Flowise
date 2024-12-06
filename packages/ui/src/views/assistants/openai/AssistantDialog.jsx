@@ -338,7 +338,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             const obj = {
                 details: JSON.stringify(assistantDetails),
                 iconSrc: assistantIcon,
-                credential: assistantCredential
+                credential: assistantCredential,
+                type: 'OPENAI'
             }
 
             const createResp = await assistantsApi.createNewAssistant(obj)
