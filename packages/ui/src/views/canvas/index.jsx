@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import ReactFlow, { addEdge, Background, Controls, useEdgesState, useNodesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -11,7 +11,7 @@ import {
   SET_CHATFLOW,
   SET_DIRTY
 } from '@/store/actions'
-import { cloneDeep, omit } from 'lodash'
+import { cloneDeep, filter, omit } from 'lodash'
 
 // material-ui
 import { AppBar, Box, Button, Fab, Toolbar } from '@mui/material'
@@ -107,6 +107,29 @@ const Canvas = () => {
   const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
 
   // ==============================|| Events & Actions ||============================== //
+
+  // TODO: hide nodes
+  const nodesData = useMemo(() => {
+    return filter(getNodesApi.data, (node) => {
+      if (node.tags?.includes('LlamaIndex')) {
+        return false
+      }
+
+      if (['LLMs'].includes(node.category)) {
+        return false
+      }
+
+      if (node.category === 'Chat Models') {
+        return ['AWSChatBedrock'].includes(node.type)
+      }
+
+      if (node.category === 'Embeddings') {
+        return ['AWSBedrockEmbeddings'].includes(node.type)
+      }
+
+      return true
+    })
+  }, [getNodesApi.data])
 
   const onConnect = (params) => {
     const newEdge = {
@@ -576,7 +599,7 @@ const Canvas = () => {
                     background: isDark ? '#1B2531' : '#F0F2F7'
                   }}
                 />
-                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
+                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={nodesData} node={selectedNode} />
                 {isSyncNodesButtonEnabled && (
                   <Fab
                     sx={{

@@ -131,12 +131,13 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
   const groupByTags = (nodes, newTabValue = 0) => {
     const langchainNodes = nodes.filter((nd) => !nd.tags)
-    const llmaindexNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('LlamaIndex'))
+    // const llmaindexNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('LlamaIndex'))
     const utilitiesNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('Utilities'))
     if (newTabValue === 0) {
       return langchainNodes
     } else if (newTabValue === 1) {
-      return llmaindexNodes
+      // return llmaindexNodes
+      return utilitiesNodes
     } else {
       return utilitiesNodes
     }
