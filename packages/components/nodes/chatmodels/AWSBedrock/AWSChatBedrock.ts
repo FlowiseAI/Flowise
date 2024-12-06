@@ -55,7 +55,7 @@ class AWSChatBedrock_ChatModels implements INode {
                 name: 'model',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'anthropic.claude-3-haiku'
+                default: 'anthropic.claude-3-haiku-20240307-v1:0'
             },
             {
                 label: 'Custom Model Name',

@@ -272,7 +272,9 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         try {
             const flowData = JSON.parse(chatflow.flowData)
             let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
-            let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+            //let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+            const blob = new Blob([dataStr], { type: 'application/json' })
+            const dataUri = URL.createObjectURL(blob)
 
             let exportFileDefaultName = `${chatflow.name} ${title}.json`
 
