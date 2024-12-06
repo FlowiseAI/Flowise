@@ -18,7 +18,8 @@ import {
     MenuItem,
     Chip,
     Tooltip,
-    Divider
+    Divider,
+    Snackbar
 } from '@mui/material'
 import {
     ExpandMore as ExpandMoreIcon,
@@ -30,7 +31,8 @@ import {
     MoreHoriz as MoreHorizIcon,
     Visibility as VisibilityIcon,
     Edit as EditIcon,
-    Cancel as CancelIcon
+    Cancel as CancelIcon,
+    Share as ShareIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
 import useSWR from 'swr'
@@ -220,6 +222,8 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     const [isMarketplaceDialogOpen, setIsMarketplaceDialogOpen] = useState(false)
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+
+    const [showCopyMessage, setShowCopyMessage] = useState(false)
 
     useEffect(() => {
         const storedFavorites = localStorage.getItem('favoriteSidekicks')
@@ -522,9 +526,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                             />
                                         </Tooltip>
                                     ) : null}
-                                    {sidekick.chatflow.isOwner && (
-                                        <Chip label='Owner' size='small' color='primary' variant='outlined' />
-                                    )}
+                                    {sidekick.chatflow.isOwner && <Chip label='Owner' size='small' color='primary' variant='outlined' />}
                                 </Box>
                             </SidekickHeader>
                             <SidekickDescription variant='body2' color='text.secondary'>
@@ -735,6 +737,19 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         navigate('/canvas')
     }
 
+    const handleShare = useCallback((sidekick: Sidekick, e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (!sidekick) return
+
+        // Create the share URL
+        const shareUrl = `${window.location.origin}/sidekick/${sidekick.id}`
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            setShowCopyMessage(true)
+        })
+    }, [])
+
     return (
         <Box>
             <Button variant='outlined' onClick={() => setOpen(true)} endIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'space-between' }}>
@@ -828,6 +843,13 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 }}
                 templateId={selectedTemplateId}
                 onUse={(sidekick) => handleSidekickSelect(sidekick)}
+            />
+            <Snackbar
+                open={showCopyMessage}
+                autoHideDuration={2000}
+                onClose={() => setShowCopyMessage(false)}
+                message='Link copied to clipboard'
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             />
         </Box>
     )
