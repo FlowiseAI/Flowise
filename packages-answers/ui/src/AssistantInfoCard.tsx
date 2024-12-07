@@ -7,7 +7,7 @@ import {
     StarBorder as StarBorderIcon,
     Edit as EditIcon,
     ExpandMore as ExpandMoreIcon,
-    IconCopy
+    ContentCopy as ContentCopyIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
 import { useSelector } from 'react-redux'
@@ -75,9 +75,9 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
         if (sidekick?.flowData) {
             const flowData = typeof sidekick.flowData === 'string' ? JSON.parse(sidekick.flowData) : sidekick.flowData
             const nodes = flowData.nodes || []
-            const processedImages = []
-            const processedNodeTypes = []
-            nodes.forEach((node: any) => {
+            const processedImages: string[] = []
+            const processedNodeTypes: string[] = []
+            nodes.forEach((node: { data: { category: string; name: string; label: string } }) => {
                 if (['Agents', 'Chains', 'Chat Models', 'Tools', 'Document Loaders'].includes(node.data.category)) {
                     const imageSrc = `${baseURL}/api/v1/node-icon/${node.data.name}`
                     if (!processedImages.includes(imageSrc)) {
@@ -315,7 +315,7 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
                         {!sidekick?.isExecutable && (
                             <Tooltip title='Clone this sidekick'>
                                 <WhiteIconButton onClick={handleClone} size='small'>
-                                    <IconCopy />
+                                    <ContentCopyIcon />
                                 </WhiteIconButton>
                             </Tooltip>
                         )}

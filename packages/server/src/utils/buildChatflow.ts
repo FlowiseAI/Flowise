@@ -467,7 +467,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             role: 'apiMessage',
             content: resultText,
             chatflowid,
-            chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+            chatType: incomingInput.chatType ?? (isInternal ? chatType.INTERNAL : chatType.EXTERNAL),
             chatId,
             memoryType,
             userId: req.user?.id!,
