@@ -247,6 +247,7 @@ export interface IncomingInput {
     leadEmail?: string
     history?: IMessage[]
     action?: IAction
+    chatType?: string
 }
 
 export interface IActiveChatflows {
