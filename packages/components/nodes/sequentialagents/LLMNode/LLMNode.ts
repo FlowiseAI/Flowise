@@ -188,6 +188,14 @@ class LLMNode_SeqAgents implements INode {
                 placeholder: 'LLM'
             },
             {
+                label: 'Disable Conversation History',
+                name: 'disableConversationHistory',
+                type: 'boolean',
+                optional: true,
+                description: `If set to true, the conversation history messages from the state will not be automatically included in the prompt`,
+                additionalParams: true
+            },
+            {
                 label: 'System Prompt',
                 name: 'systemMessagePrompt',
                 type: 'string',
@@ -535,7 +543,7 @@ async function agentNode(
         }
 
         // @ts-ignore
-        state.messages = restructureMessages(llm, state)
+        state.messages = nodeData.inputs?.disableConversationHistory | false ? [] : restructureMessages(llm, state)
 
         let result: AIMessageChunk | ICommonObject = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
 
