@@ -159,6 +159,7 @@ Flowise support different environment variables to configure your instance. You 
 | S3_ENDPOINT_URL              | Custom Endpoint for S3                                                                          | String                                           |                                     |
 | S3_FORCE_PATH_STYLE          | Set this to true to force the request to use path-style addressing                              | Boolean                                          | false                               |
 | SHOW_COMMUNITY_NODES         | Show nodes created by community                                                                 | Boolean                                          |                                     |
+| BASE_HREF                    | Sets the base URL for React Router’s basename and should only be defined dynamically at runtime | String                                           |                                     |
 
 You can also specify the env variables when using `npx`. For example:
 
