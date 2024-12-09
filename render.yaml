@@ -105,7 +105,7 @@ databases:
     - name: theanswer
       databaseName: theanswer
       user: admin
-      plan: standard
+      plan: basic-256mb
       region: oregon
       ipAllowList:
           - source: 0.0.0.0/0
