@@ -470,114 +470,25 @@ export const MessageCard = ({
                                                 ['html', 'jsx', 'tsx'].includes(language) ||
                                                 (language === 'javascript' && isReactComponent(codeExample))
 
-                                            if (canPreview) {
-                                                return (
-                                                    <Box sx={{ my: 2 }}>
-                                                        <CodeCard
-                                                            code={codeExample}
-                                                            language={language}
-                                                            title='Generated Code'
-                                                            onCopy={() => handleCopyCodeClick(codeExample)}
-                                                            onPreview={() =>
-                                                                setPreviewCode?.({
-                                                                    code: codeExample,
-                                                                    language,
-                                                                    getHTMLPreview,
-                                                                    getReactPreview,
-                                                                    title: 'Interactive Preview'
-                                                                })
-                                                            }
-                                                        />
-                                                    </Box>
-                                                )
-                                            }
-
-                                            // For non-previewable code, show the regular syntax highlighted code block
+                                            // Show all non-inline code as CodeCard
                                             return (
-                                                <Box
-                                                    sx={{
-                                                        position: 'relative',
-                                                        borderRadius: 1,
-                                                        overflow: 'hidden',
-                                                        width: '100%',
-                                                        my: 1.5,
-                                                        '& pre': {
-                                                            m: 0,
-                                                            borderRadius: 0,
-                                                            backgroundColor: '#1E1E1E !important',
-                                                            width: '100%'
+                                                <Box sx={{ my: 2 }}>
+                                                    <CodeCard
+                                                        code={codeExample}
+                                                        language={language}
+                                                        title='Code'
+                                                        onCopy={() => handleCopyCodeClick(codeExample)}
+                                                        onPreview={() =>
+                                                            setPreviewCode?.({
+                                                                code: codeExample,
+                                                                language,
+                                                                getHTMLPreview,
+                                                                getReactPreview,
+                                                                title: 'Code'
+                                                            })
                                                         }
-                                                    }}
-                                                >
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            justifyContent: 'space-between',
-                                                            alignItems: 'center',
-                                                            px: 2,
-                                                            py: 1,
-                                                            backgroundColor: '#2D2D2D',
-                                                            borderBottom: '1px solid rgba(255,255,255,0.1)'
-                                                        }}
-                                                    >
-                                                        <Typography
-                                                            variant='caption'
-                                                            sx={{
-                                                                color: 'rgba(255,255,255,0.7)',
-                                                                textTransform: 'lowercase',
-                                                                fontFamily: 'monospace'
-                                                            }}
-                                                        >
-                                                            {language}
-                                                        </Typography>
-                                                        <IconButton
-                                                            size='small'
-                                                            onClick={() => handleCopyCodeClick(codeExample)}
-                                                            sx={{
-                                                                color: 'rgba(255,255,255,0.7)',
-                                                                '&:hover': {
-                                                                    color: 'white',
-                                                                    backgroundColor: 'rgba(255,255,255,0.1)'
-                                                                }
-                                                            }}
-                                                        >
-                                                            <ContentCopy fontSize='small' />
-                                                        </IconButton>
-                                                    </Box>
-
-                                                    <Box className='syntax-highlighter-wrapper'>
-                                                        <SyntaxHighlighter
-                                                            language={language}
-                                                            style={{
-                                                                ...duotoneDark,
-                                                                'pre[class*="language-"]': {
-                                                                    ...duotoneDark['pre[class*="language-"]'],
-                                                                    background: '#1E1E1E',
-                                                                    selection: 'none'
-                                                                },
-                                                                'code[class*="language-"]': {
-                                                                    ...duotoneDark['code[class*="language-"]'],
-                                                                    background: '#1E1E1E',
-                                                                    textShadow: 'none'
-                                                                }
-                                                            }}
-                                                            customStyle={{
-                                                                margin: 0,
-                                                                padding: '16px',
-                                                                backgroundColor: '#1E1E1E',
-                                                                whiteSpace: 'pre-wrap',
-                                                                wordBreak: 'break-word',
-                                                                width: '100%',
-                                                                overflow: 'auto',
-                                                                textShadow: 'none'
-                                                            }}
-                                                            PreTag='div'
-                                                            wrapLongLines={true}
-                                                            {...props}
-                                                        >
-                                                            {codeExample}
-                                                        </SyntaxHighlighter>
-                                                    </Box>
+                                                        expandable={true}
+                                                    />
                                                 </Box>
                                             )
                                         }
