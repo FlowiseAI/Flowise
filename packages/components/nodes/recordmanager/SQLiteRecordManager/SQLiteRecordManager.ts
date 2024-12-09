@@ -115,6 +115,7 @@ class SQLiteRecordManager_RecordManager implements INode {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
         }
+        const appDataSource = options.appDataSource as DataSource
 
         const database = path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')
 
@@ -126,7 +127,8 @@ class SQLiteRecordManager_RecordManager implements INode {
 
         const args = {
             sqliteOptions,
-            tableName: tableName
+            tableName: tableName,
+            appDataSource
         }
 
         const recordManager = new SQLiteRecordManager(namespace, args)
@@ -141,6 +143,7 @@ class SQLiteRecordManager_RecordManager implements INode {
 type SQLiteRecordManagerOptions = {
     sqliteOptions: any
     tableName?: string
+    appDataSource: DataSource
 }
 
 class SQLiteRecordManager implements RecordManagerInterface {
@@ -148,6 +151,7 @@ class SQLiteRecordManager implements RecordManagerInterface {
     tableName: string
     namespace: string
     config: SQLiteRecordManagerOptions
+    reuseDbConnection: boolean
 
     constructor(namespace: string, config: SQLiteRecordManagerOptions) {
         const { tableName } = config
@@ -157,6 +161,21 @@ class SQLiteRecordManager implements RecordManagerInterface {
     }
 
     private async getDataSource(): Promise<DataSource> {
+        if (process.env.REUSE_DB_CONNECTION_RECORD_MANAGER === 'true') {
+            const datasource = this.config.appDataSource
+            if (!datasource) {
+                throw new Error('No datasource provided')
+            }
+            if (datasource.options.type !== 'sqlite') {
+                throw new Error('Invalid datasource type')
+            }
+            if (!datasource.isInitialized) {
+                await datasource.initialize()
+            }
+            this.reuseDbConnection = true
+            return datasource
+        }
+
         const { sqliteOptions } = this.config
         if (!sqliteOptions) {
             throw new Error('No datasource options provided')
@@ -209,7 +228,9 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
             console.error('Error getting time in SQLiteRecordManager:')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -256,7 +277,9 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
             console.error('Error updating in SQLiteRecordManager:')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -293,7 +316,9 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
             console.error('Error checking existence of keys')
             throw error // Allow the caller to handle the error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -339,7 +364,9 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
             console.error('Error listing keys.')
             throw error // Re-throw the error to be handled by the caller
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -363,7 +390,9 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
             console.error('Error deleting keys')
             throw error // Re-throw the error to be handled by the caller
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 }

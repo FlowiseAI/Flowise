@@ -135,6 +135,7 @@ class MySQLRecordManager_RecordManager implements INode {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
         }
+        const appDataSource = options.appDataSource as DataSource
 
         const mysqlOptions = {
             ...additionalConfiguration,
@@ -148,7 +149,8 @@ class MySQLRecordManager_RecordManager implements INode {
 
         const args = {
             mysqlOptions,
-            tableName: tableName
+            tableName: tableName,
+            appDataSource
         }
 
         const recordManager = new MySQLRecordManager(namespace, args)
@@ -163,6 +165,7 @@ class MySQLRecordManager_RecordManager implements INode {
 type MySQLRecordManagerOptions = {
     mysqlOptions: any
     tableName?: string
+    appDataSource: DataSource
 }
 
 class MySQLRecordManager implements RecordManagerInterface {
@@ -170,6 +173,7 @@ class MySQLRecordManager implements RecordManagerInterface {
     config: MySQLRecordManagerOptions
     tableName: string
     namespace: string
+    reuseDbConnection: boolean
 
     constructor(namespace: string, config: MySQLRecordManagerOptions) {
         const { tableName } = config
@@ -179,6 +183,24 @@ class MySQLRecordManager implements RecordManagerInterface {
     }
 
     private async getDataSource(): Promise<DataSource> {
+        if (process.env.REUSE_DB_CONNECTION_RECORD_MANAGER === 'true') {
+            const datasource = this.config.appDataSource
+            if (!datasource) {
+                throw new Error('No datasource provided')
+            }
+            if (datasource.options.type !== 'mysql') {
+                throw new Error('Invalid datasource type')
+            }
+            if (datasource.options.port === 5432) {
+                throw new Error('Invalid port number')
+            }
+            if (!datasource.isInitialized) {
+                await datasource.initialize()
+            }
+            this.reuseDbConnection = true
+            return datasource
+        }
+
         const { mysqlOptions } = this.config
         if (!mysqlOptions) {
             throw new Error('No datasource options provided')
@@ -242,7 +264,9 @@ class MySQLRecordManager implements RecordManagerInterface {
             console.error('Error getting time in MySQLRecordManager:')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -291,7 +315,9 @@ class MySQLRecordManager implements RecordManagerInterface {
             console.error('Error updating in MySQLRecordManager:')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -328,7 +354,9 @@ class MySQLRecordManager implements RecordManagerInterface {
             console.error('Error checking existence of keys')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -374,7 +402,9 @@ class MySQLRecordManager implements RecordManagerInterface {
             console.error('MySQLRecordManager listKeys Error: ')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -398,7 +428,9 @@ class MySQLRecordManager implements RecordManagerInterface {
             console.error('Error deleting keys')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
     config: SaverOptions
     threadId: string
     tableName = 'checkpoints'
+    reuseDbConnection: boolean
 
     constructor(config: SaverOptions, serde?: SerializerProtocol<Checkpoint>) {
         super(serde)
@@ -20,6 +21,24 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
     }
 
     private async getDataSource(): Promise<DataSource> {
+        if (process.env.REUSE_DB_CONNECTION_AGENT_MEMORY === 'true') {
+            const datasource = this.config.appDataSource
+            if (!datasource) {
+                throw new Error('No datasource provided')
+            }
+            if (datasource.options.type !== 'mysql') {
+                throw new Error('Invalid datasource type')
+            }
+            if (datasource.options.port === 5432) {
+                throw new Error('Invalid port number')
+            }
+            if (!datasource.isInitialized) {
+                await datasource.initialize()
+            }
+            this.reuseDbConnection = true
+            return datasource
+        }
+
         const { datasourceOptions } = this.config
         if (!datasourceOptions) {
             throw new Error('No datasource options provided')
@@ -97,7 +116,9 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
             console.error(`Error retrieving ${this.tableName}`, error)
             throw new Error(`Error retrieving ${this.tableName}`)
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
         return undefined
     }
@@ -145,7 +166,9 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
             console.error(`Error listing checkpoints`, error)
             throw new Error(`Error listing checkpoints`)
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -174,7 +197,9 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
             console.error('Error saving checkpoint', error)
             throw new Error('Error saving checkpoint')
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
 
         return {
@@ -199,7 +224,9 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
         } catch (error) {
             console.error(`Error deleting thread_id ${threadId}`, error)
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
