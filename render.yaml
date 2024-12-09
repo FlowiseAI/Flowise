@@ -97,7 +97,7 @@ services:
           sizeGB: 1
     - type: redis
       name: theanswer
-      plan: free
+      plan: standard
       region: oregon
       maxmemoryPolicy: allkeys-lru
       ipAllowList: []
@@ -105,7 +105,7 @@ databases:
     - name: theanswer
       databaseName: theanswer
       user: admin
-      plan: free
+      plan: standard
       region: oregon
       ipAllowList:
           - source: 0.0.0.0/0
