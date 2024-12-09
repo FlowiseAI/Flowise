@@ -77,6 +77,8 @@ interface MessageCardProps extends Partial<Message>, MessageExtra {
             getReactPreview: (code: string) => string
         } | null
     ) => void
+    isFeedbackAllowed?: boolean
+    chatflowid?: string
 }
 
 const getLanguageFromClassName = (className: string | undefined) => {
@@ -146,6 +148,10 @@ export const MessageCard = ({
     fileUploads,
     setPreviewCode,
     openLinksInNewTab,
+    isFeedbackAllowed,
+    chatId,
+    chatflowid,
+    id: messageId,
     ...other
 }: MessageCardProps) => {
     other = { ...other, role, user } as any
@@ -189,17 +195,19 @@ export const MessageCard = ({
         prompt = error?.response?.data.prompt
     }
 
-    const handleLike = async (evt: React.MouseEvent<HTMLButtonElement>) => {
-        evt.stopPropagation()
-        evt.preventDefault()
-        setLastInteraction('thumbsUp')
+    const handleReview = async (rating: Rating) => {
+        setLastInteraction(rating)
         if (id) {
             try {
                 const feedback = await sendMessageFeedback({
                     messageId: id,
-                    rating: 'thumbsUp'
+                    rating: rating === 'thumbsUp' ? 'THUMBS_UP' : 'THUMBS_DOWN',
+                    content: '',
+                    chatflowid: chatflowid ?? '',
+                    chatId: chatId ?? ''
                 })
-                setShowFeedback(true)
+                // console.log('feedback ======>', feedback)
+                // setShowFeedback(true)
             } catch (err) {
                 setLastInteraction(undefined)
             }
@@ -211,23 +219,23 @@ export const MessageCard = ({
         navigator.clipboard.writeText(codeString)
     }
 
-    const handleDislike = async (evt: React.MouseEvent<HTMLButtonElement>) => {
-        evt.stopPropagation()
-        evt.preventDefault()
-        setLastInteraction('thumbsDown')
-        if (id) {
-            try {
-                const feedback = await sendMessageFeedback({
-                    messageId: id,
-                    rating: 'thumbsDown'
-                })
-                setShowFeedback(true)
-                // Show modal to ask for added feedback } catch (err) {
-            } catch (err) {
-                setLastInteraction(undefined)
-            }
-        }
-    }
+    // const handleDislike = async (evt: React.MouseEvent<HTMLButtonElement>) => {
+    //     evt.stopPropagation()
+    //     evt.preventDefault()
+    //     setLastInteraction('thumbsDown')
+    //     if (id) {
+    //         try {
+    //             const feedback = await sendMessageFeedback({
+    //                 messageId: id,
+    //                 rating: 'thumbsDown'
+    //             })
+    //             setShowFeedback(true)
+    //             // Show modal to ask for added feedback } catch (err) {
+    //         } catch (err) {
+    //             setLastInteraction(undefined)
+    //         }
+    //     }
+    // }
 
     const getDocumentLabel = (doc: Document) => {
         if (doc.metadata?.source == 'blob' && doc.metadata?.pdf) {
@@ -825,6 +833,8 @@ export const MessageCard = ({
             {/* 
             // TODO: Add feedback buttons
             {!isUserMessage ? (
+            {/* TODO: Add feedback buttons */}
+            {(role === 'assistant' || role === 'apiMessage') && isFeedbackAllowed ? (
                 <Box
                     sx={{
                         position: 'absolute',
@@ -848,7 +858,11 @@ export const MessageCard = ({
                                 color={lastInteraction === 'like' ? 'secondary' : 'default'}
                                 size='small'
                                 data-cy='like-button'
-                                onClick={handleLike}
+                                onClick={(event) => {
+                                    event.stopPropagation()
+                                    event.preventDefault()
+                                    handleReview('thumbsUp')
+                                }}
                                 sx={{ p: 0.5 }}
                             >
                                 <ThumbUpIcon sx={{ fontSize: 14 }} />
@@ -856,7 +870,11 @@ export const MessageCard = ({
                             <IconButton
                                 size='small'
                                 color={lastInteraction === 'dislike' ? 'secondary' : 'default'}
-                                onClick={handleDislike}
+                                onClick={(event) => {
+                                    event.stopPropagation()
+                                    event.preventDefault()
+                                    handleReview('thumbsDown')
+                                }}
                                 sx={{ p: 0.5 }}
                             >
                                 <ThumbDownIcon sx={{ fontSize: 14 }} />
@@ -864,7 +882,7 @@ export const MessageCard = ({
                         </>
                     )}
                 </Box>
-            ) : null} */}
+            ) : null}
 
             {developer_mode?.enabled ? (
                 <Box>

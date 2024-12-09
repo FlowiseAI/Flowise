@@ -23,7 +23,8 @@ import {
     MessageFeedback,
     SidekickListItem,
     ChatbotConfig,
-    FlowData
+    FlowData,
+    FeedbackPayload
 } from 'types'
 // import { useUserPlans } from './hooks/useUserPlan';
 
@@ -91,7 +92,7 @@ interface AnswersContextType {
     flowData?: FlowData
     gptModel: string
     setGptModel: (arg: SetStateAction<string>) => void
-    sendMessageFeedback: (args: Partial<MessageFeedback>) => void
+    sendMessageFeedback: (args: FeedbackPayload) => Promise<any>
     socketIOClientId?: string
     setSocketIOClientId: (id: string) => void
     isChatFlowAvailableToStream: boolean
@@ -331,8 +332,26 @@ export function AnswersProvider({
 
     const deleteChat = async (id: string) => axios.delete(`${apiUrl}/chats?id=${id}`).then(() => router.refresh())
 
-    const sendMessageFeedback = async (data: Partial<MessageFeedback>) =>
-        axios.post(`${apiUrl}/chats/message_feedback`, data).then(() => router.refresh())
+    const sendMessageFeedback = async (data: FeedbackPayload) => {
+        const { chatflowid } = data
+        const response = await axios.post(`/api/feedback/${chatflowid}`, { ...data, domain: sidekick?.chatflowDomain })
+        if (response && response.data && response.data.result) {
+            // setMessages((prevMessages) => {
+            //     const allMessages = [...cloneDeep(prevMessages)]
+            //     return allMessages.map((message) => {
+            //         if (message.id === messageId) {
+            //             message.feedback = {
+            //                 rating: 'THUMBS_UP'
+            //             }
+            //         }
+            //         return message
+            //     })
+            // })
+            // setFeedbackId(id)
+            // setShowFeedbackContentDialog(true)
+            return response.data.result
+        }
+    }
 
     const deletePrompt = async (id: string) => axios.delete(`${apiUrl}/prompts?id=${id}`).then(() => router.refresh())
     const deleteJourney = async (id: string) => axios.delete(`${apiUrl}/journeys?id=${id}`).then(() => router.refresh())
@@ -486,7 +505,6 @@ export function AnswersProvider({
                     })),
                     uploads: files,
                     audio,
-                    chatType: 'ANSWERAI',
                     socketIOClientId: isChatFlowAvailableToStream ? socketIOClientId : undefined
                 }
 

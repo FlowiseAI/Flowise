@@ -1,5 +1,5 @@
 import { mount } from '../mount'
-import { MessageCard } from './Message'
+import { MessageCard } from './_Message'
 import { Message } from 'types'
 
 describe('Message', () => {

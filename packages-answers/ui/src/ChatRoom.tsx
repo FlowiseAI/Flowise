@@ -51,6 +51,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                             setSelectedDocuments={setSelectedDocuments}
                             setPreviewCode={setPreviewCode}
                             openLinksInNewTab={openLinksInNewTab}
+                            role={message.role}
+                            isFeedbackAllowed={chatbotConfig?.chatFeedback?.status}
                         />
                     ))}
 
