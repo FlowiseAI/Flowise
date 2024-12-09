@@ -4,29 +4,39 @@ import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import ContentCopy from '@mui/icons-material/ContentCopy'
 import OpenInFullIcon from '@mui/icons-material/OpenInFull'
+import Paper from '@mui/material/Paper'
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import { duotoneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 interface CodeCardProps {
     code: string
     language: string
-    onCopy: () => void
-    onPreview: () => void
     title?: string
+    onCopy?: () => void
+    onPreview?: () => void
+    expandable?: boolean
 }
 
-export const CodeCard: React.FC<CodeCardProps> = ({ code, language, onCopy, onPreview, title = 'Generated Code' }) => {
+export const CodeCard: React.FC<CodeCardProps> = ({ code, language, title, onCopy, onPreview, expandable }) => {
+    const handleExpand = () => {
+        if (expandable) {
+            onPreview?.()
+        }
+    }
+
     return (
-        <Box
+        <Paper
+            variant='outlined'
             sx={{
-                backgroundColor: 'background.paper',
-                borderRadius: 1,
                 overflow: 'hidden',
-                border: '1px solid rgba(255,255,255,0.1)',
-                cursor: 'pointer',
-                '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.03)'
-                }
+                cursor: expandable ? 'pointer' : 'default',
+                '&:hover': expandable
+                    ? {
+                          bgcolor: 'rgba(255,255,255,0.03)'
+                      }
+                    : {}
             }}
-            onClick={onPreview}
+            onClick={handleExpand}
         >
             <Box
                 sx={{
@@ -35,72 +45,82 @@ export const CodeCard: React.FC<CodeCardProps> = ({ code, language, onCopy, onPr
                     alignItems: 'center',
                     px: 2,
                     py: 1,
-                    borderBottom: '1px solid rgba(255,255,255,0.1)',
-                    backgroundColor: 'rgba(0,0,0,0.2)'
+                    borderBottom: '1px solid rgba(255,255,255,0.1)'
                 }}
             >
-                <Typography variant='body2' color='text.secondary'>
-                    {title}
+                <Typography variant='subtitle2' sx={{ color: 'text.secondary' }}>
+                    {title || language}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                    <IconButton
-                        size='small'
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            onCopy()
-                        }}
-                    >
-                        <ContentCopy fontSize='small' />
-                    </IconButton>
-                    <IconButton
-                        size='small'
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            onPreview()
-                        }}
-                    >
-                        <OpenInFullIcon fontSize='small' />
-                    </IconButton>
+                    {onCopy && (
+                        <IconButton
+                            size='small'
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                onCopy()
+                            }}
+                        >
+                            <ContentCopy fontSize='small' />
+                        </IconButton>
+                    )}
+                    {onPreview && !expandable && (
+                        <IconButton
+                            size='small'
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                onPreview()
+                            }}
+                        >
+                            <OpenInFullIcon fontSize='small' />
+                        </IconButton>
+                    )}
+                    {expandable && (
+                        <IconButton size='small'>
+                            <OpenInFullIcon fontSize='small' />
+                        </IconButton>
+                    )}
                 </Box>
             </Box>
-            <Box
-                sx={{
-                    p: 2,
-                    maxHeight: 100,
-                    overflow: 'hidden',
-                    position: 'relative',
-                    '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '50px',
-                        background: 'linear-gradient(transparent, background.paper)'
-                    }
-                }}
-            >
-                <Typography
-                    component='pre'
-                    sx={{
+
+            {/* Show preview of code for expandable blocks */}
+            {expandable ? (
+                <Box sx={{ maxHeight: '300px', overflow: 'hidden', position: 'relative' }}>
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: '100px',
+                            background: 'linear-gradient(transparent, #1E1E1E)',
+                            pointerEvents: 'none'
+                        }}
+                    />
+                    <SyntaxHighlighter
+                        language={language}
+                        style={duotoneDark}
+                        customStyle={{
+                            margin: 0,
+                            padding: '16px',
+                            background: '#1E1E1E'
+                        }}
+                    >
+                        {code}
+                    </SyntaxHighlighter>
+                </Box>
+            ) : (
+                <SyntaxHighlighter
+                    language={language}
+                    style={duotoneDark}
+                    customStyle={{
                         margin: 0,
-                        fontFamily: 'monospace',
-                        fontSize: '0.875rem',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                        width: '100%',
-                        overflow: 'auto',
-                        maxHeight: '100%',
-                        '& code': {
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-word',
-                            display: 'block'
-                        }
+                        padding: '16px',
+                        background: '#1E1E1E'
                     }}
                 >
                     {code}
-                </Typography>
-            </Box>
-        </Box>
+                </SyntaxHighlighter>
+            )}
+        </Paper>
     )
 }
