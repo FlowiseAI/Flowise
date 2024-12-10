@@ -45,6 +45,7 @@ import { replaceInputsWithConfig, resolveVariables } from '.'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { getErrorMessage } from '../errors/utils'
 import logger from './logger'
+import { Variable } from '../database/entities/Variable'
 
 /**
  * Build Agent Graph
@@ -114,6 +115,7 @@ export const buildAgentGraph = async (
         }
 
         /*** Get API Config ***/
+        const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
         const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
         // Initialize nodes like ChatModels, Tools, etc.
@@ -135,6 +137,7 @@ export const buildAgentGraph = async (
             overrideConfig: incomingInput?.overrideConfig,
             apiOverrideStatus,
             nodeOverrides,
+            availableVariables,
             variableOverrides,
             cachePool: appServer.cachePool,
             isUpsert: false,
@@ -519,6 +522,7 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
     const workerNodes = reactFlowNodes.filter((node) => workerNodeIds.includes(node.data.id))
 
     /*** Get API Config ***/
+    const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
     const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
     let supervisorWorkers: { [key: string]: IMultiAgentNode[] } = {}
@@ -540,6 +544,7 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
             chatHistory,
             overrideConfig,
             uploadedFilesContent,
+            availableVariables,
             variableOverrides
         )
 
@@ -581,6 +586,7 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
             chatHistory,
             overrideConfig,
             uploadedFilesContent,
+            availableVariables,
             variableOverrides
         )
 
@@ -753,6 +759,9 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
     let conditionalToolNodes: Record<string, { source: ISeqAgentNode; toolNodes: ISeqAgentNode[] }> = {}
     let bindModel: Record<string, any> = {}
     let interruptToolNodeNames = []
+
+    /*** Get API Config ***/
+    const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
     const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
     const initiateNode = async (node: IReactFlowNode) => {
@@ -771,6 +780,7 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
             chatHistory,
             overrideConfig,
             uploadedFilesContent,
+            availableVariables,
             variableOverrides
         )
 

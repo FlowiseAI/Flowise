@@ -400,7 +400,7 @@ const OverrideConfig = ({ dialogProps }) => {
                                 </Stack>
                             </Card>
                         )}
-                        {variableOverrides && (
+                        {variableOverrides && variableOverrides.length > 0 && (
                             <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
                                 <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
                                     <IconVariable />
