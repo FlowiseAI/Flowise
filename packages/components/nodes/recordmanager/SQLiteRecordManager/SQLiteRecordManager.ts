@@ -119,6 +119,8 @@ class SQLiteRecordManager_RecordManager implements INode {
 
         const database = path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')
 
+        const database = path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')
+
         const sqliteOptions = {
             database,
             ...additionalConfiguration,

@@ -498,6 +498,14 @@
             "name": "groqChat",
             "models": [
                 {
+                    "label": "llama-3.3-70b-versatile",
+                    "name": "llama-3.3-70b-versatile"
+                },
+                {
+                    "label": "llama-3.3-70b-specdec",
+                    "name": "llama-3.3-70b-specdec"
+                },
+                {
                     "label": "llama-3.2-1b-preview",
                     "name": "llama-3.2-1b-preview"
                 },
