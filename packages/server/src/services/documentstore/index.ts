@@ -914,7 +914,7 @@ const updateVectorStoreConfigOnly = async (data: ICommonObject) => {
         )
     }
 }
-const saveVectorStoreConfig = async (data: ICommonObject) => {
+const saveVectorStoreConfig = async (data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -932,6 +932,7 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
         } else if (entity.embeddingConfig && !data.embeddingName && !data.embeddingConfig) {
             data.embeddingConfig = JSON.parse(entity.embeddingConfig)?.config
             data.embeddingName = JSON.parse(entity.embeddingConfig)?.name
+            if (isStrictSave) entity.embeddingConfig = null
         } else if (!data.embeddingName && !data.embeddingConfig) {
             entity.embeddingConfig = null
         }
@@ -944,6 +945,7 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
         } else if (entity.vectorStoreConfig && !data.vectorStoreName && !data.vectorStoreConfig) {
             data.vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)?.config
             data.vectorStoreName = JSON.parse(entity.vectorStoreConfig)?.name
+            if (isStrictSave) entity.vectorStoreConfig = null
         } else if (!data.vectorStoreName && !data.vectorStoreConfig) {
             entity.vectorStoreConfig = null
         }
@@ -956,6 +958,7 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
         } else if (entity.recordManagerConfig && !data.recordManagerName && !data.recordManagerConfig) {
             data.recordManagerConfig = JSON.parse(entity.recordManagerConfig)?.config
             data.recordManagerName = JSON.parse(entity.recordManagerConfig)?.name
+            if (isStrictSave) entity.recordManagerConfig = null
         } else if (!data.recordManagerName && !data.recordManagerConfig) {
             entity.recordManagerConfig = null
         }
@@ -975,15 +978,15 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
     }
 }
 
-const insertIntoVectorStore = async (data: ICommonObject) => {
+const insertIntoVectorStore = async (data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
-        const entity = await saveVectorStoreConfig(data)
+        const entity = await saveVectorStoreConfig(data, isStrictSave)
         entity.status = DocumentStoreStatus.UPSERTING
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
 
         // TODO: to be moved into a worker thread...
-        const indexResult = await _insertIntoVectorStoreWorkerThread(data)
+        const indexResult = await _insertIntoVectorStoreWorkerThread(data, isStrictSave)
         return indexResult
     } catch (error) {
         throw new InternalFlowiseError(
@@ -993,10 +996,10 @@ const insertIntoVectorStore = async (data: ICommonObject) => {
     }
 }
 
-const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject) => {
+const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
-        const entity = await saveVectorStoreConfig(data)
+        const entity = await saveVectorStoreConfig(data, isStrictSave)
         let upsertHistory: Record<string, any> = {}
         const chatflowid = data.storeId // fake chatflowid because this is not tied to any chatflow
 
@@ -1520,7 +1523,7 @@ const upsertDocStoreMiddleware = async (
             recordManagerConfig
         }
 
-        const res = await insertIntoVectorStore(insertData)
+        const res = await insertIntoVectorStore(insertData, false)
         res.docId = newDocId
 
         return res
