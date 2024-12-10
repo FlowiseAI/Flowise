@@ -143,6 +143,7 @@ class PostgresRecordManager_RecordManager implements INode {
                 throw new Error('Invalid JSON in the Additional Configuration: ' + exception)
             }
         }
+        const appDataSource = options.appDataSource as DataSource
 
         const postgresConnectionOptions = {
             ...additionalConfiguration,
@@ -156,7 +157,8 @@ class PostgresRecordManager_RecordManager implements INode {
 
         const args = {
             postgresConnectionOptions: postgresConnectionOptions,
-            tableName: tableName
+            tableName: tableName,
+            appDataSource
         }
 
         const recordManager = new PostgresRecordManager(namespace, args)
@@ -171,6 +173,7 @@ class PostgresRecordManager_RecordManager implements INode {
 type PostgresRecordManagerOptions = {
     postgresConnectionOptions: any
     tableName: string
+    appDataSource: DataSource
 }
 
 class PostgresRecordManager implements RecordManagerInterface {
@@ -178,6 +181,7 @@ class PostgresRecordManager implements RecordManagerInterface {
     config: PostgresRecordManagerOptions
     tableName: string
     namespace: string
+    reuseDbConnection: boolean
 
     constructor(namespace: string, config: PostgresRecordManagerOptions) {
         const { tableName } = config
@@ -187,6 +191,24 @@ class PostgresRecordManager implements RecordManagerInterface {
     }
 
     private async getDataSource(): Promise<DataSource> {
+        if (process.env.REUSE_DB_CONNECTION_RECORD_MANAGER === 'true') {
+            const datasource = this.config.appDataSource
+            if (!datasource) {
+                throw new Error('No datasource provided')
+            }
+            if (datasource.options.type !== 'postgres') {
+                throw new Error('Invalid datasource type')
+            }
+            if (datasource.options.port === 3006) {
+                throw new Error('Invalid port number')
+            }
+            if (!datasource.isInitialized) {
+                await datasource.initialize()
+            }
+            this.reuseDbConnection = true
+            return datasource
+        }
+
         const { postgresConnectionOptions } = this.config
         if (!postgresConnectionOptions) {
             throw new Error('No datasource options provided')
@@ -243,7 +265,9 @@ class PostgresRecordManager implements RecordManagerInterface {
             console.error('Error getting time in PostgresRecordManager:')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -295,7 +319,9 @@ class PostgresRecordManager implements RecordManagerInterface {
             console.error('Error updating in PostgresRecordManager:')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -321,7 +347,9 @@ class PostgresRecordManager implements RecordManagerInterface {
             console.error('Error checking existence of keys in PostgresRecordManager:')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -368,7 +396,9 @@ class PostgresRecordManager implements RecordManagerInterface {
             console.error('Error listing keys in PostgresRecordManager:')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -388,7 +418,9 @@ class PostgresRecordManager implements RecordManagerInterface {
             console.error('Error deleting keys')
             throw error
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 }

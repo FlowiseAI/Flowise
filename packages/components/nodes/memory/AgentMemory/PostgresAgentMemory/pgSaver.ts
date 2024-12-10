@@ -11,6 +11,7 @@ export class PostgresSaver extends BaseCheckpointSaver implements MemoryMethods 
     config: SaverOptions
     threadId: string
     tableName = 'checkpoints'
+    reuseDbConnection: boolean
 
     constructor(config: SaverOptions, serde?: SerializerProtocol<Checkpoint>) {
         super(serde)
@@ -20,6 +21,24 @@ export class PostgresSaver extends BaseCheckpointSaver implements MemoryMethods 
     }
 
     private async getDataSource(): Promise<DataSource> {
+        if (process.env.REUSE_DB_CONNECTION_AGENT_MEMORY === 'true') {
+            const datasource = this.config.appDataSource
+            if (!datasource) {
+                throw new Error('No datasource provided')
+            }
+            if (datasource.options.type !== 'postgres') {
+                throw new Error('Invalid datasource type')
+            }
+            if (datasource.options.port === 3006) {
+                throw new Error('Invalid port number')
+            }
+            if (!datasource.isInitialized) {
+                await datasource.initialize()
+            }
+            this.reuseDbConnection = true
+            return datasource
+        }
+
         const { datasourceOptions } = this.config
         if (!datasourceOptions) {
             throw new Error('No datasource options provided')
@@ -92,7 +111,9 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
                 console.error(`Error retrieving ${this.tableName}`, error)
                 throw new Error(`Error retrieving ${this.tableName}`)
             } finally {
-                await dataSource.destroy()
+                if (!this.reuseDbConnection) {
+                    await dataSource.destroy()
+                }
             }
         } else {
             try {
@@ -101,6 +122,7 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
                 const sql = `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${this.tableName} WHERE thread_id = $1 ORDER BY checkpoint_id DESC LIMIT 1`
 
                 const rows = await queryRunner.manager.query(sql, keys)
+
                 await queryRunner.release()
 
                 if (rows && rows.length > 0) {
@@ -127,7 +149,9 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
                 console.error(`Error retrieving ${this.tableName}`, error)
                 throw new Error(`Error retrieving ${this.tableName}`)
             } finally {
-                await dataSource.destroy()
+                if (!this.reuseDbConnection) {
+                    await dataSource.destroy()
+                }
             }
         }
         return undefined
@@ -182,7 +206,9 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
             console.error(`Error listing ${this.tableName}`, error)
             throw new Error(`Error listing ${this.tableName}`)
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
@@ -212,7 +238,9 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
             console.error('Error saving checkpoint', error)
             throw new Error('Error saving checkpoint')
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
 
         return {
@@ -240,7 +268,9 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
         } catch (error) {
             console.error(`Error deleting thread_id ${threadId}`, error)
         } finally {
-            await dataSource.destroy()
+            if (!this.reuseDbConnection) {
+                await dataSource.destroy()
+            }
         }
     }
 
