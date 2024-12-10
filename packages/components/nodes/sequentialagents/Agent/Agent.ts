@@ -218,6 +218,14 @@ class Agent_SeqAgents implements INode {
                 default: examplePrompt
             },
             {
+                label: 'Disable Conversation History',
+                name: 'disableConversationHistory',
+                type: 'boolean',
+                optional: true,
+                description: `If set to true, the conversation history messages from the state will not be automatically included in the prompt`,
+                additionalParams: true
+            },
+            {
                 label: 'Human Prompt',
                 name: 'humanMessagePrompt',
                 type: 'string',
@@ -728,16 +736,16 @@ async function agentNode(
         }
 
         // @ts-ignore
-        state.messages = restructureMessages(llm, state)
+        state.messages = nodeData.inputs?.disableConversationHistory | false? [] : restructureMessages(llm, state)
 
         let result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
 
         if (interrupt) {
             const messages = state.messages as unknown as BaseMessage[]
-            const lastMessage = messages[messages.length - 1]
+            const lastMessage = messages.length ? messages[messages.length - 1] : null
 
             // If the last message is a tool message and is an interrupted message, format output into standard agent output
-            if (lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
+            if (lastMessage && lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
                 let formattedAgentResult: {
                     output?: string
                     usedTools?: IUsedTool[]
