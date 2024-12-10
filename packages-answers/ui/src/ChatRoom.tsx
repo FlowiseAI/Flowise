@@ -3,6 +3,8 @@ import { Box, Button } from '@mui/material'
 import type { Message, Sidekick } from 'types'
 import { MessageCard } from './Message'
 import AssistantInfoCard from './AssistantInfoCard'
+import ChatFeedbackContentDialog from './../../../packages/ui/src/ui-component/dialog/ChatFeedbackContentDialog'
+import { useAnswers } from './AnswersContext'
 
 interface ChatRoomProps {
     messages: Message[] | null | undefined
@@ -29,6 +31,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     setPreviewCode
 }) => {
     const openLinksInNewTab = chatbotConfig?.chatLinksInNewTab?.status ?? false
+    const { showFeedbackContentDialog, setShowFeedbackContentDialog, feedbackId, submitFeedbackContent } = useAnswers()
+
     return (
         <Box
             sx={{
@@ -44,6 +48,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <ChatFeedbackContentDialog
+                        show={showFeedbackContentDialog}
+                        onCancel={() => setShowFeedbackContentDialog(false)}
+                        onConfirm={submitFeedbackContent}
+                    />
                     {messages?.map((message, index) => (
                         <MessageCard
                             {...message}

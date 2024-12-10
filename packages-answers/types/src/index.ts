@@ -521,6 +521,7 @@ export interface SidekickListItem extends Pick<DB.Sidekick, 'id' | 'placeholder'
 export type Sidekicks = SidekickListItem[]
 
 export interface FeedbackPayload {
+    id?: string
     chatflowid: string
     chatId: string
     messageId: string

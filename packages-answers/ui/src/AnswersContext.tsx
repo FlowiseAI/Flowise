@@ -10,6 +10,7 @@ import { deepmerge } from '@utils/deepmerge'
 import { useStreamedResponse } from './useStreamedResponse'
 import { clearEmptyValues } from './clearEmptyValues'
 import predictionApi from '@/api/prediction'
+import chatmessagefeedbackApi from '@/api/chatmessagefeedback'
 
 import {
     AnswersFilters,
@@ -97,6 +98,11 @@ interface AnswersContextType {
     setSocketIOClientId: (id: string) => void
     isChatFlowAvailableToStream: boolean
     handleAbort: () => Promise<void>
+    feedbackId: string
+    setFeedbackId: (id: string) => void
+    showFeedbackContentDialog: boolean
+    setShowFeedbackContentDialog: (show: boolean) => void
+    submitFeedbackContent: (text: string) => Promise<void>
 }
 // @ts-ignore
 const AnswersContext = createContext<AnswersContextType>({
@@ -126,7 +132,12 @@ const AnswersContext = createContext<AnswersContextType>({
     socketIOClientId: '',
     setSocketIOClientId: () => {},
     isChatFlowAvailableToStream: false,
-    handleAbort: async () => {}
+    handleAbort: async () => {},
+    feedbackId: '',
+    setFeedbackId: () => {},
+    showFeedbackContentDialog: false,
+    setShowFeedbackContentDialog: () => {},
+    submitFeedbackContent: async () => {}
 })
 
 export function useAnswers() {
@@ -211,6 +222,8 @@ export function AnswersProvider({
     // const [chat, setChat] = useState<Chat | undefined>(initialChat);
     const [journey, setJourney] = useState<Journey | undefined>(initialJourney)
     const [isLoading, setIsLoading] = useState(false)
+    const [feedbackId, setFeedbackId] = useState('')
+    const [showFeedbackContentDialog, setShowFeedbackContentDialog] = useState(false)
 
     const [showFilters, setShowFilters] = useState(false)
     const [useStreaming, setUseStreaming] = useState(initialUseStreaming)
@@ -334,8 +347,11 @@ export function AnswersProvider({
 
     const sendMessageFeedback = async (data: FeedbackPayload) => {
         const { chatflowid } = data
-        const response = await axios.post(`/api/feedback/${chatflowid}`, { ...data, domain: sidekick?.chatflowDomain })
-        if (response && response.data && response.data.result) {
+        const response = await chatmessagefeedbackApi.addFeedback(chatflowid, { ...data })
+        if (response.data) {
+            const data = response.data
+            let id = ''
+            if (data && data.id) id = data.id
             // setMessages((prevMessages) => {
             //     const allMessages = [...cloneDeep(prevMessages)]
             //     return allMessages.map((message) => {
@@ -347,9 +363,19 @@ export function AnswersProvider({
             //         return message
             //     })
             // })
-            // setFeedbackId(id)
-            // setShowFeedbackContentDialog(true)
-            return response.data.result
+            setFeedbackId(id)
+            setShowFeedbackContentDialog(true)
+        }
+    }
+
+    const submitFeedbackContent = async (text: string) => {
+        const body = {
+            content: text
+        }
+        const result = await chatmessagefeedbackApi.updateFeedback(feedbackId, body)
+        if (result.data) {
+            setFeedbackId('')
+            setShowFeedbackContentDialog(false)
         }
     }
 
@@ -823,7 +849,12 @@ export function AnswersProvider({
         socketIOClientId,
         setSocketIOClientId,
         isChatFlowAvailableToStream,
-        handleAbort
+        handleAbort,
+        feedbackId,
+        setFeedbackId,
+        showFeedbackContentDialog,
+        setShowFeedbackContentDialog,
+        submitFeedbackContent
     }
     // @ts-ignore
     return <AnswersContext.Provider value={contextValue}>{children}</AnswersContext.Provider>
