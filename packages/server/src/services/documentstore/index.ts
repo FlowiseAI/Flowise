@@ -41,7 +41,7 @@ import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { cloneDeep, omit } from 'lodash'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 
-const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
+const DOCUMENT_STORE_BASE_FOLDER = 'c-agent'
 
 const createDocumentStore = async (newDocumentStore: DocumentStore) => {
   try {
@@ -469,7 +469,31 @@ const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore) => 
   if (mimePrefix) {
     mime = mimePrefix.split(';')[0].split(':')[1]
   }
-  await addSingleFileToStorage(mime, bf, filename, DOCUMENT_STORE_BASE_FOLDER, entity.id)
+  await Promise.all([
+    addSingleFileToStorage(mime, bf, filename, DOCUMENT_STORE_BASE_FOLDER, entity.id),
+    addSingleFileToStorage(
+      'application/json',
+      Buffer.from(
+        JSON.stringify(
+          {
+            metadataAttributes: {
+              category: entity.name,
+              sub_cate_1: '',
+              sub_cate_2: '',
+              sub_cate_3: '',
+              sub_cate_4: ''
+            }
+          },
+          null,
+          2
+        )
+      ),
+      filename + '.metadata.json',
+      DOCUMENT_STORE_BASE_FOLDER,
+      entity.id
+    )
+  ])
+
   return {
     id: uuidv4(),
     name: filename,

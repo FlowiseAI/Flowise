@@ -24,7 +24,8 @@
     "lint-fix": "pnpm lint --fix",
     "quick": "pretty-quick --staged",
     "postinstall": "husky install",
-    "migration:create": "pnpm typeorm migration:create"
+    "migration:create": "pnpm typeorm migration:create",
+    "dev:server": "pnpm --filter ./packages/server dev"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
@@ -100,5 +101,6 @@
         }
       ]
     ]
-  }
+  },
+  "packageManager": "pnpm@9.14.4+sha512.c8180b3fbe4e4bca02c94234717896b5529740a6cbadf19fa78254270403ea2f27d4e1d46a08a0f56c89b63dc8ebfd3ee53326da720273794e6200fcf0d184ab"
 }
