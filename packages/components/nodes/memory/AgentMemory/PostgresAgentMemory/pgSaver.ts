@@ -21,6 +21,13 @@ export class PostgresSaver extends BaseCheckpointSaver implements MemoryMethods 
 
     private async getDataSource(): Promise<DataSource> {
         const { datasourceOptions } = this.config
+        if (!datasourceOptions) {
+            throw new Error('No datasource options provided')
+        }
+        // Prevent using default MySQL port, otherwise will throw uncaught error and crashing the app
+        if (datasourceOptions.port === 3006) {
+            throw new Error('Invalid port number')
+        }
         const dataSource = new DataSource(datasourceOptions)
         await dataSource.initialize()
         return dataSource
