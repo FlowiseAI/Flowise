@@ -260,7 +260,7 @@ class Agent_SeqAgents implements INode {
             {
                 label: 'Require Approval',
                 name: 'interrupt',
-                description: 'Require approval before executing tools. Will proceed when tools are not called',
+                description: 'Require approval before executing tools. Will proceed when tools are not called. /!\ This feature requires AgentMemory to be defined for the agent.',
                 type: 'boolean',
                 optional: true
             },
