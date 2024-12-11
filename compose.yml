@@ -1,0 +1,16 @@
+services:
+  flowise:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '${PORT:-3000}:3000'
+    volumes:
+      - ~/.flowise:/root/.flowise
+    env_file:
+      - .env
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=8192
+      - PUPPETEER_SKIP_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    restart: unless-stopped
