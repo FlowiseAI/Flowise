@@ -19,7 +19,8 @@ import {
     IDatabaseEntity,
     IUsedTool,
     IDocument,
-    IStateWithMessages
+    IStateWithMessages,
+    ConversationHistorySelection
 } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX, ARTIFACTS_PREFIX } from '../../../src/agents'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, removeInvalidImageMarkdown } from '../../../src/utils'
@@ -28,6 +29,7 @@ import {
     getVM,
     processImageMessage,
     transformObjectPropertyToFunction,
+    filterConversationHistory,
     restructureMessages,
     MessagesState,
     RunnableCallable,
@@ -218,11 +220,34 @@ class Agent_SeqAgents implements INode {
                 default: examplePrompt
             },
             {
-                label: 'Disable Conversation History',
-                name: 'disableConversationHistory',
-                type: 'boolean',
+                label: 'Conversation History Selection',
+                name: 'conversationHistorySelection',
+                type: 'options',
+                options: [
+                    {
+                        label: 'User Question',
+                        name: 'user_question',
+                        description: 'Use the user question from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Last Conversation Message',
+                        name: 'last_message',
+                        description: 'Use the last conversation message from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'All Conversation Messages',
+                        name: 'all_messages',
+                        description: 'Use all conversation messages from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Empty',
+                        name: 'empty',
+                        description: 'Do not use any messages from the conversation history. Ensure to use either System Prompt, Human Prompt, or Messages History.'
+                    }
+                ],
+                default: 'all_messages',
                 optional: true,
-                description: `If set to true, the conversation history messages from the state will not be automatically included in the prompt`,
+                description: `Select which messages from the conversation history to include in the prompt. The selected messages will be inserted between the System Prompt (if defined) and [Messages History, Human Prompt].`,
                 additionalParams: true
             },
             {
@@ -735,9 +760,12 @@ async function agentNode(
             throw new Error('Aborted!')
         }
 
+        const historySelection = (nodeData.inputs?.conversationHistorySelection || 'all_messages') as ConversationHistorySelection
         // @ts-ignore
-        state.messages = nodeData.inputs?.disableConversationHistory | false? [] : restructureMessages(llm, state)
-
+        state.messages = filterConversationHistory(historySelection, input, state)
+        // @ts-ignore
+        state.messages = restructureMessages(llm, state)
+        
         let result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
 
         if (interrupt) {

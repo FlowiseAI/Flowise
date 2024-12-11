@@ -9,7 +9,14 @@ import { Runnable, RunnableConfig, mergeConfigs } from '@langchain/core/runnable
 import { AIMessage, BaseMessage, HumanMessage, MessageContentImageUrl, ToolMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { addImagesToMessages, llmSupportsVision } from '../../src/multiModalUtils'
-import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, IVisionChatModal } from '../../src/Interface'
+import {
+    ICommonObject,
+    IDatabaseEntity,
+    INodeData,
+    ISeqAgentsState,
+    IVisionChatModal,
+    ConversationHistorySelection
+} from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
 import { ChatPromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 
@@ -206,6 +213,47 @@ export const convertStructuredSchemaToZod = (schema: string | object): ICommonOb
     } catch (e) {
         throw new Error(e)
     }
+}
+
+/**
+ * Filter the conversation history based on the selected option.
+ *
+ * @param historySelection - The selected history option.
+ * @param input - The user input.
+ * @param state - The current state of the sequential llm or agent node.
+ */
+export function filterConversationHistory(
+    historySelection: ConversationHistorySelection,
+    input: string,
+    state: ISeqAgentsState
+): BaseMessage[] {
+    let filteredMessages: BaseMessage[] = []
+    if (state.messages) {
+        switch (historySelection) {
+            case 'user_question':
+                // @ts-ignore
+                filteredMessages = [new HumanMessage(input)];
+                break;
+            case 'last_message':
+                // @ts-ignore
+                filteredMessages = [state.messages[state.messages.length - 1]];
+                break;
+            case 'empty':
+                // @ts-ignore
+                filteredMessages = [];
+                break;
+            case 'all_messages':
+                // Explicitly handle 'all_messages' by keeping the existing messages
+                // @ts-ignore
+                filteredMessages = state.messages;
+                break;
+            default:
+                // Ensures all cases are handled and catches any unexpected values
+                const exhaustiveCheck: never = historySelection;
+                throw new Error(`Unhandled conversationHistorySelection: ${exhaustiveCheck}`);
+        }
+    }
+    return filteredMessages
 }
 
 export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) => {
