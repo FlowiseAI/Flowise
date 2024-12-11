@@ -1,10 +1,10 @@
 import express from 'express'
-import documentStoreController from '../../controllers/documentstore'
 import multer from 'multer'
-import path from 'path'
+import { getUploadPath } from '../../utils'
+import documentStoreController from '../../controllers/documentstore'
 
 const router = express.Router()
-const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
+const upload = multer({ dest: getUploadPath() })
 
 router.post(['/upsert/', '/upsert/:id'], upload.array('files'), documentStoreController.upsertDocStoreMiddleware)
 
@@ -60,5 +60,8 @@ router.get('/components/recordmanager', documentStoreController.getRecordManager
 
 // update the selected vector store from the playground
 router.post('/vectorstore/update', documentStoreController.updateVectorStoreConfigOnly)
+
+// generate docstore tool description
+router.post('/generate-tool-desc/:id', documentStoreController.generateDocStoreToolDesc)
 
 export default router
