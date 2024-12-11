@@ -212,12 +212,15 @@ class LLMNode_SeqAgents implements INode {
                     {
                         label: 'Empty',
                         name: 'empty',
-                        description: 'Do not use any messages from the conversation history. Ensure to use either System Prompt, Human Prompt, or Messages History.'
+                        description: 'Do not use any messages from the conversation history. ' +
+                            'Ensure to use either System Prompt, Human Prompt, or Messages History.'
                     }
                 ],
                 default: 'all_messages',
                 optional: true,
-                description: `Select which messages from the conversation history to include in the prompt. The selected messages will be inserted between the System Prompt (if defined) and [Messages History, Human Prompt].`,
+                description: 'Select which messages from the conversation history to include in the prompt. ' +
+                    'The selected messages will be inserted between the System Prompt (if defined) and ' +
+                    '[Messages History, Human Prompt].',
                 additionalParams: true
             },
             {
