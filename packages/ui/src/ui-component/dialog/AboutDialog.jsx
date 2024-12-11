@@ -32,10 +32,10 @@ const AboutDialog = ({ show, onCancel }) => {
             Promise.all([currentVersionReq])
                 .then(([currentVersionData]) => {
                     const finalData = {
-                        name: '24.3',
+                        name: '24.4',
                         html_url: 'https://docs-symphony.zendesk.com/hc/en-us/sections/25422182631693',
                         currentVersion: currentVersionData.data.version,
-                        published_at: 'September 27, 2024'
+                        published_at: 'December 23, 2024'
                     }
                     setData(finalData)
                 })
