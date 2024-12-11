@@ -41,6 +41,7 @@ import nextAgentGIF from './../../../../packages/ui/src/assets/images/next-agent
 import multiagent_supervisorPNG from './../../../../packages/ui/src/assets/images/multiagent_supervisor.png'
 import multiagent_workerPNG from './../../../../packages/ui/src/assets/images/multiagent_worker.png'
 import { isValidURL, removeDuplicateURL } from '../../../../packages/ui/src/utils/genericHelper.js'
+import SourceDocDialog from '../../../../packages/ui/src/ui-component/dialog/SourceDocDialog'
 
 interface MessageExtra {
     prompt?: string
@@ -158,7 +159,10 @@ export const MessageCard = ({
         [contextDocuments]
     )
     const [showFeedback, setShowFeedback] = useState(false)
-    const [sourceDialogProps, setSourceDialogProps] = useState<{ data: any; title: string } | null>(null)
+    const [sourceDialogProps, setSourceDialogProps] = useState<{ data: any; title: string } | null>({
+        data: null,
+        title: ''
+    })
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
 
     const services: { [key: string]: AppService } =
@@ -804,6 +808,8 @@ export const MessageCard = ({
                     })}
                 </div>
             )}
+
+            <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
 
             {/* 
             // TODO: Add feedback buttons
