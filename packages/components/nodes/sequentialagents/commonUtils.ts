@@ -227,31 +227,20 @@ export function filterConversationHistory(
     input: string,
     state: ISeqAgentsState
 ): BaseMessage[] {
-    let filteredMessages: BaseMessage[] = []
-    if (state.messages) {
-        switch (historySelection) {
-            case 'user_question':
-                // @ts-ignore
-                filteredMessages = [new HumanMessage(input)]
-                break
-            case 'last_message':
-                // @ts-ignore
-                filteredMessages = [state.messages[state.messages.length - 1]]
-                break
-            case 'empty':
-                // @ts-ignore
-                filteredMessages = []
-                break
-            case 'all_messages':
-                // Explicitly handle 'all_messages' by keeping the existing messages
-                // @ts-ignore
-                filteredMessages = state.messages
-                break
-            default:
-                throw new Error(`Unhandled conversationHistorySelection: ${historySelection}`)
-        }
+    switch (historySelection) {
+        case 'user_question':
+            return [new HumanMessage(input)]
+        case 'last_message':
+            // @ts-ignore
+            return state.messages?.length ? [state.messages[state.messages.length - 1] as BaseMessage] : []
+        case 'empty':
+            return []
+        case 'all_messages':
+            // @ts-ignore
+            return (state.messages as BaseMessage[]) ?? []
+        default:
+            throw new Error(`Unhandled conversationHistorySelection: ${historySelection}`)
     }
-    return filteredMessages
 }
 
 export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) => {
