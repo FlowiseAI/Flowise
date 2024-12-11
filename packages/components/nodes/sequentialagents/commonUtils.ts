@@ -233,24 +233,22 @@ export function filterConversationHistory(
             case 'user_question':
                 // @ts-ignore
                 filteredMessages = [new HumanMessage(input)]
-                break;
+                break
             case 'last_message':
                 // @ts-ignore
                 filteredMessages = [state.messages[state.messages.length - 1]]
-                break;
+                break
             case 'empty':
                 // @ts-ignore
                 filteredMessages = []
-                break;
+                break
             case 'all_messages':
                 // Explicitly handle 'all_messages' by keeping the existing messages
                 // @ts-ignore
                 filteredMessages = state.messages
-                break;
+                break
             default:
-                // Ensures all cases are handled and catches any unexpected values
-                const exhaustiveCheck: never = historySelection;
-                throw new Error(`Unhandled conversationHistorySelection: ${exhaustiveCheck}`)
+                throw new Error(`Unhandled conversationHistorySelection: ${historySelection}`)
         }
     }
     return filteredMessages

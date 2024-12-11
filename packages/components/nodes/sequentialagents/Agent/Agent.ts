@@ -242,13 +242,15 @@ class Agent_SeqAgents implements INode {
                     {
                         label: 'Empty',
                         name: 'empty',
-                        description: 'Do not use any messages from the conversation history. ' +
+                        description:
+                            'Do not use any messages from the conversation history. ' +
                             'Ensure to use either System Prompt, Human Prompt, or Messages History.'
                     }
                 ],
                 default: 'all_messages',
                 optional: true,
-                description: 'Select which messages from the conversation history to include in the prompt. ' +
+                description:
+                    'Select which messages from the conversation history to include in the prompt. ' +
                     'The selected messages will be inserted between the System Prompt (if defined) and ' +
                     '[Messages History, Human Prompt].',
                 additionalParams: true
@@ -768,7 +770,7 @@ async function agentNode(
         state.messages = filterConversationHistory(historySelection, input, state)
         // @ts-ignore
         state.messages = restructureMessages(llm, state)
-        
+
         let result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
 
         if (interrupt) {
