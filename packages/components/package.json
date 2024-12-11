@@ -62,7 +62,7 @@
         "@pinecone-database/pinecone": "4.0.0",
         "@qdrant/js-client-rest": "^1.9.0",
         "@stripe/agent-toolkit": "^0.1.20",
-        "@supabase/supabase-js": "^2.29.0",
+        "@supabase/supabase-js": "^2.39.8",
         "@types/js-yaml": "^4.0.5",
         "@types/jsdom": "^21.1.1",
         "@upstash/redis": "1.22.1",
