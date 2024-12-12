@@ -197,7 +197,7 @@ class Agent_SeqAgents implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'seqAgent'
-        this.version = 3.1
+        this.version = 4.0
         this.type = 'Agent'
         this.icon = 'seqAgent.png'
         this.category = 'Sequential Agents'
@@ -220,7 +220,18 @@ class Agent_SeqAgents implements INode {
                 default: examplePrompt
             },
             {
-                label: 'Conversation History Selection',
+                label: 'Prepend Messages History',
+                name: 'messageHistory',
+                description:
+                    'Prepend a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
+                type: 'code',
+                hideCodeExecute: true,
+                codeExample: messageHistoryExample,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Conversation History',
                 name: 'conversationHistorySelection',
                 type: 'options',
                 options: [
@@ -261,17 +272,6 @@ class Agent_SeqAgents implements INode {
                 type: 'string',
                 description: 'This prompt will be added at the end of the messages as human message',
                 rows: 4,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Messages History',
-                name: 'messageHistory',
-                description:
-                    'Return a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
-                type: 'code',
-                hideCodeExecute: true,
-                codeExample: messageHistoryExample,
                 optional: true,
                 additionalParams: true
             },
