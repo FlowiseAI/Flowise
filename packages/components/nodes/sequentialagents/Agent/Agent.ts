@@ -19,7 +19,8 @@ import {
     IDatabaseEntity,
     IUsedTool,
     IDocument,
-    IStateWithMessages
+    IStateWithMessages,
+    ConversationHistorySelection
 } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX, ARTIFACTS_PREFIX } from '../../../src/agents'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, removeInvalidImageMarkdown } from '../../../src/utils'
@@ -28,6 +29,7 @@ import {
     getVM,
     processImageMessage,
     transformObjectPropertyToFunction,
+    filterConversationHistory,
     restructureMessages,
     MessagesState,
     RunnableCallable,
@@ -195,7 +197,7 @@ class Agent_SeqAgents implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'seqAgent'
-        this.version = 3.1
+        this.version = 4.0
         this.type = 'Agent'
         this.icon = 'seqAgent.png'
         this.category = 'Sequential Agents'
@@ -218,22 +220,58 @@ class Agent_SeqAgents implements INode {
                 default: examplePrompt
             },
             {
+                label: 'Prepend Messages History',
+                name: 'messageHistory',
+                description:
+                    'Prepend a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
+                type: 'code',
+                hideCodeExecute: true,
+                codeExample: messageHistoryExample,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Conversation History',
+                name: 'conversationHistorySelection',
+                type: 'options',
+                options: [
+                    {
+                        label: 'User Question',
+                        name: 'user_question',
+                        description: 'Use the user question from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Last Conversation Message',
+                        name: 'last_message',
+                        description: 'Use the last conversation message from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'All Conversation Messages',
+                        name: 'all_messages',
+                        description: 'Use all conversation messages from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Empty',
+                        name: 'empty',
+                        description:
+                            'Do not use any messages from the conversation history. ' +
+                            'Ensure to use either System Prompt, Human Prompt, or Messages History.'
+                    }
+                ],
+                default: 'all_messages',
+                optional: true,
+                description:
+                    'Select which messages from the conversation history to include in the prompt. ' +
+                    'The selected messages will be inserted between the System Prompt (if defined) and ' +
+                    '[Messages History, Human Prompt].',
+                additionalParams: true
+            },
+            {
                 label: 'Human Prompt',
                 name: 'humanMessagePrompt',
                 type: 'string',
                 description: 'This prompt will be added at the end of the messages as human message',
                 rows: 4,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Messages History',
-                name: 'messageHistory',
-                description:
-                    'Return a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
-                type: 'code',
-                hideCodeExecute: true,
-                codeExample: messageHistoryExample,
                 optional: true,
                 additionalParams: true
             },
@@ -727,6 +765,9 @@ async function agentNode(
             throw new Error('Aborted!')
         }
 
+        const historySelection = (nodeData.inputs?.conversationHistorySelection || 'all_messages') as ConversationHistorySelection
+        // @ts-ignore
+        state.messages = filterConversationHistory(historySelection, input, state)
         // @ts-ignore
         state.messages = restructureMessages(llm, state)
 
@@ -734,10 +775,10 @@ async function agentNode(
 
         if (interrupt) {
             const messages = state.messages as unknown as BaseMessage[]
-            const lastMessage = messages[messages.length - 1]
+            const lastMessage = messages.length ? messages[messages.length - 1] : null
 
             // If the last message is a tool message and is an interrupted message, format output into standard agent output
-            if (lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
+            if (lastMessage && lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
                 let formattedAgentResult: {
                     output?: string
                     usedTools?: IUsedTool[]

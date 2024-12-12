@@ -9,7 +9,14 @@ import { Runnable, RunnableConfig, mergeConfigs } from '@langchain/core/runnable
 import { AIMessage, BaseMessage, HumanMessage, MessageContentImageUrl, ToolMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { addImagesToMessages, llmSupportsVision } from '../../src/multiModalUtils'
-import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, IVisionChatModal } from '../../src/Interface'
+import {
+    ICommonObject,
+    IDatabaseEntity,
+    INodeData,
+    ISeqAgentsState,
+    IVisionChatModal,
+    ConversationHistorySelection
+} from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
 import { ChatPromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 
@@ -205,6 +212,34 @@ export const convertStructuredSchemaToZod = (schema: string | object): ICommonOb
         return zodObj
     } catch (e) {
         throw new Error(e)
+    }
+}
+
+/**
+ * Filter the conversation history based on the selected option.
+ *
+ * @param historySelection - The selected history option.
+ * @param input - The user input.
+ * @param state - The current state of the sequential llm or agent node.
+ */
+export function filterConversationHistory(
+    historySelection: ConversationHistorySelection,
+    input: string,
+    state: ISeqAgentsState
+): BaseMessage[] {
+    switch (historySelection) {
+        case 'user_question':
+            return [new HumanMessage(input)]
+        case 'last_message':
+            // @ts-ignore
+            return state.messages?.length ? [state.messages[state.messages.length - 1] as BaseMessage] : []
+        case 'empty':
+            return []
+        case 'all_messages':
+            // @ts-ignore
+            return (state.messages as BaseMessage[]) ?? []
+        default:
+            throw new Error(`Unhandled conversationHistorySelection: ${historySelection}`)
     }
 }
 
