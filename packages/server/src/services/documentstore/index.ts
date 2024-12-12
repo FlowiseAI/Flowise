@@ -40,6 +40,7 @@ import { App } from '../../index'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { cloneDeep, omit } from 'lodash'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
+import { DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR } from '../../utils/prompt'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
@@ -913,7 +914,7 @@ const updateVectorStoreConfigOnly = async (data: ICommonObject) => {
         )
     }
 }
-const saveVectorStoreConfig = async (data: ICommonObject) => {
+const saveVectorStoreConfig = async (data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -931,6 +932,7 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
         } else if (entity.embeddingConfig && !data.embeddingName && !data.embeddingConfig) {
             data.embeddingConfig = JSON.parse(entity.embeddingConfig)?.config
             data.embeddingName = JSON.parse(entity.embeddingConfig)?.name
+            if (isStrictSave) entity.embeddingConfig = null
         } else if (!data.embeddingName && !data.embeddingConfig) {
             entity.embeddingConfig = null
         }
@@ -943,6 +945,7 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
         } else if (entity.vectorStoreConfig && !data.vectorStoreName && !data.vectorStoreConfig) {
             data.vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)?.config
             data.vectorStoreName = JSON.parse(entity.vectorStoreConfig)?.name
+            if (isStrictSave) entity.vectorStoreConfig = null
         } else if (!data.vectorStoreName && !data.vectorStoreConfig) {
             entity.vectorStoreConfig = null
         }
@@ -955,6 +958,7 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
         } else if (entity.recordManagerConfig && !data.recordManagerName && !data.recordManagerConfig) {
             data.recordManagerConfig = JSON.parse(entity.recordManagerConfig)?.config
             data.recordManagerName = JSON.parse(entity.recordManagerConfig)?.name
+            if (isStrictSave) entity.recordManagerConfig = null
         } else if (!data.recordManagerName && !data.recordManagerConfig) {
             entity.recordManagerConfig = null
         }
@@ -974,15 +978,15 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
     }
 }
 
-const insertIntoVectorStore = async (data: ICommonObject) => {
+const insertIntoVectorStore = async (data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
-        const entity = await saveVectorStoreConfig(data)
+        const entity = await saveVectorStoreConfig(data, isStrictSave)
         entity.status = DocumentStoreStatus.UPSERTING
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
 
         // TODO: to be moved into a worker thread...
-        const indexResult = await _insertIntoVectorStoreWorkerThread(data)
+        const indexResult = await _insertIntoVectorStoreWorkerThread(data, isStrictSave)
         return indexResult
     } catch (error) {
         throw new InternalFlowiseError(
@@ -992,10 +996,10 @@ const insertIntoVectorStore = async (data: ICommonObject) => {
     }
 }
 
-const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject) => {
+const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
-        const entity = await saveVectorStoreConfig(data)
+        const entity = await saveVectorStoreConfig(data, isStrictSave)
         let upsertHistory: Record<string, any> = {}
         const chatflowid = data.storeId // fake chatflowid because this is not tied to any chatflow
 
@@ -1519,7 +1523,7 @@ const upsertDocStoreMiddleware = async (
             recordManagerConfig
         }
 
-        const res = await insertIntoVectorStore(insertData)
+        const res = await insertIntoVectorStore(insertData, false)
         res.docId = newDocId
 
         return res
@@ -1568,6 +1572,63 @@ const refreshDocStoreMiddleware = async (storeId: string, data?: IDocumentStoreR
     }
 }
 
+const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: ICommonObject): Promise<string> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // get matching DocumentStoreFileChunk storeId with docStoreId, and only the first 4 chunks sorted by chunkNo
+        const chunks = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).findBy({
+            storeId: docStoreId
+        })
+
+        if (!chunks?.length) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `DocumentStore ${docStoreId} chunks not found`)
+        }
+
+        // sort the chunks by chunkNo
+        chunks.sort((a, b) => a.chunkNo - b.chunkNo)
+
+        // get the first 4 chunks
+        const chunksPageContent = chunks
+            .slice(0, 4)
+            .map((chunk) => {
+                return chunk.pageContent
+            })
+            .join('\n')
+
+        if (selectedChatModel && Object.keys(selectedChatModel).length > 0) {
+            const nodeInstanceFilePath = appServer.nodesPool.componentNodes[selectedChatModel.name].filePath as string
+            const nodeModule = await import(nodeInstanceFilePath)
+            const newNodeInstance = new nodeModule.nodeClass()
+            const nodeData = {
+                credential: selectedChatModel.credential || selectedChatModel.inputs['FLOWISE_CREDENTIAL_ID'] || undefined,
+                inputs: selectedChatModel.inputs,
+                id: `${selectedChatModel.name}_0`
+            }
+            const options: ICommonObject = {
+                appDataSource: appServer.AppDataSource,
+                databaseEntities,
+                logger
+            }
+            const llmNodeInstance = await newNodeInstance.init(nodeData, '', options)
+            const response = await llmNodeInstance.invoke(
+                DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR.replace('{context}', chunksPageContent)
+            )
+            return response
+        }
+
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.generateDocStoreToolDesc - Error generating tool description`
+        )
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.generateDocStoreToolDesc - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     updateDocumentStoreUsage,
     deleteDocumentStore,
@@ -1594,5 +1655,6 @@ export default {
     deleteVectorStoreFromStore,
     updateVectorStoreConfigOnly,
     upsertDocStoreMiddleware,
-    refreshDocStoreMiddleware
+    refreshDocStoreMiddleware,
+    generateDocStoreToolDesc
 }
