@@ -2,10 +2,11 @@ import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { useEffect, useRef, useState } from 'react'
+import moment from 'moment'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button, CircularProgress } from '@mui/material'
 
 // icons
 import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
@@ -368,10 +369,25 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
                         )}
                     </Box>
                 </Stack>
-                <Box>
-                    {isSaving && <Typography>Saving...</Typography>}
+                <Stack flexDirection='row' sx={{ gap: 2 }}>
+                    {isSaving ? (
+                        <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                            <CircularProgress size={16} />
+                            <Typography variant='h5'>Saving...</Typography>
+                        </Stack>
+                    ) : (
+                        <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                            <IconCheck size='1.3rem' />
+                            <Typography variant='h5'>
+                                Saved{' '}
+                                {moment(chatflow.updatedDate).isSame(moment(), 'day')
+                                    ? `at ${moment(chatflow.updatedDate).format('hh:mma')}`
+                                    : `on ${moment(chatflow.updatedDate).format('MMM D, h:mma')}`}
+                            </Typography>
+                        </Stack>
+                    )}
                     {chatflow?.id && (
-                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%' }}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
@@ -392,7 +408,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
                             </Avatar>
                         </ButtonBase>
                     )}
-                    <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+                    <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%' }}>
                         <Avatar
                             variant='rounded'
                             sx={{
@@ -431,7 +447,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
                             <IconSettings stroke={1.5} size='1.3rem' />
                         </Avatar>
                     </ButtonBase>
-                </Box>
+                </Stack>
             </Stack>
             <Settings
                 chatflow={chatflow}
