@@ -36,6 +36,10 @@
     height: 100%;
 }
 
+.reactflow-parent-wrapper .reactflow-wrapper .chatflow-canvas {
+    position: relative;
+}
+
 .chatflow-canvas .react-flow__handle-connecting {
     cursor: not-allowed;
     background: #db4e4e !important;
@@ -44,4 +48,47 @@
 .chatflow-canvas .react-flow__handle-valid {
     cursor: crosshair;
     background: #5dba62 !important;
+}
+
+.chatflow-canvas .undo-redo-wrapper {
+    display: flex;
+}
+
+.chatflow-canvas .react-flow__controls,
+.chatflow-canvas .undo-redo-wrapper {
+    height: 40px;
+    background-color: #fefefe;
+    border: 1px solid #454c59;
+    border-radius: 8px;
+    margin: 0;
+    position: relative;
+}
+
+.chatflow-canvas .react-flow__controls .react-flow__controls-button,
+.chatflow-canvas .undo-redo-wrapper button {
+    background: transparent;
+    border: none;
+    padding: 0.65rem;
+}
+
+.chatflow-canvas .react-flow__controls .react-flow__controls-button:not(:last-child),
+.chatflow-canvas .undo-redo-wrapper button:not(:last-child) {
+    border-right: 1px solid #454c59;
+}
+
+.chatflow-canvas .undo-redo-wrapper button {
+    min-width: initial;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.65rem;
+    border-radius: 0;
+}
+
+.chatflow-canvas .undo-redo-wrapper button svg {
+    width: 32px;
+    height: 32px;
+    color: #000;
 }

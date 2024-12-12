@@ -25,7 +25,7 @@ import LlamaindexPNG from '@/assets/images/llamaindex.png'
 
 const CanvasNode = ({ data }) => {
     const theme = useTheme()
-    const canvas = useSelector((state) => state.canvas)
+    const canvas = useSelector((state) => state.canvas.present)
     const { deleteNode, duplicateNode } = useContext(flowContext)
 
     const [showDialog, setShowDialog] = useState(false)

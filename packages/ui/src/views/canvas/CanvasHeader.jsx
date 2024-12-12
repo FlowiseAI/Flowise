@@ -33,7 +33,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -63,7 +63,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
-    const canvas = useSelector((state) => state.canvas)
+    const canvas = useSelector((state) => state.canvas.present)
 
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
@@ -369,6 +369,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                     </Box>
                 </Stack>
                 <Box>
+                    {isSaving && <Typography>Saving...</Typography>}
                     {chatflow?.id && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
                             <Avatar
@@ -485,7 +486,8 @@ CanvasHeader.propTypes = {
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isSaving: PropTypes.bool
 }
 
 export default CanvasHeader
