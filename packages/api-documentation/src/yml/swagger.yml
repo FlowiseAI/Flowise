@@ -553,7 +553,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             responses:
                 '200':
                     description: Successfully retrieved document store
@@ -580,7 +580,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             requestBody:
                 content:
                     application/json:
@@ -613,7 +613,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             responses:
                 '200':
                     description: Successfully deleted document store
@@ -638,7 +638,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             requestBody:
                 content:
                     application/json:
@@ -711,7 +711,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             requestBody:
                 content:
                     application/json:
@@ -752,7 +752,7 @@ paths:
                             properties:
                                 storeId:
                                     type: string
-                                    description: Document store ID
+                                    description: Document Store ID
                                     example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
                                 query:
                                     type: string
@@ -779,6 +779,38 @@ paths:
                 '500':
                     description: Internal server error
 
+    /document-store/loader/{storeId}/{loaderId}:
+        delete:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Delete specific document loader and associated chunks from document store
+            description: Delete specific document loader and associated chunks from document store. This does not delete data from vector store.
+            operationId: deleteLoaderFromDocumentStore
+            parameters:
+                - in: path
+                  name: storeId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Store ID
+                - in: path
+                  name: loaderId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Loader ID
+            responses:
+                '200':
+                    description: Successfully deleted loader from document store
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Document Store not found
+                '500':
+                    description: Internal server error
+
     /document-store/vectorstore/{id}:
         delete:
             tags:
@@ -798,6 +830,131 @@ paths:
             responses:
                 '200':
                     description: Successfully deleted data from vector store
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Document Store not found
+                '500':
+                    description: Internal server error
+
+    /document-store/chunks/{storeId}/{loaderId}/{pageNo}:
+        get:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Get chunks from a specific document loader
+            description: Get chunks from a specific document loader within a document store
+            operationId: getDocumentStoreFileChunks
+            parameters:
+                - in: path
+                  name: storeId
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document Store ID
+                - in: path
+                  name: loaderId
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document loader ID
+                - in: path
+                  name: pageNo
+                  required: true
+                  schema:
+                      type: string
+                  description: Pagination number
+            responses:
+                '200':
+                    description: Successfully retrieved chunks from document loader
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DocumentStoreFileChunkPagedResponse'
+                '404':
+                    description: Document store not found
+                '500':
+                    description: Internal server error
+
+    /document-store/chunks/{storeId}/{loaderId}/{chunkId}:
+        put:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Update a specific chunk
+            description: Updates a specific chunk from a document loader
+            operationId: editDocumentStoreFileChunk
+            parameters:
+                - in: path
+                  name: storeId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Store ID
+                - in: path
+                  name: loaderId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Loader ID
+                - in: path
+                  name: chunkId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Chunk ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Document'
+                required: true
+            responses:
+                '200':
+                    description: Successfully updated chunk
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DocumentStoreFileChunkPagedResponse'
+                '404':
+                    description: Document store not found
+                '500':
+                    description: Internal server error
+
+        delete:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Delete a specific chunk from a document loader
+            description: Delete a specific chunk from a document loader
+            operationId: deleteDocumentStoreFileChunk
+            parameters:
+                - in: path
+                  name: storeId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Store ID
+                - in: path
+                  name: loaderId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Loader ID
+                - in: path
+                  name: chunkId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Chunk ID
+            responses:
+                '200':
+                    description: Successfully deleted chunk
                 '400':
                     description: Invalid ID provided
                 '404':
@@ -2049,7 +2206,7 @@ components:
                 storeId:
                     type: string
                     format: uuid
-                    description: Document store ID
+                    description: Document Store ID
                 chunkNo:
                     type: integer
                     description: Chunk number within the document
