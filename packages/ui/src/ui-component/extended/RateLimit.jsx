@@ -3,11 +3,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 import PropTypes from 'prop-types'
 
-import { Box, Typography, Button, OutlinedInput } from '@mui/material'
+import { Typography, Button, OutlinedInput, Stack } from '@mui/material'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+import { SwitchInput } from '@/ui-component/switch/Switch'
 
 // Icons
 import { IconX } from '@tabler/icons-react'
@@ -29,27 +30,45 @@ const RateLimit = () => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
+    const [rateLimitStatus, setRateLimitStatus] = useState(apiConfig?.rateLimit?.status !== undefined ? apiConfig.rateLimit.status : false)
     const [limitMax, setLimitMax] = useState(apiConfig?.rateLimit?.limitMax ?? '')
     const [limitDuration, setLimitDuration] = useState(apiConfig?.rateLimit?.limitDuration ?? '')
     const [limitMsg, setLimitMsg] = useState(apiConfig?.rateLimit?.limitMsg ?? '')
 
     const formatObj = () => {
         const obj = {
-            rateLimit: {}
+            rateLimit: { status: rateLimitStatus }
         }
-        const rateLimitValuesBoolean = [!limitMax, !limitDuration, !limitMsg]
-        const rateLimitFilledValues = rateLimitValuesBoolean.filter((value) => value === false)
-        if (rateLimitFilledValues.length >= 1 && rateLimitFilledValues.length <= 2) {
-            throw new Error('Need to fill all rate limit input fields')
-        } else if (rateLimitFilledValues.length === 3) {
-            obj.rateLimit = {
-                limitMax,
-                limitDuration,
-                limitMsg
+
+        if (rateLimitStatus) {
+            const rateLimitValuesBoolean = [!limitMax, !limitDuration, !limitMsg]
+            const rateLimitFilledValues = rateLimitValuesBoolean.filter((value) => value === false)
+            if (rateLimitFilledValues.length >= 1 && rateLimitFilledValues.length <= 2) {
+                throw new Error('Need to fill all rate limit input fields')
+            } else if (rateLimitFilledValues.length === 3) {
+                obj.rateLimit = {
+                    ...obj.rateLimit,
+                    limitMax,
+                    limitDuration,
+                    limitMsg
+                }
             }
         }
 
         return obj
+    }
+
+    const handleChange = (value) => {
+        setRateLimitStatus(value)
+    }
+
+    const checkDisabled = () => {
+        if (rateLimitStatus) {
+            if (limitMax === '' || limitDuration === '' || limitMsg === '') {
+                return true
+            }
+        }
+        return false
     }
 
     const onSave = async () => {
@@ -107,46 +126,49 @@ const RateLimit = () => {
 
     const textField = (message, fieldName, fieldLabel, fieldType = 'string', placeholder = '') => {
         return (
-            <Box sx={{ pt: 2, pb: 2 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                    <Typography sx={{ mb: 1 }}>{fieldLabel}</Typography>
-                    <OutlinedInput
-                        id={fieldName}
-                        type={fieldType}
-                        fullWidth
-                        value={message}
-                        placeholder={placeholder}
-                        name={fieldName}
-                        size='small'
-                        onChange={(e) => {
-                            onTextChanged(e.target.value, fieldName)
-                        }}
-                    />
-                </div>
-            </Box>
+            <Stack direction='column' spacing={1}>
+                <Typography>{fieldLabel}</Typography>
+                <OutlinedInput
+                    id={fieldName}
+                    type={fieldType}
+                    fullWidth
+                    value={message}
+                    placeholder={placeholder}
+                    name={fieldName}
+                    size='small'
+                    onChange={(e) => {
+                        onTextChanged(e.target.value, fieldName)
+                    }}
+                />
+            </Stack>
         )
     }
 
     return (
-        <>
-            {/*Rate Limit*/}
-            <Typography variant='h4' sx={{ mb: 1 }}>
+        <Stack direction='column' spacing={2} sx={{ alignItems: 'start' }}>
+            <Typography variant='h3'>
                 Rate Limit{' '}
                 <TooltipWithParser
-                    style={{ mb: 1, mt: 2, marginLeft: 10 }}
+                    style={{ marginLeft: 10 }}
                     title={
                         'Visit <a target="_blank" href="https://docs.flowiseai.com/rate-limit">Rate Limit Setup Guide</a> to set up Rate Limit correctly in your hosting environment.'
                     }
                 />
             </Typography>
-            {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number', '5')}
-            {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number', '60')}
-            {textField(limitMsg, 'limitMsg', 'Limit Message', 'string', 'You have reached the quota')}
-
-            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={() => onSave()}>
-                Save Changes
+            <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
+                <SwitchInput label='Enable Rate Limit' onChange={handleChange} value={rateLimitStatus} />
+                {rateLimitStatus && (
+                    <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
+                        {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number', '5')}
+                        {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number', '60')}
+                        {textField(limitMsg, 'limitMsg', 'Limit Message', 'string', 'You have reached the quota')}
+                    </Stack>
+                )}
+            </Stack>
+            <StyledButton disabled={checkDisabled()} variant='contained' onClick={() => onSave()} sx={{ width: 'auto' }}>
+                Save
             </StyledButton>
-        </>
+        </Stack>
     )
 }
 

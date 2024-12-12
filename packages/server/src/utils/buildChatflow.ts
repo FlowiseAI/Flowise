@@ -1,11 +1,15 @@
 import { Request } from 'express'
+import * as path from 'path'
 import {
     IFileUpload,
     convertSpeechToText,
     ICommonObject,
     addSingleFileToStorage,
     addArrayFilesToStorage,
-    mapMimeTypeToInputField
+    mapMimeTypeToInputField,
+    mapExtToInputField,
+    generateFollowUpPrompts,
+    IServerSideEventStreamer
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -15,14 +19,13 @@ import {
     IReactFlowObject,
     IReactFlowNode,
     IDepthQueue,
-    chatType,
+    ChatType,
     IChatMessage,
     IChatFlow,
     IReactFlowEdge
 } from '../Interface'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { ChatFlow } from '../database/entities/ChatFlow'
-import { Server } from 'socket.io'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import {
     isFlowValidForStream,
@@ -39,7 +42,8 @@ import {
     isSameOverrideConfig,
     getEndingNodes,
     constructGraphs,
-    isSameChatId
+    isSameChatId,
+    getAPIOverrideConfig
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
@@ -52,16 +56,17 @@ import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
+import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../Interface.Metrics'
+import { Variable } from '../database/entities/Variable'
 
 /**
  * Build Chatflow
  * @param {Request} req
- * @param {Server} socketIO
  * @param {boolean} isInternal
  */
-export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInternal: boolean = false): Promise<any> => {
+export const utilBuildChatflow = async (req: Request, isInternal: boolean = false): Promise<any> => {
+    const appServer = getRunningExpressApp()
     try {
-        const appServer = getRunningExpressApp()
         const chatflowid = req.params.id
 
         const httpProtocol = req.get('x-forwarded-proto') || req.protocol
@@ -78,7 +83,6 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
         const userMessageDateTime = new Date()
-
         if (!isInternal) {
             const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
             if (!isKeyValidated) {
@@ -87,12 +91,14 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         }
 
         let fileUploads: IFileUpload[] = []
+        let uploadedFilesContent = ''
         if (incomingInput.uploads) {
             fileUploads = incomingInput.uploads
             for (let i = 0; i < fileUploads.length; i += 1) {
                 const upload = fileUploads[i]
 
-                if ((upload.type === 'file' || upload.type === 'audio') && upload.data) {
+                // if upload in an image, a rag file, or audio
+                if ((upload.type === 'file' || upload.type === 'file:rag' || upload.type === 'audio') && upload.data) {
                     const filename = upload.name
                     const splitDataURI = upload.data.split(',')
                     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
@@ -138,6 +144,13 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                         }
                     }
                 }
+
+                if (upload.type === 'file:full' && upload.data) {
+                    upload.type = 'stored-file:full'
+                    // Omit upload.data since we don't store the content in database
+                    uploadedFilesContent += `<doc name='${upload.name}'>${upload.data}</doc>\n\n`
+                    fileUploads[i] = omit(upload, ['data'])
+                }
             }
         }
 
@@ -150,19 +163,49 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             const fileNames: string[] = []
             for (const file of files) {
                 const fileBuffer = fs.readFileSync(file.path)
-
+                // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
+                file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
 
-                const fileInputField = mapMimeTypeToInputField(file.mimetype)
+                const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
 
-                overrideConfig[fileInputField] = storagePath
+                const fileExtension = path.extname(file.originalname)
+
+                const fileInputFieldFromExt = mapExtToInputField(fileExtension)
+
+                let fileInputField = 'txtFile'
+
+                if (fileInputFieldFromExt !== 'txtFile') {
+                    fileInputField = fileInputFieldFromExt
+                } else if (fileInputFieldFromMimeType !== 'txtFile') {
+                    fileInputField = fileInputFieldFromExt
+                }
+
+                if (overrideConfig[fileInputField]) {
+                    const existingFileInputField = overrideConfig[fileInputField].replace('FILE-STORAGE::', '')
+                    const existingFileInputFieldArray = JSON.parse(existingFileInputField)
+
+                    const newFileInputField = storagePath.replace('FILE-STORAGE::', '')
+                    const newFileInputFieldArray = JSON.parse(newFileInputField)
+
+                    const updatedFieldArray = existingFileInputFieldArray.concat(newFileInputFieldArray)
+
+                    overrideConfig[fileInputField] = `FILE-STORAGE::${JSON.stringify(updatedFieldArray)}`
+                } else {
+                    overrideConfig[fileInputField] = storagePath
+                }
 
                 fs.unlinkSync(file.path)
             }
+            if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
+                overrideConfig.vars = JSON.parse(overrideConfig.vars)
+            }
             incomingInput = {
                 question: req.body.question ?? 'hello',
-                overrideConfig,
-                socketIOClientId: req.body.socketIOClientId
+                overrideConfig
+            }
+            if (req.body.chatId) {
+                incomingInput.chatId = req.body.chatId
             }
         }
 
@@ -172,22 +215,24 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const nodes = parsedFlowData.nodes
         const edges = parsedFlowData.edges
 
+        const apiMessageId = uuidv4()
+
         /*** Get session ID ***/
         const memoryNode = findMemoryNode(nodes, edges)
-        const memoryType = memoryNode?.data.label
+        const memoryType = memoryNode?.data?.label
         let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         /*** Get Ending Node with Directed Graph  ***/
         const { graph, nodeDependencies } = constructGraphs(nodes, edges)
         const directedGraph = graph
         const endingNodes = getEndingNodes(nodeDependencies, directedGraph, nodes)
-
         /*** If the graph is an agent graph, build the agent response ***/
         if (endingNodes.filter((node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents').length) {
             return await utilBuildAgentResponse(
                 chatflow,
                 isInternal,
                 chatId,
+                apiMessageId,
                 memoryType ?? '',
                 sessionId,
                 userMessageDateTime,
@@ -195,13 +240,17 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 incomingInput,
                 nodes,
                 edges,
-                socketIO,
-                baseURL
+                baseURL,
+                appServer.sseStreamer,
+                true,
+                uploadedFilesContent
             )
         }
 
         // Get prepend messages
         const prependMessages = incomingInput.history
+
+        const flowVariables = {} as Record<string, unknown>
 
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
          * - Reuse of flows is not disabled
@@ -301,29 +350,50 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
+            /*** Get API Config ***/
+            const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
+            const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
+
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
             const reactFlowNodes = await buildFlow({
                 startingNodeIds,
                 reactFlowNodes: nodes,
                 reactFlowEdges: edges,
+                apiMessageId,
                 graph,
                 depthQueue,
                 componentNodes: appServer.nodesPool.componentNodes,
                 question: incomingInput.question,
+                uploadedFilesContent,
                 chatHistory,
                 chatId,
                 sessionId: sessionId ?? '',
                 chatflowid,
                 appDataSource: appServer.AppDataSource,
                 overrideConfig: incomingInput?.overrideConfig,
+                apiOverrideStatus,
+                nodeOverrides,
+                availableVariables,
+                variableOverrides,
                 cachePool: appServer.cachePool,
                 isUpsert: false,
                 uploads: incomingInput.uploads,
-                baseURL,
-                socketIO,
-                socketIOClientId: incomingInput.socketIOClientId
+                baseURL
             })
+
+            // Show output of setVariable nodes in the response
+            for (const node of reactFlowNodes) {
+                if (
+                    node.data.name === 'setVariable' &&
+                    (node.data.inputs?.showOutput === true || node.data.inputs?.showOutput === 'true')
+                ) {
+                    const outputResult = node.data.instance
+                    const variableKey = node.data.inputs?.variableName
+                    flowVariables[variableKey] = outputResult
+                }
+            }
 
             const nodeToExecute =
                 endingNodeIds.length === 1
@@ -333,8 +403,23 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node not found`)
             }
 
-            if (incomingInput.overrideConfig) {
-                nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
+            // Only override the config if its status is true
+            if (incomingInput.overrideConfig && apiOverrideStatus) {
+                nodeToExecute.data = replaceInputsWithConfig(
+                    nodeToExecute.data,
+                    incomingInput.overrideConfig,
+                    nodeOverrides,
+                    variableOverrides
+                )
+            }
+
+            const flowData: ICommonObject = {
+                chatflowid,
+                chatId,
+                sessionId,
+                apiMessageId,
+                chatHistory,
+                ...incomingInput.overrideConfig
             }
 
             const reactFlowNodeData: INodeData = await resolveVariables(
@@ -343,7 +428,10 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
                 reactFlowNodes,
                 incomingInput.question,
                 chatHistory,
-                incomingInput.overrideConfig
+                flowData,
+                uploadedFilesContent,
+                availableVariables,
+                variableOverrides
             )
             nodeToExecuteData = reactFlowNodeData
 
@@ -356,29 +444,26 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         const nodeModule = await import(nodeInstanceFilePath)
         const nodeInstance = new nodeModule.nodeClass({ sessionId })
 
-        let result = isStreamValid
-            ? await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                  chatId,
-                  chatflowid,
-                  logger,
-                  appDataSource: appServer.AppDataSource,
-                  databaseEntities,
-                  analytic: chatflow.analytic,
-                  uploads: incomingInput.uploads,
-                  socketIO,
-                  socketIOClientId: incomingInput.socketIOClientId,
-                  prependMessages
-              })
-            : await nodeInstance.run(nodeToExecuteData, incomingInput.question, {
-                  chatId,
-                  chatflowid,
-                  logger,
-                  appDataSource: appServer.AppDataSource,
-                  databaseEntities,
-                  analytic: chatflow.analytic,
-                  uploads: incomingInput.uploads,
-                  prependMessages
-              })
+        isStreamValid = (req.body.streaming === 'true' || req.body.streaming === true) && isStreamValid
+        const finalQuestion = uploadedFilesContent ? `${uploadedFilesContent}\n\n${incomingInput.question}` : incomingInput.question
+
+        const runParams = {
+            chatId,
+            chatflowid,
+            apiMessageId,
+            logger,
+            appDataSource: appServer.AppDataSource,
+            databaseEntities,
+            analytic: chatflow.analytic,
+            uploads: incomingInput.uploads,
+            prependMessages
+        }
+
+        let result = await nodeInstance.run(nodeToExecuteData, finalQuestion, {
+            ...runParams,
+            ...(isStreamValid && { sseStreamer: appServer.sseStreamer, shouldStreamResponse: true })
+        })
+
         result = typeof result === 'string' ? { text: result } : result
 
         // Retrieve threadId from assistant if exists
@@ -390,7 +475,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             role: 'userMessage',
             content: incomingInput.question,
             chatflowid,
-            chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+            chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
             chatId,
             memoryType,
             sessionId,
@@ -405,11 +490,12 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
         else resultText = JSON.stringify(result, null, 2)
 
-        const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
+        const apiMessage: Omit<IChatMessage, 'createdDate'> = {
+            id: apiMessageId,
             role: 'apiMessage',
             content: resultText,
             chatflowid,
-            chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+            chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
             chatId,
             memoryType,
             sessionId
@@ -417,6 +503,20 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
         if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
+        if (result?.artifacts) apiMessage.artifacts = JSON.stringify(result.artifacts)
+        if (chatflow.followUpPrompts) {
+            const followUpPromptsConfig = JSON.parse(chatflow.followUpPrompts)
+            const followUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
+                chatId,
+                chatflowid,
+                appDataSource: appServer.AppDataSource,
+                databaseEntities
+            })
+            if (followUpPrompts?.questions) {
+                apiMessage.followUpPrompts = JSON.stringify(followUpPrompts.questions)
+            }
+        }
+
         const chatMessage = await utilAddChatMessage(apiMessage)
 
         logger.debug(`[server]: Finished running ${nodeToExecuteData.label} (${nodeToExecuteData.id})`)
@@ -424,21 +524,33 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             version: await getAppVersion(),
             chatflowId: chatflowid,
             chatId,
-            type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+            type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
             flowGraph: getTelemetryFlowObj(nodes, edges)
         })
 
+        appServer.metricsProvider?.incrementCounter(
+            isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
+            { status: FLOWISE_COUNTER_STATUS.SUCCESS }
+        )
         // Prepare response
         // return the question in the response
         // this is used when input text is empty but question is in audio format
         result.question = incomingInput.question
         result.chatId = chatId
         result.chatMessageId = chatMessage?.id
+        result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
+        result.isStreamValid = isStreamValid
+
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
+        if (Object.keys(flowVariables).length) result.flowVariables = flowVariables
 
         return result
     } catch (e) {
+        appServer.metricsProvider?.incrementCounter(
+            isInternal ? FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.CHATFLOW_PREDICTION_EXTERNAL,
+            { status: FLOWISE_COUNTER_STATUS.FAILURE }
+        )
         logger.error('[server]: Error:', e)
         if (e instanceof InternalFlowiseError && e.statusCode === StatusCodes.UNAUTHORIZED) {
             throw e
@@ -452,6 +564,7 @@ const utilBuildAgentResponse = async (
     agentflow: IChatFlow,
     isInternal: boolean,
     chatId: string,
+    apiMessageId: string,
     memoryType: string,
     sessionId: string,
     userMessageDateTime: Date,
@@ -459,19 +572,32 @@ const utilBuildAgentResponse = async (
     incomingInput: IncomingInput,
     nodes: IReactFlowNode[],
     edges: IReactFlowEdge[],
-    socketIO?: Server,
-    baseURL?: string
+    baseURL?: string,
+    sseStreamer?: IServerSideEventStreamer,
+    shouldStreamResponse?: boolean,
+    uploadedFilesContent?: string
 ) => {
+    const appServer = getRunningExpressApp()
     try {
-        const appServer = getRunningExpressApp()
-        const streamResults = await buildAgentGraph(agentflow, chatId, sessionId, incomingInput, isInternal, baseURL, socketIO)
+        const streamResults = await buildAgentGraph(
+            agentflow,
+            chatId,
+            apiMessageId,
+            sessionId,
+            incomingInput,
+            isInternal,
+            baseURL,
+            sseStreamer,
+            shouldStreamResponse,
+            uploadedFilesContent
+        )
         if (streamResults) {
-            const { finalResult, finalAction, sourceDocuments, usedTools, agentReasoning } = streamResults
+            const { finalResult, finalAction, sourceDocuments, artifacts, usedTools, agentReasoning } = streamResults
             const userMessage: Omit<IChatMessage, 'id'> = {
                 role: 'userMessage',
                 content: incomingInput.question,
                 chatflowid: agentflow.id,
-                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 chatId,
                 memoryType,
                 sessionId,
@@ -481,28 +607,46 @@ const utilBuildAgentResponse = async (
             }
             await utilAddChatMessage(userMessage)
 
-            const apiMessage: Omit<IChatMessage, 'id' | 'createdDate'> = {
+            const apiMessage: Omit<IChatMessage, 'createdDate'> = {
+                id: apiMessageId,
                 role: 'apiMessage',
                 content: finalResult,
                 chatflowid: agentflow.id,
-                chatType: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 chatId,
                 memoryType,
                 sessionId
             }
-            if (sourceDocuments.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
-            if (usedTools.length) apiMessage.usedTools = JSON.stringify(usedTools)
-            if (agentReasoning.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
-            if (Object.keys(finalAction).length) apiMessage.action = JSON.stringify(finalAction)
+            if (sourceDocuments?.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
+            if (artifacts?.length) apiMessage.artifacts = JSON.stringify(artifacts)
+            if (usedTools?.length) apiMessage.usedTools = JSON.stringify(usedTools)
+            if (agentReasoning?.length) apiMessage.agentReasoning = JSON.stringify(agentReasoning)
+            if (finalAction && Object.keys(finalAction).length) apiMessage.action = JSON.stringify(finalAction)
+            if (agentflow.followUpPrompts) {
+                const followUpPromptsConfig = JSON.parse(agentflow.followUpPrompts)
+                const generatedFollowUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
+                    chatId,
+                    chatflowid: agentflow.id,
+                    appDataSource: appServer.AppDataSource,
+                    databaseEntities
+                })
+                if (generatedFollowUpPrompts?.questions) {
+                    apiMessage.followUpPrompts = JSON.stringify(generatedFollowUpPrompts.questions)
+                }
+            }
             const chatMessage = await utilAddChatMessage(apiMessage)
 
             await appServer.telemetry.sendTelemetry('agentflow_prediction_sent', {
                 version: await getAppVersion(),
                 agentflowId: agentflow.id,
                 chatId,
-                type: isInternal ? chatType.INTERNAL : chatType.EXTERNAL,
+                type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             })
+            appServer.metricsProvider?.incrementCounter(
+                isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
+                { status: FLOWISE_COUNTER_STATUS.SUCCESS }
+            )
 
             // Find the previous chat message with the same action id and remove the action
             if (incomingInput.action && Object.keys(incomingInput.action).length) {
@@ -540,14 +684,19 @@ const utilBuildAgentResponse = async (
             result.chatMessageId = chatMessage?.id
             if (sessionId) result.sessionId = sessionId
             if (memoryType) result.memoryType = memoryType
-            if (agentReasoning.length) result.agentReasoning = agentReasoning
-            if (Object.keys(finalAction).length) result.action = finalAction
+            if (agentReasoning?.length) result.agentReasoning = agentReasoning
+            if (finalAction && Object.keys(finalAction).length) result.action = finalAction
+            result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
 
             return result
         }
         return undefined
     } catch (e) {
         logger.error('[server]: Error:', e)
+        appServer.metricsProvider?.incrementCounter(
+            isInternal ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_INTERNAL : FLOWISE_METRIC_COUNTERS.AGENTFLOW_PREDICTION_EXTERNAL,
+            { status: FLOWISE_COUNTER_STATUS.FAILURE }
+        )
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, getErrorMessage(e))
     }
 }

@@ -2,6 +2,12 @@ import { AzureOpenAIInput, OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@lan
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
+const serverCredentialsExists =
+    !!process.env.AZURE_OPENAI_API_KEY &&
+    !!process.env.AZURE_OPENAI_API_INSTANCE_NAME &&
+    (!!process.env.AZURE_OPENAI_API_EMBEDDINGS_DEPLOYMENT_NAME || !!process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME) &&
+    !!process.env.AZURE_OPENAI_API_VERSION
+
 class AzureOpenAIEmbedding_Embeddings implements INode {
     label: string
     name: string
@@ -27,7 +33,8 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['azureOpenAIApi']
+            credentialNames: ['azureOpenAIApi'],
+            optional: serverCredentialsExists
         }
         this.inputs = [
             {
@@ -71,7 +78,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,
             azureOpenAIApiVersion,
-            azureOpenAIBasePath: basePath
+            azureOpenAIBasePath: basePath || undefined
         }
 
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)

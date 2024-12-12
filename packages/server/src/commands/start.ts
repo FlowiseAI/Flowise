@@ -55,6 +55,7 @@ export default class Start extends Command {
         S3_STORAGE_SECRET_ACCESS_KEY: Flags.string(),
         S3_STORAGE_REGION: Flags.string(),
         S3_ENDPOINT_URL: Flags.string(),
+        S3_FORCE_PATH_STYLE: Flags.string(),
         SHOW_COMMUNITY_NODES: Flags.string()
     }
 
@@ -152,6 +153,7 @@ export default class Start extends Command {
         if (flags.S3_STORAGE_SECRET_ACCESS_KEY) process.env.S3_STORAGE_SECRET_ACCESS_KEY = flags.S3_STORAGE_SECRET_ACCESS_KEY
         if (flags.S3_STORAGE_REGION) process.env.S3_STORAGE_REGION = flags.S3_STORAGE_REGION
         if (flags.S3_ENDPOINT_URL) process.env.S3_ENDPOINT_URL = flags.S3_ENDPOINT_URL
+        if (flags.S3_FORCE_PATH_STYLE) process.env.S3_FORCE_PATH_STYLE = flags.S3_FORCE_PATH_STYLE
 
         await (async () => {
             try {

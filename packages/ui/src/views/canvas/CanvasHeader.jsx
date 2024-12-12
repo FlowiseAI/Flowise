@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
 
 // icons
 import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
@@ -17,6 +17,8 @@ import APICodeDialog from '@/views/chatflows/APICodeDialog'
 import ViewMessagesDialog from '@/ui-component/dialog/ViewMessagesDialog'
 import ChatflowConfigurationDialog from '@/ui-component/dialog/ChatflowConfigurationDialog'
 import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
+import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
+import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -27,8 +29,7 @@ import useApi from '@/hooks/useApi'
 // utils
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
-import { SET_CHATFLOW } from '@/store/actions'
-import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -54,6 +55,11 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
     const [chatflowConfigurationDialogOpen, setChatflowConfigurationDialogOpen] = useState(false)
     const [chatflowConfigurationDialogProps, setChatflowConfigurationDialogProps] = useState({})
 
+    const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
+    const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -76,6 +82,28 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 chatflow: chatflow
             })
             setViewLeadsDialogOpen(true)
+        } else if (setting === 'saveAsTemplate') {
+            if (canvas.isDirty) {
+                enqueueSnackbar({
+                    message: 'Please save the flow before exporting as template',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                return
+            }
+            setExportAsTemplateDialogProps({
+                title: 'Export As Template',
+                chatflow: chatflow
+            })
+            setExportAsTemplateDialogOpen(true)
         } else if (setting === 'viewUpsertHistory') {
             setUpsertHistoryDialogProps({
                 title: 'View Upsert History',
@@ -102,7 +130,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
             try {
                 const flowData = JSON.parse(chatflow.flowData)
                 let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
-                let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                //let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                const blob = new Blob([dataStr], { type: 'application/json' })
+                const dataUri = URL.createObjectURL(blob)
 
                 let exportFileDefaultName = `${chatflow.name} ${title}.json`
 
@@ -275,6 +305,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                         ) : (
                             <Stack flexDirection='row' sx={{ width: '100%' }}>
                                 <TextField
+                                    //eslint-disable-next-line jsx-a11y/no-autofocus
+                                    autoFocus
                                     size='small'
                                     inputRef={flowNameRef}
                                     sx={{
@@ -282,6 +314,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                         ml: 2
                                     }}
                                     defaultValue={flowName}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            submitFlowName()
+                                        } else if (e.key === 'Escape') {
+                                            setEditingFlowName(false)
+                                        }
+                                    }}
                                 />
                                 <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
                                     <Avatar
@@ -412,13 +451,20 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={onConfirmSaveName}
             />
-            <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />
+            {apiDialogOpen && <APICodeDialog show={apiDialogOpen} dialogProps={apiDialogProps} onCancel={() => setAPIDialogOpen(false)} />}
             <ViewMessagesDialog
                 show={viewMessagesDialogOpen}
                 dialogProps={viewMessagesDialogProps}
                 onCancel={() => setViewMessagesDialogOpen(false)}
             />
             <ViewLeadsDialog show={viewLeadsDialogOpen} dialogProps={viewLeadsDialogProps} onCancel={() => setViewLeadsDialogOpen(false)} />
+            {exportAsTemplateDialogOpen && (
+                <ExportAsTemplateDialog
+                    show={exportAsTemplateDialogOpen}
+                    dialogProps={exportAsTemplateDialogProps}
+                    onCancel={() => setExportAsTemplateDialogOpen(false)}
+                />
+            )}
             <UpsertHistoryDialog
                 show={upsertHistoryDialogOpen}
                 dialogProps={upsertHistoryDialogProps}

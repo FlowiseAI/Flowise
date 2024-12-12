@@ -7,8 +7,17 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
-import { getBaseClasses, handleEscapeCharacters } from '../../../src/utils'
-import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool, IVisionChatModal } from '../../../src/Interface'
+import { getBaseClasses, handleEscapeCharacters, removeInvalidImageMarkdown } from '../../../src/utils'
+import {
+    FlowiseMemory,
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeParams,
+    IServerSideEventStreamer,
+    IUsedTool,
+    IVisionChatModal
+} from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
@@ -26,7 +35,6 @@ class ToolAgent_Agents implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
-    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Tool Agent'
@@ -100,7 +108,9 @@ class ToolAgent_Agents implements INode {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
-        const isStreamable = options.socketIO && options.socketIOClientId
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
 
         if (moderations && moderations.length > 0) {
             try {
@@ -108,8 +118,9 @@ class ToolAgent_Agents implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                if (isStreamable)
-                    streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (shouldStreamResponse) {
+                    streamResponse(sseStreamer, chatId, e.message)
+                }
                 return formatResponse(e.message)
             }
         }
@@ -122,17 +133,28 @@ class ToolAgent_Agents implements INode {
         let res: ChainValues = {}
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
+        let artifacts = []
 
-        if (isStreamable) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+        if (shouldStreamResponse) {
+            const handler = new CustomChainHandler(sseStreamer, chatId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
-                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
+                if (sseStreamer) {
+                    sseStreamer.streamSourceDocumentsEvent(chatId, flatten(res.sourceDocuments))
+                }
                 sourceDocuments = res.sourceDocuments
             }
             if (res.usedTools) {
-                options.socketIO.to(options.socketIOClientId).emit('usedTools', res.usedTools)
+                if (sseStreamer) {
+                    sseStreamer.streamUsedToolsEvent(chatId, flatten(res.usedTools))
+                }
                 usedTools = res.usedTools
+            }
+            if (res.artifacts) {
+                if (sseStreamer) {
+                    sseStreamer.streamArtifactsEvent(chatId, flatten(res.artifacts))
+                }
+                artifacts = res.artifacts
             }
             // If the tool is set to returnDirect, stream the output to the client
             if (res.usedTools && res.usedTools.length) {
@@ -140,8 +162,8 @@ class ToolAgent_Agents implements INode {
                 inputTools = flatten(inputTools)
                 for (const tool of res.usedTools) {
                     const inputTool = inputTools.find((inputTool: Tool) => inputTool.name === tool.tool)
-                    if (inputTool && inputTool.returnDirect) {
-                        options.socketIO.to(options.socketIOClientId).emit('token', tool.toolOutput)
+                    if (inputTool && inputTool.returnDirect && shouldStreamResponse) {
+                        sseStreamer.streamTokenEvent(chatId, tool.toolOutput)
                     }
                 }
             }
@@ -153,6 +175,9 @@ class ToolAgent_Agents implements INode {
             if (res.usedTools) {
                 usedTools = res.usedTools
             }
+            if (res.artifacts) {
+                artifacts = res.artifacts
+            }
         }
 
         let output = res?.output
@@ -162,7 +187,10 @@ class ToolAgent_Agents implements INode {
             output = output?.text || ''
         }
 
+        output = removeInvalidImageMarkdown(output)
+
         // Claude 3 Opus tends to spit out <thinking>..</thinking> as well, discard that in final output
+        // https://docs.anthropic.com/en/docs/build-with-claude/tool-use#chain-of-thought
         const regexPattern: RegExp = /<thinking>[\s\S]*?<\/thinking>/
         const matches: RegExpMatchArray | null = output.match(regexPattern)
         if (matches) {
@@ -187,13 +215,16 @@ class ToolAgent_Agents implements INode {
 
         let finalRes = output
 
-        if (sourceDocuments.length || usedTools.length) {
+        if (sourceDocuments.length || usedTools.length || artifacts.length) {
             const finalRes: ICommonObject = { text: output }
             if (sourceDocuments.length) {
                 finalRes.sourceDocuments = flatten(sourceDocuments)
             }
             if (usedTools.length) {
                 finalRes.usedTools = usedTools
+            }
+            if (artifacts.length) {
+                finalRes.artifacts = artifacts
             }
             return finalRes
         }

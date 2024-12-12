@@ -1,11 +1,12 @@
-import { IAction } from 'flowise-components'
-import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import { IAction, ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT'
+export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'ASSISTANT'
 
-export enum chatType {
+export type AssistantType = 'CUSTOM' | 'OPENAI' | 'AZURE'
+
+export enum ChatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL'
 }
@@ -28,6 +29,7 @@ export interface IChatFlow {
     apikeyid?: string
     analytic?: string
     chatbotConfig?: string
+    followUpPrompts?: string
     apiConfig?: string
     category?: string
     type?: ChatflowType
@@ -43,6 +45,7 @@ export interface IChatMessage {
     fileAnnotations?: string
     agentReasoning?: string
     fileUploads?: string
+    artifacts?: string
     chatType: string
     chatId: string
     memoryType?: string
@@ -50,6 +53,7 @@ export interface IChatMessage {
     createdDate: Date
     leadEmail?: string
     action?: string | null
+    followUpPrompts?: string
 }
 
 export interface IChatMessageFeedback {
@@ -216,7 +220,6 @@ export interface IMessage {
 export interface IncomingInput {
     question: string
     overrideConfig?: ICommonObject
-    socketIOClientId?: string
     chatId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]
@@ -272,6 +275,35 @@ export interface IApiKey {
     apiKey: string
     apiSecret: string
     updatedDate: Date
+}
+
+export interface ICustomTemplate {
+    id: string
+    name: string
+    flowData: string
+    updatedDate: Date
+    createdDate: Date
+    description?: string
+    type?: string
+    badge?: string
+    framework?: string
+    usecases?: string
+}
+
+export interface INodeOverrides {
+    [key: string]: {
+        label: string
+        name: string
+        type: string
+        enabled: boolean
+    }[]
+}
+
+export interface IVariableOverride {
+    id: string
+    name: string
+    type: 'static' | 'runtime'
+    enabled: boolean
 }
 
 // DocumentStore related

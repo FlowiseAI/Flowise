@@ -5,6 +5,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import robotPNG from '@/assets/images/robot.png'
 import chatPNG from '@/assets/images/chathistory.png'
 import diskPNG from '@/assets/images/floppy-disc.png'
+import fileAttachmentPNG from '@/assets/images/fileAttachment.png'
 import { baseURL } from '@/store/constant'
 
 const sequentialStateMessagesSelection = [
@@ -116,6 +117,45 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                             sx={{ ml: 1 }}
                                             primary='chat_history'
                                             secondary={`Past conversation history between user and AI`}
+                                        />
+                                    </ListItem>
+                                </ListItemButton>
+                                <ListItemButton
+                                    sx={{
+                                        p: 0,
+                                        borderRadius: `${customization.borderRadius}px`,
+                                        boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
+                                        mb: 1
+                                    }}
+                                    disabled={disabled}
+                                    onClick={() => onSelectOutputResponseClick(null, 'file_attachment')}
+                                >
+                                    <ListItem alignItems='center'>
+                                        <ListItemAvatar>
+                                            <div
+                                                style={{
+                                                    width: 50,
+                                                    height: 50,
+                                                    borderRadius: '50%',
+                                                    backgroundColor: 'white'
+                                                }}
+                                            >
+                                                <img
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        padding: 10,
+                                                        objectFit: 'contain'
+                                                    }}
+                                                    alt='fileAttachment'
+                                                    src={fileAttachmentPNG}
+                                                />
+                                            </div>
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            sx={{ ml: 1 }}
+                                            primary='file_attachment'
+                                            secondary={`Files uploaded from the chat when Full File Upload is enabled on the Configuration`}
                                         />
                                     </ListItem>
                                 </ListItemButton>

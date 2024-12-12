@@ -4,24 +4,34 @@
             "name": "awsChatBedrock",
             "models": [
                 {
-                    "label": "anthropic.claude-3-haiku",
-                    "name": "anthropic.claude-3-haiku-20240307-v1:0",
-                    "description": "Image to text, conversation, chat optimized"
+                    "label": "anthropic.claude-3-5-haiku-20241022-v1:0",
+                    "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model"
                 },
                 {
-                    "label": "anthropic.claude-3.5-sonnet",
+                    "label": "anthropic.claude-3.5-sonnet-20241022-v2:0",
+                    "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model"
+                },
+                {
+                    "label": "anthropic.claude-3.5-sonnet-20240620-v1:0",
                     "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                    "description": "3.5 version of Claude Sonnet model"
-                },
-                {
-                    "label": "anthropic.claude-3-sonnet",
-                    "name": "anthropic.claude-3-sonnet-20240229-v1:0",
-                    "description": "Image to text and code, multilingual conversation, complex reasoning and analysis"
+                    "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5 - most intelligent model"
                 },
                 {
                     "label": "anthropic.claude-3-opus",
                     "name": "anthropic.claude-3-opus-20240229-v1:0",
-                    "description": "Image to text and code, multilingual conversation, complex reasoning and analysis"
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis"
+                },
+                {
+                    "label": "anthropic.claude-3-sonnet",
+                    "name": "anthropic.claude-3-sonnet-20240229-v1:0",
+                    "description": "Balance of intelligence and speed"
+                },
+                {
+                    "label": "anthropic.claude-3-haiku",
+                    "name": "anthropic.claude-3-haiku-20240307-v1:0",
+                    "description": "Fastest and most compact model for near-instant responsiveness"
                 },
                 {
                     "label": "anthropic.claude-instant-v1",
@@ -221,6 +231,18 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "o1-preview",
+                    "name": "o1-preview"
+                },
+                {
+                    "label": "o1-mini",
+                    "name": "o1-mini"
+                },
+                {
+                    "label": "gpt-4o-mini",
+                    "name": "gpt-4o-mini"
+                },
+                {
                     "label": "gpt-4o",
                     "name": "gpt-4o"
                 },
@@ -249,6 +271,10 @@
         {
             "name": "azureChatOpenAI_LlamaIndex",
             "models": [
+                {
+                    "label": "gpt-4o-mini",
+                    "name": "gpt-4o-mini"
+                },
                 {
                     "label": "gpt-4o",
                     "name": "gpt-4o"
@@ -287,24 +313,39 @@
             "name": "chatAnthropic",
             "models": [
                 {
-                    "label": "claude-3-haiku",
-                    "name": "claude-3-haiku-20240307",
-                    "description": "Fastest and most compact model, designed for near-instant responsiveness"
+                    "label": "claude-3-5-haiku-latest",
+                    "name": "claude-3-5-haiku-latest",
+                    "description": "Most recent snapshot version of Claude Haiku 3.5 - fastest model"
+                },
+                {
+                    "label": "claude-3.5-sonnet-latest",
+                    "name": "claude-3-5-sonnet-latest",
+                    "description": "Most recent snapshot version of Claude Sonnet 3.5 model - most intelligent model"
+                },
+                {
+                    "label": "claude-3.5-sonnet-20241022",
+                    "name": "claude-3-5-sonnet-20241022",
+                    "description": "(20241022) specific version of Claude Sonnet 3.5 - most intelligent model"
+                },
+                {
+                    "label": "claude-3.5-sonnet-20240620",
+                    "name": "claude-3-5-sonnet-20240620",
+                    "description": "(20240620) specific version of Claude Sonnet 3.5 - most intelligent model"
                 },
                 {
                     "label": "claude-3-opus",
                     "name": "claude-3-opus-20240229",
-                    "description": "Most powerful model for highly complex tasks"
-                },
-                {
-                    "label": "claude-3.5-sonnet",
-                    "name": "claude-3-5-sonnet-20240620",
-                    "description": "3.5 version of Claude Sonnet model"
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis"
                 },
                 {
                     "label": "claude-3-sonnet",
                     "name": "claude-3-sonnet-20240229",
                     "description": "Ideal balance of intelligence and speed for enterprise workloads"
+                },
+                {
+                    "label": "claude-3-haiku",
+                    "name": "claude-3-haiku-20240307",
+                    "description": "Fastest and most compact model, designed for near-instant responsiveness"
                 },
                 {
                     "label": "claude-2.0 (legacy)",
@@ -361,25 +402,41 @@
                     "name": "gemini-1.5-flash-latest"
                 },
                 {
+                    "label": "gemini-1.5-flash-001",
+                    "name": "gemini-1.5-flash-001"
+                },
+                {
+                    "label": "gemini-1.5-flash-002",
+                    "name": "gemini-1.5-flash-002"
+                },
+                {
+                    "label": "gemini-1.5-flash-8b",
+                    "name": "gemini-1.5-flash-8b"
+                },
+                {
                     "label": "gemini-1.5-pro-latest",
                     "name": "gemini-1.5-pro-latest"
                 },
                 {
-                    "label": "gemini-pro",
-                    "name": "gemini-pro"
+                    "label": "gemini-1.5-pro-001",
+                    "name": "gemini-1.5-pro-001"
                 },
                 {
-                    "label": "gemini-pro-vision",
-                    "name": "gemini-pro-vision"
+                    "label": "gemini-1.5-pro-002",
+                    "name": "gemini-1.5-pro-002"
+                },
+                {
+                    "label": "gemini-1.0-pro-latest (deprecated)",
+                    "name": "gemini-1.0-pro-latest"
                 }
             ]
         },
         {
-            "name": "chatGooglePaLM",
+            "name": "chatAlibabaTongyi",
             "models": [
                 {
-                    "label": "models/chat-bison-001",
-                    "name": "models/chat-bison-001"
+                    "label": "qwen-plus",
+                    "name": "qwen-plus"
                 }
             ]
         },
@@ -387,12 +444,20 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
-                    "label": "gemini-1.5-flash",
-                    "name": "gemini-1.5-flash-preview-0514"
+                    "label": "gemini-1.5-flash-002",
+                    "name": "gemini-1.5-flash-002"
                 },
                 {
-                    "label": "gemini-1.5-pro",
-                    "name": "gemini-1.5-pro-preview-0409"
+                    "label": "gemini-1.5-flash-001",
+                    "name": "gemini-1.5-flash-001"
+                },
+                {
+                    "label": "gemini-1.5-pro-002",
+                    "name": "gemini-1.5-pro-002"
+                },
+                {
+                    "label": "gemini-1.5-pro-001",
+                    "name": "gemini-1.5-pro-001"
                 },
                 {
                     "label": "gemini-1.0-pro",
@@ -403,26 +468,59 @@
                     "name": "gemini-1.0-pro-vision"
                 },
                 {
-                    "label": "chat-bison",
-                    "name": "chat-bison"
+                    "label": "claude-3-5-haiku@20241022",
+                    "name": "claude-3-5-haiku@20241022",
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model"
                 },
                 {
-                    "label": "codechat-bison",
-                    "name": "codechat-bison"
+                    "label": "claude-3-5-sonnet-v2@20241022",
+                    "name": "claude-3-5-sonnet-v2@20241022",
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model"
                 },
                 {
-                    "label": "chat-bison-32k",
-                    "name": "chat-bison-32k"
+                    "label": "claude-3-opus@20240229",
+                    "name": "claude-3-opus@20240229",
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis"
                 },
                 {
-                    "label": "codechat-bison-32k",
-                    "name": "codechat-bison-32k"
+                    "label": "claude-3-sonnet@20240229",
+                    "name": "claude-3-sonnet@20240229",
+                    "description": "Balance of intelligence and speed"
+                },
+                {
+                    "label": "claude-3-haiku@20240307",
+                    "name": "claude-3-haiku@20240307",
+                    "description": "Fastest and most compact model for near-instant responsiveness"
                 }
             ]
         },
         {
             "name": "groqChat",
             "models": [
+                {
+                    "label": "llama-3.3-70b-versatile",
+                    "name": "llama-3.3-70b-versatile"
+                },
+                {
+                    "label": "llama-3.3-70b-specdec",
+                    "name": "llama-3.3-70b-specdec"
+                },
+                {
+                    "label": "llama-3.2-1b-preview",
+                    "name": "llama-3.2-1b-preview"
+                },
+                {
+                    "label": "llama-3.2-3b-preview",
+                    "name": "llama-3.2-3b-preview"
+                },
+                {
+                    "label": "llama-3.2-11b-text-preview",
+                    "name": "llama-3.2-11b-text-preview"
+                },
+                {
+                    "label": "llama-3.2-90b-text-preview",
+                    "name": "llama-3.2-90b-text-preview"
+                },
                 {
                     "label": "llama-3.1-405b-reasoning",
                     "name": "llama-3.1-405b-reasoning"
@@ -490,12 +588,32 @@
                     "name": "gpt-4o"
                 },
                 {
+                    "label": "gpt-4o-2024-11-20",
+                    "name": "gpt-4o-2024-11-20"
+                },
+                {
                     "label": "gpt-4o-2024-08-06",
                     "name": "gpt-4o-2024-08-06"
                 },
                 {
                     "label": "gpt-4o-2024-05-13",
                     "name": "gpt-4o-2024-05-13"
+                },
+                {
+                    "label": "o1-preview (latest)",
+                    "name": "o1-preview"
+                },
+                {
+                    "label": "o1-preview-2024-09-12",
+                    "name": "o1-preview-2024-09-12"
+                },
+                {
+                    "label": "o1-mini (latest)",
+                    "name": "o1-mini"
+                },
+                {
+                    "label": "o1-mini-2024-09-12",
+                    "name": "o1-mini-2024-09-12"
                 },
                 {
                     "label": "gpt-4 (latest)",
@@ -982,15 +1100,6 @@
             ]
         },
         {
-            "name": "GooglePaLM",
-            "models": [
-                {
-                    "label": "models/text-bison-001",
-                    "name": "models/text-bison-001"
-                }
-            ]
-        },
-        {
             "name": "googlevertexai",
             "models": [
                 {
@@ -1085,6 +1194,16 @@
             "name": "voyageAIEmbeddings",
             "models": [
                 {
+                    "label": "voyage-3",
+                    "name": "voyage-3",
+                    "description": "High-performance embedding model with excellent retrieval quality, 32K token context, and 1024 dimension size."
+                },
+                {
+                    "label": "voyage-3-lite",
+                    "name": "voyage-3-lite",
+                    "description": "Lightweight embedding model optimized for low latency and cost, 32K token context, and 512 dimension size."
+                },
+                {
                     "label": "voyage-2",
                     "name": "voyage-2",
                     "description": "General-purpose embedding model optimized for a balance between cost, latency, and retrieval quality."
@@ -1127,17 +1246,20 @@
             ]
         },
         {
-            "name": "googlePaLMEmbeddings",
-            "models": [
-                {
-                    "label": "models/embedding-gecko-001",
-                    "name": "models/embedding-gecko-001"
-                }
-            ]
-        },
-        {
             "name": "googlevertexaiEmbeddings",
             "models": [
+                {
+                    "label": "multimodalembedding",
+                    "name": "multimodalembedding"
+                },
+                {
+                    "label": "text-embedding-004",
+                    "name": "text-embedding-004"
+                },
+                {
+                    "label": "text-multilingual-embedding-002",
+                    "name": "text-multilingual-embedding-002"
+                },
                 {
                     "label": "textembedding-gecko@001",
                     "name": "textembedding-gecko@001"

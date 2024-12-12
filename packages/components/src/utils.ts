@@ -5,16 +5,17 @@ import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
+import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { getFileFromStorage } from './storageUtils'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
 export const FLOWISE_CHATID = 'flowise_chatId'
 
 /*
- * List of dependencies allowed to be import in vm2
+ * List of dependencies allowed to be import in @flowiseai/nodevm
  */
 export const availableDependencies = [
     '@aws-sdk/client-bedrock-runtime',
@@ -541,8 +542,19 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
     }
 }
 
-export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData): any => {
-    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? undefined
+/**
+ * Get first non falsy value
+ *
+ * @param {...any} values
+ *
+ * @returns {any|undefined}
+ */
+export const defaultChain = (...values: any[]): any | undefined => {
+    return values.filter(Boolean)[0]
+}
+
+export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData, defaultValue?: any): any => {
+    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? defaultValue ?? undefined
 }
 
 // reference https://www.freeformatter.com/json-escape.html
@@ -601,14 +613,77 @@ export const getUserHome = (): string => {
  * @param {IChatMessage[]} chatmessages
  * @returns {BaseMessage[]}
  */
-export const mapChatMessageToBaseMessage = (chatmessages: any[] = []): BaseMessage[] => {
+export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Promise<BaseMessage[]> => {
     const chatHistory = []
 
     for (const message of chatmessages) {
         if (message.role === 'apiMessage' || message.type === 'apiMessage') {
             chatHistory.push(new AIMessage(message.content || ''))
         } else if (message.role === 'userMessage' || message.role === 'userMessage') {
-            chatHistory.push(new HumanMessage(message.content || ''))
+            // check for image/files uploads
+            if (message.fileUploads) {
+                // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
+                try {
+                    let messageWithFileUploads = ''
+                    const uploads = JSON.parse(message.fileUploads)
+                    const imageContents: MessageContentImageUrl[] = []
+                    for (const upload of uploads) {
+                        if (upload.type === 'stored-file' && upload.mime.startsWith('image')) {
+                            const fileData = await getFileFromStorage(upload.name, message.chatflowid, message.chatId)
+                            // as the image is stored in the server, read the file and convert it to base64
+                            const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
+
+                            imageContents.push({
+                                type: 'image_url',
+                                image_url: {
+                                    url: bf
+                                }
+                            })
+                        } else if (upload.type === 'url' && upload.mime.startsWith('image')) {
+                            imageContents.push({
+                                type: 'image_url',
+                                image_url: {
+                                    url: upload.data
+                                }
+                            })
+                        } else if (upload.type === 'stored-file:full') {
+                            const fileLoaderNodeModule = await import('../nodes/documentloaders/File/File')
+                            // @ts-ignore
+                            const fileLoaderNodeInstance = new fileLoaderNodeModule.nodeClass()
+                            const options = {
+                                retrieveAttachmentChatId: true,
+                                chatflowid: message.chatflowid,
+                                chatId: message.chatId
+                            }
+                            const nodeData = {
+                                inputs: {
+                                    txtFile: `FILE-STORAGE::${JSON.stringify([upload.name])}`
+                                }
+                            }
+                            const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
+                            const pageContents = documents.map((doc) => doc.pageContent).join('\n')
+                            messageWithFileUploads += `<doc name='${upload.name}'>${pageContents}</doc>\n\n`
+                        }
+                    }
+                    const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
+                    chatHistory.push(
+                        new HumanMessage({
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: messageContent
+                                },
+                                ...imageContents
+                            ]
+                        })
+                    )
+                } catch (e) {
+                    // failed to parse fileUploads, continue with text only
+                    chatHistory.push(new HumanMessage(message.content || ''))
+                }
+            } else {
+                chatHistory.push(new HumanMessage(message.content || ''))
+            }
         }
     }
     return chatHistory
@@ -656,14 +731,23 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
         const zodObj: ICommonObject = {}
         for (const sch of parsedSchema) {
             if (sch.type === 'string') {
-                if (sch.required) z.string({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.string().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.string({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.string().describe(sch.description).optional()
+                }
             } else if (sch.type === 'number') {
-                if (sch.required) z.number({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.number().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.number({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.number().describe(sch.description).optional()
+                }
             } else if (sch.type === 'boolean') {
-                if (sch.required) z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.boolean().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.boolean().describe(sch.description).optional()
+                }
             }
         }
         return zodObj
@@ -819,6 +903,35 @@ export const getVersion: () => Promise<{ version: string }> = async () => {
 }
 
 /**
+ * Map Ext to InputField
+ * @param {string} ext
+ * @returns {string}
+ */
+export const mapExtToInputField = (ext: string) => {
+    switch (ext) {
+        case '.txt':
+            return 'txtFile'
+        case '.pdf':
+            return 'pdfFile'
+        case '.json':
+            return 'jsonFile'
+        case '.csv':
+        case '.xls':
+        case '.xlsx':
+            return 'csvFile'
+        case '.jsonl':
+            return 'jsonlinesFile'
+        case '.docx':
+        case '.doc':
+            return 'docxFile'
+        case '.yaml':
+            return 'yamlFile'
+        default:
+            return 'txtFile'
+    }
+}
+
+/**
  * Map MimeType to InputField
  * @param {string} mimeType
  * @returns {string}
@@ -880,4 +993,9 @@ export const mapMimeTypeToExt = (mimeType: string) => {
         default:
             return ''
     }
+}
+
+// remove invalid markdown image pattern: ![<some-string>](<some-string>)
+export const removeInvalidImageMarkdown = (output: string): string => {
+    return typeof output === 'string' ? output.replace(/!\[.*?\]\((?!https?:\/\/).*?\)/g, '') : output
 }

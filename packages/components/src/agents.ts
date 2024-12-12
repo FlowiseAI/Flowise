@@ -7,7 +7,7 @@ import { OutputParserException, BaseOutputParser, BaseLLMOutputParser } from '@l
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { CallbackManager, CallbackManagerForChainRun, Callbacks } from '@langchain/core/callbacks/manager'
 import { ToolInputParsingException, Tool, StructuredToolInterface } from '@langchain/core/tools'
-import { Runnable, RunnableSequence, RunnablePassthrough } from '@langchain/core/runnables'
+import { Runnable, RunnableSequence, RunnablePassthrough, type RunnableConfig } from '@langchain/core/runnables'
 import { Serializable } from '@langchain/core/load/serializable'
 import { renderTemplate } from '@langchain/core/prompts'
 import { ChatGeneration } from '@langchain/core/outputs'
@@ -26,6 +26,8 @@ import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
 import { IUsedTool } from './Interface'
 
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
+export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
+
 export type AgentFinish = {
     returnValues: Record<string, any>
     log: string
@@ -34,6 +36,7 @@ type AgentExecutorOutput = ChainValues
 interface AgentExecutorIteratorInput {
     agentExecutor: AgentExecutor
     inputs: Record<string, string>
+    config?: RunnableConfig
     callbacks?: Callbacks
     tags?: string[]
     metadata?: Record<string, unknown>
@@ -48,6 +51,8 @@ export class AgentExecutorIterator extends Serializable implements AgentExecutor
     agentExecutor: AgentExecutor
 
     inputs: Record<string, string>
+
+    config?: RunnableConfig
 
     callbacks: Callbacks
 
@@ -93,6 +98,7 @@ export class AgentExecutorIterator extends Serializable implements AgentExecutor
         this.metadata = fields.metadata
         this.runName = fields.runName
         this.runManager = fields.runManager
+        this.config = fields.config
     }
 
     /**
@@ -274,6 +280,8 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
     */
     handleParsingErrors: boolean | string | ((e: OutputParserException | ToolInputParsingException) => string) = false
 
+    handleToolRuntimeErrors?: (e: Error) => string
+
     get inputKeys() {
         return this.agent.inputKeys
     }
@@ -338,19 +346,21 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         return this.maxIterations === undefined || iterations < this.maxIterations
     }
 
-    async _call(inputs: ChainValues, runManager?: CallbackManagerForChainRun): Promise<AgentExecutorOutput> {
+    async _call(inputs: ChainValues, runManager?: CallbackManagerForChainRun, config?: RunnableConfig): Promise<AgentExecutorOutput> {
         const toolsByName = Object.fromEntries(this.tools.map((t) => [t.name?.toLowerCase(), t]))
 
         const steps: AgentStep[] = []
         let iterations = 0
         let sourceDocuments: Array<Document> = []
         const usedTools: IUsedTool[] = []
+        let artifacts: any[] = []
 
         const getOutput = async (finishStep: AgentFinish): Promise<AgentExecutorOutput> => {
             const { returnValues } = finishStep
             const additional = await this.agent.prepareForOutput(returnValues, steps)
             if (sourceDocuments.length) additional.sourceDocuments = flatten(sourceDocuments)
             if (usedTools.length) additional.usedTools = usedTools
+            if (artifacts.length) additional.artifacts = flatten(artifacts)
             if (this.returnIntermediateSteps) {
                 return { ...returnValues, intermediateSteps: steps, ...additional }
             }
@@ -361,7 +371,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         while (this.shouldContinue(iterations)) {
             let output
             try {
-                output = await this.agent.plan(steps, inputs, runManager?.getChild())
+                output = await this.agent.plan(steps, inputs, runManager?.getChild(), config)
             } catch (e) {
                 if (e instanceof OutputParserException) {
                     let observation
@@ -426,13 +436,17 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                     state: inputs
                                 }
                             )
+                            let toolOutput = observation
+                            if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                                toolOutput = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)[0]
+                            }
+                            if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
+                                toolOutput = toolOutput.split(ARTIFACTS_PREFIX)[0]
+                            }
                             usedTools.push({
                                 tool: tool.name,
                                 toolInput: action.toolInput as any,
-                                toolOutput:
-                                    typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)
-                                        ? observation.split(SOURCE_DOCUMENTS_PREFIX)[0]
-                                        : observation
+                                toolOutput
                             })
                         } else {
                             observation = `${action.tool} is not a valid tool, try another one.`
@@ -459,6 +473,16 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                         try {
                             const parsedDocs = JSON.parse(docs)
                             sourceDocuments.push(parsedDocs)
+                        } catch (e) {
+                            console.error('Error parsing source documents from tool')
+                        }
+                    }
+                    if (typeof observation === 'string' && observation.includes(ARTIFACTS_PREFIX)) {
+                        const observationArray = observation.split(ARTIFACTS_PREFIX)
+                        observation = observationArray[0]
+                        try {
+                            const artifact = JSON.parse(observationArray[1])
+                            artifacts.push(artifact)
                         } catch (e) {
                             console.error('Error parsing source documents from tool')
                         }
@@ -491,11 +515,12 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         nameToolMap: Record<string, Tool>,
         inputs: ChainValues,
         intermediateSteps: AgentStep[],
-        runManager?: CallbackManagerForChainRun
+        runManager?: CallbackManagerForChainRun,
+        config?: RunnableConfig
     ): Promise<AgentFinish | AgentStep[]> {
         let output
         try {
-            output = await this.agent.plan(intermediateSteps, inputs, runManager?.getChild())
+            output = await this.agent.plan(intermediateSteps, inputs, runManager?.getChild(), config)
         } catch (e) {
             if (e instanceof OutputParserException) {
                 let observation
@@ -566,6 +591,10 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                         const observationArray = observation.split(SOURCE_DOCUMENTS_PREFIX)
                         observation = observationArray[0]
                     }
+                    if (typeof observation === 'string' && observation.includes(ARTIFACTS_PREFIX)) {
+                        const observationArray = observation.split(ARTIFACTS_PREFIX)
+                        observation = observationArray[0]
+                    }
                 } catch (e) {
                     if (e instanceof ToolInputParsingException) {
                         if (this.handleParsingErrors === true) {
@@ -634,10 +663,11 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         throw new Error(`Got unsupported early_stopping_method: ${earlyStoppingMethod}`)
     }
 
-    async *_streamIterator(inputs: Record<string, any>): AsyncGenerator<ChainValues> {
+    async *_streamIterator(inputs: Record<string, any>, options?: Partial<RunnableConfig>): AsyncGenerator<ChainValues> {
         const agentExecutorIterator = new AgentExecutorIterator({
             inputs,
             agentExecutor: this,
+            config: options,
             metadata: this.metadata,
             tags: this.tags,
             callbacks: this.callbacks

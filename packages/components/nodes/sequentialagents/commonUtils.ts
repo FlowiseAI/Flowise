@@ -1,7 +1,7 @@
 import { get } from 'lodash'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { NodeVM } from 'vm2'
+import { NodeVM } from '@flowiseai/nodevm'
 import { StructuredTool } from '@langchain/core/tools'
 import { ChatMistralAI } from '@langchain/mistralai'
 import { ChatAnthropic } from '@langchain/anthropic'
@@ -212,7 +212,7 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
     const messages: BaseMessage[] = []
     for (const message of state.messages as unknown as BaseMessage[]) {
         // Sometimes Anthropic can return a message with content types of array, ignore that EXECEPT when tool calls are present
-        if ((message as any).tool_calls?.length) {
+        if ((message as any).tool_calls?.length && message.content !== '') {
             message.content = JSON.stringify(message.content)
         }
 
