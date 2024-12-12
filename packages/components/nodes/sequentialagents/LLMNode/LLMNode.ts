@@ -175,7 +175,7 @@ class LLMNode_SeqAgents implements INode {
     constructor() {
         this.label = 'LLM Node'
         this.name = 'seqLLMNode'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'LLMNode'
         this.icon = 'llmNode.svg'
         this.category = 'Sequential Agents'
@@ -190,7 +190,26 @@ class LLMNode_SeqAgents implements INode {
                 placeholder: 'LLM'
             },
             {
-                label: 'Conversation History Selection',
+                label: 'System Prompt',
+                name: 'systemMessagePrompt',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Prepend Messages History',
+                name: 'messageHistory',
+                description:
+                    'Prepend a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
+                type: 'code',
+                hideCodeExecute: true,
+                codeExample: messageHistoryExample,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Conversation History',
                 name: 'conversationHistorySelection',
                 type: 'options',
                 options: [
@@ -226,30 +245,11 @@ class LLMNode_SeqAgents implements INode {
                 additionalParams: true
             },
             {
-                label: 'System Prompt',
-                name: 'systemMessagePrompt',
-                type: 'string',
-                rows: 4,
-                optional: true,
-                additionalParams: true
-            },
-            {
                 label: 'Human Prompt',
                 name: 'humanMessagePrompt',
                 type: 'string',
                 description: 'This prompt will be added at the end of the messages as human message',
                 rows: 4,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Messages History',
-                name: 'messageHistory',
-                description:
-                    'Return a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
-                type: 'code',
-                hideCodeExecute: true,
-                codeExample: messageHistoryExample,
                 optional: true,
                 additionalParams: true
             },
