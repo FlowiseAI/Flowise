@@ -380,9 +380,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
                             <IconCheck size='1.3rem' />
                             <Typography variant='h5'>
                                 Saved{' '}
-                                {moment(chatflow.updatedDate).isSame(moment(), 'day')
-                                    ? `at ${moment(chatflow.updatedDate).format('hh:mma')}`
-                                    : `on ${moment(chatflow.updatedDate).format('MMM D, h:mma')}`}
+                                {moment(chatflow?.updatedDate).isSame(moment(), 'day')
+                                    ? `at ${moment(chatflow?.updatedDate).format('hh:mma')}`
+                                    : `on ${moment(chatflow?.updatedDate).format('MMM D, h:mma')}`}
                             </Typography>
                         </Stack>
                     )}
