@@ -55,22 +55,17 @@ const canvasReducer = (state = initialState, action) => {
 }
 
 const undoableCanvas = undoable(canvasReducer, {
-    debug: true,
-    filter: (action, currentState, previousState) => {
-        if (action.skipHistory) return false
+    debug: false, // set to true when debugging
+    filter: (action, currentState, previousHistory) => {
         if (action.type !== actionTypes.SET_CHATFLOW) return false
 
         const currentFlowData = currentState.chatflow?.flowData
-        const previousFlowData = previousState.chatflow?.flowData
+        const previousFlowData = previousHistory.present.chatflow?.flowData
 
         return currentFlowData !== previousFlowData
     },
-    groupBy: (action) => {
-        if (action.type === actionTypes.SET_CHATFLOW) {
-            return Math.floor(Date.now() / 2000)
-        }
-        return null
-    },
+    groupBy: (action) => (action.type === actionTypes.SET_CHATFLOW ? Math.floor(Date.now() / 2000) : null),
+    ignoreInitialState: true,
     limit: 50
 })
 

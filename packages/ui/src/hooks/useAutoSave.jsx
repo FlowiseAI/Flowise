@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { SET_CHATFLOW } from '@/store/actions'
+import { useSelector } from 'react-redux'
 import { isEqual } from 'lodash'
 
 const useAutoSave = ({ onAutoSave, interval = 60000, debounce = 1000 }) => {
-    const dispatch = useDispatch()
     const canvas = useSelector((state) => state.canvas.present)
     const [isSaving, setIsSaving] = useState(false)
     const timeoutRef = useRef(null)
-    const previousDataRef = useRef(null)
+    const previousSaveRef = useRef(null)
     const onAutoSaveRef = useRef(onAutoSave)
 
     useEffect(() => {
         onAutoSaveRef.current = onAutoSave
     }, [onAutoSave])
 
-    // debounced save function - only for autosaving to backend
+    // debounced save function
     const debouncedSave = useCallback(() => {
         setIsSaving(true)
 
@@ -31,12 +29,11 @@ const useAutoSave = ({ onAutoSave, interval = 60000, debounce = 1000 }) => {
                     flowData: canvas.chatflow.flowData
                 }
 
-                // Use lodash's isEqual for deep comparison with previous save
-                const hasChanged = !previousDataRef.current || !isEqual(currentData, previousDataRef.current)
+                const hasChanged = !previousSaveRef.current || !isEqual(currentData, previousSaveRef.current)
 
                 if (hasChanged) {
                     onAutoSaveRef.current(currentData)
-                    previousDataRef.current = currentData
+                    previousSaveRef.current = currentData
                 }
             }
             setIsSaving(false)
@@ -54,13 +51,13 @@ const useAutoSave = ({ onAutoSave, interval = 60000, debounce = 1000 }) => {
     // periodic saves
     useEffect(() => {
         const intervalId = setInterval(() => {
-            if (canvas.chatflow && !isEqual(canvas.chatflow, previousDataRef.current)) {
+            if (canvas.chatflow && !isEqual(canvas.chatflow, previousSaveRef.current)) {
                 onAutoSaveRef.current({
                     chatflowId: canvas.chatflow.id,
                     chatflowName: canvas.chatflow.name,
                     flowData: canvas.chatflow.flowData
                 })
-                previousDataRef.current = canvas.chatflow
+                previousSaveRef.current = canvas.chatflow
             }
         }, interval)
 
@@ -79,38 +76,17 @@ const useAutoSave = ({ onAutoSave, interval = 60000, debounce = 1000 }) => {
             clearTimeout(timeoutRef.current)
         }
 
-        if (canvas.chatflow && !isEqual(canvas.chatflow, previousDataRef.current)) {
+        if (canvas.chatflow && !isEqual(canvas.chatflow, previousSaveRef.current)) {
             onAutoSaveRef.current({
                 chatflowId: canvas.chatflow.id,
                 chatflowName: canvas.chatflow.name,
                 flowData: canvas.chatflow.flowData
             })
-            previousDataRef.current = canvas.chatflow
+            previousSaveRef.current = canvas.chatflow
         }
     }, [canvas.chatflow])
 
-    const setChatflow = useCallback(
-        (updates) => {
-            if (canvas.chatflow) {
-                const newChatflow = {
-                    ...canvas.chatflow,
-                    ...updates
-                }
-
-                const hasChanges = Object.keys(updates).some((key) => !isEqual(updates[key], canvas.chatflow[key]))
-
-                if (hasChanges) {
-                    dispatch({
-                        type: SET_CHATFLOW,
-                        chatflow: newChatflow
-                    })
-                }
-            }
-        },
-        [dispatch, canvas.chatflow]
-    )
-
-    return [canvas.chatflow, setChatflow, isSaving, forceSave]
+    return [canvas.chatflow, isSaving, forceSave]
 }
 
 export default useAutoSave

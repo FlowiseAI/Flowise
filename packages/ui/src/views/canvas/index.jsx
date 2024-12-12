@@ -97,7 +97,7 @@ const Canvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const [chatflowData, setChatflowData, isSaving] = useAutoSave({
+    const [chatflowData, isSaving, forceSave] = useAutoSave({
         onAutoSave,
         interval: 10000,
         debounce: 2000
@@ -107,7 +107,6 @@ const Canvas = () => {
 
     const [nodes, setNodes, onNodesChange] = useNodesState()
     const [edges, setEdges] = useEdgesState()
-    const isInitialLoadRef = useRef(true)
 
     const [selectedNode, setSelectedNode] = useState(null)
     const [isUpsertButtonEnabled, setIsUpsertButtonEnabled] = useState(false)
@@ -124,45 +123,9 @@ const Canvas = () => {
 
     // ==============================|| Events & Actions ||============================== //
 
-    // const onNodesChange = useCallback(
-    //     (changes) => {
-    //         if (isInitialLoadRef.current) {
-    //             setNodes((nodes) => applyNodeChanges(changes, nodes))
-    //             return
-    //         }
-    //         setNodes((oldNodes) => {
-    //             const updatedNodes = applyNodeChanges(changes, oldNodes)
-    //
-    //             // Only dispatch to Redux if it's not the initial load
-    //             if (updatedNodes !== oldNodes) {
-    //                 const flowData = {
-    //                     nodes: updatedNodes,
-    //                     edges: edges,
-    //                     viewport: reactFlowInstance?.getViewport()
-    //                 }
-    //                 dispatch({
-    //                     type: SET_CHATFLOW,
-    //                     chatflow: {
-    //                         ...canvas.chatflow,
-    //                         flowData: JSON.stringify(flowData)
-    //                     }
-    //                 })
-    //             }
-    //             return updatedNodes
-    //         })
-    //     },
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    //     [edges, canvas.chatflow, dispatch, reactFlowInstance]
-    // )
-
     const onNodeDragStop = useCallback(
-        (event, node) => {
+        () => {
             setDirty()
-            // if (isInitialLoadRef.current) {
-            //     setEdges((edges) => applyEdgeChanges(changes, edges))
-            //     return
-            // }
-
             const flowData = {
                 nodes: reactFlowInstance.getNodes(),
                 edges: edges,
@@ -332,12 +295,7 @@ const Canvas = () => {
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
-                // TODO: should this be forceSave instead?
-                setChatflowData({
-                    id: chatflowData.id,
-                    name: chatflowName,
-                    flowData
-                })
+                forceSave()
             }
         }
     }
@@ -421,7 +379,6 @@ const Canvas = () => {
         [reactFlowInstance]
     )
 
-    // TODO: sync nodes should work with autosave
     const syncNodes = () => {
         const componentNodes = canvas.componentNodes
 
@@ -439,9 +396,23 @@ const Canvas = () => {
             }
         }
 
+        const updatedEdges = cloneEdges.filter((edge) => !toBeRemovedEdges.includes(edge))
         setNodes(cloneNodes)
-        setEdges(cloneEdges.filter((edge) => !toBeRemovedEdges.includes(edge)))
+        setEdges(updatedEdges)
         setDirty()
+        // update the canvas store data which will trigger autosave
+        const flowData = {
+            nodes: cloneNodes,
+            edges: updatedEdges,
+            viewport: reactFlowInstance?.getViewport()
+        }
+        dispatch({
+            type: SET_CHATFLOW,
+            chatflow: {
+                ...canvas.chatflow,
+                flowData: JSON.stringify(flowData)
+            }
+        })
         setIsSyncNodesButtonEnabled(false)
     }
 
@@ -529,11 +500,7 @@ const Canvas = () => {
             const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
             setNodes(initialFlow.nodes || [])
             setEdges(initialFlow.edges || [])
-            dispatch({ type: SET_CHATFLOW, chatflow, skipHistory: true })
-            setTimeout(() => {
-                isInitialLoadRef.current = false
-                dispatch(ActionCreators.clearHistory())
-            }, 1000)
+            dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
             errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
         }
@@ -558,8 +525,6 @@ const Canvas = () => {
     // Update chatflow successful
     useEffect(() => {
         if (updateChatflowApi.data) {
-            // TODO: this is where updated chatflow is set in redux store probably causing the issues
-            dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
             errorFailed(`Failed to save ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
@@ -592,7 +557,8 @@ const Canvas = () => {
                 setNodes([])
                 setEdges([])
             }
-            setChatflowData({
+            dispatch({
+                type: SET_CHATFLOW,
                 chatflow: {
                     name: `Untitled ${canvasTitle}`
                 }
