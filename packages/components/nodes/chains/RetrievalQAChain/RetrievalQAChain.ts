@@ -105,9 +105,11 @@ class RetrievalQAChain_Chains implements INode {
         if (shouldStreamResponse) {
             const handler = new CustomChainHandler(sseStreamer, chatId)
             const res = await chain.call(obj, [loggerHandler, handler, ...callbacks])
+            if (res.text && res.sourceDocuments) return res
             return res?.text
         } else {
             const res = await chain.call(obj, [loggerHandler, ...callbacks])
+            if (res.text && res.sourceDocuments) return res
             return res?.text
         }
     }
