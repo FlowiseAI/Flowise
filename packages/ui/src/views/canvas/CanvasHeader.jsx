@@ -364,7 +364,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
                         <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                             <IconCheck size='1.3rem' />
                             <Typography variant='h5'>
-                                Saved{' '}
+                                Auto-Saved{' '}
                                 {moment(chatflow?.updatedDate).isSame(moment(), 'day')
                                     ? `at ${moment(chatflow?.updatedDate).format('hh:mma')}`
                                     : `on ${moment(chatflow?.updatedDate).format('MMM D, h:mma')}`}
