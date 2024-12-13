@@ -1,6 +1,7 @@
 import { BaseRetriever } from '@langchain/core/retrievers'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { RetrievalQAChain } from 'langchain/chains'
+import { BasePromptTemplate } from '@langchain/core/prompts'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
@@ -39,6 +40,12 @@ class RetrievalQAChain_Chains implements INode {
                 type: 'BaseRetriever'
             },
             {
+                label: 'Prompt',
+                name: 'prompt',
+                type: 'BasePromptTemplate',
+                optional: true
+            },
+            {
                 label: 'Input Moderation',
                 description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
                 name: 'inputModeration',
@@ -51,9 +58,13 @@ class RetrievalQAChain_Chains implements INode {
 
     async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model as BaseLanguageModel
+        const prompt = nodeData.inputs?.prompt as BasePromptTemplate | undefined
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as BaseRetriever
 
-        const chain = RetrievalQAChain.fromLLM(model, vectorStoreRetriever, { verbose: process.env.DEBUG === 'true' ? true : false })
+        const chain = RetrievalQAChain.fromLLM(model, vectorStoreRetriever, {
+            prompt,
+            verbose: process.env.DEBUG === 'true' ? true : false
+        })
         return chain
     }
 
