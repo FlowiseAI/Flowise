@@ -1,8 +1,3 @@
-// Tailwind
-//@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 // color variants
 @import 'themes-vars.module.scss';
 
@@ -124,4 +119,12 @@
   75% {
     transform: translateX(10px);
   }
+}
+
+[data-state='open'].z-50 {
+  z-index: 1500 !important;
+}
+
+[role='dialog'] {
+  z-index: 1600;
 }

@@ -34,11 +34,13 @@ import useApi from '@/hooks/useApi'
 import documentsApi from '@/api/documentstore'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
+import { IconLayoutGrid, IconList, IconPlus } from '@tabler/icons-react'
 import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
+import { S3Explorer } from 'dccxx-s3-explorer'
+import 'dccxx-s3-explorer/dist/style.css'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -141,187 +143,196 @@ const Documents = () => {
 
   return (
     <MainCard>
-      {error ? (
-        <ErrorBoundary error={error} />
+      {import.meta.env.VITE_DOCUMENT_STORE_TYPE === 's3' ? (
+        <Stack flexDirection='column' sx={{ gap: 1 }}>
+          <ViewHeader title='Document Store'></ViewHeader>
+          <S3Explorer />
+        </Stack>
       ) : (
-        <Stack flexDirection='column' sx={{ gap: 3 }}>
-          <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name' title='Document Store'>
-            <ToggleButtonGroup sx={{ borderRadius: 2, maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleChange}>
-              <ToggleButton
-                sx={{
-                  borderColor: theme.palette.grey[900] + 25,
-                  borderRadius: 2,
-                  color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                }}
-                variant='contained'
-                value='card'
-                title='Card View'
-              >
-                <IconLayoutGrid />
-              </ToggleButton>
-              <ToggleButton
-                sx={{
-                  borderColor: theme.palette.grey[900] + 25,
-                  borderRadius: 2,
-                  color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                }}
-                variant='contained'
-                value='list'
-                title='List View'
-              >
-                <IconList />
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <StyledButton
-              variant='contained'
-              sx={{ borderRadius: 2, height: '100%' }}
-              onClick={addNew}
-              startIcon={<IconPlus />}
-              id='btn_createVariable'
-            >
-              Add New
-            </StyledButton>
-          </ViewHeader>
-          {!view || view === 'card' ? (
-            <>
-              {isLoading && !docStores ? (
-                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                  <Skeleton variant='rounded' height={160} />
-                  <Skeleton variant='rounded' height={160} />
-                  <Skeleton variant='rounded' height={160} />
-                </Box>
-              ) : (
-                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                  {docStores?.filter(filterDocStores).map((data, index) => (
-                    <DocumentStoreCard key={index} images={images[data.id]} data={data} onClick={() => goToDocumentStore(data.id)} />
-                  ))}
-                </Box>
-              )}
-            </>
+        <>
+          {error ? (
+            <ErrorBoundary error={error} />
           ) : (
-            <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-              <Table aria-label='documents table'>
-                <TableHead
-                  sx={{
-                    backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
-                    height: 56
-                  }}
+            <Stack flexDirection='column' sx={{ gap: 3 }}>
+              <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name' title='Document Store'>
+                <ToggleButtonGroup sx={{ borderRadius: 2, maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleChange}>
+                  <ToggleButton
+                    sx={{
+                      borderColor: theme.palette.grey[900] + 25,
+                      borderRadius: 2,
+                      color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                    }}
+                    variant='contained'
+                    value='card'
+                    title='Card View'
+                  >
+                    <IconLayoutGrid />
+                  </ToggleButton>
+                  <ToggleButton
+                    sx={{
+                      borderColor: theme.palette.grey[900] + 25,
+                      borderRadius: 2,
+                      color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                    }}
+                    variant='contained'
+                    value='list'
+                    title='List View'
+                  >
+                    <IconList />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+                <StyledButton
+                  variant='contained'
+                  sx={{ borderRadius: 2, height: '100%' }}
+                  onClick={addNew}
+                  startIcon={<IconPlus />}
+                  id='btn_createVariable'
                 >
-                  <TableRow>
-                    <TableCell>&nbsp;</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Connected flows</TableCell>
-                    <TableCell>Total characters</TableCell>
-                    <TableCell>Total chunks</TableCell>
-                    <TableCell>Loader types</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {docStores?.filter(filterDocStores).map((data, index) => (
-                    <TableRow
-                      onClick={() => goToDocumentStore(data.id)}
-                      hover
-                      key={index}
-                      sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
+                  Add New
+                </StyledButton>
+              </ViewHeader>
+              {!view || view === 'card' ? (
+                <>
+                  {isLoading && !docStores ? (
+                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                      <Skeleton variant='rounded' height={160} />
+                      <Skeleton variant='rounded' height={160} />
+                      <Skeleton variant='rounded' height={160} />
+                    </Box>
+                  ) : (
+                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                      {docStores?.filter(filterDocStores).map((data, index) => (
+                        <DocumentStoreCard key={index} images={images[data.id]} data={data} onClick={() => goToDocumentStore(data.id)} />
+                      ))}
+                    </Box>
+                  )}
+                </>
+              ) : (
+                <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
+                  <Table aria-label='documents table'>
+                    <TableHead
+                      sx={{
+                        backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
+                        height: 56
+                      }}
                     >
-                      <TableCell align='center'>
-                        <DocumentStoreStatus isTableView={true} status={data.status} />
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          sx={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 5,
-                            WebkitBoxOrient: 'vertical',
-                            textOverflow: 'ellipsis',
-                            overflow: 'hidden'
-                          }}
+                      <TableRow>
+                        <TableCell>&nbsp;</TableCell>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Description</TableCell>
+                        <TableCell>Connected flows</TableCell>
+                        <TableCell>Total characters</TableCell>
+                        <TableCell>Total chunks</TableCell>
+                        <TableCell>Loader types</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {docStores?.filter(filterDocStores).map((data, index) => (
+                        <TableRow
+                          onClick={() => goToDocumentStore(data.id)}
+                          hover
+                          key={index}
+                          sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
                         >
-                          {data.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          sx={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 5,
-                            WebkitBoxOrient: 'vertical',
-                            textOverflow: 'ellipsis',
-                            overflow: 'hidden'
-                          }}
-                        >
-                          {data?.description}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>{data.whereUsed?.length ?? 0}</TableCell>
-                      <TableCell>{data.totalChars}</TableCell>
-                      <TableCell>{data.totalChunks}</TableCell>
-                      <TableCell>
-                        {images[data.id] && (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'start',
-                              gap: 1
-                            }}
-                          >
-                            {images[data.id].slice(0, images.length > 3 ? 3 : images.length).map((img) => (
+                          <TableCell align='center'>
+                            <DocumentStoreStatus isTableView={true} status={data.status} />
+                          </TableCell>
+                          <TableCell>
+                            <Typography
+                              sx={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 5,
+                                WebkitBoxOrient: 'vertical',
+                                textOverflow: 'ellipsis',
+                                overflow: 'hidden'
+                              }}
+                            >
+                              {data.name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography
+                              sx={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 5,
+                                WebkitBoxOrient: 'vertical',
+                                textOverflow: 'ellipsis',
+                                overflow: 'hidden'
+                              }}
+                            >
+                              {data?.description}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>{data.whereUsed?.length ?? 0}</TableCell>
+                          <TableCell>{data.totalChars}</TableCell>
+                          <TableCell>{data.totalChunks}</TableCell>
+                          <TableCell>
+                            {images[data.id] && (
                               <Box
-                                key={img}
                                 sx={{
-                                  width: 30,
-                                  height: 30,
-                                  borderRadius: '50%',
-                                  backgroundColor: customization.isDarkMode ? theme.palette.common.white : theme.palette.grey[300] + 75
-                                }}
-                              >
-                                <img
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    padding: 5,
-                                    objectFit: 'contain'
-                                  }}
-                                  alt=''
-                                  src={img}
-                                />
-                              </Box>
-                            ))}
-                            {images.length > 3 && (
-                              <Typography
-                                sx={{
-                                  alignItems: 'center',
                                   display: 'flex',
-                                  fontSize: '.9rem',
-                                  fontWeight: 200
+                                  alignItems: 'center',
+                                  justifyContent: 'start',
+                                  gap: 1
                                 }}
                               >
-                                + {images.length - 3} More
-                              </Typography>
+                                {images[data.id].slice(0, images.length > 3 ? 3 : images.length).map((img) => (
+                                  <Box
+                                    key={img}
+                                    sx={{
+                                      width: 30,
+                                      height: 30,
+                                      borderRadius: '50%',
+                                      backgroundColor: customization.isDarkMode ? theme.palette.common.white : theme.palette.grey[300] + 75
+                                    }}
+                                  >
+                                    <img
+                                      style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        padding: 5,
+                                        objectFit: 'contain'
+                                      }}
+                                      alt=''
+                                      src={img}
+                                    />
+                                  </Box>
+                                ))}
+                                {images.length > 3 && (
+                                  <Typography
+                                    sx={{
+                                      alignItems: 'center',
+                                      display: 'flex',
+                                      fontSize: '.9rem',
+                                      fontWeight: 200
+                                    }}
+                                  >
+                                    + {images.length - 3} More
+                                  </Typography>
+                                )}
+                              </Box>
                             )}
-                          </Box>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-          {!isLoading && (!docStores || docStores.length === 0) && (
-            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-              <Box sx={{ p: 2, height: 'auto' }}>
-                <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={doc_store_empty} alt='doc_store_empty' />
-              </Box>
-              <div>No Document Stores Created Yet</div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+              {!isLoading && (!docStores || docStores.length === 0) && (
+                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                  <Box sx={{ p: 2, height: 'auto' }}>
+                    <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={doc_store_empty} alt='doc_store_empty' />
+                  </Box>
+                  <div>No Document Stores Created Yet</div>
+                </Stack>
+              )}
             </Stack>
           )}
-        </Stack>
-      )}
-      {showDialog && (
-        <AddDocStoreDialog dialogProps={dialogProps} show={showDialog} onCancel={() => setShowDialog(false)} onConfirm={onConfirm} />
+          {showDialog && (
+            <AddDocStoreDialog dialogProps={dialogProps} show={showDialog} onCancel={() => setShowDialog(false)} onConfirm={onConfirm} />
+          )}
+        </>
       )}
     </MainCard>
   )
