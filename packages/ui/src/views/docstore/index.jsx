@@ -43,6 +43,9 @@ import { S3Explorer } from 'dccxx-s3-explorer'
 import 'dccxx-s3-explorer/dist/style.css'
 
 // ==============================|| DOCUMENTS ||============================== //
+// TODO: hard env
+import.meta.env.VITE_DOCUMENT_STORE_TYPE = import.meta.env.VITE_DOCUMENT_STORE_TYPE || 's3'
+import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'http://44.214.37.235:4001'
 
 const Documents = () => {
   const theme = useTheme()
