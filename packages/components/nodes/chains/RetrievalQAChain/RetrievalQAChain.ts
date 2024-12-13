@@ -46,6 +46,12 @@ class RetrievalQAChain_Chains implements INode {
                 optional: true
             },
             {
+                label: 'Return Source Documents',
+                name: 'returnSourceDocuments',
+                type: 'boolean',
+                optional: true
+            },
+            {
                 label: 'Input Moderation',
                 description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
                 name: 'inputModeration',
@@ -60,9 +66,11 @@ class RetrievalQAChain_Chains implements INode {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const prompt = nodeData.inputs?.prompt as BasePromptTemplate | undefined
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as BaseRetriever
+        const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
 
         const chain = RetrievalQAChain.fromLLM(model, vectorStoreRetriever, {
             prompt,
+            returnSourceDocuments,
             verbose: process.env.DEBUG === 'true' ? true : false
         })
         return chain
