@@ -21,12 +21,6 @@ import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
-// API
-import chatflowsApi from '@/api/chatflows'
-
-// Hooks
-import useApi from '@/hooks/useApi'
-
 // utils
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
@@ -63,7 +57,6 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
 
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
-    const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas.present)
 
     const onSettingsItemClick = (setting) => {
@@ -154,11 +147,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
 
     const submitFlowName = () => {
         if (chatflow.id) {
-            const updateBody = {
+            const updatedChatflow = {
+                ...chatflow,
                 name: flowNameRef.current.value
             }
-            updateChatflowApi.request(chatflow.id, updateBody)
+            dispatch({ type: SET_CHATFLOW, chatflow: updatedChatflow })
         }
+        setEditingFlowName(false)
     }
 
     const onAPIDialogClick = () => {
@@ -212,16 +207,6 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
         setFlowDialogOpen(false)
         handleSaveFlow(flowName)
     }
-
-    useEffect(() => {
-        if (updateChatflowApi.data) {
-            setFlowName(updateChatflowApi.data.name)
-            dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
-        }
-        setEditingFlowName(false)
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updateChatflowApi.data])
 
     useEffect(() => {
         if (chatflow) {

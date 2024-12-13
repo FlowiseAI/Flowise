@@ -62,7 +62,10 @@ const undoableCanvas = undoable(canvasReducer, {
         const currentFlowData = currentState.chatflow?.flowData
         const previousFlowData = previousHistory.present.chatflow?.flowData
 
-        return currentFlowData !== previousFlowData
+        const currentName = currentState.chatflow?.name
+        const previousName = previousHistory.present.chatflow?.name
+
+        return currentFlowData !== previousFlowData || currentName !== previousName
     },
     groupBy: (action) => (action.type === actionTypes.SET_CHATFLOW ? Math.floor(Date.now() / 2000) : null),
     ignoreInitialState: true,
