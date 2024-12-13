@@ -123,6 +123,25 @@ const Canvas = () => {
 
     // ==============================|| Events & Actions ||============================== //
 
+    // const onNodeDataChange = useCallback(() => {
+    //     if (nodes && nodes.length > 0) {
+    //         setDirty()
+    //         const flowData = {
+    //             nodes: reactFlowInstance.getNodes(),
+    //             edges: edges,
+    //             viewport: reactFlowInstance?.getViewport()
+    //         }
+    //         dispatch({
+    //             type: SET_CHATFLOW,
+    //             chatflow: {
+    //                 ...canvas.chatflow,
+    //                 flowData: JSON.stringify(flowData)
+    //             }
+    //         })
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [nodes, canvas.chatflow, dispatch, reactFlowInstance])
+
     const onNodeDragStop = useCallback(
         () => {
             setDirty()
@@ -493,6 +512,11 @@ const Canvas = () => {
 
     // ==============================|| useEffect ||============================== //
 
+    // useEffect(() => {
+    //     onNodeDataChange()
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [nodes])
+
     // Get specific chatflow successful
     useEffect(() => {
         if (getSpecificChatflowApi.data) {
@@ -584,10 +608,26 @@ const Canvas = () => {
             }
         }
 
+        function handleKeyDown(event) {
+            // Check if Ctrl/Cmd key is pressed
+            if (event.ctrlKey || event.metaKey) {
+                if (event.key === 'z') {
+                    event.preventDefault()
+                    if (event.shiftKey) {
+                        handleRedo()
+                    } else {
+                        handleUndo()
+                    }
+                }
+            }
+        }
+
         window.addEventListener('paste', handlePaste)
+        window.addEventListener('keydown', handleKeyDown)
 
         return () => {
             window.removeEventListener('paste', handlePaste)
+            window.removeEventListener('keydown', handleKeyDown)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
