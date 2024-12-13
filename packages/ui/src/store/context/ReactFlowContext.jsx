@@ -1,9 +1,9 @@
 import { createContext, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { getUniqueNodeId } from '@/utils/genericHelper'
 import { cloneDeep } from 'lodash'
-import { SET_DIRTY } from '@/store/actions'
+import { SET_CHATFLOW, SET_DIRTY } from '@/store/actions'
 
 const initialValue = {
     reactFlowInstance: null,
@@ -16,20 +16,48 @@ const initialValue = {
 export const flowContext = createContext(initialValue)
 
 export const ReactFlowContext = ({ children }) => {
+    const canvas = useSelector((state) => state.canvas.present)
     const dispatch = useDispatch()
     const [reactFlowInstance, setReactFlowInstance] = useState(null)
 
     const deleteNode = (nodeid) => {
         deleteConnectedInput(nodeid, 'node')
-        reactFlowInstance.setNodes(reactFlowInstance.getNodes().filter((n) => n.id !== nodeid))
-        reactFlowInstance.setEdges(reactFlowInstance.getEdges().filter((ns) => ns.source !== nodeid && ns.target !== nodeid))
+        const updatedNodes = reactFlowInstance.getNodes().filter((n) => n.id !== nodeid)
+        const updatedEdges = reactFlowInstance.getEdges().filter((ns) => ns.source !== nodeid && ns.target !== nodeid)
+        reactFlowInstance.setNodes(updatedNodes)
+        reactFlowInstance.setEdges(updatedEdges)
         dispatch({ type: SET_DIRTY })
+        const flowData = {
+            nodes: updatedNodes,
+            edges: updatedEdges,
+            viewport: reactFlowInstance?.getViewport()
+        }
+        dispatch({
+            type: SET_CHATFLOW,
+            chatflow: {
+                ...canvas.chatflow,
+                flowData: JSON.stringify(flowData)
+            }
+        })
     }
 
     const deleteEdge = (edgeid) => {
         deleteConnectedInput(edgeid, 'edge')
-        reactFlowInstance.setEdges(reactFlowInstance.getEdges().filter((edge) => edge.id !== edgeid))
+        const updatedEdges = reactFlowInstance.getEdges().filter((edge) => edge.id !== edgeid)
+        reactFlowInstance.setEdges(updatedEdges)
         dispatch({ type: SET_DIRTY })
+        const flowData = {
+            nodes: reactFlowInstance.getNodes(),
+            edges: updatedEdges,
+            viewport: reactFlowInstance?.getViewport()
+        }
+        dispatch({
+            type: SET_CHATFLOW,
+            chatflow: {
+                ...canvas.chatflow,
+                flowData: JSON.stringify(flowData)
+            }
+        })
     }
 
     const deleteConnectedInput = (id, type) => {
@@ -135,8 +163,21 @@ export const ReactFlowContext = ({ children }) => {
                 }
             }
 
-            reactFlowInstance.setNodes([...nodes, duplicatedNode])
+            const updatedNodes = [...nodes, duplicatedNode]
+            reactFlowInstance.setNodes(updatedNodes)
             dispatch({ type: SET_DIRTY })
+            const flowData = {
+                nodes: updatedNodes,
+                edges: reactFlowInstance.getEdges(),
+                viewport: reactFlowInstance?.getViewport()
+            }
+            dispatch({
+                type: SET_CHATFLOW,
+                chatflow: {
+                    ...canvas.chatflow,
+                    flowData: JSON.stringify(flowData)
+                }
+            })
         }
     }
 
