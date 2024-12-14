@@ -39,6 +39,7 @@ export const createFileAttachment = async (req: Request) => {
     const files = (req.files as Express.Multer.File[]) || []
     const fileAttachments = []
     if (files.length) {
+        const isBase64 = req.body.base64
         for (const file of files) {
             const fileBuffer = fs.readFileSync(file.path)
             const fileNames: string[] = []
@@ -68,15 +69,24 @@ export const createFileAttachment = async (req: Request) => {
                 const nodeData = {
                     inputs: {
                         [fileInputField]: storagePath
-                    }
+                    },
+                    outputs: { output: 'document' }
                 }
-                const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
-                const pageContents = documents.map((doc) => doc.pageContent).join('\n')
+
+                let content = ''
+
+                if (isBase64) {
+                    content = fileBuffer.toString('base64')
+                } else {
+                    const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
+                    content = documents.map((doc) => doc.pageContent).join('\n')
+                }
+
                 fileAttachments.push({
                     name: file.originalname,
                     mimeType: file.mimetype,
                     size: file.size,
-                    content: pageContents
+                    content
                 })
             } catch (error) {
                 throw new Error(`Failed operation: createFileAttachment - ${getErrorMessage(error)}`)

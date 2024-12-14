@@ -38,7 +38,6 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
-    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Conversational Retrieval Tool Agent'
@@ -50,7 +49,6 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
         this.icon = 'toolAgent.png'
         this.description = `Agent that calls a vector store retrieval and uses Function Calling to pick the tools and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
-        this.badge = 'NEW'
         this.inputs = [
             {
                 label: 'Tools',

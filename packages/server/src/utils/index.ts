@@ -1,3 +1,7 @@
+/**
+ * Strictly no getRepository, appServer here, must be passed as parameter
+ */
+
 import path from 'path'
 import fs from 'fs'
 import logger from './logger'
@@ -12,11 +16,14 @@ import {
     INodeData,
     INodeDependencies,
     INodeDirectedGraph,
+    INodeOverrides,
     INodeQueue,
     IOverrideConfig,
     IReactFlowEdge,
     IReactFlowNode,
+    IVariable,
     IVariableDict,
+    IVariableOverride,
     IncomingInput
 } from '../Interface'
 import { cloneDeep, get, isEqual } from 'lodash'
@@ -436,8 +443,9 @@ type BuildFlowParams = {
     appDataSource: DataSource
     overrideConfig?: ICommonObject
     apiOverrideStatus?: boolean
-    nodeOverrides?: ICommonObject
-    variableOverrides?: ICommonObject[]
+    nodeOverrides?: INodeOverrides
+    availableVariables?: IVariable[]
+    variableOverrides?: IVariableOverride[]
     cachePool?: CachePool
     isUpsert?: boolean
     stopNodeId?: string
@@ -468,6 +476,7 @@ export const buildFlow = async ({
     overrideConfig,
     apiOverrideStatus = false,
     nodeOverrides = {},
+    availableVariables = [],
     variableOverrides = [],
     cachePool,
     isUpsert,
@@ -525,13 +534,13 @@ export const buildFlow = async ({
             if (isUpsert) upsertHistory['flowData'] = saveUpsertFlowData(flowNodeData, upsertHistory)
 
             const reactFlowNodeData: INodeData = await resolveVariables(
-                appDataSource,
                 flowNodeData,
                 flowNodes,
                 question,
                 chatHistory,
                 flowData,
                 uploadedFilesContent,
+                availableVariables,
                 variableOverrides
             )
 
@@ -725,9 +734,11 @@ export const clearSessionMemory = async (
     }
 }
 
-const getGlobalVariable = async (appDataSource: DataSource, overrideConfig?: ICommonObject, variableOverrides?: ICommonObject[]) => {
-    const variables = await appDataSource.getRepository(Variable).find()
-
+const getGlobalVariable = async (
+    overrideConfig?: ICommonObject,
+    availableVariables: IVariable[] = [],
+    variableOverrides: ICommonObject[] = []
+) => {
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
     if (overrideConfig?.vars && variableOverrides) {
@@ -738,14 +749,14 @@ const getGlobalVariable = async (appDataSource: DataSource, overrideConfig?: ICo
                 continue // Skip this variable if it's not enabled for override
             }
 
-            const foundVar = variables.find((v) => v.name === propertyName)
+            const foundVar = availableVariables.find((v) => v.name === propertyName)
             if (foundVar) {
                 // even if the variable was defined as runtime, we override it with static value
                 foundVar.type = 'static'
                 foundVar.value = overrideConfig.vars[propertyName]
             } else {
                 // add it the variables, if not found locally in the db
-                variables.push({
+                availableVariables.push({
                     name: propertyName,
                     type: 'static',
                     value: overrideConfig.vars[propertyName],
@@ -758,8 +769,8 @@ const getGlobalVariable = async (appDataSource: DataSource, overrideConfig?: ICo
     }
 
     let vars = {}
-    if (variables.length) {
-        for (const item of variables) {
+    if (availableVariables.length) {
+        for (const item of availableVariables) {
             let value = item.value
 
             // read from .env file
@@ -787,7 +798,6 @@ const getGlobalVariable = async (appDataSource: DataSource, overrideConfig?: ICo
  * @returns {string}
  */
 export const getVariableValue = async (
-    appDataSource: DataSource,
     paramValue: string | object,
     reactFlowNodes: IReactFlowNode[],
     question: string,
@@ -795,6 +805,7 @@ export const getVariableValue = async (
     isAcceptVariable = false,
     flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
+    availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
 ) => {
     const isObject = typeof paramValue === 'object'
@@ -837,7 +848,7 @@ export const getVariableValue = async (
             }
 
             if (variableFullPath.startsWith('$vars.')) {
-                const vars = await getGlobalVariable(appDataSource, flowConfig, variableOverrides)
+                const vars = await getGlobalVariable(flowConfig, availableVariables, variableOverrides)
                 const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
                 if (variableValue) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
@@ -940,13 +951,13 @@ export const getVariableValue = async (
  * @returns {INodeData}
  */
 export const resolveVariables = async (
-    appDataSource: DataSource,
     reactFlowNodeData: INodeData,
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
     flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
+    availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
 ): Promise<INodeData> => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
@@ -959,7 +970,6 @@ export const resolveVariables = async (
                 const resolvedInstances = []
                 for (const param of paramValue) {
                     const resolvedInstance = await getVariableValue(
-                        appDataSource,
                         param,
                         reactFlowNodes,
                         question,
@@ -967,6 +977,7 @@ export const resolveVariables = async (
                         undefined,
                         flowConfig,
                         uploadedFilesContent,
+                        availableVariables,
                         variableOverrides
                     )
                     resolvedInstances.push(resolvedInstance)
@@ -975,7 +986,6 @@ export const resolveVariables = async (
             } else {
                 const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
                 const resolvedInstance = await getVariableValue(
-                    appDataSource,
                     paramValue,
                     reactFlowNodes,
                     question,
@@ -983,6 +993,7 @@ export const resolveVariables = async (
                     isAcceptVariable,
                     flowConfig,
                     uploadedFilesContent,
+                    availableVariables,
                     variableOverrides
                 )
                 paramsObj[key] = resolvedInstance
@@ -1000,15 +1011,15 @@ export const resolveVariables = async (
  * Loop through each inputs and replace their value with override config values
  * @param {INodeData} flowNodeData
  * @param {ICommonObject} overrideConfig
- * @param {ICommonObject} nodeOverrides
- * @param {ICommonObject[]} variableOverrides
+ * @param {INodeOverrides} nodeOverrides
+ * @param {IVariableOverride[]} variableOverrides
  * @returns {INodeData}
  */
 export const replaceInputsWithConfig = (
     flowNodeData: INodeData,
     overrideConfig: ICommonObject,
-    nodeOverrides: ICommonObject,
-    variableOverrides: ICommonObject[]
+    nodeOverrides: INodeOverrides,
+    variableOverrides: IVariableOverride[]
 ) => {
     const types = 'inputs'
 
@@ -1267,6 +1278,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
  * @returns {boolean}
  */
 export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
+    /** Deprecated, add streaming input param to the component instead **/
     const streamAvailableLLMs = {
         'Chat Models': [
             'azureChatOpenAI',
@@ -1297,9 +1309,18 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
     for (const flowNode of reactFlowNodes) {
         const data = flowNode.data
         if (data.category === 'Chat Models' || data.category === 'LLMs') {
-            isChatOrLLMsExist = true
-            const validLLMs = streamAvailableLLMs[data.category]
-            if (!validLLMs.includes(data.name)) return false
+            if (data.inputs?.streaming === false || data.inputs?.streaming === 'false') {
+                return false
+            }
+            if (data.inputs?.streaming === true || data.inputs?.streaming === 'true') {
+                isChatOrLLMsExist = true // passed, proceed to next check
+            }
+            /** Deprecated, add streaming input param to the component instead **/
+            if (!Object.prototype.hasOwnProperty.call(data.inputs, 'streaming') && !data.inputs?.streaming) {
+                isChatOrLLMsExist = true
+                const validLLMs = streamAvailableLLMs[data.category]
+                if (!validLLMs.includes(data.name)) return false
+            }
         }
     }
 
@@ -1310,28 +1331,8 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         isValidChainOrAgent = !blacklistChains.includes(endingNodeData.name)
     } else if (endingNodeData.category === 'Agents') {
         // Agent that are available to stream
-        const whitelistAgents = [
-            'openAIFunctionAgent',
-            'mistralAIToolAgent',
-            'csvAgent',
-            'airtableAgent',
-            'conversationalRetrievalAgent',
-            'openAIToolAgent',
-            'toolAgent',
-            'conversationalRetrievalToolAgent',
-            'openAIToolAgentLlamaIndex'
-        ]
+        const whitelistAgents = ['csvAgent', 'airtableAgent', 'toolAgent', 'conversationalRetrievalToolAgent', 'openAIToolAgentLlamaIndex']
         isValidChainOrAgent = whitelistAgents.includes(endingNodeData.name)
-
-        // Anthropic streaming has some bug where the log is being sent, temporarily disabled
-        const model = endingNodeData.inputs?.model
-        if (endingNodeData.name.includes('toolAgent')) {
-            if (typeof model === 'string' && model.includes('chatAnthropic')) {
-                return false
-            } else if (typeof model === 'object' && 'id' in model && model['id'].includes('chatAnthropic')) {
-                return false
-            }
-        }
 
         // If agent is openAIAssistant, streaming is enabled
         if (endingNodeData.name === 'openAIAssistant') return true
@@ -1676,12 +1677,21 @@ export const aMonthAgo = () => {
 export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
     try {
         const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
-        const nodeOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
-        const variableOverrides = apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
-        const apiOverrideStatus = apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
+        const nodeOverrides: INodeOverrides =
+            apiConfig.overrideConfig && apiConfig.overrideConfig.nodes ? apiConfig.overrideConfig.nodes : {}
+        const variableOverrides: IVariableOverride[] =
+            apiConfig.overrideConfig && apiConfig.overrideConfig.variables ? apiConfig.overrideConfig.variables : []
+        const apiOverrideStatus: boolean =
+            apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
 
         return { nodeOverrides, variableOverrides, apiOverrideStatus }
     } catch (error) {
         return { nodeOverrides: {}, variableOverrides: [], apiOverrideStatus: false }
     }
+}
+
+export const getUploadPath = (): string => {
+    return process.env.BLOB_STORAGE_PATH
+        ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads')
+        : path.join(getUserHome(), '.flowise', 'uploads')
 }

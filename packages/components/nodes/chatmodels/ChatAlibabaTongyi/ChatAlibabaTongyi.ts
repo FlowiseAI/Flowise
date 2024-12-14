@@ -19,7 +19,7 @@ class ChatAlibabaTongyi_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAlibabaTongyi'
         this.name = 'chatAlibabaTongyi'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatAlibabaTongyi'
         this.icon = 'alibaba-svgrepo-com.svg'
         this.category = 'Chat Models'
@@ -51,6 +51,13 @@ class ChatAlibabaTongyi_ChatModels implements INode {
                 step: 0.1,
                 default: 0.9,
                 optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true
             }
         ]
     }
@@ -59,12 +66,13 @@ class ChatAlibabaTongyi_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
+        const streaming = nodeData.inputs?.streaming as boolean
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const alibabaApiKey = getCredentialParam('alibabaApiKey', credentialData, nodeData)
 
         const obj: Partial<ChatAlibabaTongyi> & BaseChatModelParams = {
-            streaming: true,
+            streaming: streaming ?? true,
             alibabaApiKey,
             model: modelName,
             temperature: temperature ? parseFloat(temperature) : undefined

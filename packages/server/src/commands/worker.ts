@@ -5,16 +5,40 @@ import { getDataSource } from '../DataSource'
 import { Telemetry } from '../utils/telemetry'
 import { NodesPool } from '../NodesPool'
 import { CachePool } from '../CachePool'
+import { ChatflowPool } from '../ChatflowPool'
+import { QueueEvents, QueueEventsListener } from 'bullmq'
+
+interface CustomListener extends QueueEventsListener {
+    abort: (args: { id: string }, id: string) => void
+}
 
 export default class Worker extends BaseCommand {
     workerId: string
 
     async run(): Promise<void> {
         logger.info('Starting Flowise Worker...')
-        const { appDataSource, telemetry, componentNodes, cachePool } = await this.prepareData()
-        const queueManager = QueueManager.getInstance({ appDataSource, telemetry, componentNodes, cachePool })
+
+        const { appDataSource, telemetry, componentNodes, cachePool, chatflowPool } = await this.prepareData()
+
+        const queueManager = QueueManager.getInstance({ appDataSource, telemetry, componentNodes, cachePool, chatflowPool })
+        const queueName = QueueManager.getQueueName()
         const worker = queueManager.createWorker()
         this.workerId = worker.id
+
+        const queueEvents = new QueueEvents(queueName)
+
+        queueEvents.on<CustomListener>('abort', async ({ id }: { id: string }) => {
+            const endingNodeData = chatflowPool.activeChatflows[`${id}`]?.endingNodeData as any
+            if (endingNodeData && endingNodeData.signal) {
+                try {
+                    endingNodeData.signal.abort()
+                    await chatflowPool.remove(`${id}`)
+                } catch (e) {
+                    logger.error(`[Worker ${this.workerId}]: Error aborting chat message for ${id}: ${e}`)
+                }
+            }
+        })
+
         logger.info(`Worker ${worker.id} created`)
         // Keep the process running
         process.stdin.resume()
@@ -26,6 +50,9 @@ export default class Worker extends BaseCommand {
         await appDataSource.initialize()
         await appDataSource.runMigrations({ transaction: 'each' })
 
+        // Initialize chatflow pool
+        const chatflowPool = new ChatflowPool()
+
         // Init telemetry
         const telemetry = new Telemetry()
 
@@ -36,7 +63,7 @@ export default class Worker extends BaseCommand {
         // Initialize cache pool
         const cachePool = new CachePool()
 
-        return { appDataSource, telemetry, componentNodes: nodesPool.componentNodes, cachePool }
+        return { appDataSource, telemetry, componentNodes: nodesPool.componentNodes, cachePool, chatflowPool }
     }
 
     async catch(error: Error) {

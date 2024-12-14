@@ -13,7 +13,14 @@ import { Telemetry } from './utils/telemetry'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT'
+export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'ASSISTANT'
+
+export type AssistantType = 'CUSTOM' | 'OPENAI' | 'AZURE'
+
+export enum MODE {
+    QUEUE = 'queue',
+    MAIN = 'main'
+}
 
 export enum ChatType {
     INTERNAL = 'INTERNAL',
@@ -236,6 +243,7 @@ export interface IncomingInput {
     leadEmail?: string
     history?: IMessage[]
     action?: IAction
+    streaming?: boolean
 }
 
 export interface IActiveChatflows {
@@ -310,30 +318,35 @@ export interface IFlowConfig {
 }
 
 export interface IExecuteFlowParams {
-    startingNodeIds: string[]
-    endingNodeIds: string[]
-    nodes: IReactFlowNode[]
-    edges: IReactFlowEdge[]
-    graph: INodeDirectedGraph
-    depthQueue: IDepthQueue
     componentNodes: IComponentNodes
     incomingInput: IncomingInput
-    flowConfig: IFlowConfig
     chatflow: IChatFlow
-    memoryType: string
-    fileUploads: IFileUpload[]
-    uploadedFilesContent: string
-    userMessageDateTime: Date
+    chatId: string
     appDataSource: DataSource
-    apiOverrideStatus: boolean
-    nodeOverrides: ICommonObject
-    variableOverrides: ICommonObject[]
     sseStreamer: IServerSideEventStreamer
     telemetry: Telemetry
     cachePool: CachePool
     baseURL: string
-    isStreamValid: boolean
     isInternal: boolean
+    signal?: AbortController
+    files?: Express.Multer.File[]
+    isUpsert?: boolean
+}
+
+export interface INodeOverrides {
+    [key: string]: {
+        label: string
+        name: string
+        type: string
+        enabled: boolean
+    }[]
+}
+
+export interface IVariableOverride {
+    id: string
+    name: string
+    type: 'static' | 'runtime'
+    enabled: boolean
 }
 
 // DocumentStore related

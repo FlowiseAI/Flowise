@@ -5,7 +5,7 @@ import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
 import { DataSource } from 'typeorm'
-import { IChatFlow } from './Interface'
+import { IChatFlow, MODE } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
@@ -80,11 +80,11 @@ export class App {
             this.sseStreamer = new SSEStreamer()
 
             // Init Queue Manager
-            if (process.env.QUEUE_MODE === 'queue') {
+            if (process.env.MODE === MODE.QUEUE) {
                 this.queueManager = QueueManager.getInstance()
                 this.redisSubscriber = new RedisEventSubscriber(this.sseStreamer)
                 // TODO: retry for 3 times, then default back to main
-                this.redisSubscriber.connect()
+                await this.redisSubscriber.connect()
             }
 
             logger.info('📦 [server]: Data Source has been initialized!')

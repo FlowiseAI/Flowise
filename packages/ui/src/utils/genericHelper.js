@@ -2,25 +2,18 @@ import { uniq } from 'lodash'
 import moment from 'moment'
 
 export const getUniqueNodeId = (nodeData, nodes) => {
-    // Get amount of same nodes
-    let totalSameNodes = 0
-    for (let i = 0; i < nodes.length; i += 1) {
-        const node = nodes[i]
-        if (node.data.name === nodeData.name) {
-            totalSameNodes += 1
-        }
+    let suffix = 0
+
+    // Construct base ID
+    let baseId = `${nodeData.name}_${suffix}`
+
+    // Increment suffix until a unique ID is found
+    while (nodes.some((node) => node.id === baseId)) {
+        suffix += 1
+        baseId = `${nodeData.name}_${suffix}`
     }
 
-    // Get unique id
-    let nodeId = `${nodeData.name}_${totalSameNodes}`
-    for (let i = 0; i < nodes.length; i += 1) {
-        const node = nodes[i]
-        if (node.id === nodeId) {
-            totalSameNodes += 1
-            nodeId = `${nodeData.name}_${totalSameNodes}`
-        }
-    }
-    return nodeId
+    return baseId
 }
 
 export const initializeDefaultNodeData = (nodeParams) => {

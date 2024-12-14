@@ -1,6 +1,6 @@
 import { DeleteResult, FindOptionsWhere } from 'typeorm'
 import { StatusCodes } from 'http-status-codes'
-import { ChatMessageRatingType, ChatType, IChatMessage } from '../../Interface'
+import { ChatMessageRatingType, ChatType, IChatMessage, MODE } from '../../Interface'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { utilAddChatMessage } from '../../utils/addChatMesage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -10,6 +10,8 @@ import logger from '../../utils/logger'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { QueueEventsProducer } from 'bullmq'
+import { QueueManager } from '../../queue/QueueManager'
 
 // Add chatmessages for chatflowid
 const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
@@ -161,14 +163,27 @@ const abortChatMessage = async (chatId: string, chatflowid: string) => {
     try {
         const appServer = getRunningExpressApp()
 
-        const endingNodeData = appServer.chatflowPool.activeChatflows[`${chatflowid}_${chatId}`]?.endingNodeData as any
+        if (process.env.MODE === MODE.QUEUE) {
+            const connection = appServer.queueManager.getConnection()
+            const queueName = QueueManager.getQueueName()
 
-        if (endingNodeData && endingNodeData.signal) {
-            try {
-                endingNodeData.signal.abort()
-                await appServer.chatflowPool.remove(`${chatflowid}_${chatId}`)
-            } catch (e) {
-                logger.error(`[server]: Error aborting chat message for ${chatflowid}, chatId ${chatId}: ${e}`)
+            const queueEventsProducer = new QueueEventsProducer(queueName, {
+                connection
+            })
+
+            await queueEventsProducer.publishEvent({
+                eventName: 'abort',
+                id: `${chatflowid}_${chatId}`
+            })
+        } else {
+            const endingNodeData = appServer.chatflowPool.activeChatflows[`${chatflowid}_${chatId}`]?.endingNodeData as any
+            if (endingNodeData && endingNodeData.signal) {
+                try {
+                    endingNodeData.signal.abort()
+                    await appServer.chatflowPool.remove(`${chatflowid}_${chatId}`)
+                } catch (e) {
+                    logger.error(`[server]: Error aborting chat message for ${chatflowid}, chatId ${chatId}: ${e}`)
+                }
             }
         }
     } catch (error) {

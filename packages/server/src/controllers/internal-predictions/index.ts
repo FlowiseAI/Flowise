@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { utilBuildChatflow } from '../../utils/buildChatflow'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { getErrorMessage } from '../../errors/utils'
+import { MODE } from '../../Interface'
 
 // Send input message and get prediction result (Internal)
 const createInternalPrediction = async (req: Request, res: Response, next: NextFunction) => {
@@ -31,7 +32,7 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
         res.setHeader('X-Accel-Buffering', 'no') //nginx config: https://serverfault.com/a/801629
         res.flushHeaders()
 
-        if (process.env.QUEUE_MODE === 'queue') {
+        if (process.env.MODE === MODE.QUEUE) {
             console.log(`Subscribing to chatId ${chatId}:`, redisSubscriber)
             redisSubscriber.subscribe(chatId)
         }
