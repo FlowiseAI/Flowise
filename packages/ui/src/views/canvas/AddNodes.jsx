@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { memo, useState, useRef, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
@@ -586,4 +586,4 @@ AddNodes.propTypes = {
     isAgentCanvas: PropTypes.bool
 }
 
-export default AddNodes
+export default memo(AddNodes)

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 // material-ui
 import { styled } from '@mui/material/styles'
 
@@ -18,4 +19,4 @@ const NodeCardWrapper = styled(MainCard)(({ theme }) => ({
     }
 }))
 
-export default NodeCardWrapper
+export default memo(NodeCardWrapper)

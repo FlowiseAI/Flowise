@@ -64,6 +64,10 @@
     position: relative;
 }
 
+.node-actions {
+    border: 1px solid #454c59;
+}
+
 .chatflow-canvas .react-flow__controls .react-flow__controls-button,
 .chatflow-canvas .undo-redo-wrapper button {
     background: transparent;
@@ -72,7 +76,8 @@
 }
 
 .chatflow-canvas .react-flow__controls .react-flow__controls-button:not(:last-child),
-.chatflow-canvas .undo-redo-wrapper button:not(:last-child) {
+.chatflow-canvas .undo-redo-wrapper button:not(:last-child),
+.node-actions button:not(:last-child) {
     border-right: 1px solid #454c59;
 }
 
