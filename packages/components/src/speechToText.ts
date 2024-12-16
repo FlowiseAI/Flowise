@@ -3,11 +3,14 @@ import { getCredentialData } from './utils'
 import { type ClientOptions, OpenAIClient, toFile } from '@langchain/openai'
 import { AssemblyAI } from 'assemblyai'
 import { getFileFromStorage } from './storageUtils'
+import axios from 'axios'
+import FormData from 'form-data'
 
 const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
-    LOCALAI_STT: 'localAISTT'
+    LOCALAI_STT: 'localAISTT',
+    AZURE_COGNITIVE: 'azureCognitive'
 }
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
@@ -69,6 +72,43 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     return localAITranscription.text
                 }
                 break
+            }
+            case SpeechToTextType.AZURE_COGNITIVE: {
+                try {
+                    const baseUrl = `https://${credentialData.serviceRegion}.cognitiveservices.azure.com/speechtotext/transcriptions:transcribe`
+                    const apiVersion = credentialData.apiVersion || '2024-05-15-preview'
+
+                    const formData = new FormData()
+                    formData.append('audio', audio_file, {
+                        filename: upload.name,
+                        contentType: upload.type
+                    })
+
+                    const channelsStr = speechToTextConfig.channels || '0,1'
+                    const channels = channelsStr.split(',').map(Number)
+
+                    const definition = {
+                        locales: [speechToTextConfig.language || 'en-US'],
+                        profanityFilterMode: speechToTextConfig.profanityFilterMode || 'Masked',
+                        channels
+                    }
+                    formData.append('definition', JSON.stringify(definition))
+
+                    const response = await axios.post(`${baseUrl}?api-version=${apiVersion}`, formData, {
+                        headers: {
+                            'Ocp-Apim-Subscription-Key': credentialData.azureSubscriptionKey,
+                            Accept: 'application/json',
+                            ...formData.getHeaders()
+                        }
+                    })
+
+                    if (response.data && response.data.combinedPhrases.length > 0) {
+                        return response.data.combinedPhrases[0]?.text || ''
+                    }
+                    return ''
+                } catch (error) {
+                    throw error.response?.data || error
+                }
             }
         }
     } else {
