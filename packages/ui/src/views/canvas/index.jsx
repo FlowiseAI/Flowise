@@ -489,14 +489,16 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
     // Get specific chatflow successful
     useEffect(() => {
-        if (getSpecificChatflowApi.data) {
+        if (getSpecificChatflowApi?.data) {
             const chatflow = getSpecificChatflowApi.data
             const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
             setNodes(initialFlow.nodes || [])
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
-        } else if (getSpecificChatflowApi.error) {
-            errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
+        } else if (getSpecificChatflowApi?.error?.response?.data?.message) {
+            errorFailed(`Failed to save ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
+        } else if (getSpecificChatflowApi?.error) {
+            errorFailed(`Failed to save ${canvasTitle}: No message: ${getSpecificChatflowApi.error}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -504,13 +506,15 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
     // Create new chatflow successful
     useEffect(() => {
-        if (createNewChatflowApi.data) {
+        if (createNewChatflowApi?.data) {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
             navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`, { replace: true })
-        } else if (createNewChatflowApi.error) {
+        } else if (createNewChatflowApi?.error?.response?.data?.message) {
             errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
+        } else if (createNewChatflowApi?.error) {
+            errorFailed(`Failed to save ${canvasTitle}: No message: ${createNewChatflowApi.error}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -518,11 +522,13 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
     // Update chatflow successful
     useEffect(() => {
-        if (updateChatflowApi.data) {
+        if (updateChatflowApi?.data) {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
-        } else if (updateChatflowApi.error) {
+        } else if (updateChatflowApi?.error?.response?.data?.message) {
             errorFailed(`Failed to save ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
+        } else if (updateChatflowApi?.error) {
+            errorFailed(`Failed to save ${canvasTitle}: No message: ${updateChatflowApi.error}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -530,8 +536,8 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
     useEffect(() => {
         setChatflow(canvasDataStore.chatflow)
-        if (canvasDataStore.chatflow) {
-            const flowData = canvasDataStore.chatflow.flowData ? JSON.parse(canvasDataStore.chatflow.flowData) : []
+        if (canvasDataStore?.chatflow) {
+            const flowData = canvasDataStore.chatflow?.flowData ? JSON.parse(canvasDataStore.chatflow.flowData) : []
             checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || [])
             checkIfSyncNodesAvailable(flowData.nodes || [])
         }
@@ -541,7 +547,6 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
     // Initialization
     useEffect(() => {
-        console.log('Init', { chatflowId })
         setIsSyncNodesButtonEnabled(false)
         setIsUpsertButtonEnabled(false)
         if (chatflowId) {
