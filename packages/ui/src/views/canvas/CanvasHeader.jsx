@@ -355,21 +355,25 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
                     </Box>
                 </Stack>
                 <Stack flexDirection='row' sx={{ gap: 2 }}>
-                    {isSaving ? (
-                        <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                            <CircularProgress size={16} />
-                            <Typography variant='h5'>Saving...</Typography>
-                        </Stack>
-                    ) : (
-                        <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                            <IconCheck size='1.3rem' />
-                            <Typography variant='h5'>
-                                Auto-Saved{' '}
-                                {moment(chatflow?.updatedDate).isSame(moment(), 'day')
-                                    ? `at ${moment(chatflow?.updatedDate).format('hh:mma')}`
-                                    : `on ${moment(chatflow?.updatedDate).format('MMM D, h:mma')}`}
-                            </Typography>
-                        </Stack>
+                    {chatflow?.id && (
+                        <>
+                            {isSaving ? (
+                                <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                    <CircularProgress size={16} />
+                                    <Typography variant='h5'>Saving...</Typography>
+                                </Stack>
+                            ) : (
+                                <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                    <IconCheck size='1.3rem' />
+                                    <Typography variant='h5'>
+                                        Auto-Saved{' '}
+                                        {moment(chatflow?.updatedDate).isSame(moment(), 'day')
+                                            ? `at ${moment(chatflow?.updatedDate).format('hh:mma')}`
+                                            : `on ${moment(chatflow?.updatedDate).format('MMM D, h:mma')}`}
+                                    </Typography>
+                                </Stack>
+                            )}
+                        </>
                     )}
                     {chatflow?.id && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%' }}>
