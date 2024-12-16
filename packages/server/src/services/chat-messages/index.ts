@@ -11,7 +11,6 @@ import { ChatMessage } from '../../database/entities/ChatMessage'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { QueueEventsProducer } from 'bullmq'
-import { QueueManager } from '../../queue/QueueManager'
 
 // Add chatmessages for chatflowid
 const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
@@ -162,29 +161,20 @@ const removeChatMessagesByMessageIds = async (
 const abortChatMessage = async (chatId: string, chatflowid: string) => {
     try {
         const appServer = getRunningExpressApp()
+        const id = `${chatflowid}_${chatId}`
 
         if (process.env.MODE === MODE.QUEUE) {
+            const predictionQueue = appServer.queueManager.getQueue('prediction')
             const connection = appServer.queueManager.getConnection()
-            const queueName = QueueManager.getQueueName()
-
-            const queueEventsProducer = new QueueEventsProducer(queueName, {
+            const queueEventsProducer = new QueueEventsProducer(predictionQueue.getQueueName(), {
                 connection
             })
-
             await queueEventsProducer.publishEvent({
                 eventName: 'abort',
-                id: `${chatflowid}_${chatId}`
+                id
             })
         } else {
-            const endingNodeData = appServer.chatflowPool.activeChatflows[`${chatflowid}_${chatId}`]?.endingNodeData as any
-            if (endingNodeData && endingNodeData.signal) {
-                try {
-                    endingNodeData.signal.abort()
-                    await appServer.chatflowPool.remove(`${chatflowid}_${chatId}`)
-                } catch (e) {
-                    logger.error(`[server]: Error aborting chat message for ${chatflowid}, chatId ${chatId}: ${e}`)
-                }
-            }
+            appServer.abortControllerPool.abort(id)
         }
     } catch (error) {
         throw new InternalFlowiseError(

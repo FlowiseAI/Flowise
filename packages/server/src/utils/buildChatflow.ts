@@ -702,12 +702,13 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         }
 
         if (process.env.MODE === MODE.QUEUE) {
-            const job = await appServer.queueManager.addJob(
+            const predictionQueue = appServer.queueManager.getQueue('prediction')
+            const job = await predictionQueue.addJob(
                 omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
             )
             logger.debug(`[server]: Job added to queue: ${job.id}`)
 
-            const queueEvents = appServer.queueManager.getQueueEvents()
+            const queueEvents = predictionQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
 
             if (!result) {
@@ -732,17 +733,16 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             })*/
         } else {
             const signal = new AbortController()
-            const endingNodeData: any = { signal }
-            appServer.chatflowPool.add(`${chatflow.id}_${chatId}`, endingNodeData, [])
+            appServer.abortControllerPool.add(`${chatflow.id}_${chatId}`, signal)
             executeData.signal = signal
             const result = await executeFlow(executeData)
-            appServer.chatflowPool.remove(`${chatflow.id}_${chatId}`)
+            appServer.abortControllerPool.remove(`${chatflow.id}_${chatId}`)
             incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
             return result
         }
     } catch (e) {
         logger.error('[server]: Error:', e)
-        appServer.chatflowPool.remove(`${chatflow.id}_${chatId}`)
+        appServer.abortControllerPool.remove(`${chatflow.id}_${chatId}`)
         incrementFailedMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
         if (e instanceof InternalFlowiseError && e.statusCode === StatusCodes.UNAUTHORIZED) {
             throw e

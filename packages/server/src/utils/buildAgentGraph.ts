@@ -428,7 +428,6 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
         workerNodeIds,
         componentNodes,
         options,
-        startingNodeIds,
         prependHistoryMessages = [],
         chatHistory = [],
         overrideConfig = {},
@@ -562,13 +561,6 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
             //@ts-ignore
             workflowGraph.addEdge(START, supervisorResult.name)
             ;(workflowGraph as any).signal = options.signal
-
-            /*appServer.chatflowPool.add(
-                `${agentflow.id}_${options.chatId}`,
-                workflowGraph as any,
-                reactFlowNodes.filter((node) => startingNodeIds.includes(node.id)),
-                overrideConfig
-            )*/
 
             // Get memory
             let memory = supervisorResult?.checkpointMemory
@@ -994,13 +986,6 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
     }
 
     ;(seqGraph as any).signal = options.signal
-
-    /*appServer.chatflowPool.add(
-        `${agentflow.id}_${options.chatId}`,
-        seqGraph as any,
-        reactFlowNodes.filter((node) => startAgentNodes.map((nd) => nd.id).includes(node.id)),
-        overrideConfig
-    )*/
 
     /*** Get memory ***/
     const startNode = reactFlowNodes.find((node: IReactFlowNode) => node.data.name === 'seqStart')

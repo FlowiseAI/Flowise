@@ -252,12 +252,14 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         }
 
         if (process.env.MODE === MODE.QUEUE) {
-            const job = await appServer.queueManager.addJob(
+            const upsertQueue = appServer.queueManager.getQueue('upsert')
+
+            const job = await upsertQueue.addJob(
                 omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
             )
             logger.debug(`[server]: Job added to queue: ${job.id}`)
 
-            const queueEvents = appServer.queueManager.getQueueEvents()
+            const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
 
             if (!result) {

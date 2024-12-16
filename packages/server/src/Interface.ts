@@ -317,15 +317,18 @@ export interface IFlowConfig {
     overrideConfig?: ICommonObject
 }
 
-export interface IExecuteFlowParams {
-    componentNodes: IComponentNodes
-    incomingInput: IncomingInput
-    chatflow: IChatFlow
-    chatId: string
+export interface IPredictionQueueAppServer {
     appDataSource: DataSource
+    componentNodes: IComponentNodes
     sseStreamer: IServerSideEventStreamer
     telemetry: Telemetry
     cachePool: CachePool
+}
+
+export interface IExecuteFlowParams extends IPredictionQueueAppServer {
+    incomingInput: IncomingInput
+    chatflow: IChatFlow
+    chatId: string
     baseURL: string
     isInternal: boolean
     signal?: AbortController

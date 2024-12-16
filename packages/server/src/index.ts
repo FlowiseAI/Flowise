@@ -11,8 +11,8 @@ import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
-import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
+import { AbortControllerPool } from './AbortControllerPool'
 import { initializeRateLimiter } from './utils/rateLimit'
 import { getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
@@ -31,7 +31,7 @@ import 'global-agent/bootstrap'
 export class App {
     app: express.Application
     nodesPool: NodesPool
-    chatflowPool: ChatflowPool
+    abortControllerPool: AbortControllerPool
     cachePool: CachePool
     telemetry: Telemetry
     AppDataSource: DataSource = getDataSource()
@@ -57,8 +57,8 @@ export class App {
             this.nodesPool = new NodesPool()
             await this.nodesPool.initialize()
 
-            // Initialize chatflow pool
-            this.chatflowPool = new ChatflowPool()
+            // Initialize abort controllers pool
+            this.abortControllerPool = new AbortControllerPool()
 
             // Initialize API keys
             await getAPIKeys()
@@ -79,9 +79,16 @@ export class App {
             // Initialize SSE Streamer
             this.sseStreamer = new SSEStreamer()
 
-            // Init Queue Manager
+            // Init Queues
             if (process.env.MODE === MODE.QUEUE) {
                 this.queueManager = QueueManager.getInstance()
+                this.queueManager.setupAllQueues({
+                    componentNodes: this.nodesPool.componentNodes,
+                    telemetry: this.telemetry,
+                    cachePool: this.cachePool,
+                    appDataSource: this.AppDataSource,
+                    abortControllerPool: this.abortControllerPool
+                })
                 this.redisSubscriber = new RedisEventSubscriber(this.sseStreamer)
                 // TODO: retry for 3 times, then default back to main
                 await this.redisSubscriber.connect()
@@ -242,17 +249,6 @@ export class App {
                 ip: request.ip,
                 msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
             })
-        })
-
-        this.app.post('/api/job', async (req, res) => {
-            try {
-                const jobData = req.body
-                const job = await this.queueManager.addJob(jobData)
-                res.json({ message: 'Job added successfully', jobId: job.id })
-            } catch (error) {
-                console.error('Error adding job:', error)
-                res.status(500).json({ error: 'Failed to add job' })
-            }
         })
 
         // ----------------------------------------

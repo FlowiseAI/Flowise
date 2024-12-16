@@ -5,41 +5,52 @@ import { getDataSource } from '../DataSource'
 import { Telemetry } from '../utils/telemetry'
 import { NodesPool } from '../NodesPool'
 import { CachePool } from '../CachePool'
-import { ChatflowPool } from '../ChatflowPool'
 import { QueueEvents, QueueEventsListener } from 'bullmq'
+import { AbortControllerPool } from '../AbortControllerPool'
 
 interface CustomListener extends QueueEventsListener {
     abort: (args: { id: string }, id: string) => void
 }
 
 export default class Worker extends BaseCommand {
-    workerId: string
+    predictionWorkerId: string
+    upsertionWorkerId: string
 
     async run(): Promise<void> {
         logger.info('Starting Flowise Worker...')
 
-        const { appDataSource, telemetry, componentNodes, cachePool, chatflowPool } = await this.prepareData()
+        const { appDataSource, telemetry, componentNodes, cachePool, abortControllerPool } = await this.prepareData()
 
-        const queueManager = QueueManager.getInstance({ appDataSource, telemetry, componentNodes, cachePool, chatflowPool })
-        const queueName = QueueManager.getQueueName()
-        const worker = queueManager.createWorker()
-        this.workerId = worker.id
-
-        const queueEvents = new QueueEvents(queueName)
-
-        queueEvents.on<CustomListener>('abort', async ({ id }: { id: string }) => {
-            const endingNodeData = chatflowPool.activeChatflows[`${id}`]?.endingNodeData as any
-            if (endingNodeData && endingNodeData.signal) {
-                try {
-                    endingNodeData.signal.abort()
-                    await chatflowPool.remove(`${id}`)
-                } catch (e) {
-                    logger.error(`[Worker ${this.workerId}]: Error aborting chat message for ${id}: ${e}`)
-                }
-            }
+        const queueManager = QueueManager.getInstance()
+        queueManager.setupAllQueues({
+            componentNodes,
+            telemetry,
+            cachePool,
+            appDataSource,
+            abortControllerPool
         })
 
-        logger.info(`Worker ${worker.id} created`)
+        /** Prediction */
+        const predictionQueue = queueManager.getQueue('prediction')
+        const predictionQueueName = predictionQueue.getQueueName()
+
+        // pass in concurrency
+        const predictionWorker = predictionQueue.createWorker()
+        this.predictionWorkerId = predictionWorker.id
+        logger.info(`Prediction Worker ${this.predictionWorkerId} created`)
+
+        const queueEvents = new QueueEvents(predictionQueueName)
+
+        queueEvents.on<CustomListener>('abort', async ({ id }: { id: string }) => {
+            abortControllerPool.abort(id)
+        })
+
+        /** Upsertion */
+        const upsertionQueue = queueManager.getQueue('upsert')
+        const upsertionWorker = upsertionQueue.createWorker()
+        this.upsertionWorkerId = upsertionWorker.id
+        logger.info(`Upsertion Worker ${this.upsertionWorkerId} created`)
+
         // Keep the process running
         process.stdin.resume()
     }
@@ -51,7 +62,7 @@ export default class Worker extends BaseCommand {
         await appDataSource.runMigrations({ transaction: 'each' })
 
         // Initialize chatflow pool
-        const chatflowPool = new ChatflowPool()
+        const abortControllerPool = new AbortControllerPool()
 
         // Init telemetry
         const telemetry = new Telemetry()
@@ -63,7 +74,7 @@ export default class Worker extends BaseCommand {
         // Initialize cache pool
         const cachePool = new CachePool()
 
-        return { appDataSource, telemetry, componentNodes: nodesPool.componentNodes, cachePool, chatflowPool }
+        return { appDataSource, telemetry, componentNodes: nodesPool.componentNodes, cachePool, abortControllerPool }
     }
 
     async catch(error: Error) {
@@ -76,7 +87,8 @@ export default class Worker extends BaseCommand {
 
     async stopProcess() {
         try {
-            logger.info(`Shutting down Flowise Worker ${this.workerId}...`)
+            logger.info(`Shutting down Flowise Prediction Worker ${this.predictionWorkerId}...`)
+            logger.info(`Shutting down Flowise Upsertion Worker ${this.upsertionWorkerId}...`)
             //const serverApp = Server.getInstance()
             //if (serverApp) await serverApp.stopApp()
         } catch (error) {

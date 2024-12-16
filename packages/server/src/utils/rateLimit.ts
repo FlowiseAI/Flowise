@@ -46,9 +46,9 @@ export async function updateRateLimiter(chatFlow: IChatFlow) {
     else if (limitMax && limitDuration && limitMsg) await addRateLimiter(chatFlow.id, limitDuration, limitMax, limitMsg)
 }
 
-export async function initializeRateLimiter(chatFlowPool: IChatFlow[]) {
+export async function initializeRateLimiter(chatflows: IChatFlow[]) {
     await Promise.all(
-        chatFlowPool.map(async (chatFlow) => {
+        chatflows.map(async (chatFlow) => {
             await updateRateLimiter(chatFlow)
         })
     )
