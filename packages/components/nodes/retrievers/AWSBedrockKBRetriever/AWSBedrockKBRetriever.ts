@@ -60,7 +60,7 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
         description: 'Number of chunks to retrieve',
         optional: true,
         additionalParams: true,
-        default: 5
+        default: 10
       },
       {
         label: 'SearchType',
@@ -105,7 +105,7 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
   async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
     const knoledgeBaseID = nodeData.inputs?.knoledgeBaseID as string
     const region = nodeData.inputs?.region as string
-    const topK = nodeData.inputs?.topK as number
+    const topK = parseInt(nodeData.inputs?.topK || 10) as number
     const overrideSearchType = (nodeData.inputs?.searchType != '' ? nodeData.inputs?.searchType : undefined) as 'HYBRID' | 'SEMANTIC'
     const filter = (nodeData.inputs?.filter != '' ? JSON.parse(nodeData.inputs?.filter) : undefined) as RetrievalFilter
     let credentialApiKey = ''
