@@ -37,6 +37,7 @@ import { CodePreview } from './CodePreview'
 import { PreviewDialog } from './PreviewDialog'
 import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
 import { CodeCard } from './CodeCard'
+import remarkGfm from 'remark-gfm'
 
 interface MessageExtra {
     prompt?: string
@@ -413,6 +414,7 @@ export const MessageCard = ({
                             }}
                         >
                             <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
                                 components={{
                                     p: (paragraph: any) => {
                                         const { node } = paragraph
@@ -460,6 +462,12 @@ export const MessageCard = ({
                                         }
                                         return <p>{paragraph.children}</p>
                                     },
+
+                                    a: ({ node, ...props }) => (
+                                        <a {...props} target='_blank' rel='noopener noreferrer'>
+                                            {props.children}
+                                        </a>
+                                    ),
 
                                     code({ node, inline, className, children, ...props }) {
                                         const codeExample = String(children).replace(/\n$/, '')
