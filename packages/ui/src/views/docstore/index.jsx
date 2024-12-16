@@ -149,7 +149,7 @@ const Documents = () => {
       {import.meta.env.VITE_DOCUMENT_STORE_TYPE === 's3' ? (
         <Stack flexDirection='column' sx={{ gap: 1 }}>
           <ViewHeader title='Document Store'></ViewHeader>
-          <S3Explorer apiBaseUrl={import.meta.env.VITE_DOCUMENT_STORE_BASE_URL} homeLabel='Kho tài liệu' rootPrefix='c-agent/' />
+          <S3Explorer apiBaseUrl={import.meta.env.VITE_DOCUMENT_STORE_BASE_URL} homeLabel='Kho tài liệu' rootPrefix='rongviet-sample/' />
         </Stack>
       ) : (
         <>
