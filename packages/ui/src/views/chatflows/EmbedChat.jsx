@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { useState } from 'react'
 
-import { Tabs, Tab, Box } from '@mui/material'
+import { Box, Tab, Tabs } from '@mui/material'
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
 
 // Project import
@@ -40,7 +40,7 @@ function a11yProps(index) {
 
 const embedPopupHtmlCode = (chatflowid) => {
   return `<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    import Chatbot from "https://cdn.jsdelivr.net/npm/c-agent-embedding/dist/web.js"
     Chatbot.init({
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
@@ -49,7 +49,7 @@ const embedPopupHtmlCode = (chatflowid) => {
 }
 
 const embedPopupReactCode = (chatflowid) => {
-  return `import { BubbleChat } from 'flowise-embed-react'
+  return `import { BubbleChat } from 'c-agent-embedding-react'
 
 const App = () => {
     return (
@@ -62,9 +62,9 @@ const App = () => {
 }
 
 const embedFullpageHtmlCode = (chatflowid) => {
-  return `<flowise-fullchatbot></flowise-fullchatbot>
+  return `
 <script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    import Chatbot from "https://cdn.jsdelivr.net/npm/c-agent-embedding/dist/web.js"
     Chatbot.initFull({
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
@@ -73,7 +73,7 @@ const embedFullpageHtmlCode = (chatflowid) => {
 }
 
 const embedFullpageReactCode = (chatflowid) => {
-  return `import { FullPageChat } from "flowise-embed-react"
+  return `import { FullPageChat } from "c-agent-embedding-react"
 
 const App = () => {
     return (
@@ -194,7 +194,7 @@ const customStringify = (obj) => {
 
 const embedPopupHtmlCodeCustomization = (chatflowid) => {
   return `<script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    import Chatbot from "https://cdn.jsdelivr.net/npm/c-agent-embedding/dist/web.js"
     Chatbot.init({
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
@@ -210,7 +210,7 @@ const embedPopupHtmlCodeCustomization = (chatflowid) => {
 }
 
 const embedPopupReactCodeCustomization = (chatflowid) => {
-  return `import { BubbleChat } from 'flowise-embed-react'
+  return `import { BubbleChat } from 'c-agent-embedding-react'
 
 const App = () => {
     return (
@@ -247,7 +247,7 @@ const getFullPageThemeConfig = () => {
 const embedFullpageHtmlCodeCustomization = (chatflowid) => {
   return `<flowise-fullchatbot></flowise-fullchatbot>
 <script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    import Chatbot from "https://cdn.jsdelivr.net/npm/c-agent-embedding/dist/web.js"
     Chatbot.initFull({
         chatflowid: "${chatflowid}",
         apiHost: "${baseURL}",
@@ -263,7 +263,7 @@ const embedFullpageHtmlCodeCustomization = (chatflowid) => {
 }
 
 const embedFullpageReactCodeCustomization = (chatflowid) => {
-  return `import { FullPageChat } from 'flowise-embed-react'
+  return `import { FullPageChat } from 'c-agent-embedding-react'
 
 const App = () => {
     return (
@@ -349,10 +349,10 @@ const EmbedChat = ({ chatflowid }) => {
                 Paste this anywhere in the <code>{`<body>`}</code> tag of your html file.
                 <p>
                   You can also specify a&nbsp;
-                  <a rel='noreferrer' target='_blank' href='https://www.npmjs.com/package/flowise-embed?activeTab=versions'>
+                  <a rel='noreferrer' target='_blank' href='https://www.npmjs.com/package/c-agent-embedding?activeTab=versions'>
                     version
                   </a>
-                  :&nbsp;<code>{`https://cdn.jsdelivr.net/npm/flowise-embed@<version>/dist/web.js`}</code>
+                  :&nbsp;<code>{`https://cdn.jsdelivr.net/npm/c-agent-embedding@<version>/dist/web.js`}</code>
                 </p>
               </span>
               <div style={{ height: 10 }}></div>
