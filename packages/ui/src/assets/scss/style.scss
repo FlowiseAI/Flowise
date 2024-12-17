@@ -133,3 +133,8 @@
 [role='dialog'] {
   z-index: 1600;
 }
+
+img,
+video {
+  height: fit-content;
+}
