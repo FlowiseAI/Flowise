@@ -488,6 +488,33 @@ const Canvas = () => {
         }
     }, [canRedo, dispatch, canvasHistory.future, setNodes, setEdges])
 
+    const handleKeyDown = useCallback(
+        (event) => {
+            // Check if Ctrl/Cmd key is pressed
+            if (event.ctrlKey || event.metaKey) {
+                // Convert to lowercase to handle both 'z' and 'Z'
+                const key = event.key.toLowerCase()
+
+                if (key === 'z') {
+                    event.preventDefault() // Prevent browser's default undo/redo
+
+                    if (event.shiftKey) {
+                        // Ctrl+Shift+Z (redo)
+                        if (canRedo) {
+                            handleRedo()
+                        }
+                    } else {
+                        // Ctrl+Z (undo)
+                        if (canUndo) {
+                            handleUndo()
+                        }
+                    }
+                }
+            }
+        },
+        [handleRedo, handleUndo, canRedo, canUndo]
+    )
+
     // ==============================|| useEffect ||============================== //
 
     // useEffect(() => {
@@ -588,30 +615,28 @@ const Canvas = () => {
             }
         }
 
-        function handleKeyDown(event) {
-            // Check if Ctrl/Cmd key is pressed
-            if (event.ctrlKey || event.metaKey) {
-                if (event.key === 'z') {
-                    event.preventDefault()
-                    if (event.shiftKey) {
-                        handleRedo()
-                    } else {
-                        handleUndo()
-                    }
-                }
+        const flowWrapper = reactFlowWrapper.current
+
+        if (flowWrapper) {
+            flowWrapper.addEventListener('paste', handlePaste)
+            flowWrapper.addEventListener('keydown', handleKeyDown)
+
+            // Make the wrapper focusable
+            flowWrapper.tabIndex = -1
+
+            // Focus the wrapper when the component mounts
+            flowWrapper.focus()
+        }
+
+        return () => {
+            if (flowWrapper) {
+                flowWrapper.removeEventListener('paste', handlePaste)
+                flowWrapper.removeEventListener('keydown', handleKeyDown)
             }
         }
 
-        window.addEventListener('paste', handlePaste)
-        window.addEventListener('keydown', handleKeyDown)
-
-        return () => {
-            window.removeEventListener('paste', handlePaste)
-            window.removeEventListener('keydown', handleKeyDown)
-        }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [handleKeyDown, reactFlowWrapper])
 
     useEffect(() => {
         if (templateFlowData && templateFlowData.includes('"nodes":[') && templateFlowData.includes('],"edges":[')) {
