@@ -293,7 +293,8 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
     constructor(input: AgentExecutorInput & { sessionId?: string; chatId?: string; input?: string; isXML?: boolean }) {
         let agent: BaseSingleActionAgent | BaseMultiActionAgent
         if (Runnable.isRunnable(input.agent)) {
-            agent = new RunnableAgent({ runnable: input.agent })
+            // @ts-ignore
+            agent = new RunnableAgent({ runnable: input.agent, streamRunnable: input.agent.streamRunnable })
         } else {
             agent = input.agent
         }
@@ -921,7 +922,13 @@ export class ToolCallingAgentOutputParser extends AgentMultiActionOutputParser {
 
     async parseResult(generations: ChatGeneration[]) {
         if ('message' in generations[0] && isBaseMessage(generations[0].message)) {
-            return parseAIMessageToToolAction(generations[0].message)
+            const parsedMessage = parseAIMessageToToolAction(generations[0].message)
+            if (generations[0].message.additional_kwargs.audio) {
+                const audio = generations[0].message.additional_kwargs.audio as any
+                ;(parsedMessage as any).returnValues.output = audio.transcript
+                ;(parsedMessage as any).returnValues.audio = audio
+            }
+            return parsedMessage
         }
         throw new Error('parseResult on ToolCallingAgentOutputParser only works on ChatGeneration output')
     }

@@ -5,7 +5,16 @@ import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
+import {
+    ICommonObject,
+    IDatabaseEntity,
+    IDocument,
+    IMessage,
+    INodeData,
+    IVariable,
+    MessageContentAudioUrl,
+    MessageContentImageUrl
+} from './Interface'
 import { AES, enc } from 'crypto-js'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { getFileFromStorage } from './storageUtils'
@@ -628,6 +637,7 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                     let messageWithFileUploads = ''
                     const uploads = JSON.parse(message.fileUploads)
                     const imageContents: MessageContentImageUrl[] = []
+                    const audioContents: MessageContentAudioUrl[] = []
                     for (const upload of uploads) {
                         if (upload.type === 'stored-file' && upload.mime.startsWith('image')) {
                             const fileData = await getFileFromStorage(upload.name, message.chatflowid, message.chatId)
@@ -664,6 +674,15 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                             const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
                             const pageContents = documents.map((doc) => doc.pageContent).join('\n')
                             messageWithFileUploads += `<doc name='${upload.name}'>${pageContents}</doc>\n\n`
+                        } else if (upload.type === 'stored-file' && upload.mime.startsWith('audio')) {
+                            const contents = await getFileFromStorage(upload.name, message.chatflowid, message.chatId)
+                            audioContents.push({
+                                type: 'input_audio',
+                                input_audio: {
+                                    data: contents.toString('base64'),
+                                    format: 'wav'
+                                }
+                            })
                         }
                     }
                     const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
@@ -674,7 +693,8 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                                     type: 'text',
                                     text: messageContent
                                 },
-                                ...imageContents
+                                ...imageContents,
+                                ...audioContents
                             ]
                         })
                     )

@@ -98,7 +98,10 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 const upload = fileUploads[i]
 
                 // if upload in an image, a rag file, or audio
-                if ((upload.type === 'file' || upload.type === 'file:rag' || upload.type === 'audio') && upload.data) {
+                if (
+                    (upload.type === 'file' || upload.type === 'file:rag' || upload.type === 'audio' || upload.type === 'audio:realtime') &&
+                    upload.data
+                ) {
                     const filename = upload.name
                     const splitDataURI = upload.data.split(',')
                     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
@@ -116,7 +119,10 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 }
 
                 // Run Speech to Text conversion
-                if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg') {
+                if (
+                    upload.type === 'audio' &&
+                    (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg')
+                ) {
                     logger.debug(`Attempting a speech to text conversion...`)
                     let speechToTextConfig: ICommonObject = {}
                     if (chatflow.speechToText) {
@@ -515,6 +521,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             if (followUpPrompts?.questions) {
                 apiMessage.followUpPrompts = JSON.stringify(followUpPrompts.questions)
             }
+        }
+        if (result?.audio) {
+            const base64WavData = result.audio.data
+            const bf = Buffer.from(base64WavData, 'base64')
+            const mime = 'audio/wav'
+            const filename = `${result.audio.id}.wav`
+            await addSingleFileToStorage(mime, bf, filename, chatflowid, chatId)
+            apiMessage.fileUploads = JSON.stringify([{ type: 'stored-file', name: filename, mime: mime }])
         }
 
         const chatMessage = await utilAddChatMessage(apiMessage)

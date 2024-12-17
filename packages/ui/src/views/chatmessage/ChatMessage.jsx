@@ -58,7 +58,8 @@ import { ImageButton, ImageSrc, ImageBackdrop, ImageMarked } from '@/ui-componen
 import CopyToClipboardButton from '@/ui-component/button/CopyToClipboardButton'
 import ThumbsUpButton from '@/ui-component/button/ThumbsUpButton'
 import ThumbsDownButton from '@/ui-component/button/ThumbsDownButton'
-import { cancelAudioRecording, startAudioRecording, stopAudioRecording } from './audio-recording'
+import { convertWebmToWav, cancelAudioRecording, startAudioRecording, stopAudioRecording } from './audio-recording'
+import { WavRecorder } from '@/ui-component/audioplayer/lib/wavtools/index'
 import './audio-recording.css'
 import './ChatMessage.css'
 
@@ -224,6 +225,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const [isChatFlowAvailableForImageUploads, setIsChatFlowAvailableForImageUploads] = useState(false)
     const [isChatFlowAvailableForFileUploads, setIsChatFlowAvailableForFileUploads] = useState(false)
     const [isChatFlowAvailableForRAGFileUploads, setIsChatFlowAvailableForRAGFileUploads] = useState(false)
+    const [isChatFlowAvailableForAudioIO, setIsChatFlowAvailableForAudioIO] = useState(false)
     const [isDragActive, setIsDragActive] = useState(false)
 
     // recording
@@ -396,27 +398,25 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     }
 
     const addRecordingToPreviews = (blob) => {
-        let mimeType = ''
-        const pos = blob.type.indexOf(';')
-        if (pos === -1) {
-            mimeType = blob.type
-        } else {
-            mimeType = blob.type ? blob.type.substring(0, pos) : ''
-        }
-        // read blob and add to previews
-        const reader = new FileReader()
-        reader.readAsDataURL(blob)
-        reader.onloadend = () => {
-            const base64data = reader.result
-            const upload = {
-                data: base64data,
-                preview: audioUploadSVG,
-                type: 'audio',
-                name: `audio_${Date.now()}.wav`,
-                mime: mimeType
-            }
-            setPreviews((prevPreviews) => [...prevPreviews, upload])
-        }
+        convertWebmToWav(blob)
+            .then((wavBlob) => {
+                const reader = new FileReader()
+                reader.readAsDataURL(wavBlob)
+                reader.onloadend = () => {
+                    const base64data = reader.result
+                    const upload = {
+                        data: base64data,
+                        preview: audioUploadSVG,
+                        type: isChatFlowAvailableForAudioIO ? 'audio:realtime' : 'audio',
+                        name: `audio_${Date.now()}.wav`,
+                        mime: 'audio/wav'
+                    }
+                    setPreviews((prevPreviews) => [...prevPreviews, upload])
+                }
+            })
+            .catch((error) => {
+                console.error('Conversion error:', error)
+            })
     }
 
     const handleDrag = (e) => {
@@ -630,6 +630,15 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         })
     }
 
+    const base64ToArrayBuffer = (base64) => {
+        var binaryString = atob(base64)
+        var bytes = new Uint8Array(binaryString.length)
+        for (var i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i)
+        }
+        return bytes.buffer
+    }
+
     // Handle errors
     const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
         message = message.replace(`Unable to parse JSON response from chat agent.\n\n`, '')
@@ -763,7 +772,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         if (e) e.preventDefault()
 
         if (!selectedInput && userInput.trim() === '') {
-            const containsFile = previews.filter((item) => !item.mime.startsWith('image') && item.type !== 'audio').length > 0
+            const containsFile = previews.filter((item) => !item.mime.startsWith('image') && !item.type.startsWith('audio')).length > 0
             if (!previews.length || (previews.length && containsFile)) {
                 return
             }
@@ -821,6 +830,13 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
                     else text = JSON.stringify(data, null, 2)
 
+                    let audioUrl = ''
+                    if (data.audio) {
+                        const audioData = data.audio.data
+                        const wavFile = await WavRecorder.decode(base64ToArrayBuffer(audioData), 24000)
+                        audioUrl = wavFile.url
+                    }
+
                     setMessages((prevMessages) => [
                         ...prevMessages,
                         {
@@ -830,6 +846,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             usedTools: data?.usedTools,
                             fileAnnotations: data?.fileAnnotations,
                             agentReasoning: data?.agentReasoning,
+                            audio: audioUrl,
                             action: data?.action,
                             artifacts: data?.artifacts,
                             type: 'apiMessage',
@@ -1074,6 +1091,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         if (getAllowChatFlowUploads.data) {
             setIsChatFlowAvailableForImageUploads(getAllowChatFlowUploads.data?.isImageUploadAllowed ?? false)
             setIsChatFlowAvailableForRAGFileUploads(getAllowChatFlowUploads.data?.isRAGFileUploadAllowed ?? false)
+            setIsChatFlowAvailableForAudioIO(getAllowChatFlowUploads.data?.isAudioInputOutputEnabled ?? false)
             setIsChatFlowAvailableForSpeech(getAllowChatFlowUploads.data?.isSpeechToTextEnabled ?? false)
             setImageUploadAllowedTypes(getAllowChatFlowUploads.data?.imgUploadSizeAndTypes.map((allowed) => allowed.fileTypes).join(','))
             setFileUploadAllowedTypes(getAllowChatFlowUploads.data?.fileUploadSizeAndTypes.map((allowed) => allowed.fileTypes).join(','))
@@ -1185,7 +1203,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
     useEffect(() => {
         // wait for audio recording to load and then send
-        const containsAudio = previews.filter((item) => item.type === 'audio').length > 0
+        const containsAudio = previews.filter((item) => item.type.startsWith('audio')).length > 0
         if (previews.length >= 1 && containsAudio) {
             setIsRecording(false)
             setRecordingNotSupported(false)
@@ -1939,6 +1957,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 </>
                                             )}
                                         </div>
+                                        {message.audio && <audio src={message.audio} autoPlay controls />}
                                         {message.fileAnnotations && (
                                             <div
                                                 style={{
@@ -2269,7 +2288,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             }
                             endAdornment={
                                 <>
-                                    {isChatFlowAvailableForSpeech && (
+                                    {(isChatFlowAvailableForSpeech || isChatFlowAvailableForAudioIO) && (
                                         <InputAdornment position='end'>
                                             <IconButton
                                                 onClick={() => onMicrophonePressed()}

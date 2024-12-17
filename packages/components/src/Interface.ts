@@ -265,6 +265,14 @@ export type MessageContentImageUrl = {
           }
 }
 
+export type MessageContentAudioUrl = {
+    type: 'input_audio'
+    input_audio: {
+        data: string
+        format: string
+    }
+}
+
 export interface IDocument<Metadata extends Record<string, any> = Record<string, any>> {
     pageContent: string
     metadata: Metadata

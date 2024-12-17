@@ -1,6 +1,6 @@
 import { flatten } from 'lodash'
 import { Tool } from '@langchain/core/tools'
-import { BaseMessage } from '@langchain/core/messages'
+import { BaseMessage, HumanMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
@@ -22,7 +22,7 @@ import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from 
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
-import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
+import { addAudioToMessages, addImagesToMessages, llmSupportsAudio, llmSupportsVision } from '../../../src/multiModalUtils'
 
 class ToolAgent_Agents implements INode {
     label: string
@@ -134,6 +134,7 @@ class ToolAgent_Agents implements INode {
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
         let artifacts = []
+        let audio = null
 
         if (shouldStreamResponse) {
             const handler = new CustomChainHandler(sseStreamer, chatId)
@@ -178,6 +179,9 @@ class ToolAgent_Agents implements INode {
             if (res.artifacts) {
                 artifacts = res.artifacts
             }
+            if (res.audio) {
+                audio = res.audio
+            }
         }
 
         let output = res?.output
@@ -215,7 +219,7 @@ class ToolAgent_Agents implements INode {
 
         let finalRes = output
 
-        if (sourceDocuments.length || usedTools.length || artifacts.length) {
+        if (sourceDocuments.length || usedTools.length || artifacts.length || audio) {
             const finalRes: ICommonObject = { text: output }
             if (sourceDocuments.length) {
                 finalRes.sourceDocuments = flatten(sourceDocuments)
@@ -225,6 +229,9 @@ class ToolAgent_Agents implements INode {
             }
             if (artifacts.length) {
                 finalRes.artifacts = artifacts
+            }
+            if (audio) {
+                finalRes.audio = audio
             }
             return finalRes
         }
@@ -309,6 +316,23 @@ const prepareAgent = async (
         }
     }
 
+    if (llmSupportsAudio(model)) {
+        const audioContent = await addAudioToMessages(nodeData, options, model.multiModalOption)
+        if (audioContent?.length) {
+            // Pop the `agent_scratchpad` MessagePlaceHolder
+            const messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
+            if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
+                const userInput = new HumanMessage({
+                    content: audioContent
+                })
+                prompt.promptMessages.push(userInput)
+            }
+
+            // Add the `agent_scratchpad` MessagePlaceHolder back
+            prompt.promptMessages.push(messagePlaceholder)
+        }
+    }
+
     if (model.bindTools === undefined) {
         throw new Error(`This agent requires that the "bindTools()" method be implemented on the input model.`)
     }
@@ -329,6 +353,11 @@ const prepareAgent = async (
         modelWithTools,
         new ToolCallingAgentOutputParser()
     ])
+
+    if (llmSupportsAudio(model)) {
+        // @ts-ignore
+        runnableAgent.streamRunnable = false
+    }
 
     const executor = AgentExecutor.fromAgentAndTools({
         agent: runnableAgent,

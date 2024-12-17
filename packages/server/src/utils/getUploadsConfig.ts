@@ -9,6 +9,7 @@ type IUploadConfig = {
     isSpeechToTextEnabled: boolean
     isImageUploadAllowed: boolean
     isRAGFileUploadAllowed: boolean
+    isAudioInputOutputEnabled: boolean
     imgUploadSizeAndTypes: IUploadFileSizeAndTypes[]
     fileUploadSizeAndTypes: IUploadFileSizeAndTypes[]
 }
@@ -33,6 +34,15 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
     let isSpeechToTextEnabled = false
     let isImageUploadAllowed = false
     let isRAGFileUploadAllowed = false
+    let isAudioInputOutputEnabled = false
+
+    /*
+     * Check for audio input/output
+     */
+    const audioIONodes = nodes.filter((node) => node.data.category === 'Chat Models' && node.data.inputs?.['allowAudioIO'] === true)
+    if (audioIONodes.length) {
+        isAudioInputOutputEnabled = true
+    }
 
     /*
      * Check for STT
@@ -113,6 +123,7 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
 
     return {
         isSpeechToTextEnabled,
+        isAudioInputOutputEnabled,
         isImageUploadAllowed,
         isRAGFileUploadAllowed,
         imgUploadSizeAndTypes,

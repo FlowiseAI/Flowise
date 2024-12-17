@@ -342,3 +342,77 @@ export const audioRecorder = {
     getEventListeners(audioRecorder.mediaRecorder) will return an empty array of events.*/
     }
 }
+
+export const convertWebmToWav = (webmBlob) => {
+    return new Promise((resolve, reject) => {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
+        // Read the webm blob
+        const fileReader = new FileReader()
+        fileReader.readAsArrayBuffer(webmBlob)
+
+        fileReader.onload = async () => {
+            try {
+                const arrayBuffer = fileReader.result
+
+                // Decode WebM audio
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+
+                // Convert the decoded audio data to WAV format
+                const wavBlob = encodeWAV(audioBuffer)
+                resolve(wavBlob)
+            } catch (error) {
+                reject(error)
+            }
+        }
+
+        fileReader.onerror = (error) => reject(error)
+    })
+}
+
+// Helper function to encode AudioBuffer into WAV format
+export const encodeWAV = (audioBuffer) => {
+    const { numberOfChannels, sampleRate } = audioBuffer
+    const length = audioBuffer.length * numberOfChannels * 2 + 44
+    const buffer = new ArrayBuffer(length)
+    const view = new DataView(buffer)
+
+    // WAV file header
+    writeString(view, 0, 'RIFF') // ChunkID
+    view.setUint32(4, length - 8, true) // ChunkSize
+    writeString(view, 8, 'WAVE') // Format
+    writeString(view, 12, 'fmt ') // Subchunk1ID
+    view.setUint32(16, 16, true) // Subchunk1Size
+    view.setUint16(20, 1, true) // AudioFormat (1 = PCM)
+    view.setUint16(22, numberOfChannels, true) // NumChannels
+    view.setUint32(24, sampleRate, true) // SampleRate
+    view.setUint32(28, sampleRate * numberOfChannels * 2, true) // ByteRate
+    view.setUint16(32, numberOfChannels * 2, true) // BlockAlign
+    view.setUint16(34, 16, true) // BitsPerSample
+    writeString(view, 36, 'data') // Subchunk2ID
+    view.setUint32(40, length - 44, true) // Subchunk2Size
+
+    // Write audio samples
+    const channelData = []
+    for (let i = 0; i < numberOfChannels; i++) {
+        channelData.push(audioBuffer.getChannelData(i))
+    }
+
+    let offset = 44
+    for (let i = 0; i < audioBuffer.length; i++) {
+        for (let channel = 0; channel < numberOfChannels; channel++) {
+            const sample = Math.max(-1, Math.min(1, channelData[channel][i]))
+            view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true)
+            offset += 2
+        }
+    }
+
+    return new Blob([view], { type: 'audio/wav' })
+}
+
+// Helper to write strings in DataView
+export const writeString = (view, offset, string) => {
+    for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i))
+    }
+}

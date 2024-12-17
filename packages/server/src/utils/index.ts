@@ -1315,6 +1315,9 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
     for (const flowNode of reactFlowNodes) {
         const data = flowNode.data
         if (data.category === 'Chat Models' || data.category === 'LLMs') {
+            if (data.inputs?.allowAudioIO === true || data.inputs?.allowAudioIO === 'true') {
+                return false
+            }
             if (data.inputs?.streaming === false || data.inputs?.streaming === 'false') {
                 return false
             }

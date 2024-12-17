@@ -23,7 +23,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 8.0
+        this.version = 9.0
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -145,6 +145,13 @@ class ChatOpenAI_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Allow Audio Input/Output',
+                name: 'allowAudioIO',
+                type: 'boolean',
+                default: false,
+                optional: true
+            },
+            {
                 label: 'Image Resolution',
                 description: 'This parameter controls the resolution in which the model views the image.',
                 name: 'imageResolution',
@@ -192,6 +199,7 @@ class ChatOpenAI_ChatModels implements INode {
         const baseOptions = nodeData.inputs?.baseOptions
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const allowAudioIO = nodeData.inputs?.allowAudioIO as boolean
         const imageResolution = nodeData.inputs?.imageResolution as string
 
         if (nodeData.inputs?.credentialId) {
@@ -222,6 +230,16 @@ class ChatOpenAI_ChatModels implements INode {
             obj.stop = stopSequenceArray
         }
 
+        if (allowAudioIO) {
+            obj.modalities = ['text', 'audio']
+            obj.modelName = 'gpt-4o-audio-preview'
+            obj.streaming = false
+            obj.audio = {
+                voice: 'alloy',
+                format: 'wav'
+            }
+        }
+
         let parsedBaseOptions: any | undefined = undefined
 
         if (baseOptions) {
@@ -250,6 +268,9 @@ class ChatOpenAI_ChatModels implements INode {
             image: {
                 allowImageUploads: allowImageUploads ?? false,
                 imageResolution
+            },
+            audio: {
+                allowAudioIO
             }
         }
 

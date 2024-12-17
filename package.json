@@ -70,7 +70,7 @@
         "@google/generative-ai": "^0.15.0",
         "@langchain/core": "0.3.18",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
-        "openai": "4.57.3",
+        "openai": "4.71.0",
         "protobufjs": "7.4.0"
     },
     "eslintIgnore": [
