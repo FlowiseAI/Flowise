@@ -622,14 +622,38 @@ const Canvas = () => {
 
                       const layout = await elk.layout(elkGraph)
 
+                      // Find the smallest y-coordinate among all nodes
+                      let minY = Infinity
                       layout.children?.forEach((child) => {
-                        const index = nodes.findIndex((e) => e.id === child.id)
-                        if (index > -1) {
-                          nodes[index].position = {
-                            x: child.x,
-                            y: child.y
-                          }
+                        if (child.y < minY) {
+                          minY = child.y
                         }
+                      })
+
+                      // Group nodes by x-coordinate
+                      const nodesByX = {}
+                      layout.children?.forEach((child) => {
+                        const xCoord = Math.round(child.x) // Round to handle floating point imprecision
+                        if (!nodesByX[xCoord]) {
+                          nodesByX[xCoord] = []
+                        }
+                        nodesByX[xCoord].push(child)
+                      })
+
+                      // Position nodes, handling overlaps
+                      Object.values(nodesByX).forEach((nodesAtX) => {
+                        let currentY = minY
+                        nodesAtX.forEach((child) => {
+                          const index = nodes.findIndex((e) => e.id === child.id)
+                          if (index > -1) {
+                            nodes[index].position = {
+                              x: child.x,
+                              y: currentY
+                            }
+                            // Update currentY for next node, adding a small gap of 20px between nodes
+                            currentY += child.height + 64
+                          }
+                        })
                       })
 
                       reactFlowInstance.setNodes(nodes)
