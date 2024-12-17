@@ -42,7 +42,6 @@ import InputHintDialog from '@/ui-component/dialog/InputHintDialog'
 import { getInputVariables, getCustomConditionOutputs, isValidConnection, getAvailableNodesForVariable } from '@/utils/genericHelper'
 
 // const
-import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
 const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
 
@@ -73,7 +72,8 @@ const NodeInputHandler = ({
     disabled = false,
     isAdditionalParams = false,
     disablePadding = false,
-    onHideNodeInfoDialog
+    onHideNodeInfoDialog,
+    onNodeDataChange
 }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -567,10 +567,7 @@ const NodeInputHandler = ({
                                 disabled={disabled}
                                 data={data}
                                 inputParam={inputParam}
-                                onSelect={(newValue) => {
-                                    data.credential = newValue
-                                    data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
-                                }}
+                                onSelect={(newValue) => onNodeDataChange(inputParam, newValue)}
                             />
                         )}
                         {inputParam.type === 'tabs' && (
@@ -579,7 +576,7 @@ const NodeInputHandler = ({
                                     value={getTabValue(inputParam)}
                                     onChange={(event, val) => {
                                         setTabValue(val)
-                                        data.inputs[`${inputParam.tabIdentifier}_${data.id}`] = inputParam.tabs[val].name
+                                        onNodeDataChange(inputParam, val)
                                     }}
                                     aria-label='tabs'
                                     variant='fullWidth'
@@ -608,14 +605,14 @@ const NodeInputHandler = ({
                             <File
                                 disabled={disabled}
                                 fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
                             />
                         )}
                         {inputParam.type === 'boolean' && (
                             <SwitchInput
                                 disabled={disabled}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? false}
                             />
                         )}
@@ -625,7 +622,7 @@ const NodeInputHandler = ({
                                 columns={getDataGridColDef(inputParam.datagrid, inputParam)}
                                 hideFooter={true}
                                 rows={data.inputs[inputParam.name] ?? JSON.stringify(inputParam.default) ?? []}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
                             />
                         )}
                         {inputParam.type === 'code' && (
@@ -658,7 +655,7 @@ const NodeInputHandler = ({
                                         theme={customization.isDarkMode ? 'dark' : 'light'}
                                         lang={'js'}
                                         placeholder={inputParam.placeholder}
-                                        onValueChange={(code) => (data.inputs[inputParam.name] = code)}
+                                        onValueChange={(code) => onNodeDataChange(inputParam, code)}
                                         basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
                                     />
                                 </div>
@@ -669,7 +666,8 @@ const NodeInputHandler = ({
                                 key={data.inputs[inputParam.name]}
                                 disabled={disabled}
                                 inputParam={inputParam}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                // onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
                                 nodes={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getNodes() : []}
                                 edges={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getEdges() : []}
@@ -681,7 +679,7 @@ const NodeInputHandler = ({
                                 {!inputParam?.acceptVariable && (
                                     <JsonEditorInput
                                         disabled={disabled}
-                                        onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                        onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
                                         value={
                                             data.inputs[inputParam.name] ||
                                             inputParam.default ||
@@ -711,7 +709,7 @@ const NodeInputHandler = ({
                                             show={showFormatPromptValuesDialog}
                                             dialogProps={formatPromptValuesDialogProps}
                                             onCancel={() => setShowFormatPromptValuesDialog(false)}
-                                            onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                            onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
                                         ></FormatPromptValuesDialog>
                                     </>
                                 )}
@@ -722,7 +720,7 @@ const NodeInputHandler = ({
                                 disabled={disabled}
                                 name={inputParam.name}
                                 options={inputParam.options}
-                                onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onSelect={(newValue) => onNodeDataChange(inputParam, newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                             />
                         )}
@@ -731,7 +729,7 @@ const NodeInputHandler = ({
                                 disabled={disabled}
                                 name={inputParam.name}
                                 options={inputParam.options}
-                                onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onSelect={(newValue) => onNodeDataChange(inputParam, newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                             />
                         )}
@@ -745,7 +743,7 @@ const NodeInputHandler = ({
                                         nodeData={data}
                                         value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                                         isCreateNewOption={EDITABLE_OPTIONS.includes(inputParam.name)}
-                                        onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                        onSelect={(newValue) => onNodeDataChange(inputParam, newValue)}
                                         onCreateNew={() => addAsyncOption(inputParam.name)}
                                     />
                                     {EDITABLE_OPTIONS.includes(inputParam.name) && data.inputs[inputParam.name] && (
@@ -858,7 +856,8 @@ NodeInputHandler.propTypes = {
     disabled: PropTypes.bool,
     isAdditionalParams: PropTypes.bool,
     disablePadding: PropTypes.bool,
-    onHideNodeInfoDialog: PropTypes.func
+    onHideNodeInfoDialog: PropTypes.func,
+    onNodeDataChange: PropTypes.func
 }
 
 export default NodeInputHandler

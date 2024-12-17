@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
-import { useContext, useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useCallback, useMemo, useContext, useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { debounce } from 'lodash'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
@@ -15,7 +16,8 @@ import AdditionalParamsDialog from '@/ui-component/dialog/AdditionalParamsDialog
 import NodeInfoDialog from '@/ui-component/dialog/NodeInfoDialog'
 
 // const
-import { baseURL } from '@/store/constant'
+import { SET_CHATFLOW, SET_DIRTY } from '@/store/actions'
+import { baseURL, FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
@@ -24,8 +26,9 @@ import LlamaindexPNG from '@/assets/images/llamaindex.png'
 
 const CanvasNode = ({ data }) => {
     const theme = useTheme()
+    const dispatch = useDispatch()
     const canvas = useSelector((state) => state.canvas.present)
-    const { deleteNode, duplicateNode } = useContext(flowContext)
+    const { deleteNode, duplicateNode, reactFlowInstance } = useContext(flowContext)
 
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
@@ -47,6 +50,68 @@ const CanvasNode = ({ data }) => {
         setDialogProps(dialogProps)
         setShowDialog(true)
     }
+
+    // Function to update store
+    const updateStore = useCallback(() => {
+        dispatch({ type: SET_DIRTY })
+        const flowData = {
+            nodes: reactFlowInstance.getNodes(),
+            edges: reactFlowInstance.getEdges(),
+            viewport: reactFlowInstance?.getViewport()
+        }
+        dispatch({
+            type: SET_CHATFLOW,
+            chatflow: {
+                ...canvas.chatflow,
+                flowData: JSON.stringify(flowData)
+            }
+        })
+    }, [dispatch, canvas.chatflow, reactFlowInstance])
+
+    // Create debounced version of updateStore
+    const debouncedUpdateStore = useMemo(
+        () => debounce(updateStore, 500), // 500ms delay
+        [updateStore]
+    )
+
+    const onNodeDataChange = useCallback(
+        (inputParam, newValue) => {
+            switch (inputParam.type) {
+                case 'credential': {
+                    data.credential = newValue
+                    data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
+                    updateStore(data)
+                    break
+                }
+                case 'tabs': {
+                    data.inputs[`${inputParam.tabIdentifier}_${data.id}`] = inputParam.tabs[val].name
+                    updateStore(data)
+                    break
+                }
+                case 'datagrid':
+                case 'code':
+                case 'json':
+                case 'number':
+                case 'password':
+                case 'string': {
+                    data.inputs[inputParam.name] = newValue
+                    debouncedUpdateStore(data)
+                    break
+                }
+                default: {
+                    data.inputs[inputParam.name] = newValue
+                    updateStore(data)
+                }
+            }
+        },
+        [data, updateStore, debouncedUpdateStore]
+    )
+
+    useEffect(() => {
+        return () => {
+            debouncedUpdateStore.cancel()
+        }
+    }, [debouncedUpdateStore])
 
     useEffect(() => {
         const componentNode = canvas.componentNodes.find((nd) => nd.name === data.name)
@@ -223,12 +288,12 @@ const CanvasNode = ({ data }) => {
                         </>
                     )}
                     {data.inputAnchors.map((inputAnchor, index) => (
-                        <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
+                        <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} onNodeDataChange={onNodeDataChange} />
                     ))}
                     {data.inputParams
                         .filter((inputParam) => !inputParam.hidden)
                         .map((inputParam, index) => (
-                            <NodeInputHandler key={index} inputParam={inputParam} data={data} />
+                            <NodeInputHandler key={index} inputParam={inputParam} data={data} onNodeDataChange={onNodeDataChange} />
                         ))}
                     {data.inputParams.find((param) => param.additionalParams) && (
                         <div
