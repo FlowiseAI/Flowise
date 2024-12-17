@@ -17,6 +17,7 @@ import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import openAISVG from '@/assets/images/openai.svg'
 import assemblyAIPng from '@/assets/images/assemblyai.png'
 import localAiPng from '@/assets/images/localai.png'
+import groqPng from '@/assets/images/groq.png'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -29,7 +30,8 @@ import chatflowsApi from '@/api/chatflows'
 const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
-    LOCALAI_STT: 'localAISTT'
+    LOCALAI_STT: 'localAISTT',
+    GROQ_WHISPER: 'groqWhisper'
 }
 
 // Weird quirk - the key must match the name property value.
@@ -139,6 +141,46 @@ const speechToTextProviders = {
                 optional: true
             }
         ]
+    },
+    [SpeechToTextType.GROQ_WHISPER]: {
+        label: 'Groq Whisper',
+        name: SpeechToTextType.GROQ_WHISPER,
+        icon: groqPng,
+        url: 'https://console.groq.com/',
+        inputs: [
+            {
+                label: 'Model',
+                name: 'model',
+                type: 'string',
+                description: `The STT model to load. Defaults to whisper-large-v3 if left blank.`,
+                placeholder: 'whisper-large-v3',
+                optional: true
+            },
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['groqApi']
+            },
+            {
+                label: 'Language',
+                name: 'language',
+                type: 'string',
+                description:
+                    'The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
+                placeholder: 'en',
+                optional: true
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                description:
+                    'The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.',
+                optional: true
+            }
+        ]
     }
 }
 
@@ -210,6 +252,9 @@ const SpeechToText = ({ dialogProps }) => {
                     newVal[provider.name] = { ...speechToText[provider.name], status: false }
                 }
             })
+            if (providerName !== 'none') {
+                newVal['none'].status = false
+            }
         }
         setSpeechToText(newVal)
         return newVal

@@ -3,11 +3,13 @@ import { getCredentialData } from './utils'
 import { type ClientOptions, OpenAIClient, toFile } from '@langchain/openai'
 import { AssemblyAI } from 'assemblyai'
 import { getFileFromStorage } from './storageUtils'
+import Groq from 'groq-sdk'
 
 const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
-    LOCALAI_STT: 'localAISTT'
+    LOCALAI_STT: 'localAISTT',
+    GROQ_WHISPER: 'groqWhisper'
 }
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
@@ -67,6 +69,23 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                 })
                 if (localAITranscription?.text) {
                     return localAITranscription.text
+                }
+                break
+            }
+            case SpeechToTextType.GROQ_WHISPER: {
+                const groqClient = new Groq({
+                    apiKey: credentialData.groqApiKey
+                })
+                const file = await toFile(audio_file, upload.name)
+                const groqTranscription = await groqClient.audio.transcriptions.create({
+                    file,
+                    model: speechToTextConfig?.model || 'whisper-large-v3',
+                    language: speechToTextConfig?.language,
+                    temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
+                    response_format: 'verbose_json'
+                })
+                if (groqTranscription?.text) {
+                    return groqTranscription.text
                 }
                 break
             }
