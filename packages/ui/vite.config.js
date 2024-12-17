@@ -24,6 +24,7 @@ export default defineConfig(async ({ mode }) => {
   }
   dotenv.config()
   return {
+    base: mode === 'development' ? undefined : '/c-agent/cmc-uni/',
     plugins: [react()],
     resolve: {
       alias: {
