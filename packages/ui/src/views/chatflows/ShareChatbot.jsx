@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 import { SketchPicker } from 'react-color'
 import PropTypes from 'prop-types'
 
-import { Box, Typography, Button, Switch, OutlinedInput, Popover, Stack, IconButton } from '@mui/material'
+import { Box, Button, IconButton, OutlinedInput, Popover, Stack, Switch, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // Project import
@@ -12,7 +12,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // Icons
-import { IconX, IconCopy, IconArrowUpRightCircle } from '@tabler/icons-react'
+import { IconArrowUpRightCircle, IconCopy, IconX } from '@tabler/icons-react'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -22,6 +22,7 @@ import useNotifier from '@/utils/useNotifier'
 
 // Const
 import { baseURL } from '@/store/constant'
+import config from '@/config'
 
 const defaultConfig = {
   backgroundColor: '#ffffff',
@@ -400,13 +401,13 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
           }}
           variant='h5'
         >
-          {`${baseURL}/chatbot/${chatflowid}`}
+          {`${baseURL}${config.basename}/chatbot/${chatflowid}`}
         </Typography>
         <IconButton
           title='Copy Link'
           color='success'
           onClick={(event) => {
-            navigator.clipboard.writeText(`${baseURL}/chatbot/${chatflowid}`)
+            navigator.clipboard.writeText(`${baseURL}${config.basename}/chatbot/${chatflowid}`)
             setCopyAnchorEl(event.currentTarget)
             setTimeout(() => {
               handleCloseCopyPopOver()
@@ -415,7 +416,11 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
         >
           <IconCopy />
         </IconButton>
-        <IconButton title='Open New Tab' color='primary' onClick={() => window.open(`${baseURL}/chatbot/${chatflowid}`, '_blank')}>
+        <IconButton
+          title='Open New Tab'
+          color='primary'
+          onClick={() => window.open(`${baseURL}${config.basename}/chatbot/${chatflowid}`, '_blank')}
+        >
           <IconArrowUpRightCircle />
         </IconButton>
         <div style={{ flex: 1 }} />
