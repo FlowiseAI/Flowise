@@ -48,7 +48,8 @@ import 'dccxx-s3-explorer/dist/style.css'
 import.meta.env.VITE_DOCUMENT_STORE_TYPE = 'default'
 import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'https://stock.cmcts.ai/c-agent/s3e'
 
-const Documents = () => {
+// eslint-disable-next-line react/prop-types
+const Documents = ({ storeType = import.meta.env.VITE_DOCUMENT_STORE_TYPE }) => {
   const theme = useTheme()
   const customization = useSelector((state) => state.customization)
 
@@ -147,7 +148,7 @@ const Documents = () => {
 
   return (
     <MainCard>
-      {import.meta.env.VITE_DOCUMENT_STORE_TYPE === 's3' ? (
+      {storeType === 's3' ? (
         <Stack flexDirection='column' sx={{ gap: 1 }}>
           <ViewHeader title='Document Store'></ViewHeader>
           <S3Explorer apiBaseUrl={import.meta.env.VITE_DOCUMENT_STORE_BASE_URL} homeLabel='Kho tài liệu' rootPrefix='' />

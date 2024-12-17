@@ -1,7 +1,9 @@
 // assets
 import {
   IconBuildingStore,
+  IconFileExport,
   IconFiles,
+  IconFolderFilled,
   IconHierarchy,
   IconKey,
   IconLock,
@@ -10,7 +12,8 @@ import {
   IconTemplate,
   IconTool,
   IconUsersGroup,
-  IconVariable
+  IconVariable,
+  IconFile
 } from '@tabler/icons-react'
 
 // constant
@@ -24,8 +27,11 @@ const icons = {
   IconRobot,
   IconVariable,
   IconFiles,
+  IconFileExport,
   IconSettings,
-  IconTemplate
+  IconTemplate,
+  IconFolderFilled,
+  IconFile
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -46,10 +52,29 @@ const dashboard = {
     {
       id: 'document-stores',
       title: 'Kho Tài Liệu',
-      type: 'item',
-      url: '/document-stores',
+      // type: 'item',
+      type: 'collapse',
+      // url: '/document-stores',
       icon: icons.IconFiles,
-      breadcrumbs: true
+      breadcrumbs: true,
+      children: [
+        {
+          id: 'single-file',
+          title: 'Single file',
+          type: 'item',
+          url: '/document-stores',
+          icon: icons.IconFile,
+          breadcrumbs: true
+        },
+        {
+          id: 'directory',
+          title: 'Directory',
+          type: 'item',
+          url: '/document-stores-new',
+          icon: icons.IconFolderFilled,
+          breadcrumbs: true
+        }
+      ]
     },
     {
       id: 'agentflows',

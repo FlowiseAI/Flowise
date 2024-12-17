@@ -83,6 +83,10 @@ const MainRoutes = {
       element: <Documents />
     },
     {
+      path: '/document-stores-new',
+      element: <Documents storeType={'s3'} />
+    },
+    {
       path: '/document-stores/:id',
       element: <DocumentStoreDetail />
     },
