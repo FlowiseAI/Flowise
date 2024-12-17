@@ -23,13 +23,13 @@ jobs:
       - name: Validate Cloudformation
         run: |
           aws cloudformation validate-template \
-            --template-body file://aws_cloudformation/ecs.yml
+            --template-body file://aws-cloudformation/ecs.yml
 
       - name: Network-Cloudformation
         run: |
           STACK_NAME=sumo-flowise-ecs-stack-dev
           aws cloudformation deploy \
-            --template-file aws_cloudformation/ecs.yml \
+            --template-file aws-cloudformation/ecs.yml \
             --parameter-overrides Environment=dev \
             --stack-name $STACK_NAME \
             --capabilities CAPABILITY_NAMED_IAM
