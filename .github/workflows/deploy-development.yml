@@ -3,7 +3,7 @@ name: Sumo Chatwoot for Development
 on:
   push:
     branches:
-      - dev
+      - develop
 
 jobs:
   deploy:
