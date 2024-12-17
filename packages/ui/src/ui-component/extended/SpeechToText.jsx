@@ -252,6 +252,9 @@ const SpeechToText = ({ dialogProps }) => {
                     newVal[provider.name] = { ...speechToText[provider.name], status: false }
                 }
             })
+            if (providerName !== 'none') {
+                newVal['none'].status = false
+            }
         }
         setSpeechToText(newVal)
         return newVal
