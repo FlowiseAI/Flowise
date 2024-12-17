@@ -49,6 +49,8 @@ const canvasReducer = (state = initialState, action) => {
                 ...state,
                 componentCredentials: action.componentCredentials
             }
+        case actionTypes.RESET_CANVAS:
+            return initialState
         default:
             return state
     }

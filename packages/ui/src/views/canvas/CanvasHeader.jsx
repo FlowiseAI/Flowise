@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { useEffect, useRef, useState } from 'react'
 import moment from 'moment'
+import { ActionCreators } from 'redux-undo'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
@@ -24,7 +25,7 @@ import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog
 // utils
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW, RESET_CANVAS } from '@/store/actions'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -208,6 +209,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
         handleSaveFlow(flowName)
     }
 
+    const handleBack = () => {
+        // clear canvas data and history when leaving the canvas
+        dispatch({ type: RESET_CANVAS })
+        dispatch(ActionCreators.clearHistory())
+        window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
+    }
+
     useEffect(() => {
         if (chatflow) {
             setFlowName(chatflow.name)
@@ -241,9 +249,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
                                     }
                                 }}
                                 color='inherit'
-                                onClick={() =>
-                                    window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
-                                }
+                                onClick={handleBack}
                             >
                                 <IconChevronLeft stroke={1.5} size='1.3rem' />
                             </Avatar>

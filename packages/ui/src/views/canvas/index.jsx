@@ -9,6 +9,7 @@ import {
     REMOVE_DIRTY,
     SET_DIRTY,
     SET_CHATFLOW,
+    RESET_CANVAS,
     enqueueSnackbar as enqueueSnackbarAction,
     closeSnackbar as closeSnackbarAction
 } from '@/store/actions'
@@ -122,25 +123,6 @@ const Canvas = () => {
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
 
     // ==============================|| Events & Actions ||============================== //
-
-    // const onNodeDataChange = useCallback(() => {
-    //     if (nodes && nodes.length > 0) {
-    //         setDirty()
-    //         const flowData = {
-    //             nodes: reactFlowInstance.getNodes(),
-    //             edges: edges,
-    //             viewport: reactFlowInstance?.getViewport()
-    //         }
-    //         dispatch({
-    //             type: SET_CHATFLOW,
-    //             chatflow: {
-    //                 ...canvas.chatflow,
-    //                 flowData: JSON.stringify(flowData)
-    //             }
-    //         })
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [nodes, canvas.chatflow, dispatch, reactFlowInstance])
 
     const onNodeDragStop = useCallback(
         () => {
@@ -567,6 +549,8 @@ const Canvas = () => {
     useEffect(() => {
         setIsSyncNodesButtonEnabled(false)
         setIsUpsertButtonEnabled(false)
+        // clear history when the component mounts
+        dispatch(ActionCreators.clearHistory())
         if (chatflowId) {
             getSpecificChatflowApi.request(chatflowId)
         } else {
@@ -636,6 +620,14 @@ const Canvas = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateFlowData])
+
+    useEffect(() => {
+        return () => {
+            // clear canvas data and history when leaving the canvas
+            dispatch({ type: RESET_CANVAS })
+            dispatch(ActionCreators.clearHistory())
+        }
+    }, [dispatch])
 
     return (
         <>

@@ -15,6 +15,7 @@ export const SHOW_CANVAS_DIALOG = '@canvas/SHOW_CANVAS_DIALOG'
 export const HIDE_CANVAS_DIALOG = '@canvas/HIDE_CANVAS_DIALOG'
 export const SET_COMPONENT_NODES = '@canvas/SET_COMPONENT_NODES'
 export const SET_COMPONENT_CREDENTIALS = '@canvas/SET_COMPONENT_CREDENTIALS'
+export const RESET_CANVAS = '@canvas/RESET_CANVAS'
 
 // action - notifier reducer
 export const ENQUEUE_SNACKBAR = 'ENQUEUE_SNACKBAR'
