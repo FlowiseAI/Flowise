@@ -22,7 +22,6 @@ import useNotifier from '@/utils/useNotifier'
 
 // Const
 import { baseURL } from '@/store/constant'
-import config from '@/config'
 
 const defaultConfig = {
   backgroundColor: '#ffffff',
@@ -401,13 +400,13 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
           }}
           variant='h5'
         >
-          {`${baseURL}${config.basename}/chatbot/${chatflowid}`}
+          {`${baseURL}/chatbot/${chatflowid}`}
         </Typography>
         <IconButton
           title='Copy Link'
           color='success'
           onClick={(event) => {
-            navigator.clipboard.writeText(`${baseURL}${config.basename}/chatbot/${chatflowid}`)
+            navigator.clipboard.writeText(`${baseURL}/chatbot/${chatflowid}`)
             setCopyAnchorEl(event.currentTarget)
             setTimeout(() => {
               handleCloseCopyPopOver()
@@ -416,11 +415,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
         >
           <IconCopy />
         </IconButton>
-        <IconButton
-          title='Open New Tab'
-          color='primary'
-          onClick={() => window.open(`${baseURL}${config.basename}/chatbot/${chatflowid}`, '_blank')}
-        >
+        <IconButton title='Open New Tab' color='primary' onClick={() => window.open(`${baseURL}/chatbot/${chatflowid}`, '_blank')}>
           <IconArrowUpRightCircle />
         </IconButton>
         <div style={{ flex: 1 }} />
