@@ -321,7 +321,7 @@ const CustomAssistantConfigurePreview = () => {
                 const docStoreOption = documentStoreOptions.find((ds) => ds.name === selectedDocumentStores[i].id)
                 // convert to small case and replace space with underscore
                 const name = (docStoreOption?.label || '').toLowerCase().replace(/ /g, '_')
-                const desc = docStoreOption?.description || ''
+                const desc = selectedDocumentStores[i].description || docStoreOption?.description || ''
 
                 set(retrieverToolNodeData, 'inputs', {
                     name,
