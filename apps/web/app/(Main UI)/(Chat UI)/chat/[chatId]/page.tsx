@@ -87,6 +87,8 @@ async function getMessages(chat: Partial<ChatType>, user: User) {
         const messages = await result.json()
         return messages?.map((m: any) => ({
             ...m,
+            agentReasoning: m.agentReasoning ? JSON.parse(m.agentReasoning) : [],
+            usedTools: m.usedTools ? JSON.parse(m.usedTools) : [],
             contextDocuments: m.sourceDocuments ? JSON.parse(m.sourceDocuments) : [],
             fileUploads: (m.fileUploads ? JSON.parse(m.fileUploads) : [])?.map((f: any) => ({
                 ...f,
