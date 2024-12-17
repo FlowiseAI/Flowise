@@ -42,6 +42,7 @@ import InputHintDialog from '@/ui-component/dialog/InputHintDialog'
 import { getInputVariables, getCustomConditionOutputs, isValidConnection, getAvailableNodesForVariable } from '@/utils/genericHelper'
 
 // const
+import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
 const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
 
@@ -565,6 +566,7 @@ const NodeInputHandler = ({
                         {inputParam.type === 'credential' && (
                             <CredentialInputHandler
                                 disabled={disabled}
+                                key={`${data.id}-${inputParam.name}-${data.inputs[FLOWISE_CREDENTIAL_ID]}`}
                                 data={data}
                                 inputParam={inputParam}
                                 onSelect={(newValue) => onNodeDataChange(inputParam, newValue)}
@@ -573,6 +575,7 @@ const NodeInputHandler = ({
                         {inputParam.type === 'tabs' && (
                             <>
                                 <Tabs
+                                    key={`${data.id}-${inputParam.name}-${data.inputs[`${inputParam.tabIdentifier}_${data.id}`]}`}
                                     value={getTabValue(inputParam)}
                                     onChange={(event, val) => {
                                         setTabValue(val)
@@ -604,6 +607,7 @@ const NodeInputHandler = ({
                         {inputParam.type === 'file' && (
                             <File
                                 disabled={disabled}
+                                key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                 fileType={inputParam.fileType || '*'}
                                 onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
@@ -612,6 +616,7 @@ const NodeInputHandler = ({
                         {inputParam.type === 'boolean' && (
                             <SwitchInput
                                 disabled={disabled}
+                                key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                 onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? false}
                             />
@@ -619,6 +624,7 @@ const NodeInputHandler = ({
                         {inputParam.type === 'datagrid' && (
                             <DataGrid
                                 disabled={disabled}
+                                key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                 columns={getDataGridColDef(inputParam.datagrid, inputParam)}
                                 hideFooter={true}
                                 rows={data.inputs[inputParam.name] ?? JSON.stringify(inputParam.default) ?? []}
@@ -650,6 +656,7 @@ const NodeInputHandler = ({
                                 >
                                     <CodeEditor
                                         disabled={disabled}
+                                        key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                         value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
                                         height={inputParam.rows ? '100px' : '200px'}
                                         theme={customization.isDarkMode ? 'dark' : 'light'}
@@ -663,7 +670,7 @@ const NodeInputHandler = ({
                         )}
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
-                                key={data.inputs[inputParam.name]}
+                                key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                 disabled={disabled}
                                 inputParam={inputParam}
                                 // onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
@@ -679,6 +686,7 @@ const NodeInputHandler = ({
                                 {!inputParam?.acceptVariable && (
                                     <JsonEditorInput
                                         disabled={disabled}
+                                        key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                         onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
                                         value={
                                             data.inputs[inputParam.name] ||
@@ -718,6 +726,7 @@ const NodeInputHandler = ({
                         {inputParam.type === 'options' && (
                             <Dropdown
                                 disabled={disabled}
+                                key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                 name={inputParam.name}
                                 options={inputParam.options}
                                 onSelect={(newValue) => onNodeDataChange(inputParam, newValue)}
@@ -727,6 +736,7 @@ const NodeInputHandler = ({
                         {inputParam.type === 'multiOptions' && (
                             <MultiDropdown
                                 disabled={disabled}
+                                key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                 name={inputParam.name}
                                 options={inputParam.options}
                                 onSelect={(newValue) => onNodeDataChange(inputParam, newValue)}
@@ -739,6 +749,7 @@ const NodeInputHandler = ({
                                 <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
                                     <AsyncDropdown
                                         disabled={disabled}
+                                        key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                         name={inputParam.name}
                                         nodeData={data}
                                         value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
