@@ -434,7 +434,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
           />
         </div>
       </Stack>
-      {textField(title, 'title', 'Title', 'string', 'CMCAI Assistant')}
+      {textField(title, 'title', 'Title', 'string', 'Agent Studio Assistant')}
       {textField(
         titleAvatarSrc,
         'titleAvatarSrc',

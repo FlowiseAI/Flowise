@@ -10,7 +10,11 @@ const Logo = () => {
 
   return (
     <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row' }}>
-      <img style={{ objectFit: 'contain', height: 'auto', width: 150 }} src={customization.isDarkMode ? logoDark : logo} alt='CMCAI' />
+      <img
+        style={{ objectFit: 'contain', height: 'auto', width: 150 }}
+        src={customization.isDarkMode ? logoDark : logo}
+        alt='Agent Studio'
+      />
     </div>
   )
 }

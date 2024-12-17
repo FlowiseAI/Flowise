@@ -22,10 +22,10 @@ const DeleteConfirmDialog = ({ show, dialogProps, onCancel, onDelete, onDeleteBo
         <span>{dialogProps.description}</span>
         <div style={{ display: 'flex', flexDirection: 'row', marginTop: 20 }}>
           <Button sx={{ flex: 1, mb: 1, mr: 1 }} color='error' variant='outlined' onClick={onDelete}>
-            Only CMCAI
+            Only Agent Studio
           </Button>
           <StyledButton sx={{ flex: 1, mb: 1, ml: 1 }} color='error' variant='contained' onClick={onDeleteBoth}>
-            OpenAI and CMCAI
+            OpenAI and Agent Studio
           </StyledButton>
         </div>
       </DialogContent>

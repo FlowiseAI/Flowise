@@ -413,7 +413,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                         {/*    <ListItemIcon>*/}
                         {/*        <IconInfoCircle stroke={1.5} size='1.3rem' />*/}
                         {/*    </ListItemIcon>*/}
-                        {/*    <ListItemText primary={<Typography variant='body2'>About CMCAI</Typography>} />*/}
+                        {/*    <ListItemText primary={<Typography variant='body2'>About Agent Studio</Typography>} />*/}
                         {/*</ListItemButton>*/}
                         {localStorage.getItem('username') && localStorage.getItem('password') && (
                           <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }} onClick={handleLogout}>
