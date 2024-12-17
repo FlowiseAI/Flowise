@@ -164,10 +164,6 @@ const Canvas = () => {
 
     const onEdgesChange = useCallback(
         (changes) => {
-            if (isInitialLoadRef.current) {
-                setEdges((edges) => applyEdgeChanges(changes, edges))
-                return
-            }
             setEdges((oldEdges) => {
                 const updatedEdges = applyEdgeChanges(changes, oldEdges)
 
@@ -680,6 +676,7 @@ const Canvas = () => {
                                 edgeTypes={edgeTypes}
                                 onConnect={onConnect}
                                 onInit={setReactFlowInstance}
+                                nodeDragThreshold={1}
                                 fitView
                                 deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                                 minZoom={0.1}
