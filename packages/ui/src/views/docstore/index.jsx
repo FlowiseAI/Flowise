@@ -45,7 +45,7 @@ import 'dccxx-s3-explorer/dist/style.css'
 // ==============================|| DOCUMENTS ||============================== //
 // TODO: hard env
 import.meta.env.VITE_DOCUMENT_STORE_TYPE = import.meta.env.VITE_DOCUMENT_STORE_TYPE || 's3'
-import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'http://44.214.37.235:4001'
+import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'https://stock.cmcts.ai/c-agent/s3e'
 
 const Documents = () => {
   const theme = useTheme()

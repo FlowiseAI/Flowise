@@ -9,7 +9,6 @@ import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Typography, u
 
 // project imports
 import { MENU_OPEN, SET_MENU } from '@/store/actions'
-import config from '@/config'
 
 // assets
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
@@ -42,7 +41,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
 
   let listItemProps = {
     component: forwardRef(function ListItemPropsComponent(props, ref) {
-      return <Link ref={ref} {...props} to={`${config.basename}${item.url}`} target={itemTarget} />
+      return <Link ref={ref} {...props} to={`${item.url}`} target={itemTarget} />
     })
   }
   if (item?.external) {
