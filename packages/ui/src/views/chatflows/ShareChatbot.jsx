@@ -156,6 +156,8 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             }
         }
 
+        obj.fullFileUpload = chatbotConfig.fullFileUpload
+
         return obj
     }
 
