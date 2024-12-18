@@ -70,7 +70,7 @@ class N8n_Tools implements INode {
     constructor() {
         this.label = 'N8n'
         this.name = 'n8n'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'N8n'
         this.icon = 'n8n.svg'
         this.category = 'Tools'
@@ -88,7 +88,16 @@ class N8n_Tools implements INode {
                 name: 'workflow',
                 type: 'asyncOptions',
                 loadMethod: 'listWorkflows',
-                default: ''
+                default: '',
+                description: 'Choose the workflow you would like to trigger via webhook'
+            },
+            {
+                label: 'Use Test Workflow URL?',
+                name: 'useTestWorkflowUrl',
+                type: 'boolean',
+                optional: true,
+                default: false,
+                description: 'Set to true if you would like to trigger the "test" version of the webhook'
             },
             {
                 label: 'Tool Name',
@@ -113,8 +122,13 @@ class N8n_Tools implements INode {
     }
 
     private async getCredData(nodeData: INodeData, options: ICommonObject): Promise<{ apiUrl: string; apiKey: string } | null> {
-        if (nodeData === undefined || !nodeData?.credential) {
-            console.warn('Warning: nodeData or nodeData.credential is missing.')
+        if (nodeData === undefined) {
+            console.warn('Warning: nodeData is missing.')
+            return null
+        }
+
+        if (!nodeData?.credential) {
+            console.warn('Warning: nodeData.credential is missing.')
             return null
         }
 
@@ -204,6 +218,7 @@ class N8n_Tools implements INode {
         const { apiUrl, apiKey } = credentialData
         const selectedWorkflow = nodeData.inputs?.workflow as string
         const toolName = (nodeData.inputs?.toolName as string) || 'N8N Workflow'
+        const useTestWorkflowUrl = !!nodeData.inputs?.useTestWorkflowUrl as boolean
         const toolDescription = (nodeData.inputs?.toolDescription as string) || 'Execute N8N workflow'
         const schemaStr = (nodeData.inputs?.schema as string) || 'z.object({})'
 
@@ -239,7 +254,8 @@ class N8n_Tools implements INode {
         // Construct webhook URLs
         const webhookUrls = webhookNodes.map((node: any) => {
             const path = node.parameters.path
-            return `${apiUrl}/webhook/${path}`
+            // Add the test portion of the URL if it's set to test
+            return `${apiUrl}/webhook${useTestWorkflowUrl ? '-test' : ''}/${path}`
         })
 
         // Convert schema string to Zod object
