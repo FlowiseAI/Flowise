@@ -1,6 +1,6 @@
-import express from 'express'
+import express, { Router } from 'express'
 import marketplacesController from '../../controllers/marketplaces'
-const router = express.Router()
+const router: Router = express.Router()
 
 // READ
 router.get('/templates', marketplacesController.getAllTemplates)

@@ -1,7 +1,7 @@
-import express from 'express'
+import express, { Router } from 'express'
 import variablesController from '../../controllers/variables'
 
-const router = express.Router()
+const router: Router = express.Router()
 
 // CREATE
 router.post('/', variablesController.createVariable)

@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Router } from 'express'
 import apikeyRouter from './apikey'
 import assistantsRouter from './assistants'
 import attachmentsRouter from './attachments'
@@ -43,7 +43,7 @@ import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
 
-const router = express.Router()
+const router: Router = express.Router()
 
 router.use('/ping', pingRouter)
 router.use('/apikey', apikeyRouter)

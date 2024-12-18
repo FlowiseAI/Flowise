@@ -1,7 +1,7 @@
-import express from 'express'
+import express, { Router } from 'express'
 import statsController from '../../controllers/stats'
 
-const router = express.Router()
+const router: Router = express.Router()
 
 // READ
 router.get(['/', '/:id'], statsController.getChatflowStats)

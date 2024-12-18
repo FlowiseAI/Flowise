@@ -1,6 +1,6 @@
-import express from 'express'
+import express, { Router } from 'express'
 import feedbackController from '../../controllers/feedback'
-const router = express.Router()
+const router: Router = express.Router()
 
 // CREATE
 router.post(['/', '/:id'], feedbackController.createChatMessageFeedbackForChatflow)

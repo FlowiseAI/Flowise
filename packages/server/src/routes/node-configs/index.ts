@@ -1,6 +1,6 @@
-import express from 'express'
+import express, { Router } from 'express'
 import nodeConfigsController from '../../controllers/node-configs'
-const router = express.Router()
+const router: Router = express.Router()
 
 // CREATE
 router.post('/', nodeConfigsController.getAllNodeConfigs)

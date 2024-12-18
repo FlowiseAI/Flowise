@@ -1,6 +1,6 @@
-import express from 'express'
+import express, { Router } from 'express'
 import internalPredictionsController from '../../controllers/internal-predictions'
-const router = express.Router()
+const router: Router = express.Router()
 
 // CREATE
 router.post(['/', '/:id'], internalPredictionsController.createInternalPrediction)

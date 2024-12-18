@@ -1,7 +1,7 @@
-import express from 'express'
+import express, { Router } from 'express'
 import openaiRealTimeController from '../../controllers/openai-realtime'
 
-const router = express.Router()
+const router: Router = express.Router()
 
 // GET
 router.get(['/', '/:id'], openaiRealTimeController.getAgentTools)

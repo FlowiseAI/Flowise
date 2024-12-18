@@ -1,9 +1,9 @@
-import express from 'express'
+import express, { Router } from 'express'
 import multer from 'multer'
 import { getUploadPath } from '../../utils'
 import documentStoreController from '../../controllers/documentstore'
 
-const router = express.Router()
+const router: Router = express.Router()
 const upload = multer({ dest: getUploadPath() })
 
 router.post(['/upsert/', '/upsert/:id'], upload.array('files'), documentStoreController.upsertDocStoreMiddleware)

@@ -1,9 +1,9 @@
-import express from 'express'
+import express, { Router } from 'express'
 import multer from 'multer'
 import openaiAssistantsVectorStoreController from '../../controllers/openai-assistants-vector-store'
 import { getUploadPath } from '../../utils'
 
-const router = express.Router()
+const router: Router = express.Router()
 const upload = multer({ dest: getUploadPath() })
 
 // CREATE

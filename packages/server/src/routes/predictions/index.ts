@@ -1,9 +1,9 @@
-import express from 'express'
+import express, { Router } from 'express'
 import multer from 'multer'
 import predictionsController from '../../controllers/predictions'
 import { getUploadPath } from '../../utils'
 
-const router = express.Router()
+const router: Router = express.Router()
 
 const upload = multer({ dest: getUploadPath() })
 

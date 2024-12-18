@@ -1,6 +1,6 @@
-import express from 'express'
+import express, { Router } from 'express'
 import leadsController from '../../controllers/leads'
-const router = express.Router()
+const router: Router = express.Router()
 
 // CREATE
 router.post('/', leadsController.createLeadInChatflow)
