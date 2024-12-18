@@ -192,7 +192,7 @@ const speechToTextProviders = {
                 type: 'string',
                 description: 'Comma-separated list of audio channels to process (e.g., "0,1")',
                 placeholder: '0,1',
-                default: '0,1',
+                default: '0,1'
             }
         ]
     },
