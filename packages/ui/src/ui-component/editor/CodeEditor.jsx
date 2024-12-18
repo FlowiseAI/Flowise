@@ -1,9 +1,4 @@
 import PropTypes from 'prop-types'
-import CodeMirror from '@uiw/react-codemirror'
-import { javascript } from '@codemirror/lang-javascript'
-import { json } from '@codemirror/lang-json'
-import { vscodeDark } from '@uiw/codemirror-theme-vscode'
-import { sublime } from '@uiw/codemirror-theme-sublime'
 import { EditorView } from '@codemirror/view'
 import { useTheme } from '@mui/material/styles'
 
@@ -42,22 +37,36 @@ export const CodeEditor = ({
   })
 
   return (
-    <CodeMirror
+    <textarea
       placeholder={placeholder}
       value={value}
-      height={height ?? 'calc(100vh - 220px)'}
-      theme={theme === 'dark' ? (lang === 'js' ? vscodeDark : sublime) : 'none'}
-      extensions={
-        lang === 'js' ? [javascript({ jsx: true }), EditorView.lineWrapping, customStyle] : [json(), EditorView.lineWrapping, customStyle]
-      }
-      onChange={onValueChange}
+      style={{
+        height: height ?? 'calc(100vh - 220px)',
+        width: '100%',
+        border: 0
+      }}
+      onChange={(e) => onValueChange?.(e.target.value)}
       readOnly={disabled}
-      editable={!disabled}
-      // eslint-disable-next-line
-      autoFocus={autoFocus}
-      basicSetup={basicSetup}
-    />
+    ></textarea>
   )
+
+  // return (
+  //   // <CodeMirror
+  //   //   placeholder={placeholder}
+  //   //   value={value}
+  //   //   height={height ?? 'calc(100vh - 220px)'}
+  //   //   theme={theme === 'dark' ? (lang === 'js' ? vscodeDark : sublime) : 'none'}
+  //   //   extensions={
+  //   //     lang === 'js' ? [javascript({ jsx: true }), EditorView.lineWrapping, customStyle] : [json(), EditorView.lineWrapping, customStyle]
+  //   //   }
+  //   //   onChange={onValueChange}
+  //   //   readOnly={disabled}
+  //   //   editable={!disabled}
+  //   //   // eslint-disable-next-line
+  //   //   autoFocus={autoFocus}
+  //   //   basicSetup={basicSetup}
+  //   // />
+  // )
 }
 
 CodeEditor.propTypes = {
