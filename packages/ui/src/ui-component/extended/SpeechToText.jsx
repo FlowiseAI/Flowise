@@ -17,6 +17,7 @@ import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import openAISVG from '@/assets/images/openai.svg'
 import assemblyAIPng from '@/assets/images/assemblyai.png'
 import localAiPng from '@/assets/images/localai.png'
+import azureSvg from '@/assets/images/azure_openai.svg'
 import groqPng from '@/assets/images/groq.png'
 
 // store
@@ -31,6 +32,7 @@ const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
     LOCALAI_STT: 'localAISTT',
+    AZURE_COGNITIVE: 'azureCognitive',
     GROQ_WHISPER: 'groqWhisper'
 }
 
@@ -139,6 +141,58 @@ const speechToTextProviders = {
                 step: 0.1,
                 description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
                 optional: true
+            }
+        ]
+    },
+    [SpeechToTextType.AZURE_COGNITIVE]: {
+        label: 'Azure Cognitive Services',
+        name: SpeechToTextType.AZURE_COGNITIVE,
+        icon: azureSvg,
+        url: 'https://azure.microsoft.com/en-us/products/cognitive-services/speech-services',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['azureCognitiveServices']
+            },
+            {
+                label: 'Language',
+                name: 'language',
+                type: 'string',
+                description: 'The recognition language (e.g., "en-US", "es-ES")',
+                placeholder: 'en-US',
+                optional: true
+            },
+            {
+                label: 'Profanity Filter Mode',
+                name: 'profanityFilterMode',
+                type: 'options',
+                description: 'How to handle profanity in the transcription',
+                options: [
+                    {
+                        label: 'None',
+                        name: 'None'
+                    },
+                    {
+                        label: 'Masked',
+                        name: 'Masked'
+                    },
+                    {
+                        label: 'Removed',
+                        name: 'Removed'
+                    }
+                ],
+                default: 'Masked',
+                optional: true
+            },
+            {
+                label: 'Audio Channels',
+                name: 'channels',
+                type: 'string',
+                description: 'Comma-separated list of audio channels to process (e.g., "0,1")',
+                placeholder: '0,1',
+                default: '0,1'
             }
         ]
     },
