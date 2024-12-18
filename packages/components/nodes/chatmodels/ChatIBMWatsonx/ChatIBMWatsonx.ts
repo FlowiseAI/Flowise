@@ -27,7 +27,7 @@ class ChatIBMWatsonx_ChatModels implements INode {
     constructor() {
         this.label = 'ChatIBMWatsonx'
         this.name = 'chatIBMWatsonx'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatIBMWatsonx'
         this.icon = 'ibm.png'
         this.category = 'Chat Models'
