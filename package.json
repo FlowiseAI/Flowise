@@ -25,7 +25,8 @@
     "quick": "pretty-quick --staged",
     "postinstall": "husky install",
     "migration:create": "pnpm typeorm migration:create",
-    "dev:server": "pnpm --filter ./packages/server dev"
+    "dev:server": "pnpm --filter ./packages/server dev",
+    "dev:ui": "pnpm --filter ./packages/ui dev"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
