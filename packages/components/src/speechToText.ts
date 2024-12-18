@@ -4,7 +4,6 @@ import { type ClientOptions, OpenAIClient, toFile } from '@langchain/openai'
 import { AssemblyAI } from 'assemblyai'
 import { getFileFromStorage } from './storageUtils'
 import axios from 'axios'
-import FormData from 'form-data'
 import Groq from 'groq-sdk'
 
 const SpeechToTextType = {
@@ -81,10 +80,8 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     const apiVersion = credentialData.apiVersion || '2024-05-15-preview'
 
                     const formData = new FormData()
-                    formData.append('audio', audio_file, {
-                        filename: upload.name,
-                        contentType: upload.type
-                    })
+                    const audioBlob = new Blob([audio_file], { type: upload.type })
+                    formData.append('audio', audioBlob, upload.name)
 
                     const channelsStr = speechToTextConfig.channels || '0,1'
                     const channels = channelsStr.split(',').map(Number)
@@ -99,8 +96,7 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     const response = await axios.post(`${baseUrl}?api-version=${apiVersion}`, formData, {
                         headers: {
                             'Ocp-Apim-Subscription-Key': credentialData.azureSubscriptionKey,
-                            Accept: 'application/json',
-                            ...formData.getHeaders()
+                            Accept: 'application/json'
                         }
                     })
 
