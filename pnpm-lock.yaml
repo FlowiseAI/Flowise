@@ -664,14 +664,14 @@ importers:
   packages/ui:
     dependencies:
       '@codemirror/lang-javascript':
-        specifier: ^6.2.1
-        version: 6.2.2
+        specifier: 6.2.1
+        version: 6.2.1
       '@codemirror/lang-json':
-        specifier: ^6.0.1
+        specifier: 6.0.1
         version: 6.0.1
       '@codemirror/view':
-        specifier: ^6.22.3
-        version: 6.25.1
+        specifier: 6.22.3
+        version: 6.22.3
       '@emotion/cache':
         specifier: ^11.4.0
         version: 11.11.0
@@ -704,22 +704,22 @@ importers:
         version: 3.3.0(react@18.2.0)
       '@uiw/codemirror-theme-sublime':
         specifier: ^4.21.21
-        version: 4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)
+        version: 4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)
       '@uiw/codemirror-theme-vscode':
         specifier: ^4.21.21
-        version: 4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)
+        version: 4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)
       '@uiw/react-codemirror':
         specifier: ^4.21.21
-        version: 4.21.24(@babel/runtime@7.26.0)(@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)(@lezer/common@1.2.1))(@codemirror/language@6.10.1)(@codemirror/lint@6.5.0)(@codemirror/search@6.5.6)(@codemirror/state@6.4.1)(@codemirror/theme-one-dark@6.1.2)(@codemirror/view@6.25.1)(codemirror@6.0.1(@lezer/common@1.2.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        version: 4.21.24(@babel/runtime@7.26.0)(@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)(@lezer/common@1.2.3))(@codemirror/language@6.10.1)(@codemirror/lint@6.5.0)(@codemirror/search@6.5.6)(@codemirror/state@6.5.0)(@codemirror/theme-one-dark@6.1.2)(@codemirror/view@6.22.3)(codemirror@6.0.1(@lezer/common@1.2.3))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       axios:
         specifier: 1.6.2
         version: 1.6.2(debug@4.3.4)
       c-agent-embedding:
-        specifier: latest
-        version: 1.0.0
+        specifier: 1.0.4
+        version: 1.0.4(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       c-agent-embedding-react:
-        specifier: 1.0.3
-        version: 1.0.3(@types/node@20.12.12)(c-agent-embedding@1.0.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.4
+        version: 1.0.4(@types/node@20.12.12)(c-agent-embedding@1.0.4(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       clsx:
         specifier: ^1.1.1
         version: 1.2.1
@@ -2956,8 +2956,8 @@ packages:
   '@codemirror/commands@6.7.1':
     resolution: { integrity: sha512-llTrboQYw5H4THfhN4U3qCnSZ1SOJ60ohhz+SzU0ADGtwlc533DtklQP0vSFaQuCPDn3BPpOd1GbbnUtwNjsrw== }
 
-  '@codemirror/lang-javascript@6.2.2':
-    resolution: { integrity: sha512-VGQfY+FCc285AhWuwjYxQyUQcYurWlxdKYT4bqwr3Twnd5wP5WSeu52t4tvvuWmljT4EmgEgZCqSieokhtY8hg== }
+  '@codemirror/lang-javascript@6.2.1':
+    resolution: { integrity: sha512-jlFOXTejVyiQCW3EQwvKH0m99bUYIw40oPmFjSX2VS78yzfe0HELZ+NEo9Yfo1MkGRpGlj3Gnu4rdxV1EnAs5A== }
 
   '@codemirror/lang-json@6.0.1':
     resolution: { integrity: sha512-+T1flHdgpqDDlJZ2Lkil/rLiRy684WMLc74xUnjJH48GQdfJo/pudlTRreZmKwzP8/tGdKf83wlbAdOCzlJOGQ== }
@@ -2971,17 +2971,14 @@ packages:
   '@codemirror/search@6.5.6':
     resolution: { integrity: sha512-rpMgcsh7o0GuCDUXKPvww+muLA1pDJaFrpq/CCHtpQJYz8xopu4D1hPcKRoDD0YlF8gZaqTNIRa4VRBWyhyy7Q== }
 
-  '@codemirror/state@6.4.1':
-    resolution: { integrity: sha512-QkEyUiLhsJoZkbumGZlswmAhA7CBU02Wrz7zvH4SrcifbsqwlXShVXg65f3v/ts57W3dqyamEriMhij1Z3Zz4A== }
-
   '@codemirror/state@6.5.0':
     resolution: { integrity: sha512-MwBHVK60IiIHDcoMet78lxt6iw5gJOGSbNbOIVBHWVXIH4/Nq1+GQgLLGgI1KlnN86WDXsPudVaqYHKBIx7Eyw== }
 
   '@codemirror/theme-one-dark@6.1.2':
     resolution: { integrity: sha512-F+sH0X16j/qFLMAfbciKTxVOwkdAS336b7AXTKOZhy8BR3eH/RelsnLgLFINrpST63mmN2OuwUt0W2ndUgYwUA== }
 
-  '@codemirror/view@6.25.1':
-    resolution: { integrity: sha512-2LXLxsQnHDdfGzDvjzAwZh2ZviNJm7im6tGpa0IONIDnFd8RZ80D2SNi8PDi6YjKcMoMRK20v6OmKIdsrwsyoQ== }
+  '@codemirror/view@6.22.3':
+    resolution: { integrity: sha512-rqnq+Zospwoi3x1vZ8BGV1MlRsaGljX+6qiGYmIpJ++M+LCC+wjfDaPklhwpWSgv7pr/qx29KiAKQBH5+DOn4w== }
 
   '@codemirror/view@6.35.3':
     resolution: { integrity: sha512-ScY7L8+EGdPl4QtoBiOzE4FELp7JmNUsBvgBcCakXWM2uiv/K89VAzU3BMDscf0DsACLvTKePbd5+cFDTcei6g== }
@@ -4303,14 +4300,8 @@ packages:
   '@leichtgewicht/ip-codec@2.0.4':
     resolution: { integrity: sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A== }
 
-  '@lezer/common@1.2.1':
-    resolution: { integrity: sha512-yemX0ZD2xS/73llMZIK6KplkjIjf2EvAHcinDi/TfJ9hS25G0388+ClHt6/3but0oOxinTcQHJLDXh6w1crzFQ== }
-
   '@lezer/common@1.2.3':
     resolution: { integrity: sha512-w7ojc8ejBqr2REPsWxJjrMFsA/ysDCFICn8zEOR9mrqzOu2amhITYuLD8ag6XZf0CFXDrhKqw7+tW8cX66NaDA== }
-
-  '@lezer/highlight@1.2.0':
-    resolution: { integrity: sha512-WrS5Mw51sGrpqjlh3d4/fOwpEV2Hd3YOkp9DBt4k8XZQcoTHZFB7sx030A6OcahF4J1nDQAa3jXlTVVYH50IFA== }
 
   '@lezer/highlight@1.2.1':
     resolution: { integrity: sha512-Z5duk4RN/3zuVO7Jq0pGLJ3qynpxUVsh7IbUbGj88+uV2ApSAn6kWg2au3iJb+0Zi7kKtqffIESgNcRXWZWmSA== }
@@ -7724,9 +7715,6 @@ packages:
   axios@1.7.4:
     resolution: { integrity: sha512-DukmaFRnY6AzAALSH4J2M3k6PkaC+MfaAGdEERRWcC9q3/TWQwLpHR8ZRLKTdQ3aBDL64EdluRDjJqKw+BPZEw== }
 
-  axios@1.7.8:
-    resolution: { integrity: sha512-Uu0wb7KNqK2t5K+YQyVCLM76prD5sRFjKHbJYCP1J7JFGEQ6nN7HWn9+04LAeiJ3ji54lgS/gZCH1oxyrf1SPw== }
-
   axios@1.7.9:
     resolution: { integrity: sha512-LhLcE7Hbiryz8oMDdDptSrWowmB4Bl6RCt6sIJKpRB4XtVf0iEgewX3au/pJqm+Py1kCASkb/FFKjxQaLtxJvw== }
 
@@ -8111,14 +8099,14 @@ packages:
     resolution: { integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg== }
     engines: { node: '>= 0.8' }
 
-  c-agent-embedding-react@1.0.3:
-    resolution: { integrity: sha512-D3b6D6OF52c9+QL3A6V04ioopSyKK/2N+Mf2GhPWKqXjk9tx1zk+2HMUC4xRUeH7/dAXHs+5SwzaMCX8IFmBrg== }
+  c-agent-embedding-react@1.0.4:
+    resolution: { integrity: sha512-JA0YnL37VAWsSquOD4dRiBE0Q1KyMLkGz7eOIHXv0L9aDgE+wxLe3dmgb30YGlw6gLqNlb08x7ctswTpJSpkyQ== }
     peerDependencies:
       c-agent-embedding: '*'
       react: 18.x
 
-  c-agent-embedding@1.0.0:
-    resolution: { integrity: sha512-gmTgQnven2p3wSHSYiez4Pt1XKIashXszwJIPqO0xinRd4eTQAMyiiWV4M+E5pxQp2ciIPdf+VOSPm5LDC5mdg== }
+  c-agent-embedding@1.0.4:
+    resolution: { integrity: sha512-lcD8mWi0dWE/vTOXZQww0oNDkI3pfBShUBuazn7JsjU//DXi945Hg6QVCmNZVgifEtrbLk+FezzPkS+/ACihAg== }
 
   cacache@15.3.0:
     resolution: { integrity: sha512-VVdYzXEn+cnbXpFgWs5hTT7OScegHVmLhJIR8Ufqk3iFD6A6j5iSX1KuBTfNEv4tdJWE2PzA6IVFtcLC7fN9wQ== }
@@ -17855,7 +17843,7 @@ snapshots:
     dependencies:
       '@aws-crypto/util': 5.2.0
       '@aws-sdk/types': 3.609.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@aws-crypto/crc32c@3.0.0':
     dependencies:
@@ -17916,7 +17904,7 @@ snapshots:
 
   '@aws-crypto/supports-web-crypto@5.2.0':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@aws-crypto/util@3.0.0':
     dependencies:
@@ -18273,7 +18261,7 @@ snapshots:
       '@smithy/util-middleware': 2.1.4
       '@smithy/util-retry': 2.1.4
       '@smithy/util-utf8': 2.2.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     transitivePeerDependencies:
       - aws-crt
 
@@ -18357,7 +18345,7 @@ snapshots:
       '@smithy/util-defaults-mode-node': 2.2.6
       '@smithy/util-retry': 2.1.4
       '@smithy/util-utf8': 2.2.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     transitivePeerDependencies:
       - aws-crt
 
@@ -18400,7 +18388,7 @@ snapshots:
       '@smithy/util-middleware': 2.1.4
       '@smithy/util-retry': 2.1.4
       '@smithy/util-utf8': 2.2.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     transitivePeerDependencies:
       - aws-crt
 
@@ -18443,7 +18431,7 @@ snapshots:
       '@smithy/util-middleware': 3.0.3
       '@smithy/util-retry': 3.0.3
       '@smithy/util-utf8': 3.0.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     transitivePeerDependencies:
       - aws-crt
 
@@ -19084,7 +19072,7 @@ snapshots:
       '@smithy/util-defaults-mode-node': 2.2.6
       '@smithy/util-retry': 2.1.4
       '@smithy/util-utf8': 2.2.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     transitivePeerDependencies:
       - aws-crt
 
@@ -19095,7 +19083,7 @@ snapshots:
       '@smithy/property-provider': 2.1.4
       '@smithy/shared-ini-file-loader': 2.3.5
       '@smithy/types': 2.11.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - aws-crt
@@ -19107,7 +19095,7 @@ snapshots:
       '@smithy/property-provider': 3.1.3
       '@smithy/shared-ini-file-loader': 3.1.4
       '@smithy/types': 3.3.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@aws-sdk/types@3.418.0':
     dependencies:
@@ -19366,7 +19354,7 @@ snapshots:
       '@babel/core': 7.24.0
       '@babel/helper-compilation-targets': 7.23.6
       '@babel/helper-plugin-utils': 7.25.9
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       lodash.debounce: 4.0.8
       resolve: 1.22.8
     transitivePeerDependencies:
@@ -21183,42 +21171,35 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)(@lezer/common@1.2.1)':
+  '@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)(@lezer/common@1.2.3)':
     dependencies:
       '@codemirror/language': 6.10.1
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.25.1
-      '@lezer/common': 1.2.1
-
-  '@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.35.3)(@lezer/common@1.2.1)':
-    dependencies:
-      '@codemirror/language': 6.10.1
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.35.3
-      '@lezer/common': 1.2.1
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.22.3
+      '@lezer/common': 1.2.3
 
   '@codemirror/commands@6.3.3':
     dependencies:
       '@codemirror/language': 6.10.1
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.25.1
-      '@lezer/common': 1.2.1
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.22.3
+      '@lezer/common': 1.2.3
 
   '@codemirror/commands@6.7.1':
     dependencies:
       '@codemirror/language': 6.10.1
-      '@codemirror/state': 6.4.1
+      '@codemirror/state': 6.5.0
       '@codemirror/view': 6.35.3
       '@lezer/common': 1.2.3
 
-  '@codemirror/lang-javascript@6.2.2':
+  '@codemirror/lang-javascript@6.2.1':
     dependencies:
-      '@codemirror/autocomplete': 6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)(@lezer/common@1.2.1)
+      '@codemirror/autocomplete': 6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)(@lezer/common@1.2.3)
       '@codemirror/language': 6.10.1
       '@codemirror/lint': 6.5.0
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.25.1
-      '@lezer/common': 1.2.1
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.22.3
+      '@lezer/common': 1.2.3
       '@lezer/javascript': 1.4.13
 
   '@codemirror/lang-json@6.0.1':
@@ -21228,26 +21209,24 @@ snapshots:
 
   '@codemirror/language@6.10.1':
     dependencies:
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.25.1
-      '@lezer/common': 1.2.1
-      '@lezer/highlight': 1.2.0
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.35.3
+      '@lezer/common': 1.2.3
+      '@lezer/highlight': 1.2.1
       '@lezer/lr': 1.4.0
       style-mod: 4.1.2
 
   '@codemirror/lint@6.5.0':
     dependencies:
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.25.1
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.22.3
       crelt: 1.0.6
 
   '@codemirror/search@6.5.6':
     dependencies:
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.35.3
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.22.3
       crelt: 1.0.6
-
-  '@codemirror/state@6.4.1': {}
 
   '@codemirror/state@6.5.0':
     dependencies:
@@ -21256,13 +21235,13 @@ snapshots:
   '@codemirror/theme-one-dark@6.1.2':
     dependencies:
       '@codemirror/language': 6.10.1
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.35.3
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.22.3
       '@lezer/highlight': 1.2.1
 
-  '@codemirror/view@6.25.1':
+  '@codemirror/view@6.22.3':
     dependencies:
-      '@codemirror/state': 6.4.1
+      '@codemirror/state': 6.5.0
       style-mod: 4.1.2
       w3c-keyname: 2.2.8
 
@@ -22152,16 +22131,16 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.26.2
       '@babel/core': 7.24.0
-      '@babel/generator': 7.26.2
-      '@babel/parser': 7.26.2
+      '@babel/generator': 7.26.3
+      '@babel/parser': 7.26.3
       '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.24.0)
-      '@babel/preset-env': 7.24.5(@babel/core@7.24.0)
+      '@babel/preset-env': 7.26.0(@babel/core@7.24.0)
       '@babel/preset-react': 7.25.9(@babel/core@7.24.0)
       '@babel/preset-typescript': 7.18.6(@babel/core@7.24.0)
       '@babel/runtime': 7.26.0
       '@babel/template': 7.25.9
-      '@babel/traverse': 7.25.9
-      '@babel/types': 7.26.0
+      '@babel/traverse': 7.26.4
+      '@babel/types': 7.26.3
       '@ladle/react-context': 1.0.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@vitejs/plugin-react': 3.1.0(vite@4.5.2(@types/node@20.12.12)(sass@1.71.1)(terser@5.29.1))
       axe-core: 4.8.4
@@ -22170,7 +22149,7 @@ snapshots:
       classnames: 2.5.1
       commander: 9.5.0
       cross-spawn: 7.0.3
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       default-browser: 3.1.0
       express: 4.21.1
       get-port: 6.1.2
@@ -22494,13 +22473,7 @@ snapshots:
 
   '@leichtgewicht/ip-codec@2.0.4': {}
 
-  '@lezer/common@1.2.1': {}
-
   '@lezer/common@1.2.3': {}
-
-  '@lezer/highlight@1.2.0':
-    dependencies:
-      '@lezer/common': 1.2.1
 
   '@lezer/highlight@1.2.1':
     dependencies:
@@ -22508,19 +22481,19 @@ snapshots:
 
   '@lezer/javascript@1.4.13':
     dependencies:
-      '@lezer/common': 1.2.1
-      '@lezer/highlight': 1.2.0
+      '@lezer/common': 1.2.3
+      '@lezer/highlight': 1.2.1
       '@lezer/lr': 1.4.0
 
   '@lezer/json@1.0.2':
     dependencies:
-      '@lezer/common': 1.2.1
-      '@lezer/highlight': 1.2.0
+      '@lezer/common': 1.2.3
+      '@lezer/highlight': 1.2.1
       '@lezer/lr': 1.4.0
 
   '@lezer/lr@1.4.0':
     dependencies:
-      '@lezer/common': 1.2.1
+      '@lezer/common': 1.2.3
 
   '@llamaindex/cloud@0.0.5(node-fetch@2.7.0(encoding@0.1.13))':
     dependencies:
@@ -24595,7 +24568,7 @@ snapshots:
   '@smithy/abort-controller@3.1.1':
     dependencies:
       '@smithy/types': 3.3.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/chunked-blob-reader-native@2.1.2':
     dependencies:
@@ -24665,14 +24638,14 @@ snapshots:
       '@aws-crypto/crc32': 3.0.0
       '@smithy/types': 2.11.0
       '@smithy/util-hex-encoding': 2.1.1
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/eventstream-codec@3.1.2':
     dependencies:
       '@aws-crypto/crc32': 5.2.0
       '@smithy/types': 3.3.0
       '@smithy/util-hex-encoding': 3.0.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/eventstream-serde-browser@2.1.4':
     dependencies:
@@ -24718,7 +24691,7 @@ snapshots:
     dependencies:
       '@smithy/eventstream-codec': 3.1.2
       '@smithy/types': 3.3.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/fetch-http-handler@2.4.4':
     dependencies:
@@ -24779,7 +24752,7 @@ snapshots:
 
   '@smithy/is-array-buffer@3.0.0':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/md5-js@2.1.4':
     dependencies:
@@ -24923,7 +24896,7 @@ snapshots:
     dependencies:
       '@smithy/types': 3.3.0
       '@smithy/util-uri-escape': 3.0.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/querystring-parser@2.1.4':
     dependencies:
@@ -24933,7 +24906,7 @@ snapshots:
   '@smithy/querystring-parser@3.0.3':
     dependencies:
       '@smithy/types': 3.3.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/service-error-classification@2.1.4':
     dependencies:
@@ -24973,7 +24946,7 @@ snapshots:
       '@smithy/util-middleware': 3.0.3
       '@smithy/util-uri-escape': 3.0.0
       '@smithy/util-utf8': 3.0.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/smithy-client@2.4.4':
     dependencies:
@@ -25049,7 +25022,7 @@ snapshots:
   '@smithy/util-buffer-from@3.0.0':
     dependencies:
       '@smithy/is-array-buffer': 3.0.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/util-config-provider@2.2.1':
     dependencies:
@@ -25057,7 +25030,7 @@ snapshots:
 
   '@smithy/util-config-provider@3.0.0':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/util-defaults-mode-browser@2.1.6':
     dependencies:
@@ -25113,7 +25086,7 @@ snapshots:
 
   '@smithy/util-hex-encoding@3.0.0':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/util-middleware@2.1.4':
     dependencies:
@@ -25161,11 +25134,11 @@ snapshots:
 
   '@smithy/util-uri-escape@2.1.1':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/util-uri-escape@3.0.0':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@smithy/util-utf8@2.2.0':
     dependencies:
@@ -25282,7 +25255,7 @@ snapshots:
 
   '@svgr/hast-util-to-babel-ast@5.5.0':
     dependencies:
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
 
   '@svgr/plugin-jsx@5.5.0':
     dependencies:
@@ -25457,7 +25430,7 @@ snapshots:
 
   '@ts-stack/markdown@1.5.0':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@tsconfig/node10@1.0.9': {}
 
@@ -26174,47 +26147,47 @@ snapshots:
       '@typescript-eslint/types': 7.13.1
       eslint-visitor-keys: 3.4.3
 
-  '@uiw/codemirror-extensions-basic-setup@4.21.24(@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)(@lezer/common@1.2.1))(@codemirror/commands@6.3.3)(@codemirror/language@6.10.1)(@codemirror/lint@6.5.0)(@codemirror/search@6.5.6)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)':
+  '@uiw/codemirror-extensions-basic-setup@4.21.24(@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)(@lezer/common@1.2.3))(@codemirror/commands@6.3.3)(@codemirror/language@6.10.1)(@codemirror/lint@6.5.0)(@codemirror/search@6.5.6)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)':
     dependencies:
-      '@codemirror/autocomplete': 6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)(@lezer/common@1.2.1)
+      '@codemirror/autocomplete': 6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)(@lezer/common@1.2.3)
       '@codemirror/commands': 6.3.3
       '@codemirror/language': 6.10.1
       '@codemirror/lint': 6.5.0
       '@codemirror/search': 6.5.6
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.25.1
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.22.3
 
-  '@uiw/codemirror-theme-sublime@4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)':
+  '@uiw/codemirror-theme-sublime@4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)':
     dependencies:
-      '@uiw/codemirror-themes': 4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)
+      '@uiw/codemirror-themes': 4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)
     transitivePeerDependencies:
       - '@codemirror/language'
       - '@codemirror/state'
       - '@codemirror/view'
 
-  '@uiw/codemirror-theme-vscode@4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)':
+  '@uiw/codemirror-theme-vscode@4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)':
     dependencies:
-      '@uiw/codemirror-themes': 4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)
+      '@uiw/codemirror-themes': 4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)
     transitivePeerDependencies:
       - '@codemirror/language'
       - '@codemirror/state'
       - '@codemirror/view'
 
-  '@uiw/codemirror-themes@4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)':
+  '@uiw/codemirror-themes@4.21.24(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)':
     dependencies:
       '@codemirror/language': 6.10.1
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.25.1
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.22.3
 
-  '@uiw/react-codemirror@4.21.24(@babel/runtime@7.26.0)(@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)(@lezer/common@1.2.1))(@codemirror/language@6.10.1)(@codemirror/lint@6.5.0)(@codemirror/search@6.5.6)(@codemirror/state@6.4.1)(@codemirror/theme-one-dark@6.1.2)(@codemirror/view@6.25.1)(codemirror@6.0.1(@lezer/common@1.2.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@uiw/react-codemirror@4.21.24(@babel/runtime@7.26.0)(@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)(@lezer/common@1.2.3))(@codemirror/language@6.10.1)(@codemirror/lint@6.5.0)(@codemirror/search@6.5.6)(@codemirror/state@6.5.0)(@codemirror/theme-one-dark@6.1.2)(@codemirror/view@6.22.3)(codemirror@6.0.1(@lezer/common@1.2.3))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@babel/runtime': 7.26.0
       '@codemirror/commands': 6.3.3
-      '@codemirror/state': 6.4.1
+      '@codemirror/state': 6.5.0
       '@codemirror/theme-one-dark': 6.1.2
-      '@codemirror/view': 6.25.1
-      '@uiw/codemirror-extensions-basic-setup': 4.21.24(@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)(@lezer/common@1.2.1))(@codemirror/commands@6.3.3)(@codemirror/language@6.10.1)(@codemirror/lint@6.5.0)(@codemirror/search@6.5.6)(@codemirror/state@6.4.1)(@codemirror/view@6.25.1)
-      codemirror: 6.0.1(@lezer/common@1.2.1)
+      '@codemirror/view': 6.22.3
+      '@uiw/codemirror-extensions-basic-setup': 4.21.24(@codemirror/autocomplete@6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)(@lezer/common@1.2.3))(@codemirror/commands@6.3.3)(@codemirror/language@6.10.1)(@codemirror/lint@6.5.0)(@codemirror/search@6.5.6)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)
+      codemirror: 6.0.1(@lezer/common@1.2.3)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -26479,7 +26452,7 @@ snapshots:
 
   agent-base@7.1.0:
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -26848,7 +26821,7 @@ snapshots:
 
   ast-types@0.13.4:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   astral-regex@2.0.0: {}
 
@@ -26953,14 +26926,6 @@ snapshots:
   axios@1.7.4(debug@4.4.0):
     dependencies:
       follow-redirects: 1.15.9(debug@4.4.0)
-      form-data: 4.0.0
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-
-  axios@1.7.8:
-    dependencies:
-      follow-redirects: 1.15.6
       form-data: 4.0.1
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -27070,7 +27035,7 @@ snapshots:
   babel-plugin-jest-hoist@27.5.1:
     dependencies:
       '@babel/template': 7.25.9
-      '@babel/types': 7.26.0
+      '@babel/types': 7.26.3
       '@types/babel__core': 7.20.5
       '@types/babel__traverse': 7.20.5
 
@@ -27554,10 +27519,10 @@ snapshots:
 
   bytes@3.1.2: {}
 
-  c-agent-embedding-react@1.0.3(@types/node@20.12.12)(c-agent-embedding@1.0.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  c-agent-embedding-react@1.0.4(@types/node@20.12.12)(c-agent-embedding@1.0.4(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@ladle/react': 2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-      c-agent-embedding: 1.0.0
+      c-agent-embedding: 1.0.4(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       react: 18.2.0
     transitivePeerDependencies:
       - '@types/node'
@@ -27571,16 +27536,17 @@ snapshots:
       - terser
       - typescript
 
-  c-agent-embedding@1.0.0:
+  c-agent-embedding@1.0.4(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@babel/core': 7.24.0
       '@microsoft/fetch-event-source': 2.0.1
       '@ts-stack/markdown': 1.5.0
-      axios: 1.7.8
+      axios: 1.7.9(debug@4.3.4)
+      c-agent-embedding-react: 1.0.4(@types/node@20.12.12)(c-agent-embedding@1.0.4(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       cors: 2.8.5
       cross-env: 7.0.3
       device-detector-js: 3.0.3
-      dotenv: 16.4.5
+      dotenv: 16.4.7
       express: 4.21.1
       form-data: 4.0.1
       lodash: 4.17.21
@@ -27591,8 +27557,18 @@ snapshots:
       solid-js: 1.7.1
       zod: 3.22.4
     transitivePeerDependencies:
+      - '@types/node'
       - debug
+      - less
+      - lightningcss
+      - react
+      - react-dom
+      - sass
+      - stylus
+      - sugarss
       - supports-color
+      - terser
+      - typescript
 
   cacache@15.3.0:
     dependencies:
@@ -27716,7 +27692,7 @@ snapshots:
 
   caniuse-api@3.0.0:
     dependencies:
-      browserslist: 4.24.2
+      browserslist: 4.24.3
       caniuse-lite: 1.0.30001597
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
@@ -28041,15 +28017,15 @@ snapshots:
       estree-walker: 3.0.3
       periscopic: 3.1.0
 
-  codemirror@6.0.1(@lezer/common@1.2.1):
+  codemirror@6.0.1(@lezer/common@1.2.3):
     dependencies:
-      '@codemirror/autocomplete': 6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.4.1)(@codemirror/view@6.35.3)(@lezer/common@1.2.1)
+      '@codemirror/autocomplete': 6.14.0(@codemirror/language@6.10.1)(@codemirror/state@6.5.0)(@codemirror/view@6.22.3)(@lezer/common@1.2.3)
       '@codemirror/commands': 6.7.1
       '@codemirror/language': 6.10.1
       '@codemirror/lint': 6.5.0
       '@codemirror/search': 6.5.6
-      '@codemirror/state': 6.4.1
-      '@codemirror/view': 6.35.3
+      '@codemirror/state': 6.5.0
+      '@codemirror/view': 6.22.3
     transitivePeerDependencies:
       - '@lezer/common'
 
@@ -30544,7 +30520,7 @@ snapshots:
     dependencies:
       basic-ftp: 5.0.5
       data-uri-to-buffer: 6.0.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       fs-extra: 11.2.0
     transitivePeerDependencies:
       - supports-color
@@ -31191,7 +31167,7 @@ snapshots:
     dependencies:
       '@tootallnate/once': 1.1.2
       agent-base: 6.0.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -31206,7 +31182,7 @@ snapshots:
   http-proxy-agent@7.0.2:
     dependencies:
       agent-base: 7.1.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
     transitivePeerDependencies:
       - supports-color
 
@@ -31736,7 +31712,7 @@ snapshots:
   istanbul-lib-instrument@5.2.1:
     dependencies:
       '@babel/core': 7.24.0
-      '@babel/parser': 7.26.2
+      '@babel/parser': 7.26.3
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-coverage: 3.2.2
       semver: 6.3.1
@@ -31751,7 +31727,7 @@ snapshots:
 
   istanbul-lib-source-maps@4.0.1:
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       istanbul-lib-coverage: 3.2.2
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -32116,10 +32092,10 @@ snapshots:
   jest-snapshot@27.5.1:
     dependencies:
       '@babel/core': 7.24.0
-      '@babel/generator': 7.26.2
+      '@babel/generator': 7.26.3
       '@babel/plugin-syntax-typescript': 7.23.3(@babel/core@7.24.0)
-      '@babel/traverse': 7.25.9
-      '@babel/types': 7.26.0
+      '@babel/traverse': 7.26.4
+      '@babel/types': 7.26.3
       '@jest/transform': 27.5.1
       '@jest/types': 27.5.1
       '@types/babel__traverse': 7.20.5
@@ -33001,7 +32977,7 @@ snapshots:
 
   magic-string@0.27.0:
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.4.15
+      '@jridgewell/sourcemap-codec': 1.5.0
 
   magic-string@0.30.10:
     dependencies:
@@ -33556,7 +33532,7 @@ snapshots:
   micromark@3.2.0:
     dependencies:
       '@types/debug': 4.1.12
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       decode-named-character-reference: 1.0.2
       micromark-core-commonmark: 1.1.0
       micromark-factory-space: 1.1.0
@@ -34495,7 +34471,7 @@ snapshots:
     dependencies:
       '@tootallnate/quickjs-emscripten': 0.23.0
       agent-base: 7.1.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       get-uri: 6.0.3
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.4
@@ -37036,7 +37012,7 @@ snapshots:
   socks-proxy-agent@6.2.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       socks: 2.8.1
     transitivePeerDependencies:
       - supports-color
@@ -37044,7 +37020,7 @@ snapshots:
   socks-proxy-agent@7.0.0:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       socks: 2.8.1
     transitivePeerDependencies:
       - supports-color
@@ -37052,7 +37028,7 @@ snapshots:
   socks-proxy-agent@8.0.2:
     dependencies:
       agent-base: 7.1.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       socks: 2.8.1
     transitivePeerDependencies:
       - supports-color
@@ -37150,7 +37126,7 @@ snapshots:
 
   spdy-transport@3.0.0:
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       detect-node: 2.1.0
       hpack.js: 2.1.6
       obuf: 1.1.2
@@ -37496,7 +37472,7 @@ snapshots:
 
   stylehacks@5.1.1(postcss@8.4.49):
     dependencies:
-      browserslist: 4.24.2
+      browserslist: 4.24.3
       postcss: 8.4.49
       postcss-selector-parser: 6.0.15
 
@@ -37968,7 +37944,7 @@ snapshots:
   tuf-js@1.1.7:
     dependencies:
       '@tufjs/models': 1.0.4
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       make-fetch-happen: 11.1.1
     transitivePeerDependencies:
       - supports-color
@@ -38582,7 +38558,7 @@ snapshots:
 
   vite-tsconfig-paths@4.3.1(typescript@5.5.2)(vite@4.5.2(@types/node@20.12.12)(sass@1.71.1)(terser@5.29.1)):
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0
       globrex: 0.1.2
       tsconfck: 3.0.3(typescript@5.5.2)
     optionalDependencies:

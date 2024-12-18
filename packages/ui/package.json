@@ -8,9 +8,9 @@
     "email": "henryheng@flowiseai.com"
   },
   "dependencies": {
-    "@codemirror/lang-javascript": "^6.2.1",
-    "@codemirror/lang-json": "^6.0.1",
-    "@codemirror/view": "^6.22.3",
+    "@codemirror/lang-javascript": "6.2.1",
+    "@codemirror/lang-json": "6.0.1",
+    "@codemirror/view": "6.22.3",
     "@emotion/cache": "^11.4.0",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
@@ -25,8 +25,8 @@
     "@uiw/codemirror-theme-vscode": "^4.21.21",
     "@uiw/react-codemirror": "^4.21.21",
     "axios": "1.6.2",
-    "c-agent-embedding": "latest",
-    "c-agent-embedding-react": "1.0.3",
+    "c-agent-embedding": "1.0.4",
+    "c-agent-embedding-react": "1.0.4",
     "clsx": "^1.1.1",
     "dccxx-s3-explorer": "^1.0.10",
     "dotenv": "^16.0.0",
