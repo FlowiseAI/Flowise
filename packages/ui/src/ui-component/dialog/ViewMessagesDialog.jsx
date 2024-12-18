@@ -33,7 +33,7 @@ import {
 import { useTheme } from '@mui/material/styles'
 import DatePicker from 'react-datepicker'
 
-import robotPNG from '@/assets/images/robot.png'
+import robotPNG from '@/assets/images/ezgif.com-resize_crop_64.gif'
 import userPNG from '@/assets/images/account.png'
 import msgEmptySVG from '@/assets/images/message_empty.svg'
 import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'

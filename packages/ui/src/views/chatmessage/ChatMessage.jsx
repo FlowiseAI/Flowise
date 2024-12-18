@@ -41,7 +41,7 @@ import {
   IconPaperclip,
   IconSparkles
 } from '@tabler/icons-react'
-import robotPNG from '@/assets/images/robot.png'
+import robotPNG from '@/assets/images/ezgif.com-resize_crop_64.gif'
 import userPNG from '@/assets/images/account.png'
 import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
 import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
