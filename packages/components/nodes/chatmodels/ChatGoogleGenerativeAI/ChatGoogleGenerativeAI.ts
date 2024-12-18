@@ -21,7 +21,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleGenerativeAI'
         this.name = 'chatGoogleGenerativeAI'
-        this.version = 2.1
+        this.version = 3.0
         this.type = 'ChatGoogleGenerativeAI'
         this.icon = 'GoogleGemini.svg'
         this.category = 'Chat Models'
@@ -47,7 +47,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'gemini-pro'
+                default: 'gemini-1.5-flash-latest'
             },
             {
                 label: 'Custom Model Name',
@@ -64,6 +64,14 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 step: 0.1,
                 default: 0.9,
                 optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Max Output Tokens',
@@ -153,7 +161,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Automatically uses vision model when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, Conversational Agent, Tool Agent',
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             }

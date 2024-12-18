@@ -42,7 +42,8 @@ import {
     isSameOverrideConfig,
     getEndingNodes,
     constructGraphs,
-    isSameChatId
+    isSameChatId,
+    getAPIOverrideConfig
 } from '../utils'
 import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
@@ -56,6 +57,7 @@ import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../Interface.Metrics'
+import { Variable } from '../database/entities/Variable'
 
 /**
  * Build Chatflow
@@ -217,7 +219,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         /*** Get session ID ***/
         const memoryNode = findMemoryNode(nodes, edges)
-        const memoryType = memoryNode?.data.label
+        const memoryType = memoryNode?.data?.label
         let sessionId = getMemorySessionId(memoryNode, incomingInput, chatId, isInternal)
 
         /*** Get Ending Node with Directed Graph  ***/
@@ -247,6 +249,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         // Get prepend messages
         const prependMessages = incomingInput.history
+
+        const flowVariables = {} as Record<string, unknown>
 
         /*   Reuse the flow without having to rebuild (to avoid duplicated upsert, recomputation, reinitialization of memory) when all these conditions met:
          * - Reuse of flows is not disabled
@@ -346,15 +350,20 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
+            /*** Get API Config ***/
+            const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
+            const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
+
             /*** BFS to traverse from Starting Nodes to Ending Node ***/
             const reactFlowNodes = await buildFlow({
                 startingNodeIds,
                 reactFlowNodes: nodes,
                 reactFlowEdges: edges,
+                apiMessageId,
                 graph,
                 depthQueue,
-                apiMessageId,
                 componentNodes: appServer.nodesPool.componentNodes,
                 question: incomingInput.question,
                 uploadedFilesContent,
@@ -364,11 +373,27 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 chatflowid,
                 appDataSource: appServer.AppDataSource,
                 overrideConfig: incomingInput?.overrideConfig,
+                apiOverrideStatus,
+                nodeOverrides,
+                availableVariables,
+                variableOverrides,
                 cachePool: appServer.cachePool,
                 isUpsert: false,
                 uploads: incomingInput.uploads,
                 baseURL
             })
+
+            // Show output of setVariable nodes in the response
+            for (const node of reactFlowNodes) {
+                if (
+                    node.data.name === 'setVariable' &&
+                    (node.data.inputs?.showOutput === true || node.data.inputs?.showOutput === 'true')
+                ) {
+                    const outputResult = node.data.instance
+                    const variableKey = node.data.inputs?.variableName
+                    flowVariables[variableKey] = outputResult
+                }
+            }
 
             const nodeToExecute =
                 endingNodeIds.length === 1
@@ -378,8 +403,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Node not found`)
             }
 
-            if (incomingInput.overrideConfig) {
-                nodeToExecute.data = replaceInputsWithConfig(nodeToExecute.data, incomingInput.overrideConfig)
+            // Only override the config if its status is true
+            if (incomingInput.overrideConfig && apiOverrideStatus) {
+                nodeToExecute.data = replaceInputsWithConfig(
+                    nodeToExecute.data,
+                    incomingInput.overrideConfig,
+                    nodeOverrides,
+                    variableOverrides
+                )
             }
 
             const flowData: ICommonObject = {
@@ -398,7 +429,9 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 incomingInput.question,
                 chatHistory,
                 flowData,
-                uploadedFilesContent
+                uploadedFilesContent,
+                availableVariables,
+                variableOverrides
             )
             nodeToExecuteData = reactFlowNodeData
 
@@ -510,6 +543,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
+        if (Object.keys(flowVariables).length) result.flowVariables = flowVariables
 
         return result
     } catch (e) {
