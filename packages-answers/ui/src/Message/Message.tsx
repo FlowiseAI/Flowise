@@ -65,7 +65,7 @@ interface MessageExtra {
 }
 interface MessageCardProps extends Partial<Message>, MessageExtra {
     error?: AxiosError<MessageExtra>
-
+    openLinksInNewTab?: boolean
     role: string
     setPreviewCode?: (
         preview: {
@@ -143,6 +143,7 @@ export const MessageCard = ({
     isLoading,
     fileUploads,
     setPreviewCode,
+    openLinksInNewTab,
     ...other
 }: MessageCardProps) => {
     other = { ...other, role, user } as any
@@ -515,7 +516,7 @@ export const MessageCard = ({
                                     },
 
                                     a: ({ node, ...props }) => (
-                                        <a {...props} target='_blank' rel='noopener noreferrer'>
+                                        <a {...props} target={openLinksInNewTab ? '_blank' : '_self'} rel='noopener noreferrer'>
                                             {props.children}
                                         </a>
                                     ),
