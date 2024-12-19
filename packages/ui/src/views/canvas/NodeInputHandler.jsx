@@ -43,6 +43,7 @@ import { getInputVariables, getCustomConditionOutputs, isValidConnection, getAva
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
+import HighlightButtonWrapper from './HighlightButtonWrapper'
 
 const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
 
@@ -79,7 +80,7 @@ const NodeInputHandler = ({
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const ref = useRef(null)
-    const { reactFlowInstance, deleteEdge } = useContext(flowContext)
+    const { reactFlowInstance, deleteEdge, highlightedNodeId, setHighlightedNodeId } = useContext(flowContext)
     const updateNodeInternals = useUpdateNodeInternals()
     const [position, setPosition] = useState(0)
     const [showExpandDialog, setShowExpandDialog] = useState(false)
@@ -700,19 +701,25 @@ const NodeInputHandler = ({
                                 )}
                                 {inputParam?.acceptVariable && (
                                     <>
-                                        <Button
-                                            sx={{
-                                                borderRadius: 25,
-                                                width: '100%',
-                                                mb: 0,
-                                                mt: 2
-                                            }}
-                                            variant='outlined'
-                                            disabled={disabled}
-                                            onClick={() => onEditJSONClicked(data.inputs[inputParam.name] ?? '', inputParam)}
+                                        <HighlightButtonWrapper
+                                            highlightedNodeId={highlightedNodeId}
+                                            nodeId={data.id}
+                                            setHighlightedNodeId={setHighlightedNodeId}
                                         >
-                                            {inputParam.label}
-                                        </Button>
+                                            <Button
+                                                sx={{
+                                                    borderRadius: 25,
+                                                    width: '100%',
+                                                    mb: 0,
+                                                    mt: 2
+                                                }}
+                                                variant='outlined'
+                                                disabled={disabled}
+                                                onClick={() => onEditJSONClicked(data.inputs[inputParam.name] ?? '', inputParam)}
+                                            >
+                                                {inputParam.label}
+                                            </Button>
+                                        </HighlightButtonWrapper>
                                         <FormatPromptValuesDialog
                                             show={showFormatPromptValuesDialog}
                                             dialogProps={formatPromptValuesDialogProps}

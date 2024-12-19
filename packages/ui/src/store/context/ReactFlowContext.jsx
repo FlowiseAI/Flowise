@@ -6,6 +6,8 @@ import { cloneDeep } from 'lodash'
 import { SET_CHATFLOW, SET_DIRTY } from '@/store/actions'
 
 const initialValue = {
+    highlightedNodeId: '',
+    setHighlightedNodeId: () => {},
     reactFlowInstance: null,
     setReactFlowInstance: () => {},
     duplicateNode: () => {},
@@ -18,6 +20,7 @@ export const flowContext = createContext(initialValue)
 export const ReactFlowContext = ({ children }) => {
     const canvas = useSelector((state) => state.canvas.present)
     const dispatch = useDispatch()
+    const [highlightedNodeId, setHighlightedNodeId] = useState('')
     const [reactFlowInstance, setReactFlowInstance] = useState(null)
 
     const deleteNode = (nodeid) => {
@@ -184,6 +187,8 @@ export const ReactFlowContext = ({ children }) => {
     return (
         <flowContext.Provider
             value={{
+                highlightedNodeId,
+                setHighlightedNodeId,
                 reactFlowInstance,
                 setReactFlowInstance,
                 deleteNode,

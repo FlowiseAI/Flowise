@@ -21,6 +21,7 @@ import { baseURL, FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/icons-react'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
+import HighlightButtonWrapper from './HighlightButtonWrapper'
 
 // ===========================|| CANVAS NODE ||=========================== //
 
@@ -28,7 +29,7 @@ const CanvasNode = ({ data }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const canvas = useSelector((state) => state.canvas.present)
-    const { deleteNode, duplicateNode, reactFlowInstance } = useContext(flowContext)
+    const { deleteNode, duplicateNode, highlightedNodeId, setHighlightedNodeId, reactFlowInstance } = useContext(flowContext)
 
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
@@ -306,9 +307,15 @@ const CanvasNode = ({ data }) => {
                                         : 0
                             }}
                         >
-                            <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
-                                Additional Parameters
-                            </Button>
+                            <HighlightButtonWrapper
+                                highlightedNodeId={highlightedNodeId}
+                                nodeId={data.id}
+                                setHighlightedNodeId={setHighlightedNodeId}
+                            >
+                                <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
+                                    Additional Parameters
+                                </Button>
+                            </HighlightButtonWrapper>
                         </div>
                     )}
                     {data.outputAnchors.length > 0 && <Divider />}
@@ -335,6 +342,7 @@ const CanvasNode = ({ data }) => {
                 show={showDialog}
                 dialogProps={dialogProps}
                 onCancel={() => setShowDialog(false)}
+                onNodeDataChange={onNodeDataChange}
             ></AdditionalParamsDialog>
             <NodeInfoDialog show={showInfoDialog} dialogProps={infoDialogProps} onCancel={() => setShowInfoDialog(false)}></NodeInfoDialog>
         </Stack>

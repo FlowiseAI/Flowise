@@ -81,7 +81,7 @@ const Canvas = () => {
     const canvas = canvasHistory.present
     const canUndo = canvasHistory.past.length > 0
     const canRedo = canvasHistory.future.length > 0
-    const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
+    const { setHighlightedNodeId, reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
 
     // ==============================|| Snackbar ||============================== //
 
@@ -460,32 +460,44 @@ const Canvas = () => {
 
     const handleUndo = useCallback(() => {
         if (canUndo) {
+            const prevState = canvasHistory.past[canvasHistory.past.length - 1]
+            const currentState = canvasHistory.present
+
+            // detect which node's additionalParams data changed and get it's id
+            const changedNode = findNodeWithAdditionalParamsChange(prevState, currentState)
+            if (changedNode) {
+                setHighlightedNodeId?.(changedNode.id)
+            }
+
             dispatch(ActionCreators.undo())
-            // After undo, we need to sync the ReactFlow state with Redux state
-            const prevNodes = canvasHistory.past[canvasHistory.past.length - 1].chatflow?.flowData
-                ? JSON.parse(canvasHistory.past[canvasHistory.past.length - 1].chatflow.flowData).nodes || []
-                : []
-            const prevEdges = canvasHistory.past[canvasHistory.past.length - 1].chatflow?.flowData
-                ? JSON.parse(canvasHistory.past[canvasHistory.past.length - 1].chatflow.flowData).edges || []
-                : []
+
+            const prevNodes = prevState.chatflow?.flowData ? JSON.parse(prevState.chatflow.flowData).nodes || [] : []
+            const prevEdges = prevState.chatflow?.flowData ? JSON.parse(prevState.chatflow.flowData).edges || [] : []
             setNodes(prevNodes)
             setEdges(prevEdges)
         }
-    }, [canUndo, dispatch, canvasHistory.past, setNodes, setEdges])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [canUndo, dispatch, canvasHistory, setNodes, setEdges])
 
     const handleRedo = useCallback(() => {
         if (canRedo) {
+            const prevState = canvasHistory.present
+            const currentState = canvasHistory.future[0]
+
+            // detect which node's additionalParams data changed and get it's id
+            const changedNode = findNodeWithAdditionalParamsChange(prevState, currentState)
+            if (changedNode) {
+                setHighlightedNodeId?.(changedNode.id)
+            }
+
             dispatch(ActionCreators.redo())
-            // After redo, we need to sync the ReactFlow state with Redux state
-            const nextNodes = canvasHistory.future[0].chatflow?.flowData
-                ? JSON.parse(canvasHistory.future[0].chatflow.flowData).nodes || []
-                : []
-            const nextEdges = canvasHistory.future[0].chatflow?.flowData
-                ? JSON.parse(canvasHistory.future[0].chatflow.flowData).edges || []
-                : []
+
+            const nextNodes = currentState.chatflow?.flowData ? JSON.parse(currentState.chatflow.flowData).nodes || [] : []
+            const nextEdges = currentState.chatflow?.flowData ? JSON.parse(currentState.chatflow.flowData).edges || [] : []
             setNodes(nextNodes)
             setEdges(nextEdges)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canRedo, dispatch, canvasHistory.future, setNodes, setEdges])
 
     const handleKeyDown = useCallback(
@@ -515,12 +527,23 @@ const Canvas = () => {
         [handleRedo, handleUndo, canRedo, canUndo]
     )
 
-    // ==============================|| useEffect ||============================== //
+    const findNodeWithAdditionalParamsChange = (prevState, currentState) => {
+        const prevNodes = JSON.parse(prevState.chatflow.flowData).nodes
+        const currentNodes = JSON.parse(currentState.chatflow.flowData).nodes
 
-    // useEffect(() => {
-    //     onNodeDataChange()
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [nodes])
+        return prevNodes.find((prevNode, index) => {
+            const currentNode = currentNodes[index]
+            if (!currentNode) return false
+
+            // Check if any additional params changed
+            return prevNode.data.inputParams.some((param) => {
+                if (!param.additionalParams && param.name !== 'promptValues') return false
+                const hasChanged = JSON.stringify(prevNode.data.inputs[param.name]) !== JSON.stringify(currentNode.data.inputs[param.name])
+                return hasChanged
+            })
+        })
+    }
+    // ==============================|| useEffect ||============================== //
 
     // Get specific chatflow successful
     useEffect(() => {
