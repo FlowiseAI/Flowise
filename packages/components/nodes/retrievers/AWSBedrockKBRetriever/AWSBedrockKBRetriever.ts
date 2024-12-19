@@ -1,8 +1,8 @@
 import { AmazonKnowledgeBaseRetriever } from '@langchain/aws'
-import { ICommonObject, INode, INodeData, INodeParams, INodeOptionsValue } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { RetrievalFilter } from '@aws-sdk/client-bedrock-agent-runtime'
-import { MODEL_TYPE, getRegions } from '../../../src/modelLoader'
+import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 
 class AWSBedrockKBRetriever_Retrievers implements INode {
   label: string
@@ -42,8 +42,15 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
       },
       {
         label: 'Knowledge Base ID',
-        name: 'knoledgeBaseID',
-        type: 'string'
+        name: 'knowledgeBaseID',
+        type: 'string',
+        optional: true
+      },
+      {
+        label: 'Knowledge Base Files',
+        name: 'knowledgeBaseFiles',
+        type: 'string',
+        optional: true
       },
       {
         label: 'Query',
@@ -72,12 +79,12 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
           {
             label: 'HYBRID',
             name: 'HYBRID',
-            description: 'Hybrid seach type'
+            description: 'Hybrid search type'
           },
           {
             label: 'SEMANTIC',
             name: 'SEMANTIC',
-            description: 'Semantic seach type'
+            description: 'Semantic search type'
           }
         ],
         optional: true,
@@ -103,7 +110,7 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
   }
 
   async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-    const knoledgeBaseID = nodeData.inputs?.knoledgeBaseID as string
+    const knowledgeBaseID = nodeData.inputs?.knowledgeBaseID as string
     const region = nodeData.inputs?.region as string
     const topK = parseInt(nodeData.inputs?.topK || 10) as number
     const overrideSearchType = (nodeData.inputs?.searchType != '' ? nodeData.inputs?.searchType : undefined) as 'HYBRID' | 'SEMANTIC'
@@ -121,7 +128,7 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
 
     const retriever = new AmazonKnowledgeBaseRetriever({
       topK: topK,
-      knowledgeBaseId: knoledgeBaseID,
+      knowledgeBaseId: knowledgeBaseID,
       region: region,
       filter,
       overrideSearchType,

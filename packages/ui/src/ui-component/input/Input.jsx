@@ -1,19 +1,45 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
-import { FormControl, OutlinedInput, InputBase, Popover } from '@mui/material'
+import { FormControl, InputBase, OutlinedInput, Popover } from '@mui/material'
 import SelectVariable from '@/ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
+import { S3Explorer } from 'dccxx-s3-explorer'
+
+import 'dccxx-s3-explorer/dist/style.css'
 
 export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
   const [myValue, setMyValue] = useState(value ?? '')
   const [anchorEl, setAnchorEl] = useState(null)
+  const [s3ExplorerAnchorEl, setS3ExplorerAnchorEl] = useState(null)
   const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
   const ref = useRef(null)
+  const inputRef = useRef(null)
+  const isKnowledgeFilesInput = useMemo(() => {
+    return inputParam.name === 'knowledgeBaseFiles'
+  }, [inputParam])
 
   const openPopOver = Boolean(anchorEl)
+  const openS3Explorer = Boolean(s3ExplorerAnchorEl)
 
   const handleClosePopOver = () => {
     setAnchorEl(null)
+  }
+
+  const handleCloseS3Explorer = () => {
+    setS3ExplorerAnchorEl(null)
+  }
+
+  const handleInputClick = () => {
+    if (isKnowledgeFilesInput && !disabled) {
+      setS3ExplorerAnchorEl(inputRef.current)
+    }
+  }
+
+  const handleS3FilesSelected = (files) => {
+    const filesStr = JSON.stringify(files)
+    setMyValue(filesStr)
+    onChange(filesStr)
+    handleCloseS3Explorer()
   }
 
   const setNewVal = (val) => {
@@ -84,6 +110,8 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                 }
               }
             }}
+            ref={inputRef}
+            onClick={handleInputClick}
           />
         </FormControl>
       ) : (
@@ -108,6 +136,8 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                 height: inputParam.rows ? '90px' : 'inherit'
               }
             }}
+            ref={inputRef}
+            onClick={handleInputClick}
           />
         </FormControl>
       )}
@@ -133,6 +163,38 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
               setNewVal(val)
               handleClosePopOver()
             }}
+          />
+        </Popover>
+      )}
+      {isKnowledgeFilesInput && (
+        <Popover
+          open={openS3Explorer}
+          anchorEl={s3ExplorerAnchorEl}
+          onClose={handleCloseS3Explorer}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left'
+          }}
+          slotProps={{
+            paper: {
+              style: {
+                width: '400px',
+                maxHeight: '600px',
+                padding: '1rem'
+              }
+            }
+          }}
+        >
+          <S3Explorer
+            apiBaseUrl={import.meta.env.VITE_DOCUMENT_STORE_BASE_URL}
+            homeLabel='Kho tài liệu'
+            rootPrefix=''
+            asSelector={true}
+            onSelected={handleS3FilesSelected}
           />
         </Popover>
       )}
