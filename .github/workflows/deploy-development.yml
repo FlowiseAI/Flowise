@@ -69,44 +69,44 @@ jobs:
           source: './*'
           target: '/home/ec2-user/flowise'
 
-      # - name: Install Flowise in EC2
-      #   uses: appleboy/ssh-action@v1.1.0
-      #   with:
-      #     host: ${{ env.EC2_IP }}
-      #     username: ec2-user
-      #     key: ${{ secrets.SSH_KEY }}
-      #     script: |
-      #       # Update packages
-      #       yum update -y
+      - name: Install Flowise in EC2
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ env.EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Update packages
+            yum update -y
 
-      #       # Install Docker
-      #       yum install -y docker
-      #       systemctl enable docker
-      #       systemctl start docker
+            # Install Docker
+            yum install -y docker
+            systemctl enable docker
+            systemctl start docker
 
-      #       # Add ec2-user to the Docker group
-      #       usermod -aG docker ec2-user
+            # Add ec2-user to the Docker group
+            usermod -aG docker ec2-user
 
-      #       # Install Docker Compose
-      #       yum install -y docker-compose-plugin
+            # Install Docker Compose
+            yum install -y docker-compose-plugin
 
-      #       # Install Git
-      #       yum install -y git
+            # Install Git
+            yum install -y git
 
-      #       # Clone the Flowise repository
-      #       # git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/flowise
-      #       cd /home/ec2-user/flowise
+            # Clone the Flowise repository
+            # git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/flowise
+            cd /home/ec2-user/flowise
 
-      #       # Create the .env file
-      #       cat <<EOT >> /home/ec2-user/flowise/docker/.env
-      #       PORT=3000
-      #       DATABASE_PATH=/root/.flowise
-      #       APIKEY_PATH=/root/.flowise
-      #       SECRETKEY_PATH=/root/.flowise
-      #       LOG_PATH=/root/.flowise/logs
-      #       BLOB_STORAGE_PATH=/root/.flowise/storage
-      #       EOT
+            # Create the .env file
+            cat <<EOT >> /home/ec2-user/flowise/docker/.env
+            PORT=3000
+            DATABASE_PATH=/root/.flowise
+            APIKEY_PATH=/root/.flowise
+            SECRETKEY_PATH=/root/.flowise
+            LOG_PATH=/root/.flowise/logs
+            BLOB_STORAGE_PATH=/root/.flowise/storage
+            EOT
 
-      #       # Start the Flowise application using Docker Compose
-      #       docker compose up -d
+            # Start the Flowise application using Docker Compose
+            docker compose up -d
 
