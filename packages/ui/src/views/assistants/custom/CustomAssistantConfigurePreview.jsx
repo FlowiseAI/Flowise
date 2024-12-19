@@ -987,7 +987,7 @@ const CustomAssistantConfigurePreview = () => {
                                         >
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
                                                 <Typography>Knowledge (Document Stores)</Typography>
-                                                <TooltipWithParser title='Give your assistant context about different document sources' />
+                                                <TooltipWithParser title='Give your assistant context about different document sources. Document stores must be upserted in advance.' />
                                             </Stack>
                                             <MultiDropdown
                                                 key={JSON.stringify(selectedDocumentStores)}
