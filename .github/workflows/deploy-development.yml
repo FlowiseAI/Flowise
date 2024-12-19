@@ -57,3 +57,55 @@ jobs:
           SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
           echo "EC2_ID=${SumoFlowiseWebAppURL}" >> $GITHUB_ENV
 
+      - name: Upload Source Code to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_KEY }}
+          overwrite: true
+          timeout: 150s
+          rm: true
+          source: './*'
+          target: '/home/ubuntu/Flowise'
+
+      - name: Install Flowise in EC2
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ env.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Update packages
+            yum update -y
+
+            # Install Docker
+            yum install -y docker
+            systemctl enable docker
+            systemctl start docker
+
+            # Add ec2-user to the Docker group
+            usermod -aG docker ec2-user
+
+            # Install Docker Compose
+            yum install -y docker-compose-plugin
+
+            # Install Git
+            yum install -y git
+
+            # Clone the Flowise repository
+            git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/Flowise
+
+            # Create the .env file
+            cat <<EOT >> /home/ec2-user/Flowise/docker/.env
+            PORT=3000
+            DATABASE_PATH=/root/.flowise
+            APIKEY_PATH=/root/.flowise
+            SECRETKEY_PATH=/root/.flowise
+            LOG_PATH=/root/.flowise/logs
+            BLOB_STORAGE_PATH=/root/.flowise/storage
+            EOT
+
+            # Start the Flowise application using Docker Compose
+            docker compose up -d
+
