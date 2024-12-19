@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
-import { FormControl, InputBase, OutlinedInput, Popover } from '@mui/material'
+import { Dialog, FormControl, InputBase, OutlinedInput } from '@mui/material'
 import SelectVariable from '@/ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 import { S3Explorer } from 'dccxx-s3-explorer'
@@ -9,8 +9,8 @@ import 'dccxx-s3-explorer/dist/style.css'
 
 export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
   const [myValue, setMyValue] = useState(value ?? '')
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [s3ExplorerAnchorEl, setS3ExplorerAnchorEl] = useState(null)
+  const [openVariableDialog, setOpenVariableDialog] = useState(false)
+  const [openS3Dialog, setOpenS3Dialog] = useState(false)
   const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
   const ref = useRef(null)
   const inputRef = useRef(null)
@@ -18,20 +18,17 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
     return inputParam.name === 'knowledgeBaseFiles'
   }, [inputParam])
 
-  const openPopOver = Boolean(anchorEl)
-  const openS3Explorer = Boolean(s3ExplorerAnchorEl)
-
-  const handleClosePopOver = () => {
-    setAnchorEl(null)
+  const handleCloseVariableDialog = () => {
+    setOpenVariableDialog(false)
   }
 
-  const handleCloseS3Explorer = () => {
-    setS3ExplorerAnchorEl(null)
+  const handleCloseS3Dialog = () => {
+    setOpenS3Dialog(false)
   }
 
   const handleInputClick = () => {
     if (isKnowledgeFilesInput && !disabled) {
-      setS3ExplorerAnchorEl(inputRef.current)
+      setOpenS3Dialog(true)
     }
   }
 
@@ -39,7 +36,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
     const filesStr = JSON.stringify(files)
     setMyValue(filesStr)
     onChange(filesStr)
-    handleCloseS3Explorer()
+    handleCloseS3Dialog()
   }
 
   const setNewVal = (val) => {
@@ -70,7 +67,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
 
   useEffect(() => {
     if (typeof myValue === 'string' && myValue && myValue.endsWith('{{')) {
-      setAnchorEl(ref.current)
+      setOpenVariableDialog(true)
     }
   }, [myValue])
 
@@ -143,49 +140,26 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
       )}
       <div ref={ref}></div>
       {inputParam?.acceptVariable && (
-        <Popover
-          open={openPopOver}
-          anchorEl={anchorEl}
-          onClose={handleClosePopOver}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left'
-          }}
-        >
+        <Dialog open={openVariableDialog} onClose={handleCloseVariableDialog} maxWidth='sm' fullWidth>
           <SelectVariable
             disabled={disabled}
             availableNodesForVariable={availableNodesForVariable}
             onSelectAndReturnVal={(val) => {
               setNewVal(val)
-              handleClosePopOver()
+              handleCloseVariableDialog()
             }}
           />
-        </Popover>
+        </Dialog>
       )}
       {isKnowledgeFilesInput && (
-        <Popover
-          open={openS3Explorer}
-          anchorEl={s3ExplorerAnchorEl}
-          onClose={handleCloseS3Explorer}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left'
-          }}
-          slotProps={{
-            paper: {
-              style: {
-                width: '400px',
-                maxHeight: '600px',
-                padding: '1rem'
-              }
+        <Dialog
+          open={openS3Dialog}
+          onClose={handleCloseS3Dialog}
+          maxWidth='sm'
+          fullWidth
+          PaperProps={{
+            style: {
+              padding: '1rem'
             }
           }}
         >
@@ -196,7 +170,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
             asSelector={true}
             onSelected={handleS3FilesSelected}
           />
-        </Popover>
+        </Dialog>
       )}
     </>
   )
