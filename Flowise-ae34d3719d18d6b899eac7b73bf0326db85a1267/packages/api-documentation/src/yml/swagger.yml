@@ -1,0 +1,2281 @@
+tags:
+    - name: assistants
+    - name: attachments
+    - name: chatmessage
+    - name: chatflows
+    - name: document-store
+    - name: feedback
+    - name: leads
+    - name: ping
+    - name: prediction
+    - name: tools
+    - name: upsert-history
+    - name: variables
+    - name: vector
+
+paths:
+    /chatmessage/{id}:
+        get:
+            tags:
+                - chatmessage
+            security:
+                - bearerAuth: []
+            operationId: getAllChatMessages
+            summary: List all chat messages
+            description: Retrieve all chat messages for a specific chatflow.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+                - in: query
+                  name: chatType
+                  schema:
+                      type: string
+                      enum: [INTERNAL, EXTERNAL]
+                  description: Filter by chat type
+                - in: query
+                  name: order
+                  schema:
+                      type: string
+                      enum: [ASC, DESC]
+                  description: Sort order
+                - in: query
+                  name: chatId
+                  schema:
+                      type: string
+                  description: Filter by chat ID
+                - in: query
+                  name: memoryType
+                  schema:
+                      type: string
+                      example: Buffer Memory
+                  description: Filter by memory type
+                - in: query
+                  name: sessionId
+                  schema:
+                      type: string
+                  description: Filter by session ID
+                - in: query
+                  name: startDate
+                  schema:
+                      type: string
+                  format: date-time
+                  description: Filter by start date
+                - in: query
+                  name: endDate
+                  schema:
+                      type: string
+                  format: date-time
+                  description: Filter by end date
+                - in: query
+                  name: feedback
+                  schema:
+                      type: boolean
+                  description: Filter by feedback
+                - in: query
+                  name: feedbackType
+                  schema:
+                      type: string
+                      enum: [THUMBS_UP, THUMBS_DOWN]
+                  description: Filter by feedback type
+            responses:
+                '200':
+                    description: A list of chat messages
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/ChatMessage'
+                '500':
+                    description: Internal error
+
+        delete:
+            tags:
+                - chatmessage
+            security:
+                - bearerAuth: []
+            operationId: removeAllChatMessages
+            summary: Delete all chat messages
+            description: Delete all chat messages for a specific chatflow.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+                - in: query
+                  name: chatId
+                  schema:
+                      type: string
+                  description: Filter by chat ID
+                - in: query
+                  name: memoryType
+                  schema:
+                      type: string
+                      example: Buffer Memory
+                  description: Filter by memory type
+                - in: query
+                  name: sessionId
+                  schema:
+                      type: string
+                  description: Filter by session ID
+                - in: query
+                  name: chatType
+                  schema:
+                      type: string
+                      enum: [INTERNAL, EXTERNAL]
+                  description: Filter by chat type
+            responses:
+                '200':
+                    description: Chat messages deleted successfully
+                '400':
+                    description: Invalid parameters
+                '404':
+                    description: Chat messages not found
+                '500':
+                    description: Internal error
+    /assistants:
+        post:
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            operationId: createAssistant
+            summary: Create a new assistant
+            description: Create a new assistant with the provided details
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Assistant'
+                required: true
+            responses:
+                '200':
+                    description: Assistant created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Assistant'
+                '400':
+                    description: Invalid input provided
+                '422':
+                    description: Validation exception
+        get:
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            summary: List all assistants
+            description: Retrieve a list of all assistants
+            operationId: listAssistants
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                $ref: '#/components/schemas/Assistant'
+                '500':
+                    description: Internal error
+    /assistants/{id}:
+        get:
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            summary: Get assistant by ID
+            description: Retrieve a specific assistant by ID
+            operationId: getAssistantById
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Assistant ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Assistant'
+                '400':
+                    description: The specified ID is invalid
+                '404':
+                    description: Assistant not found
+                '500':
+                    description: Internal error
+        put:
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            summary: Update assistant details
+            description: Update the details of an existing assistant
+            operationId: updateAssistant
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Assistant ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Assistant'
+            responses:
+                '200':
+                    description: Assistant updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/assistant'
+                '400':
+                    description: The specified ID is invalid or body is missing
+                '404':
+                    description: Assistant not found
+                '500':
+                    description: Internal error
+        delete:
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            summary: Delete an assistant
+            description: Delete an assistant by ID
+            operationId: deleteAssistant
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Assistant ID
+            responses:
+                '200':
+                    description: Assistant deleted successfully
+                '400':
+                    description: The specified ID is invalid
+                '404':
+                    description: Assistant not found
+                '500':
+                    description: Internal error
+
+    /attachments/{chatflowId}/{chatId}:
+        post:
+            tags:
+                - attachments
+            security:
+                - bearerAuth: []
+            operationId: createAttachment
+            summary: Create attachments array
+            description: Return contents of the files in plain string format
+            parameters:
+                - in: path
+                  name: chatflowId
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+                - in: path
+                  name: chatId
+                  required: true
+                  schema:
+                      type: string
+                  description: Chat ID
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                files:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: binary
+                                    description: Files to be uploaded
+                                base64:
+                                    type: boolean
+                                    default: false
+                                    description: Return contents of the files in base64 format
+                            required:
+                                - files
+                required: true
+            responses:
+                '200':
+                    description: Attachments created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/CreateAttachmentResponse'
+                '400':
+                    description: Invalid input provided
+                '404':
+                    description: Chatflow or ChatId not found
+                '422':
+                    description: Validation error
+                '500':
+                    description: Internal server error
+
+    /chatflows:
+        post:
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            operationId: createChatflow
+            summary: Create a new chatflow
+            description: Create a new chatflow with the provided details
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Chatflow'
+                required: true
+            responses:
+                '200':
+                    description: Chatflow created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Chatflow'
+                '400':
+                    description: Invalid input provided
+                '422':
+                    description: Validation exception
+        get:
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            summary: List all chatflows
+            description: Retrieve a list of all chatflows
+            operationId: listChatflows
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Chatflow'
+                '500':
+                    description: Internal error
+    /chatflows/{id}:
+        get:
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            summary: Get chatflow by ID
+            description: Retrieve a specific chatflow by ID
+            operationId: getChatflowById
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Chatflow'
+                '400':
+                    description: The specified ID is invalid
+                '404':
+                    description: Chatflow not found
+                '500':
+                    description: Internal error
+        put:
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            summary: Update chatflow details
+            description: Update the details of an existing chatflow
+            operationId: updateChatflow
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Chatflow'
+            responses:
+                '200':
+                    description: Chatflow updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Chatflow'
+                '400':
+                    description: The specified ID is invalid or body is missing
+                '404':
+                    description: Chatflow not found
+                '500':
+                    description: Internal error
+        delete:
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            summary: Delete a chatflow
+            description: Delete a chatflow by ID
+            operationId: deleteChatflow
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            responses:
+                '200':
+                    description: Chatflow deleted successfully
+                '400':
+                    description: The specified ID is invalid
+                '404':
+                    description: Chatflow not found
+                '500':
+                    description: Internal error
+    /chatflows/apikey/{apikey}:
+        get:
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            summary: Get chatflow by API key
+            description: Retrieve a chatflow using an API key
+            operationId: getChatflowByApiKey
+            parameters:
+                - in: path
+                  name: apikey
+                  required: true
+                  schema:
+                      type: string
+                  description: API key associated with the chatflow
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Chatflow'
+                '400':
+                    description: The specified API key is invalid
+                '404':
+                    description: Chatflow not found
+                '500':
+                    description: Internal error
+
+    /document-store/store:
+        post:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Create a new document store
+            description: Creates a new document store with the provided details
+            operationId: createDocumentStore
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DocumentStore'
+                required: true
+            responses:
+                '200':
+                    description: Successfully created document store
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DocumentStore'
+                '400':
+                    description: Invalid request body
+                '500':
+                    description: Internal server error
+        get:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: List all document stores
+            description: Retrieves a list of all document stores
+            operationId: getAllDocumentStores
+            responses:
+                '200':
+                    description: A list of document stores
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/DocumentStore'
+                '500':
+                    description: Internal server error
+
+    /document-store/store/{id}:
+        get:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Get a specific document store
+            description: Retrieves details of a specific document store by its ID
+            operationId: getDocumentStoreById
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document store ID
+            responses:
+                '200':
+                    description: Successfully retrieved document store
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DocumentStore'
+                '404':
+                    description: Document store not found
+                '500':
+                    description: Internal server error
+        put:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Update a specific document store
+            description: Updates the details of a specific document store by its ID
+            operationId: updateDocumentStore
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document store ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DocumentStore'
+                required: true
+            responses:
+                '200':
+                    description: Successfully updated document store
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DocumentStore'
+                '404':
+                    description: Document store not found
+                '500':
+                    description: Internal server error
+        delete:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Delete a specific document store
+            description: Deletes a document store by its ID
+            operationId: deleteDocumentStore
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document store ID
+            responses:
+                '200':
+                    description: Successfully deleted document store
+                '404':
+                    description: Document store not found
+                '500':
+                    description: Internal server error
+
+    /document-store/upsert/{id}:
+        post:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Upsert new document to document store
+            description: Upsert new document to document store
+            operationId: upsertDocument
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document store ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DocumentStoreLoaderForUpsert'
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                files:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: binary
+                                    description: Files to be uploaded
+                                loader:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"plainText","config":{"text":"why the sky is blue"}}'
+                                    description: Loader configurations
+                                splitter:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"recursiveCharacterTextSplitter","config":{"chunkSize":2000}}'
+                                    description: Splitter configurations
+                                embedding:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"openAIEmbeddings","config":{"modelName":"text-embedding-ada-002"}}'
+                                    description: Embedding configurations
+                                vectorStore:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"faiss"}'
+                                    description: Vector Store configurations
+                                recordManager:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"postgresRecordManager"}'
+                                    description: Record Manager configurations
+                            required:
+                                - files
+                required: true
+            responses:
+                '200':
+                    description: Successfully execute upsert operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/VectorUpsertResponse'
+
+                '400':
+                    description: Invalid request body
+                '500':
+                    description: Internal server error
+
+    /document-store/refresh/{id}:
+        post:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Re-process and upsert all documents in document store
+            description: Re-process and upsert all existing documents in document store
+            operationId: refreshDocument
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document store ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DocumentStoreLoaderForRefresh'
+                required: true
+            responses:
+                '200':
+                    description: Successfully execute refresh operation
+                    content:
+                        application/json:
+                            type: array
+                            items:
+                                $ref: '#/components/schemas/VectorUpsertResponse'
+
+                '400':
+                    description: Invalid request body
+                '500':
+                    description: Internal server error
+
+    /document-store/vectorstore/query:
+        post:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Retrieval query
+            description: Retrieval query for the upserted chunks
+            operationId: queryVectorStore
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - storeId
+                                - query
+                            properties:
+                                storeId:
+                                    type: string
+                                    description: Document store ID
+                                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                                query:
+                                    type: string
+                                    description: Query to search for
+                                    example: 'What is the capital of France?'
+                required: true
+            responses:
+                '200':
+                    description: Successfully executed query on vector store
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    timeTaken:
+                                        type: number
+                                        description: Time taken to execute the query (in milliseconds)
+                                    docs:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Document'
+                '400':
+                    description: Invalid request body
+                '500':
+                    description: Internal server error
+
+    /document-store/vectorstore/{id}:
+        delete:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Delete data from vector store
+            description: Only data that were upserted with Record Manager will be deleted from vector store
+            operationId: deleteVectorStoreFromStore
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Store ID
+            responses:
+                '200':
+                    description: Successfully deleted data from vector store
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Document Store not found
+                '500':
+                    description: Internal server error
+
+    /feedback:
+        post:
+            tags:
+                - feedback
+            security:
+                - bearerAuth: []
+            operationId: createChatMessageFeedbackForChatflow
+            summary: Create new chat message feedback
+            description: Create new feedback for a specific chat flow.
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatMessageFeedback'
+                required: true
+            responses:
+                '200':
+                    description: Feedback successfully created
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatMessageFeedback'
+                '400':
+                    description: Invalid input provided
+                '500':
+                    description: Internal server error
+    /feedback/{id}:
+        get:
+            tags:
+                - feedback
+            security:
+                - bearerAuth: []
+            summary: List all chat message feedbacks for a chatflow
+            description: Retrieve all feedbacks for a chatflow
+            operationId: getAllChatMessageFeedback
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+                - in: query
+                  name: chatId
+                  schema:
+                      type: string
+                  description: Chat ID to filter feedbacks (optional)
+                - in: query
+                  name: sortOrder
+                  schema:
+                      type: string
+                      enum: [asc, desc]
+                      default: asc
+                  description: Sort order of feedbacks (optional)
+                - in: query
+                  name: startDate
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter feedbacks starting from this date (optional)
+                - in: query
+                  name: endDate
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter feedbacks up to this date (optional)
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/ChatMessageFeedback'
+                '500':
+                    description: Internal server error
+        put:
+            tags:
+                - feedback
+            security:
+                - bearerAuth: []
+            summary: Update chat message feedback
+            description: Update a specific feedback
+            operationId: updateChatMessageFeedbackForChatflow
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chat Message Feedback ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatMessageFeedback'
+            responses:
+                '200':
+                    description: Feedback successfully updated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatMessageFeedback'
+                '400':
+                    description: Invalid input provided
+                '404':
+                    description: Feedback with the specified ID was not found
+                '500':
+                    description: Internal server error
+
+    /leads:
+        post:
+            tags:
+                - leads
+            security:
+                - bearerAuth: []
+            operationId: createLead
+            summary: Create a new lead in a chatflow
+            description: Create a new lead associated with a specific chatflow
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Lead'
+                required: true
+            responses:
+                '200':
+                    description: Lead created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Lead'
+                '400':
+                    description: Invalid request body
+                '422':
+                    description: Validation error
+                '500':
+                    description: Internal server error
+
+    /leads/{id}:
+        get:
+            tags:
+                - leads
+            security:
+                - bearerAuth: []
+            summary: Get all leads for a specific chatflow
+            description: Retrieve all leads associated with a specific chatflow
+            operationId: getAllLeadsForChatflow
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Lead'
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Leads not found
+                '500':
+                    description: Internal server error
+
+    /ping:
+        get:
+            tags:
+                - ping
+            summary: Ping the server
+            description: Ping the server to check if it is running
+            operationId: pingServer
+            responses:
+                '200':
+                    description: Server is running
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: pong
+                '500':
+                    description: Internal server error
+
+    /prediction/{id}:
+        post:
+            tags:
+                - prediction
+            security:
+                - bearerAuth: []
+            operationId: createPrediction
+            summary: Create a new prediction
+            description: Create a new prediction
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Prediction'
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                question:
+                                    type: string
+                                    description: Question to ask during the prediction process
+                                files:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: binary
+                                    description: Files to be uploaded
+                                modelName:
+                                    type: string
+                                    nullable: true
+                                    example: ''
+                                    description: Other override configurations
+                            required:
+                                - question
+                required: true
+            responses:
+                '200':
+                    description: Prediction created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    text:
+                                        type: string
+                                        description: The result of the prediction
+                                    json:
+                                        type: object
+                                        description: The result of the prediction in JSON format if available
+                                    question:
+                                        type: string
+                                        description: The question asked during the prediction process
+                                    chatId:
+                                        type: string
+                                        description: The chat ID associated with the prediction
+                                    chatMessageId:
+                                        type: string
+                                        description: The chat message ID associated with the prediction
+                                    sessionId:
+                                        type: string
+                                        description: The session ID associated with the prediction
+                                    memoryType:
+                                        type: string
+                                        description: The memory type associated with the prediction
+                                    sourceDocuments:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Document'
+                                    usedTools:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/UsedTool'
+                                    fileAnnotations:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/FileAnnotation'
+                '400':
+                    description: Invalid input provided
+                '404':
+                    description: Chatflow not found
+                '422':
+                    description: Validation error
+                '500':
+                    description: Internal server error
+    /tools:
+        post:
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            operationId: createTool
+            summary: Create a new tool
+            description: Create a new tool
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Tool'
+                required: true
+            responses:
+                '200':
+                    description: Tool created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Tool'
+                '400':
+                    description: Invalid request body
+                '422':
+                    description: Validation error
+                '500':
+                    description: Internal server error
+        get:
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            summary: List all tools
+            description: Retrieve a list of all tools
+            operationId: getAllTools
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Tool'
+                '500':
+                    description: Internal server error
+
+    /tools/{id}:
+        get:
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            summary: Get a tool by ID
+            description: Retrieve a specific tool by ID
+            operationId: getToolById
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Tool ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Tool'
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Tool not found
+                '500':
+                    description: Internal server error
+        put:
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            summary: Update a tool by ID
+            description: Update a specific tool by ID
+            operationId: updateTool
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Tool ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Tool'
+                required: true
+            responses:
+                '200':
+                    description: Tool updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Tool'
+                '400':
+                    description: Invalid ID or request body provided
+                '404':
+                    description: Tool not found
+                '500':
+                    description: Internal server error
+        delete:
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            summary: Delete a tool by ID
+            description: Delete a specific tool by ID
+            operationId: deleteTool
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Tool ID
+            responses:
+                '200':
+                    description: Tool deleted successfully
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Tool not found
+                '500':
+                    description: Internal server error
+
+    /upsert-history/{id}:
+        get:
+            tags:
+                - upsert-history
+            security:
+                - bearerAuth: []
+            summary: Get all upsert history records
+            description: Retrieve all upsert history records with optional filters
+            operationId: getAllUpsertHistory
+            parameters:
+                - in: path
+                  name: id
+                  required: false
+                  schema:
+                      type: string
+                  description: Chatflow ID to filter records by
+                - in: query
+                  name: order
+                  required: false
+                  schema:
+                      type: string
+                      enum: [ASC, DESC]
+                      default: ASC
+                  description: Sort order of the results (ascending or descending)
+                - in: query
+                  name: startDate
+                  required: false
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter records from this start date (inclusive)
+                - in: query
+                  name: endDate
+                  required: false
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter records until this end date (inclusive)
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/UpsertHistoryResponse'
+                '500':
+                    description: Internal server error
+        patch:
+            tags:
+                - upsert-history
+            security:
+                - bearerAuth: []
+            summary: Delete upsert history records
+            description: Soft delete upsert history records by IDs
+            operationId: patchDeleteUpsertHistory
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                ids:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: List of upsert history record IDs to delete
+            responses:
+                '200':
+                    description: Successfully deleted records
+                '400':
+                    description: Invalid request body
+                '500':
+                    description: Internal server error
+    /variables:
+        post:
+            tags:
+                - variables
+            security:
+                - bearerAuth: []
+            operationId: createVariable
+            summary: Create a new variable
+            description: Create a new variable
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Variable'
+                required: true
+            responses:
+                '200':
+                    description: Variable created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Variable'
+                '400':
+                    description: Invalid request body
+                '422':
+                    description: Validation error
+                '500':
+                    description: Internal server error
+        get:
+            tags:
+                - variables
+            security:
+                - bearerAuth: []
+            summary: List all variables
+            description: Retrieve a list of all variables
+            operationId: getAllVariables
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Variable'
+                '500':
+                    description: Internal server error
+
+    /variables/{id}:
+        put:
+            tags:
+                - variables
+            security:
+                - bearerAuth: []
+            summary: Update a variable by ID
+            description: Update a specific variable by ID
+            operationId: updateVariable
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Variable ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Variable'
+                required: true
+            responses:
+                '200':
+                    description: Variable updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Variable'
+                '400':
+                    description: Invalid ID or request body provided
+                '404':
+                    description: Variable not found
+                '500':
+                    description: Internal server error
+        delete:
+            tags:
+                - variables
+            security:
+                - bearerAuth: []
+            summary: Delete a variable by ID
+            description: Delete a specific variable by ID
+            operationId: deleteVariable
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Variable ID
+            responses:
+                '200':
+                    description: Variable deleted successfully
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Variable not found
+                '500':
+                    description: Internal server error
+    /vector/upsert/{id}:
+        post:
+            tags:
+                - vector
+            security:
+                - bearerAuth: []
+            operationId: vectorUpsert
+            summary: Upsert vector embeddings
+            description: Upsert vector embeddings of documents in a chatflow
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                stopNodeId:
+                                    type: string
+                                    description: In cases when you have multiple vector store nodes, you can specify the node ID to store the vectors
+                                    example: 'node_1'
+                                overrideConfig:
+                                    type: object
+                                    description: The configuration to override the default vector upsert settings (optional)
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                files:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: binary
+                                    description: Files to be uploaded
+                                modelName:
+                                    type: string
+                                    nullable: true
+                                    example: ''
+                                    description: Other override configurations
+                            required:
+                                - files
+                required: true
+            responses:
+                '200':
+                    description: Vector embeddings upserted successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/VectorUpsertResponse'
+                '400':
+                    description: Invalid input provided
+                '404':
+                    description: Chatflow not found
+                '422':
+                    description: Validation error
+                '500':
+                    description: Internal server error
+
+components:
+    responses:
+        UnauthorizedError:
+            description: Access token is missing or invalid
+    schemas:
+        ApiKey:
+            type: object
+            properties:
+                apiKey:
+                    type: string
+                    example: 'vYV8OdUMRzRQbzpp2JzY5DvriBnuVHo3pYpPQ7IJWyw='
+                apiSecret:
+                    type: string
+                    example: '50e19a35ee1df775c09628dade1c00f0f680c6e15256e34a6eab350b38b31352df35c4db7925a3e5dd41cc773a0e2529e6c6da18408a8bbeeb0ae4b0f0ab9486.a96478a9225ed6ab'
+                chatFlows:
+                    type: array
+                    example: []
+                createdAt:
+                    type: string
+                    example: '10-Mar-24'
+                id:
+                    type: string
+                    example: '525e4daa2104f06ffdea5c1af37009be'
+                keyName:
+                    type: string
+                    example: 'someKeyName'
+
+        ChatMessage:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
+                role:
+                    type: string
+                    enum: [apiMessage, userMessage]
+                    example: 'apiMessage'
+                chatflowid:
+                    type: string
+                    format: uuid
+                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0852'
+                content:
+                    type: string
+                    example: 'Hello, how can I help you today?'
+                sourceDocuments:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/Document'
+                usedTools:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/UsedTool'
+                fileAnnotations:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/FileAnnotation'
+                agentReasoning:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/AgentReasoning'
+                fileUploads:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/FileUpload'
+                action:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/Action'
+                chatType:
+                    type: string
+                    enum: [INTERNAL, EXTERNAL]
+                    example: 'INTERNAL'
+                chatId:
+                    type: string
+                    example: 'chat12345'
+                memoryType:
+                    type: string
+                    nullable: true
+                sessionId:
+                    type: string
+                    nullable: true
+                createdDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+                leadEmail:
+                    type: string
+                    nullable: true
+                    example: 'user@example.com'
+
+        Chatflow:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
+                name:
+                    type: string
+                    example: 'MyChatFlow'
+                flowData:
+                    type: string
+                    example: '{}'
+                deployed:
+                    type: boolean
+                isPublic:
+                    type: boolean
+                apikeyid:
+                    type: string
+                chatbotConfig:
+                    type: string
+                    example: '{}'
+                apiConfig:
+                    type: string
+                    example: '{}'
+                analytic:
+                    type: string
+                    example: '{}'
+                speechToText:
+                    type: string
+                    example: '{}'
+                category:
+                    type: string
+                    example: 'category1;category2'
+                type:
+                    type: string
+                    enum: [CHATFLOW, MULTIAGENT]
+                createdDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+                updatedDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+
+        Document:
+            type: object
+            properties:
+                pageContent:
+                    type: string
+                    example: 'This is the content of the page.'
+                metadata:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    example:
+                        author: 'John Doe'
+                        date: '2024-08-24'
+
+        UsedTool:
+            type: object
+            properties:
+                tool:
+                    type: string
+                    example: 'Name of the tool'
+                toolInput:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    example:
+                        input: 'search query'
+                toolOutput:
+                    type: string
+
+        FileAnnotation:
+            type: object
+            properties:
+                filePath:
+                    type: string
+                    example: 'path/to/file'
+                fileName:
+                    type: string
+                    example: 'file.txt'
+
+        FileUpload:
+            type: object
+            properties:
+                data:
+                    type: string
+                    example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG'
+                type:
+                    type: string
+                    example: 'image'
+                name:
+                    type: string
+                    example: 'image.png'
+                mime:
+                    type: string
+                    example: 'image/png'
+        Action:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    example: '61beeb58-6ebe-4d51-aa0b-41d4c546ff08'
+                mapping:
+                    type: object
+                    properties:
+                        approve:
+                            type: string
+                            example: 'Yes'
+                        reject:
+                            type: string
+                            example: 'No'
+                        toolCalls:
+                            type: array
+                            example: []
+                elements:
+                    type: array
+
+        AgentReasoning:
+            type: object
+            properties:
+                agentName:
+                    type: string
+                    example: 'agent'
+                messages:
+                    type: array
+                    items:
+                        type: string
+                    example: ['hello']
+                nodeName:
+                    type: string
+                    example: 'seqAgent'
+                nodeId:
+                    type: string
+                    example: 'seqAgent_0'
+                usedTools:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UsedTool'
+                sourceDocuments:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Document'
+                state:
+                    type: object
+                    additionalProperties:
+                        type: string
+
+        Assistant:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
+                details:
+                    type: object
+                    properties:
+                        id:
+                            type: string
+                            example: 'asst_zbNeYIuXIUSKVHjJkfRo6ilv'
+                        name:
+                            type: string
+                            example: 'assistant'
+                        description:
+                            type: string
+                        model:
+                            type: string
+                            example: 'gpt-4'
+                        instructions:
+                            type: string
+                            example: 'You are a helpful assistant, do your best to answer question and query'
+                        temperature:
+                            type: number
+                            example: 1
+                        top_p:
+                            type: number
+                            example: 1
+                        tools:
+                            type: array
+                            items:
+                                type: string
+                            example: ['function', 'code_interpreter', 'file_search']
+                        tool_resources:
+                            type: object
+                            additionalProperties:
+                                type: object
+                credential:
+                    type: string
+                    example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339'
+                iconSrc:
+                    type: string
+                    example: '/images/assistant.png'
+                createdDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+                updatedDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+
+        Credential:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                name:
+                    type: string
+                    example: 'My Credential'
+                credentialName:
+                    type: string
+                    example: 'openAIAPI'
+                encryptedData:
+                    type: string
+                    example: 'U2FsdGVkX1/3T2gnnsEtX6FJi1DbnYx0VVdS3XWZ5ro='
+                createdDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+                updatedDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+        Prediction:
+            type: object
+            properties:
+                question:
+                    type: string
+                    description: The question being asked
+                overrideConfig:
+                    type: object
+                    description: The configuration to override the default prediction settings (optional)
+                history:
+                    type: array
+                    description: The history messages to be prepended (optional)
+                    items:
+                        type: object
+                        properties:
+                            role:
+                                type: string
+                                enum: [apiMessage, userMessage]
+                                description: The role of the message
+                                example: apiMessage
+                            content:
+                                type: string
+                                description: The content of the message
+                                example: 'Hello, how can I help you?'
+                uploads:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            type:
+                                type: string
+                                enum: [audio, url, file, file:rag, file:full]
+                                description: The type of file upload
+                                example: file
+                            name:
+                                type: string
+                                description: The name of the file or resource
+                                example: 'image.png'
+                            data:
+                                type: string
+                                description: The base64-encoded data or URL for the resource
+                                example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG'
+                            mime:
+                                type: string
+                                description: The MIME type of the file or resource
+                                example: 'image/png'
+
+        Tool:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the tool
+                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                name:
+                    type: string
+                    description: Name of the tool
+                    example: 'date_time_tool'
+                description:
+                    type: string
+                    description: Description of the tool
+                    example: 'A tool used for date and time operations'
+                color:
+                    type: string
+                    description: Color associated with the tool
+                    example: '#FF5733'
+                iconSrc:
+                    type: string
+                    nullable: true
+                    description: Source URL for the tool's icon
+                    example: 'https://example.com/icons/date.png'
+                schema:
+                    type: string
+                    nullable: true
+                    description: JSON schema associated with the tool
+                func:
+                    type: string
+                    nullable: true
+                    description: Functionality description or code associated with the tool
+                createdDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the tool was created
+                    example: '2024-08-24T14:15:22Z'
+                updatedDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the tool was last updated
+                    example: '2024-08-24T14:15:22Z'
+        Variable:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the variable
+                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                name:
+                    type: string
+                    description: Name of the variable
+                    example: 'API_KEY'
+                value:
+                    type: string
+                    description: Value of the variable
+                    nullable: true
+                    example: 'my-secret-key'
+                type:
+                    type: string
+                    description: Type of the variable (e.g., string, number)
+                    example: 'string'
+                createdDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the variable was created
+                    example: '2024-08-24T14:15:22Z'
+                updatedDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the variable was last updated
+                    example: '2024-08-24T14:15:22Z'
+        VectorUpsertResponse:
+            type: object
+            properties:
+                numAdded:
+                    type: number
+                    description: Number of vectors added
+                    example: 1
+                numDeleted:
+                    type: number
+                    description: Number of vectors deleted
+                    example: 1
+                numUpdated:
+                    type: number
+                    description: Number of vectors updated
+                    example: 1
+                numSkipped:
+                    type: number
+                    description: Number of vectors skipped (not added, deleted, or updated)
+                    example: 1
+                addedDocs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Document'
+        Lead:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the lead
+                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                name:
+                    type: string
+                    description: Name of the lead
+                    example: 'John Doe'
+                email:
+                    type: string
+                    description: Email address of the lead
+                    example: 'john.doe@example.com'
+                phone:
+                    type: string
+                    description: Phone number of the lead
+                    example: '+1234567890'
+                chatflowid:
+                    type: string
+                    description: ID of the chatflow the lead is associated with
+                    example: '7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02'
+                chatId:
+                    type: string
+                    description: ID of the chat session the lead is associated with
+                    example: 'd7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b'
+                createdDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the lead was created
+                    example: '2024-08-24T14:15:22Z'
+        UpsertHistoryResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the upsert history record
+                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                chatflowid:
+                    type: string
+                    description: ID of the chatflow associated with the upsert history
+                    example: '7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02'
+                result:
+                    type: string
+                    description: Result of the upsert operation, stored as a JSON string
+                    example: '{"status":"success","data":{"key":"value"}}'
+                flowData:
+                    type: string
+                    description: Flow data associated with the upsert operation, stored as a JSON string
+                    example: '{"nodes":[],"edges":[]}'
+                date:
+                    type: string
+                    format: date-time
+                    description: Date and time when the upsert operation was performed
+                    example: '2024-08-24T14:15:22Z'
+        DocumentStore:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the document store
+                name:
+                    type: string
+                    description: Name of the document store
+                description:
+                    type: string
+                    description: Description of the document store
+                loaders:
+                    type: string
+                    description: Loaders associated with the document store, stored as JSON string
+                whereUsed:
+                    type: string
+                    description: Places where the document store is used, stored as JSON string
+                status:
+                    type: string
+                    enum: [EMPTY, SYNC, SYNCING, STALE, NEW, UPSERTING, UPSERTED]
+                    description: Status of the document store
+                vectorStoreConfig:
+                    type: string
+                    description: Configuration for the vector store, stored as JSON string
+                embeddingConfig:
+                    type: string
+                    description: Configuration for the embedding, stored as JSON string
+                recordManagerConfig:
+                    type: string
+                    description: Configuration for the record manager, stored as JSON string
+                createdDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the document store was created
+                updatedDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the document store was last updated
+
+        DocumentStoreFileChunk:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the file chunk
+                docId:
+                    type: string
+                    format: uuid
+                    description: Document ID within the store
+                storeId:
+                    type: string
+                    format: uuid
+                    description: Document store ID
+                chunkNo:
+                    type: integer
+                    description: Chunk number within the document
+                pageContent:
+                    type: string
+                    description: Content of the chunk
+                metadata:
+                    type: string
+                    description: Metadata associated with the chunk
+
+        DocumentStoreLoaderForPreview:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the document store loader
+                loaderId:
+                    type: string
+                    description: ID of the loader
+                loaderName:
+                    type: string
+                    description: Name of the loader
+                loaderConfig:
+                    type: object
+                    description: Configuration for the loader
+                splitterId:
+                    type: string
+                    description: ID of the text splitter
+                splitterName:
+                    type: string
+                    description: Name of the text splitter
+                splitterConfig:
+                    type: object
+                    description: Configuration for the text splitter
+                totalChunks:
+                    type: number
+                    description: Total number of chunks
+                totalChars:
+                    type: number
+                    description: Total number of characters
+                status:
+                    type: string
+                    enum: [EMPTY, SYNC, SYNCING, STALE, NEW, UPSERTING, UPSERTED]
+                    description: Status of the document store loader
+                storeId:
+                    type: string
+                    description: ID of the document store
+                files:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentStoreLoaderFile'
+                source:
+                    type: string
+                    description: Source of the document store loader
+                credential:
+                    type: string
+                    description: Credential associated with the document store loader
+                rehydrated:
+                    type: boolean
+                    description: Whether the loader has been rehydrated
+                preview:
+                    type: boolean
+                    description: Whether the loader is in preview mode
+                previewChunkCount:
+                    type: number
+                    description: Number of chunks in preview mode
+
+        DocumentStoreLoaderFile:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the file
+                name:
+                    type: string
+                    description: Name of the file
+                mimePrefix:
+                    type: string
+                    description: MIME prefix of the file
+                size:
+                    type: number
+                    description: Size of the file
+                status:
+                    type: string
+                    enum: [EMPTY, SYNC, SYNCING, STALE, NEW, UPSERTING, UPSERTED]
+                    description: Status of the file
+                uploaded:
+                    type: string
+                    format: date-time
+                    description: Date and time when the file was uploaded
+
+        DocumentStoreFileChunkPagedResponse:
+            type: object
+            properties:
+                chunks:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentStoreFileChunk'
+                count:
+                    type: number
+                    example: 1
+                file:
+                    $ref: '#/components/schemas/DocumentStoreLoaderForPreview'
+                currentPage:
+                    type: number
+                storeName:
+                    type: string
+                description:
+                    type: string
+
+        DocumentStoreLoaderForUpsert:
+            type: object
+            properties:
+                docId:
+                    type: string
+                    format: uuid
+                    description: Document ID within the store. If provided, existing configuration from the document will be used for the new document
+                loader:
+                    type: object
+                    properties:
+                        name:
+                            type: string
+                            example: plainText
+                            description: Name of the loader (camelCase)
+                        config:
+                            type: object
+                            description: Configuration for the loader
+                splitter:
+                    type: object
+                    properties:
+                        name:
+                            type: string
+                            example: recursiveCharacterTextSplitter
+                            description: Name of the text splitter (camelCase)
+                        config:
+                            type: object
+                            description: Configuration for the text splitter
+                embedding:
+                    type: object
+                    properties:
+                        name:
+                            type: string
+                            example: openAIEmbeddings
+                            description: Name of the embedding generator (camelCase)
+                        config:
+                            type: object
+                            description: Configuration for the embedding generator
+                vectorStore:
+                    type: object
+                    properties:
+                        name:
+                            type: string
+                            example: faiss
+                            description: Name of the vector store (camelCase)
+                        config:
+                            type: object
+                            description: Configuration for the vector store
+                recordManager:
+                    type: object
+                    properties:
+                        name:
+                            type: string
+                            example: postgresRecordManager
+                            description: Name of the record manager (camelCase)
+                        config:
+                            type: object
+                            description: Configuration for the record manager
+
+        DocumentStoreLoaderForRefresh:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentStoreLoaderForUpsert'
+
+        ChatMessageFeedback:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the feedback
+                chatflowid:
+                    type: string
+                    format: uuid
+                    description: Identifier for the chat flow
+                chatId:
+                    type: string
+                    description: Identifier for the chat
+                messageId:
+                    type: string
+                    format: uuid
+                    description: Identifier for the message
+                rating:
+                    type: string
+                    enum: [THUMBS_UP, THUMBS_DOWN]
+                    description: Rating for the message
+                content:
+                    type: string
+                    description: Feedback content
+                createdDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the feedback was created
+
+        CreateAttachmentResponse:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the file
+                mimeType:
+                    type: string
+                    description: Mime type of the file
+                size:
+                    type: string
+                    description: Size of the file
+                content:
+                    type: string
+                    description: Content of the file in string format
+
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT # optional, for documentation purposes only

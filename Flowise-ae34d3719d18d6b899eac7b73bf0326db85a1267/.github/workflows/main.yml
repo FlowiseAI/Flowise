@@ -1,0 +1,49 @@
+name: Node CI
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - '*'
+permissions:
+    contents: read
+jobs:
+    build:
+        strategy:
+            matrix:
+                platform: [ubuntu-latest]
+                node-version: [18.15.0]
+        runs-on: ${{ matrix.platform }}
+        env:
+            PUPPETEER_SKIP_DOWNLOAD: true
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v3
+              with:
+                  version: 9.0.4
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  check-latest: false
+                  cache: 'pnpm'
+            - run: npm i -g pnpm
+            - run: pnpm install
+            - run: ./node_modules/.bin/cypress install
+            - run: pnpm lint
+            - run: pnpm build
+            - name: Install dependencies
+              uses: cypress-io/github-action@v6
+              with:
+                  working-directory: ./
+                  runTests: false
+            - name: Cypress test
+              uses: cypress-io/github-action@v6
+              with:
+                  install: false
+                  working-directory: packages/server
+                  start: pnpm start
+                  wait-on: 'http://localhost:3000'
+                  wait-on-timeout: 120
+                  browser: chrome
