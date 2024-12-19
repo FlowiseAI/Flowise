@@ -573,6 +573,19 @@
             ]
         },
         {
+            "name": "deepseek",
+            "models": [
+                {
+                    "label": "deepseek-chat",
+                    "name": "deepseek-chat"
+                },
+                {
+                    "label": "deepseek-coder",
+                    "name": "deepseek-coder"
+                }
+            ]
+        },
+        {
             "name": "chatOpenAI",
             "models": [
                 {
