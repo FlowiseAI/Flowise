@@ -5,7 +5,6 @@ import {
     INodeParams,
     INodeOutputsValue,
     IServerSideEventStreamer,
-    FlowiseMemory
 } from '../../../src/Interface'
 import { GraphCypherQAChain } from '@langchain/community/chains/graph_qa/cypher'
 import { getBaseClasses } from '../../../src/utils'
@@ -31,7 +30,7 @@ class GraphCypherQA_Chain implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Graph Cypher QA Chain'
         this.name = 'graphCypherQAChain'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'GraphCypherQAChain'
         this.icon = 'graphqa.svg'
         this.category = 'Chains'
@@ -66,15 +65,9 @@ class GraphCypherQA_Chain implements INode {
                 type: 'Neo4j'
             },
             {
-                label: 'Memory',
-                name: 'memory',
-                type: 'BaseMemory',
-                optional: true,
-                description: 'Memory to store chat history for context'
-            },
-            {
                 label: 'Cypher Generation Prompt',
                 name: 'cypherPrompt',
+                optional: true,
                 type: 'BasePromptTemplate',
                 description: 'Prompt template for generating Cypher queries. Must include {schema} and {question} variables'
             },
@@ -100,65 +93,46 @@ class GraphCypherQA_Chain implements INode {
                 default: false,
                 optional: true,
                 description: 'If true, return the raw query results instead of using the QA chain'
-            },
-            {
-                label: 'Return Intermediate Steps',
-                name: 'returnIntermediateSteps',
-                type: 'boolean',
-                default: false,
-                optional: true,
-                description: 'If true, return the intermediate steps in the chain execution'
-            }
-        ]
-        this.outputs = [
-            {
-                label: 'Graph Cypher QA Chain',
-                name: 'graphCypherQAChain',
-                baseClasses: [this.type, ...getBaseClasses(GraphCypherQAChain)]
-            },
-            {
-                label: 'Output Prediction',
-                name: 'outputPrediction',
-                baseClasses: ['string', 'json']
             }
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const model = nodeData.inputs?.model
         const cypherModel = nodeData.inputs?.cypherModel
         const qaModel = nodeData.inputs?.qaModel
         const graph = nodeData.inputs?.graph
-        const cypherPrompt = nodeData.inputs?.cypherPrompt as BasePromptTemplate | FewShotPromptTemplate
-        const qaPrompt = nodeData.inputs?.qaPrompt as BasePromptTemplate
+        const cypherPrompt = nodeData.inputs?.cypherPrompt as BasePromptTemplate | FewShotPromptTemplate | undefined
+        const qaPrompt = nodeData.inputs?.qaPrompt as BasePromptTemplate | undefined
         const returnDirect = nodeData.inputs?.returnDirect as boolean
-        const returnIntermediateSteps = nodeData.inputs?.returnIntermediateSteps as boolean
-
-        const omitQaPrompt = cypherPrompt instanceof FewShotPromptTemplate
 
         // Handle prompt values if they exist
-        let cypherPromptTemplate: PromptTemplate | FewShotPromptTemplate
+        let cypherPromptTemplate: PromptTemplate | FewShotPromptTemplate | undefined
         let qaPromptTemplate: PromptTemplate | undefined
 
-        if (cypherPrompt instanceof PromptTemplate) {
-            cypherPromptTemplate = new PromptTemplate({
-                template: cypherPrompt.template as string,
-                inputVariables: cypherPrompt.inputVariables
-            })
-        } else if (cypherPrompt instanceof FewShotPromptTemplate) {
-            const examplePrompt = cypherPrompt.examplePrompt as PromptTemplate
-
-            cypherPromptTemplate = new FewShotPromptTemplate({
-                examples: cypherPrompt.examples,
-                examplePrompt: examplePrompt,
-                inputVariables: cypherPrompt.inputVariables,
-                prefix: cypherPrompt.prefix,
-                suffix: cypherPrompt.suffix,
-                exampleSeparator: cypherPrompt.exampleSeparator,
-                templateFormat: cypherPrompt.templateFormat
-            })
-        } else {
-            cypherPromptTemplate = cypherPrompt as PromptTemplate
+        if (cypherPrompt) {
+            if (cypherPrompt instanceof PromptTemplate) {
+                cypherPromptTemplate = new PromptTemplate({
+                    template: cypherPrompt.template as string,
+                    inputVariables: cypherPrompt.inputVariables
+                })
+                if (!qaPrompt) {
+                    throw new Error('QA Prompt is required when Cypher Prompt is a Prompt Template')
+                }
+            } else if (cypherPrompt instanceof FewShotPromptTemplate) {
+                const examplePrompt = cypherPrompt.examplePrompt as PromptTemplate
+                cypherPromptTemplate = new FewShotPromptTemplate({
+                    examples: cypherPrompt.examples,
+                    examplePrompt: examplePrompt,
+                    inputVariables: cypherPrompt.inputVariables,
+                    prefix: cypherPrompt.prefix,
+                    suffix: cypherPrompt.suffix,
+                    exampleSeparator: cypherPrompt.exampleSeparator,
+                    templateFormat: cypherPrompt.templateFormat
+                })
+            } else {
+                cypherPromptTemplate = cypherPrompt as PromptTemplate
+            }
         }
 
         if (qaPrompt instanceof PromptTemplate) {
@@ -168,19 +142,12 @@ class GraphCypherQA_Chain implements INode {
             })
         }
 
-        if (!cypherModel || !qaModel) {
-            if (!model) {
-                throw new Error('Model or is required when Cypher Model or QA Model are not provided')
-            }
-        }
-
-        // validate cypherPromptTemplate is PromptTemplate and qaPromptTemplate must be exists
-        if (cypherPromptTemplate instanceof PromptTemplate && !qaPromptTemplate) {
-            throw new Error('QA Prompt is required when Cypher Prompt is a Prompt Template')
+        if ((!cypherModel || !qaModel) && !model) {
+            throw new Error('Model or is required when Cypher Model or QA Model are not provided')
         }
 
         // Validate required variables in prompts
-        if (!cypherPromptTemplate.inputVariables.includes('schema') || !cypherPromptTemplate.inputVariables.includes('question')) {
+        if (!cypherPromptTemplate?.inputVariables.includes('schema') || !cypherPromptTemplate?.inputVariables.includes('question')) {
             throw new Error('Cypher Generation Prompt must include {schema} and {question} variables')
         }
 
@@ -190,9 +157,8 @@ class GraphCypherQA_Chain implements INode {
             cypherLLM: cypherModel,
             graph,
             cypherPrompt: cypherPromptTemplate,
-            qaPrompt: omitQaPrompt ? undefined : qaPromptTemplate,
-            returnDirect,
-            returnIntermediateSteps
+            qaPrompt: qaPromptTemplate,
+            returnDirect
         })
 
         return chain
@@ -200,8 +166,8 @@ class GraphCypherQA_Chain implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | object> {
         const chain = nodeData.instance as GraphCypherQAChain
-        const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const returnDirect = nodeData.inputs?.returnDirect as boolean
 
         const shouldStreamResponse = options.shouldStreamResponse
         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
@@ -235,28 +201,19 @@ class GraphCypherQA_Chain implements INode {
         try {
             let response
             if (shouldStreamResponse) {
-                const handler = new CustomChainHandler(sseStreamer, chatId)
-                callbacks.push(handler)
-                response = await chain.invoke(obj, { callbacks })
+                if (returnDirect) {
+                    response = await chain.invoke(obj, { callbacks })
+                    const result = response?.result
+                    if (result) {
+                        streamResponse(sseStreamer, chatId, result)
+                    }
+                } else {
+                    const handler = new CustomChainHandler(sseStreamer, chatId, 2)
+                    callbacks.push(handler)
+                    response = await chain.invoke(obj, { callbacks })
+                }
             } else {
                 response = await chain.invoke(obj, { callbacks })
-            }
-
-            // Store in memory if configured
-            if (memory) {
-                await memory.addChatMessages(
-                    [
-                        {
-                            text: input,
-                            type: 'userMessage'
-                        },
-                        {
-                            text: response?.result,
-                            type: 'apiMessage'
-                        }
-                    ],
-                    this.sessionId
-                )
             }
 
             return response?.result
