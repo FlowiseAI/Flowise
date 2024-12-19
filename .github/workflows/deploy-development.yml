@@ -61,19 +61,19 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ env.EC2_IP }}
-          username: ubuntu
+          username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           overwrite: true
           timeout: 150s
           rm: true
           source: './*'
-          target: '/home/ubuntu/flowise'
+          target: '/home/ec2-user/flowise'
 
       # - name: Install Flowise in EC2
       #   uses: appleboy/ssh-action@v1.1.0
       #   with:
       #     host: ${{ env.EC2_IP }}
-      #     username: ubuntu
+      #     username: ec2-user
       #     key: ${{ secrets.SSH_KEY }}
       #     script: |
       #       # Update packages
@@ -94,10 +94,11 @@ jobs:
       #       yum install -y git
 
       #       # Clone the Flowise repository
-      #       git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/flowise
+      #       # git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/flowise
+      #       cd /home/ec2-user/flowise
 
       #       # Create the .env file
-      #       cat <<EOT >> /home/ec2-user/Flowise/docker/.env
+      #       cat <<EOT >> /home/ec2-user/flowise/docker/.env
       #       PORT=3000
       #       DATABASE_PATH=/root/.flowise
       #       APIKEY_PATH=/root/.flowise

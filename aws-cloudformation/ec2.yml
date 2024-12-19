@@ -37,9 +37,9 @@ Mappings:
   RegionMap:
     # Use Amazon Linux 2 AMI IDs based on region
     us-east-1:
-      AMI: "ami-005fc0f236362e99f" # Amazon Linux 2 AMI for us-east-1
+      AMI: "ami-01816d07b1128cd2d" # Amazon Linux 2023 AMI for us-east-1
     us-west-2:
-      AMI: "ami-0e34e7b9ca0ace12d" # Amazon Linux 2 AMI for us-west-2
+      AMI: "ami-0166fe664262f664c" # Amazon Linux 2 AMI (HVN) for us-west-2
 
 Resources:
   #### Security Group ####
