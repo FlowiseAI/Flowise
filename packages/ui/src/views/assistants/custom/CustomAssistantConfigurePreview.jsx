@@ -321,7 +321,7 @@ const CustomAssistantConfigurePreview = () => {
                 const docStoreOption = documentStoreOptions.find((ds) => ds.name === selectedDocumentStores[i].id)
                 // convert to small case and replace space with underscore
                 const name = (docStoreOption?.label || '').toLowerCase().replace(/ /g, '_')
-                const desc = docStoreOption?.description || ''
+                const desc = selectedDocumentStores[i].description || docStoreOption?.description || ''
 
                 set(retrieverToolNodeData, 'inputs', {
                     name,
@@ -987,7 +987,7 @@ const CustomAssistantConfigurePreview = () => {
                                         >
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
                                                 <Typography>Knowledge (Document Stores)</Typography>
-                                                <TooltipWithParser title='Give your assistant context about different document sources' />
+                                                <TooltipWithParser title='Give your assistant context about different document sources. Document stores must be upserted in advance.' />
                                             </Stack>
                                             <MultiDropdown
                                                 key={JSON.stringify(selectedDocumentStores)}
