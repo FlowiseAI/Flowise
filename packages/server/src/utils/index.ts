@@ -534,7 +534,6 @@ export const buildFlow = async ({
             if (isUpsert) upsertHistory['flowData'] = saveUpsertFlowData(flowNodeData, upsertHistory)
 
             const reactFlowNodeData: INodeData = await resolveVariables(
-                appDataSource,
                 flowNodeData,
                 flowNodes,
                 question,
@@ -736,10 +735,9 @@ export const clearSessionMemory = async (
 }
 
 const getGlobalVariable = async (
-    appDataSource: DataSource,
     overrideConfig?: ICommonObject,
     availableVariables: IVariable[] = [],
-    variableOverrides?: ICommonObject[]
+    variableOverrides: ICommonObject[] = []
 ) => {
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
@@ -800,13 +798,12 @@ const getGlobalVariable = async (
  * @returns {string}
  */
 export const getVariableValue = async (
-    appDataSource: DataSource,
     paramValue: string | object,
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
     isAcceptVariable = false,
-    flowData?: ICommonObject,
+    flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
@@ -851,7 +848,7 @@ export const getVariableValue = async (
             }
 
             if (variableFullPath.startsWith('$vars.')) {
-                const vars = await getGlobalVariable(appDataSource, flowData, availableVariables, variableOverrides)
+                const vars = await getGlobalVariable(flowConfig, availableVariables, variableOverrides)
                 const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
                 if (variableValue) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
@@ -859,8 +856,8 @@ export const getVariableValue = async (
                 }
             }
 
-            if (variableFullPath.startsWith('$flow.') && flowData) {
-                const variableValue = get(flowData, variableFullPath.replace('$flow.', ''))
+            if (variableFullPath.startsWith('$flow.') && flowConfig) {
+                const variableValue = get(flowConfig, variableFullPath.replace('$flow.', ''))
                 if (variableValue) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
@@ -954,12 +951,11 @@ export const getVariableValue = async (
  * @returns {INodeData}
  */
 export const resolveVariables = async (
-    appDataSource: DataSource,
     reactFlowNodeData: INodeData,
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
-    flowData?: ICommonObject,
+    flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
@@ -974,13 +970,12 @@ export const resolveVariables = async (
                 const resolvedInstances = []
                 for (const param of paramValue) {
                     const resolvedInstance = await getVariableValue(
-                        appDataSource,
                         param,
                         reactFlowNodes,
                         question,
                         chatHistory,
                         undefined,
-                        flowData,
+                        flowConfig,
                         uploadedFilesContent,
                         availableVariables,
                         variableOverrides
@@ -991,13 +986,12 @@ export const resolveVariables = async (
             } else {
                 const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
                 const resolvedInstance = await getVariableValue(
-                    appDataSource,
                     paramValue,
                     reactFlowNodes,
                     question,
                     chatHistory,
                     isAcceptVariable,
-                    flowData,
+                    flowConfig,
                     uploadedFilesContent,
                     availableVariables,
                     variableOverrides

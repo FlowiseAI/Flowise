@@ -1,6 +1,6 @@
 import { DeleteResult, FindOptionsWhere } from 'typeorm'
 import { StatusCodes } from 'http-status-codes'
-import { ChatMessageRatingType, ChatType, IChatMessage } from '../../Interface'
+import { ChatMessageRatingType, ChatType, IChatMessage, MODE } from '../../Interface'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { utilAddChatMessage } from '../../utils/addChatMesage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -10,6 +10,7 @@ import logger from '../../utils/logger'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { QueueEventsProducer } from 'bullmq'
 
 // Add chatmessages for chatflowid
 const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
@@ -160,16 +161,20 @@ const removeChatMessagesByMessageIds = async (
 const abortChatMessage = async (chatId: string, chatflowid: string) => {
     try {
         const appServer = getRunningExpressApp()
+        const id = `${chatflowid}_${chatId}`
 
-        const endingNodeData = appServer.chatflowPool.activeChatflows[`${chatflowid}_${chatId}`]?.endingNodeData as any
-
-        if (endingNodeData && endingNodeData.signal) {
-            try {
-                endingNodeData.signal.abort()
-                await appServer.chatflowPool.remove(`${chatflowid}_${chatId}`)
-            } catch (e) {
-                logger.error(`[server]: Error aborting chat message for ${chatflowid}, chatId ${chatId}: ${e}`)
-            }
+        if (process.env.MODE === MODE.QUEUE) {
+            const predictionQueue = appServer.queueManager.getQueue('prediction')
+            const connection = appServer.queueManager.getConnection()
+            const queueEventsProducer = new QueueEventsProducer(predictionQueue.getQueueName(), {
+                connection
+            })
+            await queueEventsProducer.publishEvent({
+                eventName: 'abort',
+                id
+            })
+        } else {
+            appServer.abortControllerPool.abort(id)
         }
     } catch (error) {
         throw new InternalFlowiseError(
