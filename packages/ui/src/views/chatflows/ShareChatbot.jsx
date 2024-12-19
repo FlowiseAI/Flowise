@@ -111,8 +111,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             userMessage: {
                 showAvatar: false
             },
-            textInput: {},
-            overrideConfig: {}
+            textInput: {}
         }
         if (title) obj.title = title
         if (titleAvatarSrc) obj.titleAvatarSrc = titleAvatarSrc
@@ -137,15 +136,13 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
         if (textInputPlaceholder) obj.textInput.placeholder = textInputPlaceholder
         if (textInputSendButtonColor) obj.textInput.sendButtonColor = textInputSendButtonColor
 
-        if (isSessionMemory) obj.overrideConfig.generateNewSession = generateNewSession
+        if (isSessionMemory) obj.generateNewSession = generateNewSession
 
         if (renderHTML) {
             obj.renderHTML = true
         } else {
             obj.renderHTML = false
         }
-
-        if (chatbotConfig?.starterPrompts) obj.starterPrompts = chatbotConfig.starterPrompts
 
         if (isAgentCanvas) {
             // if showAgentMessages is undefined, default to true
@@ -156,9 +153,10 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             }
         }
 
-        if (chatbotConfig?.fullFileUpload) obj.fullFileUpload = chatbotConfig?.fullFileUpload
-
-        return obj
+        return {
+            ...chatbotConfig,
+            ...obj
+        }
     }
 
     const onSave = async () => {
