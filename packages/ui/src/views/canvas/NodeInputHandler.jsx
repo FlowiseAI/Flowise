@@ -9,7 +9,7 @@ import { Popper, Box, Typography, Tooltip, IconButton, Button, TextField } from 
 import { useGridApiContext } from '@mui/x-data-grid'
 import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconEdit, IconAlertTriangle, IconBulb } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconEdit, IconAlertTriangle, IconBulb, IconRefresh } from '@tabler/icons-react'
 import { Tabs } from '@mui/base/Tabs'
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 
@@ -738,7 +738,7 @@ const NodeInputHandler = ({
                         {inputParam.type === 'asyncOptions' && (
                             <>
                                 {data.inputParams.length === 1 && <div style={{ marginTop: 10 }} />}
-                                <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
+                                <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row', alignContent: 'center' }}>
                                     <AsyncDropdown
                                         disabled={disabled}
                                         name={inputParam.name}
@@ -756,6 +756,16 @@ const NodeInputHandler = ({
                                             onClick={() => editAsyncOption(inputParam.name, data.inputs[inputParam.name])}
                                         >
                                             <IconEdit />
+                                        </IconButton>
+                                    )}
+                                    {inputParam.refresh && (
+                                        <IconButton
+                                            title='Refresh'
+                                            color='primary'
+                                            size='small'
+                                            onClick={() => setReloadTimestamp(Date.now().toString())}
+                                        >
+                                            <IconRefresh />
                                         </IconButton>
                                     )}
                                 </div>
