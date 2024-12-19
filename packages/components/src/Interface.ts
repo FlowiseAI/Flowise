@@ -93,6 +93,7 @@ export interface INodeParams {
     hint?: Record<string, string>
     tabIdentifier?: string
     tabs?: Array<INodeParams>
+    refresh?: boolean
 }
 
 export interface INodeExecutionData {

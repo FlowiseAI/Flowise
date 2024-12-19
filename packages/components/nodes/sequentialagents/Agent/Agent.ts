@@ -298,7 +298,12 @@ class Agent_SeqAgents implements INode {
             {
                 label: 'Require Approval',
                 name: 'interrupt',
-                description: 'Require approval before executing tools. Will proceed when tools are not called',
+                description:
+                    'Pause execution and request user approval before running tools.\n' +
+                    'If enabled, the agent will prompt the user with customizable approve/reject options\n' +
+                    'and will proceed only after approval. This requires a configured agent memory to manage\n' +
+                    'the state and handle approval requests.\n' +
+                    'If no tools are invoked, the agent proceeds without interruption.',
                 type: 'boolean',
                 optional: true
             },
