@@ -128,7 +128,7 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
 
     if (nodeData.inputs?.knowledgeBaseFiles && !filter) {
       try {
-        const filterFiles: { key: string; name: string }[] = JSON.parse(nodeData.inputs?.knowledgeBaseFiles as string)
+        let filterFiles: { key: string; name: string }[] = JSON.parse(nodeData.inputs?.knowledgeBaseFiles as string)
         const isRongViet = filterFiles.findIndex((item) => item.key.includes('rongviet-sample/')) !== -1
 
         if (isRongViet) {
@@ -136,17 +136,23 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
         }
 
         if (filterFiles.length > 0) {
-          const orAll = filterFiles
-            .filter((item) => !item.key.endsWith('/'))
-            .map(
-              (item) =>
-                ({
-                  stringContains: {
-                    key: 'x-amz-bedrock-kb-source-uri',
-                    value: item.key
-                  }
-                } as RetrievalFilter)
-            )
+          const filterFolders = filterFiles.filter((item) => item.key.endsWith('/'))
+
+          if (filterFolders.length > 0) {
+            filterFiles = filterFiles.filter((item) => {
+              return filterFolders.findIndex((folder) => item.key !== folder.key && item.key.includes(folder.key)) === -1
+            })
+          }
+
+          const orAll = filterFiles.map(
+            (item) =>
+              ({
+                stringContains: {
+                  key: 'x-amz-bedrock-kb-source-uri',
+                  value: item.key
+                }
+              } as RetrievalFilter)
+          )
 
           if (orAll.length > 1) {
             filter = {
