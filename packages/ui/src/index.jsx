@@ -12,6 +12,7 @@ import { Provider } from 'react-redux'
 import { SnackbarProvider } from 'notistack'
 import ConfirmContextProvider from '@/store/context/ConfirmContextProvider'
 import { ReactFlowContext } from '@/store/context/ReactFlowContext'
+import { baseName } from '@/store/constant'
 
 const container = document.getElementById('root')
 const root = createRoot(container)
@@ -19,7 +20,7 @@ const root = createRoot(container)
 root.render(
     <React.StrictMode>
         <Provider store={store}>
-            <BrowserRouter>
+            <BrowserRouter basename={baseName}>
                 <SnackbarProvider>
                     <ConfirmContextProvider>
                         <ReactFlowContext>
