@@ -110,11 +110,11 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
   }
 
   async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-    const knowledgeBaseID = nodeData.inputs?.knowledgeBaseID as string
+    let knowledgeBaseID = (nodeData.inputs?.knowledgeBaseID as string) || 'DRXXU5RCGD'
     const region = nodeData.inputs?.region as string
     const topK = parseInt(nodeData.inputs?.topK || 10) as number
     const overrideSearchType = (nodeData.inputs?.searchType != '' ? nodeData.inputs?.searchType : undefined) as 'HYBRID' | 'SEMANTIC'
-    const filter = (nodeData.inputs?.filter != '' ? JSON.parse(nodeData.inputs?.filter) : undefined) as RetrievalFilter
+    let filter = (nodeData.inputs?.filter != '' ? JSON.parse(nodeData.inputs?.filter) : undefined) as RetrievalFilter
     let credentialApiKey = ''
     let credentialApiSecret = ''
     let credentialApiSession = ''
@@ -125,6 +125,43 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
       credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData)
       credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData)
     }
+
+    if (nodeData.inputs?.knowledgeBaseFiles && !filter) {
+      try {
+        const filterFiles: { key: string; name: string }[] = JSON.parse(nodeData.inputs?.knowledgeBaseFiles as string)
+        const isRongViet = filterFiles.findIndex((item) => item.key.includes('rongviet-sample/')) !== -1
+
+        if (isRongViet) {
+          knowledgeBaseID = 'ZXQTGNJKV8'
+        }
+
+        if (filterFiles.length > 0) {
+          const orAll = filterFiles
+            .filter((item) => !item.key.endsWith('/'))
+            .map(
+              (item) =>
+                ({
+                  stringContains: {
+                    key: 'x-amz-bedrock-kb-source-uri',
+                    value: item.key
+                  }
+                } as RetrievalFilter)
+            )
+
+          if (orAll.length > 1) {
+            filter = {
+              orAll
+            }
+          } else if (orAll.length === 1) {
+            filter = orAll[0]
+          }
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    console.log('filter data:', filter)
 
     const retriever = new AmazonKnowledgeBaseRetriever({
       topK: topK,
