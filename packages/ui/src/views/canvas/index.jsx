@@ -120,7 +120,7 @@ const Canvas = () => {
       }
 
       if (node.category === 'Chat Models') {
-        return ['AWSChatBedrock'].includes(node.type)
+        return ['AWSChatBedrock', 'ChatOpenAI', 'ChatOpenAI-Custom'].includes(node.type)
       }
 
       if (node.category === 'Embeddings') {
