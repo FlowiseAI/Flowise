@@ -156,6 +156,8 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             }
         }
 
+        if (chatbotConfig?.fullFileUpload) obj.fullFileUpload = chatbotConfig?.fullFileUpload
+
         return obj
     }
 
@@ -449,7 +451,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             {colorField(backgroundColor, 'backgroundColor', 'Background Color')}
             {textField(fontSize, 'fontSize', 'Font Size', 'number')}
             {colorField(poweredByTextColor, 'poweredByTextColor', 'PoweredBy TextColor')}
-            {booleanField(showAgentMessages, 'showAgentMessages', 'Show Agent Reasoning')}
+            {isAgentCanvas && booleanField(showAgentMessages, 'showAgentMessages', 'Show Agent Reasoning')}
 
             {/*BOT Message*/}
             <Typography variant='h4' sx={{ mb: 1, mt: 2 }}>
