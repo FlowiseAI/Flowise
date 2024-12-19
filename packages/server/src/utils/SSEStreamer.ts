@@ -88,29 +88,20 @@ export class SSEStreamer implements IServerSideEventStreamer {
   }
 
   streamSourceDocumentsEvent(chatId: string, data: any) {
-    const client = this.clients[chatId];
-    if (client && client.response) {
-      try {
-        const updatedDocuments = data.map((doc: any) => {
-          if (!doc.metadata.url) {
-            delete doc.metadata.pageContent;
-          } else {
-            doc.metadata['source'] = doc.metadata.url;
-            doc.metadata['x-amz-bedrock-kb-source-uri'] = doc.metadata.url;
-          }
-          return doc;
-        });
-  
-        const clientResponse = {
-          event: 'sourceDocuments',
-          data: updatedDocuments,
-        };
-        client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n');
-      } catch (error) {
-        console.error('Error processing the documents:', error);
+    const client = this.clients[chatId]
+    if (client) {
+      const clientResponse = {
+        event: 'sourceDocuments',
+        data: data
+          .filter((doc: any) => Boolean(doc?.metadata?.url))
+          .map((doc: any) => {
+            doc.metadata['source'] = doc.metadata.url
+            doc.metadata['x-amz-bedrock-kb-source-uri'] = doc.metadata.url
+            delete doc.metadata['pageContent']
+            return doc
+          })
       }
-    } else {
-      console.warn(`No client found for chatId: ${chatId}`);
+      client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
     }
   }
   
