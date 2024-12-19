@@ -1,11 +1,11 @@
-import { Tool } from "@langchain/core/tools"
+import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { LangchainToolSet } from 'composio-core'
 
 class ComposioTool extends Tool {
-    name = "composio"
-    description = "Tool for interacting with Composio applications and performing actions"
+    name = 'composio'
+    description = 'Tool for interacting with Composio applications and performing actions'
     toolset: any
     appName: string
     actions: string[]
@@ -21,7 +21,7 @@ class ComposioTool extends Tool {
         try {
             return `Executed action on ${this.appName} with input: ${input}`
         } catch (error) {
-            return "Failed to execute action"
+            return 'Failed to execute action'
         }
     }
 }
@@ -51,7 +51,7 @@ class Composio_Tools implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['composioApi'],
+            credentialNames: ['composioApi']
         }
         this.inputs = [
             {
@@ -59,21 +59,24 @@ class Composio_Tools implements INode {
                 name: 'appName',
                 type: 'asyncOptions',
                 loadMethod: 'listApps',
-                description: 'Select the app to connect with'
+                description: 'Select the app to connect with',
+                refresh: true
             },
             {
                 label: 'Auth Status',
                 name: 'authStatus',
                 type: 'asyncOptions',
                 loadMethod: 'authStatus',
-                placeholder: 'Connection status will appear here'
+                placeholder: 'Connection status will appear here',
+                refresh: true
             },
             {
                 label: 'Actions to Use',
                 name: 'actions',
                 type: 'asyncOptions',
                 loadMethod: 'listActions',
-                description: 'Select the actions you want to use'
+                description: 'Select the actions you want to use',
+                refresh: true
             }
         ]
     }
@@ -90,13 +93,14 @@ class Composio_Tools implements INode {
                         {
                             label: 'API Key Required',
                             name: 'placeholder',
-                            description: 'Enter Composio API key in the credential field (save & refresh the page)'
+                            description: 'Enter Composio API key in the credential field'
                         }
                     ]
                 }
 
                 const toolset = new LangchainToolSet({ apiKey: composioApiKey })
                 const apps = await toolset.client.apps.list()
+                apps.sort((a: any, b: any) => a.name.localeCompare(b.name))
 
                 return apps.map(({ name, ...rest }) => ({
                     label: name.toUpperCase(),
@@ -121,23 +125,28 @@ class Composio_Tools implements INode {
                 const appName = nodeData.inputs?.appName as string
 
                 if (!composioApiKey) {
-                    return [{
-                        label: 'API Key Required',
-                        name: 'placeholder',
-                        description: 'Enter Composio API key in the credential field (save & refresh the page)'
-                    }]
+                    return [
+                        {
+                            label: 'API Key Required',
+                            name: 'placeholder',
+                            description: 'Enter Composio API key in the credential field'
+                        }
+                    ]
                 }
 
                 if (!appName) {
-                    return [{
-                        label: 'Select an App first',
-                        name: 'placeholder',
-                        description: 'Select an app from the dropdown to view available actions (save & refresh the page)'
-                    }]
+                    return [
+                        {
+                            label: 'Select an App first',
+                            name: 'placeholder',
+                            description: 'Select an app from the dropdown to view available actions'
+                        }
+                    ]
                 }
 
                 const toolset = new LangchainToolSet({ apiKey: composioApiKey })
                 const actions = await toolset.getTools({ apps: [appName] })
+                actions.sort((a: any, b: any) => a.name.localeCompare(b.name))
 
                 return actions.map(({ name, ...rest }) => ({
                     label: name.toUpperCase(),
@@ -146,11 +155,13 @@ class Composio_Tools implements INode {
                 }))
             } catch (error) {
                 console.error('Error loading actions:', error)
-                return [{
-                    label: 'Error Loading Actions',
-                    name: 'error',
-                    description: 'Failed to load actions. Please check your API key and try again'
-                }]
+                return [
+                    {
+                        label: 'Error Loading Actions',
+                        name: 'error',
+                        description: 'Failed to load actions. Please check your API key and try again'
+                    }
+                ]
             }
         },
         authStatus: async (nodeData: INodeData, options?: ICommonObject): Promise<INodeOptionsValue[]> => {
@@ -159,28 +170,34 @@ class Composio_Tools implements INode {
             const appName = nodeData.inputs?.appName as string
 
             if (!composioApiKey) {
-                return [{
-                    label: 'API Key Required',
-                    name: 'placeholder',
-                    description: 'Enter Composio API key in the credential field (save & refresh the page)'
-                }]
+                return [
+                    {
+                        label: 'API Key Required',
+                        name: 'placeholder',
+                        description: 'Enter Composio API key in the credential field'
+                    }
+                ]
             }
 
             if (!appName) {
-                return [{
-                    label: 'Select an App first',
-                    name: 'placeholder',
-                    description: 'Select an app from the dropdown to view available actions (save & refresh the page)'
-                }]
+                return [
+                    {
+                        label: 'Select an App first',
+                        name: 'placeholder',
+                        description: 'Select an app from the dropdown to view available actions'
+                    }
+                ]
             }
 
             const toolset = new LangchainToolSet({ apiKey: composioApiKey })
-            const authStatus = await toolset.client.getEntity("default").getConnection({ app: appName.toLowerCase() })
-            return [{
-                label: authStatus ? "Connected" : "Not Connected",
-                name: authStatus ? "Connected" : "Not Connected",
-                description: authStatus ? "Selected app has an active connection" : "Please connect the app on app.composio.dev"
-            }]
+            const authStatus = await toolset.client.getEntity('default').getConnection({ app: appName.toLowerCase() })
+            return [
+                {
+                    label: authStatus ? 'Connected' : 'Not Connected',
+                    name: authStatus ? 'Connected' : 'Not Connected',
+                    description: authStatus ? 'Selected app has an active connection' : 'Please connect the app on app.composio.dev'
+                }
+            ]
         }
     }
 
@@ -189,8 +206,6 @@ class Composio_Tools implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const composioApiKey = getCredentialParam('composioApi', credentialData, nodeData)
-        const appName = nodeData.inputs?.appName as string
-        const actions = nodeData.inputs?.actions as string[]
 
         if (!composioApiKey) {
             nodeData.inputs = {
