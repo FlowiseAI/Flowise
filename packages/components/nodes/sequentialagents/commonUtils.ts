@@ -99,7 +99,22 @@ export const transformObjectPropertyToFunction = (obj: ICommonObject, state: ISe
                     (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === parsedValue.id
                 )
                 const messageOutput = messageOutputs[messageOutputs.length - 1]
-                if (messageOutput) value = messageOutput.content
+                if (messageOutput) {
+                    // if messageOutput.content is a string, set value to the content
+                    if (typeof messageOutput.content === 'string') value = messageOutput.content
+                    // if messageOutput.content is an array
+                    else if (Array.isArray(messageOutput.content)) {
+                        // Get the first element of the array
+                        const messageOutputContentFirstElement: any = messageOutput.content[0]
+
+                        if (typeof messageOutputContentFirstElement === 'string') value = messageOutputContentFirstElement
+                        // If messageOutputContentFirstElement is an object and has a text property, set value to the text property
+                        else if (typeof messageOutputContentFirstElement === 'object' && messageOutputContentFirstElement.text)
+                            value = messageOutputContentFirstElement.text
+                        // Otherwise, stringify the messageOutputContentFirstElement
+                        else value = JSON.stringify(messageOutputContentFirstElement)
+                    }
+                }
             }
         } catch (e) {
             // do nothing
