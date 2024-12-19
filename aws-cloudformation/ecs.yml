@@ -15,6 +15,11 @@ Parameters:
       - dev
       - prod
 
+  DesiredCount:
+    Description: Number of ECS tasks to run
+    Type: Number
+    Default: 2
+
 Mappings:
   SubnetConfig:
     VPC:
@@ -452,7 +457,7 @@ Resources:
       Cluster: !Ref SumoFlowiseECSCluster
       TaskDefinition: !Ref SumoFlowiseTaskDefinition
       LaunchType: FARGATE
-      DesiredCount: 2
+      DesiredCount: !Ref DesiredCount
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
@@ -490,9 +495,9 @@ Resources:
             - Name: IFRAME_ORIGINS
               Value: ""
             - Name: FLOWISE_USERNAME
-              Value: ""
+              Value: "user"
             - Name: FLOWISE_PASSWORD
-              Value: ""
+              Value: "1234"
             - Name: FLOWISE_FILE_SIZE_LIMIT
               Value: ""
             - Name: DEBUG
@@ -500,17 +505,19 @@ Resources:
             - Name: DATABASE_PATH
               Value: "/root/.flowise"
             - Name: DATABASE_TYPE
-              Value: ""
+              Value: "postgres"
             - Name: DATABASE_PORT
-              Value: ""
+              Value: "5432"
             - Name: DATABASE_HOST
-              Value: ""
+              Value: "localhost"
             - Name: DATABASE_NAME
-              Value: ""
+              Value: "flowise"
             - Name: DATABASE_USER
-              Value: ""
+              Value: "user"
             - Name: DATABASE_PASSWORD
-              Value: ""
+              Value: "123"
+            - Name: PGSSLMODE
+              Value: "require"
             - Name: DATABASE_SSL
               Value: ""
             - Name: DATABASE_SSL_KEY_BASE64

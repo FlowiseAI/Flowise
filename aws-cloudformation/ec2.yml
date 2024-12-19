@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: This CloudFormation template creates an EC2 instance to deploy Flowise with Docker.
+
+Parameters:
+  Stage:
+    Description: Prefix of resource names
+    Type: String
+    Default: sumo-flowise
+
+  Environment:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+  KeyName:
+    Description: Name of the existing EC2 Key Pair to enable SSH access to the instance.
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: Must be the name of an existing key pair.
+    Default: sumo-flowise-key
+
+  InstanceType:
+    Description: EC2 instance type for the Flowise application.
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t3.micro
+      - t3.small
+      - t3.medium
+    ConstraintDescription: Must be a valid EC2 instance type.
+
+Mappings:
+  RegionMap:
+    # Use Amazon Linux 2 AMI IDs based on region
+    us-east-1:
+      AMI: "ami-005fc0f236362e99f" # Amazon Linux 2 AMI for us-east-1
+    us-west-2:
+      AMI: "ami-0e34e7b9ca0ace12d" # Amazon Linux 2 AMI for us-west-2
+
+Resources:
+  #### Security Group ####
+  SumoFlowiseEC2InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH, HTTP, and Docker traffic for Flowise application.
+      GroupName: !Join ["-", [!Ref Stage, "sg", !Ref Environment]]
+      SecurityGroupIngress:
+        # Allow SSH (port 22) from anywhere
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        # Allow HTTP traffic (port 3000 for Flowise)
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, "sg", !Ref Environment]]
+
+  #### EC2 Instance ####
+  SumoFlowiseInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref SumoFlowiseEC2InstanceSecurityGroup
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, "instance", !Ref Environment]]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # Update packages
+          yum update -y
+
+          # Install Docker
+          yum install -y docker
+          systemctl enable docker
+          systemctl start docker
+
+          # Add ec2-user to the Docker group
+          usermod -aG docker ec2-user
+
+          # Install Docker Compose
+          yum install -y docker-compose-plugin
+
+          # Install Git
+          yum install -y git
+
+          # Clone the Flowise repository
+          git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/Flowise
+
+          # Create the .env file
+          cat <<EOT >> /home/ec2-user/Flowise/docker/.env
+          PORT=3000
+          DATABASE_PATH=/root/.flowise
+          APIKEY_PATH=/root/.flowise
+          SECRETKEY_PATH=/root/.flowise
+          LOG_PATH=/root/.flowise/logs
+          BLOB_STORAGE_PATH=/root/.flowise/storage
+          EOT
+
+          # Start the Flowise application using Docker Compose
+          docker compose up -d
+
+Outputs:
+  SumoFlowiseInstanceId:
+    Description: The ID of the created EC2 instance.
+    Value: !Ref SumoFlowiseInstance
+
+  SumoFlowisePublicIP:
+    Description: The public IP address of the EC2 instance.
+    Value: !GetAtt SumoFlowiseInstance.PublicIp
+
+  SumoFlowiseWebAppURL:
+    Description: The URL to access the Flowise application.
+    Value: !Sub "http://${SumoFlowiseInstance.PublicIp}:3000"

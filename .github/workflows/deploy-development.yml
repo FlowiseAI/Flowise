@@ -37,4 +37,23 @@ jobs:
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
+      - name: EC2-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-ec2-stack-dev
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/ec2.yml \
+            --parameter-overrides \
+              Environment=dev \
+              KeyName=${{ secrets.KEY_NAME }} \
+            --stack-name $STACK_NAME \
+            --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+          SumoFlowisePublicIP=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowisePublicIP'].OutputValue" --output text)
+          echo "EC2_IP=${SumoFlowisePublicIP}" >> $GITHUB_ENV
+
+          SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
+          echo "EC2_ID=${SumoFlowiseWebAppURL}" >> $GITHUB_ENV
 
