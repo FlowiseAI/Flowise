@@ -1,11 +1,4 @@
-import {
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeParams,
-    INodeOutputsValue,
-    IServerSideEventStreamer,
-} from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeParams, INodeOutputsValue, IServerSideEventStreamer } from '../../../src/Interface'
 import { GraphCypherQAChain } from '@langchain/community/chains/graph_qa/cypher'
 import { getBaseClasses } from '../../../src/utils'
 import { BasePromptTemplate, PromptTemplate, FewShotPromptTemplate } from '@langchain/core/prompts'
@@ -97,7 +90,7 @@ class GraphCypherQA_Chain implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData): Promise<any> {
         const model = nodeData.inputs?.model
         const cypherModel = nodeData.inputs?.cypherModel
         const qaModel = nodeData.inputs?.qaModel
