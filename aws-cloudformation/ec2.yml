@@ -43,25 +43,25 @@ Mappings:
 
 Resources:
   #### Security Group ####
-  SumoFlowiseEC2InstanceSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow SSH, HTTP, and Docker traffic for Flowise application.
-      GroupName: !Join ["-", [!Ref Stage, "sg", !Ref Environment]]
-      SecurityGroupIngress:
-        # Allow SSH (port 22) from anywhere
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-        # Allow HTTP traffic (port 3000 for Flowise)
-        - IpProtocol: tcp
-          FromPort: 3000
-          ToPort: 3000
-          CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, "sg", !Ref Environment]]
+  # SumoFlowiseEC2InstanceSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: Allow SSH, HTTP, and Docker traffic for Flowise application.
+  #     GroupName: !Join ["-", [!Ref Stage, "sg", !Ref Environment]]
+  #     SecurityGroupIngress:
+  #       # Allow SSH (port 22) from anywhere
+  #       - IpProtocol: tcp
+  #         FromPort: 22
+  #         ToPort: 22
+  #         CidrIp: 0.0.0.0/0
+  #       # Allow HTTP traffic (port 3000 for Flowise)
+  #       - IpProtocol: tcp
+  #         FromPort: 3000
+  #         ToPort: 3000
+  #         CidrIp: 0.0.0.0/0
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Join ["-", [!Ref Stage, "sg", !Ref Environment]]
 
   #### EC2 Instance ####
   SumoFlowiseInstance:
@@ -69,8 +69,8 @@ Resources:
     Properties:
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
-      SecurityGroupIds:
-        - !Ref SumoFlowiseEC2InstanceSecurityGroup
+      # SecurityGroupIds:
+      #   - !Ref SumoFlowiseEC2InstanceSecurityGroup
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
       Tags:
         - Key: Name
