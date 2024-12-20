@@ -86,15 +86,27 @@ const MarketplaceCanvas = () => {
                                 edgeTypes={edgeTypes}
                                 fitView
                                 minZoom={0.1}
+                                className='marketplace-canvas'
                             >
-                                <Controls
-                                    style={{
+                                <Box
+                                    sx={{
                                         display: 'flex',
                                         flexDirection: 'row',
+                                        gap: 2,
+                                        position: 'absolute',
+                                        bottom: '1rem',
                                         left: '50%',
-                                        transform: 'translate(-50%, -50%)'
+                                        transform: 'translateX(-50%)',
+                                        zIndex: 10
                                     }}
-                                />
+                                >
+                                    <Controls
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row'
+                                        }}
+                                    />
+                                </Box>
                                 <Background color='#aaa' gap={16} />
                             </ReactFlow>
                         </div>

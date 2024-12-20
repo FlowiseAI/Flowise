@@ -55,6 +55,7 @@
 }
 
 .chatflow-canvas .react-flow__controls,
+.marketplace-canvas .react-flow__controls,
 .chatflow-canvas .undo-redo-wrapper {
     height: 40px;
     background-color: #fefefe;
@@ -69,6 +70,7 @@
 }
 
 .chatflow-canvas .react-flow__controls .react-flow__controls-button,
+.marketplace-canvas .react-flow__controls .react-flow__controls-button,
 .chatflow-canvas .undo-redo-wrapper button {
     background: transparent;
     border: none;
@@ -77,6 +79,7 @@
 
 .chatflow-canvas .react-flow__controls .react-flow__controls-button:not(:last-child),
 .chatflow-canvas .undo-redo-wrapper button:not(:last-child),
+.marketplace-canvas .react-flow__controls .react-flow__controls-button:not(:last-child),
 .node-actions button:not(:last-child) {
     border-right: 1px solid #454c59;
 }
