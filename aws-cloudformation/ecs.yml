@@ -712,4 +712,9 @@ Outputs:
     Value: !GetAtt SumoFlowiseLoadBalancer.CanonicalHostedZoneID
     Export:
       Name: !Join ["-", [!Ref Stage, LBCanonicalHostedZoneID, !Ref Environment]]
-  
+
+  SumoFlowisePublicSubnet1Id:
+    Description: 'The ID of the first public subnet'
+    Value: !Ref SumoFlowisePublicSubnet1
+    Export:
+      Name: !Join ["-", [!Ref Stage, PublicSubnet1Id, !Ref Environment]]

@@ -61,7 +61,7 @@ Resources:
         - AssociatePublicIpAddress: true
           DeviceIndex: 0
           SubnetId: !ImportValue 
-            Fn::Join: ["-", [!Ref Stage, SumoFlowisePublicSubnet1Id, !Ref Environment]]
+            Fn::Join: ["-", [!Ref Stage, PublicSubnet1Id, !Ref Environment]]
           GroupSet:
             - !ImportValue 
               Fn::Join: ["-", [!Ref Stage, LBSGId, !Ref Environment]]
