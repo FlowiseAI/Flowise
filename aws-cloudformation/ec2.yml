@@ -108,6 +108,7 @@ Resources:
           # Start the Flowise application using Docker Compose
           docker-compose up -d
 
+
 Outputs:
   SumoFlowiseInstanceId:
     Description: The ID of the created EC2 instance.
