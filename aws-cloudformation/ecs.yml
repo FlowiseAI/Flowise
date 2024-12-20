@@ -503,8 +503,8 @@ Resources:
   SumoFlowiseService:
     Type: AWS::ECS::Service
     DependsOn:
-      - SumoFlowisePrivateRoute1
-      - SumoFlowisePrivateRoute2
+      - SumoFlowisePublicSubnet1
+      - SumoFlowisePublicSubnet2
       - SumoFlowiseListenerRule
     Properties:
       Cluster: !Ref SumoFlowiseECSCluster
@@ -513,7 +513,7 @@ Resources:
       DesiredCount: !Ref DesiredCount
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !Ref SumoFlowisePublicSubnet1
             - !Ref SumoFlowisePublicSubnet2
