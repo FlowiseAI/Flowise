@@ -166,7 +166,7 @@ importers:
         version: 0.0.7(encoding@0.1.13)(openai@4.57.3(encoding@0.1.13)(zod@3.22.4))
       '@langchain/community':
         specifier: ^0.3.11
-        version: 0.3.14(b5en7avgkfvvzzpgv6szagpyqy)
+        version: 0.3.14(stpufq5tb43gka36ts4s3gdhki)
       '@langchain/core':
         specifier: 0.3.18
         version: 0.3.18(openai@4.57.3(encoding@0.1.13)(zod@3.22.4))
@@ -266,6 +266,9 @@ importers:
       cohere-ai:
         specifier: ^7.7.5
         version: 7.10.0(encoding@0.1.13)
+      composio-core:
+        specifier: ^0.4.7
+        version: 0.4.7
       couchbase:
         specifier: 4.4.1
         version: 4.4.1
@@ -281,6 +284,9 @@ importers:
       dotenv:
         specifier: ^16.0.0
         version: 16.4.5
+      epub2:
+        specifier: ^3.0.2
+        version: 3.0.2(ts-toolbelt@9.6.0)
       exa-js:
         specifier: ^1.0.12
         version: 1.0.12(encoding@0.1.13)
@@ -6420,6 +6426,10 @@ packages:
     resolution: {integrity: sha512-OXwN5b9pCUXNQHJpwwD2qP40byEmSgzj8B4ydSN0uMNYWiFmJ6x6KwUllMmfk8Rwu/HJDFR7U8ubsWBoN0Xp0A==}
     engines: {node: '>=8.9'}
 
+  adm-zip@0.5.16:
+    resolution: {integrity: sha512-TGw5yVi4saajsSEgz25grObGHEUaDrniwvA2qwSC060KfqGPdglhvPMA2lPIoxs3PQIItj2iag35fONcQqgUaQ==}
+    engines: {node: '>=12.0'}
+
   agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
@@ -6643,6 +6653,9 @@ packages:
 
   array-flatten@1.1.1:
     resolution: {integrity: sha512-PCVAQswWemu6UdxsDFFX/+gVeYqKAod3D3UVm91jHwynguOwAvYPhx8nNlM++NqRcK6CxxpUafjmhIdKiHibqg==}
+
+  array-hyper-unique@2.1.6:
+    resolution: {integrity: sha512-BdlHRqjKSYs88WFaVNVEc6Kv8ln/FdzCKPbcDPuWs4/EXkQFhnjc8TyR7hnPxRjcjo5LKOhUMGUWpAqRgeJvpA==}
 
   array-includes@3.1.7:
     resolution: {integrity: sha512-dlcsNBIiWhPkHdOEEKnehA+RNUWDc4UqFtnIXU4uuYDPtA4LDkr7qip2p0VvFAEXNDr0yWZ9PJyIRiGjRLQzwQ==}
@@ -7664,6 +7677,10 @@ packages:
   component-register@0.8.3:
     resolution: {integrity: sha512-/0u8ov0WPWi2FL78rgB9aFOcfY8pJT4jP/l9NTOukGNLVQ6hk35sEJE1RkEnNQU3yk48Qr7HlDQjRQKEVfgeWg==}
 
+  composio-core@0.4.7:
+    resolution: {integrity: sha512-3F/mKPnkj8RfTKq4mHcm6EbvqnsRODbC5S7JHkQC9TXYgxm9KSAH/L7pJRZ0vgEpvnnTSn35zTH7qlfwnkSmFQ==}
+    hasBin: true
+
   compressible@2.0.18:
     resolution: {integrity: sha512-AF3r7P5dWxL8MxyITRMlORQNaOA2IkAFaTr4k7BUumjPtRpGDTZpl0Pb1XCO6JeDCBdp126Cgs9sMxqSjgYyRg==}
     engines: {node: '>= 0.6'}
@@ -7777,6 +7794,9 @@ packages:
 
   crelt@1.0.6:
     resolution: {integrity: sha512-VQ2MBenTq1fWZUH9DJNGti7kKv6EeAuYr3cLwxUWhIu1baTaXh4Ib5W2CqHVqib4/MqbYGJqiL3Zb8GJZr3l4g==}
+
+  crlf-normalize@1.0.20:
+    resolution: {integrity: sha512-h/rBerTd3YHQGfv7tNT25mfhWvRq2BBLCZZ80GFarFxf6HQGbpW6iqDL3N+HBLpjLfAdcBXfWAzVlLfHkRUQBQ==}
 
   cross-env@7.0.3:
     resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
@@ -8112,6 +8132,10 @@ packages:
 
   dedent@0.7.0:
     resolution: {integrity: sha512-Q6fKUPqnAHAyhiUgFU7BUzLiv0kd8saH9al7tnu5Q/okj6dnupxyTgFIBjVzJATdfIAm9NAsvXNzjaKa+bxVyA==}
+
+  deep-eql@4.0.0:
+    resolution: {integrity: sha512-GxJC5MOg2KyQlv6WiUF/VAnMj4MWnYiXo4oLgeptOELVoknyErb4Z8+5F/IM/K4g9/80YzzatxmWcyRwUseH0A==}
+    engines: {node: '>=6'}
 
   deep-equal@2.2.3:
     resolution: {integrity: sha512-ZIwpnevOurS8bpT4192sqAowWM76JDKSHYzMLty3BZGSswgq6pBaH3DhCSW5xVAZICZyKdOBPjwww5wfgT/6PA==}
@@ -8473,6 +8497,9 @@ packages:
   env-paths@2.2.1:
     resolution: {integrity: sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==}
     engines: {node: '>=6'}
+
+  epub2@3.0.2:
+    resolution: {integrity: sha512-rhvpt27CV5MZfRetfNtdNwi3XcNg1Am0TwfveJkK8YWeHItHepQ8Js9J06v8XRIjuTrCW/NSGYMTy55Of7BfNQ==}
 
   err-code@2.0.3:
     resolution: {integrity: sha512-2bmlRpNKBxT/CRmPOlyISQpNj+qSeYvcym/uT0Jx2bMOlKLtSy1ZmLuVxSEKKyor/N5yhvp/ZiG1oE3DEYMSFA==}
@@ -15134,6 +15161,14 @@ packages:
       '@swc/wasm':
         optional: true
 
+  ts-toolbelt@9.6.0:
+    resolution: {integrity: sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==}
+
+  ts-type@3.0.1:
+    resolution: {integrity: sha512-cleRydCkBGBFQ4KAvLH0ARIkciduS745prkGVVxPGvcRGhMMoSJUB7gNR1ByKhFTEYrYRg2CsMRGYnqp+6op+g==}
+    peerDependencies:
+      ts-toolbelt: ^9.6.0
+
   tsc-watch@6.0.4:
     resolution: {integrity: sha512-cHvbvhjO86w2aGlaHgSCeQRl+Aqw6X6XN4sQMPZKF88GoP30O+oTuh5lRIJr5pgFWrRpF1AgXnJJ2DoFEIPHyg==}
     engines: {node: '>=12.12.0'}
@@ -15283,6 +15318,9 @@ packages:
 
   typed-emitter@2.1.0:
     resolution: {integrity: sha512-g/KzbYKbH5C2vPkaXGu8DJlHrGKHLsM25Zg9WuC9pMGfuvT+X25tZQWo5fK1BjBm8+UrVE9LDCvaY0CQk+fXDA==}
+
+  typedarray-dts@1.0.0:
+    resolution: {integrity: sha512-Ka0DBegjuV9IPYFT1h0Qqk5U4pccebNIJCGl8C5uU7xtOs+jpJvKGAY4fHGK25hTmXZOEUl9Cnsg5cS6K/b5DA==}
 
   typedarray-to-buffer@3.1.5:
     resolution: {integrity: sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==}
@@ -20370,7 +20408,7 @@ snapshots:
       - encoding
       - openai
 
-  '@langchain/community@0.3.14(b5en7avgkfvvzzpgv6szagpyqy)':
+  '@langchain/community@0.3.14(stpufq5tb43gka36ts4s3gdhki)':
     dependencies:
       '@ibm-cloud/watsonx-ai': 1.1.2
       '@langchain/core': 0.3.18(openai@4.57.3(encoding@0.1.13)(zod@3.22.4))
@@ -20421,6 +20459,7 @@ snapshots:
       cohere-ai: 7.10.0(encoding@0.1.13)
       crypto-js: 4.2.0
       d3-dsv: 2.0.0
+      epub2: 3.0.2(ts-toolbelt@9.6.0)
       faiss-node: 0.5.1
       google-auth-library: 9.6.3(encoding@0.1.13)
       html-to-text: 9.0.5
@@ -24060,6 +24099,8 @@ snapshots:
       loader-utils: 2.0.4
       regex-parser: 2.3.0
 
+  adm-zip@0.5.16: {}
+
   agent-base@6.0.2:
     dependencies:
       debug: 4.3.7(supports-color@5.5.0)
@@ -24279,6 +24320,11 @@ snapshots:
   array-each@1.0.1: {}
 
   array-flatten@1.1.1: {}
+
+  array-hyper-unique@2.1.6:
+    dependencies:
+      deep-eql: 4.0.0
+      lodash: 4.17.21
 
   array-includes@3.1.7:
     dependencies:
@@ -25629,6 +25675,8 @@ snapshots:
 
   component-register@0.8.3: {}
 
+  composio-core@0.4.7: {}
+
   compressible@2.0.18:
     dependencies:
       mime-db: 1.52.0
@@ -25761,6 +25809,12 @@ snapshots:
   create-require@1.1.1: {}
 
   crelt@1.0.6: {}
+
+  crlf-normalize@1.0.20(ts-toolbelt@9.6.0):
+    dependencies:
+      ts-type: 3.0.1(ts-toolbelt@9.6.0)
+    transitivePeerDependencies:
+      - ts-toolbelt
 
   cross-env@7.0.3:
     dependencies:
@@ -26145,6 +26199,10 @@ snapshots:
 
   dedent@0.7.0: {}
 
+  deep-eql@4.0.0:
+    dependencies:
+      type-detect: 4.0.8
+
   deep-equal@2.2.3:
     dependencies:
       array-buffer-byte-length: 1.0.1
@@ -26524,6 +26582,17 @@ snapshots:
   entities@4.5.0: {}
 
   env-paths@2.2.1: {}
+
+  epub2@3.0.2(ts-toolbelt@9.6.0):
+    dependencies:
+      adm-zip: 0.5.16
+      array-hyper-unique: 2.1.6
+      bluebird: 3.7.2
+      crlf-normalize: 1.0.20(ts-toolbelt@9.6.0)
+      tslib: 2.6.2
+      xml2js: 0.6.2
+    transitivePeerDependencies:
+      - ts-toolbelt
 
   err-code@2.0.3: {}
 
@@ -35138,6 +35207,15 @@ snapshots:
     optionalDependencies:
       '@swc/core': 1.4.6
 
+  ts-toolbelt@9.6.0: {}
+
+  ts-type@3.0.1(ts-toolbelt@9.6.0):
+    dependencies:
+      '@types/node': 20.12.12
+      ts-toolbelt: 9.6.0
+      tslib: 2.6.2
+      typedarray-dts: 1.0.0
+
   tsc-watch@6.0.4(typescript@5.5.2):
     dependencies:
       cross-spawn: 7.0.3
@@ -35277,6 +35355,8 @@ snapshots:
   typed-emitter@2.1.0:
     optionalDependencies:
       rxjs: 7.8.1
+
+  typedarray-dts@1.0.0: {}
 
   typedarray-to-buffer@3.1.5:
     dependencies:
