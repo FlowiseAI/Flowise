@@ -245,6 +245,8 @@ Resources:
         - CidrIp: 0.0.0.0/0
           IpProtocol: -1
       Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, lb-sg, !Ref Environment]]
         - Key: Environment
           Value: !Ref Environment
 
