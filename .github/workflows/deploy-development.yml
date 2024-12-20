@@ -43,119 +43,119 @@ jobs:
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-      - name: EC2-Cloudformation
-        run: |
-          STACK_NAME=sumo-flowise-ec2-stack-dev
-          aws cloudformation deploy \
-            --template-file aws-cloudformation/ec2.yml \
-            --parameter-overrides \
-              Environment=dev \
-              KeyName=${{ secrets.KEY_NAME }} \
-            --stack-name $STACK_NAME \
-            --capabilities CAPABILITY_NAMED_IAM
+      # - name: EC2-Cloudformation
+      #   run: |
+      #     STACK_NAME=sumo-flowise-ec2-stack-dev
+      #     aws cloudformation deploy \
+      #       --template-file aws-cloudformation/ec2.yml \
+      #       --parameter-overrides \
+      #         Environment=dev \
+      #         KeyName=${{ secrets.KEY_NAME }} \
+      #       --stack-name $STACK_NAME \
+      #       --capabilities CAPABILITY_NAMED_IAM
 
-          echo "CloudFormation Outputs:"
-          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+      #     echo "CloudFormation Outputs:"
+      #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-          SumoFlowisePublicIP=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowisePublicIP'].OutputValue" --output text)
-          echo "EC2_IP=${SumoFlowisePublicIP}" >> $GITHUB_ENV
+      #     SumoFlowisePublicIP=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowisePublicIP'].OutputValue" --output text)
+      #     echo "EC2_IP=${SumoFlowisePublicIP}" >> $GITHUB_ENV
 
-          SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
-          echo "SumoFlowiseWebAppURL=${SumoFlowiseWebAppURL}" >> $GITHUB_ENV
+      #     SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
+      #     echo "SumoFlowiseWebAppURL=${SumoFlowiseWebAppURL}" >> $GITHUB_ENV
 
-      - name: Route53-Cloudformation
-        run: |
-          STACK_NAME=sumo-flowise-route-stack-dev
-          aws cloudformation deploy \
-            --template-file aws-cloudformation/route.yml \
-            --stack-name $STACK_NAME \
-            --parameter-overrides \
-              Environment=dev \
-              HostedZoneId=${{ secrets.ROUTE_HZ_ID }} \
-            --capabilities CAPABILITY_NAMED_IAM
+      # - name: Route53-Cloudformation
+      #   run: |
+      #     STACK_NAME=sumo-flowise-route-stack-dev
+      #     aws cloudformation deploy \
+      #       --template-file aws-cloudformation/route.yml \
+      #       --stack-name $STACK_NAME \
+      #       --parameter-overrides \
+      #         Environment=dev \
+      #         HostedZoneId=${{ secrets.ROUTE_HZ_ID }} \
+      #       --capabilities CAPABILITY_NAMED_IAM
 
-          echo "CloudFormation Outputs:"
-          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+      #     echo "CloudFormation Outputs:"
+      #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-          echo "Wait for creating domain"
-          sleep 60
+      #     echo "Wait for creating domain"
+      #     sleep 60
 
-      - name: Upload Source Code to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.EC2_IP }}
-          username: ec2-user
-          key: ${{ secrets.SSH_KEY }}
-          overwrite: true
-          timeout: 150s
-          rm: true
-          source: './*'
-          target: '/home/ec2-user/flowise'
+      # - name: Upload Source Code to EC2
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: ${{ env.EC2_IP }}
+      #     username: ec2-user
+      #     key: ${{ secrets.SSH_KEY }}
+      #     overwrite: true
+      #     timeout: 150s
+      #     rm: true
+      #     source: './*'
+      #     target: '/home/ec2-user/flowise'
 
-      - name: Install Flowise in EC2
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ env.EC2_IP }}
-          username: ec2-user
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            # Update packages
-            sudo yum update -y
+      # - name: Install Flowise in EC2
+      #   uses: appleboy/ssh-action@v1.1.0
+      #   with:
+      #     host: ${{ env.EC2_IP }}
+      #     username: ec2-user
+      #     key: ${{ secrets.SSH_KEY }}
+      #     script: |
+      #       # Update packages
+      #       sudo yum update -y
 
-            # Install Docker
-            sudo yum install -y docker
-            sudo systemctl enable docker
-            sudo systemctl start docker
+      #       # Install Docker
+      #       sudo yum install -y docker
+      #       sudo systemctl enable docker
+      #       sudo systemctl start docker
 
-            # Add ec2-user to the Docker group
-            # usermod -aG docker ec2-user
+      #       # Add ec2-user to the Docker group
+      #       # usermod -aG docker ec2-user
 
-            # Install Docker Compose
-            # sudo yum install docker-compose-plugin
-            sudo curl -L "https://github.com/docker/compose/releases/download/v2.32.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            docker-compose --version
-            sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+      #       # Install Docker Compose
+      #       # sudo yum install docker-compose-plugin
+      #       sudo curl -L "https://github.com/docker/compose/releases/download/v2.32.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+      #       sudo chmod +x /usr/local/bin/docker-compose
+      #       docker-compose --version
+      #       sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
-            # Install Git
-            # yum install -y git
+      #       # Install Git
+      #       # yum install -y git
 
-            # Clone the Flowise repository
-            # git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/flowise
-            cd /home/ec2-user/flowise
+      #       # Clone the Flowise repository
+      #       # git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/flowise
+      #       cd /home/ec2-user/flowise
 
-            # Create the .env file
-            cat <<EOT >> /home/ec2-user/flowise/docker/.env
-            PORT=3000
-            DATABASE_TYPE=postgres
-            DATABASE_PORT=5432
-            DATABASE_HOST="localhost"
-            DATABASE_NAME=flowise
-            DATABASE_USER=${{ secrets.USERNAME }}
-            DATABASE_PASSWORD=${{ secrets.PASSWORD }}
+      #       # Create the .env file
+      #       cat <<EOT >> /home/ec2-user/flowise/docker/.env
+      #       PORT=3000
+      #       DATABASE_TYPE=postgres
+      #       DATABASE_PORT=5432
+      #       DATABASE_HOST="localhost"
+      #       DATABASE_NAME=flowise
+      #       DATABASE_USER=${{ secrets.USERNAME }}
+      #       DATABASE_PASSWORD=${{ secrets.PASSWORD }}
 
-            FLOWISE_USERNAME=${{ secrets.USERNAME }}
-            FLOWISE_PASSWORD=${{ secrets.PASSWORD }}
+      #       FLOWISE_USERNAME=${{ secrets.USERNAME }}
+      #       FLOWISE_PASSWORD=${{ secrets.PASSWORD }}
 
-            DATABASE_PATH=/root/.flowise
-            APIKEY_PATH=/root/.flowise
-            SECRETKEY_PATH=/root/.flowise
-            LOG_PATH=/root/.flowise/logs
-            BLOB_STORAGE_PATH=/root/.flowise/storage
-            EOT
+      #       DATABASE_PATH=/root/.flowise
+      #       APIKEY_PATH=/root/.flowise
+      #       SECRETKEY_PATH=/root/.flowise
+      #       LOG_PATH=/root/.flowise/logs
+      #       BLOB_STORAGE_PATH=/root/.flowise/storage
+      #       EOT
 
-            cd /home/ec2-user/flowise/docker
+      #       cd /home/ec2-user/flowise/docker
 
-            # Start the Flowise application using Docker Compose
-            docker-compose up -d
+      #       # Start the Flowise application using Docker Compose
+      #       docker-compose up -d
 
-      - name: Post-deployment script
-        run: |
-          # STACK_NAME=sumo-flowise-ec2-stack-dev
-          # SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
-          # echo "Deployment complete!\n Check the url: ${SumoFlowiseWebAppURL}"
+      # - name: Post-deployment script
+      #   run: |
+      #     # STACK_NAME=sumo-flowise-ec2-stack-dev
+      #     # SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
+      #     # echo "Deployment complete!\n Check the url: ${SumoFlowiseWebAppURL}"
 
-          STACK_NAME=sumo-flowise-route-stack-dev
-          DomainName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
-          echo "Deployment complete!\n Check the url: https://${DomainName}"
+      #     STACK_NAME=sumo-flowise-route-stack-dev
+      #     DomainName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
+      #     echo "Deployment complete!\n Check the url: https://${DomainName}"
 
