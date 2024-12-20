@@ -48,23 +48,23 @@ Resources:
     Properties:
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
-      SecurityGroupIds:
-        - !ImportValue 
-          Fn::Join: ["-", [!Ref Stage, LBSGId, !Ref Environment]]
+      # SecurityGroupIds:
+      #   - !ImportValue 
+      #     Fn::Join: ["-", [!Ref Stage, LBSGId, !Ref Environment]]
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref Stage, "instance", !Ref Environment]]
         - Key: Environment
           Value: !Ref Environment
-      # NetworkInterfaces:
-      #   - AssociatePublicIpAddress: true
-      #     DeviceIndex: 0
-      #     SubnetId: !ImportValue 
-      #       Fn::Join: ["-", [!Ref Stage, SumoFlowisePublicSubnet1Id, !Ref Environment]]
-      #     GroupSet:
-      #       - !ImportValue 
-      #         Fn::Join: ["-", [!Ref Stage, LBSGId, !Ref Environment]]
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !ImportValue 
+            Fn::Join: ["-", [!Ref Stage, SumoFlowisePublicSubnet1Id, !Ref Environment]]
+          GroupSet:
+            - !ImportValue 
+              Fn::Join: ["-", [!Ref Stage, LBSGId, !Ref Environment]]
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash

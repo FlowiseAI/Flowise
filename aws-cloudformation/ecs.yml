@@ -281,6 +281,8 @@ Resources:
       Subnets:
         - !Ref SumoFlowisePublicSubnet1
         - !Ref SumoFlowisePublicSubnet2
+        - !Ref SumoFlowisePrivateSubnet1
+        - !Ref SumoFlowisePrivateSubnet2
       SecurityGroups: 
         - !Ref SumoFlowiseLoadBalancerSG
       IpAddressType: ipv4
