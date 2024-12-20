@@ -476,7 +476,7 @@ const Canvas = () => {
             const currentState = canvasHistory.present
 
             // detect which node's additionalParams data changed and get it's id
-            const changedNode = findNodeWithAdditionalParamsChange(prevState, currentState)
+            const changedNode = findNodesWithHiddenInputsChange(prevState, currentState)
             if (changedNode) {
                 setHighlightedNodeId?.(changedNode.id)
             }
@@ -497,7 +497,7 @@ const Canvas = () => {
             const currentState = canvasHistory.future[0]
 
             // detect which node's additionalParams data changed and get it's id
-            const changedNode = findNodeWithAdditionalParamsChange(prevState, currentState)
+            const changedNode = findNodesWithHiddenInputsChange(prevState, currentState)
             if (changedNode) {
                 setHighlightedNodeId?.(changedNode.id)
             }
@@ -539,7 +539,7 @@ const Canvas = () => {
         [handleRedo, handleUndo, canRedo, canUndo]
     )
 
-    const findNodeWithAdditionalParamsChange = (prevState, currentState) => {
+    const findNodesWithHiddenInputsChange = (prevState, currentState) => {
         const prevNodes = prevState.chatflow.flowData ? JSON.parse(prevState.chatflow.flowData).nodes : []
         const currentNodes = currentState.chatflow.flowData ? JSON.parse(currentState.chatflow.flowData).nodes : []
 
@@ -549,9 +549,10 @@ const Canvas = () => {
 
             // Check if any additional params changed
             return prevNode.data.inputParams.some((param) => {
-                if (!param.additionalParams && param.name !== 'promptValues') return false
-                const hasChanged = JSON.stringify(prevNode.data.inputs[param.name]) !== JSON.stringify(currentNode.data.inputs[param.name])
-                return hasChanged
+                const isParamChanged =
+                    JSON.stringify(prevNode.data.inputs[param.name]) !== JSON.stringify(currentNode.data.inputs[param.name])
+
+                return isParamChanged || param.additionalParams || (param.type && param.type.includes('conditionFunction'))
             })
         })
     }

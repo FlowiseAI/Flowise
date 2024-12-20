@@ -74,7 +74,6 @@ const NodeInputHandler = ({
     disabled = false,
     isAdditionalParams = false,
     disablePadding = false,
-    onHideNodeInfoDialog,
     onNodeDataChange
 }) => {
     const theme = useTheme()
@@ -130,7 +129,6 @@ const NodeInputHandler = ({
         }
         setConditionDialogProps(dialogProps)
         setShowConditionDialog(true)
-        onHideNodeInfoDialog(true)
     }
 
     const onShowPromptHubButtonClicked = () => {
@@ -371,7 +369,6 @@ const NodeInputHandler = ({
             deleteEdge(edgeId)
         }
         setShowConditionDialog(false)
-        onHideNodeInfoDialog(false)
     }
 
     const editAsyncOption = (inputParamName, inputValue) => {
@@ -600,6 +597,7 @@ const NodeInputHandler = ({
                                             data={data}
                                             isAdditionalParams={true}
                                             disablePadding={true}
+                                            onNodeDataChange={onNodeDataChange}
                                         />
                                     </TabPanel>
                                 ))}
@@ -780,18 +778,24 @@ const NodeInputHandler = ({
                         {/* CUSTOM INPUT LOGIC */}
                         {inputParam.type.includes('conditionFunction') && (
                             <>
-                                <Button
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        width: '100%'
-                                    }}
-                                    sx={{ borderRadius: '12px', width: '100%', mt: 1 }}
-                                    variant='outlined'
-                                    onClick={() => onConditionDialogClicked(inputParam)}
+                                <HighlightButtonWrapper
+                                    highlightedNodeId={highlightedNodeId}
+                                    nodeId={data.id}
+                                    setHighlightedNodeId={setHighlightedNodeId}
                                 >
-                                    {inputParam.label}
-                                </Button>
+                                    <Button
+                                        sx={{
+                                            borderRadius: 25,
+                                            width: '100%',
+                                            mb: 0,
+                                            mt: 2
+                                        }}
+                                        variant='outlined'
+                                        onClick={() => onConditionDialogClicked(inputParam)}
+                                    >
+                                        {inputParam.label}
+                                    </Button>
+                                </HighlightButtonWrapper>
                             </>
                         )}
                         {(data.name === 'cheerioWebScraper' ||
@@ -854,9 +858,9 @@ const NodeInputHandler = ({
                 dialogProps={conditionDialogProps}
                 onCancel={() => {
                     setShowConditionDialog(false)
-                    onHideNodeInfoDialog(false)
                 }}
                 onConfirm={(newData, inputParam, tabValue) => onConditionDialogSave(newData, inputParam, tabValue)}
+                onNodeDataChange={onNodeDataChange}
             ></ConditionDialog>
             <InputHintDialog
                 show={showInputHintDialog}
@@ -874,7 +878,6 @@ NodeInputHandler.propTypes = {
     disabled: PropTypes.bool,
     isAdditionalParams: PropTypes.bool,
     disablePadding: PropTypes.bool,
-    onHideNodeInfoDialog: PropTypes.func,
     onNodeDataChange: PropTypes.func
 }
 
