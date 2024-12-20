@@ -75,31 +75,44 @@ Resources:
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref Stage, "instance", !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          GroupSet:
+            - !ImportValue 
+              Fn::Join: ["-", [!Ref Stage, LBSGId, !Ref Environment]]
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
           # Update packages
-          yum update -y
+          sudo yum update -y
 
           # Install Docker
-          yum install -y docker
-          systemctl enable docker
-          systemctl start docker
+          sudo yum install -y docker
+          sudo systemctl enable docker
+          sudo systemctl start docker
 
           # Add ec2-user to the Docker group
-          usermod -aG docker ec2-user
+          # usermod -aG docker ec2-user
 
           # Install Docker Compose
-          yum install -y docker-compose-plugin
+          # sudo yum install docker-compose-plugin
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.32.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+          sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
           # Install Git
-          yum install -y git
+          # yum install -y git
 
           # Clone the Flowise repository
-          git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/Flowise
+          # git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/flowise
+          cd /home/ec2-user/flowise
 
           # Create the .env file
-          cat <<EOT >> /home/ec2-user/Flowise/docker/.env
+          cat <<EOT >> /home/ec2-user/flowise/docker/.env
           PORT=3000
           DATABASE_PATH=/root/.flowise
           APIKEY_PATH=/root/.flowise
@@ -108,8 +121,10 @@ Resources:
           BLOB_STORAGE_PATH=/root/.flowise/storage
           EOT
 
+          cd /home/ec2-user/flowise/docker
+
           # Start the Flowise application using Docker Compose
-          docker compose up -d
+          docker-compose up -d
 
 Outputs:
   SumoFlowiseInstanceId:

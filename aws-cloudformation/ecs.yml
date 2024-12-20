@@ -235,10 +235,10 @@ Resources:
   ####
   # ALB related resources
   ####
-  SumoFlowisePublicLoadBalancerSG:
+  SumoFlowiseLoadBalancerSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Join ["-", [!Ref Stage, public-lb-sg, !Ref Environment]]
+      GroupName: !Join ["-", [!Ref Stage, lb-sg, !Ref Environment]]
       GroupDescription: Access to the public facing load balancer
       VpcId: !Ref SumoFlowiseVPC
       SecurityGroupIngress:
@@ -248,10 +248,10 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  SumoFlowisePublicLoadBalancer:
+  SumoFlowiseLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: !Join ["-", [!Ref Stage, public-lb, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, lb, !Ref Environment]]
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: idle_timeout.timeout_seconds
@@ -259,14 +259,14 @@ Resources:
       Subnets:
         - !Ref SumoFlowisePublicSubnet1
         - !Ref SumoFlowisePublicSubnet2
-      SecurityGroups: [!Ref SumoFlowisePublicLoadBalancerSG]
+      SecurityGroups: [!Ref SumoFlowiseLoadBalancerSG]
       Tags:
         - Key: Environment
           Value: !Ref Environment
 
   # A dummy target group is used to setup the ALB to just drop traffic
   # initially, before any real service target groups have been added.
-  SumoFlowiseDummyTargetGroupPublic:
+  SumoFlowiseDummyTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Name: !Join ["-", [!Ref Stage, dummy-tg, !Ref Environment]]
@@ -283,15 +283,15 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  SumoFlowisePublicLoadBalancerListener:
+  SumoFlowiseLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     DependsOn:
-      - SumoFlowisePublicLoadBalancer
+      - SumoFlowiseLoadBalancer
     Properties:
       DefaultActions:
-        - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
+        - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroup
           Type: "forward"
-      LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
+      LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
       Port: 80
       Protocol: HTTP
 
@@ -316,7 +316,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 0
           ToPort: 65535
-          SourceSecurityGroupId: !Ref SumoFlowisePublicLoadBalancerSG
+          SourceSecurityGroupId: !Ref SumoFlowiseLoadBalancerSG
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -586,7 +586,7 @@ Resources:
   SumoFlowiseListenerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
-      ListenerArn: !Ref SumoFlowisePublicLoadBalancerListener
+      ListenerArn: !Ref SumoFlowiseLoadBalancerListener
       Priority: 1
       Conditions:
         - Field: path-pattern
@@ -599,16 +599,22 @@ Resources:
 Outputs:
   ExternalUrl:
     Description: The url of Flowise application
-    Value: !Sub http://${SumoFlowisePublicLoadBalancer.DNSName}
+    Value: !Sub http://${SumoFlowiseLoadBalancer.DNSName}
 
-  SumoFlowisePublicLoadBalancerDNSName:
-    Description: 'DNS name of the load balancer'
-    Value: !GetAtt SumoFlowisePublicLoadBalancer.DNSName
+  SumoFlowiseLoadBalancerSGId:
+    Description: 'The ID of the load balancer'
+    Value: !Ref SumoFlowiseLoadBalancerSG
     Export:
-      Name: !Join ["-", [!Ref Stage, PublicLBDNSName, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, LBSGId, !Ref Environment]]
+
+  SumoFlowiseLoadBalancerDNSName:
+    Description: 'DNS name of the load balancer'
+    Value: !GetAtt SumoFlowiseLoadBalancer.DNSName
+    Export:
+      Name: !Join ["-", [!Ref Stage, LBDNSName, !Ref Environment]]
 
   SumoFlowiseLoadBalancerCanonicalHostedZoneId:
     Description: 'CanonicalHostedZoneId of the load balancer'
-    Value: !GetAtt SumoFlowisePublicLoadBalancer.CanonicalHostedZoneID
+    Value: !GetAtt SumoFlowiseLoadBalancer.CanonicalHostedZoneID
     Export:
-      Name: !Join ["-", [!Ref Stage, PublicLBCanonicalHostedZoneID, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, LBCanonicalHostedZoneID, !Ref Environment]]

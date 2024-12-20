@@ -39,9 +39,9 @@ Resources:
       #   - !ImportValue SumoChatwootDevStack-SumoChatwootInstanceIP
       AliasTarget: 
         DNSName: !ImportValue 
-          Fn::Join: ["-", [!Ref Stage, PublicLBDNSName, !Ref Environment]]
+          Fn::Join: ["-", [!Ref Stage, LBDNSName, !Ref Environment]]
         HostedZoneId: !ImportValue 
-          Fn::Join: ["-", [!Ref Stage, PublicLBCanonicalHostedZoneID, !Ref Environment]]
+          Fn::Join: ["-", [!Ref Stage, LBCanonicalHostedZoneID, !Ref Environment]]
 
 Outputs:
   RecordSetName:
