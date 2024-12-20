@@ -246,8 +246,24 @@ Resources:
       GroupDescription: Access to the public facing load balancer
       VpcId: !Ref SumoFlowiseVPC
       SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: -1
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        # - CidrIp: 0.0.0.0/0
+        #   IpProtocol: -1
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref Stage, lb-sg, !Ref Environment]]
