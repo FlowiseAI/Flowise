@@ -134,8 +134,8 @@ jobs:
             # DATABASE_USER=${{ secrets.USERNAME }}
             # DATABASE_PASSWORD=${{ secrets.PASSWORD }}
 
-            FLOWISE_USERNAME=${{ secrets.USERNAME }}
-            FLOWISE_PASSWORD=${{ secrets.PASSWORD }}
+            # FLOWISE_USERNAME=${{ secrets.USERNAME }}
+            # FLOWISE_PASSWORD=${{ secrets.PASSWORD }}
 
             DATABASE_PATH=/root/.flowise
             APIKEY_PATH=/root/.flowise
@@ -147,7 +147,7 @@ jobs:
             cd /home/ec2-user/flowise/docker
 
             # Start the Flowise application using Docker Compose
-            docker-compose up -d
+            sudo docker-compose up -d
 
       - name: Post-deployment script
         run: |
