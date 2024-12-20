@@ -618,7 +618,7 @@ Resources:
     Properties:
       MaxCapacity: 5 # Maximum number of task instances
       MinCapacity: 1 # Start with one task instance
-      ResourceId: !Sub service/${SumoFlowiseECSCluster}/${SumoFlowiseService}
+      ResourceId: !Join ["/", [service, !Ref SumoFlowiseECSCluster, !GetAtt SumoFlowiseService.Name]]
       RoleARN: !GetAtt SumoFlowiseAutoScalingRole.Arn
       ScalableDimension: ecs:service:DesiredCount
       ServiceNamespace: ecs
