@@ -281,7 +281,9 @@ Resources:
       Subnets:
         - !Ref SumoFlowisePublicSubnet1
         - !Ref SumoFlowisePublicSubnet2
-      SecurityGroups: [!Ref SumoFlowiseLoadBalancerSG]
+      SecurityGroups: 
+        - !Ref SumoFlowiseLoadBalancerSG
+      IpAddressType: ipv4
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -294,7 +296,7 @@ Resources:
       Name: !Join ["-", [!Ref Stage, dummy-tg, !Ref Environment]]
       VpcId: !Ref SumoFlowiseVPC
       Protocol: HTTP
-      Port: 80
+      Port: 3000
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
       HealthCheckIntervalSeconds: 6
@@ -321,18 +323,18 @@ Resources:
   #           Port: "443"
   #           StatusCode: HTTP_301
 
-  # # Listener for HTTPS
-  # SumoFlowiseHTTPSListener:
-  #   Type: AWS::ElasticLoadBalancingV2::Listener
-  #   Properties:
-  #     LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
-  #     Protocol: HTTPS
-  #     Port: 443
-  #     DefaultActions:
-  #       - Type: forward
-  #         TargetGroupArn: !Ref SumoFlowiseDummyTargetGroup
-  #     Certificates:
-  #       - CertificateArn: !Ref SumoFlowiseCertificateArn
+  # Listener for HTTPS
+  SumoFlowiseHTTPSListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
+      Protocol: HTTPS
+      Port: 443
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref SumoFlowiseDummyTargetGroup
+      Certificates:
+        - CertificateArn: !Ref SumoFlowiseCertificateArn
 
   SumoFlowiseLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -672,8 +674,8 @@ Resources:
         TargetValue: 50 # Target CPU utilization percentage
         PredefinedMetricSpecification:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
-        ScaleInCooldown: 60
-        ScaleOutCooldown: 60
+        ScaleInCooldown: 300
+        ScaleOutCooldown: 300
 
   SumoFlowiseScalingPolicyMemory:
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
@@ -685,8 +687,8 @@ Resources:
         TargetValue: 70 # Target memory utilization percentage
         PredefinedMetricSpecification:
           PredefinedMetricType: ECSServiceAverageMemoryUtilization
-        ScaleInCooldown: 60
-        ScaleOutCooldown: 60
+        ScaleInCooldown: 300
+        ScaleOutCooldown: 300
 
 Outputs:
   ExternalUrl:

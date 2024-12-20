@@ -42,27 +42,6 @@ Mappings:
       AMI: "ami-0166fe664262f664c" # Amazon Linux 2 AMI (HVN) for us-west-2
 
 Resources:
-  #### Security Group ####
-  # SumoFlowiseEC2InstanceSecurityGroup:
-  #   Type: AWS::EC2::SecurityGroup
-  #   Properties:
-  #     GroupDescription: Allow SSH, HTTP, and Docker traffic for Flowise application.
-  #     GroupName: !Join ["-", [!Ref Stage, "sg", !Ref Environment]]
-  #     SecurityGroupIngress:
-  #       # Allow SSH (port 22) from anywhere
-  #       - IpProtocol: tcp
-  #         FromPort: 22
-  #         ToPort: 22
-  #         CidrIp: 0.0.0.0/0
-  #       # Allow HTTP traffic (port 3000 for Flowise)
-  #       - IpProtocol: tcp
-  #         FromPort: 3000
-  #         ToPort: 3000
-  #         CidrIp: 0.0.0.0/0
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Join ["-", [!Ref Stage, "EC2SG", !Ref Environment]]
-
   #### EC2 Instance ####
   SumoFlowiseInstance:
     Type: AWS::EC2::Instance
