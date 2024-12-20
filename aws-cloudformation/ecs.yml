@@ -281,8 +281,6 @@ Resources:
       Subnets:
         - !Ref SumoFlowisePublicSubnet1
         - !Ref SumoFlowisePublicSubnet2
-        - !Ref SumoFlowisePrivateSubnet1
-        - !Ref SumoFlowisePrivateSubnet2
       SecurityGroups: 
         - !Ref SumoFlowiseLoadBalancerSG
       IpAddressType: ipv4
@@ -517,8 +515,8 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           Subnets:
-            - !Ref SumoFlowisePrivateSubnet1
-            - !Ref SumoFlowisePrivateSubnet2
+            - !Ref SumoFlowisePublicSubnet1
+            - !Ref SumoFlowisePublicSubnet2
           SecurityGroups:
             - !Ref SumoFlowiseContainerSecurityGroup
       LoadBalancers:
