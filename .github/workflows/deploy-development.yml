@@ -57,6 +57,23 @@ jobs:
           SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
           echo "SumoFlowiseWebAppURL=${SumoFlowiseWebAppURL}" >> $GITHUB_ENV
 
+      - name: Route53-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-route-stack-dev
+          aws cloudformation deploy \
+            --template-file aws_cloudformation/route.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              Environment=dev \
+              HostedZoneId=${{ secrets.ROUTE_HZ_ID }} \
+            --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+          echo "Wait for creating domain"
+          sleep 60
+
       - name: Upload Source Code to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -118,6 +135,11 @@ jobs:
 
       - name: Post-deployment script
         run: |
-          STACK_NAME=sumo-flowise-ec2-stack-dev
-          SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
-          echo "Deployment complete!\n Check the url: https://${SumoFlowiseWebAppURL}"
+          # STACK_NAME=sumo-flowise-ec2-stack-dev
+          # SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
+          # echo "Deployment complete!\n Check the url: ${SumoFlowiseWebAppURL}"
+
+          STACK_NAME=sumo-flowise-route-stack-dev
+          DomainName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
+          echo "Deployment complete!\n Check the url: https://${DomainName}"
+

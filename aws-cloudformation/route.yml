@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create a Route 53 hosted zone and an A record'
+
+Parameters:
+  Stage:
+    Description: Prefix of resource names
+    Type: String
+    Default: sumo-flowise
+
+  Environment:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+  HostedZoneId:
+    Description: 'The ID of the existing Route 53 hosted zone'
+    Type: 'AWS::Route53::HostedZone::Id'
+
+Conditions:
+  IsProd: !Equals [!Ref Environment, prod]
+
+Resources:
+  # Create an A Record in the Hosted Zone
+  SumoChatwootDNSRecord:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      # Name: !Ref DomainName
+      Name: !If 
+        - IsProd
+        - flowise.sumoscheduler.com
+        - dev-flowise.sumoscheduler.com
+      Type: 'A'
+      # TTL: '60'  # Set TTL to 60 seconds
+      # ResourceRecords: 
+      #   - !ImportValue SumoChatwootDevStack-SumoChatwootInstanceIP
+      AliasTarget: 
+        DNSName: !ImportValue 
+          Fn::Join: ["-", [!Ref Stage, PublicLBDNSName, !Ref Environment]]
+        HostedZoneId: !ImportValue 
+          Fn::Join: ["-", [!Ref Stage, PublicLBCanonicalHostedZoneID, !Ref Environment]]
+
+Outputs:
+  RecordSetName:
+    Description: 'The name of the DNS record set created'
+    Value: !If
+      - IsProd
+      - flowise.sumoscheduler.com
+      - dev-flowise.sumoscheduler.com

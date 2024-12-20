@@ -600,3 +600,15 @@ Outputs:
   ExternalUrl:
     Description: The url of Flowise application
     Value: !Sub http://${SumoFlowisePublicLoadBalancer.DNSName}
+
+  SumoFlowisePublicLoadBalancerDNSName:
+    Description: 'DNS name of the load balancer'
+    Value: !GetAtt SumoFlowisePublicLoadBalancer.DNSName
+    Export:
+      Name: !Join ["-", [!Ref Stage, PublicLBDNSName, !Ref Environment]]
+
+  SumoFlowiseLoadBalancerCanonicalHostedZoneId:
+    Description: 'CanonicalHostedZoneId of the load balancer'
+    Value: !GetAtt SumoFlowisePublicLoadBalancer.CanonicalHostedZoneID
+    Export:
+      Name: !Join ["-", [!Ref Stage, PublicLBCanonicalHostedZoneID, !Ref Environment]]
