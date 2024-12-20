@@ -36,7 +36,9 @@ jobs:
           STACK_NAME=sumo-flowise-ecs-stack-dev
           aws cloudformation deploy \
             --template-file aws-cloudformation/ecs.yml \
-            --parameter-overrides Environment=dev \
+            --parameter-overrides \
+              Environment=dev \
+              SumoFlowiseCertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
             --stack-name $STACK_NAME \
             --capabilities CAPABILITY_NAMED_IAM
 
