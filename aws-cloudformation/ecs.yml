@@ -613,6 +613,8 @@ Resources:
   ####
   SumoFlowiseScalableTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn:
+      - SumoFlowiseService # Ensure the ECS Service is created first    
     Properties:
       MaxCapacity: 5 # Maximum number of task instances
       MinCapacity: 1 # Start with one task instance
