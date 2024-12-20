@@ -242,22 +242,8 @@ Resources:
       GroupDescription: Access to the public facing load balancer
       VpcId: !Ref SumoFlowiseVPC
       SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 3000
-          ToPort: 3000
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref Stage, lb-sg, !Ref Environment]]
@@ -301,12 +287,22 @@ Resources:
 
   SumoFlowiseLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - SumoFlowiseLoadBalancer
+    # DependsOn:
+    #   - SumoFlowiseLoadBalancer
+    # Properties:
+    #   DefaultActions:
+    #     - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroup
+    #       Type: "forward"
+    #   LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
+    #   Port: 80
+    #   Protocol: HTTP
     Properties:
       DefaultActions:
-        - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroup
-          Type: "forward"
+        - Type: "redirect"
+          RedirectConfig:
+            Protocol: HTTPS
+            Port: "443"
+            StatusCode: HTTP_301
       LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
       Port: 80
       Protocol: HTTP
@@ -611,6 +607,45 @@ Resources:
       Actions:
         - TargetGroupArn: !Ref SumoFlowiseTargetGroup
           Type: forward
+
+  ####
+  # ECS Auto Scaling
+  ####
+  SumoFlowiseScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: 5 # Maximum number of task instances
+      MinCapacity: 1 # Start with one task instance
+      ResourceId: !Sub service/${SumoFlowiseECSCluster}/${SumoFlowiseService}
+      RoleARN: !GetAtt SumoFlowiseAutoScalingRole.Arn
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+
+  SumoFlowiseScalingPolicyCPU:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Join ["-", [!Ref Stage, "cpu-scaling-policy", !Ref Environment]]
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref SumoFlowiseScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50 # Target CPU utilization percentage
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+
+  SumoFlowiseScalingPolicyMemory:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Join ["-", [!Ref Stage, "memory-scaling-policy", !Ref Environment]]
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref SumoFlowiseScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 70 # Target memory utilization percentage
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageMemoryUtilization
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
 
 Outputs:
   ExternalUrl:
