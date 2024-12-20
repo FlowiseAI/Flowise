@@ -369,11 +369,23 @@ const Canvas = () => {
                     return node
                 })
             )
-            setTimeout(() => setDirty(), 0)
+            setDirty()
+            const flowData = {
+                nodes: reactFlowInstance.getNodes().concat(newNode),
+                edges: edges,
+                viewport: reactFlowInstance?.getViewport()
+            }
+            dispatch({
+                type: SET_CHATFLOW,
+                chatflow: {
+                    ...canvas.chatflow,
+                    flowData: JSON.stringify(flowData)
+                }
+            })
         },
 
         // eslint-disable-next-line
-        [reactFlowInstance]
+        [edges, canvas.chatflow, dispatch, reactFlowInstance, setNodes]
     )
 
     const syncNodes = () => {
@@ -528,8 +540,8 @@ const Canvas = () => {
     )
 
     const findNodeWithAdditionalParamsChange = (prevState, currentState) => {
-        const prevNodes = JSON.parse(prevState.chatflow.flowData).nodes
-        const currentNodes = JSON.parse(currentState.chatflow.flowData).nodes
+        const prevNodes = prevState.chatflow.flowData ? JSON.parse(prevState.chatflow.flowData).nodes : []
+        const currentNodes = currentState.chatflow.flowData ? JSON.parse(currentState.chatflow.flowData).nodes : []
 
         return prevNodes.find((prevNode, index) => {
             const currentNode = currentNodes[index]
