@@ -127,12 +127,12 @@ jobs:
             # Create the .env file
             cat <<EOT >> /home/ec2-user/flowise/docker/.env
             PORT=3000
-            DATABASE_TYPE=postgres
-            DATABASE_PORT=5432
-            DATABASE_HOST="localhost"
-            DATABASE_NAME=flowise
-            DATABASE_USER=${{ secrets.USERNAME }}
-            DATABASE_PASSWORD=${{ secrets.PASSWORD }}
+            # DATABASE_TYPE=postgres
+            # DATABASE_PORT=5432
+            # DATABASE_HOST="localhost"
+            # DATABASE_NAME=flowise
+            # DATABASE_USER=${{ secrets.USERNAME }}
+            # DATABASE_PASSWORD=${{ secrets.PASSWORD }}
 
             FLOWISE_USERNAME=${{ secrets.USERNAME }}
             FLOWISE_PASSWORD=${{ secrets.PASSWORD }}
@@ -151,9 +151,9 @@ jobs:
 
       - name: Post-deployment script
         run: |
-          # STACK_NAME=sumo-flowise-ec2-stack-dev
-          # SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
-          # echo "Deployment complete!\n Check the url: ${SumoFlowiseWebAppURL}"
+          STACK_NAME=sumo-flowise-ec2-stack-dev
+          SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
+          echo "Deployment complete!\n Check the url: ${SumoFlowiseWebAppURL}"
 
           STACK_NAME=sumo-flowise-route-stack-dev
           DomainName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
