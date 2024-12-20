@@ -57,17 +57,17 @@ jobs:
           SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
           echo "EC2_ID=${SumoFlowiseWebAppURL}" >> $GITHUB_ENV
 
-      # - name: Upload Source Code to EC2
-      #   uses: appleboy/scp-action@v0.1.7
-      #   with:
-      #     host: ${{ env.EC2_IP }}
-      #     username: ec2-user
-      #     key: ${{ secrets.SSH_KEY }}
-      #     overwrite: true
-      #     timeout: 150s
-      #     rm: true
-      #     source: './*'
-      #     target: '/home/ec2-user/flowise'
+      - name: Upload Source Code to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
+          overwrite: true
+          timeout: 150s
+          rm: true
+          source: './*'
+          target: '/home/ec2-user/flowise'
 
       - name: Install Flowise in EC2
         uses: appleboy/ssh-action@v1.1.0
