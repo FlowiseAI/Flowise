@@ -308,43 +308,43 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # SumoFlowiseLoadBalancerListener:
-  #   Type: AWS::ElasticLoadBalancingV2::Listener
-  #   Properties:
-  #     LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
-  #     Port: 80
-  #     Protocol: HTTP
-  #     DefaultActions:
-  #       - Type: "redirect"
-  #         RedirectConfig:
-  #           Protocol: HTTPS
-  #           Port: "443"
-  #           StatusCode: HTTP_301
-
-  # # Listener for HTTPS
-  # SumoFlowiseHTTPSListener:
-  #   Type: AWS::ElasticLoadBalancingV2::Listener
-  #   Properties:
-  #     LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
-  #     Protocol: HTTPS
-  #     Port: 443
-  #     DefaultActions:
-  #       - Type: forward
-  #         TargetGroupArn: !Ref SumoFlowiseDummyTargetGroup
-  #     Certificates:
-  #       - CertificateArn: !Ref SumoFlowiseCertificateArn
-
   SumoFlowiseLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - SumoFlowiseLoadBalancer
     Properties:
-      DefaultActions:
-        - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroup
-          Type: "forward"
       LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
       Port: 80
       Protocol: HTTP
+      DefaultActions:
+        - Type: "redirect"
+          RedirectConfig:
+            Protocol: HTTPS
+            Port: "443"
+            StatusCode: HTTP_301
+
+  # Listener for HTTPS
+  SumoFlowiseHTTPSListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
+      Protocol: HTTPS
+      Port: 443
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref SumoFlowiseDummyTargetGroup
+      Certificates:
+        - CertificateArn: !Ref SumoFlowiseCertificateArn
+
+  # SumoFlowiseLoadBalancerListener:
+  #   Type: AWS::ElasticLoadBalancingV2::Listener
+  #   DependsOn:
+  #     - SumoFlowiseLoadBalancer
+  #   Properties:
+  #     DefaultActions:
+  #       - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroup
+  #         Type: "forward"
+  #     LoadBalancerArn: !Ref SumoFlowiseLoadBalancer
+  #     Port: 80
+  #     Protocol: HTTP
 
   ####
   # ECS cluster related resources
@@ -623,8 +623,8 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       VpcId: !Ref SumoFlowiseVPC
-      Port: 80
-      Protocol: HTTP
+      Port: 443
+      Protocol: HTTPS
       Matcher:
         HttpCode: 200-299
       HealthCheckIntervalSeconds: 10
