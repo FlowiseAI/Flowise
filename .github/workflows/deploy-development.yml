@@ -25,6 +25,12 @@ jobs:
           aws cloudformation validate-template \
             --template-body file://aws-cloudformation/ecs.yml
 
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/ec2.yml
+
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/route.yml
+
       - name: Network-Cloudformation
         run: |
           STACK_NAME=sumo-flowise-ecs-stack-dev
@@ -61,7 +67,7 @@ jobs:
         run: |
           STACK_NAME=sumo-flowise-route-stack-dev
           aws cloudformation deploy \
-            --template-file aws_cloudformation/route.yml \
+            --template-file aws-cloudformation/route.yml \
             --stack-name $STACK_NAME \
             --parameter-overrides \
               Environment=dev \
