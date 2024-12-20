@@ -26,7 +26,7 @@
     "@uiw/react-codemirror": "^4.21.21",
     "axios": "1.6.2",
     "c-agent-embedding": "1.0.4",
-    "c-agent-embedding-react": "1.0.4",
+    "c-agent-embedding-react": "1.0.5",
     "clsx": "^1.1.1",
     "dccxx-s3-explorer": "^1.0.10",
     "dotenv": "^16.0.0",
