@@ -31,39 +31,39 @@ jobs:
           # aws cloudformation validate-template \
           #   --template-body file://aws-cloudformation/route.yml
 
-      - name: Network-Cloudformation
-        run: |
-          STACK_NAME=sumo-flowise-ecs-stack-dev
-          aws cloudformation deploy \
-            --template-file aws-cloudformation/ecs.yml \
-            --parameter-overrides \
-              Environment=dev \
-              SumoFlowiseCertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
-            --stack-name $STACK_NAME \
-            --capabilities CAPABILITY_NAMED_IAM
-
-          echo "CloudFormation Outputs:"
-          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
-
-      # - name: EC2-Cloudformation
+      # - name: Network-Cloudformation
       #   run: |
-      #     STACK_NAME=sumo-flowise-ec2-stack-dev
+      #     STACK_NAME=sumo-flowise-ecs-stack-dev
       #     aws cloudformation deploy \
-      #       --template-file aws-cloudformation/ec2.yml \
+      #       --template-file aws-cloudformation/ecs.yml \
       #       --parameter-overrides \
       #         Environment=dev \
-      #         KeyName=${{ secrets.KEY_NAME }} \
+      #         SumoFlowiseCertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
       #       --stack-name $STACK_NAME \
       #       --capabilities CAPABILITY_NAMED_IAM
 
       #     echo "CloudFormation Outputs:"
       #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-      #     SumoFlowisePublicIP=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowisePublicIP'].OutputValue" --output text)
-      #     echo "EC2_IP=${SumoFlowisePublicIP}" >> $GITHUB_ENV
+      - name: EC2-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-ec2-stack-dev
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/ec2.yml \
+            --parameter-overrides \
+              Environment=dev \
+              KeyName=${{ secrets.KEY_NAME }} \
+            --stack-name $STACK_NAME \
+            --capabilities CAPABILITY_NAMED_IAM
 
-      #     SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
-      #     echo "SumoFlowiseWebAppURL=${SumoFlowiseWebAppURL}" >> $GITHUB_ENV
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+          SumoFlowisePublicIP=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowisePublicIP'].OutputValue" --output text)
+          echo "EC2_IP=${SumoFlowisePublicIP}" >> $GITHUB_ENV
+
+          SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
+          echo "SumoFlowiseWebAppURL=${SumoFlowiseWebAppURL}" >> $GITHUB_ENV
 
       # - name: Route53-Cloudformation
       #   run: |
