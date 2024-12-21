@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for PostgreSQL RDS setup for Flowise'
+
+Parameters:
+  Stage:
+    Description: Prefix of resource names
+    Type: String
+    Default: sumo-flowise
+
+  Environment:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+  SumoFlowiseDBUsername:
+    Description: 'The database admin account username'
+    NoEcho: true
+    Type: 'String'
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: 'must begin with a letter and contain only alphanumeric characters.'
+
+  SumoFlowiseDBPassword:
+    Description: 'The database admin account password'
+    NoEcho: true
+    Type: 'String'
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9@]*'
+    ConstraintDescription: 'must contain only alphanumeric characters and/or @.'
+
+Resources:
+  # Security Group for RDS
+  SumoFlowiseRDSDBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref Environment]]
+      GroupDescription: Security group for Flowise RDS
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !ImportValue 
+            Fn::Join: ["-", [!Ref Stage, "LoadBalancerSGId", !Ref Environment]]
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, "rds-sg", !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  # RDS Subnet Group
+  SumoFlowiseRDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for Flowise RDS
+      SubnetIds:
+        - !ImportValue 
+          Fn::Join: ["-", [!Ref Stage, "Private1Id", !Ref Environment]]
+        - !ImportValue 
+          Fn::Join: ["-", [!Ref Stage, "Private2Id", !Ref Environment]]
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, "rds-group", !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  # RDS Instance
+  SumoFlowiseRDSDBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Join ["-", [!Ref Stage, "postgres", !Ref Environment]]
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      MasterUsername: !Ref SumoFlowiseDBUsername
+      MasterUserPassword: !Ref SumoFlowiseDBPassword
+      DBSubnetGroupName: !Ref SumoFlowiseRDSSubnetGroup
+      VPCSecurityGroups:
+        - !Ref SumoFlowiseRDSDBSecurityGroup
+      MultiAZ: true
+      PubliclyAccessible: false
+      AllocatedStorage: 20
+      StorageType: gp2
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, "postgres", !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  SumoFlowiseRDSInstanceEndpoint:
+    Description: 'The connection endpoint for the RDS instance'
+    Value: !GetAtt SumoFlowiseRDSDBInstance.Endpoint.Address
+    Export:
+      Name: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref Environment]]
+
+  SumoFlowiseRDSInstancePort:
+    Description: 'The port of the RDS instance'
+    Value: !GetAtt SumoFlowiseRDSDBInstance.Endpoint.Port
+    Export:
+      Name: !Join ["-", [!Ref Stage, "RDSInstancePort", !Ref Environment]]

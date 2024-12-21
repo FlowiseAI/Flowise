@@ -24,24 +24,20 @@ Conditions:
 
 Resources:
   # Create an A Record in the Hosted Zone
-  SumoChatwootDNSRecord:
+  SumoFlowiseDNSRecord:
     Type: 'AWS::Route53::RecordSet'
     Properties:
       HostedZoneId: !Ref HostedZoneId
-      # Name: !Ref DomainName
       Name: !If 
         - IsProd
         - flowise.sumoscheduler.com
         - dev-flowise.sumoscheduler.com
       Type: 'A'
-      # TTL: '60'  # Set TTL to 60 seconds
-      # ResourceRecords: 
-      #   - !ImportValue SumoChatwootDevStack-SumoChatwootInstanceIP
       AliasTarget: 
         DNSName: !ImportValue 
-          Fn::Join: ["-", [!Ref Stage, LBDNSName, !Ref Environment]]
+          Fn::Join: ["-", [!Ref Stage, "LoadbalancerDNSName", !Ref Environment]]
         HostedZoneId: !ImportValue 
-          Fn::Join: ["-", [!Ref Stage, LBCanonicalHostedZoneID, !Ref Environment]]
+          Fn::Join: ["-", [!Ref Stage, "LoadbalancerCanonicalHostedZoneId", !Ref Environment]]
 
 Outputs:
   RecordSetName:

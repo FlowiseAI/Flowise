@@ -62,28 +62,44 @@ Mappings:
       AMI: ami-0a10b2721688ce9d2 # Amazon Linux 2 AMI for ap-northeast-2
 
 Resources:
-  # Security Group for the EC2 instance
-  SumoFlowiseEC2SecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+  SumoFlowiseLogGroup:
+    Type: AWS::Logs::LogGroup
     Properties:
-      GroupDescription: Allow SSH and HTTP access
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 22
-          ToPort: 22
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 3000
-          ToPort: 3000
-          CidrIp: 0.0.0.0/0
+      LogGroupName: !Sub "/Flowise/logs-${Environment}"
+      RetentionInDays: 7 # Retain logs for 7 days (customize based on needs)
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, "logs", !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowiseLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CloudWatchAgentPolicy
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+  
+  SumoFlowiseInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref SumoFlowiseLogsRole
 
   #### EC2 Instance ####
   SumoFlowiseInstance:
@@ -91,22 +107,26 @@ Resources:
     Properties:
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
-      SecurityGroupIds:
-        - !Ref SumoFlowiseEC2SecurityGroup
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      IamInstanceProfile: !Ref SumoFlowiseInstanceProfile
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 60
+            VolumeType: gp2
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref Stage, "instance", !Ref Environment]]
         - Key: Environment
           Value: !Ref Environment
-      # NetworkInterfaces:
-      #   - AssociatePublicIpAddress: true
-      #     DeviceIndex: 0
-      #     SubnetId: !ImportValue 
-      #       Fn::Join: ["-", [!Ref Stage, PublicSubnet1Id, !Ref Environment]]
-      #     GroupSet:
-      #       - !ImportValue 
-      #         Fn::Join: ["-", [!Ref Stage, LBSGId, !Ref Environment]]
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeviceIndex: 0
+          SubnetId: !ImportValue 
+            Fn::Join: ["-", [!Ref Stage, PrivateSubnet1Id, !Ref Environment]]
+          GroupSet:
+            - !ImportValue 
+              Fn::Join: ["-", [!Ref Stage, "LoadbalancerSGId", !Ref Environment]]
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash

@@ -1,4 +1,4 @@
-name: Sumo Chatwoot for Development
+name: Sumo Flowise for Development
 
 on:
   push:
@@ -23,29 +23,114 @@ jobs:
       - name: Validate Cloudformation
         run: |
           aws cloudformation validate-template \
-            --template-body file://aws-cloudformation/ecs.yml
+            --template-body file://aws_cloudformation/network.yml
 
-          # aws cloudformation validate-template \
-          #   --template-body file://aws-cloudformation/ec2.yml
+          aws cloudformation validate-template \
+            --template-body file://aws_cloudformation/application_load_balancer.yml
 
-          # aws cloudformation validate-template \
-          #   --template-body file://aws-cloudformation/route.yml
+          aws cloudformation validate-template \
+            --template-body file://aws_cloudformation/postgresql.yml
 
-      # - name: Network-Cloudformation
-      #   run: |
-      #     STACK_NAME=sumo-flowise-ecs-stack-dev
-      #     aws cloudformation deploy \
-      #       --template-file aws-cloudformation/ecs.yml \
-      #       --parameter-overrides \
-      #         Environment=dev \
-      #         SumoFlowiseCertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
-      #       --stack-name $STACK_NAME \
-      #       --capabilities CAPABILITY_NAMED_IAM
+          aws cloudformation validate-template \
+            --template-body file://aws_cloudformation/redis.yml
 
-      #     echo "CloudFormation Outputs:"
-      #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+          aws cloudformation validate-template \
+            --template-body file://aws_cloudformation/bastion.yml
 
-      - name: EC2-Cloudformation
+          aws cloudformation validate-template \
+            --template-body file://aws_cloudformation/ec2.yml
+
+          aws cloudformation validate-template \
+            --template-body file://aws_cloudformation/route.yml
+
+          aws cloudformation validate-template \
+            --template-body file://aws_cloudformation/auto_scaling.yml
+
+      - name: Network-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-ecs-stack-dev
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/ecs.yml \
+            --parameter-overrides \
+              Environment=dev \
+              SumoFlowiseCertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
+            --stack-name $STACK_NAME \
+            --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+      - name: Application Load Balancer-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-alb-stack-dev
+          aws cloudformation deploy \
+            --template-file aws_cloudformation/application_load_balancer.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              Environment=dev \
+              SumoFlowiseCertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
+            --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+          SumoFlowiseTargetGroupArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseTargetGroupArn'].OutputValue" --output text)
+          echo "TARGET_GROUP_ARN=${SumoFlowiseTargetGroupArn}" >> $GITHUB_ENV
+
+      - name: Postgresql-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-postgre-stack-dev
+          aws cloudformation deploy \
+            --template-file aws_cloudformation/postgresql.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              Environment=dev \
+              SumoFlowiseDBUsername=${{ secrets.RDS_MASTER_USERNAME }} \
+              SumoFlowiseDBPassword=${{ secrets.RDS_MASTER_PASSWORD }} \
+            --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+          SumoFlowiseRDSInstanceEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRDSInstanceEndpoint'].OutputValue" --output text)
+          echo "POSTGRES_HOST=${SumoFlowiseRDSInstanceEndpoint}" >> $GITHUB_ENV
+
+      - name: Redis-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-redis-stack-dev
+          aws cloudformation deploy \
+            --template-file aws_cloudformation/redis.yml \
+            --parameter-overrides Environment=dev \
+            --stack-name $STACK_NAME \
+            --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+          SumoFlowiseRedisEndpointAddress=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRedisEndpointAddress'].OutputValue" --output text)
+          echo "REDIS_HOST=${SumoFlowiseRedisEndpointAddress}" >> $GITHUB_ENV
+
+      - name: Bastion-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-bastion-stack-dev
+          aws cloudformation deploy \
+            --template-file aws_cloudformation/bastion.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              Environment=dev \
+              KeyPairName=${{ secrets.KEY_NAME }} \
+            --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+          SumoFlowiseBastionHostAPublicIP=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseBastionHostAPublicIP'].OutputValue" --output text)
+          echo "BastionHostAPublicIP=${SumoFlowiseBastionHostAPublicIP}" >> $GITHUB_ENV
+
+          SumoFlowiseBastionHostBPublicIP=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseBastionHostBPublicIP'].OutputValue" --output text)
+          echo "BastionHostBPublicIP=${SumoFlowiseBastionHostBPublicIP}" >> $GITHUB_ENV
+
+      - name: Flowise EC2-Cloudformation
         run: |
           STACK_NAME=sumo-flowise-ec2-stack-dev
           aws cloudformation deploy \
@@ -65,27 +150,27 @@ jobs:
           SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
           echo "SumoFlowiseWebAppURL=${SumoFlowiseWebAppURL}" >> $GITHUB_ENV
 
-      # - name: Route53-Cloudformation
-      #   run: |
-      #     STACK_NAME=sumo-flowise-route-stack-dev
-      #     aws cloudformation deploy \
-      #       --template-file aws-cloudformation/route.yml \
-      #       --stack-name $STACK_NAME \
-      #       --parameter-overrides \
-      #         Environment=dev \
-      #         HostedZoneId=${{ secrets.ROUTE_HZ_ID }} \
-      #       --capabilities CAPABILITY_NAMED_IAM
+      - name: Route53-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-route-stack-dev
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/route.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              Environment=dev \
+              HostedZoneId=${{ secrets.ROUTE_HZ_ID }} \
+            --capabilities CAPABILITY_NAMED_IAM
 
-      #     echo "CloudFormation Outputs:"
-      #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-      #     echo "Wait for creating domain"
-      #     sleep 60
+          echo "Wait for creating domain"
+          sleep 60
 
-      - name: Upload Source Code to EC2
+      - name: Upload Source Code to Bastion-A
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ env.EC2_IP }}
+          host: ${{ env.BastionHostAPublicIP }}
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           overwrite: true
@@ -94,13 +179,32 @@ jobs:
           source: './*'
           target: '/home/ec2-user/flowise'
 
-      - name: Install Flowise in EC2
+      - name: Upload ssh key to Bastion-A
         uses: appleboy/ssh-action@v1.1.0
         with:
-          host: ${{ env.EC2_IP }}
+          host: ${{ env.BastionHostAPublicIP }}
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           script: |
+            cd /home/ec2-user
+            echo "${{ secrets.SSH_KEY }}" > ${{ secrets.KEY_NAME }}.pem
+            chmod 600 ${{ secrets.KEY_NAME }}.pem
+
+            ssh -i ${{ secrets.KEY_NAME }}.pem -o StrictHostKeyChecking=no ec2-user@${{ env.EC2_IP }} << 'EOF'
+            sudo rm -rf /home/ec2-user/flowise
+            EOF
+
+            scp -i ${{ secrets.KEY_NAME }}.pem -r /home/ec2-user/flowise ec2-user@${{ env.EC2_IP }}:/home/ec2-user
+
+      - name: Install Flowise in EC2
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ env.BastionHostAPublicIP }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            ssh -i ${{ secrets.KEY_NAME }}.pem -o StrictHostKeyChecking=no ec2-user@${{ env.EC2_IP }} << 'EOT'
+
             # Update packages
             sudo yum update -y
 
@@ -127,7 +231,7 @@ jobs:
             cd /home/ec2-user/flowise
 
             # Create the .env file
-            cat <<EOT >> /home/ec2-user/flowise/docker/.env
+            cat <<EOF >> /home/ec2-user/flowise/docker/.env
             PORT=3000
             # DATABASE_TYPE=postgres
             # DATABASE_PORT=5432
@@ -144,20 +248,119 @@ jobs:
             SECRETKEY_PATH=/root/.flowise
             LOG_PATH=/root/.flowise/logs
             BLOB_STORAGE_PATH=/root/.flowise/storage
-            EOT
+            EOF
 
             cd /home/ec2-user/flowise/docker
 
             # Start the Flowise application using Docker Compose
             sudo docker-compose up -d
 
-      # - name: Post-deployment script
-      #   run: |
-      #     STACK_NAME=sumo-flowise-ec2-stack-dev
-      #     SumoFlowiseWebAppURL=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseWebAppURL'].OutputValue" --output text)
-      #     echo "Deployment complete!\n Check the url: ${SumoFlowiseWebAppURL}"
+            EOT
 
-      #     STACK_NAME=sumo-flowise-route-stack-dev
-      #     DomainName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
-      #     echo "Deployment complete!\n Check the url: https://${DomainName}"
+      # - name: Forward log to CloudWatch
+      #   uses: appleboy/ssh-action@v1.1.0
+      #   with:
+      #     host: ${{ env.BastionHostAPublicIP }}
+      #     username: ec2-user
+      #     key: ${{ secrets.SSH_KEY }}
+      #     script: |
+      #       ssh -i ${{ secrets.KEY_NAME }}.pem -o StrictHostKeyChecking=no ec2-user@${{ env.EC2_IP }} << 'EOT'
+
+      #       # Create CloudWatch Agent configuration file
+      #       cat <<EOF | sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json > /dev/null
+      #       {
+      #         "logs": {
+      #           "logs_collected": {
+      #             "files": {
+      #               "collect_list": [
+      #                 {
+      #                   "file_path": "/var/log/chatwoot-setup.log",
+      #                   "log_group_name": "/chatwoot/logs-dev",
+      #                   "log_stream_name": "chatwoot-setup-logs"
+      #                 },
+      #                 {
+      #                   "file_path": "/var/log/chatwoot-web.1.log",
+      #                   "log_group_name": "/chatwoot/logs-dev",
+      #                   "log_stream_name": "chatwoot-web-logs"
+      #                 },
+      #                 {
+      #                   "file_path": "/var/log/chatwoot-worker.1.log",
+      #                   "log_group_name": "/chatwoot/logs-dev",
+      #                   "log_stream_name": "chatwoot-worker-logs"
+      #                 }
+      #               ]
+      #             }
+      #           }
+      #         }
+      #       }
+      #       EOF
+
+      #       # Start the CloudWatch Agent
+      #       sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
+
+      #       EOT
+
+      - name: Add instance to the target group attached to the alb
+        run: |
+          TARGET_GROUP_ARN=${{ env.TARGET_GROUP_ARN }}
+          INSTANCE_ID=${{ env.EC2_ID }}
+          aws elbv2 register-targets --target-group-arn $TARGET_GROUP_ARN --targets Id=$INSTANCE_ID
+
+      - name: Create the AMI
+        run: |
+          echo "Create the AMI"
+          STACK_NAME=sumo-flowise-ec2-stack-dev
+
+          # Retrieve existing AMIs with a similar name
+          BASE_AMI_NAME="flowise-base-ami-dev"
+          existing_ami_id=$(aws ec2 describe-images --owners self --filters "Name=name,Values=$BASE_AMI_NAME" --query 'Images[0].ImageId' --output text)
+
+          if [ "$existing_ami_id" != "None" ]; then
+            echo "Found existing AMI with ID: $existing_ami_id. Deregistering..."
+            aws ec2 deregister-image --image-id $existing_ami_id
+
+            # Also, delete associated snapshots
+            snapshot_ids=$(aws ec2 describe-images --image-ids $existing_ami_id --query 'Images[0].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)
+            echo "snapshot_ids=$snapshot_ids"
+            if [ "$snapshot_ids" != "None" ]; then
+              for snapshot_id in $snapshot_ids; do
+                echo "Deleting snapshot $snapshot_id"
+                aws ec2 delete-snapshot --snapshot-id $snapshot_id
+              done
+            fi
+          else
+            echo "No existing AMI found with the name $BASE_AMI_NAME."
+          fi
+
+          INSTANCE_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs[?OutputKey==`SumoFlowiseInstanceId`].OutputValue' --output text)
+
+          AMI_ID=$(aws ec2 create-image --instance-id $INSTANCE_ID --name $BASE_AMI_NAME --description "Base AMI for Flowise application" --no-reboot --query 'ImageId' --output text)
+          echo "AMI created with ID: $AMI_ID"
+          echo "AMI_ID=${AMI_ID}" >> $GITHUB_ENV
+
+      - name: Auto Scaling-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-auto-scaling-stack-dev
+          aws cloudformation deploy \
+            --template-file aws_cloudformation/auto_scaling.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              Environment=dev \
+              FlowiseAMI=${{ env.AMI_ID }} \
+              KeyPairName=${{ secrets.KEY_NAME }} \
+            --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+          GroupName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='AutoScalingGroupName'].OutputValue" --output text)
+
+          echo "Instances refresh: ${GroupName}"
+          aws autoscaling start-instance-refresh --auto-scaling-group-name ${GroupName}
+
+      - name: Post-deployment script
+        run: |
+          STACK_NAME=sumo-flowise-route-stack-dev
+          DomainName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
+          echo "Deployment complete!\n Check the url: https://${DomainName}"
 

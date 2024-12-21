@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create an Auto Scaling Group for Flowise instances'
+
+Parameters:
+  Stage:
+    Description: Prefix of resource names
+    Type: String
+    Default: sumo-flowise
+
+  Environment:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+  KeyPairName:
+    Description: 'Name of an existing EC2 KeyPair to enable SSH access to the instances'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+
+  FlowiseAMI:
+    Description: 'AMI ID for the Flowise instance'
+    Type: 'AWS::EC2::Image::Id'
+
+Resources:
+  SumoFlowiseLaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Properties:
+      LaunchTemplateData:
+        ImageId: !Ref FlowiseAMI
+        InstanceType: c5.xlarge
+        KeyName: !Ref KeyPairName
+        NetworkInterfaces:
+          - AssociatePublicIpAddress: false
+            DeviceIndex: 0
+            SubnetId: !ImportValue 
+              Fn::Join: ["-", [!Ref Stage, "Public1Id", !Ref Environment]]
+            Groups:
+              - !ImportValue 
+                Fn::Join: ["-", [!Ref Stage, "LoadbalancerSGId", !Ref Environment]]
+        BlockDeviceMappings:
+          - DeviceName: /dev/sda1
+            Ebs:
+              VolumeSize: 60  # GB
+              VolumeType: gp2
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Join ["-", [!Ref Stage, "instance-template", !Ref Environment]]
+              - Key: Environment
+                Value: !Ref Environment
+
+  # Auto Scaling Group
+  SumoFlowiseAutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      VPCZoneIdentifier:
+        - !ImportValue 
+          Fn::Join: ["-", [!Ref Stage, "Public1Id", !Ref Environment]]
+        - !ImportValue 
+          Fn::Join: ["-", [!Ref Stage, "Public2Id", !Ref Environment]]
+      LaunchTemplate:
+        LaunchTemplateId: !Ref SumoFlowiseLaunchTemplate
+        Version: !GetAtt SumoFlowiseLaunchTemplate.LatestVersionNumber
+      MinSize: '1'
+      DesiredCapacity: '1'
+      MaxSize: '4'
+      TargetGroupARNs:
+        - !ImportValue 
+          Fn::Join: ["-", [!Ref Stage, "TargetGroupArn", !Ref Environment]]
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, "auto-scaling-group", !Ref Environment]]
+          PropagateAtLaunch: true
+      Cooldown: 300 # Default cooldown period for the Auto Scaling Group in seconds
+
+  # Scaling Policy
+  SumoFlowiseScalingPolicy:
+    Type: 'AWS::AutoScaling::ScalingPolicy'
+    Properties:
+      AutoScalingGroupName: !Ref SumoFlowiseAutoScalingGroup
+      PolicyName: 'CPUScalingPolicy'
+      PolicyType: 'TargetTrackingScaling'
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: 'ASGAverageCPUUtilization'
+        TargetValue: 50.0  # Adjust target CPU utilization as needed
+      EstimatedInstanceWarmup: 300 # Optional: Time in seconds that instances take to become ready to handle traffic
+      Cooldown: 300 # Cooldown in the scaling policy if needed (overrides the ASG cooldown)
+
+Outputs:
+  AutoScalingGroupName:
+    Description: 'The name of the Auto Scaling Group'
+    Value: !Ref SumoFlowiseAutoScalingGroup
+
