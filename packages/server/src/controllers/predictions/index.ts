@@ -8,6 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { v4 as uuidv4 } from 'uuid'
 import { getErrorMessage } from '../../errors/utils'
+import { MODE } from '../../Interface'
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
@@ -55,6 +56,8 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             const isStreamingRequested = req.body.streaming === 'true' || req.body.streaming === true
             if (streamable?.isStreaming && isStreamingRequested) {
                 const sseStreamer = getRunningExpressApp().sseStreamer
+                const redisSubscriber = getRunningExpressApp().redisSubscriber
+
                 let chatId = req.body.chatId
                 if (!req.body.chatId) {
                     chatId = req.body.chatId ?? req.body.overrideConfig?.sessionId ?? uuidv4()
@@ -68,8 +71,13 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                     res.setHeader('X-Accel-Buffering', 'no') //nginx config: https://serverfault.com/a/801629
                     res.flushHeaders()
 
+                    if (process.env.MODE === MODE.QUEUE) {
+                        console.log(`Subscribing to chatId ${chatId}:`, redisSubscriber)
+                        redisSubscriber.subscribe(chatId)
+                    }
+
                     const apiResponse = await predictionsServices.buildChatflow(req)
-                    sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
+                    if (apiResponse) sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
                 } catch (error) {
                     if (chatId) {
                         sseStreamer.streamErrorEvent(chatId, getErrorMessage(error))
@@ -80,7 +88,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                 }
             } else {
                 const apiResponse = await predictionsServices.buildChatflow(req)
-                return res.json(apiResponse)
+                if (apiResponse) return res.json(apiResponse)
             }
         } else {
             const isStreamingRequested = req.body.streaming === 'true' || req.body.streaming === true
