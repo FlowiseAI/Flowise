@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { styled } from '@mui/material/styles'
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip'
 
@@ -9,4 +10,4 @@ const NodeTooltip = styled(({ className, ...props }) => <Tooltip {...props} clas
     }
 }))
 
-export default NodeTooltip
+export default memo(NodeTooltip)

@@ -45,7 +45,7 @@ const defaultConfig = {
 const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
     const dispatch = useDispatch()
     const theme = useTheme()
-    const chatflow = useSelector((state) => state.canvas.chatflow)
+    const chatflow = useSelector((state) => state.canvas.present.chatflow)
     const chatflowid = chatflow.id
     const chatbotConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {}
 

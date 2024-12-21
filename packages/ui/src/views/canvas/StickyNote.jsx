@@ -17,7 +17,7 @@ import { flowContext } from '@/store/context/ReactFlowContext'
 
 const StickyNote = ({ data }) => {
     const theme = useTheme()
-    const canvas = useSelector((state) => state.canvas)
+    const canvas = useSelector((state) => state.canvas.present)
     const { deleteNode, duplicateNode } = useContext(flowContext)
     const [inputParam] = data.inputParams
 

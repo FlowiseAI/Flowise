@@ -7,7 +7,7 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import NodeInputHandler from '@/views/canvas/NodeInputHandler'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
-const AdditionalParamsDialog = ({ show, dialogProps, onCancel }) => {
+const AdditionalParamsDialog = ({ show, dialogProps, onCancel, onNodeDataChange }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -54,6 +54,7 @@ const AdditionalParamsDialog = ({ show, dialogProps, onCancel }) => {
                             inputParam={inputParam}
                             data={data}
                             isAdditionalParams={true}
+                            onNodeDataChange={onNodeDataChange}
                         />
                     ))}
                 </PerfectScrollbar>
@@ -67,7 +68,8 @@ const AdditionalParamsDialog = ({ show, dialogProps, onCancel }) => {
 AdditionalParamsDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
-    onCancel: PropTypes.func
+    onCancel: PropTypes.func,
+    onNodeDataChange: PropTypes.func
 }
 
 export default AdditionalParamsDialog

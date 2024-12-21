@@ -87,7 +87,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const theme = useTheme()
-    const chatflow = useSelector((state) => state.canvas.chatflow)
+    const chatflow = useSelector((state) => state.canvas.present.chatflow)
     const apiConfig = chatflow?.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
     const overrideConfigStatus = apiConfig?.overrideConfig?.status !== undefined ? apiConfig.overrideConfig.status : false
 

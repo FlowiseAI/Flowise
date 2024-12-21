@@ -67,7 +67,7 @@ const CustomAssistantConfigurePreview = () => {
     const navigate = useNavigate()
     const theme = useTheme()
     const settingsRef = useRef()
-    const canvas = useSelector((state) => state.canvas)
+    const canvas = useSelector((state) => state.canvas.present)
     const customization = useSelector((state) => state.customization)
 
     const getSpecificAssistantApi = useApi(assistantsApi.getSpecificAssistant)
