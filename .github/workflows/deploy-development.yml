@@ -23,34 +23,34 @@ jobs:
       - name: Validate Cloudformation
         run: |
           aws cloudformation validate-template \
-            --template-body file://aws_cloudformation/network.yml
+            --template-body file://aws-cloudformation/network.yml
 
           aws cloudformation validate-template \
-            --template-body file://aws_cloudformation/application_load_balancer.yml
+            --template-body file://aws-cloudformation/application_load_balancer.yml
 
           aws cloudformation validate-template \
-            --template-body file://aws_cloudformation/postgresql.yml
+            --template-body file://aws-cloudformation/postgresql.yml
 
           aws cloudformation validate-template \
-            --template-body file://aws_cloudformation/redis.yml
+            --template-body file://aws-cloudformation/redis.yml
 
           aws cloudformation validate-template \
-            --template-body file://aws_cloudformation/bastion.yml
+            --template-body file://aws-cloudformation/bastion.yml
 
           aws cloudformation validate-template \
-            --template-body file://aws_cloudformation/ec2.yml
+            --template-body file://aws-cloudformation/ec2.yml
 
           aws cloudformation validate-template \
-            --template-body file://aws_cloudformation/route.yml
+            --template-body file://aws-cloudformation/route.yml
 
           aws cloudformation validate-template \
-            --template-body file://aws_cloudformation/auto_scaling.yml
+            --template-body file://aws-cloudformation/auto_scaling.yml
 
       - name: Network-Cloudformation
         run: |
-          STACK_NAME=sumo-flowise-ecs-stack-dev
+          STACK_NAME=sumo-flowise-network-stack-dev
           aws cloudformation deploy \
-            --template-file aws-cloudformation/ecs.yml \
+            --template-file aws-cloudformation/network.yml \
             --parameter-overrides \
               Environment=dev \
               SumoFlowiseCertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
@@ -64,7 +64,7 @@ jobs:
         run: |
           STACK_NAME=sumo-flowise-alb-stack-dev
           aws cloudformation deploy \
-            --template-file aws_cloudformation/application_load_balancer.yml \
+            --template-file aws-cloudformation/application_load_balancer.yml \
             --stack-name $STACK_NAME \
             --parameter-overrides \
               Environment=dev \
@@ -81,12 +81,12 @@ jobs:
         run: |
           STACK_NAME=sumo-flowise-postgre-stack-dev
           aws cloudformation deploy \
-            --template-file aws_cloudformation/postgresql.yml \
+            --template-file aws-cloudformation/postgresql.yml \
             --stack-name $STACK_NAME \
             --parameter-overrides \
               Environment=dev \
-              SumoFlowiseDBUsername=${{ secrets.RDS_MASTER_USERNAME }} \
-              SumoFlowiseDBPassword=${{ secrets.RDS_MASTER_PASSWORD }} \
+              SumoFlowiseDBUsername=${{ secrets.USERNAME }} \
+              SumoFlowiseDBPassword=${{ secrets.PASSWORD }} \
             --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
@@ -99,7 +99,7 @@ jobs:
         run: |
           STACK_NAME=sumo-flowise-redis-stack-dev
           aws cloudformation deploy \
-            --template-file aws_cloudformation/redis.yml \
+            --template-file aws-cloudformation/redis.yml \
             --parameter-overrides Environment=dev \
             --stack-name $STACK_NAME \
             --capabilities CAPABILITY_NAMED_IAM
@@ -114,7 +114,7 @@ jobs:
         run: |
           STACK_NAME=sumo-flowise-bastion-stack-dev
           aws cloudformation deploy \
-            --template-file aws_cloudformation/bastion.yml \
+            --template-file aws-cloudformation/bastion.yml \
             --stack-name $STACK_NAME \
             --parameter-overrides \
               Environment=dev \
@@ -342,7 +342,7 @@ jobs:
         run: |
           STACK_NAME=sumo-flowise-auto-scaling-stack-dev
           aws cloudformation deploy \
-            --template-file aws_cloudformation/auto_scaling.yml \
+            --template-file aws-cloudformation/auto_scaling.yml \
             --stack-name $STACK_NAME \
             --parameter-overrides \
               Environment=dev \
