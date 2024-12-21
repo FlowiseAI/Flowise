@@ -6,6 +6,7 @@ import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchai
 import { BaseMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import {
+    ConversationHistorySelection,
     ICommonObject,
     IDatabaseEntity,
     INode,
@@ -23,6 +24,7 @@ import {
     customGet,
     getVM,
     transformObjectPropertyToFunction,
+    filterConversationHistory,
     restructureMessages
 } from '../commonUtils'
 import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
@@ -149,7 +151,7 @@ class ConditionAgent_SeqAgents implements INode {
     constructor() {
         this.label = 'Condition Agent'
         this.name = 'seqConditionAgent'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ConditionAgent'
         this.icon = 'condition.svg'
         this.category = 'Sequential Agents'
@@ -184,6 +186,42 @@ class ConditionAgent_SeqAgents implements INode {
                 default: examplePrompt,
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Conversation History',
+                name: 'conversationHistorySelection',
+                type: 'options',
+                options: [
+                    {
+                        label: 'User Question',
+                        name: 'user_question',
+                        description: 'Use the user question from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Last Conversation Message',
+                        name: 'last_message',
+                        description: 'Use the last conversation message from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'All Conversation Messages',
+                        name: 'all_messages',
+                        description: 'Use all conversation messages from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Empty',
+                        name: 'empty',
+                        description:
+                            'Do not use any messages from the conversation history. ' +
+                            'Ensure to use either System Prompt, Human Prompt, or Messages History.'
+                    }
+                ],
+                default: 'all_messages',
+                optional: true,
+                description:
+                    'Select which messages from the conversation history to include in the prompt. ' +
+                    'The selected messages will be inserted between the System Prompt (if defined) and ' +
+                    'Human Prompt.',
+                additionalParams: true
             },
             {
                 label: 'Human Prompt',
@@ -481,6 +519,9 @@ const runCondition = async (
         })
     }
 
+    const historySelection = (nodeData.inputs?.conversationHistorySelection || 'all_messages') as ConversationHistorySelection
+    // @ts-ignore
+    state.messages = filterConversationHistory(historySelection, input, state)
     // @ts-ignore
     state.messages = restructureMessages(model, state)
 
