@@ -46,7 +46,7 @@ Resources:
           FromPort: 5432
           ToPort: 5432
           SourceSecurityGroupId: !ImportValue 
-            Fn::Join: ["-", [!Ref Stage, "LoadBalancerSGId", !Ref Environment]]
+            Fn::Join: ["-", [!Ref Stage, "LoadbalancerSGId", !Ref Environment]]
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref Stage, "rds-sg", !Ref Environment]]
