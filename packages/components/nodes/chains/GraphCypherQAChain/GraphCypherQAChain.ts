@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams, INodeOutputsValue, IServerSideEventStreamer } from '../../../src/Interface'
-import { GraphCypherQAChain } from '@langchain/community/chains/graph_qa/cypher'
+import { FromLLMInput, GraphCypherQAChain } from '@langchain/community/chains/graph_qa/cypher'
 import { getBaseClasses } from '../../../src/utils'
 import { BasePromptTemplate, PromptTemplate, FewShotPromptTemplate } from '@langchain/core/prompts'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
@@ -17,8 +17,8 @@ class GraphCypherQA_Chain implements INode {
     description: string
     baseClasses: string[]
     inputs: INodeParams[]
-    outputs: INodeOutputsValue[]
     sessionId?: string
+    outputs: INodeOutputsValue[]
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Graph Cypher QA Chain'
@@ -35,22 +35,7 @@ class GraphCypherQA_Chain implements INode {
                 label: 'Language Model',
                 name: 'model',
                 type: 'BaseLanguageModel',
-                optional: true,
                 description: 'Model for generating Cypher queries and answers.'
-            },
-            {
-                label: 'Cypher Generation Model',
-                name: 'cypherModel',
-                optional: true,
-                type: 'BaseLanguageModel',
-                description: 'Model for generating Cypher queries. If not provided, the main model will be used.'
-            },
-            {
-                label: 'QA Model',
-                name: 'qaModel',
-                optional: true,
-                type: 'BaseLanguageModel',
-                description: 'Model for generating answers. If not provided, the main model will be used.'
             },
             {
                 label: 'Neo4j Graph',
@@ -65,11 +50,25 @@ class GraphCypherQA_Chain implements INode {
                 description: 'Prompt template for generating Cypher queries. Must include {schema} and {question} variables'
             },
             {
+                label: 'Cypher Generation Model',
+                name: 'cypherModel',
+                optional: true,
+                type: 'BaseLanguageModel',
+                description: 'Model for generating Cypher queries. If not provided, the main model will be used.'
+            },
+            {
                 label: 'QA Prompt',
                 name: 'qaPrompt',
                 optional: true,
                 type: 'BasePromptTemplate',
                 description: 'Prompt template for generating answers. Must include {context} and {question} variables'
+            },
+            {
+                label: 'QA Model',
+                name: 'qaModel',
+                optional: true,
+                type: 'BaseLanguageModel',
+                description: 'Model for generating answers. If not provided, the main model will be used.'
             },
             {
                 label: 'Input Moderation',
@@ -88,9 +87,21 @@ class GraphCypherQA_Chain implements INode {
                 description: 'If true, return the raw query results instead of using the QA chain'
             }
         ]
+        this.outputs = [
+            {
+                label: 'Graph Cypher QA Chain',
+                name: 'graphCypherQAChain',
+                baseClasses: [this.type, ...getBaseClasses(GraphCypherQAChain)]
+            },
+            {
+                label: 'Output Prediction',
+                name: 'outputPrediction',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const model = nodeData.inputs?.model
         const cypherModel = nodeData.inputs?.cypherModel
         const qaModel = nodeData.inputs?.qaModel
@@ -98,6 +109,7 @@ class GraphCypherQA_Chain implements INode {
         const cypherPrompt = nodeData.inputs?.cypherPrompt as BasePromptTemplate | FewShotPromptTemplate | undefined
         const qaPrompt = nodeData.inputs?.qaPrompt as BasePromptTemplate | undefined
         const returnDirect = nodeData.inputs?.returnDirect as boolean
+        const output = nodeData.outputs?.output as string
 
         // Handle prompt values if they exist
         let cypherPromptTemplate: PromptTemplate | FewShotPromptTemplate | undefined
@@ -136,23 +148,41 @@ class GraphCypherQA_Chain implements INode {
         }
 
         if ((!cypherModel || !qaModel) && !model) {
-            throw new Error('Model or is required when Cypher Model or QA Model are not provided')
+            throw new Error('Language Model is required when Cypher Model or QA Model are not provided')
         }
 
         // Validate required variables in prompts
-        if (!cypherPromptTemplate?.inputVariables.includes('schema') || !cypherPromptTemplate?.inputVariables.includes('question')) {
+        if (
+            cypherPromptTemplate &&
+            (!cypherPromptTemplate?.inputVariables.includes('schema') || !cypherPromptTemplate?.inputVariables.includes('question'))
+        ) {
             throw new Error('Cypher Generation Prompt must include {schema} and {question} variables')
         }
 
-        const chain = GraphCypherQAChain.fromLLM({
+        const fromLLMInput: FromLLMInput = {
             llm: model,
-            qaLLM: qaModel,
-            cypherLLM: cypherModel,
             graph,
-            cypherPrompt: cypherPromptTemplate,
-            qaPrompt: qaPromptTemplate,
             returnDirect
-        })
+        }
+
+        if (cypherModel && cypherPromptTemplate) {
+            fromLLMInput['cypherLLM'] = cypherModel
+            fromLLMInput['cypherPrompt'] = cypherPromptTemplate
+        }
+
+        if (qaModel && qaPromptTemplate) {
+            fromLLMInput['qaLLM'] = qaModel
+            fromLLMInput['qaPrompt'] = qaPromptTemplate
+        }
+
+        const chain = GraphCypherQAChain.fromLLM(fromLLMInput)
+
+        if (output === this.name) {
+            return chain
+        } else if (output === 'outputPrediction') {
+            nodeData.instance = chain
+            return await this.run(nodeData, input, options)
+        }
 
         return chain
     }
@@ -196,8 +226,11 @@ class GraphCypherQA_Chain implements INode {
             if (shouldStreamResponse) {
                 if (returnDirect) {
                     response = await chain.invoke(obj, { callbacks })
-                    const result = response?.result
-                    if (result) {
+                    let result = response?.result
+                    if (typeof result === 'object') {
+                        result = '```json\n' + JSON.stringify(result, null, 2)
+                    }
+                    if (result && typeof result === 'string') {
                         streamResponse(sseStreamer, chatId, result)
                     }
                 } else {
@@ -209,7 +242,7 @@ class GraphCypherQA_Chain implements INode {
                 response = await chain.invoke(obj, { callbacks })
             }
 
-            return response?.result
+            return formatResponse(response?.result)
         } catch (error) {
             console.error('Error in GraphCypherQAChain:', error)
             if (shouldStreamResponse) {
