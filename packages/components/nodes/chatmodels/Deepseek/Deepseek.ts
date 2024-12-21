@@ -1,8 +1,8 @@
 import { BaseCache } from '@langchain/core/caches'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { AzureOpenAIInput, ChatOpenAI, LegacyOpenAIInput, OpenAIChatInput } from '@langchain/openai'
+import { ChatOpenAI, LegacyOpenAIInput, OpenAIChatInput } from '@langchain/openai'
 import type { ClientOptions } from 'openai'
-import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -114,43 +114,12 @@ class Deepseek_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'BaseOptions',
+                label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Allow Image Uploads',
-                name: 'allowImageUploads',
-                type: 'boolean',
-                description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
-                default: false,
-                optional: true
-            },
-            {
-                label: 'Image Resolution',
-                description: 'This parameter controls the resolution in which the model views the image.',
-                name: 'imageResolution',
-                type: 'options',
-                options: [
-                    {
-                        label: 'Low',
-                        name: 'low'
-                    },
-                    {
-                        label: 'High',
-                        name: 'high'
-                    },
-                    {
-                        label: 'Auto',
-                        name: 'auto'
-                    }
-                ],
-                default: 'low',
-                optional: false,
-                additionalParams: true
+                additionalParams: true,
+                description: 'Additional options to pass to the Deepseek client. This should be a JSON object.'
             }
         ]
     }
@@ -174,9 +143,6 @@ class Deepseek_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
         const baseOptions = nodeData.inputs?.baseOptions
 
-        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
-        const imageResolution = nodeData.inputs?.imageResolution as string
-
         if (nodeData.inputs?.credentialId) {
             nodeData.credential = nodeData.inputs?.credentialId
         }
@@ -185,9 +151,7 @@ class Deepseek_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<OpenAIChatInput> &
-            Partial<AzureOpenAIInput> &
-            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput } = {
+        const obj: Partial<OpenAIChatInput> & BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -210,22 +174,20 @@ class Deepseek_ChatModels implements INode {
         if (baseOptions) {
             try {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                if (parsedBaseOptions.baseURL) {
+                    console.warn("The 'baseURL' parameter is not allowed when using the ChatDeepseek node.")
+                    parsedBaseOptions.baseURL = undefined
+                }
             } catch (exception) {
-                throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
-            }
-        }
-
-        const multiModalOption: IMultiModalOption = {
-            image: {
-                allowImageUploads: allowImageUploads ?? false,
-                imageResolution
+                throw new Error('Invalid JSON in the BaseOptions: ' + exception)
             }
         }
 
         const model = new ChatOpenAI({
             ...obj,
             configuration: {
-                baseURL: this.baseURL
+                baseURL: this.baseURL,
+                ...parsedBaseOptions
             }
         })
         return model
