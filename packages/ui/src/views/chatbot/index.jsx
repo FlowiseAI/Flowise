@@ -88,11 +88,11 @@ const ChatbotFull = () => {
                     parsedConfig = { ...parsedConfig, ...JSON.parse(chatflowData.chatbotConfig) }
                     setChatbotTheme(parsedConfig)
                     if (parsedConfig.overrideConfig) {
-                        // Generate new sessionId
-                        if (parsedConfig.overrideConfig.generateNewSession) {
-                            parsedConfig.overrideConfig.sessionId = Date.now().toString()
-                        }
                         setChatbotOverrideConfig(parsedConfig.overrideConfig)
+                    }
+
+                    if (parsedConfig.generateNewSession) {
+                        localStorage.removeItem(`${chatflowData.id}_EXTERNAL`)
                     }
                 } catch (e) {
                     console.error(e)
