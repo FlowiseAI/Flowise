@@ -54,6 +54,13 @@ class ChatNvdiaNIM_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Base Path',
+                name: 'basePath',
+                type: 'string',
+                description: 'Specify the URL of the deployed NIM Inference API',
+                placeholder: 'https://integrate.api.nvidia.com/v1'
+            },
+            {
                 label: 'Streaming',
                 name: 'streaming',
                 type: 'boolean',
@@ -102,15 +109,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'BasePath',
-                name: 'basePath',
-                type: 'string',
-                default: 'https://integrate.api.nvidia.com/v1',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'BaseOptions',
+                label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
