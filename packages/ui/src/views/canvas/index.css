@@ -34,6 +34,7 @@
 .reactflow-parent-wrapper .reactflow-wrapper {
     flex-grow: 1;
     height: 100%;
+    position: relative;
 }
 
 .reactflow-parent-wrapper .reactflow-wrapper .chatflow-canvas {

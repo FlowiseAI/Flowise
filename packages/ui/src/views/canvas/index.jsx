@@ -716,6 +716,37 @@ const Canvas = () => {
                 <Box sx={{ pt: '70px', height: '100vh', width: '100%' }}>
                     <div className='reactflow-parent-wrapper'>
                         <div className='reactflow-wrapper' ref={reactFlowWrapper}>
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    padding: 2.5
+                                }}
+                            >
+                                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
+                                {isSyncNodesButtonEnabled && (
+                                    <Fab
+                                        sx={{
+                                            color: 'white',
+                                            background: 'orange',
+                                            '&:hover': {
+                                                background: 'orange',
+                                                backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
+                                            }
+                                        }}
+                                        size='small'
+                                        aria-label='sync'
+                                        title='Sync Nodes'
+                                        onClick={() => syncNodes()}
+                                    >
+                                        <IconRefreshAlert />
+                                    </Fab>
+                                )}
+                            </Box>
                             <ReactFlow
                                 nodes={nodes}
                                 edges={edges}
@@ -777,27 +808,6 @@ const Canvas = () => {
                                     />
                                 </Box>
                                 <Background color='#aaa' gap={16} />
-                                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
-                                {isSyncNodesButtonEnabled && (
-                                    <Fab
-                                        sx={{
-                                            left: 40,
-                                            top: 20,
-                                            color: 'white',
-                                            background: 'orange',
-                                            '&:hover': {
-                                                background: 'orange',
-                                                backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
-                                            }
-                                        }}
-                                        size='small'
-                                        aria-label='sync'
-                                        title='Sync Nodes'
-                                        onClick={() => syncNodes()}
-                                    >
-                                        <IconRefreshAlert />
-                                    </Fab>
-                                )}
                                 {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
                                 <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
                             </ReactFlow>
