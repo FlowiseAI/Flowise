@@ -156,10 +156,16 @@ Outputs:
     Description: The ID of the created EC2 instance.
     Value: !Ref SumoFlowiseInstance
 
-  SumoFlowisePublicIP:
-    Description: The public IP address of the EC2 instance.
-    Value: !GetAtt SumoFlowiseInstance.PublicIp
+  # SumoFlowisePublicIP:
+  #   Description: The public IP address of the EC2 instance.
+  #   Value: !GetAtt SumoFlowiseInstance.PublicIp
 
-  SumoFlowiseWebAppURL:
-    Description: The URL to access the Flowise application.
-    Value: !Sub "http://${SumoFlowiseInstance.PublicIp}:3000"
+  SumoChatwootInstanceIP:
+    Description: 'Public IP address of the Chatwoot EC2 instance'
+    Value: !GetAtt SumoFlowiseInstance.PrivateIp
+    Export:
+      Name: !Join ["-", [!Ref Stage, "InstanceIP", !Ref Environment]]
+
+  # SumoFlowiseWebAppURL:
+  #   Description: The URL to access the Flowise application.
+  #   Value: !Sub "http://${SumoFlowiseInstance.PublicIp}:3000"
