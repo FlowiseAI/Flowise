@@ -8,6 +8,7 @@ const useAutoSave = ({ onAutoSave, interval = 60000, debounce = 1000 }) => {
     const timeoutRef = useRef(null)
     const previousSaveRef = useRef(null)
     const onAutoSaveRef = useRef(onAutoSave)
+    const initialLoadRef = useRef(true)
 
     useEffect(() => {
         onAutoSaveRef.current = onAutoSave
@@ -15,6 +16,11 @@ const useAutoSave = ({ onAutoSave, interval = 60000, debounce = 1000 }) => {
 
     // debounced save function
     const debouncedSave = useCallback(() => {
+        if (initialLoadRef.current) {
+            initialLoadRef.current = false
+            return
+        }
+
         setIsSaving(true)
 
         if (timeoutRef.current) {
