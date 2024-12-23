@@ -237,8 +237,7 @@ jobs:
             # DATABASE_PATH=/root/.flowise
             DATABASE_TYPE=postgres
             DATABASE_PORT=5432
-            # DATABASE_HOST=${{ env.POSTGRES_HOST }}
-            DATABASE_HOST=localhost
+            DATABASE_HOST=${{ env.POSTGRES_HOST }}
             DATABASE_NAME=flowise
             DATABASE_USER=${{ secrets.USERNAME }}
             DATABASE_PASSWORD=${{ secrets.PASSWORD }}
