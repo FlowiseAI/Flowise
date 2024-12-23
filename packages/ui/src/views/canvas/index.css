@@ -35,6 +35,7 @@
     flex-grow: 1;
     height: 100%;
     position: relative;
+    outline: none;
 }
 
 .reactflow-parent-wrapper .reactflow-wrapper .chatflow-canvas {
@@ -51,53 +52,47 @@
     background: #5dba62 !important;
 }
 
-.chatflow-canvas .undo-redo-wrapper {
+.undo-redo-wrapper,
+.reactflow-controls-wrapper {
     display: flex;
 }
 
-.chatflow-canvas .react-flow__controls,
-.marketplace-canvas .react-flow__controls,
-.chatflow-canvas .undo-redo-wrapper {
+.undo-redo-wrapper,
+.reactflow-controls-wrapper {
     height: 40px;
-    background-color: #fefefe;
-    border: 1px solid #454c59;
     border-radius: 8px;
     margin: 0;
     position: relative;
 }
 
 .node-actions {
-    border: 1px solid #454c59;
+    border: 1px solid;
 }
 
-.chatflow-canvas .react-flow__controls .react-flow__controls-button,
-.marketplace-canvas .react-flow__controls .react-flow__controls-button,
-.chatflow-canvas .undo-redo-wrapper button {
-    background: transparent;
+.undo-redo-wrapper button,
+.reactflow-controls-wrapper button {
     border: none;
     padding: 0.65rem;
-}
-
-.chatflow-canvas .react-flow__controls .react-flow__controls-button:not(:last-child),
-.chatflow-canvas .undo-redo-wrapper button:not(:last-child),
-.marketplace-canvas .react-flow__controls .react-flow__controls-button:not(:last-child),
-.node-actions button:not(:last-child) {
-    border-right: 1px solid #454c59;
-}
-
-.chatflow-canvas .undo-redo-wrapper button {
+    color: inherit;
     min-width: initial;
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.65rem;
     border-radius: 0;
 }
 
-.chatflow-canvas .undo-redo-wrapper button svg {
+.undo-redo-wrapper button:not(:last-child),
+.reactflow-controls-wrapper button:not(:last-child),
+.node-actions button:not(:last-child) {
+    border-right: 1px solid;
+}
+
+.undo-redo-wrapper button svg,
+.reactflow-controls-wrapper button svg {
     width: 32px;
     height: 32px;
-    color: #000;
+    color: inherit;
+    stroke: currentColor;
 }

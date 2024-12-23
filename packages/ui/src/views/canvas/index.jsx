@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useContext } from 'react'
-import ReactFlow, { addEdge, applyEdgeChanges, Controls, Background, useNodesState, useEdgesState } from 'reactflow'
+import ReactFlow, { addEdge, applyEdgeChanges, Background, useNodesState, useEdgesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 
 import { useDispatch, useSelector } from 'react-redux'
@@ -40,7 +40,17 @@ import useAutoSave from '@/hooks/useAutoSave'
 import useConfirm from '@/hooks/useConfirm'
 
 // icons
-import { IconX, IconRefreshAlert, IconArrowBackUp, IconArrowForwardUp } from '@tabler/icons-react'
+import {
+    IconX,
+    IconRefreshAlert,
+    IconArrowBackUp,
+    IconArrowForwardUp,
+    IconPlus,
+    IconMinus,
+    IconMaximize,
+    IconLock,
+    IconLockOpen
+} from '@tabler/icons-react'
 
 // utils
 import {
@@ -112,6 +122,9 @@ const Canvas = () => {
     const [selectedNode, setSelectedNode] = useState(null)
     const [isUpsertButtonEnabled, setIsUpsertButtonEnabled] = useState(false)
     const [isSyncNodesButtonEnabled, setIsSyncNodesButtonEnabled] = useState(false)
+    const [isNodesDraggable, setIsNodesDraggable] = useState(true)
+    const [isNodesConnectable, setIsNodesConnectable] = useState(true)
+    const [isElementsSelectable, setIsElementsSelectable] = useState(true)
 
     const reactFlowWrapper = useRef(null)
 
@@ -216,6 +229,12 @@ const Canvas = () => {
         )
 
         setEdges((eds) => addEdge(newEdge, eds))
+    }
+
+    const onToggleLockViewport = () => {
+        setIsNodesDraggable(!isNodesDraggable)
+        setIsNodesConnectable(!isNodesConnectable)
+        setIsElementsSelectable(!isElementsSelectable)
     }
 
     const handleLoadFlow = (file) => {
@@ -656,6 +675,9 @@ const Canvas = () => {
         if (flowWrapper) {
             flowWrapper.addEventListener('paste', handlePaste)
             flowWrapper.addEventListener('keydown', handleKeyDown)
+            // focus reactflow wrapper
+            flowWrapper.tabIndex = -1
+            flowWrapper.focus()
         }
 
         return () => {
@@ -760,6 +782,85 @@ const Canvas = () => {
                                     <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
                                 </Box>
                             </Box>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: 2.5,
+                                    gap: 2,
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: 0,
+                                    zIndex: 10
+                                }}
+                            >
+                                <Box
+                                    className='undo-redo-wrapper'
+                                    sx={{
+                                        backgroundColor: theme?.customization?.isDarkMode
+                                            ? theme.palette.background.darkPaper
+                                            : theme.palette.background.paper,
+                                        borderColor: theme?.customization?.isDarkMode ? theme.palette.grey[400] : theme.palette.grey[600],
+                                        borderStyle: 'solid',
+                                        borderWidth: '1px',
+                                        '& button': {
+                                            borderColor: `${
+                                                theme?.customization?.isDarkMode ? theme.palette.grey[400] : theme.palette.grey[600]
+                                            } !important`,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'black'
+                                        }
+                                    }}
+                                >
+                                    <Button
+                                        disabled={!canUndo}
+                                        onClick={handleUndo}
+                                        sx={{
+                                            cursor: canUndo ? 'pointer' : 'not-allowed'
+                                        }}
+                                    >
+                                        <IconArrowBackUp />
+                                    </Button>
+                                    <Button
+                                        disabled={!canRedo}
+                                        onClick={handleRedo}
+                                        sx={{
+                                            cursor: canRedo ? 'pointer' : 'not-allowed'
+                                        }}
+                                    >
+                                        <IconArrowForwardUp />
+                                    </Button>
+                                </Box>
+                                <Box
+                                    className='reactflow-controls-wrapper'
+                                    sx={{
+                                        backgroundColor: theme?.customization?.isDarkMode
+                                            ? theme.palette.background.darkPaper
+                                            : theme.palette.background.paper,
+                                        borderColor: theme?.customization?.isDarkMode ? theme.palette.grey[400] : theme.palette.grey[600],
+                                        borderStyle: 'solid',
+                                        borderWidth: '1px',
+                                        '& button': {
+                                            borderColor: `${
+                                                theme?.customization?.isDarkMode ? theme.palette.grey[400] : theme.palette.grey[600]
+                                            } !important`,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'black'
+                                        }
+                                    }}
+                                >
+                                    <Button onClick={reactFlowInstance?.zoomIn}>
+                                        <IconPlus />
+                                    </Button>
+                                    <Button onClick={reactFlowInstance?.zoomOut}>
+                                        <IconMinus />
+                                    </Button>
+                                    <Button onClick={reactFlowInstance?.fitView}>
+                                        <IconMaximize />
+                                    </Button>
+                                    <Button onClick={onToggleLockViewport}>
+                                        {isNodesDraggable || isNodesConnectable || isElementsSelectable ? <IconLockOpen /> : <IconLock />}
+                                    </Button>
+                                </Box>
+                            </Box>
                             <ReactFlow
                                 nodes={nodes}
                                 edges={edges}
@@ -777,49 +878,11 @@ const Canvas = () => {
                                 fitView
                                 deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                                 minZoom={0.1}
+                                nodesDraggable={isNodesDraggable}
+                                nodesConnectable={isNodesConnectable}
+                                elementsSelectable={isElementsSelectable}
                                 className='chatflow-canvas'
                             >
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        padding: 2.5,
-                                        gap: 2,
-                                        position: 'absolute',
-                                        bottom: 0,
-                                        left: 0,
-                                        zIndex: 10
-                                    }}
-                                >
-                                    <Box className='undo-redo-wrapper'>
-                                        <Button
-                                            disabled={!canUndo}
-                                            onClick={handleUndo}
-                                            sx={{
-                                                opacity: canUndo ? 1 : 0.5,
-                                                cursor: canUndo ? 'pointer' : 'not-allowed'
-                                            }}
-                                        >
-                                            <IconArrowBackUp />
-                                        </Button>
-                                        <Button
-                                            disabled={!canRedo}
-                                            onClick={handleRedo}
-                                            sx={{
-                                                opacity: canRedo ? 1 : 0.5,
-                                                cursor: canRedo ? 'pointer' : 'not-allowed'
-                                            }}
-                                        >
-                                            <IconArrowForwardUp />
-                                        </Button>
-                                    </Box>
-                                    <Controls
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'row'
-                                        }}
-                                    />
-                                </Box>
                                 <Background color='#aaa' gap={16} />
                             </ReactFlow>
                         </div>
