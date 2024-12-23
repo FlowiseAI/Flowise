@@ -656,12 +656,6 @@ const Canvas = () => {
         if (flowWrapper) {
             flowWrapper.addEventListener('paste', handlePaste)
             flowWrapper.addEventListener('keydown', handleKeyDown)
-
-            // Make the wrapper focusable
-            flowWrapper.tabIndex = -1
-
-            // Focus the wrapper when the component mounts
-            flowWrapper.focus()
         }
 
         return () => {
@@ -718,34 +712,53 @@ const Canvas = () => {
                         <div className='reactflow-wrapper' ref={reactFlowWrapper}>
                             <Box
                                 sx={{
+                                    width: '100%',
                                     position: 'absolute',
                                     top: 0,
                                     left: 0,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 2,
+                                    justifyContent: 'space-between',
                                     padding: 2.5
                                 }}
                             >
-                                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
-                                {isSyncNodesButtonEnabled && (
-                                    <Fab
-                                        sx={{
-                                            color: 'white',
-                                            background: 'orange',
-                                            '&:hover': {
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2
+                                    }}
+                                >
+                                    <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
+                                    {isSyncNodesButtonEnabled && (
+                                        <Fab
+                                            sx={{
+                                                color: 'white',
                                                 background: 'orange',
-                                                backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
-                                            }
-                                        }}
-                                        size='small'
-                                        aria-label='sync'
-                                        title='Sync Nodes'
-                                        onClick={() => syncNodes()}
-                                    >
-                                        <IconRefreshAlert />
-                                    </Fab>
-                                )}
+                                                '&:hover': {
+                                                    background: 'orange',
+                                                    backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
+                                                }
+                                            }}
+                                            size='small'
+                                            aria-label='sync'
+                                            title='Sync Nodes'
+                                            onClick={() => syncNodes()}
+                                        >
+                                            <IconRefreshAlert />
+                                        </Fab>
+                                    )}
+                                </Box>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 2
+                                    }}
+                                >
+                                    {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
+                                    <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
+                                </Box>
                             </Box>
                             <ReactFlow
                                 nodes={nodes}
@@ -769,12 +782,12 @@ const Canvas = () => {
                                 <Box
                                     sx={{
                                         display: 'flex',
-                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        padding: 2.5,
                                         gap: 2,
                                         position: 'absolute',
-                                        bottom: '1rem',
-                                        left: '50%',
-                                        transform: 'translateX(-50%)',
+                                        bottom: 0,
+                                        left: 0,
                                         zIndex: 10
                                     }}
                                 >
@@ -808,8 +821,6 @@ const Canvas = () => {
                                     />
                                 </Box>
                                 <Background color='#aaa' gap={16} />
-                                {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
-                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
                             </ReactFlow>
                         </div>
                     </div>

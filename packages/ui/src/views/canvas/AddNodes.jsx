@@ -1,6 +1,7 @@
-import { memo, useState, useRef, useEffect } from 'react'
+import { memo, useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
+import { debounce } from 'lodash'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
@@ -38,7 +39,7 @@ import { StyledFab } from '@/ui-component/button/StyledFab'
 import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons-react'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 import LangChainPNG from '@/assets/images/langchain.png'
-import utilNodesPNG from '@/assets/images/utilNodes.png'
+import UtilNodesPNG from '@/assets/images/utilNodes.png'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -67,9 +68,161 @@ const blacklistForChatflowCanvas = {
     Memory: agentMemoryNodes
 }
 
-const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
+const TAB_ICONS = [LangChainPNG, LlamaindexPNG, UtilNodesPNG]
+const TAB_LABELS = ['LangChain', 'LlamaIndex', 'Utilities']
+
+const NodeItem = memo(({ index, node, onDragStart, totalNodes }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+
+    const handleDragStart = (event) => onDragStart(event, node)
+
+    return (
+        <div onDragStart={handleDragStart} draggable>
+            <ListItemButton
+                sx={{
+                    p: 0,
+                    borderRadius: `${customization.borderRadius}px`,
+                    cursor: 'move'
+                }}
+            >
+                <ListItem alignItems='center' sx={{ alignItems: 'center', p: 1, gap: 2 }}>
+                    <ListItemAvatar sx={{ minWidth: 'auto' }}>
+                        <div
+                            style={{
+                                width: 40,
+                                height: 40,
+                                borderRadius: '50%',
+                                backgroundColor: 'white'
+                            }}
+                        >
+                            <img
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    padding: 10,
+                                    objectFit: 'contain'
+                                }}
+                                alt={node.name}
+                                src={`${baseURL}/api/v1/node-icon/${node.name}`}
+                            />
+                        </div>
+                    </ListItemAvatar>
+                    <ListItemText
+                        primary={
+                            <>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        fontWeight: 'bold'
+                                    }}
+                                >
+                                    <span>{node.label}</span>
+                                    &nbsp;
+                                    {node.badge && (
+                                        <Chip
+                                            sx={{
+                                                width: 'max-content',
+                                                fontWeight: 700,
+                                                fontSize: '0.65rem',
+                                                background:
+                                                    node.badge === 'DEPRECATING' ? theme.palette.warning.main : theme.palette.teal.main,
+                                                color: node.badge !== 'DEPRECATING' ? 'white' : 'inherit'
+                                            }}
+                                            size='small'
+                                            label={node.badge}
+                                        />
+                                    )}
+                                </Box>
+                                {node.author && (
+                                    <span
+                                        style={{
+                                            fontSize: '0.65rem',
+                                            fontWeight: 700
+                                        }}
+                                    >
+                                        By {node.author}
+                                    </span>
+                                )}
+                            </>
+                        }
+                        secondary={<Typography variant='subtitle2'>{node.description}</Typography>}
+                    />
+                </ListItem>
+            </ListItemButton>
+            {index === totalNodes - 1 ? null : <Divider />}
+        </div>
+    )
+})
+NodeItem.displayName = 'NodeItem'
+NodeItem.propTypes = {
+    index: PropTypes.number,
+    node: PropTypes.object,
+    onDragStart: PropTypes.func,
+    totalNodes: PropTypes.number
+}
+
+const CategoryAccordion = memo(({ category, categoryNodes, expanded, onAccordionChange, onDragStart }) => {
+    const categoryName = category.split(';')[0]
+    const categoryBadge = category.split(';')[1]
+
+    const theme = useTheme()
+
+    return (
+        <Accordion expanded={expanded} onChange={(e, expanded) => onAccordionChange(category, expanded)} key={category} disableGutters>
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls={`nodes-accordian-${category}`}
+                id={`nodes-accordian-header-${category}`}
+                sx={{ py: 1 }}
+            >
+                {categoryBadge ? (
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <Typography variant='h5'>{categoryName}</Typography>
+                        &nbsp;
+                        <Chip
+                            sx={{
+                                width: 'max-content',
+                                fontWeight: 700,
+                                fontSize: '0.65rem',
+                                background: categoryBadge === 'DEPRECATING' ? theme.palette.warning.main : theme.palette.teal.main,
+                                color: categoryBadge !== 'DEPRECATING' ? 'white' : 'inherit'
+                            }}
+                            size='small'
+                            label={categoryBadge}
+                        />
+                    </div>
+                ) : (
+                    <Typography variant='h5'>{categoryName}</Typography>
+                )}
+            </AccordionSummary>
+            <AccordionDetails sx={{ p: 0, px: 1 }}>
+                {categoryNodes.map((node, index) => (
+                    <NodeItem index={index} key={node.name} node={node} onDragStart={onDragStart} totalNodes={categoryNodes.length} />
+                ))}
+            </AccordionDetails>
+        </Accordion>
+    )
+})
+CategoryAccordion.displayName = 'CategoryAccordion'
+CategoryAccordion.propTypes = {
+    category: PropTypes.string,
+    categoryNodes: PropTypes.array,
+    expanded: PropTypes.bool,
+    onAccordionChange: PropTypes.func,
+    onDragStart: PropTypes.func
+}
+
+const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
+    const theme = useTheme()
     const dispatch = useDispatch()
 
     const [searchValue, setSearchValue] = useState('')
@@ -89,29 +242,43 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         }
     }
 
-    const handleTabChange = (event, newValue) => {
-        setTabValue(newValue)
-        filterSearch(searchValue, newValue)
-    }
-
-    const addException = (category) => {
-        let nodes = []
-        if (category) {
-            const nodeNames = exceptionsForAgentCanvas[category] || []
-            nodes = nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name))
-        } else {
-            for (const category in exceptionsForAgentCanvas) {
-                const nodeNames = exceptionsForAgentCanvas[category]
-                nodes.push(...nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name)))
+    const addException = useCallback(
+        (category) => {
+            let nodes = []
+            if (category) {
+                const nodeNames = exceptionsForAgentCanvas[category] || []
+                nodes = nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name))
+            } else {
+                for (const category in exceptionsForAgentCanvas) {
+                    const nodeNames = exceptionsForAgentCanvas[category]
+                    nodes.push(...nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name)))
+                }
             }
-        }
-        return nodes
-    }
+            return nodes
+        },
+        [nodesData]
+    )
 
-    const getSearchedNodes = (value) => {
-        if (isAgentCanvas) {
-            const nodes = nodesData.filter((nd) => !blacklistCategoriesForAgentCanvas.includes(nd.category))
-            nodes.push(...addException())
+    const getSearchedNodes = useCallback(
+        (value) => {
+            if (isAgentCanvas) {
+                const nodes = nodesData.filter((nd) => !blacklistCategoriesForAgentCanvas.includes(nd.category))
+                nodes.push(...addException())
+                const passed = nodes.filter((nd) => {
+                    const passesName = nd.name.toLowerCase().includes(value.toLowerCase())
+                    const passesLabel = nd.label.toLowerCase().includes(value.toLowerCase())
+                    const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
+                    return passesName || passesCategory || passesLabel
+                })
+                return passed
+            }
+            let nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents' && nd.category !== 'Sequential Agents')
+
+            for (const category in blacklistForChatflowCanvas) {
+                const nodeNames = blacklistForChatflowCanvas[category]
+                nodes = nodes.filter((nd) => !nodeNames.includes(nd.name))
+            }
+
             const passed = nodes.filter((nd) => {
                 const passesName = nd.name.toLowerCase().includes(value.toLowerCase())
                 const passesLabel = nd.label.toLowerCase().includes(value.toLowerCase())
@@ -119,36 +286,9 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                 return passesName || passesCategory || passesLabel
             })
             return passed
-        }
-        let nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents' && nd.category !== 'Sequential Agents')
-
-        for (const category in blacklistForChatflowCanvas) {
-            const nodeNames = blacklistForChatflowCanvas[category]
-            nodes = nodes.filter((nd) => !nodeNames.includes(nd.name))
-        }
-
-        const passed = nodes.filter((nd) => {
-            const passesName = nd.name.toLowerCase().includes(value.toLowerCase())
-            const passesLabel = nd.label.toLowerCase().includes(value.toLowerCase())
-            const passesCategory = nd.category.toLowerCase().includes(value.toLowerCase())
-            return passesName || passesCategory || passesLabel
-        })
-        return passed
-    }
-
-    const filterSearch = (value, newTabValue) => {
-        setSearchValue(value)
-        setTimeout(() => {
-            if (value) {
-                const returnData = getSearchedNodes(value)
-                groupByCategory(returnData, newTabValue ?? tabValue, true)
-                scrollTop()
-            } else if (value === '') {
-                groupByCategory(nodesData, newTabValue ?? tabValue)
-                scrollTop()
-            }
-        }, 500)
-    }
+        },
+        [addException, isAgentCanvas, nodesData]
+    )
 
     const groupByTags = (nodes, newTabValue = 0) => {
         const langchainNodes = nodes.filter((nd) => !nd.tags)
@@ -163,69 +303,66 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         }
     }
 
-    const groupByCategory = (nodes, newTabValue, isFilter) => {
-        if (isAgentCanvas) {
-            const accordianCategories = {}
-            const result = nodes.reduce(function (r, a) {
-                r[a.category] = r[a.category] || []
-                r[a.category].push(a)
-                accordianCategories[a.category] = isFilter ? true : false
-                return r
-            }, Object.create(null))
+    const groupByCategory = useCallback(
+        (nodes, newTabValue, isFilter) => {
+            if (isAgentCanvas) {
+                const accordianCategories = {}
+                const result = nodes.reduce(function (r, a) {
+                    r[a.category] = r[a.category] || []
+                    r[a.category].push(a)
+                    accordianCategories[a.category] = isFilter ? true : false
+                    return r
+                }, Object.create(null))
 
-            const filteredResult = {}
-            for (const category in result) {
-                // Filter out blacklisted categories
-                if (!blacklistCategoriesForAgentCanvas.includes(category)) {
-                    // Filter out LlamaIndex nodes
-                    const nodes = result[category].filter((nd) => !nd.tags || !nd.tags.includes('LlamaIndex'))
-                    if (!nodes.length) continue
+                const filteredResult = {}
+                for (const category in result) {
+                    // Filter out blacklisted categories
+                    if (!blacklistCategoriesForAgentCanvas.includes(category)) {
+                        // Filter out LlamaIndex nodes
+                        const nodes = result[category].filter((nd) => !nd.tags || !nd.tags.includes('LlamaIndex'))
+                        if (!nodes.length) continue
 
-                    filteredResult[category] = nodes
+                        filteredResult[category] = nodes
+                    }
+
+                    // Allow exceptionsForAgentCanvas
+                    if (Object.keys(exceptionsForAgentCanvas).includes(category)) {
+                        filteredResult[category] = addException(category)
+                    }
+                }
+                setNodes(filteredResult)
+                accordianCategories['Multi Agents'] = true
+                accordianCategories['Sequential Agents'] = true
+                accordianCategories['Memory'] = true
+                setCategoryExpanded(accordianCategories)
+            } else {
+                const taggedNodes = groupByTags(nodes, newTabValue)
+                const accordianCategories = {}
+                const result = taggedNodes.reduce(function (r, a) {
+                    r[a.category] = r[a.category] || []
+                    r[a.category].push(a)
+                    accordianCategories[a.category] = isFilter ? true : false
+                    return r
+                }, Object.create(null))
+
+                const filteredResult = {}
+                for (const category in result) {
+                    if (category === 'Multi Agents' || category === 'Sequential Agents') {
+                        continue
+                    }
+                    if (Object.keys(blacklistForChatflowCanvas).includes(category)) {
+                        const nodes = blacklistForChatflowCanvas[category]
+                        result[category] = result[category].filter((nd) => !nodes.includes(nd.name))
+                    }
+                    filteredResult[category] = result[category]
                 }
 
-                // Allow exceptionsForAgentCanvas
-                if (Object.keys(exceptionsForAgentCanvas).includes(category)) {
-                    filteredResult[category] = addException(category)
-                }
+                setNodes(filteredResult)
+                setCategoryExpanded(accordianCategories)
             }
-            setNodes(filteredResult)
-            accordianCategories['Multi Agents'] = true
-            accordianCategories['Sequential Agents'] = true
-            accordianCategories['Memory'] = true
-            setCategoryExpanded(accordianCategories)
-        } else {
-            const taggedNodes = groupByTags(nodes, newTabValue)
-            const accordianCategories = {}
-            const result = taggedNodes.reduce(function (r, a) {
-                r[a.category] = r[a.category] || []
-                r[a.category].push(a)
-                accordianCategories[a.category] = isFilter ? true : false
-                return r
-            }, Object.create(null))
-
-            const filteredResult = {}
-            for (const category in result) {
-                if (category === 'Multi Agents' || category === 'Sequential Agents') {
-                    continue
-                }
-                if (Object.keys(blacklistForChatflowCanvas).includes(category)) {
-                    const nodes = blacklistForChatflowCanvas[category]
-                    result[category] = result[category].filter((nd) => !nodes.includes(nd.name))
-                }
-                filteredResult[category] = result[category]
-            }
-
-            setNodes(filteredResult)
-            setCategoryExpanded(accordianCategories)
-        }
-    }
-
-    const handleAccordionChange = (category) => (event, isExpanded) => {
-        const accordianCategories = { ...categoryExpanded }
-        accordianCategories[category] = isExpanded
-        setCategoryExpanded(accordianCategories)
-    }
+        },
+        [addException, isAgentCanvas]
+    )
 
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -238,20 +375,45 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         setOpen((prevOpen) => !prevOpen)
     }
 
-    const onDragStart = (event, node) => {
+    const debouncedSearch = useMemo(
+        () =>
+            debounce((value, newTabValue) => {
+                const returnData = value ? getSearchedNodes(value) : nodesData
+                groupByCategory(returnData, newTabValue ?? tabValue, !!value)
+                scrollTop()
+            }, 300),
+        [getSearchedNodes, groupByCategory, nodesData, tabValue]
+    )
+
+    const onAccordionChange = useCallback(
+        (category, isExpanded) => {
+            const accordianCategories = { ...categoryExpanded }
+            accordianCategories[category] = isExpanded
+            setCategoryExpanded(accordianCategories)
+        },
+        [categoryExpanded]
+    )
+
+    const onDragStart = useCallback((event, node) => {
         event.dataTransfer.setData('application/reactflow', JSON.stringify(node))
         event.dataTransfer.effectAllowed = 'move'
-    }
+    }, [])
 
-    const getImage = (tabValue) => {
-        if (tabValue === 0) {
-            return LangChainPNG
-        } else if (tabValue === 1) {
-            return LlamaindexPNG
-        } else {
-            return utilNodesPNG
-        }
-    }
+    const onSearchValueChange = useCallback(
+        (value, newTabValue) => {
+            setSearchValue(value)
+            debouncedSearch(value, newTabValue)
+        },
+        [debouncedSearch]
+    )
+
+    const onTabChange = useCallback(
+        (event, newValue) => {
+            setTabValue(newValue)
+            onSearchValueChange(searchValue, newValue)
+        },
+        [onSearchValueChange, searchValue]
+    )
 
     useEffect(() => {
         if (prevOpen.current === true && open === false) {
@@ -270,7 +432,6 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             groupByCategory(nodesData)
             dispatch({ type: SET_COMPONENT_NODES, componentNodes: nodesData })
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodesData, dispatch])
 
@@ -306,7 +467,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                     sx={{ width: '100%', pr: 2, pl: 2 }}
                                     id='input-search-node'
                                     value={searchValue}
-                                    onChange={(e) => filterSearch(e.target.value)}
+                                    onChange={(e) => onSearchValueChange(e.target.value)}
                                     placeholder='Search nodes'
                                     startAdornment={
                                         <InputAdornment position='start'>
@@ -328,7 +489,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                             <IconX
                                                 stroke={1.5}
                                                 size='1rem'
-                                                onClick={() => filterSearch('')}
+                                                onClick={() => onSearchValueChange('')}
                                                 style={{
                                                     cursor: 'pointer'
                                                 }}
@@ -346,10 +507,10 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                     sx={{ position: 'relative', minHeight: '50px', height: '50px' }}
                                     variant='fullWidth'
                                     value={tabValue}
-                                    onChange={handleTabChange}
+                                    onChange={onTabChange}
                                     aria-label='tabs'
                                 >
-                                    {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
+                                    {TAB_LABELS.map((item, index) => (
                                         <Tab
                                             icon={
                                                 <div
@@ -364,7 +525,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                             borderRadius: '50%',
                                                             objectFit: 'contain'
                                                         }}
-                                                        src={getImage(index)}
+                                                        src={TAB_ICONS[index]}
                                                         alt={item}
                                                     />
                                                 </div>
@@ -413,145 +574,14 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                         {Object.keys(nodes)
                                             .sort()
                                             .map((category) => (
-                                                <Accordion
+                                                <CategoryAccordion
+                                                    category={category}
+                                                    categoryNodes={nodes[category]}
                                                     expanded={categoryExpanded[category] || false}
-                                                    onChange={handleAccordionChange(category)}
                                                     key={category}
-                                                    disableGutters
-                                                >
-                                                    <AccordionSummary
-                                                        expandIcon={<ExpandMoreIcon />}
-                                                        aria-controls={`nodes-accordian-${category}`}
-                                                        id={`nodes-accordian-header-${category}`}
-                                                        sx={{ py: 1 }}
-                                                    >
-                                                        {category.split(';').length > 1 ? (
-                                                            <div
-                                                                style={{
-                                                                    display: 'flex',
-                                                                    flexDirection: 'row',
-                                                                    alignItems: 'center'
-                                                                }}
-                                                            >
-                                                                <Typography variant='h5'>{category.split(';')[0]}</Typography>
-                                                                &nbsp;
-                                                                <Chip
-                                                                    sx={{
-                                                                        width: 'max-content',
-                                                                        fontWeight: 700,
-                                                                        fontSize: '0.65rem',
-                                                                        background:
-                                                                            category.split(';')[1] === 'DEPRECATING'
-                                                                                ? theme.palette.warning.main
-                                                                                : theme.palette.teal.main,
-                                                                        color:
-                                                                            category.split(';')[1] !== 'DEPRECATING' ? 'white' : 'inherit'
-                                                                    }}
-                                                                    size='small'
-                                                                    label={category.split(';')[1]}
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            <Typography variant='h5'>{category}</Typography>
-                                                        )}
-                                                    </AccordionSummary>
-                                                    <AccordionDetails sx={{ p: 0, px: 1 }}>
-                                                        {nodes[category].map((node, index) => (
-                                                            <div
-                                                                key={node.name}
-                                                                onDragStart={(event) => onDragStart(event, node)}
-                                                                draggable
-                                                            >
-                                                                <ListItemButton
-                                                                    sx={{
-                                                                        p: 0,
-                                                                        borderRadius: `${customization.borderRadius}px`,
-                                                                        cursor: 'move'
-                                                                    }}
-                                                                >
-                                                                    <ListItem
-                                                                        alignItems='center'
-                                                                        sx={{ alignItems: 'center', p: 1, gap: 2 }}
-                                                                    >
-                                                                        <ListItemAvatar sx={{ minWidth: 'auto' }}>
-                                                                            <div
-                                                                                style={{
-                                                                                    width: 40,
-                                                                                    height: 40,
-                                                                                    borderRadius: '50%',
-                                                                                    backgroundColor: 'white'
-                                                                                }}
-                                                                            >
-                                                                                <img
-                                                                                    style={{
-                                                                                        width: '100%',
-                                                                                        height: '100%',
-                                                                                        padding: 10,
-                                                                                        objectFit: 'contain'
-                                                                                    }}
-                                                                                    alt={node.name}
-                                                                                    src={`${baseURL}/api/v1/node-icon/${node.name}`}
-                                                                                />
-                                                                            </div>
-                                                                        </ListItemAvatar>
-                                                                        <ListItemText
-                                                                            primary={
-                                                                                <>
-                                                                                    <Box
-                                                                                        sx={{
-                                                                                            display: 'flex',
-                                                                                            flexDirection: 'row',
-                                                                                            alignItems: 'center',
-                                                                                            fontWeight: 'bold'
-                                                                                        }}
-                                                                                    >
-                                                                                        <span>{node.label}</span>
-                                                                                        &nbsp;
-                                                                                        {node.badge && (
-                                                                                            <Chip
-                                                                                                sx={{
-                                                                                                    width: 'max-content',
-                                                                                                    fontWeight: 700,
-                                                                                                    fontSize: '0.65rem',
-                                                                                                    background:
-                                                                                                        node.badge === 'DEPRECATING'
-                                                                                                            ? theme.palette.warning.main
-                                                                                                            : theme.palette.teal.main,
-                                                                                                    color:
-                                                                                                        node.badge !== 'DEPRECATING'
-                                                                                                            ? 'white'
-                                                                                                            : 'inherit'
-                                                                                                }}
-                                                                                                size='small'
-                                                                                                label={node.badge}
-                                                                                            />
-                                                                                        )}
-                                                                                    </Box>
-                                                                                    {node.author && (
-                                                                                        <span
-                                                                                            style={{
-                                                                                                fontSize: '0.65rem',
-                                                                                                fontWeight: 700
-                                                                                            }}
-                                                                                        >
-                                                                                            By {node.author}
-                                                                                        </span>
-                                                                                    )}
-                                                                                </>
-                                                                            }
-                                                                            secondary={
-                                                                                <Typography variant='subtitle2'>
-                                                                                    {node.description}
-                                                                                </Typography>
-                                                                            }
-                                                                        />
-                                                                    </ListItem>
-                                                                </ListItemButton>
-                                                                {index === nodes[category].length - 1 ? null : <Divider />}
-                                                            </div>
-                                                        ))}
-                                                    </AccordionDetails>
-                                                </Accordion>
+                                                    onAccordionChange={onAccordionChange}
+                                                    onDragStart={onDragStart}
+                                                />
                                             ))}
                                     </List>
                                 </Box>
