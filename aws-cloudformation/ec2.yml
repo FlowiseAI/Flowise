@@ -121,7 +121,7 @@ Outputs:
   #   Value: !GetAtt SumoFlowiseInstance.PublicIp
 
   SumoFlowiseInstanceIP:
-    Description: 'Public IP address of the Chatwoot EC2 instance'
+    Description: 'IP address of the Chatwoot EC2 instance'
     Value: !GetAtt SumoFlowiseInstance.PrivateIp
     Export:
       Name: !Join ["-", [!Ref Stage, "InstanceIP", !Ref Environment]]
