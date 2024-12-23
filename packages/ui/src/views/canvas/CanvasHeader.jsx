@@ -213,7 +213,11 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handl
         // clear canvas data and history when leaving the canvas
         dispatch({ type: RESET_CANVAS })
         dispatch(ActionCreators.clearHistory())
-        window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
+        if (isAgentCanvas) {
+            window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/agentflows', { replace: true })
+        } else {
+            window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
+        }
     }
 
     useEffect(() => {
