@@ -40,26 +40,6 @@ Mappings:
       AMI: "ami-01816d07b1128cd2d" # Amazon Linux 2023 AMI for us-east-1
     us-west-2:
       AMI: "ami-0166fe664262f664c" # Amazon Linux 2 AMI (HVN) for us-west-2
-    # us-east-1:
-    #   AMI: ami-0c02fb55956c7d316 # Amazon Linux 2 AMI for us-east-1
-    # us-west-1:
-    #   AMI: ami-0bdb828fd58c52235 # Amazon Linux 2 AMI for us-west-1
-    # us-west-2:
-    #   AMI: ami-07d0cf3af28718ef8 # Amazon Linux 2 AMI for us-west-2
-    # eu-west-1:
-    #   AMI: ami-047bb4163c506cd98 # Amazon Linux 2 AMI for eu-west-1
-    # eu-central-1:
-    #   AMI: ami-0a91cd140a1fc148a # Amazon Linux 2 AMI for eu-central-1
-    # ap-south-1:
-    #   AMI: ami-0912f71e06545ad88 # Amazon Linux 2 AMI for ap-south-1
-    # ap-southeast-1:
-    #   AMI: ami-0d0678f5a0fefbbb2 # Amazon Linux 2 AMI for ap-southeast-1
-    # ap-southeast-2:
-    #   AMI: ami-0a9ce9fecc3d1daf8 # Amazon Linux 2 AMI for ap-southeast-2
-    # ap-northeast-1:
-    #   AMI: ami-06cd52961ce9f0d85 # Amazon Linux 2 AMI for ap-northeast-1
-    # ap-northeast-2:
-    #   AMI: ami-0a10b2721688ce9d2 # Amazon Linux 2 AMI for ap-northeast-2
 
 Resources:
   SumoFlowiseLogGroup:

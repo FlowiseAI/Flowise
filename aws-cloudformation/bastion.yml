@@ -46,7 +46,7 @@ Resources:
       KeyName: !Ref KeyPairName
       SubnetId: !ImportValue 
         Fn::Join: ["-", [!Ref Stage, "Public1Id", !Ref Environment]]
-      ImageId: ami-005fc0f236362e99f # Ubuntu 20.04 LTS AMI in us-east-1, replace with your region's ID
+      ImageId: ami-01816d07b1128cd2d # Ubuntu 20.04 LTS AMI in us-east-1, replace with your region's ID
       SecurityGroupIds:
         - !Ref SumoFlowiseBastionSecurityGroup
       Tags:
@@ -63,7 +63,7 @@ Resources:
       KeyName: !Ref KeyPairName
       SubnetId: !ImportValue 
         Fn::Join: ["-", [!Ref Stage, "Public2Id", !Ref Environment]]
-      ImageId: ami-005fc0f236362e99f # Ubuntu 20.04 LTS AMI in us-east-1, replace with your region's ID
+      ImageId: ami-01816d07b1128cd2d # Ubuntu 20.04 LTS AMI in us-east-1, replace with your region's ID
       SecurityGroupIds:
         - !Ref SumoFlowiseBastionSecurityGroup
       Tags:
