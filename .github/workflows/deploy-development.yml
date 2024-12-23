@@ -233,6 +233,8 @@ jobs:
             # Create the .env file
             cat <<EOF >> /home/ec2-user/flowise/docker/.env
             PORT=3000
+
+            # DATABASE_PATH=/root/.flowise
             DATABASE_TYPE=postgres
             DATABASE_PORT=5432
             DATABASE_HOST=${{ env.POSTGRES_HOST }}
@@ -244,7 +246,6 @@ jobs:
             FLOWISE_USERNAME=${{ secrets.USERNAME }}
             FLOWISE_PASSWORD=${{ secrets.PASSWORD }}
 
-            DATABASE_PATH=/root/.flowise
             APIKEY_PATH=/root/.flowise
             SECRETKEY_PATH=/root/.flowise
             LOG_PATH=/root/.flowise/logs

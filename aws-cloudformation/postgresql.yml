@@ -85,6 +85,8 @@ Resources:
       PubliclyAccessible: false
       AllocatedStorage: 20
       StorageType: gp2
+      BackupRetentionPeriod: 7 # Retain backups for 7 days
+      PreferredBackupWindow: 03:00-04:00 # Daily backup window (UTC time)
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref Stage, "postgres", !Ref Environment]]
