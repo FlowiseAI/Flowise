@@ -25,12 +25,13 @@ Parameters:
   InstanceType:
     Description: EC2 instance type for the Flowise application.
     Type: String
-    Default: c5.xlarge
+    Default: t3.large
     AllowedValues:
-      - c5.large
-      - c5.xlarge
-      - c5.4xlarge
-      - c5.12xlarge
+      - t2.micro
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
     ConstraintDescription: Must be a valid EC2 instance type.
 
 Mappings:
