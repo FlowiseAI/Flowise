@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { getRateLimiter } from '../../utils/rateLimit'
+import { RateLimiterManager } from '../../utils/rateLimit'
 import chatflowsService from '../../services/chatflows'
 import logger from '../../utils/logger'
 import predictionsServices from '../../services/predictions'
@@ -104,7 +104,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
 
 const getRateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        return getRateLimiter(req, res, next)
+        return RateLimiterManager.getInstance().getRateLimiter()(req, res, next)
     } catch (error) {
         next(error)
     }

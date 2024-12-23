@@ -7,6 +7,7 @@ import { CachePool } from '../CachePool'
 import { RedisEventPublisher } from './RedisEventPublisher'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { BaseQueue } from './BaseQueue'
+import { RedisOptions } from 'bullmq'
 
 dotenv.config()
 
@@ -27,7 +28,7 @@ export class PredictionQueue extends BaseQueue {
     private redisPublisher: RedisEventPublisher
     private queueName: string
 
-    constructor(name: string, connection: { host: string; port: number }, options: PredictionQueueOptions) {
+    constructor(name: string, connection: RedisOptions, options: PredictionQueueOptions) {
         super(name, connection)
         this.queueName = name
         this.componentNodes = options.componentNodes || {}

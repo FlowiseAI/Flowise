@@ -71,7 +71,6 @@ export const buildAgentGraph = async ({
     baseURL: string
     signal?: AbortController
 }): Promise<any> => {
-    console.log('buildAgentGraph signal=', signal)
     try {
         const chatflowid = flowConfig.chatflowid
         const chatId = flowConfig.chatId

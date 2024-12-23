@@ -5,7 +5,7 @@ import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
 import { DataSource } from 'typeorm'
-import { IChatFlow, MODE } from './Interface'
+import { MODE } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
@@ -13,7 +13,7 @@ import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
 import { CachePool } from './CachePool'
 import { AbortControllerPool } from './AbortControllerPool'
-import { initializeRateLimiter } from './utils/rateLimit'
+import { RateLimiterManager } from './utils/rateLimit'
 import { getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
@@ -34,6 +34,7 @@ export class App {
     abortControllerPool: AbortControllerPool
     cachePool: CachePool
     telemetry: Telemetry
+    rateLimiterManager: RateLimiterManager
     AppDataSource: DataSource = getDataSource()
     sseStreamer: SSEStreamer
     metricsProvider: IMetricsProvider
@@ -67,8 +68,8 @@ export class App {
             await getEncryptionKey()
 
             // Initialize Rate Limit
-            const AllChatFlow: IChatFlow[] = await getAllChatFlow()
-            await initializeRateLimiter(AllChatFlow)
+            this.rateLimiterManager = RateLimiterManager.getInstance()
+            await this.rateLimiterManager.initializeRateLimiters(await getDataSource().getRepository(ChatFlow).find())
 
             // Initialize cache pool
             this.cachePool = new CachePool()
@@ -90,7 +91,6 @@ export class App {
                     abortControllerPool: this.abortControllerPool
                 })
                 this.redisSubscriber = new RedisEventSubscriber(this.sseStreamer)
-                // TODO: retry for 3 times, then default back to main
                 await this.redisSubscriber.connect()
             }
 
@@ -274,7 +274,9 @@ export class App {
         try {
             const removePromises: any[] = []
             removePromises.push(this.telemetry.flush())
-            removePromises.push(this.redisSubscriber.disconnect())
+            if (this.queueManager) {
+                removePromises.push(this.redisSubscriber.disconnect())
+            }
             await Promise.all(removePromises)
         } catch (e) {
             logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
@@ -283,10 +285,6 @@ export class App {
 }
 
 let serverApp: App | undefined
-
-export async function getAllChatFlow(): Promise<IChatFlow[]> {
-    return await getDataSource().getRepository(ChatFlow).find()
-}
 
 export async function start(): Promise<void> {
     serverApp = new App()

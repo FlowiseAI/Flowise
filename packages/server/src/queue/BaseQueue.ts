@@ -1,4 +1,4 @@
-import { Queue, Worker, Job, QueueEvents } from 'bullmq'
+import { Queue, Worker, Job, QueueEvents, RedisOptions } from 'bullmq'
 import { v4 as uuidv4 } from 'uuid'
 
 const QUEUE_REDIS_EVENT_STREAM_MAX_LEN = process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN
@@ -9,9 +9,9 @@ const WORKER_CONCURRENCY = process.env.WORKER_CONCURRENCY ? parseInt(process.env
 export abstract class BaseQueue {
     protected queue: Queue
     protected queueEvents: QueueEvents
-    protected connection: { host: string; port: number }
+    protected connection: RedisOptions
 
-    constructor(queueName: string, connection: { host: string; port: number }) {
+    constructor(queueName: string, connection: RedisOptions) {
         this.connection = connection
         this.queue = new Queue(queueName, {
             connection: this.connection,

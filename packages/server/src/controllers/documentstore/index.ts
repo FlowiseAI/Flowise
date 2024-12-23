@@ -4,16 +4,7 @@ import documentStoreService from '../../services/documentstore'
 import { DocumentStore } from '../../database/entities/DocumentStore'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { DocumentStoreDTO } from '../../Interface'
-import { getRateLimiter } from '../../utils/rateLimit'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-
-const getRateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        return getRateLimiter(req, res, next)
-    } catch (error) {
-        next(error)
-    }
-}
 
 const createDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -461,7 +452,6 @@ export default {
     queryVectorStore,
     deleteVectorStoreFromStore,
     updateVectorStoreConfigOnly,
-    getRateLimiterMiddleware,
     upsertDocStoreMiddleware,
     refreshDocStoreMiddleware,
     saveProcessingLoader,

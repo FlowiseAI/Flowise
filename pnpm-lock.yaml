@@ -596,6 +596,9 @@ importers:
             prom-client:
                 specifier: ^15.1.3
                 version: 15.1.3
+            rate-limit-redis:
+                specifier: ^4.2.0
+                version: 4.2.0(express-rate-limit@6.11.2(express@4.18.3))
             reflect-metadata:
                 specifier: ^0.1.13
                 version: 0.1.14
@@ -607,7 +610,7 @@ importers:
                 version: 5.1.7
             typeorm:
                 specifier: ^0.3.6
-                version: 0.3.20(ioredis@5.3.2)(mongodb@6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1))(mysql2@3.11.4)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))
+                version: 0.3.20(ioredis@5.4.1)(mongodb@6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1))(mysql2@3.11.4)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))
             uuid:
                 specifier: ^9.0.1
                 version: 9.0.1
@@ -13513,6 +13516,12 @@ packages:
     ranges-sort@6.0.11:
         resolution: { integrity: sha512-fhNEG0vGi7bESitNNqNBAfYPdl2efB+1paFlI8BQDCNkruERKuuhG8LkQClDIVqUJLkrmKuOSPQ3xZHqVnVo3Q== }
         engines: { node: '>=14.18.0' }
+
+    rate-limit-redis@4.2.0:
+        resolution: { integrity: sha512-wV450NQyKC24NmPosJb2131RoczLdfIJdKCReNwtVpm5998U8SgKrAZrIHaN/NfQgqOHaan8Uq++B4sa5REwjA== }
+        engines: { node: '>= 16' }
+        peerDependencies:
+            express-rate-limit: '>= 6'
 
     raw-body@2.5.2:
         resolution: { integrity: sha512-8zGqypfENjCIqGhgXToC8aB2r7YrBX+AQAfIPs/Mlk+BtPTztOvTS01NRW/3Eh60J+a48lt8qsCzirQ6loCVfA== }
@@ -33089,6 +33098,10 @@ snapshots:
 
     ranges-sort@6.0.11: {}
 
+    rate-limit-redis@4.2.0(express-rate-limit@6.11.2(express@4.18.3)):
+        dependencies:
+            express-rate-limit: 6.11.2(express@4.18.3)
+
     raw-body@2.5.2:
         dependencies:
             bytes: 3.1.2
@@ -35364,6 +35377,34 @@ snapshots:
             yargs: 17.7.2
         optionalDependencies:
             ioredis: 5.3.2
+            mongodb: 6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1)
+            mysql2: 3.11.4
+            pg: 8.11.3
+            redis: 4.6.13
+            sqlite3: 5.1.7
+            ts-node: 10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)
+        transitivePeerDependencies:
+            - supports-color
+
+    typeorm@0.3.20(ioredis@5.4.1)(mongodb@6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1))(mysql2@3.11.4)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)):
+        dependencies:
+            '@sqltools/formatter': 1.2.5
+            app-root-path: 3.1.0
+            buffer: 6.0.3
+            chalk: 4.1.2
+            cli-highlight: 2.1.11
+            dayjs: 1.11.10
+            debug: 4.3.4(supports-color@8.1.1)
+            dotenv: 16.4.5
+            glob: 10.3.10
+            mkdirp: 2.1.6
+            reflect-metadata: 0.2.1
+            sha.js: 2.4.11
+            tslib: 2.6.2
+            uuid: 9.0.1
+            yargs: 17.7.2
+        optionalDependencies:
+            ioredis: 5.4.1
             mongodb: 6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1)
             mysql2: 3.11.4
             pg: 8.11.3

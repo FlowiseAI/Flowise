@@ -6,6 +6,7 @@ import { CachePool } from '../CachePool'
 import { BaseQueue } from './BaseQueue'
 import { executeUpsert } from '../utils/upsertVector'
 import { executeDocStoreUpsert, insertIntoVectorStore, processLoader } from '../services/documentstore'
+import { RedisOptions } from 'bullmq'
 
 dotenv.config()
 
@@ -23,7 +24,7 @@ export class UpsertQueue extends BaseQueue {
     private appDataSource: DataSource
     private queueName: string
 
-    constructor(name: string, connection: { host: string; port: number }, options: UpsertQueueOptions) {
+    constructor(name: string, connection: RedisOptions, options: UpsertQueueOptions) {
         super(name, connection)
         this.queueName = name
         this.componentNodes = options.componentNodes || {}

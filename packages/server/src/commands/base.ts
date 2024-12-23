@@ -57,8 +57,14 @@ export abstract class BaseCommand extends Command {
         WORKER_CONCURRENCY: Flags.string(),
         QUEUE_NAME: Flags.string(),
         QUEUE_REDIS_EVENT_STREAM_MAX_LEN: Flags.string(),
-        QUEUE_REDIS_HOST: Flags.string(),
-        QUEUE_REDIS_PORT: Flags.string()
+        REDIS_HOST: Flags.string(),
+        REDIS_PORT: Flags.string(),
+        REDIS_USERNAME: Flags.string(),
+        REDIS_PASSWORD: Flags.string(),
+        REDIS_TLS: Flags.string(),
+        REDIS_CERT: Flags.string(),
+        REDIS_KEY: Flags.string(),
+        REDIS_CA: Flags.string()
     }
 
     protected async stopProcess() {
@@ -170,10 +176,16 @@ export abstract class BaseCommand extends Command {
 
         // Queue
         if (flags.MODE) process.env.MODE = flags.MODE
+        if (flags.REDIS_HOST) process.env.REDIS_HOST = flags.REDIS_HOST
+        if (flags.REDIS_PORT) process.env.REDIS_PORT = flags.REDIS_PORT
+        if (flags.REDIS_USERNAME) process.env.REDIS_USERNAME = flags.REDIS_USERNAME
+        if (flags.REDIS_PASSWORD) process.env.REDIS_PASSWORD = flags.REDIS_PASSWORD
+        if (flags.REDIS_TLS) process.env.REDIS_TLS = flags.REDIS_TLS
+        if (flags.REDIS_CERT) process.env.REDIS_CERT = flags.REDIS_CERT
+        if (flags.REDIS_KEY) process.env.REDIS_KEY = flags.REDIS_KEY
+        if (flags.REDIS_CA) process.env.REDIS_CA = flags.REDIS_CA
         if (flags.WORKER_CONCURRENCY) process.env.WORKER_CONCURRENCY = flags.WORKER_CONCURRENCY
         if (flags.QUEUE_NAME) process.env.QUEUE_NAME = flags.QUEUE_NAME
-        if (flags.QUEUE_REDIS_HOST) process.env.QUEUE_REDIS_HOST = flags.QUEUE_REDIS_HOST
-        if (flags.QUEUE_REDIS_PORT) process.env.QUEUE_REDIS_PORT = flags.QUEUE_REDIS_PORT
         if (flags.QUEUE_REDIS_EVENT_STREAM_MAX_LEN) process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN = flags.QUEUE_REDIS_EVENT_STREAM
     }
 }

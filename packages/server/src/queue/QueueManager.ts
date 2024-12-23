@@ -7,6 +7,7 @@ import { Telemetry } from '../utils/telemetry'
 import { CachePool } from '../CachePool'
 import { DataSource } from 'typeorm'
 import { AbortControllerPool } from '../AbortControllerPool'
+import { RedisOptions } from 'bullmq'
 
 dotenv.config()
 
@@ -17,19 +18,22 @@ type QUEUE_TYPE = 'prediction' | 'upsert'
 export class QueueManager {
     private static instance: QueueManager
     private queues: Map<string, BaseQueue> = new Map()
-    private connection: { host: string; port: number }
+    private connection: RedisOptions
 
     private constructor() {
-        const host = process.env.QUEUE_REDIS_HOST
-        const port = process.env.QUEUE_REDIS_PORT
-
-        if (!host || !port) {
-            throw new Error('Missing Redis host or port')
-        }
-
         this.connection = {
-            host,
-            port: parseInt(port)
+            host: process.env.REDIS_HOST || 'localhost',
+            port: parseInt(process.env.REDIS_PORT || '6379'),
+            username: process.env.REDIS_USERNAME || undefined,
+            password: process.env.REDIS_PASSWORD || undefined,
+            tls:
+                process.env.REDIS_TLS === 'true'
+                    ? {
+                          cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
+                          key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
+                          ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
+                      }
+                    : undefined
         }
     }
 
