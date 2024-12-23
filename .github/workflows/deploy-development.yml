@@ -257,48 +257,38 @@ jobs:
 
             EOT
 
-      # - name: Forward log to CloudWatch
-      #   uses: appleboy/ssh-action@v1.1.0
-      #   with:
-      #     host: ${{ env.BastionHostAPublicIP }}
-      #     username: ec2-user
-      #     key: ${{ secrets.SSH_KEY }}
-      #     script: |
-      #       ssh -i ${{ secrets.KEY_NAME }}.pem -o StrictHostKeyChecking=no ec2-user@${{ env.EC2_IP }} << 'EOT'
+      - name: Forward log to CloudWatch
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ env.BastionHostAPublicIP }}
+          username: ec2-user
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            ssh -i ${{ secrets.KEY_NAME }}.pem -o StrictHostKeyChecking=no ec2-user@${{ env.EC2_IP }} << 'EOT'
 
-      #       # Create CloudWatch Agent configuration file
-      #       cat <<EOF | sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json > /dev/null
-      #       {
-      #         "logs": {
-      #           "logs_collected": {
-      #             "files": {
-      #               "collect_list": [
-      #                 {
-      #                   "file_path": "/var/log/chatwoot-setup.log",
-      #                   "log_group_name": "/chatwoot/logs-dev",
-      #                   "log_stream_name": "chatwoot-setup-logs"
-      #                 },
-      #                 {
-      #                   "file_path": "/var/log/chatwoot-web.1.log",
-      #                   "log_group_name": "/chatwoot/logs-dev",
-      #                   "log_stream_name": "chatwoot-web-logs"
-      #                 },
-      #                 {
-      #                   "file_path": "/var/log/chatwoot-worker.1.log",
-      #                   "log_group_name": "/chatwoot/logs-dev",
-      #                   "log_stream_name": "chatwoot-worker-logs"
-      #                 }
-      #               ]
-      #             }
-      #           }
-      #         }
-      #       }
-      #       EOF
+            # Create CloudWatch Agent configuration file
+            cat <<EOF | sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json > /dev/null
+            {
+              "logs": {
+                "logs_collected": {
+                  "files": {
+                    "collect_list": [
+                      {
+                        "file_path": "/root/.flowise/logs/server.log",
+                        "log_group_name": "/flowise/logs-dev",
+                        "log_stream_name": "flowise-server-log"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+            EOF
 
-      #       # Start the CloudWatch Agent
-      #       sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
+            # Start the CloudWatch Agent
+            sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
 
-      #       EOT
+            EOT
 
       - name: Add instance to the target group attached to the alb
         run: |
@@ -306,57 +296,57 @@ jobs:
           INSTANCE_ID=${{ env.EC2_ID }}
           aws elbv2 register-targets --target-group-arn $TARGET_GROUP_ARN --targets Id=$INSTANCE_ID
 
-      # - name: Create the AMI
-      #   run: |
-      #     echo "Create the AMI"
-      #     STACK_NAME=sumo-flowise-ec2-stack-dev
+      - name: Create the AMI
+        run: |
+          echo "Create the AMI"
+          STACK_NAME=sumo-flowise-ec2-stack-dev
 
-      #     # Retrieve existing AMIs with a similar name
-      #     BASE_AMI_NAME="flowise-base-ami-dev"
-      #     existing_ami_id=$(aws ec2 describe-images --owners self --filters "Name=name,Values=$BASE_AMI_NAME" --query 'Images[0].ImageId' --output text)
+          # Retrieve existing AMIs with a similar name
+          BASE_AMI_NAME="flowise-base-ami-dev"
+          existing_ami_id=$(aws ec2 describe-images --owners self --filters "Name=name,Values=$BASE_AMI_NAME" --query 'Images[0].ImageId' --output text)
 
-      #     if [ "$existing_ami_id" != "None" ]; then
-      #       echo "Found existing AMI with ID: $existing_ami_id. Deregistering..."
-      #       aws ec2 deregister-image --image-id $existing_ami_id
+          if [ "$existing_ami_id" != "None" ]; then
+            echo "Found existing AMI with ID: $existing_ami_id. Deregistering..."
+            aws ec2 deregister-image --image-id $existing_ami_id
 
-      #       # Also, delete associated snapshots
-      #       snapshot_ids=$(aws ec2 describe-images --image-ids $existing_ami_id --query 'Images[0].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)
-      #       echo "snapshot_ids=$snapshot_ids"
-      #       if [ "$snapshot_ids" != "None" ]; then
-      #         for snapshot_id in $snapshot_ids; do
-      #           echo "Deleting snapshot $snapshot_id"
-      #           aws ec2 delete-snapshot --snapshot-id $snapshot_id
-      #         done
-      #       fi
-      #     else
-      #       echo "No existing AMI found with the name $BASE_AMI_NAME."
-      #     fi
+            # Also, delete associated snapshots
+            snapshot_ids=$(aws ec2 describe-images --image-ids $existing_ami_id --query 'Images[0].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)
+            echo "snapshot_ids=$snapshot_ids"
+            if [ "$snapshot_ids" != "None" ]; then
+              for snapshot_id in $snapshot_ids; do
+                echo "Deleting snapshot $snapshot_id"
+                aws ec2 delete-snapshot --snapshot-id $snapshot_id
+              done
+            fi
+          else
+            echo "No existing AMI found with the name $BASE_AMI_NAME."
+          fi
 
-      #     INSTANCE_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs[?OutputKey==`SumoFlowiseInstanceId`].OutputValue' --output text)
+          INSTANCE_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs[?OutputKey==`SumoFlowiseInstanceId`].OutputValue' --output text)
 
-      #     AMI_ID=$(aws ec2 create-image --instance-id $INSTANCE_ID --name $BASE_AMI_NAME --description "Base AMI for Flowise application" --no-reboot --query 'ImageId' --output text)
-      #     echo "AMI created with ID: $AMI_ID"
-      #     echo "AMI_ID=${AMI_ID}" >> $GITHUB_ENV
+          AMI_ID=$(aws ec2 create-image --instance-id $INSTANCE_ID --name $BASE_AMI_NAME --description "Base AMI for Flowise application" --no-reboot --query 'ImageId' --output text)
+          echo "AMI created with ID: $AMI_ID"
+          echo "AMI_ID=${AMI_ID}" >> $GITHUB_ENV
 
-      # - name: Auto Scaling-Cloudformation
-      #   run: |
-      #     STACK_NAME=sumo-flowise-auto-scaling-stack-dev
-      #     aws cloudformation deploy \
-      #       --template-file aws-cloudformation/auto_scaling.yml \
-      #       --stack-name $STACK_NAME \
-      #       --parameter-overrides \
-      #         Environment=dev \
-      #         FlowiseAMI=${{ env.AMI_ID }} \
-      #         KeyPairName=${{ secrets.KEY_NAME }} \
-      #       --capabilities CAPABILITY_NAMED_IAM
+      - name: Auto Scaling-Cloudformation
+        run: |
+          STACK_NAME=sumo-flowise-auto-scaling-stack-dev
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/auto_scaling.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              Environment=dev \
+              FlowiseAMI=${{ env.AMI_ID }} \
+              KeyPairName=${{ secrets.KEY_NAME }} \
+            --capabilities CAPABILITY_NAMED_IAM
 
-      #     echo "CloudFormation Outputs:"
-      #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-      #     GroupName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='AutoScalingGroupName'].OutputValue" --output text)
+          GroupName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='AutoScalingGroupName'].OutputValue" --output text)
 
-      #     echo "Instances refresh: ${GroupName}"
-      #     aws autoscaling start-instance-refresh --auto-scaling-group-name ${GroupName}
+          echo "Instances refresh: ${GroupName}"
+          aws autoscaling start-instance-refresh --auto-scaling-group-name ${GroupName}
 
       - name: Post-deployment script
         run: |

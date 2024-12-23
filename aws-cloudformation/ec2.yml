@@ -46,7 +46,7 @@ Resources:
   SumoFlowiseLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/Flowise/logs-${Environment}"
+      LogGroupName: !Sub "/flowise/logs-${Environment}"
       RetentionInDays: 7 # Retain logs for 7 days (customize based on needs)
       Tags:
         - Key: Name
@@ -108,49 +108,6 @@ Resources:
           GroupSet:
             - !ImportValue 
               Fn::Join: ["-", [!Ref Stage, "LoadbalancerSGId", !Ref Environment]]
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          # Update packages
-          sudo yum update -y
-
-          # Install Docker
-          sudo yum install -y docker
-          sudo systemctl enable docker
-          sudo systemctl start docker
-
-          # Add ec2-user to the Docker group
-          # usermod -aG docker ec2-user
-
-          # Install Docker Compose
-          # sudo yum install docker-compose-plugin
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.32.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-          sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-
-          # Install Git
-          # yum install -y git
-
-          # Clone the Flowise repository
-          # git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/flowise
-          cd /home/ec2-user/flowise
-
-          # Create the .env file
-          cat <<EOT >> /home/ec2-user/flowise/docker/.env
-          PORT=3000
-          DATABASE_PATH=/root/.flowise
-          APIKEY_PATH=/root/.flowise
-          SECRETKEY_PATH=/root/.flowise
-          LOG_PATH=/root/.flowise/logs
-          BLOB_STORAGE_PATH=/root/.flowise/storage
-          EOT
-
-          cd /home/ec2-user/flowise/docker
-
-          # Start the Flowise application using Docker Compose
-          docker-compose up -d
-
 
 Outputs:
   SumoFlowiseInstanceId:
@@ -168,7 +125,3 @@ Outputs:
     Value: !GetAtt SumoFlowiseInstance.PrivateIp
     Export:
       Name: !Join ["-", [!Ref Stage, "InstanceIP", !Ref Environment]]
-
-  # SumoFlowiseWebAppURL:
-  #   Description: The URL to access the Flowise application.
-  #   Value: !Sub "http://${SumoFlowiseInstance.PublicIp}:3000"
