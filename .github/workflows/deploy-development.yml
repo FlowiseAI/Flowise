@@ -241,7 +241,6 @@ jobs:
             DATABASE_NAME=flowise
             DATABASE_USER=${{ secrets.USERNAME }}
             DATABASE_PASSWORD=${{ secrets.PASSWORD }}
-            PGSSLMODE=require
             DATABASE_SSL=true
 
             FLOWISE_USERNAME=${{ secrets.USERNAME }}
