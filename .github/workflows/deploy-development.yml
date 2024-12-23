@@ -234,14 +234,14 @@ jobs:
             cat <<EOF >> /home/ec2-user/flowise/docker/.env
             PORT=3000
 
-            # DATABASE_PATH=/root/.flowise
-            DATABASE_TYPE=postgres
-            DATABASE_PORT=5432
-            DATABASE_HOST=${{ env.POSTGRES_HOST }}
-            DATABASE_NAME=flowise
-            DATABASE_USER=${{ secrets.USERNAME }}
-            DATABASE_PASSWORD=${{ secrets.PASSWORD }}
-            PGSSLMODE=require
+            DATABASE_PATH=/root/.flowise
+            # DATABASE_TYPE=postgres
+            # DATABASE_PORT=5432
+            # DATABASE_HOST=${{ env.POSTGRES_HOST }}
+            # DATABASE_NAME=flowise
+            # DATABASE_USER=${{ secrets.USERNAME }}
+            # DATABASE_PASSWORD=${{ secrets.PASSWORD }}
+            # PGSSLMODE=require
 
             FLOWISE_USERNAME=${{ secrets.USERNAME }}
             FLOWISE_PASSWORD=${{ secrets.PASSWORD }}
@@ -312,57 +312,57 @@ jobs:
           INSTANCE_ID=${{ env.EC2_ID }}
           aws elbv2 register-targets --target-group-arn $TARGET_GROUP_ARN --targets Id=$INSTANCE_ID
 
-      - name: Create the AMI
-        run: |
-          echo "Create the AMI"
-          STACK_NAME=sumo-flowise-ec2-stack-dev
+      # - name: Create the AMI
+      #   run: |
+      #     echo "Create the AMI"
+      #     STACK_NAME=sumo-flowise-ec2-stack-dev
 
-          # Retrieve existing AMIs with a similar name
-          BASE_AMI_NAME="flowise-base-ami-dev"
-          existing_ami_id=$(aws ec2 describe-images --owners self --filters "Name=name,Values=$BASE_AMI_NAME" --query 'Images[0].ImageId' --output text)
+      #     # Retrieve existing AMIs with a similar name
+      #     BASE_AMI_NAME="flowise-base-ami-dev"
+      #     existing_ami_id=$(aws ec2 describe-images --owners self --filters "Name=name,Values=$BASE_AMI_NAME" --query 'Images[0].ImageId' --output text)
 
-          if [ "$existing_ami_id" != "None" ]; then
-            echo "Found existing AMI with ID: $existing_ami_id. Deregistering..."
-            aws ec2 deregister-image --image-id $existing_ami_id
+      #     if [ "$existing_ami_id" != "None" ]; then
+      #       echo "Found existing AMI with ID: $existing_ami_id. Deregistering..."
+      #       aws ec2 deregister-image --image-id $existing_ami_id
 
-            # Also, delete associated snapshots
-            snapshot_ids=$(aws ec2 describe-images --image-ids $existing_ami_id --query 'Images[0].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)
-            echo "snapshot_ids=$snapshot_ids"
-            if [ "$snapshot_ids" != "None" ]; then
-              for snapshot_id in $snapshot_ids; do
-                echo "Deleting snapshot $snapshot_id"
-                aws ec2 delete-snapshot --snapshot-id $snapshot_id
-              done
-            fi
-          else
-            echo "No existing AMI found with the name $BASE_AMI_NAME."
-          fi
+      #       # Also, delete associated snapshots
+      #       snapshot_ids=$(aws ec2 describe-images --image-ids $existing_ami_id --query 'Images[0].BlockDeviceMappings[*].Ebs.SnapshotId' --output text)
+      #       echo "snapshot_ids=$snapshot_ids"
+      #       if [ "$snapshot_ids" != "None" ]; then
+      #         for snapshot_id in $snapshot_ids; do
+      #           echo "Deleting snapshot $snapshot_id"
+      #           aws ec2 delete-snapshot --snapshot-id $snapshot_id
+      #         done
+      #       fi
+      #     else
+      #       echo "No existing AMI found with the name $BASE_AMI_NAME."
+      #     fi
 
-          INSTANCE_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs[?OutputKey==`SumoFlowiseInstanceId`].OutputValue' --output text)
+      #     INSTANCE_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs[?OutputKey==`SumoFlowiseInstanceId`].OutputValue' --output text)
 
-          AMI_ID=$(aws ec2 create-image --instance-id $INSTANCE_ID --name $BASE_AMI_NAME --description "Base AMI for Flowise application" --no-reboot --query 'ImageId' --output text)
-          echo "AMI created with ID: $AMI_ID"
-          echo "AMI_ID=${AMI_ID}" >> $GITHUB_ENV
+      #     AMI_ID=$(aws ec2 create-image --instance-id $INSTANCE_ID --name $BASE_AMI_NAME --description "Base AMI for Flowise application" --no-reboot --query 'ImageId' --output text)
+      #     echo "AMI created with ID: $AMI_ID"
+      #     echo "AMI_ID=${AMI_ID}" >> $GITHUB_ENV
 
-      - name: Auto Scaling-Cloudformation
-        run: |
-          STACK_NAME=sumo-flowise-auto-scaling-stack-dev
-          aws cloudformation deploy \
-            --template-file aws-cloudformation/auto_scaling.yml \
-            --stack-name $STACK_NAME \
-            --parameter-overrides \
-              Environment=dev \
-              FlowiseAMI=${{ env.AMI_ID }} \
-              KeyPairName=${{ secrets.KEY_NAME }} \
-            --capabilities CAPABILITY_NAMED_IAM
+      # - name: Auto Scaling-Cloudformation
+      #   run: |
+      #     STACK_NAME=sumo-flowise-auto-scaling-stack-dev
+      #     aws cloudformation deploy \
+      #       --template-file aws-cloudformation/auto_scaling.yml \
+      #       --stack-name $STACK_NAME \
+      #       --parameter-overrides \
+      #         Environment=dev \
+      #         FlowiseAMI=${{ env.AMI_ID }} \
+      #         KeyPairName=${{ secrets.KEY_NAME }} \
+      #       --capabilities CAPABILITY_NAMED_IAM
 
-          echo "CloudFormation Outputs:"
-          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+      #     echo "CloudFormation Outputs:"
+      #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-          GroupName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='AutoScalingGroupName'].OutputValue" --output text)
+      #     GroupName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='AutoScalingGroupName'].OutputValue" --output text)
 
-          echo "Instances refresh: ${GroupName}"
-          aws autoscaling start-instance-refresh --auto-scaling-group-name ${GroupName}
+      #     echo "Instances refresh: ${GroupName}"
+      #     aws autoscaling start-instance-refresh --auto-scaling-group-name ${GroupName}
 
       - name: Post-deployment script
         run: |
