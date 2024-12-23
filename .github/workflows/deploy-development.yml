@@ -235,10 +235,11 @@ jobs:
             PORT=3000
             # DATABASE_TYPE=postgres
             # DATABASE_PORT=5432
-            # DATABASE_HOST="localhost"
+            # DATABASE_HOST=${{ env.POSTGRES_HOST }}
             # DATABASE_NAME=flowise
             # DATABASE_USER=${{ secrets.USERNAME }}
             # DATABASE_PASSWORD=${{ secrets.PASSWORD }}
+            # PGSSLMODE=require
 
             # FLOWISE_USERNAME=${{ secrets.USERNAME }}
             # FLOWISE_PASSWORD=${{ secrets.PASSWORD }}
@@ -267,12 +268,11 @@ jobs:
             ssh -i ${{ secrets.KEY_NAME }}.pem -o StrictHostKeyChecking=no ec2-user@${{ env.EC2_IP }} << 'EOT'
 
             # Update and upgrade system packages
-            sudo apt-get update -y
-            sudo apt-get upgrade -y
+            sudo yum update -y  # For RHEL/CentOS/Amazon Linux
             
             # Install the agent
-            wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
-            sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
+            wget https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+            sudo rpm -U ./amazon-cloudwatch-agent.rpm
             
             # Verify the installation
             /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a status
@@ -297,7 +297,11 @@ jobs:
             EOF
 
             # Start the CloudWatch Agent
-            sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
+            sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+              -a fetch-config \
+              -m ec2 \
+              -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
+              -s
 
             EOT
 
