@@ -266,6 +266,17 @@ jobs:
           script: |
             ssh -i ${{ secrets.KEY_NAME }}.pem -o StrictHostKeyChecking=no ec2-user@${{ env.EC2_IP }} << 'EOT'
 
+            # Update and upgrade system packages
+            sudo apt-get update -y
+            sudo apt-get upgrade -y
+            
+            # Install the agent
+            wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+            sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
+            
+            # Verify the installation
+            /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a status
+
             # Create CloudWatch Agent configuration file
             cat <<EOF | sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json > /dev/null
             {
