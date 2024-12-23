@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import { json } from '@codemirror/lang-json'
@@ -16,8 +17,10 @@ export const CodeEditor = ({
     disabled = false,
     autoFocus = false,
     basicSetup = {},
+    onBlur,
     onValueChange
 }) => {
+    const [code, setCode] = useState(value)
     const colorTheme = useTheme()
 
     const customStyle = EditorView.baseTheme({
@@ -52,7 +55,11 @@ export const CodeEditor = ({
                     ? [javascript({ jsx: true }), EditorView.lineWrapping, customStyle]
                     : [json(), EditorView.lineWrapping, customStyle]
             }
-            onChange={onValueChange}
+            onBlur={() => onBlur?.(code)}
+            onChange={(val) => {
+                setCode(val)
+                onValueChange?.(val)
+            }}
             readOnly={disabled}
             editable={!disabled}
             // eslint-disable-next-line
@@ -71,5 +78,6 @@ CodeEditor.propTypes = {
     disabled: PropTypes.bool,
     autoFocus: PropTypes.bool,
     basicSetup: PropTypes.object,
+    onBlur: PropTypes.func,
     onValueChange: PropTypes.func
 }

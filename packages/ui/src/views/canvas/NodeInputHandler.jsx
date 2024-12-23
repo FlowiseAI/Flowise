@@ -661,7 +661,7 @@ const NodeInputHandler = ({
                                         theme={customization.isDarkMode ? 'dark' : 'light'}
                                         lang={'js'}
                                         placeholder={inputParam.placeholder}
-                                        onValueChange={(code) => onNodeDataChange(inputParam, code)}
+                                        onBlur={(code) => onNodeDataChange(inputParam, code)}
                                         basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
                                     />
                                 </div>
@@ -672,8 +672,7 @@ const NodeInputHandler = ({
                                 key={`${data.id}-${inputParam.name}-${data.inputs[inputParam.name]}`}
                                 disabled={disabled}
                                 inputParam={inputParam}
-                                // onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                onChange={(newValue) => onNodeDataChange(inputParam, newValue)}
+                                onBlur={(newValue) => onNodeDataChange(inputParam, newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
                                 nodes={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getNodes() : []}
                                 edges={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getEdges() : []}
