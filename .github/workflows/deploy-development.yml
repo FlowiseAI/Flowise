@@ -144,8 +144,11 @@ jobs:
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-          SumoChatwootInstanceIP=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoChatwootInstanceIP'].OutputValue" --output text)
-          echo "EC2_IP=${SumoChatwootInstanceIP}" >> $GITHUB_ENV
+          SumoFlowiseInstanceIP=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseInstanceIP'].OutputValue" --output text)
+          echo "EC2_IP=${SumoFlowiseInstanceIP}" >> $GITHUB_ENV
+
+          SumoFlowiseInstanceId=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseInstanceId'].OutputValue" --output text)
+          echo "EC2_ID=${SumoFlowiseInstanceId}" >> $GITHUB_ENV
 
       - name: Route53-Cloudformation
         run: |
