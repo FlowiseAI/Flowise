@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useCallback, useMemo, useContext, useState, useEffect } from 'react'
+import { memo, useCallback, useMemo, useContext, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { debounce } from 'lodash'
 
@@ -353,4 +353,4 @@ CanvasNode.propTypes = {
     data: PropTypes.object
 }
 
-export default CanvasNode
+export default memo(CanvasNode)
