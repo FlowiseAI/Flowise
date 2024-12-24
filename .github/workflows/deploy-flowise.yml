@@ -3,7 +3,7 @@ name: Deploy to ECS
 on:
   push:
     branches:
-      - main # Trigger deployment on pushes to the main branch
+      - develop # Trigger deployment on pushes to the main branch
 
 jobs:
   deploy:
