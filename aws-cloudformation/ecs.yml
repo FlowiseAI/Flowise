@@ -8,7 +8,7 @@ Parameters:
     Type: String
     Default: sumo-flowise
 
-  Environment:
+  CurrentEnv:
     Description: "Deployment environment (e.g., dev, prod)"
     Type: String
     Default: dev
@@ -23,31 +23,31 @@ Resources:
   SumoFlowiseECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: !Join ["-", [!Ref Stage, ecs-cluster, !Ref Environment]]
+      ClusterName: !Join ["-", [!Ref Stage, ecs-cluster, !Ref CurrentEnv]]
 
   SumoFlowiseContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Join ["-", [!Ref Stage, container-sg, !Ref Environment]]
+      GroupName: !Join ["-", [!Ref Stage, container-sg, !Ref CurrentEnv]]
       GroupDescription: Access to the containers
       VpcId: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, VPCId, !Ref Environment]]
+        Fn::Join: ["-", [!Ref Stage, VPCId, !Ref CurrentEnv]]
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 0
           ToPort: 65535
           SourceSecurityGroupId: !ImportValue 
-            Fn::Join: ["-", [!Ref Stage, LoadbalancerSGId, !Ref Environment]]
+            Fn::Join: ["-", [!Ref Stage, LoadbalancerSGId, !Ref CurrentEnv]]
 
 Outputs:
   SumoFlowiseECSClusterId:
     Description: 'The ECS::Cluster ID'
     Value: !Ref SumoFlowiseECSCluster
     Export:
-      Name: !Join ["-", [!Ref Stage, SumoFlowiseECSClusterId, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, SumoFlowiseECSClusterId, !Ref CurrentEnv]]
 
   SumoFlowiseContainerSecurityGroupId:
     Description: 'The EC2::SecurityGroup ID'
     Value: !Ref SumoFlowiseContainerSecurityGroup
     Export:
-      Name: !Join ["-", [!Ref Stage, SumoFlowiseContainerSecurityGroupId, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, SumoFlowiseContainerSecurityGroupId, !Ref CurrentEnv]]

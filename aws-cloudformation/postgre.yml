@@ -7,7 +7,7 @@ Parameters:
     Type: String
     Default: sumo-flowise
 
-  Environment:
+  CurrentEnv:
     Description: "Deployment environment (e.g., dev, prod)"
     Type: String
     Default: dev
@@ -39,19 +39,19 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref Environment]]
+        Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref CurrentEnv]]
       GroupDescription: Security group for Flowise RDS
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 5432
           ToPort: 5432
           SourceSecurityGroupId: !ImportValue 
-            Fn::Join: ["-", [!Ref Stage, "LoadbalancerSGId", !Ref Environment]]
+            Fn::Join: ["-", [!Ref Stage, "LoadbalancerSGId", !Ref CurrentEnv]]
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, "rds-sg", !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, "rds-sg", !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   # RDS Subnet Group
   SumoFlowiseRDSSubnetGroup:
@@ -60,20 +60,20 @@ Resources:
       DBSubnetGroupDescription: Subnet group for Flowise RDS
       SubnetIds:
         - !ImportValue 
-          Fn::Join: ["-", [!Ref Stage, "Private1Id", !Ref Environment]]
+          Fn::Join: ["-", [!Ref Stage, "Private1Id", !Ref CurrentEnv]]
         - !ImportValue 
-          Fn::Join: ["-", [!Ref Stage, "Private2Id", !Ref Environment]]
+          Fn::Join: ["-", [!Ref Stage, "Private2Id", !Ref CurrentEnv]]
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, "rds-group", !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, "rds-group", !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   # RDS Instance
   SumoFlowiseRDSDBInstance:
     Type: AWS::RDS::DBInstance
     Properties:
-      DBInstanceIdentifier: !Join ["-", [!Ref Stage, "postgres", !Ref Environment]]
+      DBInstanceIdentifier: !Join ["-", [!Ref Stage, "postgres", !Ref CurrentEnv]]
       DBInstanceClass: db.t3.micro
       Engine: postgres
       MasterUsername: !Ref DBUsername
@@ -90,19 +90,19 @@ Resources:
       PreferredBackupWindow: 03:00-04:00 # Daily backup window (UTC time)
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, "postgres", !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, "postgres", !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
 Outputs:
   SumoFlowiseRDSInstanceEndpoint:
     Description: 'The connection endpoint for the RDS instance'
     Value: !GetAtt SumoFlowiseRDSDBInstance.Endpoint.Address
     Export:
-      Name: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref CurrentEnv]]
 
   SumoFlowiseRDSInstancePort:
     Description: 'The port of the RDS instance'
     Value: !GetAtt SumoFlowiseRDSDBInstance.Endpoint.Port
     Export:
-      Name: !Join ["-", [!Ref Stage, "RDSInstancePort", !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, "RDSInstancePort", !Ref CurrentEnv]]

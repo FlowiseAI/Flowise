@@ -7,7 +7,7 @@ Parameters:
     Type: String
     Default: sumo-flowise
 
-  Environment:
+  CurrentEnv:
     Description: "Deployment environment (e.g., dev, prod)"
     Type: String
     Default: dev
@@ -20,7 +20,7 @@ Parameters:
     Type: 'AWS::Route53::HostedZone::Id'
 
 Conditions:
-  IsProd: !Equals [!Ref Environment, prod]
+  IsProd: !Equals [!Ref CurrentEnv, prod]
 
 Resources:
   # Create an A Record in the Hosted Zone
@@ -35,9 +35,9 @@ Resources:
       Type: 'A'
       AliasTarget: 
         DNSName: !ImportValue 
-          Fn::Join: ["-", [!Ref Stage, "LoadbalancerDNSName", !Ref Environment]]
+          Fn::Join: ["-", [!Ref Stage, "LoadbalancerDNSName", !Ref CurrentEnv]]
         HostedZoneId: !ImportValue 
-          Fn::Join: ["-", [!Ref Stage, "LoadbalancerCanonicalHostedZoneId", !Ref Environment]]
+          Fn::Join: ["-", [!Ref Stage, "LoadbalancerCanonicalHostedZoneId", !Ref CurrentEnv]]
 
 Outputs:
   RecordSetName:

@@ -8,7 +8,7 @@ Parameters:
     Type: String
     Default: sumo-flowise
 
-  Environment:
+  CurrentEnv:
     Description: "Deployment environment (e.g., dev, prod)"
     Type: String
     Default: dev
@@ -23,16 +23,16 @@ Resources:
   SumoFlowiseEFSFileSystemSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Join ["-", [!Ref Stage, efs-sg, !Ref Environment]]
+      GroupName: !Join ["-", [!Ref Stage, efs-sg, !Ref CurrentEnv]]
       GroupDescription: Security group for EFS file system
       VpcId: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref Environment]]
+        Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref CurrentEnv]]
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 2049
           ToPort: 2049
           SourceSecurityGroupId: !ImportValue 
-            Fn::Join: ["-", [!Ref Stage, SumoFlowiseContainerSecurityGroupId, !Ref Environment]]
+            Fn::Join: ["-", [!Ref Stage, SumoFlowiseContainerSecurityGroupId, !Ref CurrentEnv]]
 
   SumoFlowiseEFSFileSystem:
     Type: AWS::EFS::FileSystem
@@ -46,7 +46,7 @@ Resources:
     Properties:
       FileSystemId: !Ref SumoFlowiseEFSFileSystem
       SubnetId: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, "Private1Id", !Ref Environment]]
+        Fn::Join: ["-", [!Ref Stage, "Private1Id", !Ref CurrentEnv]]
       SecurityGroups:
         - !Ref SumoFlowiseEFSFileSystemSecurityGroup
 
@@ -55,7 +55,7 @@ Resources:
     Properties:
       FileSystemId: !Ref SumoFlowiseEFSFileSystem
       SubnetId: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, "Private2Id", !Ref Environment]]
+        Fn::Join: ["-", [!Ref Stage, "Private2Id", !Ref CurrentEnv]]
       SecurityGroups:
         - !Ref SumoFlowiseEFSFileSystemSecurityGroup
 
@@ -64,10 +64,10 @@ Outputs:
     Description: 'The ID of FileSystem'
     Value: !Ref SumoFlowiseEFSFileSystem
     Export:
-      Name: !Join ["-", [!Ref Stage, "EFSFileSystemId", !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, "EFSFileSystemId", !Ref CurrentEnv]]
 
   SumoFlowiseEFSFileSystemArn:
     Description: 'The Arn of FileSystem'
     Value: !GetAtt SumoFlowiseEFSFileSystem.Arn
     Export:
-      Name: !Join ["-", [!Ref Stage, "EFSFileSystemArn", !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, "EFSFileSystemArn", !Ref CurrentEnv]]

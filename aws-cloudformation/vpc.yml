@@ -8,7 +8,7 @@ Parameters:
     Type: String
     Default: sumo-flowise
 
-  Environment:
+  CurrentEnv:
     Description: "Deployment environment (e.g., dev, prod)"
     Type: String
     Default: dev
@@ -41,9 +41,9 @@ Resources:
       CidrBlock: !FindInMap ["SubnetConfig", "VPC", "CIDR"]
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, vpc, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, vpc, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowisePublicSubnetOne:
     Type: AWS::EC2::Subnet
@@ -56,9 +56,9 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, public-subnet-one, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, public-subnet-one, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowisePublicSubnetTwo:
     Type: AWS::EC2::Subnet
@@ -71,9 +71,9 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, public-subnet-two, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, public-subnet-two, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowisePrivateSubnetOne:
     Type: AWS::EC2::Subnet
@@ -85,9 +85,9 @@ Resources:
       CidrBlock: !FindInMap ["SubnetConfig", "PrivateOne", "CIDR"]
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, private-subnet-one, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, private-subnet-one, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowisePrivateSubnetTwo:
     Type: AWS::EC2::Subnet
@@ -99,18 +99,18 @@ Resources:
       CidrBlock: !FindInMap ["SubnetConfig", "PrivateTwo", "CIDR"]
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, private-subnet-two, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, private-subnet-two, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowiseInternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, igw, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, igw, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowiseGatewayAttachement:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -124,9 +124,9 @@ Resources:
       VpcId: !Ref SumoFlowiseVPC
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, public-rt, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, public-rt, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowisePublicRoute:
     Type: AWS::EC2::Route
@@ -167,9 +167,9 @@ Resources:
       SubnetId: !Ref SumoFlowisePublicSubnetOne
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, ngw-one, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, ngw-one, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowiseNatGatewayTwo:
     Type: AWS::EC2::NatGateway
@@ -178,9 +178,9 @@ Resources:
       SubnetId: !Ref SumoFlowisePublicSubnetTwo
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, ngw-two, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, ngw-two, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowisePrivateRouteTableOne:
     Type: AWS::EC2::RouteTable
@@ -188,9 +188,9 @@ Resources:
       VpcId: !Ref SumoFlowiseVPC
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, private-rt-one, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, private-rt-one, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowisePrivateRouteOne:
     Type: AWS::EC2::Route
@@ -211,9 +211,9 @@ Resources:
       VpcId: !Ref SumoFlowiseVPC
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, private-rt-two, !Ref Environment]]
-        - Key: Environment
-          Value: !Ref Environment
+          Value: !Join ["-", [!Ref Stage, private-rt-two, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowisePrivateRouteTwo:
     Type: AWS::EC2::Route
@@ -233,28 +233,28 @@ Outputs:
     Description: 'The VPC ID'
     Value: !Ref SumoFlowiseVPC
     Export:
-      Name: !Join ["-", [!Ref Stage, VPCId, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, VPCId, !Ref CurrentEnv]]
 
   SumoFlowisePublicSubnet1Id:
     Description: 'The ID of the first public subnet'
     Value: !Ref SumoFlowisePublicSubnetOne
     Export:
-      Name: !Join ["-", [!Ref Stage, Public1Id, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, Public1Id, !Ref CurrentEnv]]
 
   SumoFlowisePublicSubnet2Id:
     Description: 'The ID of the second public subnet'
     Value: !Ref SumoFlowisePublicSubnetTwo
     Export:
-      Name: !Join ["-", [!Ref Stage, Public2Id, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, Public2Id, !Ref CurrentEnv]]
 
   SumoFlowisePrivateSubnet1Id:
     Description: 'The ID of the first private subnet'
     Value: !Ref SumoFlowisePrivateSubnetOne
     Export:
-      Name: !Join ["-", [!Ref Stage, Private1Id, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, Private1Id, !Ref CurrentEnv]]
 
   SumoFlowisePrivateSubnet2Id:
     Description: 'The ID of the second private subnet'
     Value: !Ref SumoFlowisePrivateSubnetTwo
     Export:
-      Name: !Join ["-", [!Ref Stage, Private2Id, !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, Private2Id, !Ref CurrentEnv]]

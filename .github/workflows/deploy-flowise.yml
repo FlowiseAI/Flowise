@@ -73,13 +73,13 @@ jobs:
     - name: VPC-CloudFormation
       env:
         STACK_NAME: sumo-flowise-vpc-stack-dev
-        ENVIRONMENT: dev
+        CURRENTENV: dev
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/vpc.yml \
           --parameter-overrides \
-            Environment=$ENVIRONMENT \
+            CurrentEnv=$CURRENTENV \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
@@ -88,13 +88,13 @@ jobs:
     - name: ALB-CloudFormation
       env:
         STACK_NAME: sumo-flowise-alb-stack-dev
-        ENVIRONMENT: dev
+        CURRENTENV: dev
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/alb.yml \
           --parameter-overrides \
-            Environment=$ENVIRONMENT \
+            CurrentEnv=$CURRENTENV \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
@@ -103,7 +103,7 @@ jobs:
     - name: Postgre-Cloudformation
       env:
         STACK_NAME: sumo-flowise-postgre-stack-dev
-        ENVIRONMENT: dev
+        CURRENTENV: dev
         USERNAME: ${{ secrets.USERNAME }}
         PASSWORD: ${{ secrets.PASSWORD }}
       run: |
@@ -111,7 +111,7 @@ jobs:
           --template-file aws-cloudformation/postgre.yml \
           --stack-name $STACK_NAME \
           --parameter-overrides \
-            Environment=$ENVIRONMENT \
+            CurrentEnv=$CURRENTENV \
             DBUsername=$USERNAME \
             DBPassword=$PASSWORD \
           --capabilities CAPABILITY_NAMED_IAM
@@ -125,13 +125,13 @@ jobs:
     - name: ECS-CloudFormation
       env:
         STACK_NAME: sumo-flowise-ecs-stack-dev
-        ENVIRONMENT: dev
+        CURRENTENV: dev
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/ecs.yml \
           --parameter-overrides \
-            Environment=$ENVIRONMENT \
+            CurrentEnv=$CURRENTENV \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
@@ -140,13 +140,13 @@ jobs:
     - name: EFS-CloudFormation
       env:
         STACK_NAME: sumo-flowise-efs-stack-dev
-        ENVIRONMENT: dev
+        CURRENTENV: dev
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/efs.yml \
           --parameter-overrides \
-            Environment=$ENVIRONMENT \
+            CurrentEnv=$CURRENTENV \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
@@ -155,13 +155,13 @@ jobs:
     - name: IAM-CloudFormation
       env:
         STACK_NAME: sumo-flowise-iam-stack-dev
-        ENVIRONMENT: dev
+        CURRENTENV: dev
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/iam.yml \
           --parameter-overrides \
-            Environment=$ENVIRONMENT \
+            CurrentEnv=$CURRENTENV \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
@@ -170,7 +170,7 @@ jobs:
     - name: ECS2-CloudFormation
       env:
         STACK_NAME: sumo-flowise-ecs2-stack-dev
-        ENVIRONMENT: dev
+        CURRENTENV: dev
         ECR_IMAGE_URL: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ env.IMAGE_TAG }}
         USERNAME: ${{ secrets.USERNAME }}
@@ -180,7 +180,7 @@ jobs:
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/flowise.yml \
           --parameter-overrides \
-            Environment=$ENVIRONMENT \
+            CurrentEnv=$CURRENTENV \
             DBUsername=$USERNAME \
             DBPassword=$PASSWORD \
             ECRImageUrl=$ECR_IMAGE_URL
@@ -193,14 +193,14 @@ jobs:
     - name: Route53-Cloudformation
       env:
         STACK_NAME: sumo-flowise-route-stack-dev
-        ENVIRONMENT: dev
+        CURRENTENV: dev
         HOSTZONE_ID: ${{ secrets.ROUTE_HZ_ID }}
       run: |
         aws cloudformation deploy \
           --template-file aws-cloudformation/route.yml \
           --stack-name $STACK_NAME \
           --parameter-overrides \
-            Environment=$ENVIRONMENT \
+            CurrentEnv=$CURRENTENV \
             HostedZoneId=$HOSTZONE_ID \
           --capabilities CAPABILITY_NAMED_IAM
 

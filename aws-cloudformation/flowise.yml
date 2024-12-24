@@ -8,7 +8,7 @@ Parameters:
     Type: String
     Default: sumo-flowise
 
-  Environment:
+  CurrentEnv:
     Description: "Deployment environment (e.g., dev, prod)"
     Type: String
     Default: dev
@@ -53,7 +53,7 @@ Resources:
       - SumoFlowiseListenerRuleFlowise
     Properties:
       Cluster: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, SumoFlowiseECSClusterId, !Ref Environment]]
+        Fn::Join: ["-", [!Ref Stage, SumoFlowiseECSClusterId, !Ref CurrentEnv]]
       TaskDefinition: !Ref SumoFlowiseTaskDefinitionFlowise
       LaunchType: FARGATE
       DesiredCount: 2
@@ -62,12 +62,12 @@ Resources:
           AssignPublicIp: DISABLED
           Subnets:
             - !ImportValue 
-              Fn::Join: ["-", [!Ref Stage, Private1Id, !Ref Environment]]
+              Fn::Join: ["-", [!Ref Stage, Private1Id, !Ref CurrentEnv]]
             - !ImportValue 
-              Fn::Join: ["-", [!Ref Stage, Private2Id, !Ref Environment]]
+              Fn::Join: ["-", [!Ref Stage, Private2Id, !Ref CurrentEnv]]
           SecurityGroups:
             - !ImportValue 
-              Fn::Join: ["-", [!Ref Stage, SumoFlowiseContainerSecurityGroupId, !Ref Environment]]
+              Fn::Join: ["-", [!Ref Stage, SumoFlowiseContainerSecurityGroupId, !Ref CurrentEnv]]
       LoadBalancers:
         - ContainerName: "flowise-service"
           ContainerPort: 3000
@@ -77,7 +77,7 @@ Resources:
     Type: "AWS::ECS::TaskDefinition"
     Properties:
       ExecutionRoleArn: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, "ECSTaskExecutionRoleArn", !Ref Environment]]
+        Fn::Join: ["-", [!Ref Stage, "ECSTaskExecutionRoleArn", !Ref CurrentEnv]]
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
@@ -112,7 +112,7 @@ Resources:
             - Name: DATABASE_PORT
               Value: "5432"
             - Name: DATABASE_HOST
-              Value: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref Environment]]
+              Value: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref CurrentEnv]]
             - Name: DATABASE_NAME
               Value: "flowise"
             - Name: DATABASE_USER
@@ -157,7 +157,7 @@ Resources:
         - Name: efs-volume
           EFSVolumeConfiguration:
             FilesystemId: !ImportValue 
-              Fn::Join: ["-", [!Ref Stage, "EFSFileSystemId", !Ref Environment]]
+              Fn::Join: ["-", [!Ref Stage, "EFSFileSystemId", !Ref CurrentEnv]]
             RootDirectory: /
             TransitEncryption: ENABLED
 
@@ -171,7 +171,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       VpcId: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, VPCId, !Ref Environment]]
+        Fn::Join: ["-", [!Ref Stage, VPCId, !Ref CurrentEnv]]
       Port: 80
       Protocol: HTTP
       Matcher:
@@ -187,7 +187,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       ListenerArn: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, PublicLoadBalancerListenerId, !Ref Environment]]
+        Fn::Join: ["-", [!Ref Stage, PublicLoadBalancerListenerId, !Ref CurrentEnv]]
       Priority: 1
       Conditions:
         - Field: path-pattern

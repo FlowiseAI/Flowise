@@ -8,7 +8,7 @@ Parameters:
     Type: String
     Default: sumo-flowise
 
-  Environment:
+  CurrentEnv:
     Description: "Deployment environment (e.g., dev, prod)"
     Type: String
     Default: dev
@@ -98,11 +98,11 @@ Resources:
                   - elasticfilesystem:DescribeMountTargets
                   - elasticfilesystem:DescribeFileSystems
                 Resource: !ImportValue 
-                  Fn::Join: ["-", [!Ref Stage, "EFSFileSystemArn", !Ref Environment]]
+                  Fn::Join: ["-", [!Ref Stage, "EFSFileSystemArn", !Ref CurrentEnv]]
 
 Outputs:
   SumoFlowiseECSTaskExecutionRoleArn:
     Description: 'The Arn of IAM::Role'
     Value: !GetAtt SumoFlowiseECSTaskExecutionRole.Arn
     Export:
-      Name: !Join ["-", [!Ref Stage, "ECSTaskExecutionRoleArn", !Ref Environment]]
+      Name: !Join ["-", [!Ref Stage, "ECSTaskExecutionRoleArn", !Ref CurrentEnv]]
