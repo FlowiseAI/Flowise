@@ -226,6 +226,9 @@ jobs:
             # Install Git
             # yum install -y git
 
+            # Install psql
+            sudo yum install -y postgresql16
+
             # Clone the Flowise repository
             # git clone https://github.com/FlowiseAI/Flowise.git /home/ec2-user/flowise
             cd /home/ec2-user/flowise
@@ -256,7 +259,7 @@ jobs:
             cd /home/ec2-user/flowise/docker
 
             # Start the Flowise application using Docker Compose
-            sudo docker-compose up -d
+            sudo docker-compose up
 
             EOT
 
