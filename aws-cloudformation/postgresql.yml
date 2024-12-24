@@ -79,6 +79,7 @@ Resources:
       MasterUsername: !Ref SumoFlowiseDBUsername
       MasterUserPassword: !Ref SumoFlowiseDBPassword
       DBSubnetGroupName: !Ref SumoFlowiseRDSSubnetGroup
+      DBName: flowise
       VPCSecurityGroups:
         - !Ref SumoFlowiseRDSDBSecurityGroup
       MultiAZ: true
