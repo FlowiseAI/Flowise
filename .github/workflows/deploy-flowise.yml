@@ -72,7 +72,7 @@ jobs:
     # Step 4: Deploy updated image using CloudFormation
     - name: VPC-CloudFormation
       env:
-        STACK_NAME: flowise-vpc-stack-dev
+        STACK_NAME: sumo-flowise-vpc-stack-dev
         ENVIRONMENT: dev
       run: |
         aws cloudformation deploy \
@@ -87,7 +87,7 @@ jobs:
 
     - name: ALB-CloudFormation
       env:
-        STACK_NAME: flowise-alb-stack-dev
+        STACK_NAME: sumo-flowise-alb-stack-dev
         ENVIRONMENT: dev
       run: |
         aws cloudformation deploy \
@@ -102,7 +102,7 @@ jobs:
 
     - name: Postgresql-Cloudformation
       env:
-        STACK_NAME: flowise-postgre-stack-dev
+        STACK_NAME: sumo-flowise-postgre-stack-dev
         ENVIRONMENT: dev
         USERNAME: ${{ secrets.USERNAME }}
         PASSWORD: ${{ secrets.PASSWORD }}
@@ -124,7 +124,7 @@ jobs:
 
     - name: ECS-CloudFormation
       env:
-        STACK_NAME: flowise-ecs-stack-dev
+        STACK_NAME: sumo-flowise-ecs-stack-dev
         ENVIRONMENT: dev
       run: |
         aws cloudformation deploy \
@@ -139,7 +139,7 @@ jobs:
 
     - name: EFS-CloudFormation
       env:
-        STACK_NAME: flowise-efs-stack-dev
+        STACK_NAME: sumo-flowise-efs-stack-dev
         ENVIRONMENT: dev
       run: |
         aws cloudformation deploy \
@@ -154,7 +154,7 @@ jobs:
 
     - name: IAM-CloudFormation
       env:
-        STACK_NAME: flowise-iam-stack-dev
+        STACK_NAME: sumo-flowise-iam-stack-dev
         ENVIRONMENT: dev
       run: |
         aws cloudformation deploy \
@@ -169,7 +169,7 @@ jobs:
 
     - name: ECS2-CloudFormation
       env:
-        STACK_NAME: flowise-ecs2-stack-dev
+        STACK_NAME: sumo-flowise-ecs2-stack-dev
         ECR_IMAGE_URL: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ env.IMAGE_TAG }}
         USERNAME: ${{ secrets.USERNAME }}
@@ -191,10 +191,10 @@ jobs:
 
     - name: Route53-Cloudformation
       env:
+        STACK_NAME: sumo-flowise-route-stack-dev
         ENVIRONMENT: dev
         HOSTZONE_ID: ${{ secrets.ROUTE_HZ_ID }}
       run: |
-        STACK_NAME=sumo-flowise-route-stack-dev
         aws cloudformation deploy \
           --template-file aws-cloudformation/route.yml \
           --stack-name $STACK_NAME \
@@ -210,8 +210,9 @@ jobs:
         sleep 60
 
     - name: Post-deployment script
+      env:
+        STACK_NAME: sumo-flowise-route-stack-dev
       run: |
-        STACK_NAME=sumo-flowise-route-stack-dev
         DomainName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
         echo "Deployment complete!\n Check the url: https://${DomainName}"
         
