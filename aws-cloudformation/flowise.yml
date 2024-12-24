@@ -96,9 +96,9 @@ Resources:
             - Name: IFRAME_ORIGINS
               Value: ""
             - Name: FLOWISE_USERNAME
-              Value: ""
+              Value: !Ref DBUsername
             - Name: FLOWISE_PASSWORD
-              Value: ""
+              Value: !Ref DBUsername
             - Name: FLOWISE_FILE_SIZE_LIMIT
               Value: ""
             - Name: DEBUG
