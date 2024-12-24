@@ -259,7 +259,7 @@ jobs:
             cd /home/ec2-user/flowise/docker
 
             # Start the Flowise application using Docker Compose
-            sudo docker-compose up
+            sudo docker-compose up -d
 
             EOT
 
