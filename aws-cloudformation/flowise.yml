@@ -6,415 +6,82 @@ Parameters:
   Stage:
     Description: Prefix of resource names
     Type: String
-    Default: flowise
+    Default: sumo-flowise
+
+  Environment:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
 
   ECRImageUrl:
     Description: The URL of the Docker image in ECR.
     Type: String
+
   ImageTag:
     Description: The tag of the Docker image.
     Type: String
     Default: latest
 
-Mappings:
-  SubnetConfig:
-    VPC:
-      CIDR: "10.0.0.0/16"
-    PublicOne:
-      CIDR: "10.0.0.0/24"
-    PublicTwo:
-      CIDR: "10.0.1.0/24"
-    PrivateOne:
-      CIDR: "10.0.2.0/24"
-    PrivateTwo:
-      CIDR: "10.0.3.0/24"
+  DBUsername:
+    Description: 'The database admin account username'
+    NoEcho: true
+    Type: 'String'
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: 'must begin with a letter and contain only alphanumeric characters.'
+
+  DBPassword:
+    Description: 'The database admin account password'
+    NoEcho: true
+    Type: 'String'
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9@]*'
+    ConstraintDescription: 'must contain only alphanumeric characters and/or @.'
 
 Resources:
   ####
-  # VPC related resources
-  ####
-  VPC:
-    Type: AWS::EC2::VPC
-    Properties:
-      EnableDnsSupport: true
-      EnableDnsHostnames: true
-      CidrBlock: !FindInMap ["SubnetConfig", "VPC", "CIDR"]
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, vpc]]
-
-  PublicSubnetOne:
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: !Select
-        - 0
-        - Fn::GetAZs: !Ref "AWS::Region"
-      VpcId: !Ref "VPC"
-      CidrBlock: !FindInMap ["SubnetConfig", "PublicOne", "CIDR"]
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, public-subnet-one]]
-  PublicSubnetTwo:
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: !Select
-        - 1
-        - Fn::GetAZs: !Ref "AWS::Region"
-      VpcId: !Ref "VPC"
-      CidrBlock: !FindInMap ["SubnetConfig", "PublicTwo", "CIDR"]
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, public-subnet-two]]
-
-  PrivateSubnetOne:
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: !Select
-        - 0
-        - Fn::GetAZs: !Ref "AWS::Region"
-      VpcId: !Ref "VPC"
-      CidrBlock: !FindInMap ["SubnetConfig", "PrivateOne", "CIDR"]
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, private-subnet-one]]
-  PrivateSubnetTwo:
-    Type: AWS::EC2::Subnet
-    Properties:
-      AvailabilityZone: !Select
-        - 1
-        - Fn::GetAZs: !Ref "AWS::Region"
-      VpcId: !Ref "VPC"
-      CidrBlock: !FindInMap ["SubnetConfig", "PrivateTwo", "CIDR"]
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, private-subnet-two]]
-
-  InternetGateway:
-    Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, igw]]
-  GatewayAttachement:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId: !Ref "VPC"
-      InternetGatewayId: !Ref "InternetGateway"
-  PublicRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref "VPC"
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, public-rt]]
-  PublicRoute:
-    Type: AWS::EC2::Route
-    DependsOn: GatewayAttachement
-    Properties:
-      RouteTableId: !Ref "PublicRouteTable"
-      DestinationCidrBlock: "0.0.0.0/0"
-      GatewayId: !Ref "InternetGateway"
-  PublicSubnetOneRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PublicSubnetOne
-      RouteTableId: !Ref PublicRouteTable
-  PublicSubnetTwoRouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PublicSubnetTwo
-      RouteTableId: !Ref PublicRouteTable
-
-  NatGatewayOneAttachment:
-    Type: AWS::EC2::EIP
-    DependsOn: GatewayAttachement
-    Properties:
-      Domain: vpc
-  NatGatewayTwoAttachment:
-    Type: AWS::EC2::EIP
-    DependsOn: GatewayAttachement
-    Properties:
-      Domain: vpc
-  NatGatewayOne:
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt NatGatewayOneAttachment.AllocationId
-      SubnetId: !Ref PublicSubnetOne
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, ngw-one]]
-  NatGatewayTwo:
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt NatGatewayTwoAttachment.AllocationId
-      SubnetId: !Ref PublicSubnetTwo
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, ngw-two]]
-  PrivateRouteTableOne:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref "VPC"
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, private-rt-one]]
-  PrivateRouteOne:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PrivateRouteTableOne
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGatewayOne
-  PrivateRouteTableOneAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref PrivateRouteTableOne
-      SubnetId: !Ref PrivateSubnetOne
-  PrivateRouteTableTwo:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref "VPC"
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, private-rt-two]]
-  PrivateRouteTwo:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PrivateRouteTableTwo
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGatewayTwo
-  PrivateRouteTableTwoAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref PrivateRouteTableTwo
-      SubnetId: !Ref PrivateSubnetTwo
-
-  ####
-  # ALB related resources
-  ####
-  PublicLoadBalancerSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Join ["-", [!Ref Stage, public-lb-sg]]
-      GroupDescription: Access to the public facing load balancer
-      VpcId: !Ref "VPC"
-      SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          IpProtocol: -1
-
-  PublicLoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Name: !Join ["-", [!Ref Stage, public-lb]]
-      Scheme: internet-facing
-      LoadBalancerAttributes:
-        - Key: idle_timeout.timeout_seconds
-          Value: "30"
-      Subnets:
-        - !Ref "PublicSubnetOne"
-        - !Ref "PublicSubnetTwo"
-      SecurityGroups: [!Ref "PublicLoadBalancerSG"]
-
-  # A dummy target group is used to setup the ALB to just drop traffic
-  # initially, before any real service target groups have been added.
-  DummyTargetGroupPublic:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: !Join ["-", [!Ref Stage, dummy-tg]]
-      HealthCheckIntervalSeconds: 6
-      HealthCheckPath: /
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 2
-      Port: 80
-      Protocol: HTTP
-      UnhealthyThresholdCount: 2
-      VpcId: !Ref "VPC"
-
-  PublicLoadBalancerListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - PublicLoadBalancer
-    Properties:
-      DefaultActions:
-        - TargetGroupArn: !Ref "DummyTargetGroupPublic"
-          Type: "forward"
-      LoadBalancerArn: !Ref "PublicLoadBalancer"
-      Port: 80
-      Protocol: HTTP
-
-  ####
-  # ECS cluster related resources
-  ####
-  ECSCluster:
-    Type: AWS::ECS::Cluster
-    Properties:
-      ClusterName: !Join ["-", [!Ref Stage, ecs-cluster]]
-
-  ContainerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Join ["-", [!Ref Stage, container-sg]]
-      GroupDescription: Access to the containers
-      VpcId: !Ref "VPC"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 0
-          ToPort: 65535
-          SourceSecurityGroupId: !Ref "PublicLoadBalancerSG"
-
-  ####
-  # EFS related resources
-  ####
-  EFSFileSystemSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Join ["-", [!Ref Stage, efs-sg]]
-      GroupDescription: Security group for EFS file system
-      VpcId: !Ref "VPC"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 2049
-          ToPort: 2049
-          SourceSecurityGroupId: !Ref ContainerSecurityGroup
-
-  EFSFileSystem:
-    Type: AWS::EFS::FileSystem
-    Properties:
-      Encrypted: true
-      PerformanceMode: generalPurpose
-      ThroughputMode: bursting
-
-  EFSMountTargetOne:
-    Type: AWS::EFS::MountTarget
-    Properties:
-      FileSystemId: !Ref EFSFileSystem
-      SubnetId: !Ref PrivateSubnetOne
-      SecurityGroups:
-        - !Ref EFSFileSystemSecurityGroup
-
-  EFSMountTargetTwo:
-    Type: AWS::EFS::MountTarget
-    Properties:
-      FileSystemId: !Ref EFSFileSystem
-      SubnetId: !Ref PrivateSubnetTwo
-      SecurityGroups:
-        - !Ref EFSFileSystemSecurityGroup
-
-  ####
-  # IAM roles related resources
-  ####
-  AutoScalingRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: "sts:AssumeRole"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole"
-
-  ECSRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: [ecs.amazonaws.com]
-            Action: ["sts:AssumeRole"]
-      Path: /
-      Policies:
-        - PolicyName: ecs-service
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "ec2:AttachNetworkInterface"
-                  - "ec2:CreateNetworkInterface"
-                  - "ec2:CreateNetworkInterfacePermission"
-                  - "ec2:DeleteNetworkInterface"
-                  - "ec2:DeleteNetworkInterfacePermission"
-                  - "ec2:Describe*"
-                  - "ec2:DetachNetworkInterface"
-
-                  - "elasticloadbalancing:DeregisterInstancesFromLoadBalancer"
-                  - "elasticloadbalancing:DeregisterTargets"
-                  - "elasticloadbalancing:Describe*"
-                  - "elasticloadbalancing:RegisterInstancesWithLoadBalancer"
-                  - "elasticloadbalancing:RegisterTargets"
-                Resource: "*"
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-
-  ECSTaskExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: [ecs-tasks.amazonaws.com]
-            Action: ["sts:AssumeRole"]
-      Path: /
-      Policies:
-        - PolicyName: AmazonECSTaskExecutionRolePolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  # Allow the ECS Tasks to download images from ECR
-                  - "ecr:GetAuthorizationToken"
-                  - "ecr:BatchCheckLayerAvailability"
-                  - "ecr:GetDownloadUrlForLayer"
-                  - "ecr:BatchGetImage"
-
-                  # Allow the ECS tasks to upload logs to CloudWatch
-                  - "logs:CreateLogStream"
-                  - "logs:PutLogEvents"
-                Resource: "*"
-              - Effect: Allow
-                Action:
-                  - elasticfilesystem:ClientMount
-                  - elasticfilesystem:ClientWrite
-                  - elasticfilesystem:DescribeMountTargets
-                  - elasticfilesystem:DescribeFileSystems
-                Resource: !GetAtt EFSFileSystem.Arn
-
-  ####
   # Flowise ECS service related resources
   ####
-  ServiceFlowise:
+  SumoFlowiseServiceFlowise:
     Type: AWS::ECS::Service
     DependsOn:
-      - PrivateRouteOne
-      - PrivateRouteTwo
-      - ListenerRuleFlowise
+      - !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, Private1Id, !Ref Environment]]
+      - !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, Private2Id, !Ref Environment]]
+      - SumoFlowiseListenerRuleFlowise
     Properties:
-      Cluster: !Ref ECSCluster
-      TaskDefinition: !Ref TaskDefinitionFlowise
+      Cluster: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, SumoFlowiseECSClusterId, !Ref Environment]]
+      TaskDefinition: !Ref SumoFlowiseTaskDefinitionFlowise
       LaunchType: FARGATE
       DesiredCount: 2
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           Subnets:
-            - !Ref PrivateSubnetOne
-            - !Ref PrivateSubnetTwo
+            - !ImportValue 
+              Fn::Join: ["-", [!Ref Stage, Private1Id, !Ref Environment]]
+            - !ImportValue 
+              Fn::Join: ["-", [!Ref Stage, Private2Id, !Ref Environment]]
           SecurityGroups:
-            - !Ref ContainerSecurityGroup
+            - !ImportValue 
+              Fn::Join: ["-", [!Ref Stage, SumoFlowiseContainerSecurityGroupId, !Ref Environment]]
       LoadBalancers:
         - ContainerName: "flowise-service"
           ContainerPort: 3000
-          TargetGroupArn: !Ref TargetGroupFlowise
+          TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
 
-  TaskDefinitionFlowise:
+  SumoFlowiseTaskDefinitionFlowise:
     Type: "AWS::ECS::TaskDefinition"
     Properties:
-      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      ExecutionRoleArn: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, "ECSTaskExecutionRoleArn", !Ref Environment]]
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
@@ -440,24 +107,26 @@ Resources:
               Value: ""
             - Name: DEBUG
               Value: ""
-            - Name: DATABASE_PATH
-              Value: "/root/.flowise"
+            # - Name: DATABASE_PATH
+            #   Value: "/root/.flowise"
+            # - Name: DATABASE_TYPE
+            #   Value: "sqlite"
             - Name: DATABASE_TYPE
-              Value: "sqlite"
+              Value: "postgres"
             - Name: DATABASE_PORT
-              Value: ""
+              Value: "5432"
             - Name: DATABASE_HOST
-              Value: ""
+              Value: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref Environment]]
             - Name: DATABASE_NAME
-              Value: ""
+              Value: "flowise"
             - Name: DATABASE_USER
               Value: ""
             - Name: DATABASE_PASSWORD
               Value: ""
             - Name: DATABASE_SSL
-              Value: ""
+              Value: "true"
             - Name: DATABASE_SSL_KEY_BASE64
-              Value: ""
+              Value: "true"
             - Name: APIKEY_PATH
               Value: "/root/.flowise"
             - Name: SECRETKEY_PATH
@@ -482,7 +151,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Ref CloudWatchLogsGroupFlowise
+              awslogs-group: !Ref SumoFlowiseCloudWatchLogsGroupFlowise
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: !Ref Stage
       NetworkMode: awsvpc
@@ -491,20 +160,22 @@ Resources:
       Volumes:
         - Name: efs-volume
           EFSVolumeConfiguration:
-            FilesystemId: !Ref EFSFileSystem
+            FilesystemId: !ImportValue 
+              Fn::Join: ["-", [!Ref Stage, "EFSFileSystemId", !Ref Environment]]
             RootDirectory: /
             TransitEncryption: ENABLED
 
-  CloudWatchLogsGroupFlowise:
+  SumoFlowiseCloudWatchLogsGroupFlowise:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Ref AWS::StackName
       RetentionInDays: 7
 
-  TargetGroupFlowise:
+  SumoFlowiseTargetGroupFlowise:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      VpcId: !Ref VPC
+      VpcId: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, VPCId, !Ref Environment]]
       Port: 80
       Protocol: HTTP
       Matcher:
@@ -516,20 +187,16 @@ Resources:
       HealthyThresholdCount: 2
       TargetType: ip
 
-  ListenerRuleFlowise:
+  SumoFlowiseListenerRuleFlowise:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
-      ListenerArn: !Ref PublicLoadBalancerListener
+      ListenerArn: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, PublicLoadBalancerListenerId, !Ref Environment]]
       Priority: 1
       Conditions:
         - Field: path-pattern
           Values:
             - /*
       Actions:
-        - TargetGroupArn: !Ref TargetGroupFlowise
+        - TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
           Type: forward
-
-Outputs:
-  ExternalUrl:
-    Description: The url of Flowise application
-    Value: !Sub http://${PublicLoadBalancer.DNSName}

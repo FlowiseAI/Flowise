@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: This template creates resources for Flowise application
+
+Parameters:
+  Stage:
+    Description: Prefix of resource names
+    Type: String
+    Default: sumo-flowise
+
+  Environment:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  ####
+  # ALB related resources
+  ####
+  SumoFlowisePublicLoadBalancerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join ["-", [!Ref Stage, public-lb-sg, !Ref Environment]]
+      GroupDescription: Access to the public facing load balancer
+      VpcId: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref Environment]]
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+
+  SumoFlowisePublicLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Join ["-", [!Ref Stage, public-lb, !Ref Environment]]
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: "30"
+      Subnets:
+        - !ImportValue
+          Fn::Join: ["-", [!Ref Stage, "Public1Id", !Ref Environment]]
+        - !ImportValue 
+          Fn::Join: ["-", [!Ref Stage, "Public2Id", !Ref Environment]]
+      SecurityGroups: [!Ref SumoFlowisePublicLoadBalancerSG]
+
+  # A dummy target group is used to setup the ALB to just drop traffic
+  # initially, before any real service target groups have been added.
+  SumoFlowiseDummyTargetGroupPublic:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Join ["-", [!Ref Stage, dummy-tg, !Ref Environment]]
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref Environment]]
+
+  SumoFlowisePublicLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn:
+      - SumoFlowisePublicLoadBalancer
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
+          Type: "forward"
+      LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+Outputs:
+  SumoFlowiseLoadBalancerSGId:
+    Description: 'The ID of the load balancer'
+    Value: !Ref SumoFlowisePublicLoadBalancerSG
+    Export:
+      Name: !Join ["-", [!Ref Stage, LoadbalancerSGId, !Ref Environment]]
+
+  SumoFlowiseLoadBalancerDNSName:
+    Description: 'DNS name of the load balancer'
+    Value: !GetAtt SumoFlowisePublicLoadBalancer.DNSName
+    Export:
+      Name: !Join ["-", [!Ref Stage, LoadbalancerDNSName, !Ref Environment]]
+
+  SumoFlowiseLoadBalancerCanonicalHostedZoneId:
+    Description: 'CanonicalHostedZoneId of the load balancer'
+    Value: !GetAtt SumoFlowisePublicLoadBalancer.CanonicalHostedZoneID
+    Export:
+      Name: !Join ["-", [!Ref Stage, LoadbalancerCanonicalHostedZoneId, !Ref Environment]]
+
+  SumoFlowisePublicLoadBalancerListenerId:
+    Description: 'The ID of ElasticLoadBalancingV2::Listener'
+    Value: !Ref SumoFlowisePublicLoadBalancerListener
+    Export:
+      Name: !Join ["-", [!Ref Stage, PublicLoadBalancerListenerId, !Ref Environment]]

@@ -20,6 +20,26 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Validate Cloudformation
+      run: |
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/vpc.yml
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/alb.yml
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/postgre.yml
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/ecs.yml
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/efs.yml
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/iam.yml
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/flowise.yml
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/route.yml
+
       
     # Step 2: Log in to Amazon ECR
     - name: Login to Amazon ECR
@@ -50,16 +70,148 @@ jobs:
         echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
     # Step 4: Deploy updated image using CloudFormation
-    - name: Deploy to ECS using CloudFormation
+    - name: VPC-CloudFormation
       env:
-        STACK_NAME: flowise-ecs-stack
+        STACK_NAME: flowise-vpc-stack-dev
+        ENVIRONMENT: dev
+      run: |
+        aws cloudformation deploy \
+          --stack-name $STACK_NAME \
+          --template-file aws-cloudformation/vpc.yml \
+          --parameter-overrides \
+            Environment=$ENVIRONMENT \
+          --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+    - name: ALB-CloudFormation
+      env:
+        STACK_NAME: flowise-alb-stack-dev
+        ENVIRONMENT: dev
+      run: |
+        aws cloudformation deploy \
+          --stack-name $STACK_NAME \
+          --template-file aws-cloudformation/alb.yml \
+          --parameter-overrides \
+            Environment=$ENVIRONMENT \
+          --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+    - name: Postgresql-Cloudformation
+      env:
+        STACK_NAME: flowise-postgre-stack-dev
+        ENVIRONMENT: dev
+        USERNAME: ${{ secrets.USERNAME }}
+        PASSWORD: ${{ secrets.PASSWORD }}
+      run: |
+        aws cloudformation deploy \
+          --template-file aws-cloudformation/postgresql.yml \
+          --stack-name $STACK_NAME \
+          --parameter-overrides \
+            Environment=$ENVIRONMENT \
+            DBUsername=$USERNAME \
+            DBPassword=$PASSWORD \
+          --capabilities CAPABILITY_NAMED_IAM
+
+        echo "CloudFormation Outputs:"
+        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+        SumoFlowiseRDSInstanceEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRDSInstanceEndpoint'].OutputValue" --output text)
+        echo "POSTGRES_HOST=${SumoFlowiseRDSInstanceEndpoint}" >> $GITHUB_ENV
+
+    - name: ECS-CloudFormation
+      env:
+        STACK_NAME: flowise-ecs-stack-dev
+        ENVIRONMENT: dev
+      run: |
+        aws cloudformation deploy \
+          --stack-name $STACK_NAME \
+          --template-file aws-cloudformation/ecs.yml \
+          --parameter-overrides \
+            Environment=$ENVIRONMENT \
+          --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+    - name: EFS-CloudFormation
+      env:
+        STACK_NAME: flowise-efs-stack-dev
+        ENVIRONMENT: dev
+      run: |
+        aws cloudformation deploy \
+          --stack-name $STACK_NAME \
+          --template-file aws-cloudformation/efs.yml \
+          --parameter-overrides \
+            Environment=$ENVIRONMENT \
+          --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+    - name: IAM-CloudFormation
+      env:
+        STACK_NAME: flowise-iam-stack-dev
+        ENVIRONMENT: dev
+      run: |
+        aws cloudformation deploy \
+          --stack-name $STACK_NAME \
+          --template-file aws-cloudformation/iam.yml \
+          --parameter-overrides \
+            Environment=$ENVIRONMENT \
+          --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+    - name: ECS2-CloudFormation
+      env:
+        STACK_NAME: flowise-ecs2-stack-dev
         ECR_IMAGE_URL: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PASSWORD: ${{ secrets.PASSWORD }}
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/flowise.yml \
           --parameter-overrides \
-            ECRImageUrl=$ECR_IMAGE_URL \
-            ImageTag=$IMAGE_TAG\
+            Environment=$ENVIRONMENT \
+            DBUsername=$USERNAME \
+            DBPassword=$PASSWORD \
+            ECRImageUrl=$ECR_IMAGE_URL
+            ImageTag=$IMAGE_TAG
           --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+    - name: Route53-Cloudformation
+      env:
+        ENVIRONMENT: dev
+        HOSTZONE_ID: ${{ secrets.ROUTE_HZ_ID }}
+      run: |
+        STACK_NAME=sumo-flowise-route-stack-dev
+        aws cloudformation deploy \
+          --template-file aws-cloudformation/route.yml \
+          --stack-name $STACK_NAME \
+          --parameter-overrides \
+            Environment=$ENVIRONMENT \
+            HostedZoneId=$HOSTZONE_ID \
+          --capabilities CAPABILITY_NAMED_IAM
+
+        echo "CloudFormation Outputs:"
+        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+        echo "Wait for creating domain"
+        sleep 60
+
+    - name: Post-deployment script
+      run: |
+        STACK_NAME=sumo-flowise-route-stack-dev
+        DomainName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
+        echo "Deployment complete!\n Check the url: https://${DomainName}"
+        

@@ -1,0 +1,260 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: VPC related resources for Flowise application
+
+Parameters:
+  Stage:
+    Description: Prefix of resource names
+    Type: String
+    Default: sumo-flowise
+
+  Environment:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+Mappings:
+  SubnetConfig:
+    VPC:
+      CIDR: "10.0.0.0/16"
+    PublicOne:
+      CIDR: "10.0.0.0/24"
+    PublicTwo:
+      CIDR: "10.0.1.0/24"
+    PrivateOne:
+      CIDR: "10.0.2.0/24"
+    PrivateTwo:
+      CIDR: "10.0.3.0/24"
+
+Resources:
+  ####
+  # VPC related resources
+  ####
+  SumoFlowiseVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: !FindInMap ["SubnetConfig", "VPC", "CIDR"]
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, vpc, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowisePublicSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      VpcId: !Ref SumoFlowiseVPC
+      CidrBlock: !FindInMap ["SubnetConfig", "PublicOne", "CIDR"]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, public-subnet-one, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowisePublicSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref "AWS::Region"
+      VpcId: !Ref SumoFlowiseVPC
+      CidrBlock: !FindInMap ["SubnetConfig", "PublicTwo", "CIDR"]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, public-subnet-two, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowisePrivateSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      VpcId: !Ref SumoFlowiseVPC
+      CidrBlock: !FindInMap ["SubnetConfig", "PrivateOne", "CIDR"]
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, private-subnet-one, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowisePrivateSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref "AWS::Region"
+      VpcId: !Ref SumoFlowiseVPC
+      CidrBlock: !FindInMap ["SubnetConfig", "PrivateTwo", "CIDR"]
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, private-subnet-two, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowiseInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, igw, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowiseGatewayAttachement:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref SumoFlowiseVPC
+      InternetGatewayId: !Ref SumoFlowiseInternetGateway
+
+  SumoFlowisePublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref SumoFlowiseVPC
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, public-rt, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowisePublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: SumoFlowiseGatewayAttachement
+    Properties:
+      RouteTableId: !Ref SumoFlowisePublicRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref SumoFlowiseInternetGateway
+
+  SumoFlowisePublicSubnetOneRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SumoFlowisePublicSubnetOne
+      RouteTableId: !Ref SumoFlowisePublicRouteTable
+
+  SumoFlowisePublicSubnetTwoRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SumoFlowisePublicSubnetTwo
+      RouteTableId: !Ref SumoFlowisePublicRouteTable
+
+  SumoFlowiseNatGatewayOneAttachment:
+    Type: AWS::EC2::EIP
+    DependsOn: SumoFlowiseGatewayAttachement
+    Properties:
+      Domain: vpc
+
+  SumoFlowiseNatGatewayTwoAttachment:
+    Type: AWS::EC2::EIP
+    DependsOn: SumoFlowiseGatewayAttachement
+    Properties:
+      Domain: vpc
+
+  SumoFlowiseNatGatewayOne:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt SumoFlowiseNatGatewayOneAttachment.AllocationId
+      SubnetId: !Ref SumoFlowisePublicSubnetOne
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, ngw-one, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowiseNatGatewayTwo:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt SumoFlowiseNatGatewayTwoAttachment.AllocationId
+      SubnetId: !Ref SumoFlowisePublicSubnetTwo
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, ngw-two, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowisePrivateRouteTableOne:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref SumoFlowiseVPC
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, private-rt-one, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowisePrivateRouteOne:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref SumoFlowisePrivateRouteTableOne
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref SumoFlowiseNatGatewayOne
+
+  SumoFlowisePrivateRouteTableOneAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref SumoFlowisePrivateRouteTableOne
+      SubnetId: !Ref SumoFlowisePrivateSubnetOne
+
+  SumoFlowisePrivateRouteTableTwo:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref SumoFlowiseVPC
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, private-rt-two, !Ref Environment]]
+        - Key: Environment
+          Value: !Ref Environment
+
+  SumoFlowisePrivateRouteTwo:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref SumoFlowisePrivateRouteTableTwo
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref SumoFlowiseNatGatewayTwo
+
+  SumoFlowisePrivateRouteTableTwoAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref SumoFlowisePrivateRouteTableTwo
+      SubnetId: !Ref SumoFlowisePrivateSubnetTwo
+
+Outputs:
+  SumoFlowiseVPCId:
+    Description: 'The VPC ID'
+    Value: !Ref SumoFlowiseVPC
+    Export:
+      Name: !Join ["-", [!Ref Stage, VPCId, !Ref Environment]]
+
+  SumoFlowisePublicSubnet1Id:
+    Description: 'The ID of the first public subnet'
+    Value: !Ref SumoFlowisePublicSubnetOne
+    Export:
+      Name: !Join ["-", [!Ref Stage, Public1Id, !Ref Environment]]
+
+  SumoFlowisePublicSubnet2Id:
+    Description: 'The ID of the second public subnet'
+    Value: !Ref SumoFlowisePublicSubnetTwo
+    Export:
+      Name: !Join ["-", [!Ref Stage, Public2Id, !Ref Environment]]
+
+  SumoFlowisePrivateSubnet1Id:
+    Description: 'The ID of the first private subnet'
+    Value: !Ref SumoFlowisePrivateSubnetOne
+    Export:
+      Name: !Join ["-", [!Ref Stage, Private1Id, !Ref Environment]]
+
+  SumoFlowisePrivateSubnet2Id:
+    Description: 'The ID of the second private subnet'
+    Value: !Ref SumoFlowisePrivateSubnetTwo
+    Export:
+      Name: !Join ["-", [!Ref Stage, Private2Id, !Ref Environment]]

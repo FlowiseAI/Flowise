@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: This template creates resources for Flowise application
+
+Parameters:
+  Stage:
+    Description: Prefix of resource names
+    Type: String
+    Default: sumo-flowise
+
+  Environment:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  ####
+  # ECS cluster related resources
+  ####
+  SumoFlowiseECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Join ["-", [!Ref Stage, ecs-cluster, !Ref Environment]]
+
+  SumoFlowiseContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Join ["-", [!Ref Stage, container-sg, !Ref Environment]]
+      GroupDescription: Access to the containers
+      VpcId: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, VPCId, !Ref Environment]]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          SourceSecurityGroupId: !ImportValue 
+            Fn::Join: ["-", [!Ref Stage, LoadbalancerSGId, !Ref Environment]]
+
+Outputs:
+  SumoFlowiseECSClusterId:
+    Description: 'The ECS::Cluster ID'
+    Value: !Ref SumoFlowiseECSCluster
+    Export:
+      Name: !Join ["-", [!Ref Stage, SumoFlowiseECSClusterId, !Ref Environment]]
+
+  SumoFlowiseContainerSecurityGroupId:
+    Description: 'The EC2::SecurityGroup ID'
+    Value: !Ref SumoFlowiseContainerSecurityGroup
+    Export:
+      Name: !Join ["-", [!Ref Stage, SumoFlowiseContainerSecurityGroupId, !Ref Environment]]

@@ -15,7 +15,7 @@ Parameters:
       - dev
       - prod
 
-  SumoFlowiseDBUsername:
+  DBUsername:
     Description: 'The database admin account username'
     NoEcho: true
     Type: 'String'
@@ -24,7 +24,7 @@ Parameters:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: 'must begin with a letter and contain only alphanumeric characters.'
 
-  SumoFlowiseDBPassword:
+  DBPassword:
     Description: 'The database admin account password'
     NoEcho: true
     Type: 'String'
@@ -76,8 +76,8 @@ Resources:
       DBInstanceIdentifier: !Join ["-", [!Ref Stage, "postgres", !Ref Environment]]
       DBInstanceClass: db.t3.micro
       Engine: postgres
-      MasterUsername: !Ref SumoFlowiseDBUsername
-      MasterUserPassword: !Ref SumoFlowiseDBPassword
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
       DBSubnetGroupName: !Ref SumoFlowiseRDSSubnetGroup
       DBName: flowise
       VPCSecurityGroups:
