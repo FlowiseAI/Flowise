@@ -103,26 +103,26 @@ Resources:
               Value: ""
             - Name: DEBUG
               Value: ""
-            # - Name: DATABASE_PATH
-            #   Value: "/root/.flowise"
-            # - Name: DATABASE_TYPE
-            #   Value: "sqlite"
+            - Name: DATABASE_PATH
+              Value: "/root/.flowise"
             - Name: DATABASE_TYPE
-              Value: "postgres"
-            - Name: DATABASE_PORT
-              Value: "5432"
-            - Name: DATABASE_HOST
-              Value: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref CurrentEnv]]
-            - Name: DATABASE_NAME
-              Value: "flowise"
-            - Name: DATABASE_USER
-              Value: !Ref DBUsername
-            - Name: DATABASE_PASSWORD
-              Value: !Ref DBPassword
-            - Name: DATABASE_SSL
-              Value: "true"
-            - Name: DATABASE_SSL_KEY_BASE64
-              Value: "true"
+              Value: "sqlite"
+            # - Name: DATABASE_TYPE
+            #   Value: "postgres"
+            # - Name: DATABASE_PORT
+            #   Value: "5432"
+            # - Name: DATABASE_HOST
+            #   Value: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref CurrentEnv]]
+            # - Name: DATABASE_NAME
+            #   Value: "flowise"
+            # - Name: DATABASE_USER
+            #   Value: !Ref DBUsername
+            # - Name: DATABASE_PASSWORD
+            #   Value: !Ref DBPassword
+            # - Name: DATABASE_SSL
+            #   Value: "true"
+            # - Name: DATABASE_SSL_KEY_BASE64
+            #   Value: "true"
             - Name: APIKEY_PATH
               Value: "/root/.flowise"
             - Name: SECRETKEY_PATH
