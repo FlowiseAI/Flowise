@@ -48,7 +48,7 @@ jobs:
     # Step 3: Build and push Docker image to Amazon ECR
     - name: Build, tag, and push Docker image to Amazon ECR
       env:
-        ECR_REPOSITORY: sumo-flowise-app
+        ECR_REPOSITORY: sumo-flowise-app-dev
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Create the repository if it doesn't exist
@@ -170,6 +170,7 @@ jobs:
     - name: ECS2-CloudFormation
       env:
         STACK_NAME: sumo-flowise-ecs2-stack-dev
+        ENVIRONMENT: dev
         ECR_IMAGE_URL: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ env.IMAGE_TAG }}
         USERNAME: ${{ secrets.USERNAME }}

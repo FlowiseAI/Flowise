@@ -116,9 +116,9 @@ Resources:
             - Name: DATABASE_NAME
               Value: "flowise"
             - Name: DATABASE_USER
-              Value: ""
+              Value: !Ref DBUsername
             - Name: DATABASE_PASSWORD
-              Value: ""
+              Value: !Ref DBPassword
             - Name: DATABASE_SSL
               Value: "true"
             - Name: DATABASE_SSL_KEY_BASE64
