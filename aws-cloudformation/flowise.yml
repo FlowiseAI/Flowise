@@ -151,8 +151,8 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: !Ref Stage
       NetworkMode: awsvpc
-      Memory: "512"
-      Cpu: "256"
+      Memory: "8192"
+      Cpu: "4096"
       Volumes:
         - Name: efs-volume
           EFSVolumeConfiguration:
