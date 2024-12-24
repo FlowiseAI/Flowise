@@ -50,10 +50,6 @@ Resources:
   SumoFlowiseServiceFlowise:
     Type: AWS::ECS::Service
     DependsOn:
-      - !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, Private1Id, !Ref Environment]]
-      - !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, Private2Id, !Ref Environment]]
       - SumoFlowiseListenerRuleFlowise
     Properties:
       Cluster: !ImportValue 
