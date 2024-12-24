@@ -59,6 +59,7 @@ jobs:
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/flowise.yml \
-          --parameters ParameterKey=ECRImageUrl,ParameterValue=$ECR_IMAGE_URL \
-                       ParameterKey=ImageTag,ParameterValue=$IMAGE_TAG \
+          --parameter-overrides \
+            ECRImageUrl=$ECR_IMAGE_URL \
+            ImageTag=$IMAGE_TAG\
           --capabilities CAPABILITY_NAMED_IAM
