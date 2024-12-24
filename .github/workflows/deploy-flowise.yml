@@ -100,7 +100,7 @@ jobs:
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-    - name: Postgresql-Cloudformation
+    - name: Postgre-Cloudformation
       env:
         STACK_NAME: sumo-flowise-postgre-stack-dev
         ENVIRONMENT: dev
@@ -108,7 +108,7 @@ jobs:
         PASSWORD: ${{ secrets.PASSWORD }}
       run: |
         aws cloudformation deploy \
-          --template-file aws-cloudformation/postgresql.yml \
+          --template-file aws-cloudformation/postgre.yml \
           --stack-name $STACK_NAME \
           --parameter-overrides \
             Environment=$ENVIRONMENT \
