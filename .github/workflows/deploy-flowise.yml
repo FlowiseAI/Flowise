@@ -183,8 +183,8 @@ jobs:
             CurrentEnv=$CURRENTENV \
             DBUsername=$USERNAME \
             DBPassword=$PASSWORD \
-            ECRImageUrl=$ECR_IMAGE_URL
-            ImageTag=$IMAGE_TAG
+            ECRImageUrl=$ECR_IMAGE_URL \
+            ImageTag=$IMAGE_TAG \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
