@@ -31,12 +31,20 @@ jobs:
         ECR_REPOSITORY: flowise-app
         IMAGE_TAG: ${{ github.sha }}
       run: |
+        # Create the repository if it doesn't exist
+        if ! aws ecr describe-repositories --repository-names $ECR_REPOSITORY > /dev/null 2>&1; then
+        aws ecr create-repository --repository-name $ECR_REPOSITORY
+        fi
+
         # Extract repository URI
         REPOSITORY_URI=$(aws ecr describe-repositories --repository-names $ECR_REPOSITORY --query "repositories[0].repositoryUri" --output text)
+
         # Build Docker image
         docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+        
         # Push Docker image to ECR
         docker push $REPOSITORY_URI:$IMAGE_TAG
+        
         # Output environment variables for the next steps
         echo "REPOSITORY_URI=$REPOSITORY_URI" >> $GITHUB_ENV
         echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
