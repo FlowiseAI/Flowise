@@ -56,7 +56,7 @@ jobs:
         ECR_IMAGE_URL: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ env.IMAGE_TAG }}
       run: |
-        aws cloudformation update-stack \
+        aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/flowise.yml \
           --parameters ParameterKey=ECRImageUrl,ParameterValue=$ECR_IMAGE_URL \
