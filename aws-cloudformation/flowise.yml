@@ -125,8 +125,8 @@ Resources:
 
   SumoFlowiseServiceFlowise:
     Type: AWS::ECS::Service
-    # DependsOn:
-    #   - SumoFlowiseListenerRuleFlowise
+    DependsOn:
+      - SumoFlowiseListenerRuleFlowise
     Properties:
       Cluster: !ImportValue 
         Fn::Join: ["-", [!Ref Stage, SumoFlowiseECSClusterId, !Ref CurrentEnv]]
