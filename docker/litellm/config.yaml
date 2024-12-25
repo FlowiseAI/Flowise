@@ -1,5 +1,5 @@
 model_list:
-  - model_name: anthropic.claude-3-5-sonnet-20240620-v1:0
+  - model_name: claude-3.5-sonnet
     litellm_params:
       model: bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0
       aws_access_key_id: os.environ/CUSTOM_AWS_ACCESS_KEY_ID
