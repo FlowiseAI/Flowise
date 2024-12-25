@@ -27,12 +27,11 @@ Resources:
             "rules": [
               {
                 "rulePriority": 1,
-                "description": "Expire images older than 30 days",
+                "description": "Delete untagged images",
                 "selection": {
-                  "tagStatus": "any",
-                  "countType": "sinceImagePushed",
-                  "countUnit": "days",
-                  "countNumber": 30
+                  "tagStatus": "untagged",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 0
                 },
                 "action": {
                   "type": "expire"
@@ -40,11 +39,24 @@ Resources:
               },
               {
                 "rulePriority": 2,
-                "description": "Retain only the last 5 images",
+                "description": "Retain only the last 5 tagged images",
                 "selection": {
-                  "tagStatus": "any",
+                  "tagStatus": "tagged",
                   "countType": "imageCountMoreThan",
                   "countNumber": 5
+                },
+                "action": {
+                  "type": "expire"
+                }
+              },
+              {
+                "rulePriority": 3,
+                "description": "Delete tagged images older than 30 days",
+                "selection": {
+                  "tagStatus": "tagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 30
                 },
                 "action": {
                   "type": "expire"
