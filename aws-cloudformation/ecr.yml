@@ -27,9 +27,9 @@ Resources:
             "rules": [
               {
                   "rulePriority": 1,
-                  "description": "Keep only one untagged image, expire all others",
+                  "description": "Rule 1",
                   "selection": {
-                      "tagStatus": "untagged",
+                      "tagStatus": "any",
                       "countType": "imageCountMoreThan",
                       "countNumber": 5
                   },
