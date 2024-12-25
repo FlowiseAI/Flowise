@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
