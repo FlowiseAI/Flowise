@@ -99,21 +99,22 @@ Resources:
   #     Port: 80
   #     Protocol: HTTP
 
-  SumoFlowiseListenerHTTP:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      DefaultActions:
-        - Type: "forward"
-          TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
-      LoadBalancerArn: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
-      Port: 80
-      Protocol: HTTP
+  # SumoFlowiseListenerHTTP:
+  #   Type: AWS::ElasticLoadBalancingV2::Listener
+  #   Properties:
+  #     DefaultActions:
+  #       - Type: "forward"
+  #         TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
+  #     LoadBalancerArn: !ImportValue 
+  #       Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
+  #     Port: 80
+  #     Protocol: HTTP
 
   SumoFlowiseListenerRuleFlowise:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
-      ListenerArn: SumoFlowiseListenerHTTP
+      ListenerArn: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, PublicLoadBalancerListenerHTTPId, !Ref CurrentEnv]]
       Priority: 1
       Conditions:
         - Field: path-pattern
