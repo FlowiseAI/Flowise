@@ -42,7 +42,7 @@ Resources:
                 "description": "Retain only the last 5 tagged images",
                 "selection": {
                   "tagStatus": "tagged",
-                  "tagPrefixList": [""],
+                  "tagPatternList": ["*"],
                   "countType": "imageCountMoreThan",
                   "countNumber": 5
                 },
@@ -55,7 +55,7 @@ Resources:
                 "description": "Delete tagged images older than 30 days",
                 "selection": {
                   "tagStatus": "tagged",
-                  "tagPrefixList": [""],
+                  "tagPatternList": ["*"],
                   "countType": "sinceImagePushed",
                   "countUnit": "days",
                   "countNumber": 30

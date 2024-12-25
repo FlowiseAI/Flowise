@@ -36,6 +36,8 @@ jobs:
         aws cloudformation validate-template \
           --template-body file://aws-cloudformation/iam.yml
         aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/ecr.yml
+        aws cloudformation validate-template \
           --template-body file://aws-cloudformation/flowise.yml
         aws cloudformation validate-template \
           --template-body file://aws-cloudformation/route.yml
