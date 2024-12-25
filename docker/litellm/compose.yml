@@ -3,10 +3,12 @@ services:
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
     restart: always
+    env_file:
+      - .env
     environment:
       - LITELLM_LOG=ERROR
     volumes:
       - ./config.yaml:/app/config.yaml
     ports:
-      - '4000:4000'
+      - '9001:4000'
     command: --config /app/config.yaml
