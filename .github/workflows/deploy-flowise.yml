@@ -80,27 +80,27 @@ jobs:
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-    - name: Postgre-Cloudformation
-      env:
-        STACK_NAME: sumo-flowise-postgre-stack-dev
-        CURRENTENV: dev
-        USERNAME: ${{ secrets.USERNAME }}
-        PASSWORD: ${{ secrets.PASSWORD }}
-      run: |
-        aws cloudformation deploy \
-          --template-file aws-cloudformation/postgre.yml \
-          --stack-name $STACK_NAME \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-            DBUsername=$USERNAME \
-            DBPassword=$PASSWORD \
-          --capabilities CAPABILITY_NAMED_IAM
+    # - name: Postgre-Cloudformation
+    #   env:
+    #     STACK_NAME: sumo-flowise-postgre-stack-dev
+    #     CURRENTENV: dev
+    #     USERNAME: ${{ secrets.USERNAME }}
+    #     PASSWORD: ${{ secrets.PASSWORD }}
+    #   run: |
+    #     aws cloudformation deploy \
+    #       --template-file aws-cloudformation/postgre.yml \
+    #       --stack-name $STACK_NAME \
+    #       --parameter-overrides \
+    #         CurrentEnv=$CURRENTENV \
+    #         DBUsername=$USERNAME \
+    #         DBPassword=$PASSWORD \
+    #       --capabilities CAPABILITY_NAMED_IAM
 
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+    #     echo "CloudFormation Outputs:"
+    #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-        SumoFlowiseRDSInstanceEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRDSInstanceEndpoint'].OutputValue" --output text)
-        echo "POSTGRES_HOST=${SumoFlowiseRDSInstanceEndpoint}" >> $GITHUB_ENV
+    #     SumoFlowiseRDSInstanceEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRDSInstanceEndpoint'].OutputValue" --output text)
+    #     echo "POSTGRES_HOST=${SumoFlowiseRDSInstanceEndpoint}" >> $GITHUB_ENV
 
     - name: ECS-CloudFormation
       env:
