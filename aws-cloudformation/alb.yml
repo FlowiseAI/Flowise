@@ -57,25 +57,25 @@ Resources:
 
   # A dummy target group is used to setup the ALB to just drop traffic
   # initially, before any real service target groups have been added.
-  SumoFlowiseDummyTargetGroupPublic:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: !Join ["-", [!Ref Stage, dummy-tg, !Ref CurrentEnv]]
-      HealthCheckIntervalSeconds: 6
-      HealthCheckPath: /
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 2
-      Port: 80
-      Protocol: HTTP
-      UnhealthyThresholdCount: 2
-      VpcId: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref CurrentEnv]]
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, DummyTargetGroupPublic, !Ref CurrentEnv]]
-        - Key: CurrentEnv
-          Value: !Ref CurrentEnv
+  # SumoFlowiseDummyTargetGroupPublic:
+  #   Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  #   Properties:
+  #     Name: !Join ["-", [!Ref Stage, dummy-tg, !Ref CurrentEnv]]
+  #     HealthCheckIntervalSeconds: 6
+  #     HealthCheckPath: /
+  #     HealthCheckProtocol: HTTP
+  #     HealthCheckTimeoutSeconds: 5
+  #     HealthyThresholdCount: 2
+  #     Port: 80
+  #     Protocol: HTTP
+  #     UnhealthyThresholdCount: 2
+  #     VpcId: !ImportValue 
+  #       Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref CurrentEnv]]
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Join ["-", [!Ref Stage, DummyTargetGroupPublic, !Ref CurrentEnv]]
+  #       - Key: CurrentEnv
+  #         Value: !Ref CurrentEnv
 
   # SumoFlowisePublicLoadBalancerListenerHTTP:
   #   Type: AWS::ElasticLoadBalancingV2::Listener
@@ -106,17 +106,17 @@ Resources:
   #     Certificates:
   #       - CertificateArn: !Ref SumoFlowiseCertificateArn
 
-  SumoFlowisePublicLoadBalancerListenerHTTP:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - SumoFlowisePublicLoadBalancer
-    Properties:
-      DefaultActions:
-        - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
-          Type: "forward"
-      LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
-      Port: 80
-      Protocol: HTTP
+  # SumoFlowisePublicLoadBalancerListenerHTTP:
+  #   Type: AWS::ElasticLoadBalancingV2::Listener
+  #   DependsOn:
+  #     - SumoFlowisePublicLoadBalancer
+  #   Properties:
+  #     DefaultActions:
+  #       - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
+  #         Type: "forward"
+  #     LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
+  #     Port: 80
+  #     Protocol: HTTP
 
 Outputs:
   SumoFlowiseLoadBalancerSGId:
@@ -143,11 +143,11 @@ Outputs:
     Export:
       Name: !Join ["-", [!Ref Stage, LoadbalancerCanonicalHostedZoneId, !Ref CurrentEnv]]
 
-  SumoFlowisePublicLoadBalancerListenerHTTPId:
-    Description: 'The ID of ElasticLoadBalancingV2::Listener'
-    Value: !Ref SumoFlowisePublicLoadBalancerListenerHTTP
-    Export:
-      Name: !Join ["-", [!Ref Stage, PublicLoadBalancerListenerHTTPId, !Ref CurrentEnv]]
+  # SumoFlowisePublicLoadBalancerListenerHTTPId:
+  #   Description: 'The ID of ElasticLoadBalancingV2::Listener'
+  #   Value: !Ref SumoFlowisePublicLoadBalancerListenerHTTP
+  #   Export:
+  #     Name: !Join ["-", [!Ref Stage, PublicLoadBalancerListenerHTTPId, !Ref CurrentEnv]]
 
   ExternalUrl:
     Description: The url of Flowise application

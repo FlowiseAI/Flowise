@@ -72,32 +72,32 @@ Resources:
         - Key: CurrentEnv
           Value: !Ref CurrentEnv
 
-  # SumoFlowiseListenerHTTPS:
-  #   Type: AWS::ElasticLoadBalancingV2::Listener
-  #   Properties:
-  #     DefaultActions:
-  #       - Type: forward
-  #         TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
-  #     LoadBalancerArn: !ImportValue 
-  #       Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
-  #     Port: 433
-  #     Protocol: HTTPS
-  #     Certificates:
-  #       - CertificateArn: !Ref SumoFlowiseCertificateArn
+  SumoFlowiseListenerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
+      LoadBalancerArn: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
+      Port: 433
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref SumoFlowiseCertificateArn
 
-  # SumoFlowiseListenerHTTP:
-  #   Type: AWS::ElasticLoadBalancingV2::Listener
-  #   Properties:
-  #     DefaultActions:
-  #       - Type: "redirect"
-  #         RedirectConfig:
-  #           Protocol: "HTTPS"
-  #           Port: "443"
-  #           StatusCode: "HTTP_301"
-  #     LoadBalancerArn: !ImportValue 
-  #       Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
-  #     Port: 80
-  #     Protocol: HTTP
+  SumoFlowiseListenerHTTP:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: "redirect"
+          RedirectConfig:
+            Protocol: "HTTPS"
+            Port: "443"
+            StatusCode: "HTTP_301"
+      LoadBalancerArn: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
+      Port: 80
+      Protocol: HTTP
 
   # SumoFlowiseListenerHTTP:
   #   Type: AWS::ElasticLoadBalancingV2::Listener
@@ -113,8 +113,7 @@ Resources:
   SumoFlowiseListenerRuleFlowise:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
-      ListenerArn: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, PublicLoadBalancerListenerHTTPId, !Ref CurrentEnv]]
+      ListenerArn: !Ref SumoFlowiseListenerHTTPS
       Priority: 1
       Conditions:
         - Field: path-pattern
