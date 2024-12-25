@@ -10,8 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Check out the code
-    - name: Checkout code
+    - name: Checkout code1
       uses: actions/checkout@v3
 
     - name: Configure AWS credentials
@@ -42,12 +41,27 @@ jobs:
         aws cloudformation validate-template \
           --template-body file://aws-cloudformation/route.yml
 
-      
-    # Step 2: Log in to Amazon ECR
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v2
 
-    # Step 4: Deploy updated image using CloudFormation
+    - name: ECR-CloudFormation
+      env:
+        STACK_NAME: sumo-flowise-ecr-stack-dev
+        CURRENTENV: dev
+      run: |
+        aws cloudformation deploy \
+          --stack-name $STACK_NAME \
+          --template-file aws-cloudformation/ecr.yml \
+          --parameter-overrides \
+            CurrentEnv=$CURRENTENV \
+          --capabilities CAPABILITY_NAMED_IAM
+
+        echo "CloudFormation Outputs:"
+        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+        SumoFlowiseECRRepositoryUri=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseECRRepositoryUri'].OutputValue" --output text)
+        echo "REPOSITORY_URI=${SumoFlowiseECRRepositoryUri}" >> $GITHUB_ENV
+
     - name: VPC-CloudFormation
       env:
         STACK_NAME: sumo-flowise-vpc-stack-dev
@@ -146,24 +160,6 @@ jobs:
 
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
-
-    - name: ECR-CloudFormation
-      env:
-        STACK_NAME: sumo-flowise-ecr-stack-dev
-        CURRENTENV: dev
-      run: |
-        aws cloudformation deploy \
-          --stack-name $STACK_NAME \
-          --template-file aws-cloudformation/ecr.yml \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
-
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
-
-        SumoFlowiseECRRepositoryUri=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseECRRepositoryUri'].OutputValue" --output text)
-        echo "REPOSITORY_URI=${SumoFlowiseECRRepositoryUri}" >> $GITHUB_ENV
 
     - name: Build, tag, and push Docker image to Amazon ECR
       env:
