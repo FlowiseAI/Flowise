@@ -44,8 +44,7 @@ Resources:
         Statement:
           - Sid: AllowPushPull
             Effect: Allow
-            Principal:
-              AWS: arn:aws:iam::123456789012:role/MyECRRole
+            Principal: *
             Action:
               - ecr:BatchCheckLayerAvailability
               - ecr:BatchGetImage
