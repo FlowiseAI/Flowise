@@ -56,7 +56,7 @@ Resources:
         Fn::Join: ["-", [!Ref Stage, SumoFlowiseECSClusterId, !Ref CurrentEnv]]
       TaskDefinition: !Ref SumoFlowiseTaskDefinitionFlowise
       LaunchType: FARGATE
-      DesiredCount: 2
+      DesiredCount: 1
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
