@@ -26,16 +26,16 @@ Resources:
           {
             "rules": [
               {
-                "rulePriority": 1,
-                "description": "Retain only the last 5 images",
-                "selection": {
-                  "tagStatus": "any",
-                  "countType": "imageCountMoreThan",
-                  "countNumber": 5
-                },
-                "action": {
-                  "type": "expire"
-                }
+                  "rulePriority": 1,
+                  "description": "Keep only one untagged image, expire all others",
+                  "selection": {
+                      "tagStatus": "untagged",
+                      "countType": "imageCountMoreThan",
+                      "countNumber": 5
+                  },
+                  "action": {
+                      "type": "expire"
+                  }
               }
             ]
           }
