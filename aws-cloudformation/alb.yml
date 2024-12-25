@@ -57,25 +57,25 @@ Resources:
 
   # A dummy target group is used to setup the ALB to just drop traffic
   # initially, before any real service target groups have been added.
-  SumoFlowiseDummyTargetGroupPublic:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: !Join ["-", [!Ref Stage, dummy-tg, !Ref CurrentEnv]]
-      HealthCheckIntervalSeconds: 6
-      HealthCheckPath: /
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 2
-      Port: 80
-      Protocol: HTTP
-      UnhealthyThresholdCount: 2
-      VpcId: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref CurrentEnv]]
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, DummyTargetGroupPublic, !Ref CurrentEnv]]
-        - Key: CurrentEnv
-          Value: !Ref CurrentEnv
+  # SumoFlowiseDummyTargetGroupPublic:
+  #   Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  #   Properties:
+  #     Name: !Join ["-", [!Ref Stage, dummy-tg, !Ref CurrentEnv]]
+  #     HealthCheckIntervalSeconds: 6
+  #     HealthCheckPath: /
+  #     HealthCheckProtocol: HTTP
+  #     HealthCheckTimeoutSeconds: 5
+  #     HealthyThresholdCount: 2
+  #     Port: 80
+  #     Protocol: HTTP
+  #     UnhealthyThresholdCount: 2
+  #     VpcId: !ImportValue 
+  #       Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref CurrentEnv]]
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Join ["-", [!Ref Stage, DummyTargetGroupPublic, !Ref CurrentEnv]]
+  #       - Key: CurrentEnv
+  #         Value: !Ref CurrentEnv
 
   # SumoFlowisePublicLoadBalancerListenerHTTP:
   #   Type: AWS::ElasticLoadBalancingV2::Listener
