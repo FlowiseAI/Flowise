@@ -20,11 +20,11 @@ services:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_DATABASE}
-    ports:
-      - '5433:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/litellmdata
+      - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    networks:
+      - chatbot-network
 volumes:
   postgres_data:
     driver: local
