@@ -29,8 +29,8 @@ litellm_settings:
 #    host: '203.145.47.214'
 #    port: 6380
 #    ttl: 600
-general_settings:
-  master_key: sk-CMCTS
+#general_settings:
+#  master_key: sk-CMCTS
 #  disable_reset_budget: true
 #  database_url: postgresql://postgres:postgrespassword@203.145.47.214:5436/litellm
 #  proxy_batch_write_at: 60
