@@ -1,7 +1,7 @@
 model_list:
-  - model_name: anthropic.claude-3-5-sonnet-20241022-v2:0
+  - model_name: anthropic.claude-3-5-sonnet-20240620-v1:0
     litellm_params:
-      model: bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0
+      model: bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0
       aws_access_key_id: os.environ/CUSTOM_AWS_ACCESS_KEY_ID
       aws_secret_access_key: os.environ/CUSTOM_AWS_SECRET_ACCESS_KEY
       aws_region_name: os.environ/CUSTOM_AWS_REGION_NAME
