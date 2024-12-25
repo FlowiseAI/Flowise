@@ -198,7 +198,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       ListenerArn: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, PublicLoadBalancerListenerId, !Ref CurrentEnv]]
+        Fn::Join: ["-", [!Ref Stage, PublicLoadBalancerListenerHTTPSId, !Ref CurrentEnv]]
       Priority: 1
       Conditions:
         - Field: path-pattern

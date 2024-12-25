@@ -89,12 +89,14 @@ jobs:
       env:
         STACK_NAME: sumo-flowise-alb-stack-dev
         CURRENTENV: dev
+        CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/alb.yml \
           --parameter-overrides \
             CurrentEnv=$CURRENTENV \
+            SumoFlowiseCertificateArn=$CERTIFICATEARN \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"

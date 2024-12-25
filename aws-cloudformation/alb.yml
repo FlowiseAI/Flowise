@@ -16,6 +16,10 @@ Parameters:
       - dev
       - prod
 
+  SumoFlowiseCertificateArn:
+    Description: Certificate ARN
+    Type: String
+
 Resources:
   ####
   # ALB related resources
@@ -73,7 +77,7 @@ Resources:
         - Key: CurrentEnv
           Value: !Ref CurrentEnv
 
-  SumoFlowisePublicLoadBalancerListener:
+  SumoFlowisePublicLoadBalancerListenerHTTPS:
     Type: AWS::ElasticLoadBalancingV2::Listener
     DependsOn:
       - SumoFlowisePublicLoadBalancer
@@ -81,6 +85,23 @@ Resources:
       DefaultActions:
         - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
           Type: "forward"
+      LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
+      Port: 433
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref SumoFlowiseCertificateArn
+
+  SumoFlowisePublicLoadBalancerListenerHTTP:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn:
+      - SumoFlowisePublicLoadBalancer
+    Properties:
+      DefaultActions:
+        - Type: "redirect"
+          RedirectConfig:
+            Protocol: "HTTPS"
+            Port: "443"
+            StatusCode: "HTTP_301"
       LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
       Port: 80
       Protocol: HTTP
@@ -104,11 +125,11 @@ Outputs:
     Export:
       Name: !Join ["-", [!Ref Stage, LoadbalancerCanonicalHostedZoneId, !Ref CurrentEnv]]
 
-  SumoFlowisePublicLoadBalancerListenerId:
+  SumoFlowisePublicLoadBalancerListenerHTTPSId:
     Description: 'The ID of ElasticLoadBalancingV2::Listener'
-    Value: !Ref SumoFlowisePublicLoadBalancerListener
+    Value: !Ref SumoFlowisePublicLoadBalancerListenerHTTPS
     Export:
-      Name: !Join ["-", [!Ref Stage, PublicLoadBalancerListenerId, !Ref CurrentEnv]]
+      Name: !Join ["-", [!Ref Stage, PublicLoadBalancerListenerHTTPSId, !Ref CurrentEnv]]
 
   ExternalUrl:
     Description: The url of Flowise application
