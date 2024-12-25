@@ -178,7 +178,7 @@ Resources:
     Properties:
       VpcId: !ImportValue 
         Fn::Join: ["-", [!Ref Stage, VPCId, !Ref CurrentEnv]]
-      Port: 3000
+      Port: 80
       Protocol: HTTP
       Matcher:
         HttpCode: 200-299
