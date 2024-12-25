@@ -106,17 +106,17 @@ Resources:
   #     Certificates:
   #       - CertificateArn: !Ref SumoFlowiseCertificateArn
 
-  SumoFlowisePublicLoadBalancerListenerHTTP:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - SumoFlowisePublicLoadBalancer
-    Properties:
-      DefaultActions:
-        - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
-          Type: "forward"
-      LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
-      Port: 80
-      Protocol: HTTP
+  # SumoFlowisePublicLoadBalancerListenerHTTP:
+  #   Type: AWS::ElasticLoadBalancingV2::Listener
+  #   DependsOn:
+  #     - SumoFlowisePublicLoadBalancer
+  #   Properties:
+  #     DefaultActions:
+  #       - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
+  #         Type: "forward"
+  #     LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
+  #     Port: 80
+  #     Protocol: HTTP
 
 Outputs:
   SumoFlowiseLoadBalancerSGId:
