@@ -66,7 +66,7 @@ Resources:
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
-      Port: 3000
+      Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 2
       VpcId: !ImportValue 
@@ -77,34 +77,20 @@ Resources:
         - Key: CurrentEnv
           Value: !Ref CurrentEnv
 
-  SumoFlowisePublicLoadBalancerListenerHTTP:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - SumoFlowisePublicLoadBalancer
-    Properties:
-      DefaultActions:
-        - Type: "redirect"
-          RedirectConfig:
-            Protocol: "HTTPS"
-            Port: "443"
-            StatusCode: "HTTP_301"
-      LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
-      Port: 80
-      Protocol: HTTP
-
-  SumoFlowisePublicLoadBalancerListenerHTTPS:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    DependsOn:
-      - SumoFlowisePublicLoadBalancer
-    Properties:
-      DefaultActions:
-        - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
-          Type: "forward"
-      LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
-      Port: 433
-      Protocol: HTTPS
-      Certificates:
-        - CertificateArn: !Ref SumoFlowiseCertificateArn
+  # SumoFlowisePublicLoadBalancerListenerHTTP:
+  #   Type: AWS::ElasticLoadBalancingV2::Listener
+  #   DependsOn:
+  #     - SumoFlowisePublicLoadBalancer
+  #   Properties:
+  #     DefaultActions:
+  #       - Type: "redirect"
+  #         RedirectConfig:
+  #           Protocol: "HTTPS"
+  #           Port: "443"
+  #           StatusCode: "HTTP_301"
+  #     LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
+  #     Port: 80
+  #     Protocol: HTTP
 
   # SumoFlowisePublicLoadBalancerListenerHTTPS:
   #   Type: AWS::ElasticLoadBalancingV2::Listener
@@ -115,10 +101,24 @@ Resources:
   #       - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
   #         Type: "forward"
   #     LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
-  #     Port: 80
-  #     Protocol: HTTP
+  #     Port: 433
+  #     Protocol: HTTPS
   #     Certificates:
   #       - CertificateArn: !Ref SumoFlowiseCertificateArn
+
+  SumoFlowisePublicLoadBalancerListenerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn:
+      - SumoFlowisePublicLoadBalancer
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
+          Type: "forward"
+      LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      Certificates:
+        - CertificateArn: !Ref SumoFlowiseCertificateArn
 
 Outputs:
   SumoFlowiseLoadBalancerSGId:
