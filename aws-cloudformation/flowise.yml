@@ -225,15 +225,15 @@ Resources:
       Port: 80
       Protocol: HTTP
 
-  SumoFlowiseListenerRuleFlowise:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      ListenerArn: SumoFlowiseListenerHTTPS
-      Priority: 1
-      Conditions:
-        - Field: path-pattern
-          Values:
-            - /*
-      Actions:
-        - TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
-          Type: forward
+  # SumoFlowiseListenerRuleFlowise:
+  #   Type: AWS::ElasticLoadBalancingV2::ListenerRule
+  #   Properties:
+  #     ListenerArn: SumoFlowiseListenerHTTPS
+  #     Priority: 1
+  #     Conditions:
+  #       - Field: path-pattern
+  #         Values:
+  #           - /*
+  #     Actions:
+  #       - TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
+  #         Type: forward
