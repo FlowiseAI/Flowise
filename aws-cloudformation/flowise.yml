@@ -72,6 +72,12 @@ Resources:
         - ContainerName: "flowise-service"
           ContainerPort: 3000
           TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
+      DeploymentConfiguration:
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
 
   SumoFlowiseTaskDefinitionFlowise:
     Type: "AWS::ECS::TaskDefinition"
@@ -182,6 +188,11 @@ Resources:
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
       TargetType: ip
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, TargetGroupFlowise, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowiseListenerRuleFlowise:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule

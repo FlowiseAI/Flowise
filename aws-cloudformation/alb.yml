@@ -45,6 +45,11 @@ Resources:
         - !ImportValue 
           Fn::Join: ["-", [!Ref Stage, "Public2Id", !Ref CurrentEnv]]
       SecurityGroups: [!Ref SumoFlowisePublicLoadBalancerSG]
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, PublicLoadBalancer, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   # A dummy target group is used to setup the ALB to just drop traffic
   # initially, before any real service target groups have been added.
@@ -62,6 +67,11 @@ Resources:
       UnhealthyThresholdCount: 2
       VpcId: !ImportValue 
         Fn::Join: ["-", [!Ref Stage, "VPCId", !Ref CurrentEnv]]
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, DummyTargetGroupPublic, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowisePublicLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
