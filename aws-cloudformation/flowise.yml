@@ -80,7 +80,7 @@ Resources:
           TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
       LoadBalancerArn: !ImportValue 
         Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
-      Port: 433
+      Port: 443
       Protocol: HTTPS
       Certificates:
         - CertificateArn: !Ref SumoFlowiseCertificateArn
