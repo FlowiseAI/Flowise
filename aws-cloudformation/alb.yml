@@ -143,11 +143,11 @@ Outputs:
     Export:
       Name: !Join ["-", [!Ref Stage, LoadbalancerCanonicalHostedZoneId, !Ref CurrentEnv]]
 
-  SumoFlowisePublicLoadBalancerListenerHTTPId:
-    Description: 'The ID of ElasticLoadBalancingV2::Listener'
-    Value: !Ref SumoFlowisePublicLoadBalancerListenerHTTP
-    Export:
-      Name: !Join ["-", [!Ref Stage, PublicLoadBalancerListenerHTTPId, !Ref CurrentEnv]]
+  # SumoFlowisePublicLoadBalancerListenerHTTPId:
+  #   Description: 'The ID of ElasticLoadBalancingV2::Listener'
+  #   Value: !Ref SumoFlowisePublicLoadBalancerListenerHTTP
+  #   Export:
+  #     Name: !Join ["-", [!Ref Stage, PublicLoadBalancerListenerHTTPId, !Ref CurrentEnv]]
 
   ExternalUrl:
     Description: The url of Flowise application
