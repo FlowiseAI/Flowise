@@ -23,6 +23,7 @@ litellm_settings:
   request_timeout: 600
   set_verbose: false
   drop_params: true
+  modify_params: true
 #  json_logs: true
 #  cache: true
 #  cache_params:
