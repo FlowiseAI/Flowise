@@ -76,8 +76,8 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
-        - TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
-          Type: forward
+        - Type: forward
+          TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
       LoadBalancerArn: !ImportValue 
         Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
       Port: 433
