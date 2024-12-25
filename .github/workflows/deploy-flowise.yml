@@ -175,15 +175,12 @@ jobs:
         # Push Docker image to ECR
         docker push $REPOSITORY_URI:$IMAGE_TAG
         
-        # Output environment variables for the next steps
-        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-
     - name: ECS2-CloudFormation
       env:
         STACK_NAME: sumo-flowise-ecs2-stack-dev
         CURRENTENV: dev
-        ECR_IMAGE_URL: ${{ env.REPOSITORY_URI }}
-        IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
+        IMAGE_TAG: ${{ github.sha }}
         USERNAME: ${{ secrets.USERNAME }}
         PASSWORD: ${{ secrets.PASSWORD }}
       run: |
@@ -194,7 +191,7 @@ jobs:
             CurrentEnv=$CURRENTENV \
             DBUsername=$USERNAME \
             DBPassword=$PASSWORD \
-            ECRImageUrl=$ECR_IMAGE_URL \
+            ECRImageUrl=$REPOSITORY_URI \
             ImageTag=$IMAGE_TAG \
           --capabilities CAPABILITY_NAMED_IAM
 
