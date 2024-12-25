@@ -7,7 +7,6 @@ import moment from 'moment'
 import { styled } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
 import {
-    Button,
     Box,
     Skeleton,
     Stack,
@@ -22,9 +21,11 @@ import {
     useTheme
 } from '@mui/material'
 
+// components
+import { Button } from '@/components/ui/button'
+
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import CredentialListDialog from './CredentialListDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import AddEditCredentialDialog from './AddEditCredentialDialog'
@@ -152,7 +153,7 @@ const Credentials = () => {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
                             action: (key) => (
-                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <Button onClick={() => closeSnackbar(key)} size='icon' variant='ghost'>
                                     <IconX />
                                 </Button>
                             )
@@ -170,7 +171,7 @@ const Credentials = () => {
                         variant: 'error',
                         persist: true,
                         action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <Button onClick={() => closeSnackbar(key)} size='icon' variant='ghost'>
                                 <IconX />
                             </Button>
                         )
@@ -234,14 +235,10 @@ const Credentials = () => {
                             searchPlaceholder='Search Credentials'
                             title='Credentials'
                         >
-                            <StyledButton
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={listCredential}
-                                startIcon={<IconPlus />}
-                            >
+                            <Button onClick={listCredential} size='sm'>
+                                <IconPlus />
                                 Add Credential
-                            </StyledButton>
+                            </Button>
                         </ViewHeader>
                         {!isLoading && credentials.length <= 0 ? (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>

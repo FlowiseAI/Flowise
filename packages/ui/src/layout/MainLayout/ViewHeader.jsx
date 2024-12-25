@@ -2,12 +2,14 @@ import PropTypes from 'prop-types'
 import { useRef } from 'react'
 
 // material-ui
-import { IconButton, Box, OutlinedInput, Toolbar, Typography } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { IconButton, Box, Toolbar, Typography } from '@mui/material'
 import { StyledFab } from '@/ui-component/button/StyledFab'
 
+// components
+import { Input } from '@/components/ui/input'
+
 // icons
-import { IconSearch, IconArrowLeft, IconEdit } from '@tabler/icons-react'
+import { IconArrowLeft, IconEdit } from '@tabler/icons-react'
 
 import useSearchShorcut from '@/hooks/useSearchShortcut'
 import { getOS } from '@/utils/genericHelper'
@@ -15,7 +17,7 @@ import { getOS } from '@/utils/genericHelper'
 const os = getOS()
 const isMac = os === 'macos'
 const isDesktop = isMac || os === 'windows' || os === 'linux'
-const keyboardShortcut = isMac ? '[ ⌘ + F ]' : '[ Ctrl + F ]'
+const keyboardShortcut = isMac ? '⌘ F' : 'Ctrl F'
 
 const ViewHeader = ({
     children,
@@ -30,7 +32,6 @@ const ViewHeader = ({
     isEditButton,
     onEdit
 }) => {
-    const theme = useTheme()
     const searchInputRef = useRef()
     useSearchShorcut(searchInputRef)
 
@@ -54,7 +55,7 @@ const ViewHeader = ({
                     <Box sx={{ display: 'flex', alignItems: 'start', flexDirection: 'column' }}>
                         <Typography
                             sx={{
-                                fontSize: '2rem',
+                                fontSize: '1.5rem',
                                 fontWeight: 600,
                                 display: '-webkit-box',
                                 WebkitLineClamp: 3,
@@ -93,42 +94,19 @@ const ViewHeader = ({
                         </IconButton>
                     )}
                 </Box>
-                <Box sx={{ height: 40, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {search && (
-                        <OutlinedInput
-                            inputRef={searchInputRef}
-                            size='small'
-                            sx={{
-                                width: '325px',
-                                height: '100%',
-                                display: { xs: 'none', sm: 'flex' },
-                                borderRadius: 2,
-
-                                '& .MuiOutlinedInput-notchedOutline': {
-                                    borderRadius: 2
-                                }
-                            }}
-                            variant='outlined'
-                            placeholder={`${searchPlaceholder} ${isDesktop ? keyboardShortcut : ''}`}
+                        <Input
+                            className='w-[325px]'
                             onChange={onSearchChange}
-                            startAdornment={
-                                <Box
-                                    sx={{
-                                        color: theme.palette.grey[400],
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        mr: 1
-                                    }}
-                                >
-                                    <IconSearch style={{ color: 'inherit', width: 16, height: 16 }} />
-                                </Box>
-                            }
-                            type='search'
+                            placeholder={`${searchPlaceholder}`}
+                            ref={searchInputRef}
+                            shortcut={isDesktop ? keyboardShortcut : null}
+                            size='sm'
                         />
                     )}
-                    {filters}
                     {children}
+                    {filters}
                 </Box>
             </Toolbar>
         </Box>

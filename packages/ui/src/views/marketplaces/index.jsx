@@ -8,23 +8,25 @@ import {
     Box,
     Stack,
     Badge,
-    ToggleButton,
-    InputLabel,
-    FormControl,
-    Select,
-    OutlinedInput,
+    // InputLabel,
+    // FormControl,
+    // Select,
+    // OutlinedInput,
     Checkbox,
-    ListItemText,
+    // ListItemText,
     Skeleton,
     FormControlLabel,
-    ToggleButtonGroup,
-    MenuItem,
+    // MenuItem,
     Button,
     Tabs,
     Tab
 } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
 import { IconLayoutGrid, IconList, IconX } from '@tabler/icons-react'
+
+// components
+// import { Button } from '@/components/ui/button'
+import { Option, Select as MySelect } from '@/components/ui/select'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -50,29 +52,27 @@ import { baseURL } from '@/store/constant'
 import { gridSpacing } from '@/store/constant'
 import useNotifier from '@/utils/useNotifier'
 
-const badges = ['POPULAR', 'NEW']
+const badges = ['Popular', 'New']
 const types = ['Chatflow', 'Agentflow', 'Tool']
 const framework = ['Langchain', 'LlamaIndex']
-const MenuProps = {
-    PaperProps: {
-        style: {
-            width: 160
-        }
-    }
-}
-const SelectStyles = {
-    '& .MuiOutlinedInput-notchedOutline': {
-        borderRadius: 2
-    }
-}
+// const MenuProps = {
+//     PaperProps: {
+//         style: {
+//             width: 160
+//         }
+//     }
+// }
+// const SelectStyles = {
+//     '& .MuiOutlinedInput-notchedOutline': {
+//         borderRadius: 2
+//     }
+// }
 // ==============================|| Marketplace ||============================== //
 
 const Marketplace = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     useNotifier()
-
-    const theme = useTheme()
 
     const [isLoading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -165,7 +165,7 @@ const Marketplace = () => {
         })
     }
 
-    const handleViewChange = (event, nextView) => {
+    const handleViewChange = (nextView) => {
         if (nextView === null) return
         localStorage.setItem('mpDisplayStyle', nextView)
         setView(nextView)
@@ -407,114 +407,141 @@ const Marketplace = () => {
                         <ViewHeader
                             filters={
                                 <>
-                                    <FormControl
-                                        sx={{
-                                            borderRadius: 2,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'end',
-                                            minWidth: 120
-                                        }}
-                                    >
-                                        <InputLabel size='small' id='filter-badge-label'>
-                                            Tag
-                                        </InputLabel>
-                                        <Select
-                                            labelId='filter-badge-label'
-                                            id='filter-badge-checkbox'
-                                            size='small'
-                                            multiple
-                                            value={badgeFilter}
-                                            onChange={handleBadgeFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
-                                            renderValue={(selected) => selected.join(', ')}
-                                            MenuProps={MenuProps}
-                                            sx={SelectStyles}
-                                        >
-                                            {badges.map((name) => (
-                                                <MenuItem
-                                                    key={name}
-                                                    value={name}
-                                                    sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
-                                                >
-                                                    <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={name} />
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <FormControl
-                                        sx={{
-                                            borderRadius: 2,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'end',
-                                            minWidth: 120
-                                        }}
-                                    >
-                                        <InputLabel size='small' id='type-badge-label'>
-                                            Type
-                                        </InputLabel>
-                                        <Select
-                                            size='small'
-                                            labelId='type-badge-label'
-                                            id='type-badge-checkbox'
-                                            multiple
-                                            value={typeFilter}
-                                            onChange={handleTypeFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
-                                            renderValue={(selected) => selected.join(', ')}
-                                            MenuProps={MenuProps}
-                                            sx={SelectStyles}
-                                        >
-                                            {types.map((name) => (
-                                                <MenuItem
-                                                    key={name}
-                                                    value={name}
-                                                    sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
-                                                >
-                                                    <Checkbox checked={typeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={name} />
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <FormControl
-                                        sx={{
-                                            borderRadius: 2,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'end',
-                                            minWidth: 120
-                                        }}
-                                    >
-                                        <InputLabel size='small' id='type-fw-label'>
-                                            Framework
-                                        </InputLabel>
-                                        <Select
-                                            size='small'
-                                            labelId='type-fw-label'
-                                            id='type-fw-checkbox'
-                                            multiple
-                                            value={frameworkFilter}
-                                            onChange={handleFrameworkFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
-                                            renderValue={(selected) => selected.join(', ')}
-                                            MenuProps={MenuProps}
-                                            sx={SelectStyles}
-                                        >
-                                            {framework.map((name) => (
-                                                <MenuItem
-                                                    key={name}
-                                                    value={name}
-                                                    sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
-                                                >
-                                                    <Checkbox checked={frameworkFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={name} />
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
+                                    <MySelect placeholder='Tag' size='sm'>
+                                        {badges.map((name) => (
+                                            <Option key={name} value={name}>
+                                                {/* <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} /> */}
+                                                {/* <ListItemText primary={name} /> */}
+                                                {name}
+                                            </Option>
+                                        ))}
+                                    </MySelect>
+                                    <MySelect placeholder='Type' size='sm'>
+                                        {types.map((name) => (
+                                            <Option key={name} value={name}>
+                                                {/* <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} /> */}
+                                                {/* <ListItemText primary={name} /> */}
+                                                {name}
+                                            </Option>
+                                        ))}
+                                    </MySelect>
+                                    <MySelect placeholder='Framework' size='sm'>
+                                        {framework.map((name) => (
+                                            <Option key={name} value={name}>
+                                                {/* <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} /> */}
+                                                {/* <ListItemText primary={name} /> */}
+                                                {name}
+                                            </Option>
+                                        ))}
+                                    </MySelect>
+                                    {/* <FormControl */}
+                                    {/*     sx={{ */}
+                                    {/*         borderRadius: 2, */}
+                                    {/*         display: 'flex', */}
+                                    {/*         flexDirection: 'column', */}
+                                    {/*         justifyContent: 'end', */}
+                                    {/*         minWidth: 120 */}
+                                    {/*     }} */}
+                                    {/* > */}
+                                    {/*     <InputLabel size='small' id='filter-badge-label'> */}
+                                    {/*         Tag */}
+                                    {/*     </InputLabel> */}
+                                    {/*     <Select */}
+                                    {/*         labelId='filter-badge-label' */}
+                                    {/*         id='filter-badge-checkbox' */}
+                                    {/*         size='small' */}
+                                    {/*         multiple */}
+                                    {/*         value={badgeFilter} */}
+                                    {/*         onChange={handleBadgeFilterChange} */}
+                                    {/*         input={<OutlinedInput label='Badge' />} */}
+                                    {/*         renderValue={(selected) => selected.join(', ')} */}
+                                    {/*         MenuProps={MenuProps} */}
+                                    {/*         sx={SelectStyles} */}
+                                    {/*     > */}
+                                    {/*         {badges.map((name) => ( */}
+                                    {/*             <MenuItem */}
+                                    {/*                 key={name} */}
+                                    {/*                 value={name} */}
+                                    {/*                 sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }} */}
+                                    {/*             > */}
+                                    {/*                 <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} /> */}
+                                    {/*                 <ListItemText primary={name} /> */}
+                                    {/*             </MenuItem> */}
+                                    {/*         ))} */}
+                                    {/*     </Select> */}
+                                    {/* </FormControl> */}
+                                    {/* <FormControl */}
+                                    {/*     sx={{ */}
+                                    {/*         borderRadius: 2, */}
+                                    {/*         display: 'flex', */}
+                                    {/*         flexDirection: 'column', */}
+                                    {/*         justifyContent: 'end', */}
+                                    {/*         minWidth: 120 */}
+                                    {/*     }} */}
+                                    {/* > */}
+                                    {/*     <InputLabel size='small' id='type-badge-label'> */}
+                                    {/*         Type */}
+                                    {/*     </InputLabel> */}
+                                    {/*     <Select */}
+                                    {/*         size='small' */}
+                                    {/*         labelId='type-badge-label' */}
+                                    {/*         id='type-badge-checkbox' */}
+                                    {/*         multiple */}
+                                    {/*         value={typeFilter} */}
+                                    {/*         onChange={handleTypeFilterChange} */}
+                                    {/*         input={<OutlinedInput label='Badge' />} */}
+                                    {/*         renderValue={(selected) => selected.join(', ')} */}
+                                    {/*         MenuProps={MenuProps} */}
+                                    {/*         sx={SelectStyles} */}
+                                    {/*     > */}
+                                    {/*         {types.map((name) => ( */}
+                                    {/*             <MenuItem */}
+                                    {/*                 key={name} */}
+                                    {/*                 value={name} */}
+                                    {/*                 sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }} */}
+                                    {/*             > */}
+                                    {/*                 <Checkbox checked={typeFilter.indexOf(name) > -1} sx={{ p: 0 }} /> */}
+                                    {/*                 <ListItemText primary={name} /> */}
+                                    {/*             </MenuItem> */}
+                                    {/*         ))} */}
+                                    {/*     </Select> */}
+                                    {/* </FormControl> */}
+                                    {/* <FormControl */}
+                                    {/*     sx={{ */}
+                                    {/*         borderRadius: 2, */}
+                                    {/*         display: 'flex', */}
+                                    {/*         flexDirection: 'column', */}
+                                    {/*         justifyContent: 'end', */}
+                                    {/*         minWidth: 120 */}
+                                    {/*     }} */}
+                                    {/* > */}
+                                    {/*     <InputLabel size='small' id='type-fw-label'> */}
+                                    {/*         Framework */}
+                                    {/*     </InputLabel> */}
+                                    {/*     <Select */}
+                                    {/*         size='small' */}
+                                    {/*         labelId='type-fw-label' */}
+                                    {/*         id='type-fw-checkbox' */}
+                                    {/*         multiple */}
+                                    {/*         value={frameworkFilter} */}
+                                    {/*         onChange={handleFrameworkFilterChange} */}
+                                    {/*         input={<OutlinedInput label='Badge' />} */}
+                                    {/*         renderValue={(selected) => selected.join(', ')} */}
+                                    {/*         MenuProps={MenuProps} */}
+                                    {/*         sx={SelectStyles} */}
+                                    {/*     > */}
+                                    {/*         {framework.map((name) => ( */}
+                                    {/*             <MenuItem */}
+                                    {/*                 key={name} */}
+                                    {/*                 value={name} */}
+                                    {/*                 sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }} */}
+                                    {/*             > */}
+                                    {/*                 <Checkbox checked={frameworkFilter.indexOf(name) > -1} sx={{ p: 0 }} /> */}
+                                    {/*                 <ListItemText primary={name} /> */}
+                                    {/*             </MenuItem> */}
+                                    {/*         ))} */}
+                                    {/*     </Select> */}
+                                    {/* </FormControl> */}
                                 </>
                             }
                             onSearchChange={onSearchChange}
@@ -522,38 +549,20 @@ const Marketplace = () => {
                             searchPlaceholder='Search Name/Description/Node'
                             title='Marketplace'
                         >
-                            <ToggleButtonGroup
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                value={view}
-                                color='primary'
-                                exclusive
-                                onChange={handleViewChange}
+                            <ToggleGroup
+                                type='single'
+                                defaultValue='card'
+                                className='p-0 gap-0 rounded-md border border-border box-border divide-x divide-border overflow-hidden shrink-0'
+                                onValueChange={handleViewChange}
+                                size='sm'
                             >
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='card'
-                                    title='Card View'
-                                >
+                                <ToggleGroupItem value='card' aria-label='Grid view' className='rounded-none'>
                                     <IconLayoutGrid />
-                                </ToggleButton>
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='list'
-                                    title='List View'
-                                >
+                                </ToggleGroupItem>
+                                <ToggleGroupItem value='list' aria-label='List view' className='rounded-none'>
                                     <IconList />
-                                </ToggleButton>
-                            </ToggleButtonGroup>
+                                </ToggleGroupItem>
+                            </ToggleGroup>
                         </ViewHeader>
                         <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs' centered>
                             <Tab value={0} label='Community Templates'></Tab>
