@@ -157,13 +157,12 @@ jobs:
             CurrentEnv=$CURRENTENV \
           --capabilities CAPABILITY_NAMED_IAM
 
-          echo "CloudFormation Outputs:"
-          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+        echo "CloudFormation Outputs:"
+        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
         SumoFlowiseECRRepositoryUri=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseECRRepositoryUri'].OutputValue" --output text)
         echo "REPOSITORY_URI=${SumoFlowiseECRRepositoryUri}" >> $GITHUB_ENV
 
-    # Step 3: Build and push Docker image to Amazon ECR
     - name: Build, tag, and push Docker image to Amazon ECR
       env:
         ECR_REPOSITORY: sumo-flowise-app-dev
