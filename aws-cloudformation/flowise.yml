@@ -99,7 +99,7 @@ Resources:
   #     Port: 80
   #     Protocol: HTTP
 
-  SumoFlowisePublicLoadBalancerListenerHTTP:
+  SumoFlowiseListenerHTTP:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
@@ -113,7 +113,7 @@ Resources:
   SumoFlowiseListenerRuleFlowise:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
-      ListenerArn: SumoFlowiseListenerHTTPS
+      ListenerArn: SumoFlowiseListenerHTTP
       Priority: 1
       Conditions:
         - Field: path-pattern
