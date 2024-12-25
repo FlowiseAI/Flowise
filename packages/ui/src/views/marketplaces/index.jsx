@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 
 // material-ui
@@ -634,11 +634,9 @@ const Marketplace = () => {
                                                                 color={data.badge === 'POPULAR' ? 'primary' : 'error'}
                                                             >
                                                                 {(data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                                    <ItemCard
-                                                                        onClick={() => goToCanvas(data)}
-                                                                        data={data}
-                                                                        images={images[data.id]}
-                                                                    />
+                                                                    <Link to={`/marketplace/${data.id}`}>
+                                                                        <ItemCard data={data} images={images[data.id]} />
+                                                                    </Link>
                                                                 )}
                                                                 {data.type === 'Tool' && (
                                                                     <ItemCard data={data} onClick={() => goToTool(data)} />
@@ -646,11 +644,9 @@ const Marketplace = () => {
                                                             </Badge>
                                                         )}
                                                         {!data.badge && (data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                            <ItemCard
-                                                                onClick={() => goToCanvas(data)}
-                                                                data={data}
-                                                                images={images[data.id]}
-                                                            />
+                                                            <Link to={`/marketplace/${data.id}`}>
+                                                                <ItemCard data={data} images={images[data.id]} />
+                                                            </Link>
                                                         )}
                                                         {!data.badge && data.type === 'Tool' && (
                                                             <ItemCard data={data} onClick={() => goToTool(data)} />
@@ -757,11 +753,9 @@ const Marketplace = () => {
                                                                 color={data.badge === 'POPULAR' ? 'primary' : 'error'}
                                                             >
                                                                 {(data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                                    <ItemCard
-                                                                        onClick={() => goToCanvas(data)}
-                                                                        data={data}
-                                                                        images={templateImages[data.id]}
-                                                                    />
+                                                                    <Link to={`/marketplace/${data.id}`}>
+                                                                        <ItemCard data={data} images={templateImages[data.id]} />
+                                                                    </Link>
                                                                 )}
                                                                 {data.type === 'Tool' && (
                                                                     <ItemCard data={data} onClick={() => goToTool(data)} />
@@ -769,11 +763,9 @@ const Marketplace = () => {
                                                             </Badge>
                                                         )}
                                                         {!data.badge && (data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                            <ItemCard
-                                                                onClick={() => goToCanvas(data)}
-                                                                data={data}
-                                                                images={templateImages[data.id]}
-                                                            />
+                                                            <Link to={`/marketplace/${data.id}`}>
+                                                                <ItemCard data={data} images={templateImages[data.id]} />
+                                                            </Link>
                                                         )}
                                                         {!data.badge && data.type === 'Tool' && (
                                                             <ItemCard data={data} onClick={() => goToTool(data)} />

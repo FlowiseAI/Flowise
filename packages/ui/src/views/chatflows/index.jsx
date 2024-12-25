@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 // material-ui
 import { Box, Skeleton, Stack } from '@mui/material'
@@ -68,14 +68,6 @@ const Chatflows = () => {
         localStorage.setItem('username', username)
         localStorage.setItem('password', password)
         navigate(0)
-    }
-
-    const addNew = () => {
-        navigate('/canvas')
-    }
-
-    const goToCanvas = (selectedChatflow) => {
-        navigate(`/canvas/${selectedChatflow.id}`)
     }
 
     useEffect(() => {
@@ -152,9 +144,11 @@ const Chatflows = () => {
                                 <IconList />
                             </ToggleGroupItem>
                         </ToggleGroup>
-                        <Button onClick={addNew} size='sm'>
-                            <IconPlus /> Add New
-                        </Button>
+                        <Link to={'/canvas'}>
+                            <Button size='sm'>
+                                <IconPlus /> Add New
+                            </Button>
+                        </Link>
                     </ViewHeader>
                     {!view || view === 'card' ? (
                         <>
@@ -167,7 +161,9 @@ const Chatflows = () => {
                             ) : (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                     {getAllChatflowsApi.data?.filter(filterFlows).map((data, index) => (
-                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                        <Link key={index} to={`/canvas/${data.id}`}>
+                                            <ItemCard data={data} images={images[data.id]} />
+                                        </Link>
                                     ))}
                                 </Box>
                             )}

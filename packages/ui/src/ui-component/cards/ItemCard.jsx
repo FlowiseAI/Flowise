@@ -2,30 +2,10 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { styled } from '@mui/material/styles'
-import { Box, Grid, Typography, useTheme } from '@mui/material'
+import { Box, Grid, Stack, Typography, useTheme } from '@mui/material'
 
-// project imports
-import MainCard from '@/ui-component/cards/MainCard'
-
-const CardWrapper = styled(MainCard)(({ theme }) => ({
-    background: theme.palette.card.main,
-    color: theme.darkTextPrimary,
-    overflow: 'auto',
-    position: 'relative',
-    boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
-    cursor: 'pointer',
-    '&:hover': {
-        background: theme.palette.card.hover,
-        boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)'
-    },
-    height: '100%',
-    minHeight: '160px',
-    maxHeight: '300px',
-    width: '100%',
-    overflowWrap: 'break-word',
-    whiteSpace: 'pre-line'
-}))
+// components
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 // ===========================|| CONTRACT CARD ||=========================== //
 
@@ -34,78 +14,54 @@ const ItemCard = ({ data, images, onClick }) => {
     const customization = useSelector((state) => state.customization)
 
     return (
-        <CardWrapper content={false} onClick={onClick} sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}>
-            <Box sx={{ height: '100%', p: 2.25 }}>
-                <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
-                    <Box display='flex' flexDirection='column' sx={{ width: '100%' }}>
-                        <div
+        <Card className='h-full cursor-pointer' onClick={onClick}>
+            <CardHeader
+                subheader={
+                    data.description && (
+                        <span
                             style={{
-                                width: '100%',
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
+                                display: '-webkit-box',
+                                marginTop: 10,
+                                overflowWrap: 'break-word',
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: 'vertical',
+                                textOverflow: 'ellipsis',
                                 overflow: 'hidden'
                             }}
                         >
-                            {data.iconSrc && (
-                                <div
-                                    style={{
-                                        width: 35,
-                                        height: 35,
-                                        display: 'flex',
-                                        flexShrink: 0,
-                                        marginRight: 10,
-                                        borderRadius: '50%',
-                                        backgroundImage: `url(${data.iconSrc})`,
-                                        backgroundSize: 'contain',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'center center'
-                                    }}
-                                ></div>
-                            )}
-                            {!data.iconSrc && data.color && (
-                                <div
-                                    style={{
-                                        width: 35,
-                                        height: 35,
-                                        display: 'flex',
-                                        flexShrink: 0,
-                                        marginRight: 10,
-                                        borderRadius: '50%',
-                                        background: data.color
-                                    }}
-                                ></div>
-                            )}
-                            <Typography
+                            {data.description}
+                        </span>
+                    )
+                }
+                title={
+                    <Stack className='flex flex-row items-center'>
+                        {data.iconSrc && <img alt='icon' className='w-6 h-6 mr-2 rounded-full' src={data.iconSrc} />}
+                        {!data.iconSrc && data.color && (
+                            <Box
+                                className='w-6 h-6 flex shrink-0 mr-2 rounded-full'
                                 sx={{
-                                    display: '-webkit-box',
-                                    fontSize: '1.25rem',
-                                    fontWeight: 500,
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: 'vertical',
-                                    textOverflow: 'ellipsis',
-                                    overflow: 'hidden'
+                                    background: data.color
                                 }}
-                            >
-                                {data.templateName || data.name}
-                            </Typography>
-                        </div>
-                        {data.description && (
-                            <span
-                                style={{
-                                    display: '-webkit-box',
-                                    marginTop: 10,
-                                    overflowWrap: 'break-word',
-                                    WebkitLineClamp: 3,
-                                    WebkitBoxOrient: 'vertical',
-                                    textOverflow: 'ellipsis',
-                                    overflow: 'hidden'
-                                }}
-                            >
-                                {data.description}
-                            </span>
+                            />
                         )}
-                    </Box>
+                        <Typography
+                            sx={{
+                                display: '-webkit-box',
+                                fontSize: '1.25rem',
+                                fontWeight: 500,
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                textOverflow: 'ellipsis',
+                                overflow: 'hidden'
+                            }}
+                        >
+                            {data.templateName || data.name}
+                        </Typography>
+                    </Stack>
+                }
+            />
+            <CardContent>
+                <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
                     {images && (
                         <Box
                             sx={{
@@ -131,15 +87,22 @@ const ItemCard = ({ data, images, onClick }) => {
                                 </Box>
                             ))}
                             {images.length > 3 && (
-                                <Typography sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}>
+                                <Typography
+                                    sx={{
+                                        alignItems: 'center',
+                                        display: 'flex',
+                                        fontSize: '.9rem',
+                                        fontWeight: 200
+                                    }}
+                                >
                                     + {images.length - 3} More
                                 </Typography>
                             )}
                         </Box>
                     )}
                 </Grid>
-            </Box>
-        </CardWrapper>
+            </CardContent>
+        </Card>
     )
 }
 

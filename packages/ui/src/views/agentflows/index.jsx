@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 // material-ui
 import { Box, Skeleton, Stack } from '@mui/material'
@@ -68,14 +68,6 @@ const Agentflows = () => {
         localStorage.setItem('username', username)
         localStorage.setItem('password', password)
         navigate(0)
-    }
-
-    const addNew = () => {
-        navigate('/agentcanvas')
-    }
-
-    const goToCanvas = (selectedAgentflow) => {
-        navigate(`/agentcanvas/${selectedAgentflow.id}`)
     }
 
     useEffect(() => {
@@ -147,9 +139,11 @@ const Agentflows = () => {
                                 <IconList />
                             </ToggleGroupItem>
                         </ToggleGroup>
-                        <Button onClick={addNew} size='sm'>
-                            <IconPlus /> Add New
-                        </Button>
+                        <Link to={'/agentcanvas'}>
+                            <Button size='sm'>
+                                <IconPlus /> Add New
+                            </Button>
+                        </Link>
                     </ViewHeader>
                     {!view || view === 'card' ? (
                         <>
@@ -162,7 +156,9 @@ const Agentflows = () => {
                             ) : (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                     {getAllAgentflows.data?.filter(filterFlows).map((data, index) => (
-                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                        <Link key={index} to={`/agentcanvas/${data.id}`}>
+                                            <ItemCard data={data} images={images[data.id]} />
+                                        </Link>
                                     ))}
                                 </Box>
                             )}
