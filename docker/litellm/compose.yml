@@ -11,3 +11,18 @@ services:
     ports:
       - '9001:4000'
     command: --config /app/config.yaml
+  postgres:
+    env_file:
+      - .env
+    image: postgres:latest
+    container_name: postgres-container
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+volumes:
+  postgres_data:
+    driver: local
