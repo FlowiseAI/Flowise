@@ -99,3 +99,7 @@ Outputs:
     Value: !Ref SumoFlowisePublicLoadBalancerListener
     Export:
       Name: !Join ["-", [!Ref Stage, PublicLoadBalancerListenerId, !Ref CurrentEnv]]
+
+  ExternalUrl:
+    Description: The url of Flowise application
+    Value: !Sub http://${SumoFlowisePublicLoadBalancer.DNSName}
