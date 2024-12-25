@@ -42,9 +42,10 @@ Resources:
       RepositoryPolicyText:
         Version: "2012-10-17"
         Statement:
-          - Sid: AllowPushPull
+          - Sid: CodeBuildAccess
             Effect: Allow
-            Principal: *
+            Principal:
+              Service: codebuild.amazonaws.com
             Action:
               - ecr:BatchCheckLayerAvailability
               - ecr:BatchGetImage
