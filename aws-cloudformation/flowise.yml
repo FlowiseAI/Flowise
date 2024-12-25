@@ -174,7 +174,7 @@ Resources:
             - Name: Port
               Value: "3000"
             - Name: CORS_ORIGINS
-              Value: ""
+              Value: "*"
             - Name: IFRAME_ORIGINS
               Value: ""
             - Name: FLOWISE_USERNAME
