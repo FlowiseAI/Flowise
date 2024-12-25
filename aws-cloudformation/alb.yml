@@ -122,7 +122,7 @@ Resources:
   #       - TargetGroupArn: !Ref SumoFlowiseDummyTargetGroupPublic
   #         Type: "forward"
   #     LoadBalancerArn: !Ref SumoFlowisePublicLoadBalancer
-  #     Port: 433
+  #     Port: 443
   #     Protocol: HTTPS
   #     Certificates:
   #       - CertificateArn: !Ref SumoFlowiseCertificateArn
