@@ -43,6 +43,10 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9@]*'
     ConstraintDescription: 'must contain only alphanumeric characters and/or @.'
 
+  SumoFlowiseCertificateArn:
+    Description: Certificate ARN
+    Type: String
+
 Resources:
   ####
   # Flowise ECS service related resources
@@ -194,11 +198,23 @@ Resources:
         - Key: CurrentEnv
           Value: !Ref CurrentEnv
 
+  SumoFlowiseListenerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
+          Type: "forward"
+      LoadBalancerArn: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
+      Port: 433
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref SumoFlowiseCertificateArn
+
   SumoFlowiseListenerRuleFlowise:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
-      ListenerArn: !ImportValue 
-        Fn::Join: ["-", [!Ref Stage, PublicLoadBalancerListenerHTTPId, !Ref CurrentEnv]]
+      ListenerArn: SumoFlowiseListenerHTTPS
       Priority: 1
       Conditions:
         - Field: path-pattern

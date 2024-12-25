@@ -16,9 +16,9 @@ Parameters:
       - dev
       - prod
 
-  SumoFlowiseCertificateArn:
-    Description: Certificate ARN
-    Type: String
+  # SumoFlowiseCertificateArn:
+  #   Description: Certificate ARN
+  #   Type: String
 
 Resources:
   ####
@@ -106,7 +106,6 @@ Resources:
   #     Certificates:
   #       - CertificateArn: !Ref SumoFlowiseCertificateArn
 
-
   SumoFlowisePublicLoadBalancerListenerHTTP:
     Type: AWS::ElasticLoadBalancingV2::Listener
     DependsOn:
@@ -125,6 +124,12 @@ Outputs:
     Value: !Ref SumoFlowisePublicLoadBalancerSG
     Export:
       Name: !Join ["-", [!Ref Stage, LoadbalancerSGId, !Ref CurrentEnv]]
+
+  SumoFlowiseLoadBalancerId:
+    Description: 'The ID of the load balancer'
+    Value: !Ref SumoFlowisePublicLoadBalancer
+    Export:
+      Name: !Join ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
 
   SumoFlowiseLoadBalancerDNSName:
     Description: 'DNS name of the load balancer'

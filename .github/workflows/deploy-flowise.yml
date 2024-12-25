@@ -81,14 +81,12 @@ jobs:
       env:
         STACK_NAME: sumo-flowise-alb-stack-dev
         CURRENTENV: dev
-        CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/alb.yml \
           --parameter-overrides \
             CurrentEnv=$CURRENTENV \
-            SumoFlowiseCertificateArn=$CERTIFICATEARN \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
@@ -181,6 +179,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
         USERNAME: ${{ secrets.USERNAME }}
         PASSWORD: ${{ secrets.PASSWORD }}
+        CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
@@ -191,6 +190,7 @@ jobs:
             DBPassword=$PASSWORD \
             ECRImageUrl=$REPOSITORY_URI \
             ImageTag=$IMAGE_TAG \
+            SumoFlowiseCertificateArn=$CERTIFICATEARN \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
