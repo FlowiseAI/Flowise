@@ -23,8 +23,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
-    networks:
-      - chatbot-network
 volumes:
   postgres_data:
     driver: local
