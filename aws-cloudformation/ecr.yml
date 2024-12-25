@@ -27,24 +27,9 @@ Resources:
             "rules": [
               {
                 "rulePriority": 1,
-                "description": "Delete development images older than 30 days",
-                "selection": {
-                  "tagStatus": "tagged",
-                  "tagPrefixList": ["*dev*"],
-                  "countType": "sinceImagePushed",
-                  "countUnit": "days",
-                  "countNumber": 30
-                },
-                "action": {
-                  "type": "expire"
-                }
-              },
-              {
-                "rulePriority": 2,
                 "description": "Retain only the last 5 images",
                 "selection": {
-                  "tagStatus": "tagged",
-                  "tagPrefixList": ["*dev*"],
+                  "tagStatus": "any",
                   "countType": "imageCountMoreThan",
                   "countNumber": 5
                 },
