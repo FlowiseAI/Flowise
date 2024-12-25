@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    restart: always
+    environment:
+      - LITELLM_LOG=ERROR
+    volumes:
+      - ./config.yaml:/app/config.yaml
+    ports:
+      - '4000:4000'
+    command: --config /app/config.yaml
