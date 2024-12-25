@@ -86,6 +86,33 @@ model_list:
       tpm: 4000000
       rpm: 4000
       source: 'https://ai.google.dev/pricing'
+  - model_name: gemini-1.5-flash
+    litellm_params:
+      model: gemini/gemini-1.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+    model_info:
+      max_tokens: 8192
+      max_input_tokens: 1048576
+      max_output_tokens: 8192
+      max_images_per_prompt: 3000
+      max_videos_per_prompt: 10
+      max_video_length: 1
+      max_audio_length_hours: 8.4
+      max_audio_per_prompt: 1
+      max_pdf_size_mb: 30
+      input_cost_per_token: 7.5E-08
+      input_cost_per_token_above_128k_tokens: 1.5E-07
+      output_cost_per_token: 3E-07
+      output_cost_per_token_above_128k_tokens: 6E-07
+      mode: 'chat'
+      supports_system_messages: true
+      supports_function_calling: true
+      supports_vision: true
+      supports_response_schema: true
+      supports_prompt_caching: true
+      tpm: 4000000
+      rpm: 2000
+      source: 'https://ai.google.dev/pricing'
 litellm_settings:
   request_timeout: 600
   set_verbose: false
