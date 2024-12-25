@@ -7,6 +7,8 @@ import { S3Explorer } from 'dccxx-s3-explorer'
 
 import 'dccxx-s3-explorer/dist/style.css'
 
+import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'https://stock.cmcts.ai/c-agent/s3e'
+
 export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
   const [myValue, setMyValue] = useState(value ?? '')
   const [openVariableDialog, setOpenVariableDialog] = useState(false)
