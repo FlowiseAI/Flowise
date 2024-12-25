@@ -140,7 +140,7 @@ Resources:
           EntryPoint:
             - /bin/sh
             - -c
-            - "sleep 3; flowise start"
+            - "sleep 3; pnpm start"
           MountPoints:
             - SourceVolume: efs-volume
               ContainerPath: "/root/.flowise"
