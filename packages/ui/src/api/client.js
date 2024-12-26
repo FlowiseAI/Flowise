@@ -1,11 +1,15 @@
 import axios from 'axios'
 import { baseURL } from '@/store/constant'
 
+const dataLogin = localStorage.getItem('dataLogin') ? JSON?.parse(localStorage.getItem('dataLogin')) : {}
+const accessToken = dataLogin?.accessToken || ''
+
 const apiClient = axios.create({
   baseURL: `${baseURL}/api/v1`,
   headers: {
     'Content-type': 'application/json',
-    'x-request-from': 'internal'
+    'x-request-from': 'internal',
+    ...(accessToken && { Authorization: `Bearer ${accessToken}` })
   }
 })
 

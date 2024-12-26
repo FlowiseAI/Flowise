@@ -6,7 +6,7 @@ import { Dialog, DialogActions, DialogContent, Typography, DialogTitle } from '@
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Input } from '@/ui-component/input/Input'
 
-const LoginDialog = ({ show, dialogProps, onConfirm }) => {
+const LoginDialog = ({ show, dialogProps, onConfirm, onClose = null }) => {
   const portalElement = document.getElementById('portal')
   const usernameInput = {
     label: 'Username',
@@ -30,6 +30,7 @@ const LoginDialog = ({ show, dialogProps, onConfirm }) => {
         }
       }}
       open={show}
+      onClose={onClose}
       fullWidth
       maxWidth='xs'
       aria-labelledby='alert-dialog-title'
@@ -46,6 +47,11 @@ const LoginDialog = ({ show, dialogProps, onConfirm }) => {
         <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
       </DialogContent>
       <DialogActions>
+        {onClose && (
+          <StyledButton className='bg-transparent text-red-400 hover:bg-transparent' variant='text' onClick={onClose}>
+            Close
+          </StyledButton>
+        )}
         <StyledButton variant='contained' onClick={() => onConfirm(usernameVal, passwordVal)}>
           {dialogProps.confirmButtonName}
         </StyledButton>
@@ -59,7 +65,8 @@ const LoginDialog = ({ show, dialogProps, onConfirm }) => {
 LoginDialog.propTypes = {
   show: PropTypes.bool,
   dialogProps: PropTypes.object,
-  onConfirm: PropTypes.func
+  onConfirm: PropTypes.func,
+  onClose: PropTypes.func
 }
 
 export default LoginDialog

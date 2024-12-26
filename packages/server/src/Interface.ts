@@ -1,4 +1,5 @@
 import { IAction, ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import { UserRole } from './database/entities/User'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
@@ -302,6 +303,16 @@ export interface IVariableOverride {
   name: string
   type: 'static' | 'runtime'
   enabled: boolean
+}
+
+export interface IUser {
+  id?: string
+  username?: string
+  email?: string
+  role?: UserRole
+  password?: string
+  createdDate?: Date
+  updatedDate?: Date
 }
 
 // DocumentStore related

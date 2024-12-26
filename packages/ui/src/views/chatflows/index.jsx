@@ -39,8 +39,6 @@ const Chatflows = () => {
   const [error, setError] = useState(null)
   const [images, setImages] = useState({})
   const [search, setSearch] = useState('')
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false)
-  const [loginDialogProps, setLoginDialogProps] = useState({})
 
   const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
   const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
@@ -62,12 +60,6 @@ const Chatflows = () => {
     )
   }
 
-  const onLoginClick = (username, password) => {
-    localStorage.setItem('username', username)
-    localStorage.setItem('password', password)
-    navigate(0)
-  }
-
   const addNew = () => {
     navigate('/canvas')
   }
@@ -82,19 +74,26 @@ const Chatflows = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    if (getAllChatflowsApi.error) {
-      if (getAllChatflowsApi.error?.response?.status === 401) {
-        setLoginDialogProps({
-          title: 'Login',
-          confirmButtonName: 'Login'
-        })
-        setLoginDialogOpen(true)
-      } else {
-        setError(getAllChatflowsApi.error)
-      }
-    }
-  }, [getAllChatflowsApi.error])
+  // const onLoginClick = (username, password) => {
+  //   localStorage.setItem('username', username)
+  //   localStorage.setItem('password', password)
+  //   navigate(0)
+  // }
+  // const [loginDialogOpen, setLoginDialogOpen] = useState(false)
+  // const [loginDialogProps, setLoginDialogProps] = useState({})
+  // useEffect(() => {
+  //   if (getAllChatflowsApi.error) {
+  //     if (getAllChatflowsApi.error?.response?.status === 401) {
+  //       setLoginDialogProps({
+  //         title: 'Login',
+  //         confirmButtonName: 'Login'
+  //       })
+  //       setLoginDialogOpen(true)
+  //     } else {
+  //       setError(getAllChatflowsApi.error)
+  //     }
+  //   }
+  // }, [getAllChatflowsApi.error])
 
   useEffect(() => {
     setLoading(getAllChatflowsApi.loading)
@@ -198,8 +197,8 @@ const Chatflows = () => {
         </Stack>
       )}
 
-      <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
-      <ConfirmDialog />
+      {/* <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
+      <ConfirmDialog /> */}
     </MainCard>
   )
 }
