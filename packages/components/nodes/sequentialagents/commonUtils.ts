@@ -104,6 +104,9 @@ export const transformObjectPropertyToFunction = (obj: ICommonObject, state: ISe
                     if (typeof messageOutput.content === 'string') value = messageOutput.content
                     // if messageOutput.content is an array
                     else if (Array.isArray(messageOutput.content)) {
+                        if (messageOutput.content.length === 0) {
+                            throw new Error(`Message output content is an empty array for node ${parsedValue.id}`)
+                        }
                         // Get the first element of the array
                         const messageOutputContentFirstElement: any = messageOutput.content[0]
 
