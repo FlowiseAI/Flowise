@@ -13,7 +13,7 @@ services:
       - postgres
       - redis
     ports:
-      - '127.0.0.1:3000:3000'
+      - '8003:3000'
     environment:
       - NODE_ENV=production
       - RAILS_ENV=production
