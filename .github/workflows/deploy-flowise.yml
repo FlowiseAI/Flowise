@@ -180,6 +180,7 @@ jobs:
         USERNAME: ${{ secrets.USERNAME }}
         PASSWORD: ${{ secrets.PASSWORD }}
         CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
+        DATABASE_HOST: ${{ secrets.POSTGRES_HOST }}
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
@@ -191,6 +192,7 @@ jobs:
             ECRImageUrl=$REPOSITORY_URI \
             ImageTag=$IMAGE_TAG \
             SumoFlowiseCertificateArn=$CERTIFICATEARN \
+            DatabaseHost=$DATABASE_HOST \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"

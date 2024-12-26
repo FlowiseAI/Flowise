@@ -25,6 +25,10 @@ Parameters:
     Type: String
     Default: latest
 
+  DatabaseHost:
+    Description: The address of postgres
+    Type: String
+  
   Username:
     Description: 'The database admin account username'
     NoEcho: true
@@ -195,9 +199,7 @@ Resources:
             - Name: DATABASE_PORT
               Value: 5432
             - Name: DATABASE_HOST
-              Value: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref CurrentEnv]]
-            # - Name: DATABASE_HOST
-            #   Value: "localhost"
+              Value: !Ref DatabaseHost
             - Name: DATABASE_NAME
               Value: "flowise"
             - Name: DATABASE_USER
