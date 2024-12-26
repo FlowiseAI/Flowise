@@ -182,10 +182,10 @@ Resources:
               Value: "*"
             - Name: IFRAME_ORIGINS
               Value: "*"
-            - Name: FLOWISE_USERNAME
-              Value: !Ref Username
-            - Name: FLOWISE_PASSWORD
-              Value: !Ref Password
+            # - Name: FLOWISE_USERNAME
+            #   Value: !Ref Username
+            # - Name: FLOWISE_PASSWORD
+            #   Value: !Ref Password
             # - Name: FLOWISE_FILE_SIZE_LIMIT
             #   Value: ""
             - Name: DEBUG
@@ -228,6 +228,13 @@ Resources:
               Value: "/root/.flowise/storage"
             # - Name: DISABLE_FLOWISE_TELEMETRY
             #   Value: ""
+          Secrets: # Use Secrets Manager to inject secrets
+            - Name: FLOWISE_USERNAME
+              ValueFrom: !ImportValue 
+                Fn::Join: ["-", [!Ref Stage, SecretUsername, !Ref CurrentEnv]]
+            - Name: FLOWISE_PASSWORD
+              ValueFrom: !ImportValue
+                Fn::Join: ["-", [!Ref Stage, SecretPassword, !Ref CurrentEnv]]
           EntryPoint:
             - /bin/sh
             - -c
