@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for setting up Bastion Hosts'
+
+Parameters:
+  Stage:
+    Description: Prefix of resource names
+    Type: String
+    Default: sumo-flowise
+
+  CurrentEnv:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+  KeyPairName:
+    Description: 'Name of an existing EC2 KeyPair to enable SSH access to the instances'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+
+Resources:
+  # Security Group for Bastion Hosts
+  SumoFlowiseBastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, VPCId, !Ref CurrentEnv]]
+      GroupDescription: Security group for Bastion hosts
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, BastionSecurityGroup, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
+
+  # Bastion Host in Public Subnet 1
+  SumoFlowiseBastionHostA:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      KeyName: !Ref KeyPairName
+      SubnetId: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, Public1Id, !Ref CurrentEnv]]
+      ImageId: ami-005fc0f236362e99f # Ubuntu 20.04 LTS AMI in us-east-1, replace with your region's ID
+      SecurityGroupIds:
+        - !Ref SumoFlowiseBastionSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, BastionHostA, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
+
+  # Bastion Host in Public Subnet 2
+  SumoFlowiseBastionHostB:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      KeyName: !Ref KeyPairName
+      SubnetId: !ImportValue 
+        Fn::Join: ["-", [!Ref Stage, Public2Id, !Ref CurrentEnv]]
+      ImageId: ami-005fc0f236362e99f # Ubuntu 20.04 LTS AMI in us-east-1, replace with your region's ID
+      SecurityGroupIds:
+        - !Ref SumoFlowiseBastionSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, BastionHostB, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
+
+Outputs:
+  SumoFlowiseBastionHostAPublicIP:
+    Description: 'Public IP address of Bastion Host A'
+    Value: !GetAtt SumoFlowiseBastionHostA.PublicIp
+    Export:
+      Name: !Join ["-", [!Ref Stage, BastionHostAIp, !Ref CurrentEnv]]
+
+  SumoFlowiseBastionHostBPublicIP:
+    Description: 'Public IP address of Bastion Host B'
+    Value: !GetAtt SumoFlowiseBastionHostB.PublicIp
+    Export:
+      Name: !Join ["-", [!Ref Stage, BastionHostBIp, !Ref CurrentEnv]]

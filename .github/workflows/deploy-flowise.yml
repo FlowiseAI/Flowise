@@ -40,6 +40,8 @@ jobs:
           --template-body file://aws-cloudformation/flowise.yml
         aws cloudformation validate-template \
           --template-body file://aws-cloudformation/route.yml
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/bastion.yml
 
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v2
@@ -219,6 +221,23 @@ jobs:
 
         echo "Wait for creating domain"
         sleep 60
+
+    - name: Bastion-Cloudformation
+      env:
+        STACK_NAME: sumo-flowise-bastion-stack-dev
+        CURRENTENV: dev
+        KEYNAME: ${{ secrets.KEY_NAME }}
+      run: |
+        aws cloudformation deploy \
+          --template-file aws-cloudformation/bastion.yml \
+          --stack-name $STACK_NAME \
+          --parameter-overrides \
+            CurrentEnv=$CURRENTENV \
+            KeyPairName=$KEYNAME \
+          --capabilities CAPABILITY_NAMED_IAM
+
+        echo "CloudFormation Outputs:"
+        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
     - name: Post-deployment script
       env:
