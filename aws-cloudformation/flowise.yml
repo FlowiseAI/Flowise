@@ -198,10 +198,10 @@ Resources:
               Value: "postgres"
             - Name: DATABASE_PORT
               Value: 5432
-            # - Name: DATABASE_HOST
-            #   Value: !Ref DatabaseHost
             - Name: DATABASE_HOST
-              Value: localhost
+              Value: !Ref DatabaseHost
+            # - Name: DATABASE_HOST
+            #   Value: localhost
             - Name: DATABASE_NAME
               Value: "flowise"
             - Name: DATABASE_USER
