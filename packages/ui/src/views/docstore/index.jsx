@@ -50,6 +50,11 @@ import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STO
 
 // eslint-disable-next-line react/prop-types
 const Documents = ({ storeType = import.meta.env.VITE_DOCUMENT_STORE_TYPE }) => {
+  const dataLogin = localStorage.getItem('dataLogin') ? JSON.parse(localStorage.getItem('dataLogin')) : {}
+  const isLogin = dataLogin?.user?.id ? true : false
+
+  const rootPrefix = dataLogin?.user?.role === 'STOCK' ? 'rongviet-sample/' : dataLogin?.user?.role === 'UNI' ? 'cmcuni-sample/' : ''
+
   const theme = useTheme()
   const customization = useSelector((state) => state.customization)
 
@@ -151,7 +156,11 @@ const Documents = ({ storeType = import.meta.env.VITE_DOCUMENT_STORE_TYPE }) => 
       {storeType === 's3' ? (
         <Stack flexDirection='column' sx={{ gap: 1 }}>
           <ViewHeader title='Document Store'></ViewHeader>
-          <S3Explorer apiBaseUrl={import.meta.env.VITE_DOCUMENT_STORE_BASE_URL} homeLabel='Kho tài liệu' rootPrefix='' />
+          {isLogin ? (
+            <S3Explorer apiBaseUrl={import.meta.env.VITE_DOCUMENT_STORE_BASE_URL} homeLabel='Kho tài liệu' rootPrefix={rootPrefix} />
+          ) : (
+            <div>Đăng nhập để xem Document Store. </div>
+          )}
         </Stack>
       ) : (
         <>

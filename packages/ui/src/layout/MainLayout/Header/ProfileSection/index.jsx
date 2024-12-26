@@ -357,7 +357,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                   {username && (
                     <Box sx={{ p: 2 }}>
                       <Typography component='span' variant='h4'>
-                        {username}
+                        user: {username}
                       </Typography>
                     </Box>
                   )}
@@ -403,19 +403,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                           <ListItemText primary={<Typography variant='body2'>Import</Typography>} />
                         </ListItemButton>
                         <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
-                        {/*<ListItemButton*/}
-                        {/*    sx={{ borderRadius: `${customization.borderRadius}px` }}*/}
-                        {/*    onClick={() => {*/}
-                        {/*        setOpen(false)*/}
-                        {/*        setAboutDialogOpen(true)*/}
-                        {/*    }}*/}
-                        {/*>*/}
-                        {/*    <ListItemIcon>*/}
-                        {/*        <IconInfoCircle stroke={1.5} size='1.3rem' />*/}
-                        {/*    </ListItemIcon>*/}
-                        {/*    <ListItemText primary={<Typography variant='body2'>About Agent Studio</Typography>} />*/}
-                        {/*</ListItemButton>*/}
-                        {localStorage.getItem('username') && localStorage.getItem('password') && (
+                        {username && (
                           <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }} onClick={handleLogout}>
                             <ListItemIcon>
                               <IconLogout stroke={1.5} size='1.3rem' />
