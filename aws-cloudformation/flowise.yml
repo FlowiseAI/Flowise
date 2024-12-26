@@ -177,7 +177,7 @@ Resources:
             - Name: CORS_ORIGINS
               Value: "*"
             - Name: IFRAME_ORIGINS
-              Value: ""
+              Value: "*"
             - Name: FLOWISE_USERNAME
               Value: !Ref DBUsername
             - Name: FLOWISE_PASSWORD
