@@ -193,7 +193,7 @@ Resources:
             - Name: DATABASE_TYPE
               Value: "postgres"
             - Name: DATABASE_PORT
-              Value: "5432"
+              Value: 5432
             - Name: DATABASE_HOST
               Value: !Join ["-", [!Ref Stage, "RDSInstanceEndpoint", !Ref CurrentEnv]]
             - Name: DATABASE_NAME
@@ -203,9 +203,9 @@ Resources:
             - Name: DATABASE_PASSWORD
               Value: !Ref Password
             - Name: DATABASE_SSL
-              Value: "true"
+              Value: true
             - Name: DATABASE_SSL_KEY_BASE64
-              Value: "true"
+              Value: true
             - Name: APIKEY_PATH
               Value: "/root/.flowise"
             - Name: SECRETKEY_PATH
