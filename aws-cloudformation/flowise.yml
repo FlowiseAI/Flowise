@@ -210,20 +210,22 @@ Resources:
               Value: true
             - Name: DATABASE_SSL_KEY_BASE64
               Value: true
+            - Name: PGSSLMODE
+              Value: "require"
             - Name: APIKEY_PATH
               Value: "/root/.flowise"
             - Name: SECRETKEY_PATH
               Value: "/root/.flowise"
-            - Name: FLOWISE_SECRETKEY_OVERWRITE
-              Value: ""
-            - Name: LOG_LEVEL
-              Value: ""
+            # - Name: FLOWISE_SECRETKEY_OVERWRITE
+            #   Value: ""
+            # - Name: LOG_LEVEL
+            #   Value: ""
             - Name: LOG_PATH
               Value: "/root/.flowise/logs"
             - Name: BLOB_STORAGE_PATH
               Value: "/root/.flowise/storage"
-            - Name: DISABLE_FLOWISE_TELEMETRY
-              Value: ""
+            # - Name: DISABLE_FLOWISE_TELEMETRY
+            #   Value: ""
           EntryPoint:
             - /bin/sh
             - -c
