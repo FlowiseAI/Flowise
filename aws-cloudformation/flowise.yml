@@ -25,7 +25,7 @@ Parameters:
     Type: String
     Default: latest
 
-  DBUsername:
+  Username:
     Description: 'The database admin account username'
     NoEcho: true
     Type: 'String'
@@ -34,7 +34,7 @@ Parameters:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: 'must begin with a letter and contain only alphanumeric characters.'
 
-  DBPassword:
+  Password:
     Description: 'The database admin account password'
     NoEcho: true
     Type: 'String'
@@ -179,13 +179,13 @@ Resources:
             - Name: IFRAME_ORIGINS
               Value: "*"
             - Name: FLOWISE_USERNAME
-              Value: !Ref DBUsername
+              Value: !Ref Username
             - Name: FLOWISE_PASSWORD
-              Value: !Ref DBUsername
-            - Name: FLOWISE_FILE_SIZE_LIMIT
-              Value: ""
+              Value: !Ref Password
+            # - Name: FLOWISE_FILE_SIZE_LIMIT
+            #   Value: ""
             - Name: DEBUG
-              Value: ""
+              Value: true
             - Name: DATABASE_PATH
               Value: "/root/.flowise"
             - Name: DATABASE_TYPE
@@ -199,9 +199,9 @@ Resources:
             # - Name: DATABASE_NAME
             #   Value: "flowise"
             # - Name: DATABASE_USER
-            #   Value: !Ref DBUsername
+            #   Value: !Ref Username
             # - Name: DATABASE_PASSWORD
-            #   Value: !Ref DBPassword
+            #   Value: !Ref Password
             # - Name: DATABASE_SSL
             #   Value: "true"
             # - Name: DATABASE_SSL_KEY_BASE64

@@ -186,8 +186,8 @@ jobs:
           --template-file aws-cloudformation/flowise.yml \
           --parameter-overrides \
             CurrentEnv=$CURRENTENV \
-            DBUsername=$USERNAME \
-            DBPassword=$PASSWORD \
+            Username=$USERNAME \
+            Password=$PASSWORD \
             ECRImageUrl=$REPOSITORY_URI \
             ImageTag=$IMAGE_TAG \
             SumoFlowiseCertificateArn=$CERTIFICATEARN \
