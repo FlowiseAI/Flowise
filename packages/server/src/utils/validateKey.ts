@@ -2,6 +2,7 @@ import { Request } from 'express'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { compareKeys } from './apiKey'
 import apikeyService from '../services/apikey'
+const jwt = require('jsonwebtoken')
 
 /**
  * Validate Chatflow API Key
@@ -34,12 +35,31 @@ export const validateAPIKey = async (req: Request) => {
   if (!authorizationHeader) return false
 
   const suppliedKey = authorizationHeader.split(`Bearer `).pop()
-  if (suppliedKey) {
+
+  if (suppliedKey && process.env.LOGIN_TYPE === 'api-key') {
     const keys = await apikeyService.getAllApiKeys()
     const apiSecret = keys.find((key: any) => key.apiKey === suppliedKey)?.apiSecret
     if (!apiSecret) return false
     if (!compareKeys(apiSecret, suppliedKey)) return false
     return true
   }
+
+  if (suppliedKey && process.env.LOGIN_TYPE === 'token') {
+    const keys = await apikeyService.getAllApiKeys()
+    const apiSecret = keys.find((key: any) => key.apiKey === suppliedKey)?.apiSecret
+    if (!apiSecret) return false
+    if (!compareKeys(apiSecret, suppliedKey)) return false
+    return true
+  }
+
+  if (suppliedKey && process.env.LOGIN_TYPE === 'token') {
+    try {
+      const decoded = jwt.verify(suppliedKey, process.env.ACCESS_TOKEN_SECRET)
+      if (decoded.id) return true
+    } catch (err) {
+      return false
+    }
+  }
+
   return false
 }

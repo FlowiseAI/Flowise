@@ -143,7 +143,8 @@ export class App {
       '/api/v1/ping',
       '/api/v1/version',
       '/api/v1/attachments',
-      '/api/v1/metrics'
+      '/api/v1/metrics',
+      '/api/v1/user'
     ]
     const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
     const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
