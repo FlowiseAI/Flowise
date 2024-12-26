@@ -29,7 +29,6 @@ Parameters:
     Description: 'The database admin account username'
     NoEcho: true
     Type: 'String'
-    Default: 'admin'
     MinLength: '1'
     MaxLength: '16'
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
@@ -39,7 +38,6 @@ Parameters:
     Description: 'The database admin account password'
     NoEcho: true
     Type: 'String'
-    Default: 'admin'
     MinLength: '8'
     MaxLength: '41'
     AllowedPattern: '[a-zA-Z0-9@]*'
