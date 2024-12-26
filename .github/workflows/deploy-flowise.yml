@@ -40,8 +40,8 @@ jobs:
           --template-body file://aws-cloudformation/flowise.yml
         aws cloudformation validate-template \
           --template-body file://aws-cloudformation/route.yml
-        # aws cloudformation validate-template \
-        #   --template-body file://aws-cloudformation/bastion.yml
+        aws cloudformation validate-template \
+          --template-body file://aws-cloudformation/secret.yml
 
     - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v2

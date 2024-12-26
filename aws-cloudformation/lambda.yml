@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: This template creates resources for Flowise application
+
+Parameters:
+  Stage:
+    Description: Prefix of resource names
+    Type: String
+    Default: sumo-flowise
+
+  CurrentEnv:
+    Description: "Deployment environment (e.g., dev, prod)"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  SumoFlowiseLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Join ["-", [!Ref Stage, "rotation-lambda", !Ref CurrentEnv]]
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Role: !GetAtt SumoFlowiseLambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          import boto3
+          import json
+          import random
+          import string
+
+          def lambda_handler(event, context):
+              secret_arn = event['SecretId']
+              stage = event['Step']
+              if not secret_arn or not stage:
+                  raise ValueError("Invalid event: SecretId and Step are required.")
+                                
+              secrets_client = boto3.client('secretsmanager')
+              response = secrets_client.get_secret_value(SecretId=secret_arn)
+              secret = json.loads(response['SecretString'])
+
+              username = secret['username']
+              password = secret['password']
+              database_host = "your_database_host"
+              database_name = "your_database_name"
+
+              if stage == "createSecret":
+                  # Generate new password
+                  new_password = generate_password()
+                  
+                  # Update the new password in the secret
+                  secret['password'] = new_password
+                  secrets_client.put_secret_value(SecretId=secret_arn, SecretString=json.dumps(secret))
+                  
+                  # Return success
+                  return "createSecret complete"
+              elif stage == "setSecret":
+                  return {"status": "setSecret complete"}
+
+              elif stage == "testSecret":
+                  return {"status": "testSecret complete"}
+
+              elif stage == "finishSecret":
+                  return {"status": "finishSecret complete"}
+
+              else:
+                  raise ValueError(f"Invalid rotation step: {stage}")
+
+          def generate_password():
+              # Generate a strong password
+              characters = string.ascii_letters + string.digits + "!@#$%^&*()"
+              return ''.join(random.choice(characters) for i in range(16))
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, rotation-lambda, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
+
+  SumoFlowiseLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SumoFlowiseLambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MyLambdaPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:*
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: "*"
