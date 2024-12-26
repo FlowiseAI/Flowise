@@ -63,7 +63,7 @@ export const init = async (): Promise<void> => {
             })
             break
         case 'postgres':
-            logger.info(`connect postgres host=${process.env.DATABASE_HOST}, port=${process.env.DATABASE_PORT}, user=${process.env.DATABASE_USER}, password=${process.env.DATABASE_PASSWORD}, dbname=${process.env.DATABASE_NAME}, ssl=`, getDatabaseSSLFromEnv())
+            logger.info(`connect postgres host=${process.env.DATABASE_HOST}, port=${process.env.DATABASE_PORT}, user=${process.env.DATABASE_USER}, password=${process.env.DATABASE_PASSWORD}, dbname=${process.env.DATABASE_NAME}, ssl=${getDatabaseSSLFromEnv()}`)
             appDataSource = new DataSource({
                 type: 'postgres',
                 host: process.env.DATABASE_HOST,

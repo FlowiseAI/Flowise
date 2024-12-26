@@ -65,9 +65,9 @@ Resources:
     Properties:
       Name: !Join ["-", [!Ref Stage, public-lb, !Ref CurrentEnv]]
       Scheme: internet-facing
-      LoadBalancerAttributes:
-        - Key: idle_timeout.timeout_seconds
-          Value: "30"
+      # LoadBalancerAttributes:
+      #   - Key: idle_timeout.timeout_seconds
+      #     Value: "30"
       Subnets:
         - !ImportValue
           Fn::Join: ["-", [!Ref Stage, "Public1Id", !Ref CurrentEnv]]
