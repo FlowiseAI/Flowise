@@ -15,6 +15,15 @@ Parameters:
       - dev
       - prod
 
+  DBName:
+    Default: flowise
+    Description: My database
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: Must begin with a letter and contain only alphanumeric characters.
+
   DBUsername:
     Description: 'The database admin account username'
     NoEcho: true
@@ -75,11 +84,11 @@ Resources:
     Properties:
       DBInstanceIdentifier: !Join ["-", [!Ref Stage, "postgres", !Ref CurrentEnv]]
       DBInstanceClass: db.t3.micro
+      DBName: !Ref DBName
       Engine: postgres
       MasterUsername: !Ref DBUsername
       MasterUserPassword: !Ref DBPassword
       DBSubnetGroupName: !Ref SumoFlowiseRDSSubnetGroup
-      DBName: flowise
       VPCSecurityGroups:
         - !Ref SumoFlowiseRDSDBSecurityGroup
       MultiAZ: true
