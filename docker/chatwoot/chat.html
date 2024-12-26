@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Title</title>
+  </head>
+  <body>
+    <script>
+      ;(function (d, t) {
+        var BASE_URL = 'http://localhost:8003'
+        var g = d.createElement(t),
+          s = d.getElementsByTagName(t)[0]
+        g.src = BASE_URL + '/packs/js/sdk.js'
+        g.defer = true
+        g.async = true
+        s.parentNode.insertBefore(g, s)
+        g.onload = function () {
+          window.chatwootSDK.run({
+            websiteToken: 'tdXQnKYi6qzUvjc8FYj6n7QX',
+            baseUrl: BASE_URL
+          })
+        }
+      })(document, 'script')
+    </script>
+  </body>
+</html>
