@@ -158,7 +158,7 @@ Resources:
           Enable: true
           Rollback: true
         MaximumPercent: 200
-        MinimumHealthyPercent: 100
+        MinimumHealthyPercent: 50
 
   SumoFlowiseTaskDefinitionFlowise:
     Type: "AWS::ECS::TaskDefinition"

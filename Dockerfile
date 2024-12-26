@@ -13,7 +13,7 @@ RUN apk add --no-cache build-base cairo-dev pango-dev
 RUN apk add --no-cache chromium
 
 # Install PostgreSQL and other necessary packages
-RUN apk add --no-cache postgresql postgresql-contrib bash
+RUN apk add --no-cache postgresql postgresql-contrib postgresql-client bash
 
 #install PNPM globaly
 RUN npm install -g pnpm

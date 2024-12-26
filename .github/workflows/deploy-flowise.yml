@@ -164,6 +164,7 @@ jobs:
         ECR_REPOSITORY: sumo-flowise-app-dev
         REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ github.sha }}
+        # IMAGE_TAG: lastest
       run: |
         # Build Docker image
         docker build -t $REPOSITORY_URI:$IMAGE_TAG .
@@ -177,6 +178,7 @@ jobs:
         CURRENTENV: dev
         REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ github.sha }}
+        # IMAGE_TAG: lastest
         USERNAME: ${{ secrets.USERNAME }}
         PASSWORD: ${{ secrets.PASSWORD }}
         CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
