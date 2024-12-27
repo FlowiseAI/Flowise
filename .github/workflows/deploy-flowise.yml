@@ -297,14 +297,18 @@ jobs:
         echo "CloudFormation Outputs:"
         aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-        SumoFlowiseApiEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseApiEndpoint'].OutputValue" --output text)
-        echo "API_ENDPOINT=${SumoFlowiseApiEndpoint}" >> $GITHUB_ENV
+        SumoFlowiseGetCredentialApiEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseGetCredentialApiEndpoint'].OutputValue" --output text)
+        echo "GET_CREDENTIAL_API_ENDPOINT=${SumoFlowiseGetCredentialApiEndpoint}" >> $GITHUB_ENV
 
+        SumoFlowiseRotatePasswordApiEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRotatePasswordApiEndpoint'].OutputValue" --output text)
+        echo "ROTATE_PASSWORD_API_ENDPOINT=${SumoFlowiseRotatePasswordApiEndpoint}" >> $GITHUB_ENV
+        
     - name: Result
       run: |
         echo "- Deployment complete! Check the url:"
         echo "${{ env.DOMAIN_NAME }}"
         echo ""
         echo "- API endpoint to get secret and restart application:"
-        echo "${{ env.API_ENDPOINT }}"
+        echo "${{ env.GET_CREDENTIAL_API_ENDPOINT }}"
+        echo "${{ env.ROTATE_PASSWORD_API_ENDPOINT }}"
         echo ""
