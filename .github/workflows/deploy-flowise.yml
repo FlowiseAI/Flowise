@@ -46,7 +46,7 @@ jobs:
           aws cloudformation validate-template \
             --template-body file://aws-cloudformation/iam.yml
           aws cloudformation validate-template \
-            --template-body file://aws-cloudformation/rotate-lambda.yml
+            --template-body file://aws-cloudformation/rotate_lambda.yml
           aws cloudformation validate-template \
             --template-body file://aws-cloudformation/secret.yml
           aws cloudformation validate-template \
