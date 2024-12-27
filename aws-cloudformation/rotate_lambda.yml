@@ -35,11 +35,17 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - secretsmanager:*
+                  - secretsmanager:GetSecretValue
+                  - secretsmanager:PutSecretValue
+                  - secretsmanager:DescribeSecret
+                  - secretsmanager:UpdateSecretVersionStage
+                  - secretsmanager:GetRandomPassword
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - logs:*
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
                 Resource: "*"
 
   SumoFlowiseRotateLambdaFunction:
@@ -236,8 +242,8 @@ Resources:
 
 Outputs:
   RotateLambdaArn:
-    Description: The Id of rotate Lambda
-    Value: !Ref SumoFlowiseRotateLambdaFunction
+    Description: The Arn of rotate Lambda
+    Value: !GetAtt SumoFlowiseRotateLambdaFunction.Arn
     Export:
-      Name: !Join ["-", [!Ref Stage, RotateLambda, !Ref CurrentEnv]]    
+      Name: !Join ["-", [!Ref Stage, RotateLambdaArn, !Ref CurrentEnv]]    
       
