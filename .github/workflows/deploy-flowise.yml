@@ -279,6 +279,9 @@ jobs:
     #     echo "CloudFormation Outputs:"
     #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
+        # RecordSetName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
+        # echo "DOMAIN_NAME=${RecordSetName}" >> $GITHUB_ENV
+
     #     echo "Wait for creating domain"
     #     sleep 60
 
@@ -303,10 +306,9 @@ jobs:
         echo "API_ENDPOINT=${SumoFlowiseApiEndpoint}" >> $GITHUB_ENV
         
 
-    # - name: Post-deployment script
-    #   env:
-    #     STACK_NAME: sumo-flowise-route-stack-dev
-    #   run: |
-    #     DomainName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
-    #     echo "Deployment complete!\n Check the url: https://${DomainName}"
-        
+    - name: Result
+      run: |
+        # echo "Deployment complete!\n Check the url: DOMAIN_NAME"
+
+        echo "API endpoint to get secret\n ${{ env.API_ENDPOINT }}"
+
