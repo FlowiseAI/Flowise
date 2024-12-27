@@ -243,7 +243,7 @@ jobs:
           --template-file aws-cloudformation/flowise.yml \
           --parameter-overrides \
             CurrentEnv=$CURRENTENV \
-            SerectArn=$SECRET_ARN \
+            SecretArn=$SECRET_ARN \
             DBUsername=$DBUSERNAME \
             DBPassword=$DBPASSWORD \
             ECRImageUrl=$REPOSITORY_URI \
@@ -289,7 +289,7 @@ jobs:
           --stack-name $STACK_NAME \
           --parameter-overrides \
             CurrentEnv=$CURRENTENV \
-            SerectArn=$SECRET_ARN \
+            SecretArn=$SECRET_ARN \
           --capabilities CAPABILITY_NAMED_IAM
 
         echo "CloudFormation Outputs:"
