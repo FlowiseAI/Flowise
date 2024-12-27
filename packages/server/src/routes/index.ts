@@ -43,6 +43,7 @@ import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
 import user from './user'
+import chatwoot from './chatwoot'
 
 const router: Router = express.Router()
 
@@ -90,5 +91,6 @@ router.use('/verify', verifyRouter)
 router.use('/version', versionRouter)
 router.use('/upsert-history', upsertHistoryRouter)
 router.use('/user', user)
+router.use('/chatwoot', chatwoot)
 
 export default router
