@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 // material-ui
-import { styled, useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Switch } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
+import { Avatar, Box, ButtonBase } from '@mui/material'
 
 // project imports
 import LogoSection from '../LogoSection'
@@ -41,12 +41,14 @@ const Header = ({ handleLeftDrawerToggle }) => {
   })
 
   const loginApi = useApi(userApi.loginUser)
+  const getUserById = useApi(userApi.getUserById)
 
   const theme = useTheme()
   const navigate = useNavigate()
 
-  const dataLogin = localStorage.getItem('dataLogin') ? JSON?.parse(localStorage.getItem('dataLogin')) : {}
+  const dataLogin = useMemo(() => (localStorage.getItem('dataLogin') ? JSON?.parse(localStorage.getItem('dataLogin')) : {}), [])
   const isLogin = dataLogin?.user?.id ? true : false
+  const idUser = dataLogin?.user?.id ?? null
 
   const customization = useSelector((state) => state.customization)
   const [isDark, setIsDark] = useState(customization.isDarkMode)
@@ -56,6 +58,13 @@ const Header = ({ handleLeftDrawerToggle }) => {
     setIsDark((isDark) => !isDark)
     localStorage.setItem('isDarkMode', !isDark)
   }
+
+  const handleGetUserById = useCallback(async () => {
+    const resData = await getUserById.request(idUser)
+    if (resData) {
+      localStorage.setItem('dataLogin', JSON.stringify({ ...dataLogin, user: resData }))
+    }
+  }, [getUserById, idUser, dataLogin])
 
   const handleLogout = () => {
     localStorage.removeItem('dataLogin')
@@ -115,7 +124,15 @@ const Header = ({ handleLeftDrawerToggle }) => {
     if (isDark) {
       changeDarkMode()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDark])
+
+  useEffect(() => {
+    if (idUser) {
+      handleGetUserById()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>

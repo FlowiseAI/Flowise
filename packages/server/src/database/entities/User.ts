@@ -24,6 +24,9 @@ export class User {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.ADMIN })
   role: UserRole
 
+  @Column('varchar', { nullable: true })
+  displayPrefixes: string
+
   @Column({ type: 'varchar', length: 255 })
   password: string
 

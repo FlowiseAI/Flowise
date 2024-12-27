@@ -28,6 +28,7 @@ import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplat
 import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
 import { AddFollowUpPrompts1726666309552 } from './1726666309552-AddFollowUpPrompts'
 import { CreateUser1735187000183 } from './1735187000183-CreateUser'
+import { UpdateUser1735287396912 } from './1735287396912-UpdateUser'
 
 export const postgresMigrations = [
   Init1693891895163,
@@ -59,5 +60,6 @@ export const postgresMigrations = [
   AddCustomTemplate1725629836652,
   AddArtifactsToChatMessage1726156258465,
   AddFollowUpPrompts1726666309552,
-  CreateUser1735187000183
+  CreateUser1735187000183,
+  UpdateUser1735287396912
 ]
