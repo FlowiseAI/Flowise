@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response, Router } from 'express'
 import crypto from 'crypto'
 import axios from 'axios'
+import { v4 } from 'uuid'
 
 const router: Router = express.Router()
 
@@ -67,7 +68,8 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
     const { data: createdConversation } = await axios.post(
       `${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/conversations`,
       {
-        source_id: req.body.chatId || Date.now() + '',
+        // source_id: (req.body.chatId || Date.now() + '') + contactIdentifier,
+        source_id: v4(),
         inbox_id: inboxId.toString(),
         contact_id: contactId.toString(),
         message: {
@@ -82,7 +84,8 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
     )
 
     return res.json({ contactId, conversation: createdConversation })
-  } catch (e) {
+  } catch (e: any) {
+    console.log('[Request error]', e?.response?.data)
     next(e)
   }
 })
