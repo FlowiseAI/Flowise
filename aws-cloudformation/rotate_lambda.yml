@@ -29,7 +29,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: MyLambdaPolicy
+        - PolicyName: SecretsManagerRotationPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -225,7 +225,9 @@ Resources:
               # Finalize by staging the secret version current
               service_client.update_secret_version_stage(SecretId=arn, VersionStage="AWSCURRENT", MoveToVersionId=token, RemoveFromVersionId=current_version)
               logger.info("finishSecret: Successfully set AWSCURRENT stage to version %s for secret %s." % (token, arn))
-
+      Environment:
+        Variables:
+          SECRETS_MANAGER_ENDPOINT: !Sub "https://secretsmanager.${AWS::Region}.amazonaws.com"
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref Stage, rotate-lambda, !Ref CurrentEnv]]
