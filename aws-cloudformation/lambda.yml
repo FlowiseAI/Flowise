@@ -64,8 +64,8 @@ Resources:
           import json
 
           def lambda_handler(event, context):
-              secret_arn = ${SerectArn}
-              print("secret_arn=", secret_arn)
+              secret_arn = "${SerectArn}"
+              # print("secret_arn=", secret_arn)
               if not secret_arn:
                   return {
                       'statusCode': 400,
