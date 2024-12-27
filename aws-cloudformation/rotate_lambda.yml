@@ -20,7 +20,7 @@ Resources:
   SumoFlowiseRotateLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: SumoFlowiseLambdaExecutionRole
+      RoleName: SumoFlowiseRotateLambdaExecutionRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -29,7 +29,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: SecretsManagerRotationPolicy
+        - PolicyName: RotateLambdaExecutionRolePolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
