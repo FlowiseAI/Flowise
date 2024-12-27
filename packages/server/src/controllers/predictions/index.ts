@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { getRateLimiter } from '../../utils/rateLimit'
 import chatflowsService from '../../services/chatflows'
 import logger from '../../utils/logger'
@@ -8,6 +8,8 @@ import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { v4 as uuidv4 } from 'uuid'
 import { getErrorMessage } from '../../errors/utils'
+import axios from 'axios'
+import { CHATWOOT_ACCESS_KEY, CHATWOOT_ACCOUNT_ID, CHATWOOT_BASE_URL } from '../../routes/chatwoot'
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
@@ -62,8 +64,30 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
           res.setHeader('X-Accel-Buffering', 'no') //nginx config: https://serverfault.com/a/801629
           res.flushHeaders()
 
-          const apiResponse = await predictionsServices.buildChatflow(req)
-          sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
+          if (req.body.stored?.chatwoot?.conversation_id) {
+            // sseStreamer.streamStartEvent(chatId, '[]')
+            // sseStreamer.streamTokenEvent(chatId, 'hello world')
+            // sseStreamer.streamMetadataEvent(chatId, { chatId })
+            if (req.body.question) {
+              await axios.post(
+                `${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/conversations/${req.body.stored?.chatwoot?.conversation_id}/messages`,
+                {
+                  content: req.body.question,
+                  message_type: 'incoming'
+                },
+                {
+                  headers: {
+                    api_access_token: CHATWOOT_ACCESS_KEY
+                  }
+                }
+              )
+            }
+
+            sseStreamer.streamAbortEvent(chatId)
+          } else {
+            const apiResponse = await predictionsServices.buildChatflow(req)
+            sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
+          }
         } catch (error) {
           if (chatId) {
             sseStreamer.streamErrorEvent(chatId, getErrorMessage(error))

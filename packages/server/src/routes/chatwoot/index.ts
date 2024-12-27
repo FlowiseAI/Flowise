@@ -5,9 +5,9 @@ import { v4 } from 'uuid'
 
 const router: Router = express.Router()
 
-const CHATWOOT_ACCESS_KEY = process.env.CHATWOOT_ACCESS_KEY || 'b4RScnnsA6Nc4sfPQe2B9XY1' // test only
-const CHATWOOT_BASE_URL = process.env.CHATWOOT_BASE_URL || 'http://203.145.47.214:8003' // test only
-const CHATWOOT_ACCOUNT_ID = 2
+export const CHATWOOT_ACCESS_KEY = process.env.CHATWOOT_ACCESS_KEY || 'b4RScnnsA6Nc4sfPQe2B9XY1' // test only
+export const CHATWOOT_BASE_URL = process.env.CHATWOOT_BASE_URL || 'http://203.145.47.214:8003' // test only
+export const CHATWOOT_ACCOUNT_ID = 2
 
 // User routes
 router.post('/connect', async (req: Request, res: Response, next: NextFunction) => {
@@ -17,7 +17,7 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
         api_access_token: CHATWOOT_ACCESS_KEY
       }
     })
-    const inboxId = +inboxes.payload?.find((item: any) => item.website_token === req.body.id)?.id
+    const inboxId = +inboxes.payload?.find((item: any) => item.website_token === req.body.id || item.inbox_identifier === req.body.id)?.id
 
     if (!inboxId) throw new Error('inbox not found')
 
