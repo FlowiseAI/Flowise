@@ -207,23 +207,23 @@ jobs:
         echo "CloudFormation Outputs:"
         aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-    - name: Secret-Cloudformation
-      env:
-        STACK_NAME: sumo-flowise-secret-stack-dev
-        CURRENTENV: dev
-      run: |
-        aws cloudformation deploy \
-          --template-file aws-cloudformation/secret.yml \
-          --stack-name $STACK_NAME \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
+    # - name: Secret-Cloudformation
+    #   env:
+    #     STACK_NAME: sumo-flowise-secret-stack-dev
+    #     CURRENTENV: dev
+    #   run: |
+    #     aws cloudformation deploy \
+    #       --template-file aws-cloudformation/secret.yml \
+    #       --stack-name $STACK_NAME \
+    #       --parameter-overrides \
+    #         CurrentEnv=$CURRENTENV \
+    #       --capabilities CAPABILITY_NAMED_IAM
 
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+    #     echo "CloudFormation Outputs:"
+    #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
         
-        SumoFlowiseSecretArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretArn'].OutputValue" --output text)
-        echo "SECRET_ARN=${SumoFlowiseSecretArn}" >> $GITHUB_ENV
+    #     SumoFlowiseSecretArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretArn'].OutputValue" --output text)
+    #     echo "SECRET_ARN=${SumoFlowiseSecretArn}" >> $GITHUB_ENV
 
     - name: Flowise-CloudFormation
       env:
@@ -251,8 +251,11 @@ jobs:
             # SecretArn=$SECRET_ARN \
           --capabilities CAPABILITY_NAMED_IAM
 
-          echo "CloudFormation Outputs:"
-          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+        echo "CloudFormation Outputs:"
+        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+        SumoFlowiseSecretArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretArn'].OutputValue" --output text)
+        echo "SECRET_ARN=${SumoFlowiseSecretArn}" >> $GITHUB_ENV
 
     - name: Route53-Cloudformation
       env:
