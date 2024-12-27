@@ -51,36 +51,11 @@ Parameters:
     Description: Certificate ARN
     Type: String
 
-  # SecretArn:
-  #   Description: The Arn of Secret
-  #   Type: String
+  SecretArn:
+    Description: The Arn of Secret
+    Type: String
 
 Resources:
-  # # Create a Secret in AWS Secrets Manager
-  # SumoFlowiseSecret:
-  #   Type: AWS::SecretsManager::Secret
-  #   Properties:
-  #     Name: !Join ["-", [!Ref Stage, secret, !Ref CurrentEnv]]
-  #     Description: "Database credentials for Flowise application"
-  #     GenerateSecretString:
-  #       SecretStringTemplate: '{"username": "admin"}'
-  #       GenerateStringKey: "password"
-  #       PasswordLength: 30
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Join ["-", [!Ref Stage, secret, !Ref CurrentEnv]]
-  #       - Key: CurrentEnv
-  #         Value: !Ref CurrentEnv
-
-  # SumoFlowiseSecretRotation:
-  #   Type: AWS::SecretsManager::RotationSchedule
-  #   Properties:
-  #     SecretId: !Ref SumoFlowiseSecret
-  #     RotationLambdaARN: !ImportValue 
-  #       Fn::Join: ["-", [!Ref Stage, RotateLambdaArn, !Ref CurrentEnv]]    
-  #     RotationRules:
-  #       AutomaticallyAfterDays: 1 # Rotate every day
-
   ####
   # Flowise ECS service related resources
   ####
@@ -259,9 +234,9 @@ Resources:
             #   Value: ""
           Secrets: # Use Secrets Manager to inject secrets
             - Name: FLOWISE_USERNAME
-              ValueFrom: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Stage}-SecretArn-${CurrentEnv}:SecretString:username"
+              ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:username}}'
             - Name: FLOWISE_PASSWORD
-              ValueFrom: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Stage}-SecretArn-${CurrentEnv}:SecretString:password"
+              ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:password}}'
           EntryPoint:
             - /bin/sh
             - -c
