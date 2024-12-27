@@ -20,6 +20,14 @@ Parameters:
     Description: The Arn of Secret
     Type: String
 
+  ClusterArn:
+    Description: The Arn of Secret
+    Type: String
+
+  ServiceArn:
+    Description: The Arn of Secret
+    Type: String
+
 Resources:
   SumoFlowiseLambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -45,17 +53,17 @@ Resources:
                 Action:
                   - logs:*
                 Resource: "*"
-
-  SumoFlowiseLambdaFunction:
+  # Lambda Function: Retrieve Credentials
+  SumoFlowiseGetCredentialLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Join ["-", [!Ref Stage, "lambda", !Ref CurrentEnv]]
+      FunctionName: !Join ["-", [!Ref Stage, "GetCredentialLambda", !Ref CurrentEnv]]
       Runtime: python3.9
       Handler: index.lambda_handler
       Role: !GetAtt SumoFlowiseLambdaExecutionRole.Arn
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, get-lambda, !Ref CurrentEnv]]
+          Value: !Join ["-", [!Ref Stage, GetCredentialLambda, !Ref CurrentEnv]]
         - Key: CurrentEnv
           Value: !Ref CurrentEnv
       Code:
@@ -87,55 +95,181 @@ Resources:
                   return {
                       'statusCode': 500,
                       'body': json.dumps(f"Error retrieving secret: {str(e)}")
-                  }                  
+                  }
+
+  # Lambda Function: Rotate Password
+  SumoFlowiseRotatePasswordLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Join ["-", [!Ref Stage, "RotatePasswordLambda", !Ref CurrentEnv]]
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Role: !GetAtt SumoFlowiseLambdaExecutionRole.Arn
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, RotatePasswordLambda, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
+      Code:
+        ZipFile: !Sub |
+          import boto3
+          import random
+          import string
+          import json
+
+          def generate_password(length=30):
+              characters = string.ascii_letters + string.digits + "-"
+              return "".join(random.choices(characters, k=length))
+
+          def lambda_handler(event, context):
+              secret_arn = "${SecretArn}"
+              if not secret_arn:
+                  return {
+                      'statusCode': 400,
+                      'body': json.dumps("Missing 'secret_arn' in the request.")
+                  }
+              try:
+                  secrets_client = boto3.client('secretsmanager')
+                  response = secrets_client.get_secret_value(SecretId=secret_arn)
+                  secret = json.loads(response['SecretString'])
+
+                  new_password = generate_password()
+                  secret["password"] = new_password
+
+                  secrets_client.update_secret(
+                      SecretId=secret_name,
+                      SecretString=json.dumps(secret)
+                  )
+              except Exception as e:
+                  return {
+                      'statusCode': 500,
+                      'body': json.dumps(f"Error : {str(e)}")
+                  }
+
+              cluster_arn = "${ClusterArn}"
+              service_arn = "${ServiceArn}"
+
+              if not cluster_arn or not service_arn:
+                  return {
+                      'statusCode': 400,
+                      'body': json.dumps("Missing 'cluster_arn' or 'service_arn' in the request.")
+                  }
+              try:
+                  ecs_client = boto3.client("ecs")
+                  response = ecs_client.describe_services(
+                      cluster=cluster_arn,
+                      services=[service_arn]
+                  )
+                  service = response["services"][0]
+
+                  task_definition = service["taskDefinition"]
+
+                  ecs_client.update_service(
+                      cluster=cluster_arn,
+                      service=service_arn,
+                      taskDefinition=task_definition,
+                      forceNewDeployment=True
+                  )
+              except Exception as e:
+                  return {
+                      'statusCode': 500,
+                      'body': json.dumps(f"Error : {str(e)}")
+                  }
+              
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps({
+                      'username': secret.get('username'),
+                      'password': secret.get('password'),
+                  })
+              }
 
   # API Gateway
-  SumoFlowiseApiGatewayRestApi:
+  SumoFlowiseApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: !Join ["-", [!Ref Stage, secrets-api, !Ref CurrentEnv]]
+      Name: !Join ["-", [!Ref Stage, api-gateway, !Ref CurrentEnv]]
       Description: API for accessing secrets
 
-  SumoFlowiseApiGatewayResourceSecrets:
+  SumoFlowiseGetCredentialResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt SumoFlowiseApiGatewayRestApi.RootResourceId
+      ParentId: !GetAtt SumoFlowiseApiGateway.RootResourceId
       PathPart: secrets
-      RestApiId: !Ref SumoFlowiseApiGatewayRestApi
+      RestApiId: !Ref SumoFlowiseApiGateway
 
-  SumoFlowiseApiGatewayMethodSecretsGet:
+  SumoFlowiseRotatePasswordResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt SumoFlowiseApiGateway.RootResourceId
+      PathPart: rotate-secrets
+      RestApiId: !Ref SumoFlowiseApiGateway
+
+  SumoFlowiseGetCredentialMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      HttpMethod: GET
-      AuthorizationType: NONE
-      RestApiId: !Ref SumoFlowiseApiGatewayRestApi
-      ResourceId: !Ref SumoFlowiseApiGatewayResourceSecrets
+      HttpMethod: POST
+      RestApiId: !Ref SumoFlowiseApiGateway
+      ResourceId: !Ref SumoFlowiseGetCredentialResource
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri: !Sub
           - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-          - { LambdaArn: !GetAtt SumoFlowiseLambdaFunction.Arn }
-      
-  SumoFlowiseApiGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn: SumoFlowiseApiGatewayMethodSecretsGet
+          - { LambdaArn: !GetAtt SumoFlowiseGetCredentialLambdaFunction.Arn }
+
+  SumoFlowiseRotatePasswordMethod:
+    Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !Ref SumoFlowiseApiGatewayRestApi
+      HttpMethod: POST
+      RestApiId: !Ref SumoFlowiseApiGateway
+      ResourceId: !Ref SumoFlowiseRotatePasswordResource
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          - { LambdaArn: !GetAtt SumoFlowiseRotatePasswordLambdaFunction.Arn }
+
+  SumoFlowiseGetCredentialDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: SumoFlowiseGetCredentialMethod
+    Properties:
+      RestApiId: !Ref SumoFlowiseApiGateway
       StageName: !Ref CurrentEnv
 
-  # Grant API Gateway permissions to invoke Lambda
-  SumoFlowiseLambdaInvokePermission:
+  SumoFlowiseRotatePasswordDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: SumoFlowiseRotatePasswordMethod
+    Properties:
+      RestApiId: !Ref SumoFlowiseApiGateway
+      StageName: !Ref CurrentEnv
+
+  SumoFlowiseGetCredentialPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt SumoFlowiseLambdaFunction.Arn
+      FunctionName: !GetAtt SumoFlowiseGetCredentialLambdaFunction.Arn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
-        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SumoFlowiseApiGatewayRestApi}/*/*/secrets
+        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SumoFlowiseApiGateway}/*/*/secrets
+
+  SumoFlowiseRotatePasswordPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SumoFlowiseRotatePasswordLambdaFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SumoFlowiseApiGateway}/*/*/rotate-secrets
 
 Outputs:
-  SumoFlowiseApiEndpoint:
-    Description: API Gateway endpoint URL
+  SumoFlowiseGetCredentialApiEndpoint:
+    Description: GetCredential API Gateway endpoint URL
     Value: !Sub
-      https://${SumoFlowiseApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${CurrentEnv}/secrets
+      https://${SumoFlowiseApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${CurrentEnv}/secrets
+
+  SumoFlowiseRotatePasswordApiEndpoint:
+    Description: RotatePassword API Gateway endpoint URL
+    Value: !Sub
+      https://${SumoFlowiseApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${CurrentEnv}/rotate-secrets
