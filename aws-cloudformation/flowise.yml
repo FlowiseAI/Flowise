@@ -186,11 +186,10 @@ Resources:
               Value: "*"
             - Name: IFRAME_ORIGINS
               Value: "*"
-            # - Name: FLOWISE_USERNAME
-            #   Value: !Join ["", ["{{resolve:secretsmanager:", !Ref SumoFlowiseSecret,":SecretString:username}}"]]
             # - Name: FLOWISE_PASSWORD
-            #   Value: !Join ["", ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret,':SecretString:password}}']]
-            # - Name: FLOWISE_FILE_SIZE_LIMIT
+            #   Value: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:password}}'
+            - Name: FLOWISE_USERNAME
+              Value: "admin"
             #   Value: ""
             - Name: DEBUG
               Value: true
@@ -233,10 +232,11 @@ Resources:
             # - Name: DISABLE_FLOWISE_TELEMETRY
             #   Value: ""
           Secrets: # Use Secrets Manager to inject secrets
-            - Name: FLOWISE_USERNAME
-              ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:username}}'
             - Name: FLOWISE_PASSWORD
-              ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:password}}'
+              # ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:password}}'
+              ValueFrom: !Sub '${SecretArn}/admin'
+            # - Name: FLOWISE_USERNAME
+            #   ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:username}}'
           EntryPoint:
             - /bin/sh
             - -c
