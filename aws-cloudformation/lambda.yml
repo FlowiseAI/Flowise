@@ -16,68 +16,11 @@ Parameters:
       - dev
       - prod
 
+  SerectArn:
+    Description: The Arn of Secret
+    Type: String
+
 Resources:
-  SumoFlowiseLambdaFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      FunctionName: !Join ["-", [!Ref Stage, "rotation-lambda", !Ref CurrentEnv]]
-      Runtime: python3.9
-      Handler: index.lambda_handler
-      Role: !GetAtt SumoFlowiseLambdaExecutionRole.Arn
-      Code:
-        ZipFile: |
-          import boto3
-          import json
-          import random
-          import string
-
-          def lambda_handler(event, context):
-              secret_arn = event['SecretId']
-              stage = event['Step']
-              if not secret_arn or not stage:
-                  raise ValueError("Invalid event: SecretId and Step are required.")
-                                
-              secrets_client = boto3.client('secretsmanager')
-              response = secrets_client.get_secret_value(SecretId=secret_arn)
-              secret = json.loads(response['SecretString'])
-
-              username = secret['username']
-              password = secret['password']
-              database_host = "your_database_host"
-              database_name = "your_database_name"
-
-              if stage == "createSecret":
-                  # Generate new password
-                  new_password = generate_password()
-                  
-                  # Update the new password in the secret
-                  secret['password'] = new_password
-                  secrets_client.put_secret_value(SecretId=secret_arn, SecretString=json.dumps(secret))
-                  
-                  # Return success
-                  return "createSecret complete"
-              elif stage == "setSecret":
-                  return {"status": "setSecret complete"}
-
-              elif stage == "testSecret":
-                  return {"status": "testSecret complete"}
-
-              elif stage == "finishSecret":
-                  return {"status": "finishSecret complete"}
-
-              else:
-                  raise ValueError(f"Invalid rotation step: {stage}")
-
-          def generate_password():
-              # Generate a strong password
-              characters = string.ascii_letters + string.digits + "!@#$%^&*()"
-              return ''.join(random.choice(characters) for i in range(16))
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, rotation-lambda, !Ref CurrentEnv]]
-        - Key: CurrentEnv
-          Value: !Ref CurrentEnv
-
   SumoFlowiseLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -102,3 +45,115 @@ Resources:
                 Action:
                   - logs:*
                 Resource: "*"
+
+  SumoFlowiseLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Join ["-", [!Ref Stage, "rotation-lambda", !Ref CurrentEnv]]
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Role: !GetAtt SumoFlowiseLambdaExecutionRole.Arn
+      Code:
+        ZipFile: !Sub |
+          import boto3
+          import json
+          import random
+          import string
+
+          def lambda_handler(event, context):
+              # secret_arn = event.get('secret_arn', None)
+              secret_arn = ${SerectArn}
+              print("secret_arn=", secret_arn)
+              if not secret_arn:
+                  return {
+                      'statusCode': 400,
+                      'body': json.dumps("Missing 'secret_arn' in the request.")
+                  }
+              try:
+                  secrets_client = boto3.client('secretsmanager')
+                  response = secrets_client.get_secret_value(SecretId=secret_arn)
+                  secret = json.loads(response['SecretString'])
+
+                  username = secret['username']
+                  password = secret['password']
+
+                  # Generate new password
+                  new_password = generate_password()
+                  
+                  # Update the new password in the secret
+                  secret['password'] = new_password
+                  secrets_client.put_secret_value(SecretId=secret_arn, SecretString=json.dumps(secret))
+                  
+                  return {
+                      'statusCode': 200,
+                      'body': json.dumps({
+                          'username': secret.get('username'),
+                          'password': secret.get('password'),
+                      })
+                  }
+              except Exception as e:
+                  return {
+                      'statusCode': 500,
+                      'body': json.dumps(f"Error retrieving secret: {str(e)}")
+                  }                  
+
+          def generate_password():
+              # Generate a strong password
+              characters = string.ascii_letters + string.digits + "!@#$%^&*()"
+              return ''.join(random.choice(characters) for i in range(16))
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, rotation-lambda, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
+
+  # API Gateway
+  SumoFlowiseApiGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Join ["-", [!Ref Stage, secrets-api, !Ref CurrentEnv]]
+      Description: API for accessing secrets
+
+  SumoFlowiseApiGatewayResourceSecrets:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt SumoFlowiseApiGatewayRestApi.RootResourceId
+      PathPart: secrets
+      RestApiId: !Ref SumoFlowiseApiGatewayRestApi
+
+  SumoFlowiseApiGatewayMethodSecretsGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      AuthorizationType: NONE
+      RestApiId: !Ref SumoFlowiseApiGatewayRestApi
+      ResourceId: !Ref SumoFlowiseApiGatewayResourceSecrets
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          - { LambdaArn: !GetAtt SumoFlowiseLambdaFunction.Arn }
+      
+  SumoFlowiseApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: SumoFlowiseApiGatewayMethodSecretsGet
+    Properties:
+      RestApiId: !Ref SumoFlowiseApiGatewayRestApi
+      StageName: !Ref CurrentEnv
+
+  # Grant API Gateway permissions to invoke Lambda
+  SumoFlowiseLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt SumoFlowiseLambdaFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SumoFlowiseApiGatewayRestApi}/*/*/secrets
+
+Outputs:
+  SumoFlowiseApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub
+      https://${SumoFlowiseApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${CurrentEnv}/secrets

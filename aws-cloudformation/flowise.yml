@@ -29,7 +29,7 @@ Parameters:
     Description: The address of postgres
     Type: String
   
-  Username:
+  DBUsername:
     Description: 'The database admin account username'
     NoEcho: true
     Type: 'String'
@@ -38,7 +38,25 @@ Parameters:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: 'must begin with a letter and contain only alphanumeric characters.'
 
-  Password:
+  DBPassword:
+    Description: 'The database admin account password'
+    NoEcho: true
+    Type: 'String'
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9@]*'
+    ConstraintDescription: 'must contain only alphanumeric characters and/or @.'
+
+  AppUsername:
+    Description: 'The database admin account username'
+    NoEcho: true
+    Type: 'String'
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: 'must begin with a letter and contain only alphanumeric characters.'
+
+  AppPassword:
     Description: 'The database admin account password'
     NoEcho: true
     Type: 'String'
@@ -183,9 +201,9 @@ Resources:
             - Name: IFRAME_ORIGINS
               Value: "*"
             # - Name: FLOWISE_USERNAME
-            #   Value: !Ref Username
+            #   ValueFrom: !Ref AppUsername
             # - Name: FLOWISE_PASSWORD
-            #   Value: !Ref Password
+            #   ValueFrom: !Ref AppPassword
             # - Name: FLOWISE_FILE_SIZE_LIMIT
             #   Value: ""
             - Name: DEBUG
@@ -205,9 +223,9 @@ Resources:
             - Name: DATABASE_NAME
               Value: "flowise"
             - Name: DATABASE_USER
-              Value: !Ref Username
+              Value: !Ref DBUsername
             - Name: DATABASE_PASSWORD
-              Value: !Ref Password
+              Value: !Ref DBPassword
             - Name: DATABASE_SSL
               Value: true
             - Name: DATABASE_SSL_KEY_BASE64
@@ -230,11 +248,9 @@ Resources:
             #   Value: ""
           Secrets: # Use Secrets Manager to inject secrets
             - Name: FLOWISE_USERNAME
-              ValueFrom: !ImportValue 
-                Fn::Join: ["-", [!Ref Stage, SecretUsername, !Ref CurrentEnv]]
+              ValueFrom: !Ref AppUsername
             - Name: FLOWISE_PASSWORD
-              ValueFrom: !ImportValue
-                Fn::Join: ["-", [!Ref Stage, SecretPassword, !Ref CurrentEnv]]
+              ValueFrom: !Ref AppPassword
           EntryPoint:
             - /bin/sh
             - -c

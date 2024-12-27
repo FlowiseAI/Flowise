@@ -206,6 +206,15 @@ jobs:
         echo "CloudFormation Outputs:"
         aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
         
+        SumoFlowiseSecretArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretArn'].OutputValue" --output text)
+        echo "SECRET_ARN=${SumoFlowiseSecretArn}" >> $GITHUB_ENV
+
+        SumoFlowiseSecretUsername=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretUsername'].OutputValue" --output text)
+        echo "APP_USERNAME=${SumoFlowiseSecretUsername}" >> $GITHUB_ENV
+
+        SumoFlowiseSecretPassword=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretPassword'].OutputValue" --output text)
+        echo "APP_PASSWORD=${SumoFlowiseSecretPassword}" >> $GITHUB_ENV
+
     - name: ECS2-CloudFormation
       env:
         STACK_NAME: sumo-flowise-ecs2-stack-dev
@@ -213,8 +222,10 @@ jobs:
         REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ github.sha }}
         # IMAGE_TAG: lastest
-        USERNAME: ${{ secrets.USERNAME }}
-        PASSWORD: ${{ secrets.PASSWORD }}
+        DBUSERNAME: ${{ secrets.USERNAME }}
+        DBPASSWORD: ${{ secrets.PASSWORD }}
+        APPUSERNAME: ${{ env.APP_USERNAME }}
+        APPPASSWORD: ${{ env.APP_PASSWORD }}
         CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
         DATABASE_HOST: ${{ env.POSTGRES_HOST }}
       run: |
@@ -223,8 +234,10 @@ jobs:
           --template-file aws-cloudformation/flowise.yml \
           --parameter-overrides \
             CurrentEnv=$CURRENTENV \
-            Username=$USERNAME \
-            Password=$PASSWORD \
+            DBUsername=$USERNAME \
+            DBPassword=$PASSWORD \
+            AppUsername=$APPUSERNAME \
+            AppPassword=$APPPASSWORD \
             ECRImageUrl=$REPOSITORY_URI \
             ImageTag=$IMAGE_TAG \
             SumoFlowiseCertificateArn=$CERTIFICATEARN \
@@ -253,6 +266,27 @@ jobs:
 
         echo "Wait for creating domain"
         sleep 60
+
+    - name: Lambda-Cloudformation
+      env:
+        STACK_NAME: sumo-flowise-lambda-stack-dev
+        CURRENTENV: dev
+        SECRET_ARN: ${{ env.SECRET_ARN }}
+      run: |
+        aws cloudformation deploy \
+          --template-file aws-cloudformation/lambda.yml \
+          --stack-name $STACK_NAME \
+          --parameter-overrides \
+            CurrentEnv=$CURRENTENV \
+            SerectArn=$SECRET_ARN \
+          --capabilities CAPABILITY_NAMED_IAM
+
+        echo "CloudFormation Outputs:"
+        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+        SumoFlowiseApiEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseApiEndpoint'].OutputValue" --output text)
+        echo "API_ENDPOINT=${SumoFlowiseApiEndpoint}" >> $GITHUB_ENV
+        
 
     - name: Post-deployment script
       env:
