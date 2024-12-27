@@ -68,6 +68,13 @@ Resources:
         - Key: CurrentEnv
           Value: !Ref CurrentEnv
 
+  SumoFlowiseSecretRotation:
+    Type: AWS::SecretsManager::RotationSchedule
+    Properties:
+      SecretId: !Ref SumoFlowiseSecret
+      RotationRules:
+        AutomaticallyAfterDays: 1 # Rotate every day
+
   ####
   # Flowise ECS service related resources
   ####
@@ -198,10 +205,10 @@ Resources:
               Value: "*"
             - Name: IFRAME_ORIGINS
               Value: "*"
-            # - Name: FLOWISE_USERNAME
-            #   Value: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:username}}']]
-            # - Name: FLOWISE_PASSWORD
-            #   Value: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:password}}']]
+            - Name: FLOWISE_USERNAME
+              Value: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:username}}']]
+            - Name: FLOWISE_PASSWORD
+              Value: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:password}}']]
             # - Name: FLOWISE_FILE_SIZE_LIMIT
             #   Value: ""
             - Name: DEBUG
@@ -244,11 +251,11 @@ Resources:
               Value: "/root/.flowise/storage"
             # - Name: DISABLE_FLOWISE_TELEMETRY
             #   Value: ""
-          Secrets: # Use Secrets Manager to inject secrets
-            - Name: FLOWISE_USERNAME
-              ValueFrom: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:username}}' ]]
-            - Name: FLOWISE_PASSWORD
-              ValueFrom: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:password}}' ]]
+          # Secrets: # Use Secrets Manager to inject secrets
+          #   - Name: FLOWISE_USERNAME
+          #     ValueFrom: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:username}}' ]]
+          #   - Name: FLOWISE_PASSWORD
+          #     ValueFrom: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:password}}' ]]
           EntryPoint:
             - /bin/sh
             - -c
