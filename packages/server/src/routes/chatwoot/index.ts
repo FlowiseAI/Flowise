@@ -71,7 +71,7 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
         inbox_id: inboxId.toString(),
         contact_id: contactId.toString(),
         message: {
-          content: `${req.body.userInfo?.name} đã tạo một yêu cầu hỗ trợ.`
+          content: `${req.body.userInfo?.name}, số điện thoại ${req.body.userInfo?.phoneNumber} đã tạo một yêu cầu hỗ trợ.`
         }
       },
       {
