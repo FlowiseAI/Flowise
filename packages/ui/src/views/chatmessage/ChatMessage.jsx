@@ -167,6 +167,22 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
     const dispatch = useDispatch()
 
+    // Add resetChat function here, after initial declarations
+    const resetChat = useCallback(() => {
+        const newChatId = uuidv4()
+        setChatId(newChatId)
+        setMessages([
+            {
+                message: 'Hi there! How can I help?',
+                type: 'apiMessage'
+            }
+        ])
+        setUserInput('')
+        setUploadedFiles([])
+        setPreviews([])
+        setLocalStorageChatflow(chatflowid, newChatId)
+    }, [chatflowid, setPreviews])
+
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -1538,6 +1554,18 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 )}
             <div ref={ps} className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
                 <div id='messagelist' className={'messagelist'}>
+                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', p: 1 }}>
+                        <Button
+                            onClick={resetChat}
+                            startIcon={<IconTrash size={20} />}
+                            variant='outlined'
+                            color='error'
+                            size='small'
+                            sx={{ borderRadius: '20px' }}
+                        >
+                            Reset Chat
+                        </Button>
+                    </Box>
                     {messages &&
                         messages.map((message, index) => {
                             return (
