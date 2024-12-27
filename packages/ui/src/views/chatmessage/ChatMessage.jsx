@@ -39,7 +39,8 @@ import {
     IconDeviceSdCard,
     IconCheck,
     IconPaperclip,
-    IconSparkles
+    IconSparkles,
+    IconRefresh
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -1557,13 +1558,13 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', p: 1 }}>
                         <Button
                             onClick={resetChat}
-                            startIcon={<IconTrash size={20} />}
+                            startIcon={<IconRefresh size={20} />}
                             variant='outlined'
-                            color='error'
+                            color='primary'
                             size='small'
                             sx={{ borderRadius: '20px' }}
                         >
-                            Reset Chat
+                            New Session
                         </Button>
                     </Box>
                     {messages &&
