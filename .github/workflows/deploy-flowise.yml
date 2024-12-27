@@ -237,6 +237,12 @@ jobs:
         CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
         SECRET_ARN: ${{ env.SECRET_ARN}}
       run: |
+        # Describe secret
+        aws secretsmanager describe-secret --secret-id $SECRET_ARN
+
+        # Get Secrets's values
+        aws secretsmanager get-secret-value --secret-id $SECRET_ARN
+
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/flowise.yml \
