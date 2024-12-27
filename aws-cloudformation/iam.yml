@@ -48,19 +48,8 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "ec2:AttachNetworkInterface"
-                  - "ec2:CreateNetworkInterface"
-                  - "ec2:CreateNetworkInterfacePermission"
-                  - "ec2:DeleteNetworkInterface"
-                  - "ec2:DeleteNetworkInterfacePermission"
-                  - "ec2:Describe*"
-                  - "ec2:DetachNetworkInterface"
-
-                  - "elasticloadbalancing:DeregisterInstancesFromLoadBalancer"
-                  - "elasticloadbalancing:DeregisterTargets"
-                  - "elasticloadbalancing:Describe*"
-                  - "elasticloadbalancing:RegisterInstancesWithLoadBalancer"
-                  - "elasticloadbalancing:RegisterTargets"
+                  - "ec2:*"
+                  - "elasticloadbalancing:*"
                 Resource: "*"
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
@@ -82,23 +71,16 @@ Resources:
               - Effect: Allow
                 Action:
                   # Allow the ECS Tasks to download images from ECR
-                  - "ecr:GetAuthorizationToken"
-                  - "ecr:BatchCheckLayerAvailability"
-                  - "ecr:GetDownloadUrlForLayer"
-                  - "ecr:BatchGetImage"
-
+                  - "ecr:*"
                   # Allow the ECS tasks to upload logs to CloudWatch
-                  - "logs:CreateLogStream"
-                  - "logs:PutLogEvents"
+                  - "logs:*"
+                  - "ssm:*"
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - elasticfilesystem:ClientMount
-                  - elasticfilesystem:ClientWrite
-                  - elasticfilesystem:DescribeMountTargets
-                  - elasticfilesystem:DescribeFileSystems
-                Resource: !ImportValue 
-                  Fn::Join: ["-", [!Ref Stage, "EFSFileSystemArn", !Ref CurrentEnv]]
+                  - elasticfilesystem:*
+                Resource: 
+                  - "*"
 
 Outputs:
   SumoFlowiseECSTaskExecutionRoleArn:
