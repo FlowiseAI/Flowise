@@ -247,9 +247,9 @@ Resources:
             #   Value: ""
           Secrets: # Use Secrets Manager to inject secrets
             - Name: FLOWISE_USERNAME
-              ValueFrom: !Sub "${SumoFlowiseSecret}::username"
+              ValueFrom: !Sub "${SumoFlowiseSecret}:username"
             - Name: FLOWISE_PASSWORD
-              ValueFrom: !Sub "${SumoFlowiseSecret}::password"
+              ValueFrom: !Sub "${SumoFlowiseSecret}:password"
           EntryPoint:
             - /bin/sh
             - -c
