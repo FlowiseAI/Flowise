@@ -229,6 +229,11 @@ Resources:
               Fn::Join: ["-", [!Ref Stage, "EFSFileSystemId", !Ref CurrentEnv]]
             RootDirectory: /
             TransitEncryption: ENABLED
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, task-definition, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
 
   SumoFlowiseCloudWatchLogsGroupFlowise:
     Type: AWS::Logs::LogGroup
