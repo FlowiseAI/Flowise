@@ -187,7 +187,7 @@ jobs:
       run: |
         # Build Docker image
         docker build -t $REPOSITORY_URI:$IMAGE_TAG .
-        
+
         # Push Docker image to ECR
         docker push $REPOSITORY_URI:$IMAGE_TAG
 
@@ -237,12 +237,6 @@ jobs:
         CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
         SECRET_ARN: ${{ env.SECRET_ARN}}
       run: |
-        # Describe secret
-        aws secretsmanager describe-secret --secret-id $SECRET_ARN
-
-        # Get Secrets's values
-        aws secretsmanager get-secret-value --secret-id $SECRET_ARN
-
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/flowise.yml \
@@ -305,15 +299,12 @@ jobs:
 
         SumoFlowiseApiEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseApiEndpoint'].OutputValue" --output text)
         echo "API_ENDPOINT=${SumoFlowiseApiEndpoint}" >> $GITHUB_ENV
-        
 
     - name: Result
       run: |
         echo "- Deployment complete! Check the url:"
-        echo "DOMAIN_NAME"
+        echo "${{ env.DOMAIN_NAME }}"
         echo ""
         echo "- API endpoint to get secret and restart application:"
         echo "${{ env.API_ENDPOINT }}"
         echo ""
-
-

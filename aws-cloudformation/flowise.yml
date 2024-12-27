@@ -28,7 +28,7 @@ Parameters:
   DatabaseHost:
     Description: The address of postgres
     Type: String
-  
+
   DBUsername:
     Description: 'The database admin account username'
     NoEcho: true
@@ -68,11 +68,8 @@ Resources:
       Protocol: HTTP
       Matcher:
         HttpCode: 200-299
-      # HealthCheckIntervalSeconds: 10
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
-      # HealthCheckTimeoutSeconds: 5
-      # HealthyThresholdCount: 2
       TargetType: ip
       Tags:
         - Key: Name
@@ -107,22 +104,10 @@ Resources:
       Port: 80
       Protocol: HTTP
 
-  # SumoFlowiseListenerHTTP:
-  #   Type: AWS::ElasticLoadBalancingV2::Listener
-  #   Properties:
-  #     DefaultActions:
-  #       - Type: "forward"
-  #         TargetGroupArn: !Ref SumoFlowiseTargetGroupFlowise
-  #     LoadBalancerArn: !ImportValue 
-  #       Fn::Join: ["-", [!Ref Stage, LoadbalancerId, !Ref CurrentEnv]]
-  #     Port: 80
-  #     Protocol: HTTP
-
   SumoFlowiseListenerRuleFlowise:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       ListenerArn: !Ref SumoFlowiseListenerHTTPS
-      # ListenerArn: !Ref SumoFlowiseListenerHTTP
       Priority: 1
       Conditions:
         - Field: path-pattern
@@ -173,7 +158,6 @@ Resources:
         - FARGATE
       ContainerDefinitions:
         - Name: "flowise-service"
-          # Image: "flowiseai/flowise:latest"
           Image: !Sub "${ECRImageUrl}:${ImageTag}" # Use dynamic Docker image URL and tag
           Essential: true
           PortMappings:
@@ -202,8 +186,6 @@ Resources:
               Value: 5432
             - Name: DATABASE_HOST
               Value: !Ref DatabaseHost
-            # - Name: DATABASE_HOST
-            #   Value: localhost
             - Name: DATABASE_NAME
               Value: "flowise"
             - Name: DATABASE_USER
@@ -224,13 +206,6 @@ Resources:
               Value: "/root/.flowise/logs"
             - Name: BLOB_STORAGE_PATH
               Value: "/root/.flowise/storage"
-          # Secrets: # Use Secrets Manager to inject secrets
-          #   - Name: FLOWISE_PASSWORD
-          #     # ValueFrom: !Sub "{{resolve:secretsmanager:${SecretArn}:SecretString:password}}"
-          #     ValueFrom: !Sub "${SecretArn}:password"
-          #   - Name: FLOWISE_USERNAME
-          #     # ValueFrom: !Sub "{{resolve:secretsmanager:${SecretArn}:SecretString:username}}"
-          #     ValueFrom: !Sub "${SecretArn}:username"
           EntryPoint:
             - /bin/sh
             - -c
@@ -260,10 +235,3 @@ Resources:
     Properties:
       LogGroupName: !Ref AWS::StackName
       RetentionInDays: 7
-
-# Outputs:
-#   SumoFlowiseSecretArn:
-#     Description: 'The Arn of the secret'
-#     Value: !Ref SumoFlowiseSecret
-#     Export:
-#       Name: !Join ["-", [!Ref Stage, SecretArn, !Ref CurrentEnv]]
