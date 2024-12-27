@@ -427,7 +427,8 @@ export enum FollowUpPromptProvider {
     AZURE_OPENAI = 'azureChatOpenAI',
     GOOGLE_GENAI = 'chatGoogleGenerativeAI',
     MISTRALAI = 'chatMistralAI',
-    OPENAI = 'chatOpenAI'
+    OPENAI = 'chatOpenAI',
+    GROQ = 'chatGroq'
 }
 
 export type FollowUpPromptProviderConfig = {
@@ -436,6 +437,7 @@ export type FollowUpPromptProviderConfig = {
         modelName: string
         prompt: string
         temperature: string
+        audioModel?: 'whisper-large-v3' | 'whisper-large-v3-turbo' | 'distil-whisper-large-v3-en'
     }
 }
 
