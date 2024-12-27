@@ -103,7 +103,7 @@ Resources:
           #     return ''.join(random.choice(characters) for i in range(16))
       Tags:
         - Key: Name
-          Value: !Join ["-", [!Ref Stage, rotation-lambda, !Ref CurrentEnv]]
+          Value: !Join ["-", [!Ref Stage, get-lambda, !Ref CurrentEnv]]
         - Key: CurrentEnv
           Value: !Ref CurrentEnv
 

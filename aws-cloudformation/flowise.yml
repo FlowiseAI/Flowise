@@ -52,29 +52,6 @@ Parameters:
     Type: String
 
 Resources:
-  # Create a Secret in AWS Secrets Manager
-  SumoFlowiseSecret:
-    Type: AWS::SecretsManager::Secret
-    Properties:
-      Name: !Join ["-", [!Ref Stage, secret, !Ref CurrentEnv]]
-      Description: "Database credentials for Flowise application"
-      GenerateSecretString:
-        SecretStringTemplate: '{"username": "admin"}'
-        GenerateStringKey: "password"
-        PasswordLength: 30
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, secret, !Ref CurrentEnv]]
-        - Key: CurrentEnv
-          Value: !Ref CurrentEnv
-
-  SumoFlowiseSecretRotation:
-    Type: AWS::SecretsManager::RotationSchedule
-    Properties:
-      SecretId: !Ref SumoFlowiseSecret
-      RotationRules:
-        AutomaticallyAfterDays: 1 # Rotate every day
-
   ####
   # Flowise ECS service related resources
   ####
@@ -206,9 +183,9 @@ Resources:
             - Name: IFRAME_ORIGINS
               Value: "*"
             - Name: FLOWISE_USERNAME
-              Value: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:username}}']]
+              Value: !Join ['', ['{{resolve:secretsmanager:', !Join ["-", [!Ref Stage, SecretArn, !Ref CurrentEnv]], ':SecretString:username}}']]
             - Name: FLOWISE_PASSWORD
-              Value: !Join ['', ['{{resolve:secretsmanager:', !Ref SumoFlowiseSecret, ':SecretString:password}}']]
+              Value: !Join ['', ['{{resolve:secretsmanager:', !Join ["-", [!Ref Stage, SecretArn, !Ref CurrentEnv]], ':SecretString:password}}']]
             # - Name: FLOWISE_FILE_SIZE_LIMIT
             #   Value: ""
             - Name: DEBUG
@@ -285,10 +262,3 @@ Resources:
     Properties:
       LogGroupName: !Ref AWS::StackName
       RetentionInDays: 7
-
-Outputs:
-  SumoFlowiseSecretArn:
-    Description: 'The Arn of the secret'
-    Value: !Ref SumoFlowiseSecret
-    Export:
-      Name: !Join ["-", [!Ref Stage, SecretArn, !Ref CurrentEnv]]
