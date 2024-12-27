@@ -182,8 +182,8 @@ jobs:
       env:
         ECR_REPOSITORY: sumo-flowise-app-dev
         REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
-        # IMAGE_TAG: ${{ github.sha }}
-        IMAGE_TAG: lastest
+        IMAGE_TAG: ${{ github.sha }}
+        # IMAGE_TAG: lastest
       run: |
         # Build Docker image
         docker build -t $REPOSITORY_URI:$IMAGE_TAG .
@@ -220,8 +220,8 @@ jobs:
         STACK_NAME: sumo-flowise-ecs2-stack-dev
         CURRENTENV: dev
         REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
-        # IMAGE_TAG: ${{ github.sha }}
-        IMAGE_TAG: lastest
+        IMAGE_TAG: ${{ github.sha }}
+        # IMAGE_TAG: lastest
         DBUSERNAME: ${{ secrets.USERNAME }}
         DBPASSWORD: ${{ secrets.PASSWORD }}
         CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
