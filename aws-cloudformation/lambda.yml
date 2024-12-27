@@ -49,19 +49,21 @@ Resources:
   SumoFlowiseLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Join ["-", [!Ref Stage, "rotation-lambda", !Ref CurrentEnv]]
+      FunctionName: !Join ["-", [!Ref Stage, "lambda", !Ref CurrentEnv]]
       Runtime: python3.9
       Handler: index.lambda_handler
       Role: !GetAtt SumoFlowiseLambdaExecutionRole.Arn
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, get-lambda, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
       Code:
         ZipFile: !Sub |
           import boto3
           import json
-          import random
-          import string
 
           def lambda_handler(event, context):
-              # secret_arn = event.get('secret_arn', None)
               secret_arn = ${SerectArn}
               print("secret_arn=", secret_arn)
               if not secret_arn:
@@ -74,16 +76,6 @@ Resources:
                   response = secrets_client.get_secret_value(SecretId=secret_arn)
                   secret = json.loads(response['SecretString'])
 
-                  # username = secret['username']
-                  # password = secret['password']
-
-                  # Generate new password
-                  # new_password = generate_password()
-                  
-                  # Update the new password in the secret
-                  # secret['password'] = new_password
-                  # secrets_client.put_secret_value(SecretId=secret_arn, SecretString=json.dumps(secret))
-                  
                   return {
                       'statusCode': 200,
                       'body': json.dumps({
@@ -96,16 +88,6 @@ Resources:
                       'statusCode': 500,
                       'body': json.dumps(f"Error retrieving secret: {str(e)}")
                   }                  
-
-          # def generate_password():
-          #     # Generate a strong password
-          #     characters = string.ascii_letters + string.digits + "!@#$%^&*()"
-          #     return ''.join(random.choice(characters) for i in range(16))
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, get-lambda, !Ref CurrentEnv]]
-        - Key: CurrentEnv
-          Value: !Ref CurrentEnv
 
   # API Gateway
   SumoFlowiseApiGatewayRestApi:

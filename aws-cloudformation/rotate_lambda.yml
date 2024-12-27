@@ -49,6 +49,11 @@ Resources:
       Runtime: python3.9
       Handler: index.lambda_handler
       Role: !GetAtt SumoFlowiseRotateLambdaExecutionRole.Arn
+      Tags:
+        - Key: Name
+          Value: !Join ["-", [!Ref Stage, rotate-lambda, !Ref CurrentEnv]]
+        - Key: CurrentEnv
+          Value: !Ref CurrentEnv
       Code:
         ZipFile: |
           # Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -225,14 +230,6 @@ Resources:
               # Finalize by staging the secret version current
               service_client.update_secret_version_stage(SecretId=arn, VersionStage="AWSCURRENT", MoveToVersionId=token, RemoveFromVersionId=current_version)
               logger.info("finishSecret: Successfully set AWSCURRENT stage to version %s for secret %s." % (token, arn))
-      Environment:
-        Variables:
-          SECRETS_MANAGER_ENDPOINT: !Sub "https://secretsmanager.${AWS::Region}.amazonaws.com"
-      Tags:
-        - Key: Name
-          Value: !Join ["-", [!Ref Stage, rotate-lambda, !Ref CurrentEnv]]
-        - Key: CurrentEnv
-          Value: !Ref CurrentEnv
 
 # Add this to allow Secrets Manager to invoke the Lambda function
   SumoFlowiseSecretsManagerInvokePermission:
