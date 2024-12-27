@@ -35,17 +35,11 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - secretsmanager:GetSecretValue
-                  - secretsmanager:PutSecretValue
-                  - secretsmanager:DescribeSecret
-                  - secretsmanager:UpdateSecretVersionStage
-                  - secretsmanager:GetRandomPassword
+                  - secretsmanager:*
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
+                  - logs:*
                 Resource: "*"
 
   SumoFlowiseRotateLambdaFunction:
@@ -240,10 +234,23 @@ Resources:
         - Key: CurrentEnv
           Value: !Ref CurrentEnv
 
+# Add this to allow Secrets Manager to invoke the Lambda function
+  SumoFlowiseSecretsManagerInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SumoFlowiseRotateLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: secretsmanager.amazonaws.com
+
 Outputs:
   RotateLambdaArn:
     Description: The Arn of rotate Lambda
     Value: !GetAtt SumoFlowiseRotateLambdaFunction.Arn
     Export:
       Name: !Join ["-", [!Ref Stage, RotateLambdaArn, !Ref CurrentEnv]]    
-      
+
+  RotateLambdaName:
+    Description: The name of the rotate Lambda function
+    Value: !Ref SumoFlowiseRotateLambdaFunction
+    Export:
+      Name: !Join ["-", [!Ref Stage, "RotateLambdaName", !Ref CurrentEnv]]
