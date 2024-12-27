@@ -68,20 +68,19 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             // sseStreamer.streamStartEvent(chatId, '[]')
             // sseStreamer.streamTokenEvent(chatId, 'hello world')
             // sseStreamer.streamMetadataEvent(chatId, { chatId })
-            if (req.body.question) {
-              await axios.post(
-                `${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/conversations/${req.body.stored?.chatwoot?.conversation_id}/messages`,
-                {
-                  content: req.body.question,
-                  message_type: 'incoming'
-                },
-                {
-                  headers: {
-                    api_access_token: CHATWOOT_ACCESS_KEY
-                  }
+
+            await axios.post(
+              `${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/conversations/${req.body.stored?.chatwoot?.conversation_id}/messages`,
+              {
+                content: req.body.question,
+                message_type: 'incoming'
+              },
+              {
+                headers: {
+                  api_access_token: CHATWOOT_ACCESS_KEY
                 }
-              )
-            }
+              }
+            )
 
             sseStreamer.streamAbortEvent(chatId)
           } else {
@@ -97,6 +96,19 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
           sseStreamer.removeClient(chatId)
         }
       } else {
+        if (req.body.fetch) {
+          const { data: messages } = await axios.get(
+            `${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/conversations/${req.body.stored?.chatwoot?.conversation_id}/messages`,
+            {
+              headers: {
+                api_access_token: CHATWOOT_ACCESS_KEY
+              }
+            }
+          )
+
+          return res.json({ messages })
+        }
+
         const apiResponse = await predictionsServices.buildChatflow(req)
         return res.json(apiResponse)
       }
