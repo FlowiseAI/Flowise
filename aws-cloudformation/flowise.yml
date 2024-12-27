@@ -232,9 +232,11 @@ Resources:
             #   Value: ""
           Secrets: # Use Secrets Manager to inject secrets
             - Name: FLOWISE_PASSWORD
-              ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:password}}'
+              # ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:password}}'
+              ValueFrom: !Sub '${SecretArn}:password'
             - Name: FLOWISE_USERNAME
-              ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:username}}'
+              # ValueFrom: !Sub '{{resolve:secretsmanager:${SecretArn}:SecretString:username}}'
+              ValueFrom: !Sub '${SecretArn}:username'
           EntryPoint:
             - /bin/sh
             - -c
