@@ -231,25 +231,39 @@ jobs:
         CURRENTENV: dev
         REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ github.sha }}
-        # IMAGE_TAG: lastest
-        SECRET_ARN: ${{ env.SECRET_ARN}}
+        DATABASE_HOST: ${{ env.POSTGRES_HOST }}
         DBUSERNAME: ${{ secrets.USERNAME }}
         DBPASSWORD: ${{ secrets.PASSWORD }}
         CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
-        DATABASE_HOST: ${{ env.POSTGRES_HOST }}
+        SECRET_ARN: ${{ env.SECRET_ARN}}
       run: |
+        aws cloudformation create-change-set \
+          --stack-name $STACK_NAME \
+          --template-body file://aws-cloudformation/flowise.yml \
+          --change-set-name debug-changeset \
+          --parameters \
+              ParameterKey=CurrentEnv,ParameterValue=$CURRENTENV \
+              ParameterKey=ECRImageUrl,ParameterValue=$REPOSITORY_URI \
+              ParameterKey=ImageTag,ParameterValue=$IMAGE_TAG \
+              ParameterKey=DatabaseHost,ParameterValue=$DATABASE_HOST \
+              ParameterKey=DBUsername,ParameterValue=$DBUSERNAME \
+              ParameterKey=DBPassword,ParameterValue=$DBPASSWORD \
+              ParameterKey=CertificateArn,ParameterValue=$CERTIFICATEARN \
+              ParameterKey=SecretArn,ParameterValue=$SECRET_ARN \
+          --capabilities CAPABILITY_NAMED_IAM
+
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
           --template-file aws-cloudformation/flowise.yml \
           --parameter-overrides \
             CurrentEnv=$CURRENTENV \
-            SecretArn=$SECRET_ARN \
-            DBUsername=$DBUSERNAME \
-            DBPassword=$DBPASSWORD \
             ECRImageUrl=$REPOSITORY_URI \
             ImageTag=$IMAGE_TAG \
-            SumoFlowiseCertificateArn=$CERTIFICATEARN \
             DatabaseHost=$DATABASE_HOST \
+            DBUsername=$DBUSERNAME \
+            DBPassword=$DBPASSWORD \
+            CertificateArn=$CERTIFICATEARN \
+            SecretArn=$SECRET_ARN \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"

@@ -47,7 +47,7 @@ Parameters:
     AllowedPattern: '[a-zA-Z0-9@]*'
     ConstraintDescription: 'must contain only alphanumeric characters and/or @.'
 
-  SumoFlowiseCertificateArn:
+  CertificateArn:
     Description: Certificate ARN
     Type: String
 
@@ -91,7 +91,7 @@ Resources:
       Port: 443
       Protocol: HTTPS
       Certificates:
-        - CertificateArn: !Ref SumoFlowiseCertificateArn
+        - CertificateArn: !Ref CertificateArn
 
   SumoFlowiseListenerHTTP:
     Type: AWS::ElasticLoadBalancingV2::Listener
