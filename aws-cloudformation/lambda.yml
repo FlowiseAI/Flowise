@@ -74,15 +74,15 @@ Resources:
                   response = secrets_client.get_secret_value(SecretId=secret_arn)
                   secret = json.loads(response['SecretString'])
 
-                  username = secret['username']
-                  password = secret['password']
+                  # username = secret['username']
+                  # password = secret['password']
 
                   # Generate new password
-                  new_password = generate_password()
+                  # new_password = generate_password()
                   
                   # Update the new password in the secret
-                  secret['password'] = new_password
-                  secrets_client.put_secret_value(SecretId=secret_arn, SecretString=json.dumps(secret))
+                  # secret['password'] = new_password
+                  # secrets_client.put_secret_value(SecretId=secret_arn, SecretString=json.dumps(secret))
                   
                   return {
                       'statusCode': 200,
@@ -97,10 +97,10 @@ Resources:
                       'body': json.dumps(f"Error retrieving secret: {str(e)}")
                   }                  
 
-          def generate_password():
-              # Generate a strong password
-              characters = string.ascii_letters + string.digits + "!@#$%^&*()"
-              return ''.join(random.choice(characters) for i in range(16))
+          # def generate_password():
+          #     # Generate a strong password
+          #     characters = string.ascii_letters + string.digits + "!@#$%^&*()"
+          #     return ''.join(random.choice(characters) for i in range(16))
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref Stage, rotation-lambda, !Ref CurrentEnv]]
