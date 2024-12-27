@@ -250,116 +250,99 @@ const SpeechToText = ({ dialogProps }) => {
     const [selectedProvider, setSelectedProvider] = useState('none')
 
     const onSave = async () => {
-        console.log('Save initiated', { selectedProvider, speechToText });
-        
         try {
-            // Ensure speechToText has 'none' key
-            const updatedSpeechToText = { ...speechToText }
-            if (!updatedSpeechToText.hasOwnProperty('none')) {
-                updatedSpeechToText['none'] = { status: true }
+            // Validate provider selection
+            if (selectedProvider === 'none') {
+                setSpeechToText(prev => ({
+                    ...prev,
+                    none: { status: true }
+                }));
+            } else {
+                // Validate required credentials
+                if (!speechToText[selectedProvider]?.credentialId) {
+                    enqueueSnackbar({
+                        message: 'Please select a credential for the Speech To Text provider',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'error',
+                            persist: true
+                        }
+                    });
+                    return;
+                }
             }
 
-            // Validate required fields before saving
-            if (selectedProvider !== 'none' && !updatedSpeechToText[selectedProvider]?.credentialId) {
-                enqueueSnackbar({
-                    message: 'Please select a credential for the Speech To Text provider',
-                    options: {
-                        variant: 'warning',
-                        persist: true
-                    }
-                });
-                return;
-            }
+            // Prepare configuration
+            const updatedConfig = {
+                ...speechToText,
+                [selectedProvider]: {
+                    ...speechToText[selectedProvider],
+                    status: true
+                }
+            };
 
-            const speechToTextConfig = setValue(true, selectedProvider, 'status');
-            console.log('Prepared Speech To Text Config:', speechToTextConfig);
-
-            if (!dialogProps.chatflow?.id) {
-                throw new Error('No chatflow ID found');
-            }
-
+            // Save configuration
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
-                speechToText: JSON.stringify(speechToTextConfig)
+                speechToText: JSON.stringify(updatedConfig)
             });
-
-            console.log('Save Response:', saveResp);
 
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Speech To Text Configuration Saved Successfully',
+                    message: 'Speech To Text Configuration Saved',
                     options: {
                         key: new Date().getTime() + Math.random(),
-                        variant: 'success',
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
+                        variant: 'success'
                     }
                 });
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data });
-            } else {
-                throw new Error('No data returned from save operation');
             }
         } catch (error) {
-            console.error('Speech To Text Save Error:', error);
-            
-            const errorMessage = error.response?.data?.message || 
-                                  error.message || 
-                                  'An unknown error occurred while saving';
-            
+            console.error('Save Error:', error);
             enqueueSnackbar({
-                message: `Failed to save Speech To Text Configuration: ${errorMessage}`,
+                message: `Failed to save: ${error.message || 'Unknown error'}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
-                    persist: true,
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
+                    persist: true
                 }
             });
         }
-    }
+    };
 
     const setValue = (value, providerName, inputParamName) => {
-        let newVal = { ...speechToText }
-        
-        // Ensure 'none' key exists
-        if (!newVal.hasOwnProperty('none')) {
-            newVal['none'] = { status: true }
-        }
-
-        // Ensure the target provider exists
-        if (!newVal.hasOwnProperty(providerName)) {
-            newVal[providerName] = {}
-        }
-
-        newVal[providerName][inputParamName] = value
-
-        if (inputParamName === 'status' && value === true) {
-            // Turn off all other providers
-            Object.keys(speechToTextProviders).forEach((key) => {
-                const provider = speechToTextProviders[key]
-                if (provider.name !== providerName) {
-                    newVal[provider.name] = { ...newVal[provider.name], status: false }
-                }
-            })
+        setSpeechToText(prevState => {
+            const newVal = { ...prevState };
             
-            // Ensure 'none' is turned off if a specific provider is selected
-            if (providerName !== 'none') {
-                newVal['none'].status = false
+            // Initialize provider object if it doesn't exist
+            if (!newVal[providerName]) {
+                newVal[providerName] = {};
             }
-        }
-
-        setSpeechToText(newVal)
-        return newVal
+    
+            // Set the new value
+            newVal[providerName][inputParamName] = value;
+    
+            // Handle status changes
+            if (inputParamName === 'status' && value === true) {
+                // Disable all other providers
+                Object.keys(speechToTextProviders).forEach((key) => {
+                    if (key !== providerName) {
+                        newVal[key] = { ...newVal[key], status: false };
+                    }
+                });
+                // Ensure 'none' is false when a provider is selected
+                newVal.none = { status: false };
+            }
+    
+            return newVal;
+        });
     }
 
     const handleProviderChange = (event) => {
-        setSelectedProvider(event.target.value)
+        const newProvider = event.target.value;
+        setSelectedProvider(newProvider);
+        
+        // Update status for the newly selected provider
+        setValue(true, newProvider, 'status');
     }
 
     useEffect(() => {
