@@ -225,12 +225,6 @@ jobs:
         SumoFlowiseSecretArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretArn'].OutputValue" --output text)
         echo "SECRET_ARN=${SumoFlowiseSecretArn}" >> $GITHUB_ENV
 
-        # SumoFlowiseSecretUsername=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretUsername'].OutputValue" --output text)
-        # echo "APP_USERNAME=${SumoFlowiseSecretUsername}" >> $GITHUB_ENV
-
-        # SumoFlowiseSecretPassword=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretPassword'].OutputValue" --output text)
-        # echo "APP_PASSWORD=${SumoFlowiseSecretPassword}" >> $GITHUB_ENV
-
     - name: Flowise-CloudFormation
       env:
         STACK_NAME: sumo-flowise-flowise-stack-dev
@@ -238,6 +232,7 @@ jobs:
         REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
         IMAGE_TAG: ${{ github.sha }}
         # IMAGE_TAG: lastest
+        SECRET_ARN: ${{ env.SECRET_ARN}}
         DBUSERNAME: ${{ secrets.USERNAME }}
         DBPASSWORD: ${{ secrets.PASSWORD }}
         CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
@@ -248,6 +243,7 @@ jobs:
           --template-file aws-cloudformation/flowise.yml \
           --parameter-overrides \
             CurrentEnv=$CURRENTENV \
+            SerectArn=$SECRET_ARN \
             DBUsername=$DBUSERNAME \
             DBPassword=$DBPASSWORD \
             ECRImageUrl=$REPOSITORY_URI \
@@ -258,9 +254,6 @@ jobs:
 
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
-
-          # SumoFlowiseSecretArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretArn'].OutputValue" --output text)
-          # echo "SECRET_ARN=${SumoFlowiseSecretArn}" >> $GITHUB_ENV
 
     - name: Route53-Cloudformation
       env:

@@ -16,7 +16,7 @@ Parameters:
       - dev
       - prod
 
-  SerectArn:
+  SecretArn:
     Description: The Arn of Secret
     Type: String
 
@@ -64,7 +64,7 @@ Resources:
           import json
 
           def lambda_handler(event, context):
-              secret_arn = "${SerectArn}"
+              secret_arn = "${SecretArn}"
               # print("secret_arn=", secret_arn)
               if not secret_arn:
                   return {
