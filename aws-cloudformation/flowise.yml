@@ -240,3 +240,10 @@ Resources:
     Properties:
       LogGroupName: !Ref AWS::StackName
       RetentionInDays: 7
+
+Outputs:
+  SumoFlowiseServiceFlowiseId:
+    Description: 'The ECS::Service ID'
+    Value: !Ref SumoFlowiseServiceFlowise
+    Export:
+      Name: !Join ["-", [!Ref Stage, SumoFlowiseServiceFlowiseId, !Ref CurrentEnv]]

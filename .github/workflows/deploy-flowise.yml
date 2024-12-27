@@ -148,6 +148,9 @@ jobs:
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
+        SumoFlowiseECSClusterId=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseECSClusterId'].OutputValue" --output text)
+        echo "CLUSTER_ARN=${SumoFlowiseECSClusterId}" >> $GITHUB_ENV
+
     - name: EFS-CloudFormation
       env:
         STACK_NAME: sumo-flowise-efs-stack-dev
@@ -254,8 +257,8 @@ jobs:
         echo "CloudFormation Outputs:"
         aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-        # SumoFlowiseSecretArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretArn'].OutputValue" --output text)
-        # echo "SECRET_ARN=${SumoFlowiseSecretArn}" >> $GITHUB_ENV
+        SumoFlowiseServiceFlowiseId=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseServiceFlowiseId'].OutputValue" --output text)
+        echo "SERVICE_ARN=${SumoFlowiseServiceFlowiseId}" >> $GITHUB_ENV
 
     - name: Route53-Cloudformation
       env:
@@ -285,6 +288,8 @@ jobs:
         STACK_NAME: sumo-flowise-lambda-stack-dev
         CURRENTENV: dev
         SECRET_ARN: ${{ env.SECRET_ARN }}
+        CLUSTER_ARN: ${{ env.CLUSTER_ARN }}
+        SERVICE_ARN: ${{ env.SERVICE_ARN }}
       run: |
         aws cloudformation deploy \
           --template-file aws-cloudformation/lambda.yml \
@@ -292,6 +297,8 @@ jobs:
           --parameter-overrides \
             CurrentEnv=$CURRENTENV \
             SecretArn=$SECRET_ARN \
+            ClusterArn=$CLUSTER_ARN \
+            ServiceArn=$SERVICE_ARN \
           --capabilities CAPABILITY_NAMED_IAM
 
         echo "CloudFormation Outputs:"
