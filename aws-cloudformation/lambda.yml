@@ -211,6 +211,7 @@ Resources:
       HttpMethod: POST
       RestApiId: !Ref SumoFlowiseApiGateway
       ResourceId: !Ref SumoFlowiseGetCredentialResource
+      AuthorizationType: NONE
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
@@ -224,6 +225,7 @@ Resources:
       HttpMethod: POST
       RestApiId: !Ref SumoFlowiseApiGateway
       ResourceId: !Ref SumoFlowiseRotatePasswordResource
+      AuthorizationType: NONE
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST

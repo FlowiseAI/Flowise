@@ -1,321 +1,317 @@
-name: Deploy to ECS
+name: Deploy to Flowise
 
 on:
   push:
     branches:
-      - develop # Trigger deployment on pushes to the main branch
+      - develop
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code1
-      uses: actions/checkout@v3
+      - name: Checkout code1
+        uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Set environment variables
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+          elif [ "${{ github.ref_name }}" == "develop" ]; then
+            echo "ENV=dev" >> $GITHUB_ENV
+          fi
 
-    - name: Validate Cloudformation
-      run: |
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/vpc.yml
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/alb.yml
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/postgre.yml
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/ecs.yml
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/efs.yml
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/iam.yml
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/ecr.yml
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/flowise.yml
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/route.yml
-        aws cloudformation validate-template \
-          --template-body file://aws-cloudformation/secret.yml
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: Validate Cloudformation
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/ecr.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/vpc.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/alb.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/postgre.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/ecs.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/efs.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/iam.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/rotate-lambda.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/secret.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/flowise.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/route.yml
+          aws cloudformation validate-template \
+            --template-body file://aws-cloudformation/lambda.yml
 
-    - name: ECR-CloudFormation
-      env:
-        STACK_NAME: sumo-flowise-ecr-stack-dev
-        CURRENTENV: dev
-      run: |
-        aws cloudformation deploy \
-          --stack-name $STACK_NAME \
-          --template-file aws-cloudformation/ecr.yml \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
-
-        SumoFlowiseECRRepositoryUri=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseECRRepositoryUri'].OutputValue" --output text)
-        echo "REPOSITORY_URI=${SumoFlowiseECRRepositoryUri}" >> $GITHUB_ENV
-
-    - name: VPC-CloudFormation
-      env:
-        STACK_NAME: sumo-flowise-vpc-stack-dev
-        CURRENTENV: dev
-      run: |
-        aws cloudformation deploy \
-          --stack-name $STACK_NAME \
-          --template-file aws-cloudformation/vpc.yml \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
+      - name: ECR-CloudFormation
+        env:
+          STACK_NAME: sumo-flowise-ecr-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+        run: |
+          aws cloudformation deploy \
+            --stack-name $STACK_NAME \
+            --template-file aws-cloudformation/ecr.yml \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+            --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-    # - name: Bastion-Cloudformation
-    #   env:
-    #     STACK_NAME: sumo-flowise-bastion-stack-dev
-    #     CURRENTENV: dev
-    #     KEYNAME: ${{ secrets.KEY_NAME }}
-    #   run: |
-    #     aws cloudformation deploy \
-    #       --template-file aws-cloudformation/bastion.yml \
-    #       --stack-name $STACK_NAME \
-    #       --parameter-overrides \
-    #         CurrentEnv=$CURRENTENV \
-    #         KeyPairName=$KEYNAME \
-    #       --capabilities CAPABILITY_NAMED_IAM
+          SumoFlowiseECRRepositoryUri=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseECRRepositoryUri'].OutputValue" --output text)
+          echo "REPOSITORY_URI=${SumoFlowiseECRRepositoryUri}" >> $GITHUB_ENV
 
-    #     echo "CloudFormation Outputs:"
-    #     aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+      - name: VPC-CloudFormation
+        env:
+          STACK_NAME: sumo-flowise-vpc-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+        run: |
+          aws cloudformation deploy \
+            --stack-name $STACK_NAME \
+            --template-file aws-cloudformation/vpc.yml \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+            --capabilities CAPABILITY_NAMED_IAM
 
-    - name: ALB-CloudFormation
-      env:
-        STACK_NAME: sumo-flowise-alb-stack-dev
-        CURRENTENV: dev
-      run: |
-        aws cloudformation deploy \
-          --stack-name $STACK_NAME \
-          --template-file aws-cloudformation/alb.yml \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
+            echo "CloudFormation Outputs:"
+            aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-          echo "CloudFormation Outputs:"
-          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+      - name: ALB-CloudFormation
+        env:
+          STACK_NAME: sumo-flowise-alb-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+        run: |
+          aws cloudformation deploy \
+            --stack-name $STACK_NAME \
+            --template-file aws-cloudformation/alb.yml \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+            --capabilities CAPABILITY_NAMED_IAM
 
-    - name: Postgre-Cloudformation
-      env:
-        STACK_NAME: sumo-flowise-postgre-stack-dev
-        CURRENTENV: dev
-        USERNAME: ${{ secrets.USERNAME }}
-        PASSWORD: ${{ secrets.PASSWORD }}
-      run: |
-        aws cloudformation deploy \
-          --template-file aws-cloudformation/postgre.yml \
-          --stack-name $STACK_NAME \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-            DBUsername=$USERNAME \
-            DBPassword=$PASSWORD \
-          --capabilities CAPABILITY_NAMED_IAM
+            echo "CloudFormation Outputs:"
+            aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
-
-        SumoFlowiseRDSInstanceEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRDSInstanceEndpoint'].OutputValue" --output text)
-        echo "POSTGRES_HOST=${SumoFlowiseRDSInstanceEndpoint}" >> $GITHUB_ENV
-
-    - name: ECS-CloudFormation
-      env:
-        STACK_NAME: sumo-flowise-ecs-stack-dev
-        CURRENTENV: dev
-      run: |
-        aws cloudformation deploy \
-          --stack-name $STACK_NAME \
-          --template-file aws-cloudformation/ecs.yml \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
+      - name: Postgre-Cloudformation
+        env:
+          STACK_NAME: sumo-flowise-postgre-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: |
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/postgre.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+              DBUsername=$USERNAME \
+              DBPassword=$PASSWORD \
+            --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-        SumoFlowiseECSClusterId=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseECSClusterId'].OutputValue" --output text)
-        echo "CLUSTER_ARN=${SumoFlowiseECSClusterId}" >> $GITHUB_ENV
+          SumoFlowiseRDSInstanceEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRDSInstanceEndpoint'].OutputValue" --output text)
+          echo "POSTGRES_HOST=${SumoFlowiseRDSInstanceEndpoint}" >> $GITHUB_ENV
 
-    - name: EFS-CloudFormation
-      env:
-        STACK_NAME: sumo-flowise-efs-stack-dev
-        CURRENTENV: dev
-      run: |
-        aws cloudformation deploy \
-          --stack-name $STACK_NAME \
-          --template-file aws-cloudformation/efs.yml \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
+      - name: ECS-CloudFormation
+        env:
+          STACK_NAME: sumo-flowise-ecs-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+        run: |
+          aws cloudformation deploy \
+            --stack-name $STACK_NAME \
+            --template-file aws-cloudformation/ecs.yml \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+            --capabilities CAPABILITY_NAMED_IAM
+
+            echo "CloudFormation Outputs:"
+            aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+          SumoFlowiseECSClusterId=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseECSClusterId'].OutputValue" --output text)
+          echo "CLUSTER_ARN=${SumoFlowiseECSClusterId}" >> $GITHUB_ENV
+
+      - name: EFS-CloudFormation
+        env:
+          STACK_NAME: sumo-flowise-efs-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+        run: |
+          aws cloudformation deploy \
+            --stack-name $STACK_NAME \
+            --template-file aws-cloudformation/efs.yml \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+            --capabilities CAPABILITY_NAMED_IAM
+
+            echo "CloudFormation Outputs:"
+            aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+      - name: IAM-CloudFormation
+        env:
+          STACK_NAME: sumo-flowise-iam-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+        run: |
+          aws cloudformation deploy \
+            --stack-name $STACK_NAME \
+            --template-file aws-cloudformation/iam.yml \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+            --capabilities CAPABILITY_NAMED_IAM
+
+            echo "CloudFormation Outputs:"
+            aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+
+      - name: Build, tag, and push Docker image to Amazon ECR
+        env:
+          ECR_REPOSITORY: sumo-flowise-app-dev
+          REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
+          IMAGE_TAG: ${{ github.sha }}
+          # IMAGE_TAG: lastest
+        run: |
+          # Build Docker image
+          docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+
+          # Push Docker image to ECR
+          docker push $REPOSITORY_URI:$IMAGE_TAG
+
+      - name: Rotate-Lambda-Cloudformation
+        env:
+          STACK_NAME: sumo-flowise-rotate-lambda-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+          SECRET_ARN: ${{ env.SECRET_ARN }}
+        run: |
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/rotate_lambda.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+            --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-    - name: IAM-CloudFormation
-      env:
-        STACK_NAME: sumo-flowise-iam-stack-dev
-        CURRENTENV: dev
-      run: |
-        aws cloudformation deploy \
-          --stack-name $STACK_NAME \
-          --template-file aws-cloudformation/iam.yml \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
+      - name: Secret-Cloudformation
+        env:
+          STACK_NAME: sumo-flowise-secret-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+        run: |
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/secret.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+            --capabilities CAPABILITY_NAMED_IAM
+
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+          
+          SumoFlowiseSecretArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretArn'].OutputValue" --output text)
+          echo "SECRET_ARN=${SumoFlowiseSecretArn}" >> $GITHUB_ENV
+
+      - name: Flowise-CloudFormation
+        env:
+          STACK_NAME: sumo-flowise-flowise-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+          REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
+          IMAGE_TAG: ${{ github.sha }}
+          DATABASE_HOST: ${{ env.POSTGRES_HOST }}
+          DBUSERNAME: ${{ secrets.USERNAME }}
+          DBPASSWORD: ${{ secrets.PASSWORD }}
+          CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
+          SECRET_ARN: ${{ env.SECRET_ARN}}
+        run: |
+          aws cloudformation deploy \
+            --stack-name $STACK_NAME \
+            --template-file aws-cloudformation/flowise.yml \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+              ECRImageUrl=$REPOSITORY_URI \
+              ImageTag=$IMAGE_TAG \
+              DatabaseHost=$DATABASE_HOST \
+              DBUsername=$DBUSERNAME \
+              DBPassword=$DBPASSWORD \
+              CertificateArn=$CERTIFICATEARN \
+              SecretArn=$SECRET_ARN \
+            --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"
           aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-    - name: Build, tag, and push Docker image to Amazon ECR
-      env:
-        ECR_REPOSITORY: sumo-flowise-app-dev
-        REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
-        IMAGE_TAG: ${{ github.sha }}
-        # IMAGE_TAG: lastest
-      run: |
-        # Build Docker image
-        docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+          SumoFlowiseServiceFlowiseId=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseServiceFlowiseId'].OutputValue" --output text)
+          echo "SERVICE_ARN=${SumoFlowiseServiceFlowiseId}" >> $GITHUB_ENV
 
-        # Push Docker image to ECR
-        docker push $REPOSITORY_URI:$IMAGE_TAG
+      - name: Route53-Cloudformation
+        env:
+          STACK_NAME: sumo-flowise-route-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+          HOSTZONE_ID: ${{ secrets.ROUTE_HZ_ID }}
+        run: |
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/route.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+              HostedZoneId=$HOSTZONE_ID \
+            --capabilities CAPABILITY_NAMED_IAM
 
-    - name: Rotate-Lambda-Cloudformation
-      env:
-        STACK_NAME: sumo-flowise-rotate-lambda-stack-dev
-        CURRENTENV: dev
-        SECRET_ARN: ${{ env.SECRET_ARN }}
-      run: |
-        aws cloudformation deploy \
-          --template-file aws-cloudformation/rotate_lambda.yml \
-          --stack-name $STACK_NAME \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+          RecordSetName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
+          echo "DOMAIN_NAME=${RecordSetName}" >> $GITHUB_ENV
 
-    - name: Secret-Cloudformation
-      env:
-        STACK_NAME: sumo-flowise-secret-stack-dev
-        CURRENTENV: dev
-      run: |
-        aws cloudformation deploy \
-          --template-file aws-cloudformation/secret.yml \
-          --stack-name $STACK_NAME \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-          --capabilities CAPABILITY_NAMED_IAM
+          echo "Wait for creating domain"
+          sleep 60
 
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
-        
-        SumoFlowiseSecretArn=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseSecretArn'].OutputValue" --output text)
-        echo "SECRET_ARN=${SumoFlowiseSecretArn}" >> $GITHUB_ENV
+      - name: Lambda-Cloudformation
+        env:
+          STACK_NAME: sumo-flowise-lambda-stack-${{ env.ENV }}
+          CURRENTENV: ${{ env.ENV }}
+          SECRET_ARN: ${{ env.SECRET_ARN }}
+          CLUSTER_ARN: ${{ env.CLUSTER_ARN }}
+          SERVICE_ARN: ${{ env.SERVICE_ARN }}
+        run: |
+          aws cloudformation deploy \
+            --template-file aws-cloudformation/lambda.yml \
+            --stack-name $STACK_NAME \
+            --parameter-overrides \
+              CurrentEnv=$CURRENTENV \
+              SecretArn=$SECRET_ARN \
+              ClusterArn=$CLUSTER_ARN \
+              ServiceArn=$SERVICE_ARN \
+            --capabilities CAPABILITY_NAMED_IAM
 
-    - name: Flowise-CloudFormation
-      env:
-        STACK_NAME: sumo-flowise-flowise-stack-dev
-        CURRENTENV: dev
-        REPOSITORY_URI: ${{ env.REPOSITORY_URI }}
-        IMAGE_TAG: ${{ github.sha }}
-        DATABASE_HOST: ${{ env.POSTGRES_HOST }}
-        DBUSERNAME: ${{ secrets.USERNAME }}
-        DBPASSWORD: ${{ secrets.PASSWORD }}
-        CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
-        SECRET_ARN: ${{ env.SECRET_ARN}}
-      run: |
-        aws cloudformation deploy \
-          --stack-name $STACK_NAME \
-          --template-file aws-cloudformation/flowise.yml \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-            ECRImageUrl=$REPOSITORY_URI \
-            ImageTag=$IMAGE_TAG \
-            DatabaseHost=$DATABASE_HOST \
-            DBUsername=$DBUSERNAME \
-            DBPassword=$DBPASSWORD \
-            CertificateArn=$CERTIFICATEARN \
-            SecretArn=$SECRET_ARN \
-          --capabilities CAPABILITY_NAMED_IAM
+          echo "CloudFormation Outputs:"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
 
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
+          SumoFlowiseGetCredentialApiEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseGetCredentialApiEndpoint'].OutputValue" --output text)
+          echo "GET_CREDENTIAL_API_ENDPOINT=${SumoFlowiseGetCredentialApiEndpoint}" >> $GITHUB_ENV
 
-        SumoFlowiseServiceFlowiseId=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseServiceFlowiseId'].OutputValue" --output text)
-        echo "SERVICE_ARN=${SumoFlowiseServiceFlowiseId}" >> $GITHUB_ENV
-
-    - name: Route53-Cloudformation
-      env:
-        STACK_NAME: sumo-flowise-route-stack-dev
-        CURRENTENV: dev
-        HOSTZONE_ID: ${{ secrets.ROUTE_HZ_ID }}
-      run: |
-        aws cloudformation deploy \
-          --template-file aws-cloudformation/route.yml \
-          --stack-name $STACK_NAME \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-            HostedZoneId=$HOSTZONE_ID \
-          --capabilities CAPABILITY_NAMED_IAM
-
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
-
-        RecordSetName=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='RecordSetName'].OutputValue" --output text)
-        echo "DOMAIN_NAME=${RecordSetName}" >> $GITHUB_ENV
-
-        echo "Wait for creating domain"
-        sleep 60
-
-    - name: Lambda-Cloudformation
-      env:
-        STACK_NAME: sumo-flowise-lambda-stack-dev
-        CURRENTENV: dev
-        SECRET_ARN: ${{ env.SECRET_ARN }}
-        CLUSTER_ARN: ${{ env.CLUSTER_ARN }}
-        SERVICE_ARN: ${{ env.SERVICE_ARN }}
-      run: |
-        aws cloudformation deploy \
-          --template-file aws-cloudformation/lambda.yml \
-          --stack-name $STACK_NAME \
-          --parameter-overrides \
-            CurrentEnv=$CURRENTENV \
-            SecretArn=$SECRET_ARN \
-            ClusterArn=$CLUSTER_ARN \
-            ServiceArn=$SERVICE_ARN \
-          --capabilities CAPABILITY_NAMED_IAM
-
-        echo "CloudFormation Outputs:"
-        aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs' --output table
-
-        SumoFlowiseGetCredentialApiEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseGetCredentialApiEndpoint'].OutputValue" --output text)
-        echo "GET_CREDENTIAL_API_ENDPOINT=${SumoFlowiseGetCredentialApiEndpoint}" >> $GITHUB_ENV
-
-        SumoFlowiseRotatePasswordApiEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRotatePasswordApiEndpoint'].OutputValue" --output text)
-        echo "ROTATE_PASSWORD_API_ENDPOINT=${SumoFlowiseRotatePasswordApiEndpoint}" >> $GITHUB_ENV
-        
-    - name: Result
-      run: |
-        echo "- Deployment complete! Check the url:"
-        echo "${{ env.DOMAIN_NAME }}"
-        echo ""
-        echo "- API endpoint to get secret and restart application:"
-        echo "${{ env.GET_CREDENTIAL_API_ENDPOINT }}"
-        echo "${{ env.ROTATE_PASSWORD_API_ENDPOINT }}"
-        echo ""
+          SumoFlowiseRotatePasswordApiEndpoint=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SumoFlowiseRotatePasswordApiEndpoint'].OutputValue" --output text)
+          echo "ROTATE_PASSWORD_API_ENDPOINT=${SumoFlowiseRotatePasswordApiEndpoint}" >> $GITHUB_ENV
+          
+      - name: Result
+        run: |
+          echo "- Deployment complete! Check the url:"
+          echo "${{ env.DOMAIN_NAME }}"
+          echo ""
+          echo "- API endpoint to get secret and restart application:"
+          echo "${{ env.GET_CREDENTIAL_API_ENDPOINT }}"
+          echo "${{ env.ROTATE_PASSWORD_API_ENDPOINT }}"
+          echo ""
