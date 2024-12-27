@@ -235,7 +235,7 @@ jobs:
         DBUSERNAME: ${{ secrets.USERNAME }}
         DBPASSWORD: ${{ secrets.PASSWORD }}
         CERTIFICATEARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
-        SECRET_ARN: ${{ env.SECRET_ARN}}
+        # SECRET_ARN: ${{ env.SECRET_ARN}}
       run: |
         aws cloudformation deploy \
           --stack-name $STACK_NAME \
@@ -248,7 +248,7 @@ jobs:
             DBUsername=$DBUSERNAME \
             DBPassword=$DBPASSWORD \
             CertificateArn=$CERTIFICATEARN \
-            SecretArn=$SECRET_ARN \
+            # SecretArn=$SECRET_ARN \
           --capabilities CAPABILITY_NAMED_IAM
 
           echo "CloudFormation Outputs:"

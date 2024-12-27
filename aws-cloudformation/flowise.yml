@@ -51,9 +51,9 @@ Parameters:
     Description: Certificate ARN
     Type: String
 
-  SecretArn:
-    Description: The Arn of Secret
-    Type: String
+  # SecretArn:
+  #   Description: The Arn of Secret
+  #   Type: String
 
 Resources:
   ####
@@ -187,9 +187,9 @@ Resources:
             - Name: IFRAME_ORIGINS
               Value: "*"
             - Name: FLOWISE_USERNAME
-              Value: !Join ['', ['{{resolve:secretsmanager:', !Join ["-", [!Ref Stage, !Ref SecretArn, !Ref CurrentEnv]], ':SecretString:username}}']]
+              Value: !Join ['', ['{{resolve:secretsmanager:', !Join ["-", [!Ref Stage, SecretArn, !Ref CurrentEnv]], ':SecretString:username}}']]
             - Name: FLOWISE_PASSWORD
-              Value: !Join ['', ['{{resolve:secretsmanager:', !Join ["-", [!Ref Stage, !Ref SecretArn, !Ref CurrentEnv]], ':SecretString:password}}']]
+              Value: !Join ['', ['{{resolve:secretsmanager:', !Join ["-", [!Ref Stage, SecretArn, !Ref CurrentEnv]], ':SecretString:password}}']]
             # - Name: FLOWISE_FILE_SIZE_LIMIT
             #   Value: ""
             - Name: DEBUG
