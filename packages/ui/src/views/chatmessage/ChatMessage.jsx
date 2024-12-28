@@ -1037,7 +1037,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         if (getChatmessageApi.data?.length) {
             const chatId = getChatmessageApi.data[0]?.chatId
             setChatId(chatId)
-            const loadedMessages = getChatmessageApi.data.map((message) => {
+            // Filter messages to only include those with matching chatId
+            const messagesForChat = getChatmessageApi.data.filter((message) => message.chatId === chatId)
+
+            const loadedMessages = messagesForChat.map((message) => {
                 const obj = {
                     id: message.id,
                     message: message.content,
