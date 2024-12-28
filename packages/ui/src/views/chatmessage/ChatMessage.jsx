@@ -1035,7 +1035,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     // Get chatmessages successful
     useEffect(() => {
         if (getChatmessageApi.data?.length) {
-            const chatId = getChatmessageApi.data[0]?.chatId
+            const latestMessage = getChatmessageApi.data[getChatmessageApi.data.length - 1]
+            const chatId = latestMessage?.chatId
             setChatId(chatId)
             // Filter messages to only include those with matching chatId
             const messagesForChat = getChatmessageApi.data.filter((message) => message.chatId === chatId)
