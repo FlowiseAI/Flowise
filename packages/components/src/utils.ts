@@ -5,10 +5,11 @@ import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
+import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { getFileFromStorage } from './storageUtils'
+import { customGet } from '../nodes/sequentialagents/commonUtils'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -542,8 +543,19 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
     }
 }
 
-export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData): any => {
-    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? undefined
+/**
+ * Get first non falsy value
+ *
+ * @param {...any} values
+ *
+ * @returns {any|undefined}
+ */
+export const defaultChain = (...values: any[]): any | undefined => {
+    return values.filter(Boolean)[0]
+}
+
+export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData, defaultValue?: any): any => {
+    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? defaultValue ?? undefined
 }
 
 // reference https://www.freeformatter.com/json-escape.html
@@ -609,10 +621,11 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
         if (message.role === 'apiMessage' || message.type === 'apiMessage') {
             chatHistory.push(new AIMessage(message.content || ''))
         } else if (message.role === 'userMessage' || message.role === 'userMessage') {
-            // check for image uploads
+            // check for image/files uploads
             if (message.fileUploads) {
                 // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
                 try {
+                    let messageWithFileUploads = ''
                     const uploads = JSON.parse(message.fileUploads)
                     const imageContents: MessageContentImageUrl[] = []
                     for (const upload of uploads) {
@@ -634,14 +647,32 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                                     url: upload.data
                                 }
                             })
+                        } else if (upload.type === 'stored-file:full') {
+                            const fileLoaderNodeModule = await import('../nodes/documentloaders/File/File')
+                            // @ts-ignore
+                            const fileLoaderNodeInstance = new fileLoaderNodeModule.nodeClass()
+                            const options = {
+                                retrieveAttachmentChatId: true,
+                                chatflowid: message.chatflowid,
+                                chatId: message.chatId
+                            }
+                            const nodeData = {
+                                inputs: {
+                                    txtFile: `FILE-STORAGE::${JSON.stringify([upload.name])}`
+                                }
+                            }
+                            const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
+                            const pageContents = documents.map((doc) => doc.pageContent).join('\n')
+                            messageWithFileUploads += `<doc name='${upload.name}'>${pageContents}</doc>\n\n`
                         }
                     }
+                    const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
                     chatHistory.push(
                         new HumanMessage({
                             content: [
                                 {
                                     type: 'text',
-                                    text: message.content
+                                    text: messageContent
                                 },
                                 ...imageContents
                             ]
@@ -968,4 +999,25 @@ export const mapMimeTypeToExt = (mimeType: string) => {
 // remove invalid markdown image pattern: ![<some-string>](<some-string>)
 export const removeInvalidImageMarkdown = (output: string): string => {
     return typeof output === 'string' ? output.replace(/!\[.*?\]\((?!https?:\/\/).*?\)/g, '') : output
+}
+
+/**
+ * Loop through the object and replace the key with the value
+ * @param {any} obj
+ * @param {any} sourceObj
+ * @returns {any}
+ */
+export const resolveFlowObjValue = (obj: any, sourceObj: any): any => {
+    if (typeof obj === 'object' && obj !== null) {
+        const resolved: any = Array.isArray(obj) ? [] : {}
+        for (const key in obj) {
+            const value = obj[key]
+            resolved[key] = resolveFlowObjValue(value, sourceObj)
+        }
+        return resolved
+    } else if (typeof obj === 'string' && obj.startsWith('$flow')) {
+        return customGet(sourceObj, obj)
+    } else {
+        return obj
+    }
 }

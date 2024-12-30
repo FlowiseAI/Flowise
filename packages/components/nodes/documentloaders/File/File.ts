@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { JSONLinesLoader, JSONLoader } from 'langchain/document_loaders/fs/json'
@@ -9,7 +9,7 @@ import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from '../../../src/storageUtils'
-import { mapMimeTypeToExt } from '../../../src/utils'
+import { handleEscapeCharacters, mapMimeTypeToExt } from '../../../src/utils'
 
 class File_DocumentLoaders implements INode {
     label: string
@@ -21,11 +21,12 @@ class File_DocumentLoaders implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'File Loader'
         this.name = 'fileLoader'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'file.svg'
         this.category = 'Document Loaders'
@@ -92,6 +93,20 @@ class File_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -101,6 +116,7 @@ class File_DocumentLoaders implements INode {
         const pdfUsage = nodeData.inputs?.pdfUsage
         const pointerName = nodeData.inputs?.pointerName as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const output = nodeData.outputs?.output as string
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -121,11 +137,22 @@ class File_DocumentLoaders implements INode {
             }
             const chatflowid = options.chatflowid
 
-            for (const file of files) {
-                if (!file) continue
-                const fileData = await getFileFromStorage(file, chatflowid)
-                const blob = new Blob([fileData])
-                fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
+            // specific to createAttachment to get files from chatId
+            const retrieveAttachmentChatId = options.retrieveAttachmentChatId
+            if (retrieveAttachmentChatId) {
+                for (const file of files) {
+                    if (!file) continue
+                    const fileData = await getFileFromStorage(file, chatflowid, options.chatId)
+                    const blob = new Blob([fileData])
+                    fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
+                }
+            } else {
+                for (const file of files) {
+                    if (!file) continue
+                    const fileData = await getFileFromStorage(file, chatflowid)
+                    const blob = new Blob([fileData])
+                    fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
+                }
             }
         } else {
             if (totalFiles.startsWith('[') && totalFiles.endsWith(']')) {
@@ -218,7 +245,15 @@ class File_DocumentLoaders implements INode {
             }))
         }
 
-        return docs
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 
@@ -288,7 +323,12 @@ class MultiFileLoader extends BaseDocumentLoader {
                 const loader = loaderFactory(fileBlob.blob)
                 documents.push(...(await loader.load()))
             } else {
-                throw new Error(`Error loading file`)
+                const loader = new TextLoader(fileBlob.blob)
+                try {
+                    documents.push(...(await loader.load()))
+                } catch (error) {
+                    throw new Error(`Error loading file`)
+                }
             }
         }
 

@@ -1,6 +1,6 @@
 import { omit } from 'lodash'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { S3Client, GetObjectCommand, S3ClientConfig, ListObjectsV2Command, ListObjectsV2Output } from '@aws-sdk/client-s3'
 import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { Readable } from 'node:stream'
@@ -27,11 +27,12 @@ class S3_DocumentLoaders implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs?: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'S3 Directory'
         this.name = 's3Directory'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Document'
         this.icon = 's3.svg'
         this.category = 'Document Loaders'
@@ -117,6 +118,20 @@ class S3_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     loadMethods = {
@@ -134,6 +149,7 @@ class S3_DocumentLoaders implements INode {
         const pdfUsage = nodeData.inputs?.pdfUsage
         const metadata = nodeData.inputs?.metadata
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const output = nodeData.outputs?.output as string
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -313,7 +329,15 @@ class S3_DocumentLoaders implements INode {
             // remove the temp directory before returning docs
             fsDefault.rmSync(tempDir, { recursive: true })
 
-            return docs
+            if (output === 'document') {
+                return docs
+            } else {
+                let finaltext = ''
+                for (const doc of docs) {
+                    finaltext += `${doc.pageContent}\n`
+                }
+                return handleEscapeCharacters(finaltext, false)
+            }
         } catch (e: any) {
             fsDefault.rmSync(tempDir, { recursive: true })
             throw new Error(`Failed to load data from bucket ${bucketName}: ${e.message}`)
