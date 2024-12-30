@@ -41,9 +41,11 @@ import verifyRouter from './verify'
 import versionRouter from './versions'
 import planRouter from './plan'
 import chatsRouter from './chats'
+import authRouter from './auth/index'
 
 const router = express.Router()
 
+router.use('/auth', authRouter)
 router.use('/ping', pingRouter)
 router.use('/apikey', apikeyRouter)
 router.use('/assistants', assistantsRouter)
