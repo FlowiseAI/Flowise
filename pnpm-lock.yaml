@@ -730,11 +730,11 @@ importers:
         specifier: ^1.1.1
         version: 1.2.1
       cmcts-c-agent-embedding:
-        specifier: 1.0.0
-        version: 1.0.0(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.2
+        version: 1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       cmcts-c-agent-embedding-react:
-        specifier: 1.0.0
-        version: 1.0.0(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.0(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.2
+        version: 1.0.2(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       dccxx-s3-explorer:
         specifier: ^1.0.20
         version: 1.0.20(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
@@ -8157,14 +8157,14 @@ packages:
     engines: { node: '>= 14.15.0' }
     hasBin: true
 
-  cmcts-c-agent-embedding-react@1.0.0:
-    resolution: { integrity: sha512-UHONNjk8DtseDrfg+A9R/ZsQd2BPVrY2UEoWst9ykhWnOmCN9U0c50eBDXJnHTvMulYITFRmIAMrpIH4lWNhTQ== }
+  cmcts-c-agent-embedding-react@1.0.2:
+    resolution: { integrity: sha512-a63TS8Mh449nrQRz1GXi8YLDUTPSTE8x61C8wUJ6Y0BPeaIGiZhZZKZ3ILuK6q9UTekAAKcrTL2AOmnYQOW6JA== }
     peerDependencies:
       cmcts-c-agent-embedding: '*'
       react: 18.x
 
-  cmcts-c-agent-embedding@1.0.0:
-    resolution: { integrity: sha512-7cZKeevXDCrS89bNJcXgEkNMFVk7/2IufPWPDESXL1iy8J24RKJxhLcnjx6DwB79yKYIstBnQW/GBeAcRvX0Ig== }
+  cmcts-c-agent-embedding@1.0.2:
+    resolution: { integrity: sha512-vFuJRCW+r9a50eQPBCkVAr8MUsTxTD/L+aknTrgEAVSRJXZCQJPLna4X2IS69KLQKtZWulGjc+O0o0ZS4YK2Hw== }
 
   cmd-shim@5.0.0:
     resolution: { integrity: sha512-qkCtZ59BidfEwHltnJwkyVZn+XQojdAySM1D1gSeh11Z4pW1Kpolkyo53L5noc0nrxmIvyFwTmJRo4xs7FFLPw== }
@@ -27328,10 +27328,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  cmcts-c-agent-embedding-react@1.0.0(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.0(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding-react@1.0.2(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@ladle/react': 2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-      cmcts-c-agent-embedding: 1.0.0(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+      cmcts-c-agent-embedding: 1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -27345,7 +27345,7 @@ snapshots:
       - terser
       - typescript
 
-  cmcts-c-agent-embedding@1.0.0(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding@1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@babel/core': 7.24.0
       '@microsoft/fetch-event-source': 2.0.1
