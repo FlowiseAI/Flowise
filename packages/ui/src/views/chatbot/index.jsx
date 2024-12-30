@@ -1,4 +1,4 @@
-import { FullPageChat } from 'c-agent-embedding-react'
+import { FullPageChat } from 'cmcts-c-agent-embedding-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
