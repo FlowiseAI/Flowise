@@ -216,7 +216,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             dialogProps={loginDialogProps}
             onConfirm={onLoginClick}
             onClose={() => setLoginDialogOpen(false)}
-            disableBtn={loginApi.loading}
+            disableBtn={loginApi.loading || undefined}
           />
           <ConfirmDialog />
         </>

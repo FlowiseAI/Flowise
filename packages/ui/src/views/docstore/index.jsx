@@ -52,7 +52,6 @@ import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STO
 const Documents = ({ storeType = import.meta.env.VITE_DOCUMENT_STORE_TYPE }) => {
   const user = useSelector((state) => state.user)
   const isLogin = user?.id ? true : false
-  console.log('🚀 ~ Documents ~ isLogin:', isLogin)
   const displayPrefixes = user?.displayPrefixes ? JSON?.parse(user?.displayPrefixes.replace(/'/g, '"')) : []
 
   const theme = useTheme()

@@ -7,7 +7,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Input } from '@/ui-component/input/Input'
 import { boolean } from 'yup'
 
-const LoginDialog = ({ show, dialogProps, onConfirm, onClose = null, disableBtn = false }) => {
+const LoginDialog = ({ show, dialogProps, onConfirm, disableBtn, onClose = null }) => {
   const portalElement = document.getElementById('portal')
   const usernameInput = {
     label: 'Username',
@@ -53,7 +53,7 @@ const LoginDialog = ({ show, dialogProps, onConfirm, onClose = null, disableBtn 
             Close
           </StyledButton>
         )}
-        <StyledButton disabled={disableBtn} variant='contained' onClick={() => onConfirm(usernameVal, passwordVal)}>
+        <StyledButton disabled={disableBtn || false} variant='contained' onClick={() => onConfirm(usernameVal, passwordVal)}>
           {dialogProps.confirmButtonName}
         </StyledButton>
       </DialogActions>
@@ -68,7 +68,7 @@ LoginDialog.propTypes = {
   dialogProps: PropTypes.object,
   onConfirm: PropTypes.func,
   onClose: PropTypes.func,
-  disableBtn: boolean
+  disableBtn: boolean || undefined
 }
 
 export default LoginDialog

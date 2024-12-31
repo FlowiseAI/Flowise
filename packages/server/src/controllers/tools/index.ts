@@ -8,7 +8,7 @@ const createTool = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.body) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.createTool - body not provided!`)
     }
-    const apiResponse = await toolsService.createTool(req.body)
+    const apiResponse = await toolsService.createTool(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -29,7 +29,7 @@ const deleteTool = async (req: Request, res: Response, next: NextFunction) => {
 
 const getAllTools = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const apiResponse = await toolsService.getAllTools()
+    const apiResponse = await toolsService.getAllTools(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)

@@ -31,6 +31,7 @@ import { CreateUser1735187000183 } from './1735187000183-CreateUser'
 import { UpdateUser1735287396912 } from './1735287396912-UpdateUser'
 import { UpdateUserIDDocumentStore1735609968505 } from './1735609968505-updateUserIDDocumentStore'
 import { UpdateUserIDCustomTemplate1735620703270 } from './1735620703270-updateUserIDCustomTemplate'
+import { UpdateUserIDToll1735629996883 } from './1735629996883-updateUserIDToll'
 
 export const postgresMigrations = [
   Init1693891895163,
@@ -65,5 +66,6 @@ export const postgresMigrations = [
   CreateUser1735187000183,
   UpdateUser1735287396912,
   UpdateUserIDDocumentStore1735609968505,
-  UpdateUserIDCustomTemplate1735620703270
+  UpdateUserIDCustomTemplate1735620703270,
+  UpdateUserIDToll1735629996883
 ]
