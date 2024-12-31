@@ -1559,7 +1559,19 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 )}
             <div ref={ps} className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
                 <div id='messagelist' className={'messagelist'}>
-                    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', p: 1 }}>
+                    <Box
+                        sx={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            p: 1,
+                            position: 'sticky',
+                            top: 0,
+                            backgroundColor: theme.palette.background.default,
+                            zIndex: 1000,
+                            borderBottom: `1px solid ${theme.palette.divider}`
+                        }}
+                    >
                         <Button
                             onClick={resetChat}
                             startIcon={<IconRefresh size={20} />}
