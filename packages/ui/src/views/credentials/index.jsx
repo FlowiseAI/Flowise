@@ -72,6 +72,8 @@ const StyledTableRow = styled(TableRow)(() => ({
 // ==============================|| Credentials ||============================== //
 
 const Credentials = () => {
+  const user = useSelector((state) => state.user)
+  const isLogin = user?.id ? true : false
   const theme = useTheme()
   const customization = useSelector((state) => state.customization)
   const dispatch = useDispatch()
@@ -80,7 +82,6 @@ const Credentials = () => {
   const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
   const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
-  const [isLoading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showCredentialListDialog, setShowCredentialListDialog] = useState(false)
   const [credentialListDialogProps, setCredentialListDialogProps] = useState({})
@@ -91,7 +92,7 @@ const Credentials = () => {
 
   const { confirm } = useConfirm()
 
-  const getAllCredentialsApi = useApi(credentialsApi.getAllCredentials)
+  const { loading: isLoadingCredentialsApi, ...getAllCredentialsApi } = useApi(credentialsApi.getAllCredentials)
   const getAllComponentsCredentialsApi = useApi(credentialsApi.getAllComponentsCredentials)
 
   const [search, setSearch] = useState('')
@@ -193,14 +194,13 @@ const Credentials = () => {
   }
 
   useEffect(() => {
-    getAllCredentialsApi.request()
-    getAllComponentsCredentialsApi.request()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    if (isLogin) {
+      getAllCredentialsApi.request()
+      getAllComponentsCredentialsApi.request()
+    }
 
-  useEffect(() => {
-    setLoading(getAllCredentialsApi.loading)
-  }, [getAllCredentialsApi.loading])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLogin])
 
   useEffect(() => {
     if (getAllCredentialsApi.data) {
@@ -229,18 +229,17 @@ const Credentials = () => {
         ) : (
           <Stack flexDirection='column' sx={{ gap: 3 }}>
             <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Credentials' title='Credentials'>
-              <StyledButton variant='contained' sx={{ borderRadius: 2, height: '100%' }} onClick={listCredential} startIcon={<IconPlus />}>
+              <StyledButton
+                disabled={!isLogin}
+                variant='contained'
+                sx={{ borderRadius: 2, height: '100%' }}
+                onClick={listCredential}
+                startIcon={<IconPlus />}
+              >
                 Add Credential
               </StyledButton>
             </ViewHeader>
-            {!isLoading && credentials.length <= 0 ? (
-              <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                <Box sx={{ p: 2, height: 'auto' }}>
-                  <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={CredentialEmptySVG} alt='CredentialEmptySVG' />
-                </Box>
-                <div>No Credentials Yet</div>
-              </Stack>
-            ) : (
+            {isLogin ? (
               <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                   <TableHead
@@ -258,7 +257,7 @@ const Credentials = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {isLoading ? (
+                    {isLoadingCredentialsApi ? (
                       <>
                         <StyledTableRow>
                           <StyledTableCell>
@@ -295,6 +294,17 @@ const Credentials = () => {
                           </StyledTableCell>
                         </StyledTableRow>
                       </>
+                    ) : credentials.length <= 0 ? (
+                      <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Box sx={{ p: 2, height: 'auto' }}>
+                          <img
+                            style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                            src={CredentialEmptySVG}
+                            alt='CredentialEmptySVG'
+                          />
+                        </Box>
+                        <div>Chưa có Credentials vào đối với user này.</div>
+                      </Stack>
                     ) : (
                       <>
                         {credentials.filter(filterCredentials).map((credential, index) => (
@@ -349,6 +359,8 @@ const Credentials = () => {
                   </TableBody>
                 </Table>
               </TableContainer>
+            ) : (
+              <div>Đăng nhập để xem danh sách Credentials</div>
             )}
           </Stack>
         )}
