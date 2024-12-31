@@ -40,13 +40,24 @@ import { App } from '../../index'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { cloneDeep, omit } from 'lodash'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
+import { User, UserRole } from '../../database/entities/User'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'c-agent'
 
-const createDocumentStore = async (newDocumentStore: DocumentStore) => {
+const createDocumentStore = async (newDocumentStore: DocumentStore, req: any) => {
   try {
+    const { user } = req
+
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
     const appServer = getRunningExpressApp()
-    const documentStore = appServer.AppDataSource.getRepository(DocumentStore).create(newDocumentStore)
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const documentStore = appServer.AppDataSource.getRepository(DocumentStore).create({ ...newDocumentStore, userId: foundUser.id })
     const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(documentStore)
     return dbResponse
   } catch (error) {
@@ -57,10 +68,30 @@ const createDocumentStore = async (newDocumentStore: DocumentStore) => {
   }
 }
 
-const getAllDocumentStores = async () => {
+const getAllDocumentStores = async (req: any) => {
   try {
+    const { user } = req
+
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
     const appServer = getRunningExpressApp()
-    const entities = await appServer.AppDataSource.getRepository(DocumentStore).find()
+
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
+    let entities
+
+    if (foundUser.role === UserRole.ADMIN) {
+      entities = await appServer.AppDataSource.getRepository(DocumentStore).find()
+    } else {
+      entities = await appServer.AppDataSource.getRepository(DocumentStore).findBy({ userId: user.id })
+    }
+
     return entities
   } catch (error) {
     throw new InternalFlowiseError(

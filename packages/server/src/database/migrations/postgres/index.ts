@@ -29,6 +29,7 @@ import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtif
 import { AddFollowUpPrompts1726666309552 } from './1726666309552-AddFollowUpPrompts'
 import { CreateUser1735187000183 } from './1735187000183-CreateUser'
 import { UpdateUser1735287396912 } from './1735287396912-UpdateUser'
+import { UpdateUserIDDocumentStore1735609968505 } from './1735609968505-updateUserIDDocumentStore'
 
 export const postgresMigrations = [
   Init1693891895163,
@@ -61,5 +62,6 @@ export const postgresMigrations = [
   AddArtifactsToChatMessage1726156258465,
   AddFollowUpPrompts1726666309552,
   CreateUser1735187000183,
-  UpdateUser1735287396912
+  UpdateUser1735287396912,
+  UpdateUserIDDocumentStore1735609968505
 ]

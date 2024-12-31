@@ -5,8 +5,9 @@ import PropTypes from 'prop-types'
 import { Dialog, DialogActions, DialogContent, Typography, DialogTitle } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Input } from '@/ui-component/input/Input'
+import { boolean } from 'yup'
 
-const LoginDialog = ({ show, dialogProps, onConfirm, onClose = null }) => {
+const LoginDialog = ({ show, dialogProps, onConfirm, onClose = null, disableBtn = false }) => {
   const portalElement = document.getElementById('portal')
   const usernameInput = {
     label: 'Username',
@@ -52,7 +53,7 @@ const LoginDialog = ({ show, dialogProps, onConfirm, onClose = null }) => {
             Close
           </StyledButton>
         )}
-        <StyledButton variant='contained' onClick={() => onConfirm(usernameVal, passwordVal)}>
+        <StyledButton disabled={disableBtn} variant='contained' onClick={() => onConfirm(usernameVal, passwordVal)}>
           {dialogProps.confirmButtonName}
         </StyledButton>
       </DialogActions>
@@ -66,7 +67,8 @@ LoginDialog.propTypes = {
   show: PropTypes.bool,
   dialogProps: PropTypes.object,
   onConfirm: PropTypes.func,
-  onClose: PropTypes.func
+  onClose: PropTypes.func,
+  disableBtn: boolean
 }
 
 export default LoginDialog

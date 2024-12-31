@@ -10,8 +10,6 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
 import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
-import LoginDialog from '@/ui-component/dialog/LoginDialog'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -73,27 +71,6 @@ const Chatflows = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // const onLoginClick = (username, password) => {
-  //   localStorage.setItem('username', username)
-  //   localStorage.setItem('password', password)
-  //   navigate(0)
-  // }
-  // const [loginDialogOpen, setLoginDialogOpen] = useState(false)
-  // const [loginDialogProps, setLoginDialogProps] = useState({})
-  // useEffect(() => {
-  //   if (getAllChatflowsApi.error) {
-  //     if (getAllChatflowsApi.error?.response?.status === 401) {
-  //       setLoginDialogProps({
-  //         title: 'Login',
-  //         confirmButtonName: 'Login'
-  //       })
-  //       setLoginDialogOpen(true)
-  //     } else {
-  //       setError(getAllChatflowsApi.error)
-  //     }
-  //   }
-  // }, [getAllChatflowsApi.error])
 
   useEffect(() => {
     setLoading(getAllChatflowsApi.loading)
@@ -196,9 +173,6 @@ const Chatflows = () => {
           )}
         </Stack>
       )}
-
-      {/* <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
-      <ConfirmDialog /> */}
     </MainCard>
   )
 }
