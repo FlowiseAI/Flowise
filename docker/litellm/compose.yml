@@ -9,7 +9,7 @@ services:
     volumes:
       - ./config.yaml:/app/config.yaml
     ports:
-      - '9001:4000'
+      - '${EXPOSE_PORT:-9001}:4000'
     command: --config /app/config.yaml
   postgres:
     env_file:
