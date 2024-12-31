@@ -1568,7 +1568,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             p: 1,
                             position: 'sticky',
                             top: 0,
-                            backgroundColor: theme.palette.background.default,
+                            backgroundColor: theme.palette.background.paper,
                             zIndex: 1000,
                             borderBottom: `1px solid ${theme.palette.divider}`
                         }}
