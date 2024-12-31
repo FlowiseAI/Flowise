@@ -116,8 +116,8 @@ model_list:
 litellm_settings:
   #  logging
   success_callback: ['langfuse']
-  langfuse_public_key: 'pk-lf-54344744-3357-4ca5-84ee-51be85af12ef'
-  langfuse_secret: 'sk-lf-70903b88-3912-4c90-b477-122b0e05b20b'
+  langfuse_public_key: 'pk-lf-57e0f66e-3813-4444-962e-79ea717f9e5d'
+  langfuse_secret: 'sk-lf-0c3c2fa9-4be4-4153-98c8-fb56a5d49c2f'
   langfuse_host: 'https://us.cloud.langfuse.com'
   #
   request_timeout: 600
