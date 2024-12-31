@@ -1559,6 +1559,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 )}
             <div ref={ps} className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
                 <div id='messagelist' className={'messagelist'}>
+                    {/* New Session Button - Fixed position at the top of chat */}
                     <Box
                         sx={{
                             width: '100%',
