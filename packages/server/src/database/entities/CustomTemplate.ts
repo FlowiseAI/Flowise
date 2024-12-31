@@ -27,6 +27,9 @@ export class CustomTemplate implements ICustomTemplate {
   @Column({ nullable: true, type: 'text' })
   type?: string
 
+  @Column({ type: 'uuid', nullable: true })
+  userId: string
+
   @Column({ type: 'timestamp' })
   @CreateDateColumn()
   createdDate: Date
