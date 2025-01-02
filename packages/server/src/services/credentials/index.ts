@@ -6,7 +6,7 @@ import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
 import { ICredentialReturnResponse } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { User, UserRole } from '../../database/entities/User'
+import { User } from '../../database/entities/User'
 
 const createCredential = async (req: any) => {
   try {
@@ -67,39 +67,21 @@ const getAllCredentials = async (req: any) => {
         for (let i = 0; i < paramCredentialName.length; i += 1) {
           const name = paramCredentialName[i] as string
           let credentials
-          if (foundUser.role === UserRole.ADMIN) {
-            credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
-              credentialName: name,
-              userId: foundUser.id
-            })
-          } else {
-            credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
-              credentialName: name
-            })
-          }
+          credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
+            credentialName: name
+          })
           dbResponse.push(...credentials)
         }
       } else {
         let credentials
-        if (foundUser.role === UserRole.ADMIN) {
-          credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
-            credentialName: paramCredentialName as string,
-            userId: foundUser.id
-          })
-        } else {
-          credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
-            credentialName: paramCredentialName as string
-          })
-        }
+        credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
+          credentialName: paramCredentialName as string
+        })
         dbResponse = [...credentials]
       }
     } else {
       let credentials
-      if (foundUser.role === UserRole.ADMIN) {
-        credentials = await appServer.AppDataSource.getRepository(Credential).find()
-      } else {
-        credentials = await appServer.AppDataSource.getRepository(Credential).findBy({ userId: foundUser.id })
-      }
+      credentials = await appServer.AppDataSource.getRepository(Credential).findBy({ userId: foundUser.id })
       for (const credential of credentials) {
         dbResponse.push(omit(credential, ['encryptedData']))
       }
