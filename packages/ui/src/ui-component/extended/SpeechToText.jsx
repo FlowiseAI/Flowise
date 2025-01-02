@@ -250,7 +250,9 @@ const SpeechToText = ({ dialogProps }) => {
     const [selectedProvider, setSelectedProvider] = useState('none')
 
     const onSave = async () => {
+        console.log('onSave:', selectedProvider)
         const speechToText = setValue(true, selectedProvider, 'status')
+        console.log('speechToText:', speechToText)
         try {
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 speechToText: JSON.stringify(speechToText)
@@ -306,6 +308,10 @@ const SpeechToText = ({ dialogProps }) => {
                     newVal[provider.name] = { ...speechToText[provider.name], status: false }
                 }
             })
+            // Initialize 'none' property if it doesn't exist
+            if (!newVal['none']) {
+                newVal['none'] = {}
+            }
             if (providerName !== 'none') {
                 newVal['none'].status = false
             }
