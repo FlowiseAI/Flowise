@@ -262,7 +262,7 @@ class Retriever_Tools implements INode {
 
             // Replace doc content with full content from API and track updated docs
             docs.forEach((doc) => {
-              const prefix = doc.metadata?.prefix
+              const prefix = doc.metadata?.source?.replace('s3://cts-llm-docs-bucket/', '')
               if (typeof prefix === 'string' && contentMap.has(prefix)) {
                 doc.pageContent = contentMap.get(prefix) as string
                 updatedDocs.add(doc.metadata?.source)
