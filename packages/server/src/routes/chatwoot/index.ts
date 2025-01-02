@@ -7,7 +7,7 @@ const router: Router = express.Router()
 
 export const CHATWOOT_ACCESS_KEY = process.env.CHATWOOT_ACCESS_KEY || 'SHKzNPvNqHWrJovbazhqZZfx' // test only
 export const CHATWOOT_BASE_URL = process.env.CHATWOOT_BASE_URL || 'http://203.145.47.214:8003' // test only
-export const CHATWOOT_ACCOUNT_ID = 2
+export const CHATWOOT_ACCOUNT_ID = +(process.env.CHATWOOT_ACCOUNT_ID || '1')
 
 // User routes
 router.post('/connect', async (req: Request, res: Response, next: NextFunction) => {
