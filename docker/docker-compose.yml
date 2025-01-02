@@ -33,6 +33,7 @@ services:
             - GLOBAL_AGENT_HTTP_PROXY=${GLOBAL_AGENT_HTTP_PROXY}
             - GLOBAL_AGENT_HTTPS_PROXY=${GLOBAL_AGENT_HTTPS_PROXY}
             - GLOBAL_AGENT_NO_PROXY=${GLOBAL_AGENT_NO_PROXY}
+            - DISABLED_NODES=${DISABLED_NODES}
         ports:
             - '${PORT}:${PORT}'
         volumes:
