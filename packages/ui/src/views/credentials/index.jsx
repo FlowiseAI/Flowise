@@ -239,6 +239,7 @@ const Credentials = () => {
                 Add Credential
               </StyledButton>
             </ViewHeader>
+
             {isLogin ? (
               <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label='simple table'>
@@ -294,66 +295,56 @@ const Credentials = () => {
                           </StyledTableCell>
                         </StyledTableRow>
                       </>
-                    ) : credentials.length <= 0 ? (
-                      <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                        <Box sx={{ p: 2, height: 'auto' }}>
-                          <img
-                            style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
-                            src={CredentialEmptySVG}
-                            alt='CredentialEmptySVG'
-                          />
-                        </Box>
-                        <div>Chưa có Credentials vào đối với user này.</div>
-                      </Stack>
                     ) : (
                       <>
-                        {credentials.filter(filterCredentials).map((credential, index) => (
-                          <StyledTableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                            <StyledTableCell scope='row'>
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  flexDirection: 'row',
-                                  alignItems: 'center',
-                                  gap: 1
-                                }}
-                              >
+                        {credentials.length > 0 &&
+                          credentials.filter(filterCredentials).map((credential, index) => (
+                            <StyledTableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                              <StyledTableCell scope='row'>
                                 <Box
                                   sx={{
-                                    width: 35,
-                                    height: 35,
-                                    borderRadius: '50%',
-                                    backgroundColor: customization.isDarkMode ? theme.palette.common.white : theme.palette.grey[300] + 75
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    gap: 1
                                   }}
                                 >
-                                  <img
-                                    style={{
-                                      width: '100%',
-                                      height: '100%',
-                                      padding: 5,
-                                      objectFit: 'contain'
+                                  <Box
+                                    sx={{
+                                      width: 35,
+                                      height: 35,
+                                      borderRadius: '50%',
+                                      backgroundColor: customization.isDarkMode ? theme.palette.common.white : theme.palette.grey[300] + 75
                                     }}
-                                    alt={credential.credentialName}
-                                    src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
-                                  />
+                                  >
+                                    <img
+                                      style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        padding: 5,
+                                        objectFit: 'contain'
+                                      }}
+                                      alt={credential.credentialName}
+                                      src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
+                                    />
+                                  </Box>
+                                  {credential.name}
                                 </Box>
-                                {credential.name}
-                              </Box>
-                            </StyledTableCell>
-                            <StyledTableCell>{moment(credential.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
-                            <StyledTableCell>{moment(credential.createdDate).format('MMMM Do, YYYY')}</StyledTableCell>
-                            <StyledTableCell>
-                              <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
-                                <IconEdit />
-                              </IconButton>
-                            </StyledTableCell>
-                            <StyledTableCell>
-                              <IconButton title='Delete' color='error' onClick={() => deleteCredential(credential)}>
-                                <IconTrash />
-                              </IconButton>
-                            </StyledTableCell>
-                          </StyledTableRow>
-                        ))}
+                              </StyledTableCell>
+                              <StyledTableCell>{moment(credential.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                              <StyledTableCell>{moment(credential.createdDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                              <StyledTableCell>
+                                <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
+                                  <IconEdit />
+                                </IconButton>
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <IconButton title='Delete' color='error' onClick={() => deleteCredential(credential)}>
+                                  <IconTrash />
+                                </IconButton>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ))}
                       </>
                     )}
                   </TableBody>
@@ -361,6 +352,14 @@ const Credentials = () => {
               </TableContainer>
             ) : (
               <div>Đăng nhập để xem danh sách Credentials</div>
+            )}
+            {isLogin && !isLoadingCredentialsApi && credentials.length <= 0 && (
+              <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                <Box sx={{ p: 2, height: 'auto' }}>
+                  <img style={{ objectFit: 'cover', height: '16vh', width: 'auto' }} src={CredentialEmptySVG} alt='CredentialEmptySVG' />
+                </Box>
+                <div>Chưa có Credentials vào đối với user này.</div>
+              </Stack>
             )}
           </Stack>
         )}

@@ -6,7 +6,7 @@ import { getAppVersion } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { QueryRunner } from 'typeorm'
-import { User, UserRole } from '../../database/entities/User'
+import { User } from '../../database/entities/User'
 
 const createTool = async (req?: any): Promise<any> => {
   try {
@@ -61,7 +61,6 @@ const getAllTools = async (req?: any): Promise<Tool[]> => {
     if (!user?.id) {
       throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: User not found or unauthorized')
     }
-
     // Check user exists and get role in single query
     const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
 
@@ -69,8 +68,7 @@ const getAllTools = async (req?: any): Promise<Tool[]> => {
       throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: User not found')
     }
 
-    // Return all tools for admin, user-specific tools for others
-    return await toolRepository.findBy(foundUser.role === UserRole.ADMIN ? {} : { userId: user.id })
+    return await toolRepository.findBy({ userId: foundUser.id })
   } catch (error) {
     throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getAllTools - ${getErrorMessage(error)}`)
   }
