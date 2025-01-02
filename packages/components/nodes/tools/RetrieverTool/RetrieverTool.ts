@@ -8,6 +8,7 @@ import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { customGet } from '../../sequentialagents/commonUtils'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
+import axios from 'axios'
 
 const howToUse = `Add additional filters to vector store. You can also filter with flow config, including the current "state":
 - \`$flow.sessionId\`
@@ -159,6 +160,22 @@ class Retriever_Tools implements INode {
         type: 'BaseRetriever'
       },
       {
+        label: 'Return Full Document Content',
+        name: 'returnFullContent',
+        type: 'boolean',
+        description: 'Whether to return the full content of retrieved documents',
+        optional: true,
+        default: false
+      },
+      {
+        label: 'Return Raw Document',
+        name: 'returnRawDocument',
+        type: 'boolean',
+        description: 'Whether to return the raw document object from the retriever',
+        optional: true,
+        default: false
+      },
+      {
         label: 'Return Source Documents',
         name: 'returnSourceDocuments',
         type: 'boolean',
@@ -212,7 +229,85 @@ class Retriever_Tools implements INode {
         vectorStore.filter = newMetadataFilter
       }
       const docs = await retriever.invoke(input)
-      const content = docs.map((doc) => doc.pageContent).join('\n\n')
+
+      if (nodeData.inputs?.returnFullContent) {
+        // Extract prefixes from docs
+        const prefixes = docs
+          .map((doc) => doc.metadata?.source?.replace('s3://cts-llm-docs-bucket/', ''))
+          .filter((prefix): prefix is string => typeof prefix === 'string')
+
+        if (prefixes.length > 0) {
+          try {
+            // Call API to get full content
+            const response = await axios.post(
+              `${process.env.PDF_KNOWLEDGE_BASE_API_URL || 'http://3.231.34.3:8001'}/knowledge_base/get_pdf_content`,
+              {
+                prefix_list: prefixes
+              }
+            )
+
+            interface ContentItem {
+              content: string
+              prefix: string
+            }
+
+            const result = response.data as { data: ContentItem[] }
+
+            // Create prefix -> content mapping
+            const contentMap = new Map<string, string>()
+            const updatedDocs = new Set<string>() // Track which docs were updated from API
+            result.data.forEach((item: ContentItem) => {
+              contentMap.set(item.prefix, item.content)
+            })
+
+            // Replace doc content with full content from API and track updated docs
+            docs.forEach((doc) => {
+              const prefix = doc.metadata?.prefix
+              if (typeof prefix === 'string' && contentMap.has(prefix)) {
+                doc.pageContent = contentMap.get(prefix) as string
+                updatedDocs.add(doc.metadata?.source)
+              }
+            })
+
+            // Deduplicate docs that were updated from API based on source
+            const uniqueSources = new Map()
+            const uniqueDocs = docs.filter((doc) => {
+              if (!updatedDocs.has(doc.metadata?.source)) {
+                return true // Keep docs not updated from API
+              }
+              if (!uniqueSources.has(doc.metadata?.source)) {
+                uniqueSources.set(doc.metadata?.source, true)
+                return true
+              }
+              return false
+            })
+
+            // Update original array in place
+            docs.splice(0, docs.length, ...uniqueDocs)
+          } catch (error) {
+            console.error('Error fetching full content:', error)
+          }
+        }
+      }
+
+      const content = nodeData.inputs?.returnRawDocument
+        ? JSON.stringify(
+            docs.map((doc) => ({
+              pageContent: doc.pageContent,
+              metadata: {
+                // source: doc.metadata?.source?.split('/')?.pop(),
+                score: doc.metadata.score,
+                sub_cate_1: doc.metadata?.sub_cate_1
+                // sub_cate_2: doc.metadata?.sub_cate_2,
+                // category: doc.metadata?.category,
+                // sub_cate_3: doc.metadata?.sub_cate_3,
+                // sub_cate_4: doc.metadata?.sub_cate_4
+              }
+            })),
+            null,
+            2
+          )
+        : docs.map((doc) => doc.pageContent).join('\n\n')
       const sourceDocuments = JSON.stringify(docs)
       return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments : content
     }
