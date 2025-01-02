@@ -56,7 +56,9 @@ export default class Start extends Command {
         S3_STORAGE_REGION: Flags.string(),
         S3_ENDPOINT_URL: Flags.string(),
         S3_FORCE_PATH_STYLE: Flags.string(),
-        SHOW_COMMUNITY_NODES: Flags.string()
+        SHOW_COMMUNITY_NODES: Flags.string(),
+        REUSE_DB_CONNECTION_AGENT_MEMORY: Flags.string(),
+        REUSE_DB_CONNECTION_RECORD_MANAGER: Flags.string()
     }
 
     async stopProcess() {
@@ -132,6 +134,9 @@ export default class Start extends Command {
         if (flags.DATABASE_PASSWORD) process.env.DATABASE_PASSWORD = flags.DATABASE_PASSWORD
         if (flags.DATABASE_SSL) process.env.DATABASE_SSL = flags.DATABASE_SSL
         if (flags.DATABASE_SSL_KEY_BASE64) process.env.DATABASE_SSL_KEY_BASE64 = flags.DATABASE_SSL_KEY_BASE64
+        if (flags.REUSE_DB_CONNECTION_AGENT_MEMORY) process.env.REUSE_DB_CONNECTION_AGENT_MEMORY = flags.REUSE_DB_CONNECTION_AGENT_MEMORY
+        if (flags.REUSE_DB_CONNECTION_RECORD_MANAGER)
+            process.env.REUSE_DB_CONNECTION_RECORD_MANAGER = flags.REUSE_DB_CONNECTION_RECORD_MANAGER
 
         // Langsmith tracing
         if (flags.LANGCHAIN_TRACING_V2) process.env.LANGCHAIN_TRACING_V2 = flags.LANGCHAIN_TRACING_V2
