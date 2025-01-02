@@ -35,6 +35,7 @@ import { UpdateUserIDToll1735629996883 } from './1735629996883-updateUserIDToll'
 import { UpdateUserIDCredential1735635345114 } from './1735635345114-updateUserIDCredential'
 import { UpdateUserIDVariable1735641924580 } from './1735641924580-updateUserIDVariable'
 import { UpdateUserIDApiKey1735786578649 } from './1735786578649-updateUserIDApiKey'
+import { UpdateUserIDChatFlow1735802580229 } from './1735802580229-updateUserIDChatFlow'
 
 export const postgresMigrations = [
   Init1693891895163,
@@ -73,5 +74,6 @@ export const postgresMigrations = [
   UpdateUserIDToll1735629996883,
   UpdateUserIDCredential1735635345114,
   UpdateUserIDVariable1735641924580,
-  UpdateUserIDApiKey1735786578649
+  UpdateUserIDApiKey1735786578649,
+  UpdateUserIDChatFlow1735802580229
 ]

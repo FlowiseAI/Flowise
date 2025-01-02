@@ -10,8 +10,6 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
 import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
-import LoginDialog from '@/ui-component/dialog/LoginDialog'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -28,10 +26,13 @@ import { baseURL } from '@/store/constant'
 
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
+import { useSelector } from 'react-redux'
 
 // ==============================|| AGENTS ||============================== //
 
 const Agentflows = () => {
+  const user = useSelector((state) => state.user)
+  const isLogin = user?.id ? true : false
   const navigate = useNavigate()
   const theme = useTheme()
 
@@ -69,31 +70,9 @@ const Agentflows = () => {
   }
 
   useEffect(() => {
-    getAllAgentflows.request()
-
+    if (isLogin) getAllAgentflows.request()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // const onLoginClick = (username, password) => {
-  //   localStorage.setItem('username', username)
-  //   localStorage.setItem('password', password)
-  //   navigate(0)
-  // }
-  // const [loginDialogOpen, setLoginDialogOpen] = useState(false)
-  // const [loginDialogProps, setLoginDialogProps] = useState({})
-  // useEffect(() => {
-  //   if (getAllAgentflows.error) {
-  //     if (getAllAgentflows.error?.response?.status === 401) {
-  //       setLoginDialogProps({
-  //         title: 'Login',
-  //         confirmButtonName: 'Login'
-  //       })
-  //       setLoginDialogOpen(true)
-  //     } else {
-  //       setError(getAllAgentflows.error)
-  //     }
-  //   }
-  // }, [getAllAgentflows.error])
+  }, [isLogin])
 
   useEffect(() => {
     setLoading(getAllAgentflows.loading)
@@ -156,11 +135,17 @@ const Agentflows = () => {
                 <IconList />
               </ToggleButton>
             </ToggleButtonGroup>
-            <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
+            <StyledButton
+              disabled={!isLogin}
+              variant='contained'
+              onClick={addNew}
+              startIcon={<IconPlus />}
+              sx={{ borderRadius: 2, height: 40 }}
+            >
               Add New
             </StyledButton>
           </ViewHeader>
-          {!view || view === 'card' ? (
+          {(!view || view === 'card') && isLogin ? (
             <>
               {isLoading && !getAllAgentflows.data ? (
                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
@@ -177,30 +162,33 @@ const Agentflows = () => {
               )}
             </>
           ) : (
-            <FlowListTable
-              isAgentCanvas={true}
-              data={getAllAgentflows.data}
-              images={images}
-              isLoading={isLoading}
-              filterFunction={filterFlows}
-              updateFlowsApi={getAllAgentflows}
-              setError={setError}
-            />
+            isLogin && (
+              <FlowListTable
+                isAgentCanvas={true}
+                data={getAllAgentflows.data}
+                images={images}
+                isLoading={isLoading}
+                filterFunction={filterFlows}
+                updateFlowsApi={getAllAgentflows}
+                setError={setError}
+              />
+            )
           )}
-          {!isLoading && (!getAllAgentflows.data || getAllAgentflows.data.length === 0) && (
-            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-              <Box sx={{ p: 2, height: 'auto' }}>
-                <img style={{ objectFit: 'cover', height: '12vh', width: 'auto' }} src={AgentsEmptySVG} alt='AgentsEmptySVG' />
-              </Box>
-              <div>No Agents Yet</div>
-            </Stack>
+          {isLogin ? (
+            !isLoading &&
+            (!getAllAgentflows.data || getAllAgentflows.data.length === 0) && (
+              <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                <Box sx={{ p: 2, height: 'auto' }}>
+                  <img style={{ objectFit: 'cover', height: '12vh', width: 'auto' }} src={AgentsEmptySVG} alt='AgentsEmptySVG' />
+                </Box>
+                <div>Người dùng chưa tạo agent nào, tạo mới agent</div>
+              </Stack>
+            )
+          ) : (
+            <div>Đăng nhập để xem danh sách Agents</div>
           )}
         </Stack>
       )}
-
-      {/* 
-      <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
-      <ConfirmDialog /> */}
     </MainCard>
   )
 }

@@ -26,10 +26,13 @@ import { baseURL } from '@/store/constant'
 
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
+import { useSelector } from 'react-redux'
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Chatflows = () => {
+  const user = useSelector((state) => state.user)
+  const isLogin = user?.id ? true : false
   const navigate = useNavigate()
   const theme = useTheme()
 
@@ -67,10 +70,9 @@ const Chatflows = () => {
   }
 
   useEffect(() => {
-    getAllChatflowsApi.request()
-
+    if (isLogin) getAllChatflowsApi.request()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isLogin])
 
   useEffect(() => {
     setLoading(getAllChatflowsApi.loading)
@@ -133,43 +135,57 @@ const Chatflows = () => {
                 <IconList />
               </ToggleButton>
             </ToggleButtonGroup>
-            <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
+            <StyledButton
+              disabled={!isLogin}
+              variant='contained'
+              onClick={addNew}
+              startIcon={<IconPlus />}
+              sx={{ borderRadius: 2, height: 40 }}
+            >
               Add New
             </StyledButton>
           </ViewHeader>
-          {!view || view === 'card' ? (
+          {isLogin ? (
             <>
-              {isLoading && !getAllChatflowsApi.data ? (
-                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                  <Skeleton variant='rounded' height={160} />
-                  <Skeleton variant='rounded' height={160} />
-                  <Skeleton variant='rounded' height={160} />
-                </Box>
+              {(!view || view === 'card') && isLogin ? (
+                <>
+                  {isLoading && !getAllChatflowsApi.data ? (
+                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                      <Skeleton variant='rounded' height={160} />
+                      <Skeleton variant='rounded' height={160} />
+                      <Skeleton variant='rounded' height={160} />
+                    </Box>
+                  ) : (
+                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                      {getAllChatflowsApi.data?.filter(filterFlows).map((data, index) => (
+                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                      ))}
+                    </Box>
+                  )}
+                </>
               ) : (
-                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                  {getAllChatflowsApi.data?.filter(filterFlows).map((data, index) => (
-                    <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                  ))}
-                </Box>
+                isLogin && (
+                  <FlowListTable
+                    data={getAllChatflowsApi.data}
+                    images={images}
+                    isLoading={isLoading}
+                    filterFunction={filterFlows}
+                    updateFlowsApi={getAllChatflowsApi}
+                    setError={setError}
+                  />
+                )
+              )}
+              {!isLoading && (!getAllChatflowsApi.data || getAllChatflowsApi.data.length === 0) && (
+                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                  <Box sx={{ p: 2, height: 'auto' }}>
+                    <img style={{ objectFit: 'cover', height: '25vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />
+                  </Box>
+                  <div>Người dùng chưa tạo chatflow nào, tạo mới chatflow</div>
+                </Stack>
               )}
             </>
           ) : (
-            <FlowListTable
-              data={getAllChatflowsApi.data}
-              images={images}
-              isLoading={isLoading}
-              filterFunction={filterFlows}
-              updateFlowsApi={getAllChatflowsApi}
-              setError={setError}
-            />
-          )}
-          {!isLoading && (!getAllChatflowsApi.data || getAllChatflowsApi.data.length === 0) && (
-            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-              <Box sx={{ p: 2, height: 'auto' }}>
-                <img style={{ objectFit: 'cover', height: '25vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />
-              </Box>
-              <div>No Chatflows Yet</div>
-            </Stack>
+            <div>Đăng nhập để xem danh sách Chatflows</div>
           )}
         </Stack>
       )}

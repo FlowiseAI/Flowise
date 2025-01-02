@@ -166,7 +166,7 @@ const deleteApiKey = async (req: any) => {
 }
 
 const importKeys = async (req: any) => {
-  const { body } = req
+  const { body, user } = req
   try {
     const jsonFile = body.jsonFile
     const splitDataURI = jsonFile.split(',')
@@ -184,7 +184,14 @@ const importKeys = async (req: any) => {
       }
       return await addChatflowsCount(keys)
     } else if (_apikeysStoredInDb()) {
+      if (!user.id) {
+        throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+      }
       const appServer = getRunningExpressApp()
+      const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+      if (!foundUser) {
+        throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+      }
       const allApiKeys = await appServer.AppDataSource.getRepository(ApiKey).find()
       if (body.importMode === 'replaceAll') {
         await appServer.AppDataSource.getRepository(ApiKey).delete({
@@ -211,6 +218,7 @@ const importKeys = async (req: any) => {
               currentKey.id = key.id
               currentKey.apiKey = key.apiKey
               currentKey.apiSecret = key.apiSecret
+              currentKey.userId = foundUser.id
               await appServer.AppDataSource.getRepository(ApiKey).save(currentKey)
               break
             }
@@ -232,6 +240,7 @@ const importKeys = async (req: any) => {
           newKey.apiKey = key.apiKey
           newKey.apiSecret = key.apiSecret
           newKey.keyName = key.keyName
+          newKey.userId = foundUser.id
           const newKeyEntity = appServer.AppDataSource.getRepository(ApiKey).create(newKey)
           await appServer.AppDataSource.getRepository(ApiKey).save(newKeyEntity)
         }

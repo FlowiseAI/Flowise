@@ -15,6 +15,7 @@ import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { QueryRunner } from 'typeorm'
+import { User } from '../../database/entities/User'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -102,15 +103,27 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
   }
 }
 
-const getAllChatflows = async (type?: ChatflowType): Promise<ChatFlow[]> => {
+const getAllChatflows = async (req: any): Promise<any[]> => {
   try {
+    const type = req.query?.type as ChatflowType
+    const { user } = req
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
     const appServer = getRunningExpressApp()
-    const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    let dbResponse: any[] = []
     if (type === 'MULTIAGENT') {
-      return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
+      dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findBy({ userId: foundUser.id, type: 'MULTIAGENT' })
+      return dbResponse
     } else if (type === 'CHATFLOW') {
       // fetch all chatflows that are not agentflow
-      return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
+      dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findBy({ type: 'CHATFLOW', userId: foundUser.id })
+      return dbResponse
     }
     return dbResponse
   } catch (error) {
