@@ -2,7 +2,7 @@ import { cloneDeep } from 'lodash'
 import { useEffect, useState } from 'react'
 import { validate as uuidValidate, v4 as uuidv4 } from 'uuid'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import ReactJson from 'flowise-react-json-view'
 
 // Hooks
@@ -66,9 +66,7 @@ const LoaderConfigPreviewChunks = () => {
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
     const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
 
-    const URLpath = document.location.pathname.toString().split('/')
-    const docLoaderNodeName = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
-    const storeId = URLpath[URLpath.length - 2] === 'document-stores' ? '' : URLpath[URLpath.length - 2]
+    const { storeId, name: docLoaderNodeName } = useParams()
 
     const [selectedDocumentLoader, setSelectedDocumentLoader] = useState({})
 

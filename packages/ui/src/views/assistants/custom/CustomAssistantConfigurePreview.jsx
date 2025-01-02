@@ -1,7 +1,7 @@
 import { cloneDeep, set } from 'lodash'
 import { memo, useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { FullPageChat } from 'flowise-embed-react'
 import PropTypes from 'prop-types'
 
@@ -76,8 +76,7 @@ const CustomAssistantConfigurePreview = () => {
     const getToolsApi = useApi(assistantsApi.getTools)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
 
-    const URLpath = document.location.pathname.toString().split('/')
-    const customAssistantId = URLpath[URLpath.length - 1] === 'assistants' ? '' : URLpath[URLpath.length - 1]
+    const { id: customAssistantId } = useParams()
 
     const [chatModelsComponents, setChatModelsComponents] = useState([])
     const [chatModelsOptions, setChatModelsOptions] = useState([])

@@ -50,7 +50,7 @@ const VectorStoreConfigure = () => {
     useNotifier()
     const customization = useSelector((state) => state.customization)
 
-    const { id: storeId, docId } = useParams()
+    const { storeId, docId } = useParams()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
