@@ -6,7 +6,7 @@ import apikeyService from '../../services/apikey'
 // Get api keys
 const getAllApiKeys = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const apiResponse = await apikeyService.getAllApiKeys()
+    const apiResponse = await apikeyService.getAllApiKeys(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -18,7 +18,7 @@ const createApiKey = async (req: Request, res: Response, next: NextFunction) => 
     if (typeof req.body === 'undefined' || !req.body.keyName) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.createApiKey - keyName not provided!`)
     }
-    const apiResponse = await apikeyService.createApiKey(req.body.keyName)
+    const apiResponse = await apikeyService.createApiKey(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -34,7 +34,7 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
     if (typeof req.body === 'undefined' || !req.body.keyName) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.updateApiKey - keyName not provided!`)
     }
-    const apiResponse = await apikeyService.updateApiKey(req.params.id, req.body.keyName)
+    const apiResponse = await apikeyService.updateApiKey(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -47,7 +47,7 @@ const importKeys = async (req: Request, res: Response, next: NextFunction) => {
     if (typeof req.body === 'undefined' || !req.body.jsonFile) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.importKeys - body not provided!`)
     }
-    const apiResponse = await apikeyService.importKeys(req.body)
+    const apiResponse = await apikeyService.importKeys(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -60,7 +60,7 @@ const deleteApiKey = async (req: Request, res: Response, next: NextFunction) => 
     if (typeof req.params === 'undefined' || !req.params.id) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.deleteApiKey - id not provided!`)
     }
-    const apiResponse = await apikeyService.deleteApiKey(req.params.id)
+    const apiResponse = await apikeyService.deleteApiKey(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)

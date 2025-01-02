@@ -15,6 +15,9 @@ export class ApiKey implements IApiKey {
   @Column({ type: 'text' })
   keyName: string
 
+  @Column({ type: 'uuid', nullable: true })
+  userId: string
+
   @Column({ type: 'timestamp' })
   @UpdateDateColumn()
   updatedDate: Date
