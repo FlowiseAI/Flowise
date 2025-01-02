@@ -45,7 +45,6 @@ import {
   isSameChatId,
   getAPIOverrideConfig
 } from '../utils'
-import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
 import { v4 as uuidv4 } from 'uuid'
 import { omit } from 'lodash'
@@ -79,16 +78,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     if (!chatflow) {
       throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
-
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const userMessageDateTime = new Date()
-    if (!isInternal) {
-      const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
-      if (!isKeyValidated) {
-        throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
-      }
-    }
-
+    // if (!isInternal) {
+    //   const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
+    //   if (!isKeyValidated) {
+    //     throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+    //   }
+    // }
     let fileUploads: IFileUpload[] = []
     let uploadedFilesContent = ''
     if (incomingInput.uploads) {
@@ -215,7 +212,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const edges = parsedFlowData.edges
 
     const apiMessageId = uuidv4()
-
     /*** Get session ID ***/
     const memoryNode = findMemoryNode(nodes, edges)
     const memoryType = memoryNode?.data?.label
