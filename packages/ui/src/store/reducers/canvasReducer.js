@@ -1,4 +1,5 @@
 // action - state management
+import undoable from 'redux-undo'
 import * as actionTypes from '../actions'
 
 export const initialState = {
@@ -48,9 +49,29 @@ const canvasReducer = (state = initialState, action) => {
                 ...state,
                 componentCredentials: action.componentCredentials
             }
+        case actionTypes.RESET_CANVAS:
+            return initialState
         default:
             return state
     }
 }
 
-export default canvasReducer
+const undoableCanvas = undoable(canvasReducer, {
+    debug: false, // set to true when debugging
+    filter: (action, currentState, previousHistory) => {
+        if (action.type !== actionTypes.SET_CHATFLOW) return false
+
+        const currentFlowData = currentState.chatflow?.flowData
+        const previousFlowData = previousHistory.present.chatflow?.flowData
+
+        const currentName = currentState.chatflow?.name
+        const previousName = previousHistory.present.chatflow?.name
+
+        return currentFlowData !== previousFlowData || currentName !== previousName
+    },
+    groupBy: (action) => (action.type === actionTypes.SET_CHATFLOW ? Math.floor(Date.now() / 2000) : null),
+    ignoreInitialState: true,
+    limit: 50
+})
+
+export default undoableCanvas

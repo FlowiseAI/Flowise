@@ -34,6 +34,12 @@
 .reactflow-parent-wrapper .reactflow-wrapper {
     flex-grow: 1;
     height: 100%;
+    position: relative;
+    outline: none;
+}
+
+.reactflow-parent-wrapper .reactflow-wrapper .chatflow-canvas {
+    position: relative;
 }
 
 .chatflow-canvas .react-flow__handle-connecting {
@@ -44,4 +50,49 @@
 .chatflow-canvas .react-flow__handle-valid {
     cursor: crosshair;
     background: #5dba62 !important;
+}
+
+.undo-redo-wrapper,
+.reactflow-controls-wrapper {
+    display: flex;
+}
+
+.undo-redo-wrapper,
+.reactflow-controls-wrapper {
+    height: 40px;
+    border-radius: 8px;
+    margin: 0;
+    position: relative;
+}
+
+.node-actions {
+    border: 1px solid;
+}
+
+.undo-redo-wrapper button,
+.reactflow-controls-wrapper button {
+    border: none;
+    padding: 0.65rem;
+    color: inherit;
+    min-width: initial;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+}
+
+.undo-redo-wrapper button:not(:last-child),
+.reactflow-controls-wrapper button:not(:last-child),
+.node-actions button:not(:last-child) {
+    border-right: 1px solid;
+}
+
+.undo-redo-wrapper button svg,
+.reactflow-controls-wrapper button svg {
+    width: 32px;
+    height: 32px;
+    color: inherit;
+    stroke: currentColor;
 }

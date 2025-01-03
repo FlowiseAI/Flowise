@@ -21,7 +21,7 @@ import useNotifier from '@/utils/useNotifier'
 
 const RateLimit = () => {
     const dispatch = useDispatch()
-    const chatflow = useSelector((state) => state.canvas.chatflow)
+    const chatflow = useSelector((state) => state.canvas.present.chatflow)
     const chatflowid = chatflow.id
     const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
 
