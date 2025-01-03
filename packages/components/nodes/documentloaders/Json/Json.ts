@@ -52,7 +52,8 @@ class Json_DocumentLoaders implements INode {
                 type: 'json',
                 description: 'Additional metadata to be added to the extracted documents',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Omit Metadata Keys',
@@ -90,6 +91,38 @@ class Json_DocumentLoaders implements INode {
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
 
+        const interpolateVariables = (value: string, variables: ICommonObject): string => {
+            return value.replace(/\{\{([^}]+)\}\}/g, (match, path) => {
+                const parts = path.trim().split('.')
+                let result = variables
+                for (const part of parts) {
+                    if (result && typeof result === 'object' && part in result) {
+                        result = result[part]
+                    } else {
+                        return match
+                    }
+                }
+                return result?.toString() || match
+            })
+        }
+
+        const processMetadata = (metadata: any, variables: ICommonObject): any => {
+            if (typeof metadata === 'string') {
+                return interpolateVariables(metadata, variables)
+            }
+            if (Array.isArray(metadata)) {
+                return metadata.map((item) => processMetadata(item, variables))
+            }
+            if (typeof metadata === 'object' && metadata !== null) {
+                const result: ICommonObject = {}
+                for (const [key, value] of Object.entries(metadata)) {
+                    result[key] = processMetadata(value, variables)
+                }
+                return result
+            }
+            return metadata
+        }
+
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
             omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
@@ -104,7 +137,6 @@ class Json_DocumentLoaders implements INode {
         let docs: IDocument[] = []
         let files: string[] = []
 
-        //FILE-STORAGE::["CONTRIBUTING.md","LICENSE.md","README.md"]
         if (jsonFileBase64.startsWith('FILE-STORAGE::')) {
             const fileName = jsonFileBase64.replace('FILE-STORAGE::', '')
             if (fileName.startsWith('[') && fileName.endsWith(']')) {
@@ -113,7 +145,6 @@ class Json_DocumentLoaders implements INode {
                 files = [fileName]
             }
             const chatflowid = options.chatflowid
-
             for (const file of files) {
                 if (!file) continue
                 const fileData = await getFileFromStorage(file, chatflowid)
@@ -152,20 +183,32 @@ class Json_DocumentLoaders implements INode {
                 }
             }
         }
-
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+
+            // Use whatever variables are passed in options
+            const variables = {
+                ...options
+            }
+
+            console.log('Variables available for interpolation:', variables)
+            console.log('Metadata before interpolation:', parsedMetadata)
+
+            const interpolatedMetadata = processMetadata(parsedMetadata, variables)
+
+            console.log('Interpolated metadata:', interpolatedMetadata)
+
             docs = docs.map((doc) => ({
                 ...doc,
                 metadata:
                     _omitMetadataKeys === '*'
                         ? {
-                              ...parsedMetadata
+                              ...interpolatedMetadata
                           }
                         : omit(
                               {
                                   ...doc.metadata,
-                                  ...parsedMetadata
+                                  ...interpolatedMetadata
                               },
                               omitMetadataKeys
                           )

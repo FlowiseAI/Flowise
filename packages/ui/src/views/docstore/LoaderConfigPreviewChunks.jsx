@@ -264,6 +264,12 @@ const LoaderConfigPreviewChunks = () => {
             config.credential = selectedDocumentLoader.credential
         }
 
+        console.log('Preparing config with:', {
+            selectedDocumentLoader,
+            inputs: selectedDocumentLoader.inputs,
+            options: config
+        })
+
         return config
     }
 
