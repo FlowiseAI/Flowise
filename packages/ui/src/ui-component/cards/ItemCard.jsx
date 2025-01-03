@@ -105,7 +105,7 @@ const ItemCard = ({ data, images, onClick }) => {
                 {data.description}
               </span>
             )}
-            {data.user.username && (
+            {data?.user?.username && (
               <div
                 style={{
                   display: 'flex',
@@ -118,7 +118,7 @@ const ItemCard = ({ data, images, onClick }) => {
                   overflow: 'hidden'
                 }}
               >
-                <span>{data.user.username}</span>
+                <span>{data?.user?.username || ''}</span>
               </div>
             )}
           </Box>

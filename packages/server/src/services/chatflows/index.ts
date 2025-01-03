@@ -103,11 +103,12 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
   }
 }
 
-const getAllPublicChatflows = async (): Promise<any[]> => {
+const getAllPublicChatflows = async (req: any): Promise<any[]> => {
   try {
+    const type = req.query?.type as ChatflowType
     const appServer = getRunningExpressApp()
     const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find({
-      where: { isPublic: true },
+      where: { isPublic: true, type },
       relations: ['user']
     })
     return dbResponse

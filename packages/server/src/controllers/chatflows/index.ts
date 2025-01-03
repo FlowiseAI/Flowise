@@ -52,7 +52,7 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
 
 const getAllPublicChatflows = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const apiResponse = await chatflowsService.getAllPublicChatflows()
+    const apiResponse = await chatflowsService.getAllPublicChatflows(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
