@@ -15,6 +15,7 @@ import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { QueryRunner } from 'typeorm'
+import { User } from '../../database/entities/User'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -102,17 +103,49 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
   }
 }
 
-const getAllChatflows = async (type?: ChatflowType): Promise<ChatFlow[]> => {
+const getAllPublicChatflows = async (): Promise<any[]> => {
   try {
     const appServer = getRunningExpressApp()
-    const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
-    if (type === 'MULTIAGENT') {
-      return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
-    } else if (type === 'CHATFLOW') {
-      // fetch all chatflows that are not agentflow
-      return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
-    }
+    const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find({
+      where: { isPublic: true },
+      relations: ['user']
+    })
     return dbResponse
+  } catch (error) {
+    throw new InternalFlowiseError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      `Error: chatflowsService.getAllPublicChatflows - ${getErrorMessage(error)}`
+    )
+  }
+}
+
+const getAllChatflows = async (req: any): Promise<any[]> => {
+  try {
+    const type = req.query?.type as ChatflowType
+    const { user } = req
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
+    const appServer = getRunningExpressApp()
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
+    const query = appServer.AppDataSource.getRepository(ChatFlow)
+      .createQueryBuilder('cf')
+      .where('cf.userId = :userId', { userId: foundUser.id })
+
+    if (type) {
+      query.andWhere('cf.type = :type', { type })
+    }
+
+    const dbResponse = await query.getMany()
+    return dbResponse.map((chatflow) => ({
+      ...chatflow,
+      user: foundUser
+    }))
   } catch (error) {
     throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.getAllChatflows - ${getErrorMessage(error)}`)
   }
@@ -337,6 +370,7 @@ export default {
   checkIfChatflowIsValidForUploads,
   deleteChatflow,
   getAllChatflows,
+  getAllPublicChatflows,
   getChatflowByApiKey,
   getChatflowById,
   saveChatflow,

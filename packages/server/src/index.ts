@@ -168,8 +168,8 @@ export class App {
             } else if (req.headers['x-request-from'] === 'internal') {
               basicAuthMiddleware(req, res, next)
             } else {
-              const isKeyValidated = await validateAPIKey(req)
-              if (!isKeyValidated) {
+              const valueDecoded = await validateAPIKey(req)
+              if (!valueDecoded) {
                 return res.status(401).json({ error: 'Unauthorized Access' })
               }
               next()
@@ -183,7 +183,7 @@ export class App {
         }
       })
     } else {
-      this.app.use(async (req, res, next) => {
+      this.app.use(async (req: any, res, next) => {
         // Step 1: Check if the req path contains /api/v1 regardless of case
         if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
           // Step 2: Check if the req path is case sensitive
@@ -195,10 +195,11 @@ export class App {
             } else if (req.headers['x-request-from'] === 'internal') {
               next()
             } else {
-              const isKeyValidated = await validateAPIKey(req)
-              if (!isKeyValidated) {
+              const valueDecoded = await validateAPIKey(req)
+              if (!valueDecoded) {
                 return res.status(401).json({ error: 'Unauthorized Access' })
               }
+              req.user = valueDecoded
               next()
             }
           } else {

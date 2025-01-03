@@ -4,6 +4,8 @@ const getAllChatflows = () => client.get('/chatflows?type=CHATFLOW')
 
 const getAllAgentflows = () => client.get('/chatflows?type=MULTIAGENT')
 
+const getAllPublicChatflows = () => client.get('/chatflows/public/all')
+
 const getSpecificChatflow = (id) => client.get(`/chatflows/${id}`)
 
 const getSpecificChatflowFromPublicEndpoint = (id) => client.get(`/public-chatflows/${id}`)
@@ -30,5 +32,6 @@ export default {
   updateChatflow,
   deleteChatflow,
   getIsChatflowStreaming,
-  getAllowChatflowUploads
+  getAllowChatflowUploads,
+  getAllPublicChatflows
 }
