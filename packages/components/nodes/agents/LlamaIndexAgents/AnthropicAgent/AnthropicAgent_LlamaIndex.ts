@@ -96,13 +96,13 @@ class AnthropicAgent_LlamaIndex_Agents implements INode {
             tools,
             llm: model,
             chatHistory: chatHistory,
-            verbose: process.env.DEBUG === 'true' ? true : false
+            verbose: process.env.DEBUG === 'true'
         })
 
         let text = ''
         const usedTools: IUsedTool[] = []
 
-        const response = await agent.chat({ message: input, chatHistory, verbose: process.env.DEBUG === 'true' ? true : false })
+        const response = await agent.chat({ message: input, chatHistory, verbose: process.env.DEBUG === 'true' })
 
         if (response.sources.length) {
             for (const sourceTool of response.sources) {

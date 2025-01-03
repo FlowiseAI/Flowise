@@ -18,7 +18,7 @@ import {
     ConversationHistorySelection
 } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { extractOutputFromArray, getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
 import {
     ExtractTool,
     convertStructuredSchemaToZod,
@@ -607,6 +607,8 @@ async function agentNode(
             } else {
                 result.name = name
                 result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
+                let outputContent = typeof result === 'string' ? result : result.content
+                result.content = extractOutputFromArray(outputContent)
                 return {
                     ...returnedOutput,
                     messages: [result]
@@ -627,6 +629,8 @@ async function agentNode(
             } else {
                 result.name = name
                 result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
+                let outputContent = typeof result === 'string' ? result : result.content
+                result.content = extractOutputFromArray(outputContent)
                 return {
                     messages: [result]
                 }

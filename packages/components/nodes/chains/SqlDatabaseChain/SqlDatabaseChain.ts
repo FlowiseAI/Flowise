@@ -242,7 +242,7 @@ const getSQLDBChain = async (
     const obj: SqlDatabaseChainInput = {
         llm,
         database: db,
-        verbose: process.env.DEBUG === 'true' ? true : false,
+        verbose: process.env.DEBUG === 'true',
         topK: topK
     }
 

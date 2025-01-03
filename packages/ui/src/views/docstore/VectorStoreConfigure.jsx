@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { cloneDeep } from 'lodash'
 import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
@@ -50,9 +50,7 @@ const VectorStoreConfigure = () => {
     useNotifier()
     const customization = useSelector((state) => state.customization)
 
-    const pathSegments = document.location.pathname.toString().split('/')
-    const storeId = pathSegments[3] || null
-    const docId = pathSegments[4] || null
+    const { storeId, docId } = useParams()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
