@@ -68,14 +68,16 @@ const getAllCredentials = async (req: any) => {
           const name = paramCredentialName[i] as string
           let credentials
           credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
-            credentialName: name
+            credentialName: name,
+            userId: foundUser.id
           })
           dbResponse.push(...credentials)
         }
       } else {
         let credentials
         credentials = await appServer.AppDataSource.getRepository(Credential).findBy({
-          credentialName: paramCredentialName as string
+          credentialName: paramCredentialName as string,
+          userId: foundUser.id
         })
         dbResponse = [...credentials]
       }

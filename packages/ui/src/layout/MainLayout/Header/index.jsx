@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 // material-ui
 import { useTheme } from '@mui/material/styles'
@@ -14,13 +14,7 @@ import ProfileSection from './ProfileSection'
 import { IconMenu2 } from '@tabler/icons-react'
 
 // store
-import {
-  enqueueSnackbar as enqueueSnackbarAction,
-  closeSnackbar as closeSnackbarAction,
-  SET_DARKMODE,
-  loginAction,
-  logoutAction
-} from '@/store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_DARKMODE, logoutAction } from '@/store/actions'
 import LoginDialog from '@/ui-component/dialog/LoginDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import useApi from '@/hooks/useApi'
@@ -39,10 +33,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
   const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
   const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-  const login = (...args) => dispatch(loginAction(...args))
   const logout = (...args) => dispatch(logoutAction(...args))
 
-  const dataLogin = useMemo(() => (localStorage.getItem('dataLogin') ? JSON?.parse(localStorage.getItem('dataLogin')) : {}), [])
   const user = useSelector((state) => state.user)
   const isLogin = user?.id ? true : false
 
@@ -53,7 +45,6 @@ const Header = ({ handleLeftDrawerToggle }) => {
   })
 
   const loginApi = useApi(userApi.loginUser)
-  const getUserById = useApi(userApi.getUserById)
 
   const theme = useTheme()
   const navigate = useNavigate()
@@ -66,17 +57,6 @@ const Header = ({ handleLeftDrawerToggle }) => {
     setIsDark((isDark) => !isDark)
     localStorage.setItem('isDarkMode', !isDark)
   }
-
-  const handleGetUserById = useCallback(
-    async (id) => {
-      const resData = await getUserById.request(id)
-      if (resData) {
-        localStorage.setItem('dataLogin', JSON.stringify({ ...dataLogin, user: resData }))
-        login(resData)
-      }
-    },
-    [getUserById, dataLogin]
-  )
 
   const handleLogout = () => {
     localStorage.removeItem('dataLogin')
@@ -141,14 +121,6 @@ const Header = ({ handleLeftDrawerToggle }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDark])
-
-  useEffect(() => {
-    if (dataLogin?.user?.id) {
-      handleGetUserById(dataLogin.user.id)
-      login(dataLogin.user)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataLogin])
 
   return (
     <>
