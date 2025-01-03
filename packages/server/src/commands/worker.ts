@@ -32,13 +32,11 @@ export default class Worker extends BaseCommand {
 
         /** Prediction */
         const predictionQueue = queueManager.getQueue('prediction')
-        const predictionQueueName = predictionQueue.getQueueName()
-
-        // pass in concurrency
         const predictionWorker = predictionQueue.createWorker()
         this.predictionWorkerId = predictionWorker.id
         logger.info(`Prediction Worker ${this.predictionWorkerId} created`)
 
+        const predictionQueueName = predictionQueue.getQueueName()
         const queueEvents = new QueueEvents(predictionQueueName)
 
         queueEvents.on<CustomListener>('abort', async ({ id }: { id: string }) => {

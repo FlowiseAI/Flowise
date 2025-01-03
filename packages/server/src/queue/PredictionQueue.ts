@@ -44,6 +44,10 @@ export class PredictionQueue extends BaseQueue {
         return this.queueName
     }
 
+    public getQueue() {
+        return this.queue
+    }
+
     async processJob(data: IExecuteFlowParams) {
         if (this.appDataSource) data.appDataSource = this.appDataSource
         if (this.telemetry) data.telemetry = this.telemetry

@@ -25,6 +25,8 @@ export abstract class BaseQueue {
 
     abstract getQueueName(): string
 
+    abstract getQueue(): Queue
+
     public async addJob(jobData: any): Promise<Job> {
         const jobId = jobData.id || uuidv4()
         return await this.queue.add(jobId, jobData, { removeOnFail: true })
@@ -35,10 +37,10 @@ export abstract class BaseQueue {
             this.queue.name,
             async (job: Job) => {
                 const start = new Date().getTime()
-                logger.debug(`Processing job ${job.id} in ${this.queue.name} at ${new Date().toISOString()}`)
+                logger.info(`Processing job ${job.id} in ${this.queue.name} at ${new Date().toISOString()}`)
                 const result = await this.processJob(job.data)
                 const end = new Date().getTime()
-                logger.debug(`Completed job ${job.id} in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms)`)
+                logger.info(`Completed job ${job.id} in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms)`)
                 return result
             },
             {

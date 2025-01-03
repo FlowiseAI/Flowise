@@ -251,6 +251,10 @@ export class App {
             })
         })
 
+        if (process.env.MODE === MODE.QUEUE) {
+            this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
+        }
+
         // ----------------------------------------
         // Serve UI static
         // ----------------------------------------

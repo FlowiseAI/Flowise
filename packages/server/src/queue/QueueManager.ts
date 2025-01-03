@@ -8,6 +8,9 @@ import { CachePool } from '../CachePool'
 import { DataSource } from 'typeorm'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { RedisOptions } from 'bullmq'
+import { createBullBoard } from 'bull-board'
+import { BullMQAdapter } from 'bull-board/bullMQAdapter'
+import { Express } from 'express'
 
 dotenv.config()
 
@@ -19,6 +22,7 @@ export class QueueManager {
     private static instance: QueueManager
     private queues: Map<string, BaseQueue> = new Map()
     private connection: RedisOptions
+    private bullBoardRouter?: Express
 
     private constructor() {
         this.connection = {
@@ -56,6 +60,11 @@ export class QueueManager {
         const queue = this.queues.get(name)
         if (!queue) throw new Error(`Queue ${name} not found`)
         return queue
+    }
+
+    public getBullBoardRouter(): Express {
+        if (!this.bullBoardRouter) throw new Error('BullBoard router not found')
+        return this.bullBoardRouter
     }
 
     public async getAllJobCounts(): Promise<{ [queueName: string]: { [status: string]: number } }> {
@@ -99,5 +108,8 @@ export class QueueManager {
             appDataSource
         })
         this.registerQueue('upsert', upsertionQueue)
+
+        const bullboard = createBullBoard([new BullMQAdapter(predictionQueue.getQueue()), new BullMQAdapter(upsertionQueue.getQueue())])
+        this.bullBoardRouter = bullboard.router
     }
 }
