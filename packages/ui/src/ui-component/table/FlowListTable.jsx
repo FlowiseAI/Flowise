@@ -186,7 +186,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                         }}
                       >
                         &nbsp;
-                        {row.user.username && row.user.username}
+                        {row?.user?.username ? row?.user?.username : ''}
                       </div>
                     </StyledTableCell>
                     <StyledTableCell key='2'>
