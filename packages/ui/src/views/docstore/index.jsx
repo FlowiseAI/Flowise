@@ -3,27 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import {
-    Box,
-    Paper,
-    Skeleton,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    ToggleButton,
-    ToggleButtonGroup,
-    Typography
-} from '@mui/material'
+import { Box, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+
+// components
+import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -146,47 +135,24 @@ const Documents = () => {
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
                     <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name' title='Document Store'>
-                        <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
-                            value={view}
-                            color='primary'
-                            exclusive
-                            onChange={handleChange}
+                        <ToggleGroup
+                            type='single'
+                            defaultValue='card'
+                            className='p-0 gap-0 rounded-md border border-border box-border divide-x divide-border overflow-hidden'
+                            onValueChange={handleChange}
+                            size='sm'
                         >
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='card'
-                                title='Card View'
-                            >
+                            <ToggleGroupItem value='card' aria-label='Grid view' className='rounded-none'>
                                 <IconLayoutGrid />
-                            </ToggleButton>
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='list'
-                                title='List View'
-                            >
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value='list' aria-label='List view' className='rounded-none'>
                                 <IconList />
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                        <StyledButton
-                            variant='contained'
-                            sx={{ borderRadius: 2, height: '100%' }}
-                            onClick={addNew}
-                            startIcon={<IconPlus />}
-                            id='btn_createVariable'
-                        >
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                        <Button size='sm' onClick={addNew} id='btn_createVariable'>
+                            <IconPlus />
                             Add New
-                        </StyledButton>
+                        </Button>
                     </ViewHeader>
                     {!view || view === 'card' ? (
                         <>

@@ -1,14 +1,17 @@
 import { useEffect, useState, useRef } from 'react'
 
 // material-ui
-import { Box, Stack, Button, ButtonGroup, Skeleton, ToggleButtonGroup, ToggleButton } from '@mui/material'
+import { Box, Stack, Skeleton } from '@mui/material'
+
+// components
+import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
 import ToolEmptySVG from '@/assets/images/tools_empty.svg'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import ToolDialog from './ToolDialog'
 import { ToolsTable } from '@/ui-component/table/ToolsListTable'
 
@@ -22,12 +25,10 @@ import useApi from '@/hooks/useApi'
 import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
-import { useTheme } from '@mui/material/styles'
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Tools = () => {
-    const theme = useTheme()
     const getAllToolsApi = useApi(toolsApi.getAllTools)
 
     const [isLoading, setLoading] = useState(true)
@@ -38,7 +39,7 @@ const Tools = () => {
 
     const inputRef = useRef(null)
 
-    const handleChange = (event, nextView) => {
+    const handleChange = (nextView) => {
         if (nextView === null) return
         localStorage.setItem('toolsDisplayStyle', nextView)
         setView(nextView)
@@ -139,45 +140,24 @@ const Tools = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Tools' title='Tools'>
-                            <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
-                                value={view}
-                                color='primary'
-                                exclusive
-                                onChange={handleChange}
+                            <ToggleGroup
+                                type='single'
+                                defaultValue='card'
+                                className='p-0 gap-0 rounded-md border border-border box-border divide-x divide-border overflow-hidden'
+                                onValueChange={handleChange}
+                                size='sm'
                             >
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='card'
-                                    title='Card View'
-                                >
+                                <ToggleGroupItem value='card' aria-label='Grid view' className='rounded-none'>
                                     <IconLayoutGrid />
-                                </ToggleButton>
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='list'
-                                    title='List View'
-                                >
+                                </ToggleGroupItem>
+                                <ToggleGroupItem value='list' aria-label='List view' className='rounded-none'>
                                     <IconList />
-                                </ToggleButton>
-                            </ToggleButtonGroup>
+                                </ToggleGroupItem>
+                            </ToggleGroup>
+
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Button
-                                    variant='outlined'
-                                    onClick={() => inputRef.current.click()}
-                                    startIcon={<IconFileUpload />}
-                                    sx={{ borderRadius: 2, height: 40 }}
-                                >
+                                <Button size='sm' variant='outline' onClick={() => inputRef.current.click()}>
+                                    <IconFileUpload />
                                     Load
                                 </Button>
                                 <input
@@ -189,16 +169,9 @@ const Tools = () => {
                                     onChange={(e) => handleFileUpload(e)}
                                 />
                             </Box>
-                            <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                                <StyledButton
-                                    variant='contained'
-                                    onClick={addNew}
-                                    startIcon={<IconPlus />}
-                                    sx={{ borderRadius: 2, height: 40 }}
-                                >
-                                    Create
-                                </StyledButton>
-                            </ButtonGroup>
+                            <Button onClick={addNew} size='sm'>
+                                <IconPlus /> Add New
+                            </Button>
                         </ViewHeader>
                         {!view || view === 'card' ? (
                             <>
