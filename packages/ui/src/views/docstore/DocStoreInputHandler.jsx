@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { useSelector } from 'react-redux'
+import { flowContext } from '@/store/context/ReactFlowContext'
 
 // material-ui
 import { Box, Typography, IconButton, Button } from '@mui/material'
@@ -14,7 +15,7 @@ import { Input } from '@/ui-component/input/Input'
 import { DataGrid } from '@/ui-component/grid/DataGrid'
 import { File } from '@/ui-component/file/File'
 import { SwitchInput } from '@/ui-component/switch/Switch'
-import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
+import JsonEditorInput from '@/ui-component/json/JsonEditor'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
@@ -24,13 +25,13 @@ import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
-// ===========================|| DocStoreInputHandler ||=========================== //
-
 const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
     const customization = useSelector((state) => state.customization)
+    const { reactFlowInstance } = useContext(flowContext)
 
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [forceUpdate, setForceUpdate] = useState(false)
     const [showManageScrapedLinksDialog, setShowManageScrapedLinksDialog] = useState(false)
     const [manageScrapedLinksDialogProps, setManageScrapedLinksDialogProps] = useState({})
 
@@ -132,16 +133,17 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
                                 inputParam={inputParam}
                                 onSelect={(newValue) => {
                                     data.credential = newValue
-                                    data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
+                                    data.inputs[FLOWISE_CREDENTIAL_ID] = newValue
                                 }}
                             />
                         )}
-
                         {inputParam.type === 'file' && (
                             <File
                                 disabled={disabled}
                                 fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => {
+                                    data.inputs[inputParam.name] = newValue
+                                }}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
                             />
                         )}
@@ -189,12 +191,30 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
                             />
                         )}
                         {inputParam.type === 'json' && (
-                            <JsonEditorInput
-                                disabled={disabled}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                                isDarkMode={customization.isDarkMode}
-                            />
+                            <>
+                                {console.log('=== JSON Input Debug ===')}
+                                {console.log('inputParam:', inputParam)}
+                                {console.log('data.inputs before render:', { ...data.inputs })}
+                                <JsonEditorInput
+                                    disabled={disabled}
+                                    onChange={(newValue) => {
+                                        console.log('JsonEditor onChange called with:', newValue)
+                                        console.log('data.inputs before update:', { ...data.inputs })
+                                        data.inputs[inputParam.name] = newValue
+                                        console.log('data.inputs after update:', { ...data.inputs })
+                                        // Force a re-render
+                                        setForceUpdate((prev) => !prev)
+                                    }}
+                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                    isDarkMode={customization.isDarkMode}
+                                    inputParam={{
+                                        ...inputParam,
+                                        acceptVariable: true,
+                                        id: `${data.id}-${inputParam.name}`
+                                    }}
+                                    jsonFileContent={data.inputs['jsonFile']}
+                                />
+                            </>
                         )}
                         {inputParam.type === 'options' && (
                             <Dropdown
@@ -227,7 +247,6 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
                                         nodeData={data}
                                         value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                                         onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                        onCreateNew={() => addAsyncOption(inputParam.name)}
                                     />
                                 </div>
                             </>
@@ -273,7 +292,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
                 dialogProps={expandDialogProps}
                 onCancel={() => setShowExpandDialog(false)}
                 onConfirm={(newValue, inputParamName) => onExpandDialogSave(newValue, inputParamName)}
-            ></ExpandTextDialog>
+            />
         </div>
     )
 }

@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Dialog, DialogContent, DialogTitle } from '@mui/material'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
+import JsonEditorInput from '@/ui-component/json/JsonEditor'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 const FormatPromptValuesDialog = ({ show, dialogProps, onChange, onCancel }) => {
