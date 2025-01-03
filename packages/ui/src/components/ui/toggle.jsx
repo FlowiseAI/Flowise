@@ -10,13 +10,16 @@ const toggleVariants = cva(
     {
         variants: {
             variant: {
-                default: 'bg-transparent',
-                outline: 'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground'
+                default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+                outline: 'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
+                secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+                ghost: 'hover:bg-accent hover:text-accent-foreground'
             },
             size: {
-                default: 'h-10 px-3 min-w-10',
-                sm: 'h-9 px-2.5 min-w-9',
-                lg: 'h-11 px-5 min-w-11'
+                default: 'h-10 px-4 py-2',
+                sm: 'h-9 rounded-md px-3',
+                lg: 'h-11 rounded-md px-8',
+                icon: 'h-10 w-10'
             }
         },
         defaultVariants: {
@@ -43,12 +46,15 @@ const Toggle = React.forwardRef(({ className, variant, size, ...props }, ref) =>
     return (
         <Button
             ref={ref}
-            className={cn(toggleVariants({ variant, size, className }) + 'px-4 py-2 md:h-12 w-10')}
+            className={cn(toggleVariants({ variant, size, className }))}
             aria-pressed={pressed}
-            variant={pressed ? 'default' : 'outline'}
+            variant={variant}
             disabled={props.disabled}
             onClick={handleToggleChange}
-        />
+            size={size}
+        >
+            {props.children}
+        </Button>
     )
 })
 
@@ -58,8 +64,8 @@ Toggle.propTypes = {
     defaultPressed: PropTypes.bool,
     pressed: PropTypes.bool,
     onPressedChange: PropTypes.func,
-    size: PropTypes.oneOf(['default', 'sm', 'lg']),
-    variant: PropTypes.oneOf(['default', 'outline'])
+    size: PropTypes.oneOf(['default', 'sm', 'lg', 'icon']),
+    variant: PropTypes.oneOf(['default', 'outline', 'secondary', 'ghost'])
 }
 
 export { Toggle, toggleVariants }

@@ -89,6 +89,7 @@ const CardHeader = React.forwardRef(({ className, title, subheader, spacing, ...
         className={cn(cardHeaderVariants({ spacing }), className)}
         title={title}
         subheader={subheader && <div className='text-sm text-muted-foreground'>{subheader}</div>}
+        // FIXME: changing font size here doesn't seem to do anything
         classes={{ title: 'text-lg font-semibold leading-none tracking-tight' }}
         {...props}
     />

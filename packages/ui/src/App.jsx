@@ -13,6 +13,7 @@ import themes from '@/themes'
 import NavigationScroll from '@/layout/NavigationScroll'
 
 // ==============================|| APP ||============================== //
+// FIXME: setup dark mode
 
 const App = () => {
     const customization = useSelector((state) => state.customization)
