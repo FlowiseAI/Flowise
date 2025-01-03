@@ -10,7 +10,6 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
 
     async connect() {
         await this.redisPublisher.connect()
-        console.log('Redis publisher connected.')
     }
 
     streamCustomEvent(chatId: string, eventType: string, data: any) {
@@ -241,7 +240,6 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
     async disconnect() {
         if (this.redisPublisher) {
             await this.redisPublisher.quit()
-            console.log('Redis publisher disconnected.')
         }
     }
 }

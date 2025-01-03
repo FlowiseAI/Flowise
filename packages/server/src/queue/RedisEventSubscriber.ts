@@ -13,7 +13,6 @@ export class RedisEventSubscriber {
 
     async connect() {
         await this.redisSubscriber.connect()
-        console.log('Redis subscriber connected.')
     }
 
     subscribe(channel: string) {
@@ -24,7 +23,6 @@ export class RedisEventSubscriber {
 
         // Check if already subscribed
         if (this.subscribedChannels.has(channel)) {
-            console.log(`Already subscribed to Redis channel: ${channel}`)
             return // Prevent duplicate subscription
         }
 
@@ -34,7 +32,6 @@ export class RedisEventSubscriber {
 
         // Mark the channel as subscribed
         this.subscribedChannels.add(channel)
-        console.log(`Subscribed to Redis channel: ${channel}`)
     }
 
     private handleEvent(message: string) {
@@ -83,15 +80,12 @@ export class RedisEventSubscriber {
             case 'metadata':
                 this.sseStreamer.streamMetadataEvent(chatId, data)
                 break
-            default:
-                console.log('Unknown event type:', eventType)
         }
     }
 
     async disconnect() {
         if (this.redisSubscriber) {
             await this.redisSubscriber.quit()
-            console.log('Redis subscriber disconnected.')
         }
     }
 }

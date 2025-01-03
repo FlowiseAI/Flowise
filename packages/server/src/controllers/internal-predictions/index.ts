@@ -33,7 +33,6 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
         res.flushHeaders()
 
         if (process.env.MODE === MODE.QUEUE) {
-            console.log(`Subscribing to chatId ${chatId}:`, redisSubscriber)
             redisSubscriber.subscribe(chatId)
         }
 

@@ -1,5 +1,6 @@
 import { Queue, Worker, Job, QueueEvents, RedisOptions } from 'bullmq'
 import { v4 as uuidv4 } from 'uuid'
+import logger from '../utils/logger'
 
 const QUEUE_REDIS_EVENT_STREAM_MAX_LEN = process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN
     ? parseInt(process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN)
@@ -33,9 +34,11 @@ export abstract class BaseQueue {
         return new Worker(
             this.queue.name,
             async (job: Job) => {
-                console.log(`Processing job ${job.id} in ${this.queue.name}`)
+                const start = new Date().getTime()
+                logger.debug(`Processing job ${job.id} in ${this.queue.name} at ${new Date().toISOString()}`)
                 const result = await this.processJob(job.data)
-                console.log(`Completed job ${job.id} in ${this.queue.name}`)
+                const end = new Date().getTime()
+                logger.debug(`Completed job ${job.id} in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms)`)
                 return result
             },
             {

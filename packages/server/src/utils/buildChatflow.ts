@@ -717,20 +717,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
             incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
             return result
-
-            // Set up a one-time listener for the specific job completion
-            /*queueEvents.once('completed', ({ jobId, returnvalue }) => {
-                if (jobId === job.id) {
-                    // Respond with the job result
-                    console.log('Job completed:', returnvalue)
-                    console.log('typeof Job completed:', typeof returnvalue)
-                    const result = typeof returnvalue === 'string' ? JSON.parse(returnvalue) : returnvalue
-                    if (isStreamValid) {
-                        appServer.sseStreamer.streamMetadataEvent(result.chatId, result)
-                    }
-                    return returnvalue
-                }
-            })*/
         } else {
             const signal = new AbortController()
             appServer.abortControllerPool.add(`${chatflow.id}_${chatId}`, signal)

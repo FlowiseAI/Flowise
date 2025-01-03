@@ -72,7 +72,6 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                     res.flushHeaders()
 
                     if (process.env.MODE === MODE.QUEUE) {
-                        console.log(`Subscribing to chatId ${chatId}:`, redisSubscriber)
                         redisSubscriber.subscribe(chatId)
                     }
 
