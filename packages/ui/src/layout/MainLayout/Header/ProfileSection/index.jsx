@@ -3,23 +3,13 @@ import { exportData, stringify } from '@/utils/exportImport'
 import useNotifier from '@/utils/useNotifier'
 import PropTypes from 'prop-types'
 import { useEffect, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { createPortal } from 'react-dom'
 
 // material-ui
 import {
-    Avatar,
     Box,
     Button,
-    ButtonBase,
-    ClickAwayListener,
-    Divider,
-    List,
-    ListItemButton,
-    ListItemIcon,
-    ListItemText,
-    Paper,
-    Popper,
     Typography,
     Dialog,
     DialogTitle,
@@ -29,15 +19,19 @@ import {
     Checkbox,
     DialogActions
 } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
 
-// third-party
-import PerfectScrollbar from 'react-perfect-scrollbar'
+// components
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
 import AboutDialog from '@/ui-component/dialog/AboutDialog'
-import Transitions from '@/ui-component/extended/Transitions'
 
 // assets
 import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconX } from '@tabler/icons-react'
@@ -154,10 +148,6 @@ ExportDialog.propTypes = {
 // ==============================|| PROFILE MENU ||============================== //
 
 const ProfileSection = ({ username, handleLogout }) => {
-    const theme = useTheme()
-
-    const customization = useSelector((state) => state.customization)
-
     const [open, setOpen] = useState(false)
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
@@ -177,17 +167,6 @@ const ProfileSection = ({ username, handleLogout }) => {
     const dispatch = useDispatch()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-
-    const handleClose = (event) => {
-        if (anchorRef.current && anchorRef.current.contains(event.target)) {
-            return
-        }
-        setOpen(false)
-    }
-
-    const handleToggle = () => {
-        setOpen((prevOpen) => !prevOpen)
-    }
 
     const errorFailed = (message) => {
         enqueueSnackbar({
@@ -315,130 +294,52 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     return (
         <>
-            <ButtonBase ref={anchorRef} sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-                <Avatar
-                    variant='rounded'
-                    sx={{
-                        ...theme.typography.commonAvatar,
-                        ...theme.typography.mediumAvatar,
-                        transition: 'all .2s ease-in-out',
-                        background: theme.palette.secondary.light,
-                        color: theme.palette.secondary.dark,
-                        '&:hover': {
-                            background: theme.palette.secondary.dark,
-                            color: theme.palette.secondary.light
-                        }
-                    }}
-                    onClick={handleToggle}
-                    color='inherit'
-                >
-                    <IconSettings stroke={1.5} size='1.3rem' />
-                </Avatar>
-            </ButtonBase>
-            <Popper
-                placement='bottom-end'
-                open={open}
-                anchorEl={anchorRef.current}
-                role={undefined}
-                transition
-                disablePortal
-                popperOptions={{
-                    modifiers: [
-                        {
-                            name: 'offset',
-                            options: {
-                                offset: [0, 14]
-                            }
-                        }
-                    ]
-                }}
-            >
-                {({ TransitionProps }) => (
-                    <Transitions in={open} {...TransitionProps}>
-                        <Paper>
-                            <ClickAwayListener onClickAway={handleClose}>
-                                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
-                                    {username && (
-                                        <Box sx={{ p: 2 }}>
-                                            <Typography component='span' variant='h4'>
-                                                {username}
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                    <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 250px)', overflowX: 'hidden' }}>
-                                        <Box sx={{ p: 2 }}>
-                                            <Divider />
-                                            <List
-                                                component='nav'
-                                                sx={{
-                                                    width: '100%',
-                                                    maxWidth: 250,
-                                                    minWidth: 200,
-                                                    backgroundColor: theme.palette.background.paper,
-                                                    borderRadius: '10px',
-                                                    [theme.breakpoints.down('md')]: {
-                                                        minWidth: '100%'
-                                                    },
-                                                    '& .MuiListItemButton-root': {
-                                                        mt: 0.5
-                                                    }
-                                                }}
-                                            >
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={() => {
-                                                        setExportDialogOpen(true)
-                                                    }}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconFileExport stroke={1.5} size='1.3rem' />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Export</Typography>} />
-                                                </ListItemButton>
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={() => {
-                                                        importAll()
-                                                    }}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconFileUpload stroke={1.5} size='1.3rem' />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>Import</Typography>} />
-                                                </ListItemButton>
-                                                <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={() => {
-                                                        setOpen(false)
-                                                        setAboutDialogOpen(true)
-                                                    }}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconInfoCircle stroke={1.5} size='1.3rem' />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
-                                                </ListItemButton>
-                                                {localStorage.getItem('username') && localStorage.getItem('password') && (
-                                                    <ListItemButton
-                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                        onClick={handleLogout}
-                                                    >
-                                                        <ListItemIcon>
-                                                            <IconLogout stroke={1.5} size='1.3rem' />
-                                                        </ListItemIcon>
-                                                        <ListItemText primary={<Typography variant='body2'>Logout</Typography>} />
-                                                    </ListItemButton>
-                                                )}
-                                            </List>
-                                        </Box>
-                                    </PerfectScrollbar>
-                                </MainCard>
-                            </ClickAwayListener>
-                        </Paper>
-                    </Transitions>
-                )}
-            </Popper>
+            <DropdownMenu>
+                <DropdownMenuTrigger size='icon' variant='secondary'>
+                    <IconSettings />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end' className='w-64'>
+                    <DropdownMenuLabel>
+                        <Typography component='span' variant='h4'>
+                            {username}
+                        </Typography>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                        onClick={() => {
+                            setExportDialogOpen(true)
+                        }}
+                    >
+                        <IconFileExport size={20} stroke={1.5} />
+                        <Typography variant='body2'>Export</Typography>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={() => {
+                            importAll()
+                        }}
+                    >
+                        <IconFileUpload size={20} stroke={1.5} />
+                        <Typography variant='body2'>Import</Typography>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                        onClick={() => {
+                            setOpen(false)
+                            setAboutDialogOpen(true)
+                        }}
+                    >
+                        <IconInfoCircle size={20} stroke={1.5} />
+                        <Typography variant='body2'>About FlowiseAI</Typography>
+                    </DropdownMenuItem>
+                    {localStorage.getItem('username') && localStorage.getItem('password') && (
+                        <DropdownMenuItem onClick={handleLogout}>
+                            <IconLogout size={20} stroke={1.5} />
+                            <Typography variant='body2'>Logout</Typography>
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
             <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
             <ExportDialog show={exportDialogOpen} onCancel={() => setExportDialogOpen(false)} onExport={(data) => onExport(data)} />
         </>

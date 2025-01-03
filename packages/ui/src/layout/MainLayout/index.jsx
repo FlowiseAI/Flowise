@@ -83,7 +83,8 @@ const MainLayout = () => {
                 elevation={0}
                 sx={{
                     bgcolor: theme.palette.background.default,
-                    transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
+                    transition: leftDrawerOpened ? theme.transitions.create('width') : 'none',
+                    zIndex: 10
                 }}
             >
                 <Toolbar sx={{ height: `${headerHeight}px`, borderBottom: '1px solid', borderColor: theme.palette.primary[200] + 75 }}>

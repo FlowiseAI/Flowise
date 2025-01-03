@@ -79,11 +79,12 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 </ButtonBase>
             </Box>
             <Box sx={{ flexGrow: 1 }} />
-            <Toggle pressed={isDark} onPressedChange={changeDarkMode} variant='ghost' size='icon'>
-                {isDark ? <IconMoonFilled /> : <IconSunFilled />}
-            </Toggle>
-            <Box sx={{ ml: 2 }}></Box>
-            <ProfileSection handleLogout={signOutClicked} username={localStorage.getItem('username') ?? ''} />
+            <Box className='flex items-center gap-2'>
+                <Toggle pressed={isDark} onPressedChange={changeDarkMode} variant='ghost' size='icon'>
+                    {isDark ? <IconMoonFilled /> : <IconSunFilled />}
+                </Toggle>
+                <ProfileSection handleLogout={signOutClicked} username={localStorage.getItem('username') ?? ''} />
+            </Box>
         </>
     )
 }
