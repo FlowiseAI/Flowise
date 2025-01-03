@@ -141,7 +141,7 @@ ViewHeader.propTypes = {
   onSearchChange: PropTypes.func,
   search: PropTypes.bool,
   searchPlaceholder: PropTypes.string,
-  title: PropTypes.string,
+  title: PropTypes.node,
   description: PropTypes.string,
   isBackButton: PropTypes.bool,
   onBack: PropTypes.func,

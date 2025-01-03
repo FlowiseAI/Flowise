@@ -50,6 +50,15 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
   }
 }
 
+const getAllPublicChatflows = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const apiResponse = await chatflowsService.getAllPublicChatflows()
+    return res.json(apiResponse)
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const apiResponse = await chatflowsService.getAllChatflows(req)
@@ -177,6 +186,7 @@ export default {
   checkIfChatflowIsValidForUploads,
   deleteChatflow,
   getAllChatflows,
+  getAllPublicChatflows,
   getChatflowByApiKey,
   getChatflowById,
   saveChatflow,

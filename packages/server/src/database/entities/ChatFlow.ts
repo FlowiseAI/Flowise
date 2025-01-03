@@ -1,6 +1,7 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm'
 import { ChatflowType, IChatFlow } from '../../Interface'
+import { User } from './User'
 
 @Entity()
 export class ChatFlow implements IChatFlow {
@@ -45,6 +46,10 @@ export class ChatFlow implements IChatFlow {
 
   @Column({ type: 'uuid', nullable: true })
   userId: string
+
+  @ManyToOne(() => User, (user) => user.chatFlows, { nullable: true })
+  @JoinColumn({ name: 'userId' })
+  user: User
 
   @Column({ type: 'timestamp' })
   @CreateDateColumn()

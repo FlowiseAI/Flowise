@@ -103,6 +103,22 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
   }
 }
 
+const getAllPublicChatflows = async (): Promise<any[]> => {
+  try {
+    const appServer = getRunningExpressApp()
+    const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find({
+      where: { isPublic: true },
+      relations: ['user']
+    })
+    return dbResponse
+  } catch (error) {
+    throw new InternalFlowiseError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      `Error: chatflowsService.getAllPublicChatflows - ${getErrorMessage(error)}`
+    )
+  }
+}
+
 const getAllChatflows = async (req: any): Promise<any[]> => {
   try {
     const type = req.query?.type as ChatflowType
@@ -116,16 +132,20 @@ const getAllChatflows = async (req: any): Promise<any[]> => {
     if (!foundUser) {
       throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
     }
-    let dbResponse: any[] = []
-    if (type === 'MULTIAGENT') {
-      dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findBy({ userId: foundUser.id, type: 'MULTIAGENT' })
-      return dbResponse
-    } else if (type === 'CHATFLOW') {
-      // fetch all chatflows that are not agentflow
-      dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findBy({ type: 'CHATFLOW', userId: foundUser.id })
-      return dbResponse
+
+    const query = appServer.AppDataSource.getRepository(ChatFlow)
+      .createQueryBuilder('cf')
+      .where('cf.userId = :userId', { userId: foundUser.id })
+
+    if (type) {
+      query.andWhere('cf.type = :type', { type })
     }
-    return dbResponse
+
+    const dbResponse = await query.getMany()
+    return dbResponse.map((chatflow) => ({
+      ...chatflow,
+      user: foundUser
+    }))
   } catch (error) {
     throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.getAllChatflows - ${getErrorMessage(error)}`)
   }
@@ -350,6 +370,7 @@ export default {
   checkIfChatflowIsValidForUploads,
   deleteChatflow,
   getAllChatflows,
+  getAllPublicChatflows,
   getChatflowByApiKey,
   getChatflowById,
   saveChatflow,
