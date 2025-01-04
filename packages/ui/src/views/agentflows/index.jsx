@@ -11,6 +11,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
+import FlowListMenu from '@/ui-component/button/FlowListMenu'
 import { gridSpacing } from '@/store/constant'
 import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
 import LoginDialog from '@/ui-component/dialog/LoginDialog'
@@ -157,9 +158,19 @@ const Agentflows = () => {
                             ) : (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                     {getAllAgentflows.data?.filter(filterFlows).map((data, index) => (
-                                        <Link key={index} to={`/agentcanvas/${data.id}`}>
-                                            <ItemCard data={data} images={images[data.id]} />
-                                        </Link>
+                                        <Box className='relative' key={index}>
+                                            <Link key={index} to={`/agentcanvas/${data.id}`}>
+                                                <ItemCard data={data} images={images[data.id]} />
+                                            </Link>
+                                            <Box className='absolute top-1 right-1'>
+                                                <FlowListMenu
+                                                    isAgentCanvas={true}
+                                                    chatflow={data}
+                                                    setError={setError}
+                                                    updateFlowsApi={getAllAgentflows}
+                                                />
+                                            </Box>
+                                        </Box>
                                     ))}
                                 </Box>
                             )}
