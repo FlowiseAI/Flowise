@@ -49,7 +49,10 @@ export class RateLimiterManager {
                     store: new RedisStore({
                         // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
                         sendCommand: (...args: string[]) => this.redisClient.call(...args)
-                    })
+                    }),
+                    handler: (_, res) => {
+                        res.status(429).send(message)
+                    }
                 })
             } else {
                 this.rateLimiters[id] = rateLimit({
