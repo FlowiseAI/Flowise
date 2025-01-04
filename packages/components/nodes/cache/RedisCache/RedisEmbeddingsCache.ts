@@ -1,45 +1,11 @@
-import { Redis, RedisOptions } from 'ioredis'
-import { isEqual } from 'lodash'
+import { Redis } from 'ioredis'
 import { RedisByteStore } from '@langchain/community/storage/ioredis'
-import { Embeddings } from '@langchain/core/embeddings'
-import { CacheBackedEmbeddings } from 'langchain/embeddings/cache_backed'
+import { Embeddings, EmbeddingsInterface } from '@langchain/core/embeddings'
+import { CacheBackedEmbeddingsFields } from 'langchain/embeddings/cache_backed'
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-
-let redisClientSingleton: Redis
-let redisClientOption: RedisOptions
-let redisClientUrl: string
-
-const getRedisClientbyOption = (option: RedisOptions) => {
-    if (!redisClientSingleton) {
-        // if client doesn't exists
-        redisClientSingleton = new Redis(option)
-        redisClientOption = option
-        return redisClientSingleton
-    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) {
-        // if client exists but option changed
-        redisClientSingleton.quit()
-        redisClientSingleton = new Redis(option)
-        redisClientOption = option
-        return redisClientSingleton
-    }
-    return redisClientSingleton
-}
-
-const getRedisClientbyUrl = (url: string) => {
-    if (!redisClientSingleton) {
-        // if client doesn't exists
-        redisClientSingleton = new Redis(url)
-        redisClientUrl = url
-        return redisClientSingleton
-    } else if (redisClientSingleton && url !== redisClientUrl) {
-        // if client exists but option changed
-        redisClientSingleton.quit()
-        redisClientSingleton = new Redis(url)
-        redisClientUrl = url
-        return redisClientSingleton
-    }
-    return redisClientSingleton
-}
+import { BaseStore } from '@langchain/core/stores'
+import { insecureHash } from '@langchain/core/utils/hash'
+import { Document } from '@langchain/core/documents'
 
 class RedisEmbeddingsCache implements INode {
     label: string
@@ -112,7 +78,7 @@ class RedisEmbeddingsCache implements INode {
 
             const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
 
-            client = getRedisClientbyOption({
+            client = new Redis({
                 port: portStr ? parseInt(portStr) : 6379,
                 host,
                 username,
@@ -120,7 +86,7 @@ class RedisEmbeddingsCache implements INode {
                 ...tlsOptions
             })
         } else {
-            client = getRedisClientbyUrl(redisUrl)
+            client = new Redis(redisUrl)
         }
 
         ttl ??= '3600'
@@ -130,10 +96,143 @@ class RedisEmbeddingsCache implements INode {
             ttl: ttlNumber
         })
 
-        return CacheBackedEmbeddings.fromBytesStore(underlyingEmbeddings, redisStore, {
-            namespace: namespace
+        const store = CacheBackedEmbeddings.fromBytesStore(underlyingEmbeddings, redisStore, {
+            namespace: namespace,
+            redisClient: client
+        })
+
+        return store
+    }
+}
+
+class CacheBackedEmbeddings extends Embeddings {
+    protected underlyingEmbeddings: EmbeddingsInterface
+
+    protected documentEmbeddingStore: BaseStore<string, number[]>
+
+    protected redisClient?: Redis
+
+    constructor(fields: CacheBackedEmbeddingsFields & { redisClient?: Redis }) {
+        super(fields)
+        this.underlyingEmbeddings = fields.underlyingEmbeddings
+        this.documentEmbeddingStore = fields.documentEmbeddingStore
+        this.redisClient = fields.redisClient
+    }
+
+    async embedQuery(document: string): Promise<number[]> {
+        const res = this.underlyingEmbeddings.embedQuery(document)
+        this.redisClient?.quit()
+        return res
+    }
+
+    async embedDocuments(documents: string[]): Promise<number[][]> {
+        const vectors = await this.documentEmbeddingStore.mget(documents)
+        const missingIndicies = []
+        const missingDocuments = []
+        for (let i = 0; i < vectors.length; i += 1) {
+            if (vectors[i] === undefined) {
+                missingIndicies.push(i)
+                missingDocuments.push(documents[i])
+            }
+        }
+        if (missingDocuments.length) {
+            const missingVectors = await this.underlyingEmbeddings.embedDocuments(missingDocuments)
+            const keyValuePairs: [string, number[]][] = missingDocuments.map((document, i) => [document, missingVectors[i]])
+            await this.documentEmbeddingStore.mset(keyValuePairs)
+            for (let i = 0; i < missingIndicies.length; i += 1) {
+                vectors[missingIndicies[i]] = missingVectors[i]
+            }
+        }
+        this.redisClient?.quit()
+        return vectors as number[][]
+    }
+
+    static fromBytesStore(
+        underlyingEmbeddings: EmbeddingsInterface,
+        documentEmbeddingStore: BaseStore<string, Uint8Array>,
+        options?: {
+            namespace?: string
+            redisClient?: Redis
+        }
+    ) {
+        const encoder = new TextEncoder()
+        const decoder = new TextDecoder()
+        const encoderBackedStore = new EncoderBackedStore<string, number[], Uint8Array>({
+            store: documentEmbeddingStore,
+            keyEncoder: (key) => (options?.namespace ?? '') + insecureHash(key),
+            valueSerializer: (value) => encoder.encode(JSON.stringify(value)),
+            valueDeserializer: (serializedValue) => JSON.parse(decoder.decode(serializedValue))
+        })
+        return new this({
+            underlyingEmbeddings,
+            documentEmbeddingStore: encoderBackedStore,
+            redisClient: options?.redisClient
         })
     }
+}
+
+class EncoderBackedStore<K, V, SerializedType = any> extends BaseStore<K, V> {
+    lc_namespace = ['langchain', 'storage']
+
+    store: BaseStore<string, SerializedType>
+
+    keyEncoder: (key: K) => string
+
+    valueSerializer: (value: V) => SerializedType
+
+    valueDeserializer: (value: SerializedType) => V
+
+    constructor(fields: {
+        store: BaseStore<string, SerializedType>
+        keyEncoder: (key: K) => string
+        valueSerializer: (value: V) => SerializedType
+        valueDeserializer: (value: SerializedType) => V
+    }) {
+        super(fields)
+        this.store = fields.store
+        this.keyEncoder = fields.keyEncoder
+        this.valueSerializer = fields.valueSerializer
+        this.valueDeserializer = fields.valueDeserializer
+    }
+
+    async mget(keys: K[]): Promise<(V | undefined)[]> {
+        const encodedKeys = keys.map(this.keyEncoder)
+        const values = await this.store.mget(encodedKeys)
+        return values.map((value) => {
+            if (value === undefined) {
+                return undefined
+            }
+            return this.valueDeserializer(value)
+        })
+    }
+
+    async mset(keyValuePairs: [K, V][]): Promise<void> {
+        const encodedPairs: [string, SerializedType][] = keyValuePairs.map(([key, value]) => [
+            this.keyEncoder(key),
+            this.valueSerializer(value)
+        ])
+        return this.store.mset(encodedPairs)
+    }
+
+    async mdelete(keys: K[]): Promise<void> {
+        const encodedKeys = keys.map(this.keyEncoder)
+        return this.store.mdelete(encodedKeys)
+    }
+
+    async *yieldKeys(prefix?: string | undefined): AsyncGenerator<string | K> {
+        yield* this.store.yieldKeys(prefix)
+    }
+}
+
+export function createDocumentStoreFromByteStore(store: BaseStore<string, Uint8Array>) {
+    const encoder = new TextEncoder()
+    const decoder = new TextDecoder()
+    return new EncoderBackedStore({
+        store,
+        keyEncoder: (key: string) => key,
+        valueSerializer: (doc: Document) => encoder.encode(JSON.stringify({ pageContent: doc.pageContent, metadata: doc.metadata })),
+        valueDeserializer: (bytes: Uint8Array) => new Document(JSON.parse(decoder.decode(bytes)))
+    })
 }
 
 module.exports = { nodeClass: RedisEmbeddingsCache }

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import apiKeyService from '../../services/apikey'
 import { ChatFlow } from '../../database/entities/ChatFlow'
-import { updateRateLimiter } from '../../utils/rateLimit'
+import { RateLimiterManager } from '../../utils/rateLimit'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { ChatflowType } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
@@ -130,7 +130,8 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         Object.assign(updateChatFlow, body)
 
         updateChatFlow.id = chatflow.id
-        updateRateLimiter(updateChatFlow)
+        const rateLimiterManager = RateLimiterManager.getInstance()
+        await rateLimiterManager.updateRateLimiter(updateChatFlow)
 
         const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow)
         return res.json(apiResponse)

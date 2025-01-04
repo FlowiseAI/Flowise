@@ -180,7 +180,6 @@ class SqlDatabaseChain_Chains implements INode {
                 if (shouldStreamResponse) {
                     streamResponse(sseStreamer, chatId, e.message)
                 }
-                // streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
                 return formatResponse(e.message)
             }
         }

@@ -1,46 +1,9 @@
-import { Redis, RedisOptions } from 'ioredis'
-import { isEqual } from 'lodash'
+import { Redis } from 'ioredis'
 import hash from 'object-hash'
 import { RedisCache as LangchainRedisCache } from '@langchain/community/caches/ioredis'
 import { StoredGeneration, mapStoredMessageToChatMessage } from '@langchain/core/messages'
 import { Generation, ChatGeneration } from '@langchain/core/outputs'
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-
-let redisClientSingleton: Redis
-let redisClientOption: RedisOptions
-let redisClientUrl: string
-
-const getRedisClientbyOption = (option: RedisOptions) => {
-    if (!redisClientSingleton) {
-        // if client doesn't exists
-        redisClientSingleton = new Redis(option)
-        redisClientOption = option
-        return redisClientSingleton
-    } else if (redisClientSingleton && !isEqual(option, redisClientOption)) {
-        // if client exists but option changed
-        redisClientSingleton.quit()
-        redisClientSingleton = new Redis(option)
-        redisClientOption = option
-        return redisClientSingleton
-    }
-    return redisClientSingleton
-}
-
-const getRedisClientbyUrl = (url: string) => {
-    if (!redisClientSingleton) {
-        // if client doesn't exists
-        redisClientSingleton = new Redis(url)
-        redisClientUrl = url
-        return redisClientSingleton
-    } else if (redisClientSingleton && url !== redisClientUrl) {
-        // if client exists but option changed
-        redisClientSingleton.quit()
-        redisClientSingleton = new Redis(url)
-        redisClientUrl = url
-        return redisClientSingleton
-    }
-    return redisClientSingleton
-}
 
 class RedisCache implements INode {
     label: string
@@ -85,33 +48,19 @@ class RedisCache implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const ttl = nodeData.inputs?.ttl as string
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const redisUrl = getCredentialParam('redisUrl', credentialData, nodeData)
-
-        let client: Redis
-        if (!redisUrl || redisUrl === '') {
-            const username = getCredentialParam('redisCacheUser', credentialData, nodeData)
-            const password = getCredentialParam('redisCachePwd', credentialData, nodeData)
-            const portStr = getCredentialParam('redisCachePort', credentialData, nodeData)
-            const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
-            const sslEnabled = getCredentialParam('redisCacheSslEnabled', credentialData, nodeData)
-
-            const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
-
-            client = getRedisClientbyOption({
-                port: portStr ? parseInt(portStr) : 6379,
-                host,
-                username,
-                password,
-                ...tlsOptions
-            })
-        } else {
-            client = getRedisClientbyUrl(redisUrl)
-        }
-
+        let client = await getRedisClient(nodeData, options)
         const redisClient = new LangchainRedisCache(client)
 
         redisClient.lookup = async (prompt: string, llmKey: string) => {
+            try {
+                const pingResp = await client.ping()
+                if (pingResp !== 'PONG') {
+                    client = await getRedisClient(nodeData, options)
+                }
+            } catch (error) {
+                client = await getRedisClient(nodeData, options)
+            }
+
             let idx = 0
             let key = getCacheKey(prompt, llmKey, String(idx))
             let value = await client.get(key)
@@ -125,10 +74,21 @@ class RedisCache implements INode {
                 value = await client.get(key)
             }
 
+            client.quit()
+
             return generations.length > 0 ? generations : null
         }
 
         redisClient.update = async (prompt: string, llmKey: string, value: Generation[]) => {
+            try {
+                const pingResp = await client.ping()
+                if (pingResp !== 'PONG') {
+                    client = await getRedisClient(nodeData, options)
+                }
+            } catch (error) {
+                client = await getRedisClient(nodeData, options)
+            }
+
             for (let i = 0; i < value.length; i += 1) {
                 const key = getCacheKey(prompt, llmKey, String(i))
                 if (ttl) {
@@ -137,12 +97,43 @@ class RedisCache implements INode {
                     await client.set(key, JSON.stringify(serializeGeneration(value[i])))
                 }
             }
+
+            client.quit()
         }
+
+        client.quit()
 
         return redisClient
     }
 }
+const getRedisClient = async (nodeData: INodeData, options: ICommonObject) => {
+    let client: Redis
 
+    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+    const redisUrl = getCredentialParam('redisUrl', credentialData, nodeData)
+
+    if (!redisUrl || redisUrl === '') {
+        const username = getCredentialParam('redisCacheUser', credentialData, nodeData)
+        const password = getCredentialParam('redisCachePwd', credentialData, nodeData)
+        const portStr = getCredentialParam('redisCachePort', credentialData, nodeData)
+        const host = getCredentialParam('redisCacheHost', credentialData, nodeData)
+        const sslEnabled = getCredentialParam('redisCacheSslEnabled', credentialData, nodeData)
+
+        const tlsOptions = sslEnabled === true ? { tls: { rejectUnauthorized: false } } : {}
+
+        client = new Redis({
+            port: portStr ? parseInt(portStr) : 6379,
+            host,
+            username,
+            password,
+            ...tlsOptions
+        })
+    } else {
+        client = new Redis(redisUrl)
+    }
+
+    return client
+}
 const getCacheKey = (...strings: string[]): string => hash(strings.join('_'))
 const deserializeStoredGeneration = (storedGeneration: StoredGeneration) => {
     if (storedGeneration.message !== undefined) {

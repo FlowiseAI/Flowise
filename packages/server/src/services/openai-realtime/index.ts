@@ -95,7 +95,6 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     const flowDataObj: ICommonObject = { chatflowid, chatId }
 
     const reactFlowNodeData: INodeData = await resolveVariables(
-        appServer.AppDataSource,
         nodeToExecute.data,
         reactFlowNodes,
         '',
