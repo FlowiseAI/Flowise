@@ -1,14 +1,13 @@
-import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { Dialog, DialogContent, DialogTitle, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@mui/material'
+import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@mui/material'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import moment from 'moment'
 import axios from 'axios'
 import { baseURL } from '@/store/constant'
 
 const AboutDialog = ({ show, onCancel }) => {
-    const portalElement = document.getElementById('portal')
-
     const [data, setData] = useState({})
 
     useEffect(() => {
@@ -46,19 +45,12 @@ const AboutDialog = ({ show, onCancel }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [show])
 
-    const component = show ? (
-        <Dialog
-            onClose={onCancel}
-            open={show}
-            fullWidth
-            maxWidth='sm'
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Flowise Version
-            </DialogTitle>
+    return (
+        <Dialog open={show} onClose={onCancel}>
             <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>About FlowiseAI</DialogTitle>
+                </DialogHeader>
                 {data && (
                     <TableContainer component={Paper}>
                         <Table aria-label='simple table'>
@@ -85,11 +77,14 @@ const AboutDialog = ({ show, onCancel }) => {
                         </Table>
                     </TableContainer>
                 )}
+                <DialogFooter>
+                    <Button type='button' variant='secondary' onClick={onCancel}>
+                        Close
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
-    ) : null
-
-    return createPortal(component, portalElement)
+    )
 }
 
 AboutDialog.propTypes = {
