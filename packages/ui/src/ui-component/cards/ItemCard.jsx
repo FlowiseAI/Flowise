@@ -16,7 +16,7 @@ const ItemCard = ({ data, images, onClick }) => {
     return (
         <Card className='h-full cursor-pointer duration-200 transition-shadow hover:shadow-lg' onClick={onClick}>
             <CardHeader>
-                <CardTitle className='flex flex-row items-center'>
+                <CardTitle className='flex flex-row items-center text-xl font-semibold'>
                     {data.iconSrc && <img alt='icon' className='w-6 h-6 mr-2 rounded-full' src={data.iconSrc} />}
                     {!data.iconSrc && data.color && (
                         <Box

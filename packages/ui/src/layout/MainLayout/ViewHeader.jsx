@@ -54,9 +54,8 @@ const ViewHeader = ({
                     )}
                     <Box sx={{ display: 'flex', alignItems: 'start', flexDirection: 'column' }}>
                         <Typography
+                            className='text-2xl font-semibold'
                             sx={{
-                                fontSize: '1.5rem',
-                                fontWeight: 600,
                                 display: '-webkit-box',
                                 WebkitLineClamp: 3,
                                 WebkitBoxOrient: 'vertical',
@@ -71,10 +70,8 @@ const ViewHeader = ({
                         </Typography>
                         {description && (
                             <Typography
+                                className='text-base font-normal mt-2'
                                 sx={{
-                                    fontSize: '1rem',
-                                    fontWeight: 500,
-                                    mt: 2,
                                     display: '-webkit-box',
                                     WebkitLineClamp: 5,
                                     WebkitBoxOrient: 'vertical',
