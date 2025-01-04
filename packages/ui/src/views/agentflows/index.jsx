@@ -131,6 +131,7 @@ const Agentflows = () => {
                             className='p-0 gap-0 rounded-md border border-border box-border divide-x divide-border overflow-hidden'
                             onValueChange={handleChange}
                             size='sm'
+                            value={view}
                         >
                             <ToggleGroupItem value='card' aria-label='Grid view' className='rounded-none'>
                                 <IconLayoutGrid />
