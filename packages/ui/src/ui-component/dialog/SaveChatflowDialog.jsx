@@ -1,60 +1,56 @@
-import { createPortal } from 'react-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 
-import { Button, Dialog, DialogActions, DialogContent, OutlinedInput, DialogTitle } from '@mui/material'
-import { StyledButton } from '@/ui-component/button/StyledButton'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
-
+    const inputRef = useRef(null)
     const [chatflowName, setChatflowName] = useState('')
     const [isReadyToSave, setIsReadyToSave] = useState(false)
+
+    useEffect(() => {
+        if (show) {
+            inputRef?.current?.focus()
+        }
+    }, [show])
 
     useEffect(() => {
         if (chatflowName) setIsReadyToSave(true)
         else setIsReadyToSave(false)
     }, [chatflowName])
 
-    const component = show ? (
-        <Dialog
-            open={show}
-            fullWidth
-            maxWidth='xs'
-            onClose={onCancel}
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-            disableRestoreFocus // needed due to StrictMode
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title}
-            </DialogTitle>
+    return (
+        <Dialog disableRestoreFocus open={show} onClose={onCancel}>
             <DialogContent>
-                <OutlinedInput
+                <DialogHeader>
+                    <DialogTitle>{dialogProps.title}</DialogTitle>
+                </DialogHeader>
+                <Input
                     // eslint-disable-next-line jsx-a11y/no-autofocus
                     autoFocus
-                    sx={{ mt: 1 }}
                     id='chatflow-name'
-                    type='text'
-                    fullWidth
-                    placeholder='My New Chatflow'
-                    value={chatflowName}
                     onChange={(e) => setChatflowName(e.target.value)}
                     onKeyDown={(e) => {
                         if (isReadyToSave && e.key === 'Enter') onConfirm(e.target.value)
                     }}
+                    placeholder='My New Chatflow'
+                    ref={inputRef}
+                    value={chatflowName}
+                    type='text'
                 />
+                <DialogFooter>
+                    <Button onClick={onCancel} size='sm' variant='ghost'>
+                        {dialogProps.cancelButtonName}
+                    </Button>
+                    <Button disabled={!isReadyToSave} size='sm' onClick={() => onConfirm(chatflowName)}>
+                        {dialogProps.confirmButtonName}
+                    </Button>
+                </DialogFooter>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
-                <StyledButton disabled={!isReadyToSave} variant='contained' onClick={() => onConfirm(chatflowName)}>
-                    {dialogProps.confirmButtonName}
-                </StyledButton>
-            </DialogActions>
         </Dialog>
-    ) : null
-
-    return createPortal(component, portalElement)
+    )
 }
 
 SaveChatflowDialog.propTypes = {

@@ -7,20 +7,11 @@ import { useDispatch } from 'react-redux'
 import { createPortal } from 'react-dom'
 
 // material-ui
-import {
-    Box,
-    Button,
-    Typography,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    Stack,
-    FormControlLabel,
-    Checkbox,
-    DialogActions
-} from '@mui/material'
+import { Box, Typography, Stack, FormControlLabel, Checkbox } from '@mui/material'
 
 // components
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -65,18 +56,11 @@ const ExportDialog = ({ show, onCancel, onExport }) => {
     }, [show])
 
     const component = show ? (
-        <Dialog
-            onClose={!isExporting ? onCancel : undefined}
-            open={show}
-            fullWidth
-            maxWidth='sm'
-            aria-labelledby='export-dialog-title'
-            aria-describedby='export-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='export-dialog-title'>
-                {!isExporting ? 'Select Data to Export' : 'Exporting..'}
-            </DialogTitle>
+        <Dialog onClose={!isExporting ? onCancel : undefined} open={show}>
             <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{!isExporting ? 'Select Data to Export' : 'Exporting..'}</DialogTitle>
+                </DialogHeader>
                 {!isExporting && (
                     <Stack direction='row' sx={{ gap: 1, flexWrap: 'wrap' }}>
                         {dataToExport.map((data, index) => (
@@ -117,22 +101,24 @@ const ExportDialog = ({ show, onCancel, onExport }) => {
                         </div>
                     </Box>
                 )}
+                {!isExporting && (
+                    <DialogFooter>
+                        <Button onClick={onCancel} size='sm' variant='ghost'>
+                            Cancel
+                        </Button>
+                        <Button
+                            disabled={selectedData.length === 0}
+                            onClick={() => {
+                                setIsExporting(true)
+                                onExport(selectedData)
+                            }}
+                            size='sm'
+                        >
+                            Export
+                        </Button>
+                    </DialogFooter>
+                )}
             </DialogContent>
-            {!isExporting && (
-                <DialogActions>
-                    <Button onClick={onCancel}>Cancel</Button>
-                    <Button
-                        disabled={selectedData.length === 0}
-                        variant='contained'
-                        onClick={() => {
-                            setIsExporting(true)
-                            onExport(selectedData)
-                        }}
-                    >
-                        Export
-                    </Button>
-                </DialogActions>
-            )}
         </Dialog>
     ) : null
 

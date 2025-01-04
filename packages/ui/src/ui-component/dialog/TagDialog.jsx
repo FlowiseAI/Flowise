@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import Dialog from '@mui/material/Dialog'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import TextField from '@mui/material/TextField'
-import Chip from '@mui/material/Chip'
 import PropTypes from 'prop-types'
-import { DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
+import Box from '@mui/material/Box'
+import Chip from '@mui/material/Chip'
+import { Typography } from '@mui/material'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
     const [inputValue, setInputValue] = useState('')
@@ -49,19 +49,12 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
     }, [dialogProps])
 
     return (
-        <Dialog
-            fullWidth
-            maxWidth='xs'
-            open={isOpen}
-            onClose={onClose}
-            aria-labelledby='category-dialog-title'
-            aria-describedby='category-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Set Chatflow Category Tags
-            </DialogTitle>
+        <Dialog disableRestoreFocus open={isOpen} onClose={onClose}>
             <DialogContent>
-                <Box>
+                <DialogHeader>
+                    <DialogTitle>Set Chatflow Category Tags</DialogTitle>
+                </DialogHeader>
+                <Box className='mt-2'>
                     <form onSubmit={handleSubmit}>
                         {categoryValues.length > 0 && (
                             <div style={{ marginBottom: 10 }}>
@@ -75,27 +68,28 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
                                 ))}
                             </div>
                         )}
-                        <TextField
-                            sx={{ mt: 2 }}
-                            fullWidth
-                            value={inputValue}
+                        <Input
+                            // eslint-disable-next-line jsx-a11y/no-autofocus
+                            autoFocus
                             onChange={handleInputChange}
                             onKeyDown={handleInputKeyDown}
-                            label='Add a tag'
-                            variant='outlined'
+                            placeholder='Add a tag'
+                            value={inputValue}
                         />
                         <Typography variant='body2' sx={{ fontStyle: 'italic', mt: 1 }} color='text.secondary'>
                             Enter a tag and press enter to add it to the list. You can add as many tags as you want.
                         </Typography>
                     </form>
                 </Box>
+                <DialogFooter>
+                    <Button onClick={onClose} size='sm' variant='ghost'>
+                        Cancel
+                    </Button>
+                    <Button onClick={handleSubmit} size='sm'>
+                        Submit
+                    </Button>
+                </DialogFooter>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button variant='contained' onClick={handleSubmit}>
-                    Submit
-                </Button>
-            </DialogActions>
         </Dialog>
     )
 }

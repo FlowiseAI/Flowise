@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 
 // material-ui
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, OutlinedInput, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
+
+// components
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 // store
 import {
@@ -14,7 +19,6 @@ import {
     SHOW_CANVAS_DIALOG
 } from '@/store/actions'
 import useNotifier from '@/utils/useNotifier'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import Chip from '@mui/material/Chip'
 import { IconX } from '@tabler/icons-react'
 
@@ -168,104 +172,79 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     }, [saveCustomTemplateApi.error])
 
     const component = show ? (
-        <Dialog
-            onClose={onCancel}
-            open={show}
-            fullWidth
-            maxWidth='sm'
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title || 'Export As Template'}
-            </DialogTitle>
+        <Dialog onClose={onCancel} open={show}>
             <DialogContent>
-                <Box sx={{ pt: 2, pb: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Typography sx={{ mb: 1 }}>
-                            Name<span style={{ color: 'red' }}>&nbsp;*</span>
-                        </Typography>
-                        <OutlinedInput
-                            id={'name'}
-                            type={'string'}
-                            fullWidth
-                            value={name}
-                            name='name'
-                            size='small'
-                            onChange={(e) => {
-                                setName(e.target.value)
-                            }}
-                        />
-                    </div>
+                <DialogHeader>
+                    <DialogTitle>{dialogProps.title || 'Export As Template'}</DialogTitle>
+                </DialogHeader>
+                <Box sx={{ pb: 0.5 }}>
+                    <Typography sx={{ mb: 1 }}>
+                        Name<span style={{ color: 'red' }}>&nbsp;*</span>
+                    </Typography>
+                    <Input
+                        id='name'
+                        value={name}
+                        name='name'
+                        size='sm'
+                        onChange={(e) => {
+                            setName(e.target.value)
+                        }}
+                    />
                 </Box>
-                <Box sx={{ pt: 2, pb: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Typography sx={{ mb: 1 }}>Description</Typography>
-                        <OutlinedInput
-                            id={'description'}
-                            type={'string'}
-                            fullWidth
-                            multiline
-                            rows={2}
-                            value={description}
-                            name='description'
-                            size='small'
-                            onChange={(e) => {
-                                setDescription(e.target.value)
-                            }}
-                        />
-                    </div>
+                <Box sx={{ pb: 0.5 }}>
+                    <Typography sx={{ mb: 1 }}>Description</Typography>
+                    <Input
+                        id='description'
+                        multiline={true}
+                        rows={3}
+                        value={description}
+                        name='description'
+                        size='sm'
+                        onChange={(e) => {
+                            setDescription(e.target.value)
+                        }}
+                    />
                 </Box>
-                <Box sx={{ pt: 2, pb: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Typography sx={{ mb: 1 }}>Badge</Typography>
-                        <OutlinedInput
-                            id={'badge'}
-                            type={'string'}
-                            fullWidth
-                            value={badge}
-                            name='badge'
-                            size='small'
-                            onChange={(e) => {
-                                setBadge(e.target.value)
-                            }}
-                        />
-                    </div>
+                <Box sx={{ pb: 0.5 }}>
+                    <Typography sx={{ mb: 1 }}>Badge</Typography>
+                    <Input
+                        id='badge'
+                        value={badge}
+                        name='badge'
+                        size='sm'
+                        onChange={(e) => {
+                            setBadge(e.target.value)
+                        }}
+                    />
                 </Box>
-                <Box sx={{ pt: 2, pb: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Typography sx={{ mb: 1 }}>Usecases</Typography>
-                        {usecases.length > 0 && (
-                            <div style={{ marginBottom: 10 }}>
-                                {usecases.map((uc, index) => (
-                                    <Chip
-                                        key={index}
-                                        label={uc}
-                                        onDelete={() => handleUsecaseDelete(uc)}
-                                        style={{ marginRight: 5, marginBottom: 5 }}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                        <OutlinedInput
-                            fullWidth
-                            value={usecaseInput}
-                            onChange={handleUsecaseInputChange}
-                            onKeyDown={handleUsecaseInputKeyDown}
-                            variant='outlined'
-                        />
-                        <Typography variant='body2' sx={{ fontStyle: 'italic', mt: 1 }} color='text.secondary'>
-                            Type a usecase and press enter to add it to the list. You can add as many items as you want.
-                        </Typography>
-                    </div>
+                <Box sx={{ pb: 0.5 }}>
+                    <Typography sx={{ mb: 1 }}>Usecases</Typography>
+                    {usecases.length > 0 && (
+                        <div style={{ marginBottom: 10 }}>
+                            {usecases.map((uc, index) => (
+                                <Chip
+                                    key={index}
+                                    label={uc}
+                                    onDelete={() => handleUsecaseDelete(uc)}
+                                    style={{ marginRight: 5, marginBottom: 5 }}
+                                />
+                            ))}
+                        </div>
+                    )}
+                    <Input value={usecaseInput} onChange={handleUsecaseInputChange} onKeyDown={handleUsecaseInputKeyDown} size='sm' />
+                    <Typography variant='body2' sx={{ fontStyle: 'italic', mt: 1 }} color='text.secondary'>
+                        Type a usecase and press enter to add it to the list. You can add as many items as you want.
+                    </Typography>
                 </Box>
+                <DialogFooter>
+                    <Button onClick={onCancel} size='sm' variant='ghost'>
+                        {dialogProps.cancelButtonName || 'Cancel'}
+                    </Button>
+                    <Button disabled={dialogProps.disabled} onClick={onConfirm} size='sm'>
+                        {dialogProps.confirmButtonName || 'Save Template'}
+                    </Button>
+                </DialogFooter>
             </DialogContent>
-            <DialogActions>
-                <Button onClick={onCancel}>{dialogProps.cancelButtonName || 'Cancel'}</Button>
-                <StyledButton disabled={dialogProps.disabled} variant='contained' onClick={onConfirm}>
-                    {dialogProps.confirmButtonName || 'Save Template'}
-                </StyledButton>
-            </DialogActions>
         </Dialog>
     ) : null
 
