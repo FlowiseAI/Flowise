@@ -2,23 +2,16 @@ import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
-import { styled, alpha } from '@mui/material/styles'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import EditIcon from '@mui/icons-material/Edit'
-import Divider from '@mui/material/Divider'
-import FileCopyIcon from '@mui/icons-material/FileCopy'
-import FileDownloadIcon from '@mui/icons-material/Downloading'
-import FileDeleteIcon from '@mui/icons-material/Delete'
-import FileCategoryIcon from '@mui/icons-material/Category'
-import PictureInPictureAltIcon from '@mui/icons-material/PictureInPictureAlt'
-import ThumbsUpDownOutlinedIcon from '@mui/icons-material/ThumbsUpDownOutlined'
-import VpnLockOutlinedIcon from '@mui/icons-material/VpnLockOutlined'
-import MicNoneOutlinedIcon from '@mui/icons-material/MicNoneOutlined'
-import ExportTemplateOutlinedIcon from '@mui/icons-material/BookmarksOutlined'
 import Button from '@mui/material/Button'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { IconX } from '@tabler/icons-react'
+
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 import chatflowsApi from '@/api/chatflows'
 
@@ -37,42 +30,20 @@ import ChatFeedbackDialog from '../dialog/ChatFeedbackDialog'
 import AllowedDomainsDialog from '../dialog/AllowedDomainsDialog'
 import SpeechToTextDialog from '../dialog/SpeechToTextDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
-
-const StyledMenu = styled((props) => (
-    <Menu
-        elevation={0}
-        anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right'
-        }}
-        transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right'
-        }}
-        {...props}
-    />
-))(({ theme }) => ({
-    '& .MuiPaper-root': {
-        borderRadius: 6,
-        marginTop: theme.spacing(1),
-        minWidth: 180,
-        boxShadow:
-            'rgb(255, 255, 255) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px',
-        '& .MuiMenu-list': {
-            padding: '4px 0'
-        },
-        '& .MuiMenuItem-root': {
-            '& .MuiSvgIcon-root': {
-                fontSize: 18,
-                color: theme.palette.text.secondary,
-                marginRight: theme.spacing(1.5)
-            },
-            '&:active': {
-                backgroundColor: alpha(theme.palette.primary.main, theme.palette.action.selectedOpacity)
-            }
-        }
-    }
-}))
+import {
+    IconDotsVertical,
+    IconPencil,
+    IconCopy,
+    IconBookmarks,
+    IconPictureInPicture,
+    IconFileExport,
+    IconWorldStar,
+    IconMicrophone,
+    IconCategory,
+    IconTrash
+} from '@tabler/icons-react'
+import { IconThumbUp } from '@tabler/icons-react'
+import { IconThumbDown } from '@tabler/icons-react'
 
 export default function FlowListMenu({ chatflow, isAgentCanvas, setError, updateFlowsApi }) {
     const { confirm } = useConfirm()
@@ -86,8 +57,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     const [flowDialogOpen, setFlowDialogOpen] = useState(false)
     const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
     const [categoryDialogProps, setCategoryDialogProps] = useState({})
-    const [anchorEl, setAnchorEl] = useState(null)
-    const open = Boolean(anchorEl)
     const [conversationStartersDialogOpen, setConversationStartersDialogOpen] = useState(false)
     const [conversationStartersDialogProps, setConversationStartersDialogProps] = useState({})
     const [chatFeedbackDialogOpen, setChatFeedbackDialogOpen] = useState(false)
@@ -102,21 +71,11 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
 
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget)
-    }
-
-    const handleClose = () => {
-        setAnchorEl(null)
-    }
-
     const handleFlowRename = () => {
-        setAnchorEl(null)
         setFlowDialogOpen(true)
     }
 
     const handleFlowStarterPrompts = () => {
-        setAnchorEl(null)
         setConversationStartersDialogProps({
             title: 'Starter Prompts - ' + chatflow.name,
             chatflow: chatflow
@@ -125,7 +84,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     const handleExportTemplate = () => {
-        setAnchorEl(null)
         setExportTemplateDialogProps({
             chatflow: chatflow
         })
@@ -133,7 +91,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     const handleFlowChatFeedback = () => {
-        setAnchorEl(null)
         setChatFeedbackDialogProps({
             title: 'Chat Feedback - ' + chatflow.name,
             chatflow: chatflow
@@ -142,7 +99,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     const handleAllowedDomains = () => {
-        setAnchorEl(null)
         setAllowedDomainsDialogProps({
             title: 'Allowed Domains - ' + chatflow.name,
             chatflow: chatflow
@@ -151,7 +107,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     const handleSpeechToText = () => {
-        setAnchorEl(null)
         setSpeechToTextDialogProps({
             title: 'Speech To Text - ' + chatflow.name,
             chatflow: chatflow
@@ -160,6 +115,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     const saveFlowRename = async (chatflowName) => {
+        setFlowDialogOpen(false)
         const updateBody = {
             name: chatflowName,
             chatflow
@@ -186,7 +142,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     const handleFlowCategory = () => {
-        setAnchorEl(null)
         if (chatflow.category) {
             setCategoryDialogProps({
                 category: chatflow.category.split(';')
@@ -225,7 +180,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     const handleDelete = async () => {
-        setAnchorEl(null)
         const confirmPayload = {
             title: `Delete`,
             description: `Delete ${title} ${chatflow.name}?`,
@@ -258,7 +212,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     const handleDuplicate = () => {
-        setAnchorEl(null)
         try {
             localStorage.setItem('duplicatedFlowData', chatflow.flowData)
             window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
@@ -268,7 +221,6 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     const handleExport = () => {
-        setAnchorEl(null)
         try {
             const flowData = JSON.parse(chatflow.flowData)
             let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
@@ -288,70 +240,59 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     }
 
     return (
-        <div>
-            <Button
-                id='demo-customized-button'
-                aria-controls={open ? 'demo-customized-menu' : undefined}
-                aria-haspopup='true'
-                aria-expanded={open ? 'true' : undefined}
-                disableElevation
-                onClick={handleClick}
-                endIcon={<KeyboardArrowDownIcon />}
-            >
-                Options
-            </Button>
-            <StyledMenu
-                id='demo-customized-menu'
-                MenuListProps={{
-                    'aria-labelledby': 'demo-customized-button'
-                }}
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-            >
-                <MenuItem onClick={handleFlowRename} disableRipple>
-                    <EditIcon />
-                    Rename
-                </MenuItem>
-                <MenuItem onClick={handleDuplicate} disableRipple>
-                    <FileCopyIcon />
-                    Duplicate
-                </MenuItem>
-                <MenuItem onClick={handleExport} disableRipple>
-                    <FileDownloadIcon />
-                    Export
-                </MenuItem>
-                <MenuItem onClick={handleExportTemplate} disableRipple>
-                    <ExportTemplateOutlinedIcon />
-                    Save As Template
-                </MenuItem>
-                <Divider sx={{ my: 0.5 }} />
-                <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
-                    <PictureInPictureAltIcon />
-                    Starter Prompts
-                </MenuItem>
-                <MenuItem onClick={handleFlowChatFeedback} disableRipple>
-                    <ThumbsUpDownOutlinedIcon />
-                    Chat Feedback
-                </MenuItem>
-                <MenuItem onClick={handleAllowedDomains} disableRipple>
-                    <VpnLockOutlinedIcon />
-                    Allowed Domains
-                </MenuItem>
-                <MenuItem onClick={handleSpeechToText} disableRipple>
-                    <MicNoneOutlinedIcon />
-                    Speech To Text
-                </MenuItem>
-                <MenuItem onClick={handleFlowCategory} disableRipple>
-                    <FileCategoryIcon />
-                    Update Category
-                </MenuItem>
-                <Divider sx={{ my: 0.5 }} />
-                <MenuItem onClick={handleDelete} disableRipple>
-                    <FileDeleteIcon />
-                    Delete
-                </MenuItem>
-            </StyledMenu>
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger size='icon' variant='ghost'>
+                    <IconDotsVertical />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end' className='w-64'>
+                    <DropdownMenuItem onClick={handleFlowRename} disableRipple>
+                        <IconPencil size={20} stroke={1.5} />
+                        Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDuplicate} disableRipple>
+                        <IconCopy size={20} stroke={1.5} />
+                        Duplicate
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExport} disableRipple>
+                        <IconFileExport size={20} stroke={1.5} />
+                        Export
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportTemplate} disableRipple>
+                        <IconBookmarks size={20} stroke={1.5} />
+                        Save As Template
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleFlowStarterPrompts} disableRipple>
+                        <IconPictureInPicture size={20} stroke={1.5} />
+                        Starter Prompts
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleFlowChatFeedback} disableRipple>
+                        <span className='relative w-5 h-5'>
+                            <IconThumbUp className='absolute top-0 left-0' size={12} stroke={2} />
+                            <IconThumbDown className='absolute bottom-0 right-0' size={12} stroke={2} />
+                        </span>
+                        Chat Feedback
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleAllowedDomains} disableRipple>
+                        <IconWorldStar size={20} stroke={1.5} />
+                        Allowed Domains
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSpeechToText} disableRipple>
+                        <IconMicrophone size={20} stroke={1.5} />
+                        Speech To Text
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleFlowCategory} disableRipple>
+                        <IconCategory size={20} stroke={1.5} />
+                        Update Category
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className='text-red-500 hover:text-red-500' onClick={handleDelete} disableRipple>
+                        <IconTrash size={20} stroke={1.5} />
+                        Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
             <SaveChatflowDialog
                 show={flowDialogOpen}
                 dialogProps={{
@@ -395,7 +336,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                     onCancel={() => setExportTemplateDialogOpen(false)}
                 />
             )}
-        </div>
+        </>
     )
 }
 
