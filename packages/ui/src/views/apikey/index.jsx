@@ -6,7 +6,6 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 
 // material-ui
 import {
-    Button,
     Box,
     Chip,
     Skeleton,
@@ -25,9 +24,11 @@ import {
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
 import { useTheme, styled } from '@mui/material/styles'
 
+// components
+import { Button } from '@/components/ui/button'
+
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import APIKeyDialog from './APIKeyDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -303,7 +304,7 @@ const APIKey = () => {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
                             action: (key) => (
-                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <Button onClick={() => closeSnackbar(key)} size='icon' variant='ghost'>
                                     <IconX />
                                 </Button>
                             )
@@ -321,7 +322,7 @@ const APIKey = () => {
                         variant: 'error',
                         persist: true,
                         action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <Button onClick={() => closeSnackbar(key)} size='icon' variant='ghost'>
                                 <IconX />
                             </Button>
                         )
@@ -368,24 +369,14 @@ const APIKey = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search API Keys' title='API Keys'>
-                            <Button
-                                variant='outlined'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={uploadDialog}
-                                startIcon={<IconFileUpload />}
-                                id='btn_importApiKeys'
-                            >
+                            <Button size='sm' variant='outline' onClick={uploadDialog} id='btn_importApiKeys'>
+                                <IconFileUpload />
                                 Import
                             </Button>
-                            <StyledButton
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                                id='btn_createApiKey'
-                            >
+                            <Button size='sm' onClick={addNew} id='btn_createApiKey'>
+                                <IconPlus />
                                 Create Key
-                            </StyledButton>
+                            </Button>
                         </ViewHeader>
                         {!isLoading && apiKeys.length <= 0 ? (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>

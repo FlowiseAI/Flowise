@@ -110,7 +110,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                     Last Modified Date
                                 </TableSortLabel>
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '10%' }} key='4'>
+                            <StyledTableCell style={{ width: '10%', textAlign: 'center' }} key='4'>
                                 Actions
                             </StyledTableCell>
                         </TableRow>

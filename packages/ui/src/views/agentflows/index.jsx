@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { Box, Skeleton, Stack } from '@mui/material'
+
+// components
+import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
+import FlowListMenu from '@/ui-component/button/FlowListMenu'
 import { gridSpacing } from '@/store/constant'
 import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
 import LoginDialog from '@/ui-component/dialog/LoginDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 
@@ -33,7 +36,6 @@ import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 
 const Agentflows = () => {
     const navigate = useNavigate()
-    const theme = useTheme()
 
     const [isLoading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -45,7 +47,7 @@ const Agentflows = () => {
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
 
-    const handleChange = (event, nextView) => {
+    const handleChange = (nextView) => {
         if (nextView === null) return
         localStorage.setItem('flowDisplayStyle', nextView)
         setView(nextView)
@@ -67,14 +69,6 @@ const Agentflows = () => {
         localStorage.setItem('username', username)
         localStorage.setItem('password', password)
         navigate(0)
-    }
-
-    const addNew = () => {
-        navigate('/agentcanvas')
-    }
-
-    const goToCanvas = (selectedAgentflow) => {
-        navigate(`/agentcanvas/${selectedAgentflow.id}`)
     }
 
     useEffect(() => {
@@ -131,42 +125,27 @@ const Agentflows = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name or Category' title='Agents'>
-                        <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search by name or category' title='Agents'>
+                        <ToggleGroup
+                            type='single'
+                            defaultValue='card'
+                            className='p-0 gap-0 rounded-md border border-border box-border divide-x divide-border overflow-hidden'
+                            onValueChange={handleChange}
+                            size='sm'
                             value={view}
-                            color='primary'
-                            exclusive
-                            onChange={handleChange}
                         >
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='card'
-                                title='Card View'
-                            >
+                            <ToggleGroupItem value='card' aria-label='Grid view' className='rounded-none'>
                                 <IconLayoutGrid />
-                            </ToggleButton>
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='list'
-                                title='List View'
-                            >
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value='list' aria-label='List view' className='rounded-none'>
                                 <IconList />
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                        <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
-                            Add New
-                        </StyledButton>
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                        <Link to={'/agentcanvas'}>
+                            <Button size='sm'>
+                                <IconPlus /> Add New
+                            </Button>
+                        </Link>
                     </ViewHeader>
                     {!view || view === 'card' ? (
                         <>
@@ -179,7 +158,19 @@ const Agentflows = () => {
                             ) : (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                     {getAllAgentflows.data?.filter(filterFlows).map((data, index) => (
-                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                        <Box className='relative' key={index}>
+                                            <Link key={index} to={`/agentcanvas/${data.id}`}>
+                                                <ItemCard data={data} images={images[data.id]} />
+                                            </Link>
+                                            <Box className='absolute top-1 right-1'>
+                                                <FlowListMenu
+                                                    isAgentCanvas={true}
+                                                    chatflow={data}
+                                                    setError={setError}
+                                                    updateFlowsApi={getAllAgentflows}
+                                                />
+                                            </Box>
+                                        </Box>
                                     ))}
                                 </Box>
                             )}

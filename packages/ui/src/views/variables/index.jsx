@@ -7,7 +7,6 @@ import moment from 'moment'
 import { styled } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
 import {
-    Button,
     Box,
     Skeleton,
     Stack,
@@ -23,9 +22,11 @@ import {
     useTheme
 } from '@mui/material'
 
+// components
+import { Button } from '@/components/ui/button'
+
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // API
@@ -139,7 +140,7 @@ const Variables = () => {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
                             action: (key) => (
-                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <Button onClick={() => closeSnackbar(key)} size='icon' variant='ghost'>
                                     <IconX />
                                 </Button>
                             )
@@ -157,7 +158,7 @@ const Variables = () => {
                         variant: 'error',
                         persist: true,
                         action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <Button onClick={() => closeSnackbar(key)} size='icon' variant='ghost'>
                                 <IconX />
                             </Button>
                         )
@@ -201,18 +202,13 @@ const Variables = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Variables' title='Variables'>
-                            <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
+                            <Button size='sm' variant='outline' onClick={() => setShowHowToDialog(true)}>
                                 How To Use
                             </Button>
-                            <StyledButton
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                                id='btn_createVariable'
-                            >
+                            <Button size='sm' onClick={addNew} id='btn_createVariable'>
+                                <IconPlus />
                                 Add Variable
-                            </StyledButton>
+                            </Button>
                         </ViewHeader>
                         {!isLoading && variables.length === 0 ? (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
