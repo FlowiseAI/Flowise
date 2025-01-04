@@ -2,10 +2,10 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { Box, Grid, Stack, Typography, useTheme } from '@mui/material'
+import { Box, Grid, Typography, useTheme } from '@mui/material'
 
 // components
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 // ===========================|| CONTRACT CARD ||=========================== //
 
@@ -14,52 +14,46 @@ const ItemCard = ({ data, images, onClick }) => {
     const customization = useSelector((state) => state.customization)
 
     return (
-        <Card className='h-full cursor-pointer' onClick={onClick}>
-            <CardHeader
-                subheader={
-                    data.description && (
-                        <span
-                            style={{
-                                display: '-webkit-box',
-                                marginTop: 10,
-                                overflowWrap: 'break-word',
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: 'vertical',
-                                textOverflow: 'ellipsis',
-                                overflow: 'hidden'
-                            }}
-                        >
-                            {data.description}
-                        </span>
-                    )
-                }
-                title={
-                    <Stack className='flex flex-row items-center'>
-                        {data.iconSrc && <img alt='icon' className='w-6 h-6 mr-2 rounded-full' src={data.iconSrc} />}
-                        {!data.iconSrc && data.color && (
-                            <Box
-                                className='w-6 h-6 flex shrink-0 mr-2 rounded-full'
-                                sx={{
-                                    background: data.color
-                                }}
-                            />
-                        )}
-                        <Typography
+        <Card className='h-full cursor-pointer duration-200 transition-shadow hover:shadow-lg' onClick={onClick}>
+            <CardHeader>
+                <CardTitle className='flex flex-row items-center'>
+                    {data.iconSrc && <img alt='icon' className='w-6 h-6 mr-2 rounded-full' src={data.iconSrc} />}
+                    {!data.iconSrc && data.color && (
+                        <Box
+                            className='w-6 h-6 flex shrink-0 mr-2 rounded-full'
                             sx={{
-                                display: '-webkit-box',
-                                fontSize: '1.25rem',
-                                fontWeight: 500,
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                textOverflow: 'ellipsis',
-                                overflow: 'hidden'
+                                background: data.color
                             }}
-                        >
-                            {data.templateName || data.name}
-                        </Typography>
-                    </Stack>
-                }
-            />
+                        />
+                    )}
+                    <span
+                        style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {data.templateName || data.name}
+                    </span>
+                </CardTitle>
+                {data.description && (
+                    <CardDescription
+                        style={{
+                            display: '-webkit-box',
+                            marginTop: 10,
+                            overflowWrap: 'break-word',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden'
+                        }}
+                    >
+                        {data.description}
+                    </CardDescription>
+                )}
+            </CardHeader>
             <CardContent>
                 <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
                     {images && (
