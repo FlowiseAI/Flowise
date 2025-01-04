@@ -27,7 +27,7 @@ const inputVariants = cva(
 
 const Input = React.forwardRef(
     (
-        { autoFocus = true, className, multiline = false, minRows = 1, maxRows, size = 'default', type, variant = 'outline', ...props },
+        { autoFocus = false, className, multiline = false, minRows = 1, maxRows, size = 'default', type, variant = 'outline', ...props },
         ref
     ) => {
         // Base className configuration
