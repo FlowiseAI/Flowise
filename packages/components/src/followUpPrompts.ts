@@ -7,6 +7,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { z } from 'zod'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { StructuredOutputParser } from '@langchain/core/output_parsers'
+import { ChatGroq } from '@langchain/groq'
 
 const FollowUpPromptType = z
     .object({
@@ -105,6 +106,16 @@ export const generateFollowUpPrompts = async (
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
                 const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
+                const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
+                return structuredResponse
+            }
+            case FollowUpPromptProvider.GROQ: {
+                const llm = new ChatGroq({
+                    apiKey: credentialData.groqApiKey,
+                    model: providerConfig.modelName,
+                    temperature: parseFloat(`${providerConfig.temperature}`)
+                })
+                const structuredLLM = llm.withStructuredOutput(FollowUpPromptType)
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
                 return structuredResponse
             }
