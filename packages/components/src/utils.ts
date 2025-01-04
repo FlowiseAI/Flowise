@@ -1002,6 +1002,21 @@ export const removeInvalidImageMarkdown = (output: string): string => {
 }
 
 /**
+ * Extract output from array
+ * @param {any} output
+ * @returns {string}
+ */
+export const extractOutputFromArray = (output: any): string => {
+    if (Array.isArray(output)) {
+        return output.map((o) => o.text).join('\n')
+    } else if (typeof output === 'object') {
+        if (output.text) return output.text
+        else return JSON.stringify(output)
+    }
+    return output
+}
+
+/**
  * Loop through the object and replace the key with the value
  * @param {any} obj
  * @param {any} sourceObj

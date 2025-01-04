@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import ReactJson from 'flowise-react-json-view'
 
 // material-ui
@@ -60,9 +60,7 @@ const ShowStoredChunks = () => {
 
     const getChunksApi = useApi(documentsApi.getFileChunks)
 
-    const URLpath = document.location.pathname.toString().split('/')
-    const fileId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
-    const storeId = URLpath[URLpath.length - 2] === 'document-stores' ? '' : URLpath[URLpath.length - 2]
+    const { storeId, fileId } = useParams()
 
     const [documentChunks, setDocumentChunks] = useState([])
     const [totalChunks, setTotalChunks] = useState(0)

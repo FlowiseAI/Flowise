@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as PropTypes from 'prop-types'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 // material-ui
 import {
@@ -146,8 +146,7 @@ const DocumentStoreDetails = () => {
     const [anchorEl, setAnchorEl] = useState(null)
     const open = Boolean(anchorEl)
 
-    const URLpath = document.location.pathname.toString().split('/')
-    const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
+    const { storeId } = useParams()
 
     const openPreviewSettings = (id) => {
         navigate('/document-stores/' + storeId + '/' + id)
