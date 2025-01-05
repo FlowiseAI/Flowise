@@ -196,7 +196,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                     <Input
                         id='description'
                         multiline={true}
-                        rows={3}
+                        minRows={3}
                         value={description}
                         name='description'
                         size='sm'
