@@ -181,8 +181,8 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
 
     const handleDelete = async () => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete ${title} ${chatflow.name}?`,
+            title: `Are you sure?`,
+            description: `This action cannot be undone. This will permanently delete the ${title.toLowerCase()} ${chatflow.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }

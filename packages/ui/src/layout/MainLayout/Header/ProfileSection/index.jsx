@@ -285,19 +285,23 @@ const ProfileSection = ({ username, handleLogout }) => {
                     <IconSettings />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='end' className='w-64'>
-                    <DropdownMenuLabel>
-                        <Typography component='span' variant='h4'>
-                            {username}
-                        </Typography>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                    {username && (
+                        <>
+                            <DropdownMenuLabel>
+                                <Typography component='span' variant='h4'>
+                                    {username}
+                                </Typography>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                        </>
+                    )}
                     <DropdownMenuItem
                         onClick={() => {
                             setExportDialogOpen(true)
                         }}
                     >
                         <IconFileExport size={20} stroke={1.5} />
-                        <Typography variant='body2'>Export</Typography>
+                        Export
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => {
@@ -305,7 +309,7 @@ const ProfileSection = ({ username, handleLogout }) => {
                         }}
                     >
                         <IconFileUpload size={20} stroke={1.5} />
-                        <Typography variant='body2'>Import</Typography>
+                        Import
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -315,12 +319,12 @@ const ProfileSection = ({ username, handleLogout }) => {
                         }}
                     >
                         <IconInfoCircle size={20} stroke={1.5} />
-                        <Typography variant='body2'>About FlowiseAI</Typography>
+                        About FlowiseAI
                     </DropdownMenuItem>
                     {localStorage.getItem('username') && localStorage.getItem('password') && (
                         <DropdownMenuItem onClick={handleLogout}>
                             <IconLogout size={20} stroke={1.5} />
-                            <Typography variant='body2'>Logout</Typography>
+                            Logout
                         </DropdownMenuItem>
                     )}
                 </DropdownMenuContent>
