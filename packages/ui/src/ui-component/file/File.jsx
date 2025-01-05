@@ -1,14 +1,17 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import PropTypes from 'prop-types'
-import { useTheme } from '@mui/material/styles'
-import { FormControl, Button } from '@mui/material'
+import { FormControl } from '@mui/material'
+import { Button } from '@/components/ui/button'
 import { IconUpload } from '@tabler/icons-react'
 import { getFileName } from '@/utils/genericHelper'
 
 export const File = ({ value, formDataUpload, fileType, onChange, onFormDataChange, disabled = false }) => {
-    const theme = useTheme()
-
+    const fileUploadRef = useRef(null)
     const [myValue, setMyValue] = useState(value ?? '')
+
+    const triggerFileUpload = () => {
+        fileUploadRef?.current?.click()
+    }
 
     const handleFileUpload = async (e) => {
         if (!e.target.files) return
@@ -79,35 +82,22 @@ export const File = ({ value, formDataUpload, fileType, onChange, onFormDataChan
     }
 
     return (
-        <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
+        <FormControl className='w-full flex flex-col justify-start gap-2' size='small'>
             {!formDataUpload && (
-                <span
-                    style={{
-                        fontStyle: 'italic',
-                        color: theme.palette.grey['800'],
-                        marginBottom: '1rem'
-                    }}
-                >
-                    {myValue ? getFileName(myValue) : 'Choose a file to upload'}
-                </span>
+                <span className='italic text-muted-foreground'>{myValue ? getFileName(myValue) : 'Choose a file to upload'}</span>
             )}
-            <Button
-                disabled={disabled}
-                variant='outlined'
-                component='label'
-                fullWidth
-                startIcon={<IconUpload />}
-                sx={{ marginRight: '1rem' }}
-            >
-                {'Upload File'}
-                <input
-                    type='file'
-                    multiple
-                    accept={fileType}
-                    hidden
-                    onChange={(e) => (formDataUpload ? handleFormDataUpload(e) : handleFileUpload(e))}
-                />
+            <Button disabled={disabled} onClick={triggerFileUpload} size='sm' variant='outline'>
+                <IconUpload />
+                Upload File
             </Button>
+            <input
+                type='file'
+                multiple
+                accept={fileType}
+                hidden
+                onChange={(e) => (formDataUpload ? handleFormDataUpload(e) : handleFileUpload(e))}
+                ref={fileUploadRef}
+            />
         </FormControl>
     )
 }

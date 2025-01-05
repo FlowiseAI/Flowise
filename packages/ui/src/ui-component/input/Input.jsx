@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import { FormControl, OutlinedInput, InputBase, Popover } from '@mui/material'
+import { FormControl, InputBase, Popover } from '@mui/material'
+import { Input as BaseInput } from '@/components/ui/input'
 import SelectVariable from '@/ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
@@ -88,9 +89,8 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                 </FormControl>
             ) : (
                 <FormControl sx={{ mt: 1, width: '100%' }} size='small'>
-                    <OutlinedInput
+                    <BaseInput
                         id={inputParam.name}
-                        size='small'
                         disabled={disabled}
                         type={getInputType(inputParam.type)}
                         placeholder={inputParam.placeholder}
