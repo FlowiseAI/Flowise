@@ -5,8 +5,9 @@ import { TextareaAutosize } from '@mui/base/TextareaAutosize'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
-const inputVariants = cva(
-    'flex w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+// Moved border and background styles to wrapper variant
+const wrapperVariants = cva(
+    'flex relative rounded-md border border-input bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
     {
         variants: {
             variant: {
@@ -14,9 +15,9 @@ const inputVariants = cva(
                 secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             },
             size: {
-                default: 'h-10',
-                sm: 'h-9',
-                lg: 'h-11'
+                default: 'min-h-10',
+                sm: 'min-h-9',
+                lg: 'min-h-11'
             }
         },
         defaultVariants: {
@@ -25,30 +26,77 @@ const inputVariants = cva(
     }
 )
 
+// Input variants without border and background styles
+const inputVariants = cva(
+    'w-full bg-transparent px-3 py-2 text-base placeholder:text-muted-foreground file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed md:text-sm',
+    {
+        variants: {
+            variant: {
+                outline: 'text-foreground',
+                secondary: 'text-secondary-foreground'
+            }
+        },
+        defaultVariants: {
+            variant: 'outline'
+        }
+    }
+)
+
 const Input = React.forwardRef(
     (
-        { autoFocus = false, className, multiline = false, minRows = 1, maxRows, size = 'default', type, variant = 'outline', ...props },
+        {
+            autoFocus = false,
+            className,
+            wrapperClassName,
+            multiline = false,
+            minRows = 1,
+            maxRows,
+            size = 'default',
+            type,
+            variant = 'outline',
+            startAdornment,
+            endAdornment,
+            shortcut,
+            disabled,
+            ...props
+        },
         ref
     ) => {
-        // Base className configuration
-        const baseClassName = cn(inputVariants({ variant, size, className }), multiline && 'h-auto min-h-[80px]')
+        const baseInputClassName = cn(inputVariants({ variant }), className)
+        const baseWrapperClassName = cn(wrapperVariants({ variant, size }), disabled && 'opacity-50', wrapperClassName)
+
+        const renderShortcut = shortcut && (
+            <kbd className='pointer-events-none absolute right-[0.5rem] top-[50%] translate-y-[-50%] h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[12px] font-medium opacity-100'>
+                {shortcut}
+            </kbd>
+        )
+
+        const combinedEndAdornment = (
+            <>
+                {endAdornment}
+                {renderShortcut}
+            </>
+        )
 
         if (multiline) {
             return (
-                <div className='relative'>
+                <div className={baseWrapperClassName}>
+                    {startAdornment && <div className='flex items-center pl-3'>{startAdornment}</div>}
                     <TextareaAutosize
                         ref={ref}
                         // eslint-disable-next-line jsx-a11y/no-autofocus
                         autoFocus={autoFocus}
                         minRows={minRows}
                         maxRows={maxRows}
-                        className={cn(baseClassName, 'resize-none')}
+                        disabled={disabled}
+                        className={cn(baseInputClassName, 'resize-none')}
                         {...props}
                     />
-                    {props.shortcut && (
-                        <kbd className='pointer-events-none absolute right-[0.5rem] top-[0.5rem] h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[12px] font-medium opacity-100'>
-                            {props.shortcut}
-                        </kbd>
+                    {(endAdornment || shortcut) && (
+                        <div className='flex items-center pr-3'>
+                            {endAdornment}
+                            {renderShortcut}
+                        </div>
                     )}
                 </div>
             )
@@ -58,21 +106,17 @@ const Input = React.forwardRef(
             <BaseInput
                 // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus={autoFocus}
-                className='flex items-center relative'
+                className={baseWrapperClassName}
                 ref={ref}
                 type={type}
+                disabled={disabled}
+                startAdornment={startAdornment && <div className='flex items-center pl-3'>{startAdornment}</div>}
+                endAdornment={(endAdornment || shortcut) && <div className='flex items-center pr-3'>{combinedEndAdornment}</div>}
                 slotProps={{
                     input: {
-                        className: baseClassName
+                        className: baseInputClassName
                     }
                 }}
-                endAdornment={
-                    props.shortcut ? (
-                        <kbd className='pointer-events-none absolute right-[0.5rem] top-[50%] translate-y-[-50%] h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[12px] font-medium opacity-100'>
-                            {props.shortcut}
-                        </kbd>
-                    ) : null
-                }
                 {...props}
             />
         )
@@ -90,8 +134,12 @@ Input.propTypes = {
     maxRows: PropTypes.number,
     variant: PropTypes.oneOf(['outline', 'secondary']),
     className: PropTypes.string,
+    wrapperClassName: PropTypes.string,
     type: PropTypes.string,
-    autoFocus: PropTypes.bool
+    autoFocus: PropTypes.bool,
+    startAdornment: PropTypes.node,
+    endAdornment: PropTypes.node,
+    disabled: PropTypes.bool
 }
 
 export { Input }
