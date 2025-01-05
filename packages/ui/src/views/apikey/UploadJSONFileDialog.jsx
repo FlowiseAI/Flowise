@@ -1,14 +1,16 @@
-import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // Material
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, Stack } from '@mui/material'
+import { Box, Typography } from '@mui/material'
+
+// components
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 // Project imports
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { File } from '@/ui-component/file/File'
 
@@ -49,8 +51,6 @@ const importModes = [
 ]
 
 const UploadJSONFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
-
     const dispatch = useDispatch()
 
     // ==============================|| Snackbar ||============================== //
@@ -117,63 +117,54 @@ const UploadJSONFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         }
     }
 
-    const component = show ? (
-        <Dialog
-            fullWidth
-            maxWidth='sm'
-            open={show}
-            onClose={onCancel}
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <IconFileUpload style={{ marginRight: '10px' }} />
-                    Import API Keys
-                </div>
-            </DialogTitle>
-            <DialogContent>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
+    return (
+        <>
+            <Dialog open={show} onClose={onCancel}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className='flex items-center gap-2'>
+                            <IconFileUpload />
+                            Import API Keys
+                        </DialogTitle>
+                    </DialogHeader>
+                    <Box>
                         <Typography variant='overline'>
                             Import api.json file
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
-                    </Stack>
-                    <File
-                        disabled={false}
-                        fileType='.json'
-                        onChange={(newValue) => setSelectedFile(newValue)}
-                        value={selectedFile ?? 'Choose a file to upload'}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
+                        <File
+                            disabled={false}
+                            fileType='.json'
+                            onChange={(newValue) => setSelectedFile(newValue)}
+                            value={selectedFile ?? 'Choose a file to upload'}
+                        />
+                    </Box>
+                    <Box>
                         <Typography variant='overline'>
                             Import Mode
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
-                    </Stack>
-                    <Dropdown
-                        key={importMode}
-                        name={importMode}
-                        options={importModes}
-                        onSelect={(newValue) => setImportMode(newValue)}
-                        value={importMode ?? 'choose an option'}
-                    />
-                </Box>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={() => onCancel()}>{dialogProps.cancelButtonName}</Button>
-                <StyledButton disabled={!selectedFile} variant='contained' onClick={importKeys}>
-                    {dialogProps.confirmButtonName}
-                </StyledButton>
-            </DialogActions>
+                        <Dropdown
+                            key={importMode}
+                            name={importMode}
+                            options={importModes}
+                            onSelect={(newValue) => setImportMode(newValue)}
+                            value={importMode ?? 'choose an option'}
+                        />
+                    </Box>
+                    <DialogFooter>
+                        <Button onClick={() => onCancel()} size='sm' variant='ghost'>
+                            {dialogProps.cancelButtonName}
+                        </Button>
+                        <Button disabled={!selectedFile} onClick={importKeys} size='sm'>
+                            {dialogProps.confirmButtonName}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             <ConfirmDialog />
-        </Dialog>
-    ) : null
-
-    return createPortal(component, portalElement)
+        </>
+    )
 }
 
 UploadJSONFileDialog.propTypes = {

@@ -1,4 +1,3 @@
-import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
@@ -10,10 +9,14 @@ import {
 } from '@/store/actions'
 
 // Material
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, OutlinedInput } from '@mui/material'
+import { Box, Typography } from '@mui/material'
+
+// components
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 // Project imports
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
@@ -26,8 +29,6 @@ import documentStoreApi from '@/api/documentstore'
 import useNotifier from '@/utils/useNotifier'
 
 const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
-    const portalElement = document.getElementById('portal')
-
     const dispatch = useDispatch()
 
     // ==============================|| Snackbar ||============================== //
@@ -148,74 +149,59 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         }
     }
 
-    const component = show ? (
-        <Dialog
-            fullWidth
-            maxWidth='sm'
-            open={show}
-            onClose={onCancel}
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
-            <DialogTitle style={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    <IconFiles style={{ marginRight: '10px' }} />
-                    {dialogProps.title}
-                </div>
-            </DialogTitle>
-            <DialogContent>
-                <Box sx={{ p: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+    return (
+        <>
+            <Dialog disableRestoreFocus open={show} onClose={onCancel}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className='flex items-center gap-2'>
+                            <IconFiles />
+                            {dialogProps.title}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <Box>
                         <Typography>
                             Name<span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
-
-                        <div style={{ flexGrow: 1 }}></div>
-                    </div>
-                    <OutlinedInput
-                        size='small'
-                        sx={{ mt: 1 }}
-                        type='string'
-                        fullWidth
-                        key='documentStoreName'
-                        onChange={(e) => setDocumentStoreName(e.target.value)}
-                        value={documentStoreName ?? ''}
-                    />
-                </Box>
-                <Box sx={{ p: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                        <Input
+                            //eslint-disable-next-line jsx-a11y/no-autofocus
+                            autoFocus
+                            key='documentStoreName'
+                            onChange={(e) => setDocumentStoreName(e.target.value)}
+                            name='name'
+                            size='sm'
+                            value={documentStoreName ?? ''}
+                        />
+                    </Box>
+                    <Box>
                         <Typography>Description</Typography>
-
-                        <div style={{ flexGrow: 1 }}></div>
-                    </div>
-                    <OutlinedInput
-                        size='small'
-                        multiline={true}
-                        rows={7}
-                        sx={{ mt: 1 }}
-                        type='string'
-                        fullWidth
-                        key='documentStoreDesc'
-                        onChange={(e) => setDocumentStoreDesc(e.target.value)}
-                        value={documentStoreDesc ?? ''}
-                    />
-                </Box>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={() => onCancel()}>Cancel</Button>
-                <StyledButton
-                    disabled={!documentStoreName}
-                    variant='contained'
-                    onClick={() => (dialogType === 'ADD' ? createDocumentStore() : updateDocumentStore())}
-                >
-                    {dialogProps.confirmButtonName}
-                </StyledButton>
-            </DialogActions>
+                        <Input
+                            multiline={true}
+                            minRows={3}
+                            key='documentStoreDesc'
+                            name='description'
+                            onChange={(e) => setDocumentStoreDesc(e.target.value)}
+                            size='sm'
+                            value={documentStoreDesc ?? ''}
+                        />
+                    </Box>
+                    <DialogFooter>
+                        <Button onClick={() => onCancel()} size='sm' variant='ghost'>
+                            Cancel
+                        </Button>
+                        <Button
+                            disabled={!documentStoreName}
+                            onClick={() => (dialogType === 'ADD' ? createDocumentStore() : updateDocumentStore())}
+                            size='sm'
+                        >
+                            {dialogProps.confirmButtonName}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             <ConfirmDialog />
-        </Dialog>
-    ) : null
-
-    return createPortal(component, portalElement)
+        </>
+    )
 }
 
 AddDocStoreDialog.propTypes = {

@@ -9,13 +9,16 @@ import ReactJson from 'flowise-react-json-view'
 import useApi from '@/hooks/useApi'
 
 // Material-UI
-import { Skeleton, Toolbar, Box, Button, Card, CardContent, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
+import { Skeleton, Toolbar, Box, Card, CardContent, Grid, Stack, Typography } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 import { IconScissors, IconArrowLeft, IconDatabaseImport, IconBook, IconX, IconEye } from '@tabler/icons-react'
 
+// components
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+
 // Project import
 import MainCard from '@/ui-component/cards/MainCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
@@ -425,14 +428,10 @@ const LoaderConfigPreviewChunks = () => {
                                     </div>
                                 </Box>
                                 <Box>
-                                    <StyledButton
-                                        variant='contained'
-                                        onClick={onSaveAndProcess}
-                                        sx={{ borderRadius: 2, height: '100%' }}
-                                        startIcon={<IconDatabaseImport />}
-                                    >
+                                    <Button onClick={onSaveAndProcess} size='sm'>
+                                        <IconDatabaseImport />
                                         Process
-                                    </StyledButton>
+                                    </Button>
                                 </Box>
                             </Toolbar>
                         </Box>
@@ -570,16 +569,15 @@ const LoaderConfigPreviewChunks = () => {
                                                         justifyContent: 'center'
                                                     }}
                                                 >
-                                                    <StyledFab
-                                                        color='secondary'
-                                                        aria-label='preview'
-                                                        title='Preview'
-                                                        variant='extended'
+                                                    <Button
+                                                        className='bg-purple-500 text-white'
                                                         onClick={onPreviewChunks}
+                                                        size='sm'
+                                                        variant='secondary'
                                                     >
-                                                        <IconEye style={{ marginRight: '5px' }} />
+                                                        <IconEye />
                                                         Preview Chunks
-                                                    </StyledFab>
+                                                    </Button>
                                                 </div>
                                             </div>
                                         ))}
@@ -590,26 +588,24 @@ const LoaderConfigPreviewChunks = () => {
                                             </Typography>
                                             <Box sx={{ mb: 3 }}>
                                                 <Typography>Show Chunks in Preview</Typography>
-                                                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                                    <OutlinedInput
-                                                        size='small'
-                                                        multiline={false}
-                                                        sx={{ mt: 1, flex: 1, mr: 2 }}
+                                                <div className='w-full flex items-center gap-2'>
+                                                    <Input
+                                                        wrapperClassName='w-full flex-1'
+                                                        size='sm'
                                                         type='number'
                                                         key='previewChunkCount'
                                                         onChange={(e) => setPreviewChunkCount(e.target.value)}
                                                         value={previewChunkCount ?? 25}
                                                     />
-                                                    <StyledFab
-                                                        color='secondary'
-                                                        aria-label='preview'
-                                                        title='Preview'
-                                                        variant='extended'
+                                                    <Button
+                                                        className='bg-purple-500 text-white'
                                                         onClick={onPreviewChunks}
+                                                        size='sm'
+                                                        variant='secondary'
                                                     >
-                                                        <IconEye style={{ marginRight: '5px' }} />
-                                                        Preview
-                                                    </StyledFab>
+                                                        <IconEye />
+                                                        Preview Chunks
+                                                    </Button>
                                                 </div>
                                             </Box>
                                             <div style={{ height: '800px', overflow: 'scroll', padding: '5px' }}>

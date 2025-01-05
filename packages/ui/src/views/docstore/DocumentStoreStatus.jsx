@@ -47,42 +47,31 @@ const DocumentStoreStatus = ({ status, isTableView }) => {
         <>
             {!isTableView && (
                 <div
+                    className='flex items-center justify-center rounded-full px-3 py-1 gap-1'
                     style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignContent: 'center',
-                        alignItems: 'center',
                         background: status === 'EMPTY' ? 'transparent' : getColor(status)[0],
                         border: status === 'EMPTY' ? '1px solid' : 'none',
                         borderColor: status === 'EMPTY' ? getColor(status)[0] : 'transparent',
-                        borderRadius: '25px',
-                        paddingTop: '3px',
-                        paddingBottom: '3px',
-                        paddingLeft: '10px',
-                        paddingRight: '10px',
                         width: 'fit-content'
                     }}
                 >
                     <div
+                        className='w-2.5 h-2.5 rounded-full'
                         style={{
-                            width: '10px',
-                            height: '10px',
-                            borderRadius: '50%',
                             backgroundColor: status === 'EMPTY' ? 'transparent' : getColor(status)[1],
                             border: status === 'EMPTY' ? '3px solid' : 'none',
                             borderColor: status === 'EMPTY' ? getColor(status)[1] : 'transparent'
                         }}
                     />
-                    <span style={{ fontSize: '0.7rem', color: getColor(status)[2], marginLeft: 5 }}>{status}</span>
+                    <span className='text-xs font-medium' style={{ color: getColor(status)[2] }}>
+                        {status}
+                    </span>
                 </div>
             )}
             {isTableView && (
                 <div
+                    className='w-5 h-5 rounded-full flex'
                     style={{
-                        display: 'flex',
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
                         backgroundColor: status === 'EMPTY' ? 'transparent' : getColor(status)[1],
                         border: status === 'EMPTY' ? '3px solid' : 'none',
                         borderColor: status === 'EMPTY' ? getColor(status)[1] : 'transparent'

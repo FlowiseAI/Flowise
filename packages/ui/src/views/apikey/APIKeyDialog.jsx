@@ -1,24 +1,15 @@
-import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
-import {
-    Box,
-    Typography,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Stack,
-    IconButton,
-    OutlinedInput,
-    Popover
-} from '@mui/material'
+import { Box, Typography, Stack, IconButton, Popover } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { StyledButton } from '@/ui-component/button/StyledButton'
+
+// components
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 // Icons
 import { IconX, IconCopy } from '@tabler/icons-react'
@@ -30,8 +21,6 @@ import apikeyApi from '@/api/apikey'
 import useNotifier from '@/utils/useNotifier'
 
 const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
-    const portalElement = document.getElementById('portal')
-
     const theme = useTheme()
     const dispatch = useDispatch()
 
@@ -136,27 +125,20 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
         }
     }
 
-    const component = show ? (
-        <Dialog
-            fullWidth
-            maxWidth='sm'
-            open={show}
-            onClose={onCancel}
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title}
-            </DialogTitle>
+    return (
+        <Dialog open={show} onClose={onCancel}>
             <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{dialogProps.title}</DialogTitle>
+                </DialogHeader>
                 {dialogProps.type === 'EDIT' && (
-                    <Box sx={{ p: 2 }}>
+                    <Box>
                         <Typography variant='overline'>API Key</Typography>
-                        <Stack direction='row' sx={{ mb: 1 }}>
+                        <Stack className='flex-row w-full' direction='row'>
                             <Typography
+                                className='flex-1 rounded-md'
                                 sx={{
                                     p: 1,
-                                    borderRadius: 10,
                                     backgroundColor: theme.palette.primary.light,
                                     width: 'max-content',
                                     height: 'max-content'
@@ -199,34 +181,18 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                     </Box>
                 )}
 
-                <Box sx={{ p: 2 }}>
-                    <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>Key Name</Typography>
-                    </Stack>
-                    <OutlinedInput
-                        id='keyName'
-                        type='string'
-                        fullWidth
-                        placeholder='My New Key'
-                        value={keyName}
-                        name='keyName'
-                        onChange={(e) => setKeyName(e.target.value)}
-                    />
+                <Box>
+                    <Typography variant='overline'>Key Name</Typography>
+                    <Input placeholder='My New Key' value={keyName} name='keyName' onChange={(e) => setKeyName(e.target.value)} />
                 </Box>
+                <DialogFooter>
+                    <Button id={dialogProps.customBtnId} onClick={() => (dialogProps.type === 'ADD' ? addNewKey() : saveKey())} size='sm'>
+                        {dialogProps.confirmButtonName}
+                    </Button>
+                </DialogFooter>
             </DialogContent>
-            <DialogActions>
-                <StyledButton
-                    variant='contained'
-                    onClick={() => (dialogProps.type === 'ADD' ? addNewKey() : saveKey())}
-                    id={dialogProps.customBtnId}
-                >
-                    {dialogProps.confirmButtonName}
-                </StyledButton>
-            </DialogActions>
         </Dialog>
-    ) : null
-
-    return createPortal(component, portalElement)
+    )
 }
 
 APIKeyDialog.propTypes = {

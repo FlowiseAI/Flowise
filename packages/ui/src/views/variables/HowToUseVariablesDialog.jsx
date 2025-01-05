@@ -1,6 +1,5 @@
-import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
-import { Dialog, DialogContent, DialogTitle } from '@mui/material'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 
 const overrideConfig = `{
@@ -12,22 +11,13 @@ const overrideConfig = `{
 }`
 
 const HowToUseVariablesDialog = ({ show, onCancel }) => {
-    const portalElement = document.getElementById('portal')
-
-    const component = show ? (
-        <Dialog
-            onClose={onCancel}
-            open={show}
-            fullWidth
-            maxWidth='sm'
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                How To Use Variables
-            </DialogTitle>
+    return (
+        <Dialog onClose={onCancel} open={show}>
             <DialogContent>
-                <p style={{ marginBottom: '10px' }}>
+                <DialogHeader>
+                    <DialogTitle>How To Use Variables</DialogTitle>
+                </DialogHeader>
+                <p className='mb-2'>
                     Variables can be used in Custom Tool, Custom Function, Custom Loader, If Else Function with the $ prefix.
                 </p>
                 <CodeEditor
@@ -38,7 +28,7 @@ const HowToUseVariablesDialog = ({ show, onCancel }) => {
                     lang={'js'}
                     basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
                 />
-                <p style={{ marginBottom: '10px' }}>
+                <p className='mb-2'>
                     Variables can also be used in Text Field parameter of any node. For example, in System Message of Agent:
                 </p>
                 <CodeEditor
@@ -49,11 +39,11 @@ const HowToUseVariablesDialog = ({ show, onCancel }) => {
                     lang={'js'}
                     basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
                 />
-                <p style={{ marginBottom: '10px' }}>
+                <p className='mb-2'>
                     If variable type is Static, the value will be retrieved as it is. If variable type is Runtime, the value will be
                     retrieved from .env file.
                 </p>
-                <p style={{ marginBottom: '10px' }}>
+                <p className='mb-2'>
                     You can also override variable values in API overrideConfig using <b>vars</b>:
                 </p>
                 <CodeEditor
@@ -72,9 +62,7 @@ const HowToUseVariablesDialog = ({ show, onCancel }) => {
                 </p>
             </DialogContent>
         </Dialog>
-    ) : null
-
-    return createPortal(component, portalElement)
+    )
 }
 
 HowToUseVariablesDialog.propTypes = {

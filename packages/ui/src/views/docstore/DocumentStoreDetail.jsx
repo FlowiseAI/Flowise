@@ -16,15 +16,20 @@ import {
     TableCell,
     TableBody,
     Chip,
-    Menu,
-    MenuItem,
-    Divider,
-    Button,
-    Skeleton,
-    IconButton
+    Skeleton
 } from '@mui/material'
-import { alpha, styled, useTheme } from '@mui/material/styles'
+import { styled, useTheme } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
+
+// components
+import { Button } from '@/components/ui/button'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -32,7 +37,6 @@ import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DocumentLoaderListDialog from '@/views/docstore/DocumentLoaderListDialog'
 import ErrorBoundary from '@/ErrorBoundary'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import DeleteDocStoreDialog from './DeleteDocStoreDialog'
 import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
@@ -48,14 +52,20 @@ import { getFileName } from '@/utils/genericHelper'
 import useConfirm from '@/hooks/useConfirm'
 
 // icons
-import { IconPlus, IconRefresh, IconX, IconVectorBezier2 } from '@tabler/icons-react'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import FileDeleteIcon from '@mui/icons-material/Delete'
-import FileEditIcon from '@mui/icons-material/Edit'
-import FileChunksIcon from '@mui/icons-material/AppRegistration'
-import NoteAddIcon from '@mui/icons-material/NoteAdd'
-import SearchIcon from '@mui/icons-material/Search'
-import RefreshIcon from '@mui/icons-material/Refresh'
+import {
+    IconPlus,
+    IconRefresh,
+    IconX,
+    IconVectorBezier2,
+    IconChevronDown,
+    IconFilePencil,
+    IconFileUpload,
+    IconSearch,
+    IconReload,
+    IconPencil,
+    IconTrash,
+    IconDotsVertical
+} from '@tabler/icons-react'
 import doc_store_details_emptySVG from '@/assets/images/doc_store_details_empty.svg'
 
 // store
@@ -83,42 +93,6 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-const StyledMenu = styled((props) => (
-    <Menu
-        elevation={0}
-        anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right'
-        }}
-        transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right'
-        }}
-        {...props}
-    />
-))(({ theme }) => ({
-    '& .MuiPaper-root': {
-        borderRadius: 6,
-        marginTop: theme.spacing(1),
-        minWidth: 180,
-        boxShadow:
-            'rgb(255, 255, 255) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px',
-        '& .MuiMenu-list': {
-            padding: '4px 0'
-        },
-        '& .MuiMenuItem-root': {
-            '& .MuiSvgIcon-root': {
-                fontSize: 18,
-                color: theme.palette.text.secondary,
-                marginRight: theme.spacing(1.5)
-            },
-            '&:active': {
-                backgroundColor: alpha(theme.palette.primary.main, theme.palette.action.selectedOpacity)
-            }
-        }
-    }
-}))
-
 const DocumentStoreDetails = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -142,9 +116,6 @@ const DocumentStoreDetails = () => {
     const [documentLoaderListDialogProps, setDocumentLoaderListDialogProps] = useState({})
     const [showDeleteDocStoreDialog, setShowDeleteDocStoreDialog] = useState(false)
     const [deleteDocStoreDialogProps, setDeleteDocStoreDialogProps] = useState({})
-
-    const [anchorEl, setAnchorEl] = useState(null)
-    const open = Boolean(anchorEl)
 
     const URLpath = document.location.pathname.toString().split('/')
     const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
@@ -308,7 +279,6 @@ const DocumentStoreDetails = () => {
         const isConfirmed = await confirm(confirmPayload)
 
         if (isConfirmed) {
-            setAnchorEl(null)
             setBackdropLoading(true)
             try {
                 const resp = await documentsApi.refreshLoader(storeId)
@@ -369,16 +339,6 @@ const DocumentStoreDetails = () => {
         getSpecificDocumentStore.request(storeId)
     }
 
-    const handleClick = (event) => {
-        event.preventDefault()
-        event.stopPropagation()
-        setAnchorEl(event.currentTarget)
-    }
-
-    const handleClose = () => {
-        setAnchorEl(null)
-    }
-
     useEffect(() => {
         getSpecificDocumentStore.request(storeId)
 
@@ -422,83 +382,59 @@ const DocumentStoreDetails = () => {
                             onEdit={() => onEditClicked()}
                         >
                             {(documentStore?.status === 'STALE' || documentStore?.status === 'UPSERTING') && (
-                                <IconButton onClick={onConfirm} size='small' color='primary' title='Refresh Document Store'>
+                                <Button onClick={onConfirm} size='icon' title='Refresh Document Store' variant='ghost'>
                                     <IconRefresh />
-                                </IconButton>
+                                </Button>
                             )}
-                            <StyledButton
-                                variant='contained'
-                                sx={{ ml: 2, minWidth: 200, borderRadius: 2, height: '100%', color: 'white' }}
-                                startIcon={<IconPlus />}
-                                onClick={listLoaders}
-                            >
+                            <DropdownMenu>
+                                <DropdownMenuTrigger size='sm' variant='secondary'>
+                                    Manage
+                                    <IconChevronDown />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align='end' className='w-64'>
+                                    <DropdownMenuItem
+                                        disabled={documentStore?.totalChunks <= 0 || documentStore?.status === 'UPSERTING'}
+                                        onClick={() => showStoredChunks('all')}
+                                    >
+                                        <IconFilePencil size={20} stroke={1.5} />
+                                        View & Edit Chunks
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        disabled={documentStore?.totalChunks <= 0 || documentStore?.status === 'UPSERTING'}
+                                        onClick={() => showVectorStore(documentStore.id)}
+                                    >
+                                        <IconFileUpload size={20} stroke={1.5} />
+                                        Upsert All Chunks
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        disabled={documentStore?.totalChunks <= 0 || documentStore?.status !== 'UPSERTED'}
+                                        onClick={() => showVectorStoreQuery(documentStore.id)}
+                                    >
+                                        <IconSearch size={20} stroke={1.5} />
+                                        Retrieval Query
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        disabled={documentStore?.totalChunks <= 0 || documentStore?.status !== 'UPSERTED'}
+                                        onClick={() => onStoreRefresh(documentStore.id)}
+                                        title='Re-process all loaders and upsert all chunks'
+                                    >
+                                        <IconReload size={20} stroke={1.5} />
+                                        Refresh
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        className='text-red-500 hover:text-red-500'
+                                        onClick={() => onStoreDelete(documentStore.vectorStoreConfig, documentStore.recordManagerConfig)}
+                                    >
+                                        <IconTrash size={20} stroke={1.5} />
+                                        Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button onClick={listLoaders} size='sm'>
+                                <IconPlus />
                                 Add Document Loader
-                            </StyledButton>
-                            <Button
-                                id='document-store-header-action-button'
-                                aria-controls={open ? 'document-store-header-menu' : undefined}
-                                aria-haspopup='true'
-                                aria-expanded={open ? 'true' : undefined}
-                                variant='outlined'
-                                disableElevation
-                                color='secondary'
-                                onClick={handleClick}
-                                sx={{ minWidth: 150 }}
-                                endIcon={<KeyboardArrowDownIcon />}
-                            >
-                                More Actions
                             </Button>
-                            <StyledMenu
-                                id='document-store-header-menu'
-                                MenuListProps={{
-                                    'aria-labelledby': 'document-store-header-menu-button'
-                                }}
-                                anchorEl={anchorEl}
-                                open={open}
-                                onClose={handleClose}
-                            >
-                                <MenuItem
-                                    disabled={documentStore?.totalChunks <= 0 || documentStore?.status === 'UPSERTING'}
-                                    onClick={() => showStoredChunks('all')}
-                                    disableRipple
-                                >
-                                    <FileChunksIcon />
-                                    View & Edit Chunks
-                                </MenuItem>
-                                <MenuItem
-                                    disabled={documentStore?.totalChunks <= 0 || documentStore?.status === 'UPSERTING'}
-                                    onClick={() => showVectorStore(documentStore.id)}
-                                    disableRipple
-                                >
-                                    <NoteAddIcon />
-                                    Upsert All Chunks
-                                </MenuItem>
-                                <MenuItem
-                                    disabled={documentStore?.totalChunks <= 0 || documentStore?.status !== 'UPSERTED'}
-                                    onClick={() => showVectorStoreQuery(documentStore.id)}
-                                    disableRipple
-                                >
-                                    <SearchIcon />
-                                    Retrieval Query
-                                </MenuItem>
-                                <MenuItem
-                                    disabled={documentStore?.totalChunks <= 0 || documentStore?.status !== 'UPSERTED'}
-                                    onClick={() => onStoreRefresh(documentStore.id)}
-                                    disableRipple
-                                    title='Re-process all loaders and upsert all chunks'
-                                >
-                                    <RefreshIcon />
-                                    Refresh
-                                </MenuItem>
-                                <Divider sx={{ my: 0.5 }} />
-                                <MenuItem
-                                    onClick={() => onStoreDelete(documentStore.vectorStoreConfig, documentStore.recordManagerConfig)}
-                                    disableRipple
-                                >
-                                    <FileDeleteIcon />
-                                    Delete
-                                </MenuItem>
-                            </StyledMenu>
                         </ViewHeader>
                         <DocumentStoreStatus status={documentStore?.status} />
                         {getSpecificDocumentStore.data?.whereUsed?.length > 0 && (
@@ -537,8 +473,8 @@ const DocumentStoreDetails = () => {
                             </Stack>
                         )}
                         {!isLoading && documentStore && !documentStore?.loaders?.length ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center', gap: 2 }} flexDirection='column'>
+                                <Box sx={{ height: 'auto' }}>
                                     <img
                                         style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
                                         src={doc_store_details_emptySVG}
@@ -546,14 +482,10 @@ const DocumentStoreDetails = () => {
                                     />
                                 </Box>
                                 <div>No Document Added Yet</div>
-                                <StyledButton
-                                    variant='contained'
-                                    sx={{ borderRadius: 2, height: '100%', mt: 2, color: 'white' }}
-                                    startIcon={<IconPlus />}
-                                    onClick={listLoaders}
-                                >
+                                <Button onClick={listLoaders}>
+                                    <IconPlus />
                                     Add Document Loader
-                                </StyledButton>
+                                </Button>
                             </Stack>
                         ) : (
                             <TableContainer
@@ -703,19 +635,6 @@ const DocumentStoreDetails = () => {
 }
 
 function LoaderRow(props) {
-    const [anchorEl, setAnchorEl] = useState(null)
-    const open = Boolean(anchorEl)
-
-    const handleClick = (event) => {
-        event.preventDefault()
-        event.stopPropagation()
-        setAnchorEl(event.currentTarget)
-    }
-
-    const handleClose = () => {
-        setAnchorEl(null)
-    }
-
     const formatSources = (source) => {
         if (source && typeof source === 'string' && source.includes('base64')) {
             return getFileName(source)
@@ -753,44 +672,30 @@ function LoaderRow(props) {
                 </StyledTableCell>
                 <StyledTableCell>
                     <div>
-                        <Button
-                            id='document-store-action-button'
-                            aria-controls={open ? 'document-store-action-customized-menu' : undefined}
-                            aria-haspopup='true'
-                            aria-expanded={open ? 'true' : undefined}
-                            disableElevation
-                            onClick={(e) => handleClick(e)}
-                            endIcon={<KeyboardArrowDownIcon />}
-                        >
-                            Options
-                        </Button>
-                        <StyledMenu
-                            id='document-store-actions-customized-menu'
-                            MenuListProps={{
-                                'aria-labelledby': 'document-store-actions-customized-button'
-                            }}
-                            anchorEl={anchorEl}
-                            open={open}
-                            onClose={handleClose}
-                        >
-                            <MenuItem onClick={props.onEditClick} disableRipple>
-                                <FileEditIcon />
-                                Preview & Process
-                            </MenuItem>
-                            <MenuItem onClick={props.onViewChunksClick} disableRipple>
-                                <FileChunksIcon />
-                                View & Edit Chunks
-                            </MenuItem>
-                            <MenuItem onClick={props.onChunkUpsert} disableRipple>
-                                <NoteAddIcon />
-                                Upsert Chunks
-                            </MenuItem>
-                            <Divider sx={{ my: 0.5 }} />
-                            <MenuItem onClick={props.onDeleteClick} disableRipple>
-                                <FileDeleteIcon />
-                                Delete
-                            </MenuItem>
-                        </StyledMenu>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger size='icon' variant='ghost'>
+                                <IconDotsVertical />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align='end' className='w-64'>
+                                <DropdownMenuItem onClick={props.onEditClick}>
+                                    <IconPencil size={20} stroke={1.5} />
+                                    Preview & Process
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={props.onViewChunksClick}>
+                                    <IconFilePencil size={20} stroke={1.5} />
+                                    View & Edit Chunks
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={props.onChunkUpsert}>
+                                    <IconFileUpload size={20} stroke={1.5} />
+                                    Upsert Chunks
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className='text-red-500 hover:text-red-500' onClick={props.onDeleteClick}>
+                                    <IconTrash size={20} stroke={1.5} />
+                                    Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </StyledTableCell>
             </TableRow>

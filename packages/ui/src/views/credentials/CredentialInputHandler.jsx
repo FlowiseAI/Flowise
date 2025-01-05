@@ -43,7 +43,7 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
         <div ref={ref}>
             {inputParam && (
                 <>
-                    <Box sx={{ p: 2 }}>
+                    <Box>
                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography>
                                 {inputParam.label}

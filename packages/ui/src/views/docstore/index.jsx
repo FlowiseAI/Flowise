@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
 // material-ui
@@ -47,7 +47,7 @@ const Documents = () => {
     const [docStores, setDocStores] = useState([])
     const [view, setView] = useState(localStorage.getItem('docStoreDisplayStyle') || 'card')
 
-    const handleChange = (event, nextView) => {
+    const handleChange = (nextView) => {
         if (nextView === null) return
         localStorage.setItem('docStoreDisplayStyle', nextView)
         setView(nextView)
@@ -166,12 +166,9 @@ const Documents = () => {
                             ) : (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                     {docStores?.filter(filterDocStores).map((data, index) => (
-                                        <DocumentStoreCard
-                                            key={index}
-                                            images={images[data.id]}
-                                            data={data}
-                                            onClick={() => goToDocumentStore(data.id)}
-                                        />
+                                        <Link key={index} to={`/document-stores/${data.id}`}>
+                                            <DocumentStoreCard images={images[data.id]} data={data} />
+                                        </Link>
                                     ))}
                                 </Box>
                             )}
