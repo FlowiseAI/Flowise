@@ -23,7 +23,8 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
                 'https://www.googleapis.com/auth/gmail.readonly',
                 'https://www.googleapis.com/auth/gmail.labels'
             ]
-            // prompt: 'consent'
+            // accessType: 'offline'
+            // prompt: 'consent',
         })(req, res, next)
     } catch (error) {
         console.log('Error: authController.authenticate', error)
