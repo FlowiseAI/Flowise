@@ -179,8 +179,9 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
 const getChatflowById = async (chatflowId: string): Promise<any> => {
   try {
     const appServer = getRunningExpressApp()
-    const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-      id: chatflowId
+    const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+      where: { id: chatflowId },
+      relations: ['user']
     })
     if (!dbResponse) {
       throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
