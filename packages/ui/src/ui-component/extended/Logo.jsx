@@ -9,12 +9,8 @@ const Logo = () => {
     const customization = useSelector((state) => state.customization)
 
     return (
-        <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row' }}>
-            <img
-                style={{ objectFit: 'contain', height: 'auto', width: 150 }}
-                src={customization.isDarkMode ? logoDark : logo}
-                alt='Flowise'
-            />
+        <div className='flex items-center'>
+            <img className='w-auto h-10 object-contain' src={customization.isDarkMode ? logoDark : logo} alt='Flowise' />
         </div>
     )
 }

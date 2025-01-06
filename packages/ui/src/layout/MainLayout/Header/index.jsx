@@ -4,15 +4,16 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase } from '@mui/material'
+import { Box } from '@mui/material'
+
+// components
+import { Button } from '@/components/ui/button'
 
 // project imports
-import LogoSection from '../LogoSection'
 import ProfileSection from './ProfileSection'
 
 // assets
-import { IconMenu2, IconSunFilled, IconMoonFilled } from '@tabler/icons-react'
+import { IconSunFilled, IconMoonFilled, IconLayoutSidebar } from '@tabler/icons-react'
 
 // store
 import { SET_DARKMODE } from '@/store/actions'
@@ -20,8 +21,7 @@ import { Toggle } from '@/components/ui/toggle'
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
-const Header = ({ handleLeftDrawerToggle }) => {
-    const theme = useTheme()
+const Header = ({ handleSidebarToggle }) => {
     const navigate = useNavigate()
 
     const customization = useSelector((state) => state.customization)
@@ -44,39 +44,10 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
     return (
         <>
-            {/* logo & toggler button */}
-            <Box
-                sx={{
-                    width: 228,
-                    display: 'flex',
-                    [theme.breakpoints.down('md')]: {
-                        width: 'auto'
-                    }
-                }}
-            >
-                <Box component='span' sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
-                    <LogoSection />
-                </Box>
-                <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-                    <Avatar
-                        variant='rounded'
-                        sx={{
-                            ...theme.typography.commonAvatar,
-                            ...theme.typography.mediumAvatar,
-                            transition: 'all .2s ease-in-out',
-                            background: theme.palette.secondary.light,
-                            color: theme.palette.secondary.dark,
-                            '&:hover': {
-                                background: theme.palette.secondary.dark,
-                                color: theme.palette.secondary.light
-                            }
-                        }}
-                        onClick={handleLeftDrawerToggle}
-                        color='inherit'
-                    >
-                        <IconMenu2 stroke={1.5} size='1.3rem' />
-                    </Avatar>
-                </ButtonBase>
+            <Box className='flex items-center justify-between'>
+                <Button onClick={handleSidebarToggle} size='icon' variant='ghost'>
+                    <IconLayoutSidebar size={20} />
+                </Button>
             </Box>
             <Box sx={{ flexGrow: 1 }} />
             <Box className='flex items-center gap-2'>
@@ -90,7 +61,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 }
 
 Header.propTypes = {
-    handleLeftDrawerToggle: PropTypes.func
+    handleSidebarToggle: PropTypes.func
 }
 
 export default Header

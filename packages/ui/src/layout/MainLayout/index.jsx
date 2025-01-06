@@ -8,9 +8,15 @@ import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material'
 
 // project imports
 import Header from './Header'
-import Sidebar from './Sidebar'
-import { drawerWidth, headerHeight } from '@/store/constant'
+// import Sidebar from './Sidebar'
+import { headerHeight } from '@/store/constant'
 import { SET_MENU } from '@/store/actions'
+import {
+    SIDEBAR_WIDTH,
+    // SIDEBAR_WIDTH_ICON,
+    SidebarProvider
+} from '@/components/ui/sidebar'
+import { AppSidebar } from './AppSidebar'
 
 // styles
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
@@ -25,17 +31,17 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
         }),
         marginRight: 0,
         [theme.breakpoints.up('md')]: {
-            marginLeft: -drawerWidth,
-            width: `calc(100% - ${drawerWidth}px)`
+            marginLeft: -SIDEBAR_WIDTH,
+            width: `calc(100% - ${SIDEBAR_WIDTH}px)`
         },
         [theme.breakpoints.down('md')]: {
             marginLeft: '20px',
-            width: `calc(100% - ${drawerWidth}px)`,
+            width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
             padding: '16px'
         },
         [theme.breakpoints.down('sm')]: {
             marginLeft: '10px',
-            width: `calc(100% - ${drawerWidth}px)`,
+            width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
             padding: '16px',
             marginRight: '10px'
         }
@@ -50,7 +56,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
         marginRight: 0,
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
-        width: `calc(100% - ${drawerWidth}px)`
+        width: `calc(100% - ${SIDEBAR_WIDTH}px)`
     })
 }))
 
@@ -62,10 +68,10 @@ const MainLayout = () => {
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
 
     // Handle left drawer
-    const leftDrawerOpened = useSelector((state) => state.customization.opened)
+    const sidebarOpen = useSelector((state) => state.customization.opened)
     const dispatch = useDispatch()
-    const handleLeftDrawerToggle = () => {
-        dispatch({ type: SET_MENU, opened: !leftDrawerOpened })
+    const handleSidebarToggle = () => {
+        dispatch({ type: SET_MENU, opened: !sidebarOpen })
     }
 
     useEffect(() => {
@@ -76,31 +82,40 @@ const MainLayout = () => {
     return (
         <Box className={`main ${customization.isDarkMode ? 'dark' : ''}`} sx={{ display: 'flex' }}>
             <CssBaseline />
-            {/* header */}
-            <AppBar
-                enableColorOnDark
-                position='fixed'
-                color='inherit'
-                elevation={0}
-                sx={{
-                    // backgroundColor: theme.palette.background.default,
-                    backgroundColor: 'transparent',
-                    transition: leftDrawerOpened ? theme.transitions.create('width') : 'none',
-                    zIndex: 10
-                }}
-            >
-                <Toolbar sx={{ height: `${headerHeight}px`, borderBottom: '1px solid', borderColor: theme.palette.primary[200] + 75 }}>
-                    <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
-                </Toolbar>
-            </AppBar>
 
-            {/* drawer */}
-            <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} />
+            {/* <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} /> */}
+            <SidebarProvider open={sidebarOpen} onOpenChange={handleSidebarToggle}>
+                {/* sidebar */}
+                <AppSidebar />
 
-            {/* main content */}
-            <Main theme={theme} open={leftDrawerOpened}>
-                <Outlet />
-            </Main>
+                {/* header */}
+                <AppBar
+                    enableColorOnDark
+                    position='fixed'
+                    color='inherit'
+                    elevation={0}
+                    sx={{
+                        // width: sidebarOpen ? `calc(100% - ${SIDEBAR_WIDTH})` : `calc(100% - ${SIDEBAR_WIDTH_ICON})`,
+                        width: sidebarOpen ? `calc(100% - ${SIDEBAR_WIDTH})` : '100%',
+                        [theme.breakpoints.down('md')]: {
+                            width: '100%'
+                        },
+                        // backgroundColor: theme.palette.background.default,
+                        backgroundColor: 'transparent',
+                        transition: sidebarOpen ? theme.transitions.create('width') : 'none',
+                        zIndex: 10
+                    }}
+                >
+                    <Toolbar className='px-4 border-b border-border' sx={{ height: `${headerHeight}px` }}>
+                        <Header handleSidebarToggle={handleSidebarToggle} sidebarOpen={sidebarOpen} />
+                    </Toolbar>
+                </AppBar>
+
+                {/* main content */}
+                <Main theme={theme} open={sidebarOpen}>
+                    <Outlet />
+                </Main>
+            </SidebarProvider>
         </Box>
     )
 }
