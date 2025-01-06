@@ -337,8 +337,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
             if (chatmsg.agentReasoning) msg.agentReasoning = chatmsg.agentReasoning
             if (chatmsg.artifacts) {
-                obj.artifacts = chatmsg.artifacts
-                obj.artifacts.forEach((artifact) => {
+                msg.artifacts = chatmsg.artifacts
+                msg.artifacts.forEach((artifact) => {
                     if (artifact.type === 'png' || artifact.type === 'jpeg') {
                         artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
                             chatmsg.chatId
