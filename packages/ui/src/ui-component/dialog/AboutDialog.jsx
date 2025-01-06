@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@mui/material'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Box, Divider } from '@mui/material'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import moment from 'moment'
 import axios from 'axios'
 import { baseURL } from '@/store/constant'
+import Logo from '../extended/Logo'
+import { Button } from '@/components/ui/button'
 
 const AboutDialog = ({ show, onCancel }) => {
     const [data, setData] = useState({})
+    const currentVersion = data?.currentVersion
+    const latestVersion = data?.name?.replace('flowise@', '')
 
     useEffect(() => {
         if (show) {
@@ -47,41 +50,26 @@ const AboutDialog = ({ show, onCancel }) => {
 
     return (
         <Dialog open={show} onClose={onCancel}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>About FlowiseAI</DialogTitle>
-                </DialogHeader>
-                {data && (
-                    <TableContainer component={Paper}>
-                        <Table aria-label='simple table'>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Current Version</TableCell>
-                                    <TableCell>Latest Version</TableCell>
-                                    <TableCell>Published At</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                    <TableCell component='th' scope='row'>
-                                        {data.currentVersion}
-                                    </TableCell>
-                                    <TableCell component='th' scope='row'>
-                                        <a target='_blank' rel='noreferrer' href={data.html_url}>
-                                            {data.name}
-                                        </a>
-                                    </TableCell>
-                                    <TableCell>{moment(data.published_at).fromNow()}</TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                )}
-                <DialogFooter>
-                    <Button type='button' variant='secondary' onClick={onCancel}>
-                        Close
-                    </Button>
-                </DialogFooter>
+            <DialogContent className='p-0'>
+                <Box className='w-full flex flex-col items-center justify-center gap-2'>
+                    <Box className='w-full flex flex-col items-center justify-center gap-2 p-6'>
+                        <Logo />
+                        <span>{`v${currentVersion}`}</span>
+                    </Box>
+                    <Divider className='w-full mx-2 bg-sidebar-border' />
+                    <Box className='w-full flex items-center justify-between gap-4 p-6'>
+                        <span>{`${
+                            currentVersion !== latestVersion
+                                ? `FlowiseAI v${latestVersion} is now available.`
+                                : `You're on the latest version.`
+                        } Published ${moment(data.published_at).fromNow()}.`}</span>
+                        <a href='https://github.com/FlowiseAI/Flowise/releases' rel='noreferrer' target='_blank'>
+                            <Button size='sm' variant='secondary'>
+                                Changelog
+                            </Button>
+                        </a>
+                    </Box>
+                </Box>
             </DialogContent>
         </Dialog>
     )

@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 import { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
 
 // material-ui
 import { Box, Typography, Stack, FormControlLabel, Checkbox } from '@mui/material'
@@ -25,7 +26,17 @@ import {
 import AboutDialog from '@/ui-component/dialog/AboutDialog'
 
 // assets
-import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconX } from '@tabler/icons-react'
+import {
+    IconFileExport,
+    IconFileUpload,
+    IconInfoCircle,
+    IconLogout,
+    IconSettings,
+    IconX,
+    IconBook,
+    IconArrowUpRight,
+    IconUsers
+} from '@tabler/icons-react'
 import './index.css'
 import ExportingGIF from '@/assets/images/Exporting.gif'
 
@@ -35,7 +46,6 @@ import exportImportApi from '@/api/exportimport'
 // Hooks
 import useApi from '@/hooks/useApi'
 import { getErrorMessage } from '@/utils/errorHandler'
-import { useNavigate } from 'react-router-dom'
 
 const dataToExport = ['Chatflows', 'Agentflows', 'Tools', 'Variables', 'Assistants']
 
@@ -133,7 +143,7 @@ ExportDialog.propTypes = {
 
 // ==============================|| PROFILE MENU ||============================== //
 
-const ProfileSection = ({ username, handleLogout }) => {
+const ProfileSection = ({ handleLogout, username, versionData }) => {
     const [open, setOpen] = useState(false)
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
@@ -312,6 +322,20 @@ const ProfileSection = ({ username, handleLogout }) => {
                         Import
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem className='group'>
+                        <a className='w-full flex items-center gap-2' href='https://discord.gg/jbaHfsRVBW' rel='noreferrer' target='_blank'>
+                            <IconUsers size={20} stroke={1.5} />
+                            <span className='inline-flex flex-1'>Community</span>
+                            <IconArrowUpRight className='hidden group-hover:inline' size={20} stroke={1.5} />
+                        </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className='group'>
+                        <a className='w-full flex items-center gap-2' href='https://docs.flowiseai.com' rel='noreferrer' target='_blank'>
+                            <IconBook size={20} stroke={1.5} />
+                            <span className='inline-flex flex-1'>Documentation</span>
+                            <IconArrowUpRight className='hidden group-hover:inline' size={20} stroke={1.5} />
+                        </a>
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => {
                             setOpen(false)
@@ -319,13 +343,17 @@ const ProfileSection = ({ username, handleLogout }) => {
                         }}
                     >
                         <IconInfoCircle size={20} stroke={1.5} />
-                        About FlowiseAI
+                        <span className='inline-flex flex-1'>About</span>
+                        {versionData?.currentVersion && <span className='text-muted-foreground'>{`v${versionData?.currentVersion}`}</span>}
                     </DropdownMenuItem>
                     {localStorage.getItem('username') && localStorage.getItem('password') && (
-                        <DropdownMenuItem onClick={handleLogout}>
-                            <IconLogout size={20} stroke={1.5} />
-                            Logout
-                        </DropdownMenuItem>
+                        <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleLogout}>
+                                <IconLogout size={20} stroke={1.5} />
+                                Logout
+                            </DropdownMenuItem>
+                        </>
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -337,8 +365,9 @@ const ProfileSection = ({ username, handleLogout }) => {
 }
 
 ProfileSection.propTypes = {
+    handleLogout: PropTypes.func,
     username: PropTypes.string,
-    handleLogout: PropTypes.func
+    versionData: PropTypes.object
 }
 
 export default ProfileSection
