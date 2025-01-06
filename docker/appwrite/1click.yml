@@ -194,7 +194,7 @@ caproverOneClickApp:
       description: Enable/disable usage statistics
     - id: $$cap_logging_config
       label: Logging Config
-      defaultValue: '{"logging":{"enabled":true,"provider":"syslog","destination":""}}'
+      defaultValue: '{\"logging\":{\"enabled\":true,\"provider\":\"syslog\",\"destination\":\"\"}}'
       description: Logging configuration in JSON format
     - id: $$cap_sms_provider
       label: SMS Provider
