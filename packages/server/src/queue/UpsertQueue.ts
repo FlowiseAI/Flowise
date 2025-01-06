@@ -1,4 +1,3 @@
-import dotenv from 'dotenv'
 import { DataSource } from 'typeorm'
 import { IComponentNodes, IExecuteDocStoreUpsert, IExecuteFlowParams, IExecuteProcessLoader, IExecuteVectorStoreInsert } from '../Interface'
 import { Telemetry } from '../utils/telemetry'
@@ -8,8 +7,6 @@ import { executeUpsert } from '../utils/upsertVector'
 import { executeDocStoreUpsert, insertIntoVectorStore, processLoader } from '../services/documentstore'
 import { RedisOptions } from 'bullmq'
 import logger from '../utils/logger'
-
-dotenv.config()
 
 interface UpsertQueueOptions {
     appDataSource: DataSource

@@ -1,4 +1,3 @@
-import dotenv from 'dotenv'
 import { BaseQueue } from './BaseQueue'
 import { PredictionQueue } from './PredictionQueue'
 import { UpsertQueue } from './UpsertQueue'
@@ -12,8 +11,6 @@ import { createBullBoard } from 'bull-board'
 import { BullMQAdapter } from 'bull-board/bullMQAdapter'
 import { Express } from 'express'
 
-dotenv.config()
-
 const QUEUE_NAME = process.env.QUEUE_NAME || 'flowise-queue'
 
 type QUEUE_TYPE = 'prediction' | 'upsert'
@@ -25,19 +22,25 @@ export class QueueManager {
     private bullBoardRouter?: Express
 
     private constructor() {
+        let tlsOpts = undefined
+        if (process.env.REDIS_URL && process.env.REDIS_URL.startsWith('rediss://')) {
+            tlsOpts = {
+                rejectUnauthorized: false
+            }
+        } else if (process.env.REDIS_TLS === 'true') {
+            tlsOpts = {
+                cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
+                key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
+                ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
+            }
+        }
         this.connection = {
+            url: process.env.REDIS_URL || undefined,
             host: process.env.REDIS_HOST || 'localhost',
             port: parseInt(process.env.REDIS_PORT || '6379'),
             username: process.env.REDIS_USERNAME || undefined,
             password: process.env.REDIS_PASSWORD || undefined,
-            tls:
-                process.env.REDIS_TLS === 'true'
-                    ? {
-                          cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
-                          key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
-                          ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
-                      }
-                    : undefined
+            tls: tlsOpts
         }
     }
 

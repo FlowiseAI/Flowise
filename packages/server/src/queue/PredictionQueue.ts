@@ -1,4 +1,3 @@
-import dotenv from 'dotenv'
 import { DataSource } from 'typeorm'
 import { executeFlow } from '../utils/buildChatflow'
 import { IComponentNodes, IExecuteFlowParams } from '../Interface'
@@ -8,8 +7,6 @@ import { RedisEventPublisher } from './RedisEventPublisher'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { BaseQueue } from './BaseQueue'
 import { RedisOptions } from 'bullmq'
-
-dotenv.config()
 
 interface PredictionQueueOptions {
     appDataSource: DataSource

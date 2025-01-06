@@ -57,6 +57,7 @@ export abstract class BaseCommand extends Command {
         WORKER_CONCURRENCY: Flags.string(),
         QUEUE_NAME: Flags.string(),
         QUEUE_REDIS_EVENT_STREAM_MAX_LEN: Flags.string(),
+        REDIS_URL: Flags.string(),
         REDIS_HOST: Flags.string(),
         REDIS_PORT: Flags.string(),
         REDIS_USERNAME: Flags.string(),
@@ -176,6 +177,7 @@ export abstract class BaseCommand extends Command {
 
         // Queue
         if (flags.MODE) process.env.MODE = flags.MODE
+        if (flags.REDIS_URL) process.env.REDIS_URL = flags.REDIS_URL
         if (flags.REDIS_HOST) process.env.REDIS_HOST = flags.REDIS_HOST
         if (flags.REDIS_PORT) process.env.REDIS_PORT = flags.REDIS_PORT
         if (flags.REDIS_USERNAME) process.env.REDIS_USERNAME = flags.REDIS_USERNAME

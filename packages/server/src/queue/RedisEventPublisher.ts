@@ -5,7 +5,24 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
     private redisPublisher: ReturnType<typeof createClient>
 
     constructor() {
-        this.redisPublisher = createClient()
+        if (process.env.REDIS_URL) {
+            this.redisPublisher = createClient({
+                url: process.env.REDIS_URL
+            })
+        } else {
+            this.redisPublisher = createClient({
+                username: process.env.REDIS_USERNAME || undefined,
+                password: process.env.REDIS_PASSWORD || undefined,
+                socket: {
+                    host: process.env.REDIS_HOST || 'localhost',
+                    port: parseInt(process.env.REDIS_PORT || '6379'),
+                    tls: process.env.REDIS_TLS === 'true',
+                    cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
+                    key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
+                    ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
+                }
+            })
+        }
     }
 
     async connect() {

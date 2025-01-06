@@ -37,7 +37,7 @@ export default class Worker extends BaseCommand {
         logger.info(`Prediction Worker ${this.predictionWorkerId} created`)
 
         const predictionQueueName = predictionQueue.getQueueName()
-        const queueEvents = new QueueEvents(predictionQueueName)
+        const queueEvents = new QueueEvents(predictionQueueName, { connection: queueManager.getConnection() })
 
         queueEvents.on<CustomListener>('abort', async ({ id }: { id: string }) => {
             abortControllerPool.abort(id)
