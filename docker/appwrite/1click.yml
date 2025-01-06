@@ -64,6 +64,210 @@ caproverOneClickApp:
     - id: $$cap_encryption_key
       label: Encryption Key
       defaultValue: $$cap_gen_random_hex(32)
+    - id: $$cap_app_env
+      label: Application Environment
+      defaultValue: 'production'
+      description: Application environment (production/development)
+    - id: $$cap_worker_per_core
+      label: Workers Per Core
+      defaultValue: '6'
+      description: Number of workers to spawn per CPU core
+    - id: $$cap_locale
+      label: Application Locale
+      defaultValue: 'en'
+      description: Default application locale
+    - id: $$cap_console_whitelist_root
+      label: Console Root Email
+      defaultValue: ''
+      description: Root email for console access
+    - id: $$cap_console_whitelist_emails
+      label: Console Whitelist Emails
+      defaultValue: ''
+      description: Comma-separated list of emails allowed to access console
+    - id: $$cap_console_whitelist_ips
+      label: Console Whitelist IPs
+      defaultValue: ''
+      description: Comma-separated list of IPs allowed to access console
+    - id: $$cap_system_email_name
+      label: System Email Name
+      defaultValue: 'Appwrite'
+      description: Name used in system emails
+    - id: $$cap_system_email_address
+      label: System Email Address
+      defaultValue: ''
+      description: Email address used for system emails
+    - id: $$cap_smtp_host
+      label: SMTP Host
+      defaultValue: ''
+      description: SMTP server host
+    - id: $$cap_smtp_port
+      label: SMTP Port
+      defaultValue: '587'
+      description: SMTP server port
+    - id: $$cap_smtp_username
+      label: SMTP Username
+      defaultValue: ''
+      description: SMTP authentication username
+    - id: $$cap_smtp_password
+      label: SMTP Password
+      defaultValue: ''
+      description: SMTP authentication password
+    - id: $$cap_storage_limit
+      label: Storage Limit
+      defaultValue: '30000000'
+      description: Maximum file size for uploads in bytes
+    - id: $$cap_functions_timeout
+      label: Functions Timeout
+      defaultValue: '900'
+      description: Maximum execution time for functions in seconds
+    - id: $$cap_functions_build_timeout
+      label: Functions Build Timeout
+      defaultValue: '900'
+      description: Maximum build time for functions in seconds
+    - id: $$cap_functions_cpus
+      label: Functions CPUs
+      defaultValue: '0'
+      description: Number of CPUs allocated to functions (0 for unlimited)
+    - id: $$cap_functions_memory
+      label: Functions Memory
+      defaultValue: '0'
+      description: Memory allocated to functions in bytes (0 for unlimited)
+    - id: $$cap_maintenance_interval
+      label: Maintenance Interval
+      defaultValue: '86400'
+      description: Interval between maintenance runs in seconds
+    - id: $$cap_system_security_email_address
+      label: Security Email Address
+      defaultValue: ''
+      description: Email address for security notifications
+    - id: $$cap_storage_s3_access_key
+      label: S3 Access Key
+      defaultValue: ''
+      description: AWS S3 access key
+    - id: $$cap_storage_s3_secret
+      label: S3 Secret
+      defaultValue: ''
+      description: AWS S3 secret key
+    - id: $$cap_storage_s3_region
+      label: S3 Region
+      defaultValue: 'us-east-1'
+      description: AWS S3 region
+    - id: $$cap_storage_s3_bucket
+      label: S3 Bucket
+      defaultValue: ''
+      description: AWS S3 bucket name
+    - id: $$cap_storage_do_spaces_access_key
+      label: DO Spaces Access Key
+      defaultValue: ''
+      description: DigitalOcean Spaces access key
+    - id: $$cap_storage_do_spaces_secret
+      label: DO Spaces Secret
+      defaultValue: ''
+      description: DigitalOcean Spaces secret
+    - id: $$cap_storage_do_spaces_region
+      label: DO Spaces Region
+      defaultValue: ''
+      description: DigitalOcean Spaces region
+    - id: $$cap_storage_do_spaces_bucket
+      label: DO Spaces Bucket
+      defaultValue: ''
+      description: DigitalOcean Spaces bucket name
+    - id: $$cap_vcs_github_app_name
+      label: GitHub App Name
+      defaultValue: ''
+      description: GitHub App name for VCS integration
+    - id: $$cap_vcs_github_app_id
+      label: GitHub App ID
+      defaultValue: ''
+      description: GitHub App ID for VCS integration
+    - id: $$cap_vcs_github_private_key
+      label: GitHub Private Key
+      defaultValue: ''
+      description: GitHub App private key
+    - id: $$cap_vcs_github_webhook_secret
+      label: GitHub Webhook Secret
+      defaultValue: ''
+      description: GitHub webhook secret
+    - id: $$cap_usage_stats
+      label: Usage Stats
+      defaultValue: 'enabled'
+      description: Enable/disable usage statistics
+    - id: $$cap_logging_config
+      label: Logging Config
+      defaultValue: '{"logging":{"enabled":true,"provider":"syslog","destination":""}}'
+      description: Logging configuration in JSON format
+    - id: $$cap_sms_provider
+      label: SMS Provider
+      defaultValue: ''
+      description: SMS provider for messaging
+    - id: $$cap_sms_from
+      label: SMS From
+      defaultValue: ''
+      description: SMS sender number/name
+    - id: $$cap_storage_backblaze_access_key
+      label: Backblaze Access Key
+      defaultValue: ''
+      description: Backblaze B2 access key
+    - id: $$cap_storage_backblaze_secret
+      label: Backblaze Secret
+      defaultValue: ''
+      description: Backblaze B2 secret key
+    - id: $$cap_storage_backblaze_region
+      label: Backblaze Region
+      defaultValue: ''
+      description: Backblaze B2 region
+    - id: $$cap_storage_backblaze_bucket
+      label: Backblaze Bucket
+      defaultValue: ''
+      description: Backblaze B2 bucket name
+    - id: $$cap_storage_linode_access_key
+      label: Linode Access Key
+      defaultValue: ''
+      description: Linode Object Storage access key
+    - id: $$cap_storage_linode_secret
+      label: Linode Secret
+      defaultValue: ''
+      description: Linode Object Storage secret key
+    - id: $$cap_storage_linode_region
+      label: Linode Region
+      defaultValue: ''
+      description: Linode Object Storage region
+    - id: $$cap_storage_linode_bucket
+      label: Linode Bucket
+      defaultValue: ''
+      description: Linode Object Storage bucket name
+    - id: $$cap_storage_wasabi_access_key
+      label: Wasabi Access Key
+      defaultValue: ''
+      description: Wasabi access key
+    - id: $$cap_storage_wasabi_secret
+      label: Wasabi Secret
+      defaultValue: ''
+      description: Wasabi secret key
+    - id: $$cap_storage_wasabi_region
+      label: Wasabi Region
+      defaultValue: ''
+      description: Wasabi region
+    - id: $$cap_storage_wasabi_bucket
+      label: Wasabi Bucket
+      defaultValue: ''
+      description: Wasabi bucket name
+    - id: $$cap_docker_hub_username
+      label: Docker Hub Username
+      defaultValue: ''
+      description: Docker Hub username for pulling images
+    - id: $$cap_docker_hub_password
+      label: Docker Hub Password
+      defaultValue: ''
+      description: Docker Hub password for pulling images
+    - id: $$cap_migrations_firebase_client_id
+      label: Firebase Client ID
+      defaultValue: ''
+      description: Firebase client ID for migrations
+    - id: $$cap_migrations_firebase_client_secret
+      label: Firebase Client Secret
+      defaultValue: ''
+      description: Firebase client secret for migrations
 
 services:
   $$cap_appname-traefik:
@@ -94,7 +298,25 @@ services:
       - $$cap_appname-certificates:/storage/certificates:rw
       - $$cap_appname-functions:/storage/functions:rw
     environment:
-      _APP_ENV: production
+      _APP_ENV: $$cap_app_env
+      _APP_WORKER_PER_CORE: $$cap_worker_per_core
+      _APP_LOCALE: $$cap_locale
+      _APP_CONSOLE_WHITELIST_ROOT: $$cap_console_whitelist_root
+      _APP_CONSOLE_WHITELIST_EMAILS: $$cap_console_whitelist_emails
+      _APP_CONSOLE_WHITELIST_IPS: $$cap_console_whitelist_ips
+      _APP_SYSTEM_EMAIL_NAME: $$cap_system_email_name
+      _APP_SYSTEM_EMAIL_ADDRESS: $$cap_system_email_address
+      _APP_SMTP_HOST: $$cap_smtp_host
+      _APP_SMTP_PORT: $$cap_smtp_port
+      _APP_SMTP_USERNAME: $$cap_smtp_username
+      _APP_SMTP_PASSWORD: $$cap_smtp_password
+      _APP_STORAGE_LIMIT: $$cap_storage_limit
+      _APP_FUNCTIONS_TIMEOUT: $$cap_functions_timeout
+      _APP_FUNCTIONS_BUILD_TIMEOUT: $$cap_functions_build_timeout
+      _APP_FUNCTIONS_CPUS: $$cap_functions_cpus
+      _APP_FUNCTIONS_MEMORY: $$cap_functions_memory
+      _APP_MAINTENANCE_INTERVAL: $$cap_maintenance_interval
+      _APP_SYSTEM_SECURITY_EMAIL_ADDRESS: $$cap_system_security_email_address
       _APP_DOMAIN: $$cap_appname.$$cap_root_domain
       _APP_DOMAIN_TARGET: $$cap_appname.$$cap_root_domain
       _APP_OPENSSL_KEY_V1: $$cap_encryption_key
@@ -109,9 +331,38 @@ services:
       _APP_DB_SCHEMA: $$cap_db_name
       _APP_DB_USER: $$cap_db_user
       _APP_DB_PASS: $$cap_db_pass
-      _APP_USAGE_STATS: enabled
+      _APP_USAGE_STATS: $$cap_usage_stats
       _APP_OPTIONS_ABUSE: enabled
       _APP_OPTIONS_FORCE_HTTPS: enabled
+      _APP_STORAGE_S3_ACCESS_KEY: $$cap_storage_s3_access_key
+      _APP_STORAGE_S3_SECRET: $$cap_storage_s3_secret
+      _APP_STORAGE_S3_REGION: $$cap_storage_s3_region
+      _APP_STORAGE_S3_BUCKET: $$cap_storage_s3_bucket
+      _APP_STORAGE_DO_SPACES_ACCESS_KEY: $$cap_storage_do_spaces_access_key
+      _APP_STORAGE_DO_SPACES_SECRET: $$cap_storage_do_spaces_secret
+      _APP_STORAGE_DO_SPACES_REGION: $$cap_storage_do_spaces_region
+      _APP_STORAGE_DO_SPACES_BUCKET: $$cap_storage_do_spaces_bucket
+      _APP_VCS_GITHUB_APP_NAME: $$cap_vcs_github_app_name
+      _APP_VCS_GITHUB_APP_ID: $$cap_vcs_github_app_id
+      _APP_VCS_GITHUB_PRIVATE_KEY: $$cap_vcs_github_private_key
+      _APP_VCS_GITHUB_WEBHOOK_SECRET: $$cap_vcs_github_webhook_secret
+      _APP_LOGGING_CONFIG: $$cap_logging_config
+      _APP_SMS_PROVIDER: $$cap_sms_provider
+      _APP_SMS_FROM: $$cap_sms_from
+      _APP_STORAGE_BACKBLAZE_ACCESS_KEY: $$cap_storage_backblaze_access_key
+      _APP_STORAGE_BACKBLAZE_SECRET: $$cap_storage_backblaze_secret
+      _APP_STORAGE_BACKBLAZE_REGION: $$cap_storage_backblaze_region
+      _APP_STORAGE_BACKBLAZE_BUCKET: $$cap_storage_backblaze_bucket
+      _APP_STORAGE_LINODE_ACCESS_KEY: $$cap_storage_linode_access_key
+      _APP_STORAGE_LINODE_SECRET: $$cap_storage_linode_secret
+      _APP_STORAGE_LINODE_REGION: $$cap_storage_linode_region
+      _APP_STORAGE_LINODE_BUCKET: $$cap_storage_linode_bucket
+      _APP_STORAGE_WASABI_ACCESS_KEY: $$cap_storage_wasabi_access_key
+      _APP_STORAGE_WASABI_SECRET: $$cap_storage_wasabi_secret
+      _APP_STORAGE_WASABI_REGION: $$cap_storage_wasabi_region
+      _APP_STORAGE_WASABI_BUCKET: $$cap_storage_wasabi_bucket
+      _APP_DOCKER_HUB_USERNAME: $$cap_docker_hub_username
+      _APP_DOCKER_HUB_PASSWORD: $$cap_docker_hub_password
     labels:
       - traefik.enable=true
       - traefik.constraint-label-stack=appwrite
@@ -155,6 +406,8 @@ services:
       _APP_DB_SCHEMA: $$cap_db_name
       _APP_DB_USER: $$cap_db_user
       _APP_DB_PASS: $$cap_db_pass
+      _APP_USAGE_STATS: $$cap_usage_stats
+      _APP_LOGGING_CONFIG: $$cap_logging_config
     labels:
       - traefik.enable=true
       - traefik.constraint-label-stack=appwrite
@@ -178,6 +431,9 @@ services:
     environment:
       OPR_EXECUTOR_SECRET: $$cap_executor_secret
       OPR_EXECUTOR_ENV: production
+      OPR_EXECUTOR_LOGGING_CONFIG: $$cap_logging_config
+      OPR_EXECUTOR_DOCKER_HUB_USERNAME: $$cap_docker_hub_username
+      OPR_EXECUTOR_DOCKER_HUB_PASSWORD: $$cap_docker_hub_password
     caproverExtra:
       notExposeAsWebApp: true
 
@@ -186,7 +442,8 @@ services:
     entrypoint: worker-functions
     restart: unless-stopped
     environment:
-      _APP_ENV: production
+      _APP_ENV: $$cap_app_env
+      _APP_WORKER_PER_CORE: $$cap_worker_per_core
       _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
       _APP_REDIS_PORT: 6379
       _APP_REDIS_USER: default
@@ -211,7 +468,8 @@ services:
       - $$cap_appname-functions:/storage/functions:rw
       - $$cap_appname-builds:/storage/builds:rw
     environment:
-      _APP_ENV: production
+      _APP_ENV: $$cap_app_env
+      _APP_WORKER_PER_CORE: $$cap_worker_per_core
       _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
       _APP_REDIS_PORT: 6379
       _APP_REDIS_USER: default
@@ -229,7 +487,8 @@ services:
     entrypoint: worker-audits
     restart: unless-stopped
     environment:
-      _APP_ENV: production
+      _APP_ENV: $$cap_app_env
+      _APP_WORKER_PER_CORE: $$cap_worker_per_core
       _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
       _APP_REDIS_PORT: 6379
       _APP_REDIS_USER: default
@@ -247,7 +506,8 @@ services:
     entrypoint: worker-webhooks
     restart: unless-stopped
     environment:
-      _APP_ENV: production
+      _APP_ENV: $$cap_app_env
+      _APP_WORKER_PER_CORE: $$cap_worker_per_core
       _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
       _APP_REDIS_PORT: 6379
       _APP_REDIS_USER: default
@@ -295,3 +555,73 @@ services:
       - $$cap_appname-redis:/data:rw
     caproverExtra:
       notExposeAsWebApp: true
+
+  $$cap_appname-worker-certificates:
+    environment:
+      _APP_ENV: $$cap_app_env
+      _APP_WORKER_PER_CORE: $$cap_worker_per_core
+      _APP_OPENSSL_KEY_V1: $$cap_encryption_key
+      _APP_DOMAIN: $$cap_appname.$$cap_root_domain
+      _APP_DOMAIN_TARGET: $$cap_appname.$$cap_root_domain
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+      _APP_LOGGING_CONFIG: $$cap_logging_config
+
+  $$cap_appname-worker-databases:
+    environment:
+      _APP_ENV: $$cap_app_env
+      _APP_WORKER_PER_CORE: $$cap_worker_per_core
+      _APP_OPENSSL_KEY_V1: $$cap_encryption_key
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+      _APP_LOGGING_CONFIG: $$cap_logging_config
+
+  $$cap_appname-worker-usage:
+    environment:
+      _APP_ENV: $$cap_app_env
+      _APP_WORKER_PER_CORE: $$cap_worker_per_core
+      _APP_OPENSSL_KEY_V1: $$cap_encryption_key
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+      _APP_USAGE_STATS: $$cap_usage_stats
+      _APP_LOGGING_CONFIG: $$cap_logging_config
+
+  $$cap_appname-task-maintenance:
+    environment:
+      _APP_ENV: $$cap_app_env
+      _APP_WORKER_PER_CORE: $$cap_worker_per_core
+      _APP_OPENSSL_KEY_V1: $$cap_encryption_key
+      _APP_DOMAIN: $$cap_appname.$$cap_root_domain
+      _APP_DOMAIN_TARGET: $$cap_appname.$$cap_root_domain
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+      _APP_MAINTENANCE_INTERVAL: $$cap_maintenance_interval
+      _APP_LOGGING_CONFIG: $$cap_logging_config
