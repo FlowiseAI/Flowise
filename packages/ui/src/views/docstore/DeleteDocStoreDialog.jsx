@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { cloneDeep } from 'lodash'
 import {
-    Button,
     Box,
     Paper,
     Accordion,
     AccordionSummary,
     AccordionDetails,
-    Dialog,
-    DialogContent,
-    DialogTitle,
     Typography,
     Table,
     TableBody,
@@ -19,9 +14,13 @@ import {
     TableRow,
     TableCell,
     Checkbox,
-    FormControlLabel,
-    DialogActions
+    FormControlLabel
 } from '@mui/material'
+
+// components
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { TableViewOnly } from '@/ui-component/table/Table'
 import { v4 as uuidv4 } from 'uuid'
@@ -35,7 +34,6 @@ import useApi from '@/hooks/useApi'
 import { initNode } from '@/utils/genericHelper'
 
 const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
-    const portalElement = document.getElementById('portal')
     const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
     const [removeFromVS, setRemoveFromVS] = useState(false)
     const [vsFlowData, setVSFlowData] = useState([])
@@ -130,19 +128,12 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getSpecificNodeApi.data])
 
-    const component = show ? (
-        <Dialog
-            fullWidth
-            maxWidth={dialogProps.recordManagerConfig ? 'md' : 'sm'}
-            open={show}
-            onClose={onCancel}
-            aria-labelledby='alert-dialog-title'
-            aria-describedby='alert-dialog-description'
-        >
-            <DialogTitle sx={{ fontSize: '1rem', p: 3, pb: 0 }} id='alert-dialog-title'>
-                {dialogProps.title}
-            </DialogTitle>
-            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
+    return (
+        <Dialog open={show} onClose={onCancel}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{dialogProps.title}</DialogTitle>
+                </DialogHeader>
                 <span style={{ marginTop: '20px' }}>{dialogProps.description}</span>
                 {dialogProps.type === 'STORE' && dialogProps.recordManagerConfig && (
                     <FormControlLabel
@@ -221,19 +212,17 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                         </span>
                     </div>
                 )}
+                <DialogFooter>
+                    <Button onClick={onCancel} size='sm' variant='ghost'>
+                        Cancel
+                    </Button>
+                    <Button onClick={() => onDelete(dialogProps.type, dialogProps.file, removeFromVS)} size='sm' variant='destructive'>
+                        Delete
+                    </Button>
+                </DialogFooter>
             </DialogContent>
-            <DialogActions sx={{ pr: 3, pb: 3 }}>
-                <Button onClick={onCancel} color='primary'>
-                    Cancel
-                </Button>
-                <Button variant='contained' onClick={() => onDelete(dialogProps.type, dialogProps.file, removeFromVS)} color='error'>
-                    Delete
-                </Button>
-            </DialogActions>
         </Dialog>
-    ) : null
-
-    return createPortal(component, portalElement)
+    )
 }
 
 DeleteDocStoreDialog.propTypes = {

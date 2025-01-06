@@ -57,14 +57,13 @@ import {
     IconRefresh,
     IconX,
     IconVectorBezier2,
-    IconChevronDown,
     IconFilePencil,
     IconFileUpload,
     IconSearch,
     IconReload,
     IconPencil,
-    IconTrash,
-    IconDotsVertical
+    IconSettings,
+    IconTrash
 } from '@tabler/icons-react'
 import doc_store_details_emptySVG from '@/assets/images/doc_store_details_empty.svg'
 
@@ -388,8 +387,8 @@ const DocumentStoreDetails = () => {
                             )}
                             <DropdownMenu>
                                 <DropdownMenuTrigger size='sm' variant='secondary'>
+                                    <IconSettings />
                                     Manage
-                                    <IconChevronDown />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align='end' className='w-64'>
                                     <DropdownMenuItem
@@ -508,7 +507,7 @@ const DocumentStoreDetails = () => {
                                             <StyledTableCell>Source(s)</StyledTableCell>
                                             <StyledTableCell>Chunks</StyledTableCell>
                                             <StyledTableCell>Chars</StyledTableCell>
-                                            <StyledTableCell>Actions</StyledTableCell>
+                                            <StyledTableCell sx={{ textAlign: 'center' }}>Actions</StyledTableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -671,10 +670,10 @@ function LoaderRow(props) {
                     {props.loader.totalChars && <Chip variant='outlined' size='small' label={props.loader.totalChars.toLocaleString()} />}
                 </StyledTableCell>
                 <StyledTableCell>
-                    <div>
+                    <div className='flex justify-center'>
                         <DropdownMenu>
                             <DropdownMenuTrigger size='icon' variant='ghost'>
-                                <IconDotsVertical />
+                                <IconSettings />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align='end' className='w-64'>
                                 <DropdownMenuItem onClick={props.onEditClick}>

@@ -47,7 +47,6 @@ import useNotifier from '@/utils/useNotifier'
 // Icons
 import {
     IconTrash,
-    IconEdit,
     IconCopy,
     IconChevronsUp,
     IconChevronsDown,
@@ -55,7 +54,8 @@ import {
     IconPlus,
     IconEye,
     IconEyeOff,
-    IconFileUpload
+    IconFileUpload,
+    IconPencil
 } from '@tabler/icons-react'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
 import UploadJSONFileDialog from '@/views/apikey/UploadJSONFileDialog'
@@ -93,34 +93,50 @@ function APIKeyRow(props) {
                     {props.apiKey.keyName}
                 </StyledTableCell>
                 <StyledTableCell style={{ width: '40%' }}>
-                    {props.showApiKeys.includes(props.apiKey.apiKey)
-                        ? props.apiKey.apiKey
-                        : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
-                              props.apiKey.apiKey.length - 5
-                          )}`}
-                    <IconButton title='Copy' color='success' onClick={props.onCopyClick}>
-                        <IconCopy />
-                    </IconButton>
-                    <IconButton title='Show' color='inherit' onClick={props.onShowAPIClick}>
-                        {props.showApiKeys.includes(props.apiKey.apiKey) ? <IconEyeOff /> : <IconEye />}
-                    </IconButton>
-                    <Popover
-                        open={props.open}
-                        anchorEl={props.anchorEl}
-                        onClose={props.onClose}
-                        anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right'
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'left'
-                        }}
-                    >
-                        <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: props.theme.palette.success.dark }}>
-                            Copied!
+                    <div className='flex items-center gap-2'>
+                        <Typography
+                            className='min-w-[35%] h-10 flex items-center justify-center rounded-md px-2 py-1'
+                            sx={{
+                                backgroundColor: theme.palette.primary.light
+                            }}
+                            variant='h5'
+                        >
+                            {props.showApiKeys.includes(props.apiKey.apiKey)
+                                ? props.apiKey.apiKey
+                                : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
+                                      props.apiKey.apiKey.length - 5
+                                  )}`}
                         </Typography>
-                    </Popover>
+                        <div className='flex items-center'>
+                            <Button onClick={props.onCopyClick} size='icon' title='Copy' variant='ghost'>
+                                <IconCopy />
+                            </Button>
+                            <Button onClick={props.onShowAPIClick} size='icon' title='Show' variant='ghost'>
+                                {props.showApiKeys.includes(props.apiKey.apiKey) ? <IconEyeOff /> : <IconEye />}
+                            </Button>
+                            <Popover
+                                open={props.open}
+                                anchorEl={props.anchorEl}
+                                onClose={props.onClose}
+                                anchorOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'center'
+                                }}
+                                transformOrigin={{
+                                    vertical: 'bottom',
+                                    horizontal: 'center'
+                                }}
+                                slotProps={{ paper: { sx: { boxShadow: 'none' } } }}
+                            >
+                                <Typography
+                                    variant='h6'
+                                    sx={{ pl: 1, pr: 1, color: 'white', background: props.theme.palette.success.dark }}
+                                >
+                                    Copied!
+                                </Typography>
+                            </Popover>
+                        </div>
+                    </div>
                 </StyledTableCell>
                 <StyledTableCell>
                     {props.apiKey.chatFlows.length}{' '}
@@ -132,14 +148,20 @@ function APIKeyRow(props) {
                 </StyledTableCell>
                 <StyledTableCell>{moment(props.apiKey.createdAt).format('MMMM Do, YYYY')}</StyledTableCell>
                 <StyledTableCell>
-                    <IconButton title='Edit' color='primary' onClick={props.onEditClick}>
-                        <IconEdit />
-                    </IconButton>
-                </StyledTableCell>
-                <StyledTableCell>
-                    <IconButton title='Delete' color='error' onClick={props.onDeleteClick}>
-                        <IconTrash />
-                    </IconButton>
+                    <div className='flex items-center justify-center gap-2'>
+                        <Button onClick={props.onEditClick} size='icon' title='Edit' variant='ghost'>
+                            <IconPencil />
+                        </Button>
+                        <Button
+                            className='text-red-500 hover:text-red-500'
+                            onClick={props.onDeleteClick}
+                            size='icon'
+                            title='Delete'
+                            variant='ghost'
+                        >
+                            <IconTrash />
+                        </Button>
+                    </div>
                 </StyledTableCell>
             </TableRow>
             {open && (
@@ -408,8 +430,7 @@ const APIKey = () => {
                                             <StyledTableCell>API Key</StyledTableCell>
                                             <StyledTableCell>Usage</StyledTableCell>
                                             <StyledTableCell>Created</StyledTableCell>
-                                            <StyledTableCell> </StyledTableCell>
-                                            <StyledTableCell> </StyledTableCell>
+                                            <StyledTableCell sx={{ textAlign: 'center' }}>Actions</StyledTableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -431,14 +452,8 @@ const APIKey = () => {
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
                                                 </StyledTableRow>
                                                 <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>

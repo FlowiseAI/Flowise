@@ -40,6 +40,7 @@ import {
     IconWorldStar,
     IconMicrophone,
     IconCategory,
+    IconSettings,
     IconTrash
 } from '@tabler/icons-react'
 import { IconThumbUp } from '@tabler/icons-react'
@@ -70,6 +71,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     const [exportTemplateDialogProps, setExportTemplateDialogProps] = useState({})
 
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
+    const view = localStorage.getItem('flowDisplayStyle') || 'card'
 
     const handleFlowRename = () => {
         setFlowDialogOpen(true)
@@ -243,7 +245,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger size='icon' variant='ghost'>
-                    <IconDotsVertical />
+                    {view === 'card' ? <IconDotsVertical size={20} stroke={1.5} /> : <IconSettings size={20} stroke={1.5} />}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='end' className='w-64'>
                     <DropdownMenuItem onClick={handleFlowRename} disableRipple>

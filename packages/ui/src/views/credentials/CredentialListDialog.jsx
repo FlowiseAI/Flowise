@@ -89,9 +89,6 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                                 </InputAdornment>
                             }
                             aria-describedby='search-helper-text'
-                            inputProps={{
-                                'aria-label': 'weight'
-                            }}
                         />
                     </Box>
                     <PerfectScrollbar className='h-full max-h-[70vh] overflow-x-hidden'>

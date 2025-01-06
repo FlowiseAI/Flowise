@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
-import { Box, Typography, Stack, IconButton, Popover } from '@mui/material'
+import { Box, Typography, Stack, Popover } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // components
@@ -19,6 +19,7 @@ import apikeyApi from '@/api/apikey'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
+import { IconCheck } from '@tabler/icons-react'
 
 const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const theme = useTheme()
@@ -134,22 +135,17 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                 {dialogProps.type === 'EDIT' && (
                     <Box>
                         <Typography variant='overline'>API Key</Typography>
-                        <Stack className='flex-row w-full' direction='row'>
+                        <Stack className='flex-row w-full gap-2' direction='row'>
                             <Typography
-                                className='flex-1 rounded-md'
+                                className='h-10 flex items-center flex-1 rounded-md px-2 py-1'
                                 sx={{
-                                    p: 1,
-                                    backgroundColor: theme.palette.primary.light,
-                                    width: 'max-content',
-                                    height: 'max-content'
+                                    backgroundColor: theme.palette.primary.light
                                 }}
                                 variant='h5'
                             >
                                 {dialogProps.key.apiKey}
                             </Typography>
-                            <IconButton
-                                title='Copy API Key'
-                                color='success'
+                            <Button
                                 onClick={(event) => {
                                     navigator.clipboard.writeText(dialogProps.key.apiKey)
                                     setAnchorEl(event.currentTarget)
@@ -157,21 +153,25 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                                         handleClosePopOver()
                                     }, 1500)
                                 }}
+                                size='icon'
+                                title='Copy API Key'
+                                variant='secondary'
                             >
-                                <IconCopy />
-                            </IconButton>
+                                {openPopOver ? <IconCheck color='green' /> : <IconCopy />}
+                            </Button>
                             <Popover
                                 open={openPopOver}
                                 anchorEl={anchorEl}
                                 onClose={handleClosePopOver}
                                 anchorOrigin={{
                                     vertical: 'top',
-                                    horizontal: 'right'
+                                    horizontal: 'center'
                                 }}
                                 transformOrigin={{
-                                    vertical: 'top',
-                                    horizontal: 'left'
+                                    vertical: 'bottom',
+                                    horizontal: 'center'
                                 }}
+                                slotProps={{ paper: { sx: { boxShadow: 'none' } } }}
                             >
                                 <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}>
                                     Copied!

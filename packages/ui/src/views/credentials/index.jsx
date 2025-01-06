@@ -6,20 +6,7 @@ import moment from 'moment'
 // material-ui
 import { styled } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
-import {
-    Box,
-    Skeleton,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    IconButton,
-    useTheme
-} from '@mui/material'
+import { Box, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, useTheme } from '@mui/material'
 
 // components
 import { Button } from '@/components/ui/button'
@@ -41,7 +28,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus } from '@tabler/icons-react'
+import { IconTrash, IconX, IconPencil, IconPlus } from '@tabler/icons-react'
 import CredentialEmptySVG from '@/assets/images/credential_empty.svg'
 
 // const
@@ -136,8 +123,8 @@ const Credentials = () => {
 
     const deleteCredential = async (credential) => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete credential ${credential.name}?`,
+            title: `Are you sure?`,
+            description: `This action cannot be undone. This will permanently delete ${credential.name}?`,
             confirmButtonName: 'Delete',
             cancelButtonName: 'Cancel'
         }
@@ -269,8 +256,7 @@ const Credentials = () => {
                                             <StyledTableCell>Name</StyledTableCell>
                                             <StyledTableCell>Last Updated</StyledTableCell>
                                             <StyledTableCell>Created</StyledTableCell>
-                                            <StyledTableCell> </StyledTableCell>
-                                            <StyledTableCell> </StyledTableCell>
+                                            <StyledTableCell sx={{ textAlign: 'center' }}>Actions</StyledTableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -289,14 +275,8 @@ const Credentials = () => {
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
                                                 </StyledTableRow>
                                                 <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>
@@ -355,18 +335,25 @@ const Credentials = () => {
                                                             {moment(credential.createdDate).format('MMMM Do, YYYY')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
-                                                                <IconEdit />
-                                                            </IconButton>
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <IconButton
-                                                                title='Delete'
-                                                                color='error'
-                                                                onClick={() => deleteCredential(credential)}
-                                                            >
-                                                                <IconTrash />
-                                                            </IconButton>
+                                                            <div className='flex items-center justify-center gap-2'>
+                                                                <Button
+                                                                    onClick={() => edit(credential)}
+                                                                    size='icon'
+                                                                    title='Edit'
+                                                                    variant='ghost'
+                                                                >
+                                                                    <IconPencil />
+                                                                </Button>
+                                                                <Button
+                                                                    className='text-red-500 hover:text-red-500'
+                                                                    onClick={() => deleteCredential(credential)}
+                                                                    size='icon'
+                                                                    title='Delete'
+                                                                    variant='ghost'
+                                                                >
+                                                                    <IconTrash />
+                                                                </Button>
+                                                            </div>
                                                         </StyledTableCell>
                                                     </StyledTableRow>
                                                 ))}

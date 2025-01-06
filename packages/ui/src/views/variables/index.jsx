@@ -17,7 +17,6 @@ import {
     TableHead,
     TableRow,
     Paper,
-    IconButton,
     Chip,
     useTheme
 } from '@mui/material'
@@ -40,7 +39,7 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus, IconVariable } from '@tabler/icons-react'
+import { IconTrash, IconX, IconPlus, IconVariable } from '@tabler/icons-react'
 import VariablesEmptySVG from '@/assets/images/variables_empty.svg'
 
 // const
@@ -48,6 +47,7 @@ import AddEditVariableDialog from './AddEditVariableDialog'
 import HowToUseVariablesDialog from './HowToUseVariablesDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import { IconPencil } from '@tabler/icons-react'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -241,8 +241,7 @@ const Variables = () => {
                                             <StyledTableCell>Type</StyledTableCell>
                                             <StyledTableCell>Last Updated</StyledTableCell>
                                             <StyledTableCell>Created</StyledTableCell>
-                                            <StyledTableCell> </StyledTableCell>
-                                            <StyledTableCell> </StyledTableCell>
+                                            <StyledTableCell sx={{ textAlign: 'center' }}>Actions</StyledTableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -267,14 +266,8 @@ const Variables = () => {
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
                                                 </StyledTableRow>
                                                 <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>
@@ -342,18 +335,25 @@ const Variables = () => {
                                                             {moment(variable.createdDate).format('MMMM Do, YYYY')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
-                                                                <IconEdit />
-                                                            </IconButton>
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <IconButton
-                                                                title='Delete'
-                                                                color='error'
-                                                                onClick={() => deleteVariable(variable)}
-                                                            >
-                                                                <IconTrash />
-                                                            </IconButton>
+                                                            <div className='flex items-center justify-center gap-2'>
+                                                                <Button
+                                                                    onClick={() => edit(variable)}
+                                                                    size='icon'
+                                                                    title='Edit'
+                                                                    variant='ghost'
+                                                                >
+                                                                    <IconPencil />
+                                                                </Button>
+                                                                <Button
+                                                                    className='text-red-500 hover:text-red-500'
+                                                                    onClick={() => deleteVariable(variable)}
+                                                                    size='icon'
+                                                                    title='Delete'
+                                                                    variant='ghost'
+                                                                >
+                                                                    <IconTrash />
+                                                                </Button>
+                                                            </div>
                                                         </StyledTableCell>
                                                     </StyledTableRow>
                                                 ))}
