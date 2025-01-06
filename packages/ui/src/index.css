@@ -31,6 +31,8 @@
         --radius: 0.5rem;
     }
     .dark {
+        /* TODO: switch to this background later */
+        /* --background: 220 11% 11%; */
         --background: 240 10% 3.9%;
         --foreground: 0 0% 98%;
         --card: 240 10% 3.9%;
@@ -61,7 +63,8 @@
     * {
         @apply box-border;
     }
-    body {
+    body,
+    .main {
         @apply bg-background text-foreground;
     }
 }

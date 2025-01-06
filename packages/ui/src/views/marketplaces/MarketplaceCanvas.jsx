@@ -5,6 +5,8 @@ import '@/views/canvas/index.css'
 
 import { useLocation, useNavigate } from 'react-router-dom'
 
+import { headerHeight } from '@/store/constant'
+
 // material-ui
 import { Toolbar, Box, AppBar } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -55,17 +57,18 @@ const MarketplaceCanvas = () => {
 
     return (
         <>
-            <Box>
+            <Box className='w-full'>
                 <AppBar
                     enableColorOnDark
                     position='fixed'
                     color='inherit'
                     elevation={1}
                     sx={{
-                        bgcolor: theme.palette.background.default
+                        // backgroundColor: theme.palette.background.default
+                        backgroundColor: 'transparent'
                     }}
                 >
-                    <Toolbar>
+                    <Toolbar sx={{ height: `${headerHeight}px`, borderBottom: '1px solid', borderColor: theme.palette.primary[200] + 75 }}>
                         <MarketplaceCanvasHeader
                             flowName={name}
                             flowData={JSON.parse(flowData)}

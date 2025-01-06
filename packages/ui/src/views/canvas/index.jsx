@@ -11,6 +11,7 @@ import {
     enqueueSnackbar as enqueueSnackbarAction,
     closeSnackbar as closeSnackbarAction
 } from '@/store/actions'
+import { headerHeight } from '@/store/constant'
 import { omit, cloneDeep } from 'lodash'
 
 // material-ui
@@ -515,17 +516,18 @@ const Canvas = () => {
 
     return (
         <>
-            <Box>
+            <Box className='w-full'>
                 <AppBar
                     enableColorOnDark
                     position='fixed'
                     color='inherit'
                     elevation={1}
                     sx={{
-                        bgcolor: theme.palette.background.default
+                        // backgroundColor: theme.palette.background.default
+                        backgroundColor: 'transparent'
                     }}
                 >
-                    <Toolbar>
+                    <Toolbar sx={{ height: `${headerHeight}px`, borderBottom: '1px solid', borderColor: theme.palette.primary[200] + 75 }}>
                         <CanvasHeader
                             chatflow={chatflow}
                             handleSaveFlow={handleSaveFlow}

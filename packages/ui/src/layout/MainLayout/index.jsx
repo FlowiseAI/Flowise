@@ -58,6 +58,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 
 const MainLayout = () => {
     const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
 
     // Handle left drawer
@@ -73,7 +74,7 @@ const MainLayout = () => {
     }, [matchDownMd])
 
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box className={`main ${customization.isDarkMode ? 'dark' : ''}`} sx={{ display: 'flex' }}>
             <CssBaseline />
             {/* header */}
             <AppBar
@@ -82,7 +83,8 @@ const MainLayout = () => {
                 color='inherit'
                 elevation={0}
                 sx={{
-                    bgcolor: theme.palette.background.default,
+                    // backgroundColor: theme.palette.background.default,
+                    backgroundColor: 'transparent',
                     transition: leftDrawerOpened ? theme.transitions.create('width') : 'none',
                     zIndex: 10
                 }}
