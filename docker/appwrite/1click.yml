@@ -442,6 +442,13 @@ services:
     image: appwrite/appwrite:$$cap_appwrite_version
     entrypoint: worker-functions
     restart: unless-stopped
+    depends_on:
+      $$cap_appname-redis:
+        condition: service_healthy
+      $$cap_appname-db:
+        condition: service_healthy
+      $$cap_appname-executor:
+        condition: service_started
     environment:
       _APP_ENV: $$cap_app_env
       _APP_WORKER_PER_CORE: $$cap_worker_per_core
@@ -542,6 +549,11 @@ services:
     command: mysqld --innodb-flush-method=fsync
     caproverExtra:
       notExposeAsWebApp: true
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   $$cap_appname-redis:
     image: redis:$$cap_redis_version
@@ -556,6 +568,11 @@ services:
       - $$cap_appname-redis:/data:rw
     caproverExtra:
       notExposeAsWebApp: true
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   $$cap_appname-worker-certificates:
     environment:
