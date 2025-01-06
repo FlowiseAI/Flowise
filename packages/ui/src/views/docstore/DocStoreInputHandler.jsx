@@ -24,10 +24,19 @@ import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
+import { GoogleDrivePicker } from '@/ui-component/drive/GoogleDrivePicker'
 
 // ===========================|| DocStoreInputHandler ||=========================== //
 
-const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
+const DocStoreInputHandler = ({
+    inputParam,
+    data,
+    disabled = false,
+    selectedCredential,
+    handleCredentialChange,
+    selectedCredentialData,
+    handleCredentialDataChange
+}) => {
     const customization = useSelector((state) => state.customization)
 
     const [showExpandDialog, setShowExpandDialog] = useState(false)
@@ -126,7 +135,18 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
                                 onSelect={(newValue) => {
                                     data.credential = newValue
                                     data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
+                                    handleCredentialChange(newValue)
                                 }}
+                            />
+                        )}
+                        {inputParam && data.name === 'googleDrive' && inputParam.name === 'selectedFiles' && (
+                            <GoogleDrivePicker
+                                disabled={disabled}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? '[]'}
+                                credentialId={selectedCredential}
+                                credentialData={selectedCredentialData}
+                                handleCredentialDataChange={handleCredentialDataChange}
                             />
                         )}
                         {inputParam.type === 'contentfulConfig' && (
@@ -282,7 +302,11 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
 DocStoreInputHandler.propTypes = {
     inputParam: PropTypes.object,
     data: PropTypes.object,
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
+    selectedCredential: PropTypes.string,
+    handleCredentialChange: PropTypes.func,
+    selectedCredentialData: PropTypes.object,
+    handleCredentialDataChange: PropTypes.func
 }
 
 export default DocStoreInputHandler
