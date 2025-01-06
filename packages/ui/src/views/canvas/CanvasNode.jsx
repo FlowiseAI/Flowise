@@ -20,14 +20,20 @@ import { baseURL } from '@/store/constant'
 import { IconAlertTriangle, IconCopy, IconInfoCircle, IconTrash } from '@tabler/icons-react'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
+import { useLocation } from 'react-router-dom'
 
 // ===========================|| CANVAS NODE ||=========================== //
 
 const CanvasNode = ({ data }) => {
   const theme = useTheme()
+  const user = useSelector((state) => state.user)
+  const { pathname } = useLocation()
   const canvas = useSelector((state) => state.canvas)
   const { deleteNode, duplicateNode } = useContext(flowContext)
 
+  const [isAdminPage, setIsAdminPage] = useState(
+    pathname === '/canvas' || pathname === '/agentcanvas' ? true : user?.role === 'ADMIN' ? true : false
+  )
   const [showDialog, setShowDialog] = useState(false)
   const [dialogProps, setDialogProps] = useState({})
   const [showInfoDialog, setShowInfoDialog] = useState(false)
@@ -81,6 +87,12 @@ const CanvasNode = ({ data }) => {
     }
   }, [canvas.componentNodes, data.name, data.version])
 
+  useEffect(() => {
+    if (canvas?.chatflow && user?.role !== 'ADMIN' && canvas?.chatflow?.userId === user?.id && !isAdminPage) {
+      setIsAdminPage(true)
+    }
+  }, [canvas, isAdminPage])
+
   return (
     <>
       <NodeCardWrapper
@@ -107,26 +119,30 @@ const CanvasNode = ({ data }) => {
                 flexDirection: 'column'
               }}
             >
-              <IconButton
-                title='Duplicate'
-                onClick={() => {
-                  duplicateNode(data.id)
-                }}
-                sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
-                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
-              >
-                <IconCopy />
-              </IconButton>
-              <IconButton
-                title='Delete'
-                onClick={() => {
-                  deleteNode(data.id)
-                }}
-                sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
-                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
-              >
-                <IconTrash />
-              </IconButton>
+              {isAdminPage && (
+                <IconButton
+                  title='Duplicate'
+                  onClick={() => {
+                    duplicateNode(data.id)
+                  }}
+                  sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
+                  color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                >
+                  <IconCopy />
+                </IconButton>
+              )}
+              {isAdminPage && (
+                <IconButton
+                  title='Delete'
+                  onClick={() => {
+                    deleteNode(data.id)
+                  }}
+                  sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
+                  color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                >
+                  <IconTrash />
+                </IconButton>
+              )}
               <IconButton
                 title='Info'
                 onClick={() => {

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { useEffect, useRef, useState } from 'react'
 
@@ -39,6 +39,12 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
   const navigate = useNavigate()
   const flowNameRef = useRef()
   const settingsRef = useRef()
+
+  const user = useSelector((state) => state.user)
+  const { pathname } = useLocation()
+  const [isAdminPage, setIsAdminPage] = useState(
+    pathname === '/canvas' || pathname === '/agentcanvas' ? true : user?.role === 'ADMIN' ? true : false
+  )
 
   const [isEditingFlowName, setEditingFlowName] = useState(null)
   const [flowName, setFlowName] = useState('')
@@ -230,8 +236,11 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
           chatflow
         })
       }
+      if (user?.role !== 'ADMIN' && chatflow?.userId === user?.id && !isAdminPage) {
+        setIsAdminPage(true)
+      }
     }
-  }, [chatflow, title, chatflowConfigurationDialogOpen])
+  }, [chatflow, title, chatflowConfigurationDialogOpen, isAdminPage])
 
   return (
     <>
@@ -274,7 +283,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 >
                   {canvas.isDirty && <strong style={{ color: theme.palette.orange.main }}>*</strong>} {flowName}
                 </Typography>
-                {chatflow?.id && (
+                {isAdminPage && chatflow?.id && (
                   <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
                     <Avatar
                       variant='rounded'
@@ -365,7 +374,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
           </Box>
         </Stack>
         <Box>
-          {chatflow?.id && (
+          {isAdminPage && chatflow?.id && (
             <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
               <Avatar
                 variant='rounded'
@@ -387,26 +396,28 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
               </Avatar>
             </ButtonBase>
           )}
-          <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
-            <Avatar
-              variant='rounded'
-              sx={{
-                ...theme.typography.commonAvatar,
-                ...theme.typography.mediumAvatar,
-                transition: 'all .2s ease-in-out',
-                background: theme.palette.canvasHeader.saveLight,
-                color: theme.palette.canvasHeader.saveDark,
-                '&:hover': {
-                  background: theme.palette.canvasHeader.saveDark,
-                  color: theme.palette.canvasHeader.saveLight
-                }
-              }}
-              color='inherit'
-              onClick={onSaveChatflowClick}
-            >
-              <IconDeviceFloppy stroke={1.5} size='1.3rem' />
-            </Avatar>
-          </ButtonBase>
+          {isAdminPage && (
+            <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+              <Avatar
+                variant='rounded'
+                sx={{
+                  ...theme.typography.commonAvatar,
+                  ...theme.typography.mediumAvatar,
+                  transition: 'all .2s ease-in-out',
+                  background: theme.palette.canvasHeader.saveLight,
+                  color: theme.palette.canvasHeader.saveDark,
+                  '&:hover': {
+                    background: theme.palette.canvasHeader.saveDark,
+                    color: theme.palette.canvasHeader.saveLight
+                  }
+                }}
+                color='inherit'
+                onClick={onSaveChatflowClick}
+              >
+                <IconDeviceFloppy stroke={1.5} size='1.3rem' />
+              </Avatar>
+            </ButtonBase>
+          )}
           <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
             <Avatar
               variant='rounded'
