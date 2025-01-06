@@ -1,1051 +1,291 @@
 captainVersion: 4
-
-services:
-  $$cap_appname-redis:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM redis:7.0.4-alpine
-        - CMD ["--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru", "--maxmemory-samples", "5"]
-    volumes:
-      - $$cap_appname-redis:/data
-
-  $$cap_appname-mariadb:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM mariadb:10.7
-        - CMD ["--innodb-flush-method", "fsync"]
-    volumes:
-      - $$cap_appname-mariadb:/var/lib/mysql
-    environment:
-      MARIADB_ROOT_PASSWORD: $$cap_APP_DB_ROOT_PASS
-      MARIADB_DATABASE: $$cap_APP_DB_SCHEMA
-      MARIADB_USER: $$cap_APP_DB_USER
-      MARIADB_PASSWORD: $$cap_APP_DB_PASS
-
-  $$cap_appname-influxdb:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-    image: appwrite/influxdb:1.5.0
-    volumes:
-      - $$cap_appname-influxdb:/var/lib/influxdb
-
-  $$cap_appname-telegraf:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-    image: appwrite/telegraf:1.4.0
-    environment:
-      _APP_INFLUXDB_HOST: srv-captain--$$cap_appname-influxdb
-      _APP_INFLUXDB_PORT: $$cap_APP_INFLUXDB_PORT
-
-  $$cap_appname:
-    image: appwrite/appwrite:$$cap_APP_VERSION
-    volumes:
-      - $$cap_appname-uploads:/storage/uploads
-      - $$cap_appname-cache:/storage/cache
-      - $$cap_appname-config:/storage/config
-      - $$cap_appname-certificates:/storage/certificates
-      - $$cap_appname-functions:/storage/functions
-    depends_on:
-      - $$cap_appname-redis
-      - $$cap_appname-mariadb
-      - $$cap_appname-influxdb
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_LOCALE: $$cap_APP_LOCALE
-      _APP_CONSOLE_WHITELIST_ROOT: $$cap_APP_CONSOLE_WHITELIST_ROOT
-      _APP_CONSOLE_WHITELIST_EMAILS: $$cap_APP_CONSOLE_WHITELIST_EMAILS
-      _APP_CONSOLE_WHITELIST_IPS: $$cap_APP_CONSOLE_WHITELIST_IPS
-      _APP_SYSTEM_EMAIL_NAME: $$cap_APP_SYSTEM_EMAIL_NAME
-      _APP_SYSTEM_EMAIL_ADDRESS: $$cap_APP_SYSTEM_EMAIL_ADDRESS
-      _APP_SYSTEM_SECURITY_EMAIL_ADDRESS: $$cap_APP_SYSTEM_SECURITY_EMAIL_ADDRESS
-      _APP_SYSTEM_RESPONSE_FORMAT: $$cap_APP_SYSTEM_RESPONSE_FORMAT
-      _APP_OPTIONS_ABUSE: $$cap_APP_OPTIONS_ABUSE
-      _APP_OPTIONS_FORCE_HTTPS: $$cap_APP_OPTIONS_FORCE_HTTPS
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_DOMAIN: $$cap_APP_DOMAIN_NAME
-      _APP_DOMAIN_FUNCTIONS: $$cap_APP_DOMAIN_FUNCTIONS
-      _APP_DOMAIN_TARGET: $$cap_APP_DOMAIN_TARGET
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_SMTP_HOST: $$cap_APP_SMTP_HOST
-      _APP_SMTP_PORT: $$cap_APP_SMTP_PORT
-      _APP_SMTP_SECURE: $$cap_APP_SMTP_SECURE
-      _APP_SMTP_USERNAME: $$cap_APP_SMTP_USERNAME
-      _APP_SMTP_PASSWORD: $$cap_APP_SMTP_PASSWORD
-      _APP_USAGE_STATS: $$cap_APP_USAGE_STATS
-      _APP_INFLUXDB_HOST: srv-captain--$$cap_appname-influxdb
-      _APP_INFLUXDB_PORT: $$cap_APP_INFLUXDB_PORT
-      _APP_STORAGE_LIMIT: $$cap_APP_STORAGE_LIMIT
-      _APP_STORAGE_PREVIEW_LIMIT: $$cap_APP_STORAGE_PREVIEW_LIMIT
-      _APP_STORAGE_ANTIVIRUS: $$cap_APP_STORAGE_ANTIVIRUS_ENABLED
-      _APP_STORAGE_ANTIVIRUS_HOST: $$cap_APP_STORAGE_ANTIVIRUS_HOST
-      _APP_STORAGE_ANTIVIRUS_PORT: $$cap_APP_STORAGE_ANTIVIRUS_PORT
-      _APP_STORAGE_DEVICE: $$cap_APP_STORAGE_DEVICE
-      _APP_STORAGE_S3_ACCESS_KEY: $$cap_APP_STORAGE_S3_ACCESS_KEY
-      _APP_STORAGE_S3_SECRET: $$cap_APP_STORAGE_S3_SECRET
-      _APP_STORAGE_S3_REGION: $$cap_APP_STORAGE_S3_REGION
-      _APP_STORAGE_S3_BUCKET: $$cap_APP_STORAGE_S3_BUCKET
-      _APP_STORAGE_DO_SPACES_ACCESS_KEY: $$cap_APP_STORAGE_DO_SPACES_ACCESS_KEY
-      _APP_STORAGE_DO_SPACES_SECRET: $$cap_APP_STORAGE_DO_SPACES_SECRET
-      _APP_STORAGE_DO_SPACES_REGION: $$cap_APP_STORAGE_DO_SPACES_REGION
-      _APP_STORAGE_DO_SPACES_BUCKET: $$cap_APP_STORAGE_DO_SPACES_BUCKET
-      _APP_STORAGE_BACKBLAZE_ACCESS_KEY: $$cap_APP_STORAGE_BACKBLAZE_ACCESS_KEY
-      _APP_STORAGE_BACKBLAZE_SECRET: $$cap_APP_STORAGE_BACKBLAZE_SECRET
-      _APP_STORAGE_BACKBLAZE_REGION: $$cap_APP_STORAGE_BACKBLAZE_REGION
-      _APP_STORAGE_BACKBLAZE_BUCKET: $$cap_APP_STORAGE_BACKBLAZE_BUCKET
-      _APP_STORAGE_LINODE_ACCESS_KEY: $$cap_APP_STORAGE_LINODE_ACCESS_KEY
-      _APP_STORAGE_LINODE_SECRET: $$cap_APP_STORAGE_LINODE_SECRET
-      _APP_STORAGE_LINODE_REGION: $$cap_APP_STORAGE_LINODE_REGION
-      _APP_STORAGE_LINODE_BUCKET: $$cap_APP_STORAGE_LINODE_BUCKET
-      _APP_STORAGE_WASABI_ACCESS_KEY: $$cap_APP_STORAGE_WASABI_ACCESS_KEY
-      _APP_STORAGE_WASABI_SECRET: $$cap_APP_STORAGE_WASABI_SECRET
-      _APP_STORAGE_WASABI_REGION: $$cap_APP_STORAGE_WASABI_REGION
-      _APP_STORAGE_WASABI_BUCKET: $$cap_APP_STORAGE_WASABI_BUCKET
-      _APP_FUNCTIONS_SIZE_LIMIT: $$cap_APP_FUNCTIONS_SIZE_LIMIT
-      _APP_FUNCTIONS_TIMEOUT: $$cap_APP_FUNCTIONS_TIMEOUT
-      _APP_FUNCTIONS_BUILD_TIMEOUT: $$cap_APP_FUNCTIONS_BUILD_TIMEOUT
-      _APP_FUNCTIONS_CPUS: $$cap_APP_FUNCTIONS_CPUS
-      _APP_FUNCTIONS_MEMORY: $$cap_APP_FUNCTIONS_MEMORY_ALLOCATED
-      _APP_FUNCTIONS_RUNTIMES: $$cap_APP_FUNCTIONS_RUNTIMES
-      _APP_EXECUTOR_SECRET: $$cap_APP_EXECUTOR_SECRET
-      _APP_EXECUTOR_HOST: http://srv-captain--$$cap_appname-executor/v1
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-      _APP_STATSD_HOST: srv-captain--$$cap_appname-telegraf
-      _APP_STATSD_PORT: $$cap_APP_STATSD_PORT
-      _APP_MAINTENANCE_INTERVAL: $$cap_APP_MAINTENANCE_INTERVAL
-      _APP_MAINTENANCE_RETENTION_EXECUTION: $$cap_APP_MAINTENANCE_RETENTION_EXECUTION
-      _APP_MAINTENANCE_RETENTION_CACHE: $$cap_APP_MAINTENANCE_RETENTION_CACHE
-      _APP_MAINTENANCE_RETENTION_ABUSE: $$cap_APP_MAINTENANCE_RETENTION_ABUSE
-      _APP_MAINTENANCE_RETENTION_AUDIT: $$cap_APP_MAINTENANCE_RETENTION_AUDIT
-      _APP_MAINTENANCE_RETENTION_USAGE_HOURLY: $$cap_APP_MAINTENANCE_RETENTION_USAGE_HOURLY
-      _APP_MAINTENANCE_RETENTION_SCHEDULES: $$cap_APP_MAINTENANCE_RETENTION_SCHEDULES
-      _APP_SMS_PROVIDER: $$cap_APP_SMS_PROVIDER
-      _APP_SMS_FROM: $$cap_APP_SMS_FROM
-      _APP_GRAPHQL_MAX_BATCH_SIZE: $$cap_APP_GRAPHQL_MAX_BATCH_SIZE
-      _APP_GRAPHQL_MAX_COMPLEXITY: $$cap_APP_GRAPHQL_MAX_COMPLEXITY
-      _APP_GRAPHQL_MAX_DEPTH: $$cap_APP_GRAPHQL_MAX_DEPTH
-      _APP_VCS_GITHUB_APP_NAME: $$cap_APP_VCS_GITHUB_APP_NAME
-      _APP_VCS_GITHUB_PRIVATE_KEY: $$cap_APP_VCS_GITHUB_PRIVATE_KEY
-      _APP_VCS_GITHUB_APP_ID: $$cap_APP_VCS_GITHUB_APP_ID
-      _APP_VCS_GITHUB_WEBHOOK_SECRET: $$cap_APP_VCS_GITHUB_WEBHOOK_SECRET
-      _APP_VCS_GITHUB_CLIENT_SECRET: $$cap_APP_VCS_GITHUB_CLIENT_SECRET
-      _APP_VCS_GITHUB_CLIENT_ID: $$cap_APP_VCS_GITHUB_CLIENT_ID
-      _APP_MIGRATIONS_FIREBASE_CLIENT_ID: $$cap_APP_MIGRATIONS_FIREBASE_CLIENT_ID
-      _APP_MIGRATIONS_FIREBASE_CLIENT_SECRET: $$cap_APP_MIGRATIONS_FIREBASE_CLIENT_SECRET
-      _APP_ASSISTANT_OPENAI_API_KEY: $$cap_APP_ASSISTANT_OPENAI_API_KEY
-
-  $$cap_appname-realtime:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["realtime"]
-    depends_on:
-      - $$cap_appname-redis
-      - $$cap_appname-mariadb
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPTIONS_ABUSE: $$cap_APP_OPTIONS_ABUSE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_USAGE_STATS: $$cap_APP_USAGE_STATS
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-
-  $$cap_appname-executor:
-    image: openruntimes/executor:$$cap_OPENRUNTIMES_EXECUTOR_VERSION
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - $$cap_appname-functions:/storage/functions
-      - $$cap_appname-builds:/storage/builds
-      - /tmp:/tmp
-    environment:
-      OPR_EXECUTOR_INACTIVE_TRESHOLD: $$cap_APP_FUNCTIONS_INACTIVE_THRESHOLD
-      OPR_EXECUTOR_MAINTENANCE_INTERVAL: $$cap_APP_FUNCTIONS_MAINTENANCE_INTERVAL
-      OPR_EXECUTOR_NETWORK: captain-overlay-network
-      OPR_EXECUTOR_DOCKER_HUB_USERNAME: $$cap_APP_DOCKER_HUB_USERNAME
-      OPR_EXECUTOR_DOCKER_HUB_PASSWORD: $$cap_APP_DOCKER_HUB_PASSWORD
-      OPR_EXECUTOR_ENV: $$cap_APP_ENV
-      OPR_EXECUTOR_RUNTIMES: $$cap_APP_FUNCTIONS_RUNTIMES
-      OPR_EXECUTOR_SECRET: $$cap_APP_EXECUTOR_SECRET
-      OPR_EXECUTOR_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      OPR_EXECUTOR_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-      OPR_EXECUTOR_STORAGE_DEVICE: $$cap_APP_STORAGE_DEVICE
-      OPR_EXECUTOR_STORAGE_S3_ACCESS_KEY: $$cap_APP_STORAGE_S3_ACCESS_KEY
-      OPR_EXECUTOR_STORAGE_S3_SECRET: $$cap_APP_STORAGE_S3_SECRET
-      OPR_EXECUTOR_STORAGE_S3_REGION: $$cap_APP_STORAGE_S3_REGION
-      OPR_EXECUTOR_STORAGE_S3_BUCKET: $$cap_APP_STORAGE_S3_BUCKET
-      OPR_EXECUTOR_STORAGE_DO_SPACES_ACCESS_KEY: $$cap_APP_STORAGE_DO_SPACES_ACCESS_KEY
-      OPR_EXECUTOR_STORAGE_DO_SPACES_SECRET: $$cap_APP_STORAGE_DO_SPACES_SECRET
-      OPR_EXECUTOR_STORAGE_DO_SPACES_REGION: $$cap_APP_STORAGE_DO_SPACES_REGION
-      OPR_EXECUTOR_STORAGE_DO_SPACES_BUCKET: $$cap_APP_STORAGE_DO_SPACES_BUCKET
-      OPR_EXECUTOR_STORAGE_BACKBLAZE_ACCESS_KEY: $$cap_APP_STORAGE_BACKBLAZE_ACCESS_KEY
-      OPR_EXECUTOR_STORAGE_BACKBLAZE_SECRET: $$cap_APP_STORAGE_BACKBLAZE_SECRET
-      OPR_EXECUTOR_STORAGE_BACKBLAZE_REGION: $$cap_APP_STORAGE_BACKBLAZE_REGION
-      OPR_EXECUTOR_STORAGE_BACKBLAZE_BUCKET: $$cap_APP_STORAGE_BACKBLAZE_BUCKET
-      OPR_EXECUTOR_STORAGE_LINODE_ACCESS_KEY: $$cap_APP_STORAGE_LINODE_ACCESS_KEY
-      OPR_EXECUTOR_STORAGE_LINODE_SECRET: $$cap_APP_STORAGE_LINODE_SECRET
-      OPR_EXECUTOR_STORAGE_LINODE_REGION: $$cap_APP_STORAGE_LINODE_REGION
-      OPR_EXECUTOR_STORAGE_LINODE_BUCKET: $$cap_APP_STORAGE_LINODE_BUCKET
-      OPR_EXECUTOR_STORAGE_WASABI_ACCESS_KEY: $$cap_APP_STORAGE_WASABI_ACCESS_KEY
-      OPR_EXECUTOR_STORAGE_WASABI_SECRET: $$cap_APP_STORAGE_WASABI_SECRET
-      OPR_EXECUTOR_STORAGE_WASABI_REGION: $$cap_APP_STORAGE_WASABI_REGION
-      OPR_EXECUTOR_STORAGE_WASABI_BUCKET: $$cap_APP_STORAGE_WASABI_BUCKET
-
-  $$cap_appname-worker-databases:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-databases"]
-    depends_on:
-      - $$cap_appname-redis
-      - $$cap_appname-mariadb
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-
-  $$cap_appname-worker-builds:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-builds"]
-    depends_on:
-      - $$cap_appname-redis
-      - $$cap_appname-mariadb
-    volumes:
-      - $$cap_appname-functions:/storage/functions
-      - $$cap_appname-builds:/storage/builds
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_EXECUTOR_SECRET: $$cap_APP_EXECUTOR_SECRET
-      _APP_EXECUTOR_HOST: http://srv-captain--$$cap_appname-executor/v1
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-      _APP_VCS_GITHUB_APP_NAME: $$cap_APP_VCS_GITHUB_APP_NAME
-      _APP_VCS_GITHUB_PRIVATE_KEY: $$cap_APP_VCS_GITHUB_PRIVATE_KEY
-      _APP_VCS_GITHUB_APP_ID: $$cap_APP_VCS_GITHUB_APP_ID
-      _APP_FUNCTIONS_TIMEOUT: $$cap_APP_FUNCTIONS_TIMEOUT
-      _APP_FUNCTIONS_BUILD_TIMEOUT: $$cap_APP_FUNCTIONS_BUILD_TIMEOUT
-      _APP_FUNCTIONS_CPUS: $$cap_APP_FUNCTIONS_CPUS
-      _APP_FUNCTIONS_MEMORY: $$cap_APP_FUNCTIONS_MEMORY
-      _APP_FUNCTIONS_SIZE_LIMIT: $$cap_APP_FUNCTIONS_SIZE_LIMIT
-      _APP_OPTIONS_FORCE_HTTPS: $$cap_APP_OPTIONS_FORCE_HTTPS
-      _APP_DOMAIN: $$cap_APP_DOMAIN_NAME
-      _APP_STORAGE_DEVICE: $$cap_APP_STORAGE_DEVICE
-      _APP_STORAGE_S3_ACCESS_KEY: $$cap_APP_STORAGE_S3_ACCESS_KEY
-      _APP_STORAGE_S3_SECRET: $$cap_APP_STORAGE_S3_SECRET
-      _APP_STORAGE_S3_REGION: $$cap_APP_STORAGE_S3_REGION
-      _APP_STORAGE_S3_BUCKET: $$cap_APP_STORAGE_S3_BUCKET
-      _APP_STORAGE_DO_SPACES_ACCESS_KEY: $$cap_APP_STORAGE_DO_SPACES_ACCESS_KEY
-      _APP_STORAGE_DO_SPACES_SECRET: $$cap_APP_STORAGE_DO_SPACES_SECRET
-      _APP_STORAGE_DO_SPACES_REGION: $$cap_APP_STORAGE_DO_SPACES_REGION
-      _APP_STORAGE_DO_SPACES_BUCKET: $$cap_APP_STORAGE_DO_SPACES_BUCKET
-      _APP_STORAGE_BACKBLAZE_ACCESS_KEY: $$cap_APP_STORAGE_BACKBLAZE_ACCESS_KEY
-      _APP_STORAGE_BACKBLAZE_SECRET: $$cap_APP_STORAGE_BACKBLAZE_SECRET
-      _APP_STORAGE_BACKBLAZE_REGION: $$cap_APP_STORAGE_BACKBLAZE_REGION
-      _APP_STORAGE_BACKBLAZE_BUCKET: $$cap_APP_STORAGE_BACKBLAZE_BUCKET
-      _APP_STORAGE_LINODE_ACCESS_KEY: $$cap_APP_STORAGE_LINODE_ACCESS_KEY
-      _APP_STORAGE_LINODE_SECRET: $$cap_APP_STORAGE_LINODE_SECRET
-      _APP_STORAGE_LINODE_REGION: $$cap_APP_STORAGE_LINODE_REGION
-      _APP_STORAGE_LINODE_BUCKET: $$cap_APP_STORAGE_LINODE_BUCKET
-      _APP_STORAGE_WASABI_ACCESS_KEY: $$cap_APP_STORAGE_WASABI_ACCESS_KEY
-      _APP_STORAGE_WASABI_SECRET: $$cap_APP_STORAGE_WASABI_SECRET
-      _APP_STORAGE_WASABI_REGION: $$cap_APP_STORAGE_WASABI_REGION
-      _APP_STORAGE_WASABI_BUCKET: $$cap_APP_STORAGE_WASABI_BUCKET
-
-  $$cap_appname-worker-audits:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-audits"]
-    depends_on:
-      - $$cap_appname-redis
-      - $$cap_appname-mariadb
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-
-  $$cap_appname-worker-webhooks:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-webhooks"]
-    depends_on:
-      - $$cap_appname-redis
-      - $$cap_appname-mariadb
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_SYSTEM_SECURITY_EMAIL_ADDRESS: $$cap_APP_SYSTEM_SECURITY_EMAIL_ADDRESS
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-
-  $$cap_appname-worker-deletes:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-deletes"]
-    depends_on:
-      - $$cap_appname-redis
-      - $$cap_appname-mariadb
-    volumes:
-      - $$cap_appname-uploads:/storage/uploads
-      - $$cap_appname-cache:/storage/cache
-      - $$cap_appname-functions:/storage/functions
-      - $$cap_appname-builds:/storage/builds
-      - $$cap_appname-certificates:/storage/certificates
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_STORAGE_DEVICE: $$cap_APP_STORAGE_DEVICE
-      _APP_STORAGE_S3_ACCESS_KEY: $$cap_APP_STORAGE_S3_ACCESS_KEY
-      _APP_STORAGE_S3_SECRET: $$cap_APP_STORAGE_S3_SECRET
-      _APP_STORAGE_S3_REGION: $$cap_APP_STORAGE_S3_REGION
-      _APP_STORAGE_S3_BUCKET: $$cap_APP_STORAGE_S3_BUCKET
-      _APP_STORAGE_DO_SPACES_ACCESS_KEY: $$cap_APP_STORAGE_DO_SPACES_ACCESS_KEY
-      _APP_STORAGE_DO_SPACES_SECRET: $$cap_APP_STORAGE_DO_SPACES_SECRET
-      _APP_STORAGE_DO_SPACES_REGION: $$cap_APP_STORAGE_DO_SPACES_REGION
-      _APP_STORAGE_DO_SPACES_BUCKET: $$cap_APP_STORAGE_DO_SPACES_BUCKET
-      _APP_STORAGE_BACKBLAZE_ACCESS_KEY: $$cap_APP_STORAGE_BACKBLAZE_ACCESS_KEY
-      _APP_STORAGE_BACKBLAZE_SECRET: $$cap_APP_STORAGE_BACKBLAZE_SECRET
-      _APP_STORAGE_BACKBLAZE_REGION: $$cap_APP_STORAGE_BACKBLAZE_REGION
-      _APP_STORAGE_BACKBLAZE_BUCKET: $$cap_APP_STORAGE_BACKBLAZE_BUCKET
-      _APP_STORAGE_LINODE_ACCESS_KEY: $$cap_APP_STORAGE_LINODE_ACCESS_KEY
-      _APP_STORAGE_LINODE_SECRET: $$cap_APP_STORAGE_LINODE_SECRET
-      _APP_STORAGE_LINODE_REGION: $$cap_APP_STORAGE_LINODE_REGION
-      _APP_STORAGE_LINODE_BUCKET: $$cap_APP_STORAGE_LINODE_BUCKET
-      _APP_STORAGE_WASABI_ACCESS_KEY: $$cap_APP_STORAGE_WASABI_ACCESS_KEY
-      _APP_STORAGE_WASABI_SECRET: $$cap_APP_STORAGE_WASABI_SECRET
-      _APP_STORAGE_WASABI_REGION: $$cap_APP_STORAGE_WASABI_REGION
-      _APP_STORAGE_WASABI_BUCKET: $$cap_APP_STORAGE_WASABI_BUCKET
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-      _APP_EXECUTOR_SECRET: $$cap_APP_EXECUTOR_SECRET
-      _APP_EXECUTOR_HOST: http://srv-captain--$$cap_appname-executor/v1
-
-  $$cap_appname-worker-functions:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-functions"]
-    depends_on:
-      - $$cap_appname-redis
-      - $$cap_appname-mariadb
-      - $$cap_appname-executor
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_FUNCTIONS_TIMEOUT: $$cap_APP_FUNCTIONS_TIMEOUT
-      _APP_FUNCTIONS_BUILD_TIMEOUT: $$cap_APP_FUNCTIONS_BUILD_TIMEOUT
-      _APP_FUNCTIONS_CPUS: $$cap_APP_FUNCTIONS_CPUS
-      _APP_FUNCTIONS_MEMORY: $$cap_APP_FUNCTIONS_MEMORY_ALLOCATED
-      _APP_EXECUTOR_SECRET: $$cap_APP_EXECUTOR_SECRET
-      _APP_EXECUTOR_HOST: http://srv-captain--$$cap_appname-executor/v1
-      _APP_USAGE_STATS: $$cap_APP_USAGE_STATS
-      _APP_DOCKER_HUB_USERNAME: $$cap_APP_DOCKER_HUB_USERNAME
-      _APP_DOCKER_HUB_PASSWORD: $$cap_APP_DOCKER_HUB_PASSWORD
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-
-  $$cap_appname-worker-mails:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-mails"]
-    depends_on:
-      - $$cap_appname-redis
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_SYSTEM_EMAIL_NAME: $$cap_APP_SYSTEM_EMAIL_NAME
-      _APP_SYSTEM_EMAIL_ADDRESS: $$cap_APP_SYSTEM_EMAIL_ADDRESS
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_SMTP_HOST: $$cap_APP_SMTP_HOST
-      _APP_SMTP_PORT: $$cap_APP_SMTP_PORT
-      _APP_SMTP_SECURE: $$cap_APP_SMTP_SECURE
-      _APP_SMTP_USERNAME: $$cap_APP_SMTP_USERNAME
-      _APP_SMTP_PASSWORD: $$cap_APP_SMTP_PASSWORD
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-
-  $$cap_appname-worker-messaging:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-messaging"]
-    depends_on:
-      - $$cap_appname-redis
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_SMS_PROVIDER: $$cap_APP_SMS_PROVIDER
-      _APP_SMS_FROM: $$cap_APP_SMS_FROM
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-
-  $$cap_appname-worker-certificates:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-certificates"]
-    depends_on:
-      - $$cap_appname-redis
-      - $$cap_appname-mariadb
-    volumes:
-      - $$cap_appname-config:/storage/config
-      - $$cap_appname-certificates:/storage/certificates
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_DOMAIN: $$cap_APP_DOMAIN_NAME
-      _APP_DOMAIN_FUNCTIONS: $$cap_APP_DOMAIN_FUNCTIONS
-      _APP_DOMAIN_TARGET: $$cap_APP_DOMAIN_TARGET
-      _APP_SYSTEM_SECURITY_EMAIL_ADDRESS: $$cap_APP_SYSTEM_SECURITY_EMAIL_ADDRESS
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-
-  $$cap_appname-worker-migrations:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["worker-migrations"]
-    depends_on:
-      - $$cap_appname-mariadb
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_DOMAIN: $$cap_APP_DOMAIN_NAME
-      _APP_DOMAIN_TARGET: $$cap_APP_DOMAIN_TARGET
-      _APP_SYSTEM_SECURITY_EMAIL_ADDRESS: $$cap_APP_SYSTEM_SECURITY_EMAIL_ADDRESS
-      _APP_REDIS_HOST: $$cap_APP_REDIS_HOST
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: $$cap_APP_DB_HOST
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-      _APP_MIGRATIONS_FIREBASE_CLIENT_ID: $$cap_APP_MIGRATIONS_FIREBASE_CLIENT_ID
-      _APP_MIGRATIONS_FIREBASE_CLIENT_SECRET: $$cap_APP_MIGRATIONS_FIREBASE_CLIENT_SECRET
-
-  $$cap_appname-assistant:
-    image: appwrite/assistant:$$cap_ASSISTANT_APP_VERSION
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-    environment:
-      _APP_ASSISTANT_OPENAI_API_KEY: $$cap_APP_ASSISTANT_OPENAI_API_KEY
-
-  $$cap_appname-maintenance:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["maintenance"]
-    depends_on:
-      - $$cap_appname-redis
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_DOMAIN: $$cap_APP_DOMAIN_NAME
-      _APP_DOMAIN_TARGET: $$cap_APP_DOMAIN_TARGET
-      _APP_DOMAIN_FUNCTIONS: $$cap_APP_DOMAIN_FUNCTIONS
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_MAINTENANCE_INTERVAL: $$cap_APP_MAINTENANCE_INTERVAL
-      _APP_MAINTENANCE_RETENTION_EXECUTION: $$cap_APP_MAINTENANCE_RETENTION_EXECUTION
-      _APP_MAINTENANCE_RETENTION_CACHE: $$cap_APP_MAINTENANCE_RETENTION_CACHE
-      _APP_MAINTENANCE_RETENTION_ABUSE: $$cap_APP_MAINTENANCE_RETENTION_ABUSE
-      _APP_MAINTENANCE_RETENTION_AUDIT: $$cap_APP_MAINTENANCE_RETENTION_AUDIT
-      _APP_MAINTENANCE_RETENTION_USAGE_HOURLY: $$cap_APP_MAINTENANCE_RETENTION_USAGE_HOURLY
-      _APP_MAINTENANCE_RETENTION_SCHEDULES: $$cap_APP_MAINTENANCE_RETENTION_SCHEDULES
-
-  $$cap_appname-usage:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["usage"]
-    depends_on:
-      - $$cap_appname-influxdb
-      - $$cap_appname-mariadb
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_DB_HOST: srv-captain--$$cap_appname-mariadb
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-      _APP_INFLUXDB_HOST: srv-captain--$$cap_appname-influxdb
-      _APP_INFLUXDB_PORT: $$cap_APP_INFLUXDB_PORT
-      _APP_USAGE_AGGREGATION_INTERVAL: $$cap_APP_USAGE_AGGREGATION_INTERVAL
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_USAGE_STATS: $$cap_APP_USAGE_STATS
-      _APP_LOGGING_PROVIDER: $$cap_APP_LOGGING_PROVIDER
-      _APP_LOGGING_CONFIG: $$cap_APP_LOGGING_CONFIG
-
-  $$cap_appname-schedule:
-    caproverExtra:
-      notExposeAsWebApp: 'true'
-      dockerfileLines:
-        - FROM appwrite/appwrite:$$cap_APP_VERSION
-        - ENTRYPOINT ["schedule"]
-    depends_on:
-      - $$cap_appname-redis
-    environment:
-      _APP_ENV: $$cap_APP_ENV
-      _APP_WORKER_PER_CORE: $$cap_APP_WORKER_PER_CORE
-      _APP_OPENSSL_KEY_V1: $$cap_APP_OPENSSL_KEY_V1
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: $$cap_APP_REDIS_PORT
-      _APP_REDIS_USER: $$cap_APP_REDIS_USER
-      _APP_REDIS_PASS: $$cap_APP_REDIS_PASS
-      _APP_DB_HOST: $$cap_APP_DB_HOST
-      _APP_DB_PORT: $$cap_APP_DB_PORT
-      _APP_DB_SCHEMA: $$cap_APP_DB_SCHEMA
-      _APP_DB_USER: $$cap_APP_DB_USER
-      _APP_DB_PASS: $$cap_APP_DB_PASS
-
 caproverOneClickApp:
-  displayName: Appwrite
-  description: Secure Backend Server for Web, Mobile & Flutter Developers.
-  isOfficial: true
-  documentation: https://appwrite.io/docs
   instructions:
     start: |-
-      Appwrite is a self-hosted solution that provides developers with a set of easy-to-use and integrate REST APIs to manage their core backend needs.
-      Description of all available environment variables: https://appwrite.io/docs/environment-variables
+      Appwrite is a secure end-to-end backend server for Web, Mobile & Flutter developers that is packaged as a set of Docker containers.
+      This will set up Appwrite with MariaDB, Redis, and all required workers.
     end: |-
-      Appwrite has been successfully deployed!
-      Please change the following settings before using the service:
-      1. Go to the settings for $$cap_appname
-      2. Enable "Websocket Support"
-      3. Click on "Edit Default Nginx Configurations" and paste the following content before the last closing bracket "}":
-          ```
-          location /v1/realtime {
-              proxy_set_header Upgrade $http_upgrade;
-              proxy_set_header Connection "upgrade";
-              proxy_set_header X-Real-IP $remote_addr;
-              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-              proxy_set_header X-Forwarded-Proto $scheme;
-              proxy_set_header Host $host;
-              proxy_set_header X-Forwarded-Host $host;
-              proxy_set_header X-Forwarded-Port $server_port;
-              proxy_pass http://srv-captain--$$cap_appname-realtime;
-              proxy_http_version 1.1;
-              proxy_connect_timeout 7d;
-              proxy_send_timeout 7d;
-              proxy_read_timeout 7d;
-          }
-          ```
-      Now you can access Appwrite at http://$$cap_appname.$$cap_root_domain
+      Appwrite has been successfully deployed! 
+      It may take a few minutes for all services to fully initialize.
+      Access your installation at https://$$cap_appname.$$cap_root_domain
+
+  displayName: Appwrite
+  isOfficial: true
+  description: Secure Backend Server for Web, Mobile & Flutter Developers
+  documentation: Taken from https://appwrite.io/docs/installation
+
   variables:
-    - label: Appwrite Version Tag
-      id: $$cap_APP_VERSION
-      description: Check out their valid tags at https://hub.docker.com/r/appwrite/appwrite/tags
-      defaultValue: '1.4.13'
-      validRegex: "/^([^\\s^\\/])+$/"
-    - label: Assistant Version Tag
-      id: $$cap_ASSISTANT_APP_VERSION
-      description: Check out their valid tags at https://hub.docker.com/r/appwrite/assistant/tags
-      defaultValue: '0.2.2'
-      validRegex: "/^([^\\s^\\/])+$/"
-    - label: OpenRuntimes Executor Version Tag
-      id: $$cap_OPENRUNTIMES_EXECUTOR_VERSION
-      description: Check out their valid tags at https://hub.docker.com/r/openruntimes/executor/tags
-      defaultValue: '0.4.5'
-      validRegex: "/^([^\\s^\\/])+$/"
-    - label: _APP_ENV
-      id: $$cap_APP_ENV
-      description: Set your server running environment.
-      defaultValue: production
-      validRegex: /^(production|development)$/
-    - label: _APP_LOCALE
-      id: $$cap_APP_LOCALE
-      description: Set your Appwrite's locale. By default, the locale is set to 'en'.
-      defaultValue: en
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_OPTIONS_ABUSE
-      id: $$cap_APP_OPTIONS_ABUSE
-      description: Allows you to disable abuse checks and API rate limiting. By default, set to 'enabled'. To cancel the abuse checking, set to 'disabled'. It is not recommended to disable this check-in a production environment.
-      defaultValue: 'enabled'
-      validRegex: /^(enabled|disabled)$/
-    - label: _APP_OPTIONS_FORCE_HTTPS
-      id: $$cap_APP_OPTIONS_FORCE_HTTPS
-      description: Allows you to force HTTPS connection to your API. This feature redirects any HTTP call to HTTPS and adds the 'Strict-Transport-Security' header to all HTTP responses.
-      defaultValue: 'disabled'
-      validRegex: /^(enabled|disabled)$/
-    - label: _APP_OPENSSL_KEY_V1
-      id: $$cap_APP_OPENSSL_KEY_V1
-      description: This is your server private secret key that is used to encrypt all sensitive data on your server. Appwrite server encrypts all secret data on your server like webhooks, HTTP passwords, user sessions, and storage files. Keep it a secret and have a backup for it.
-      defaultValue: $$cap_gen_random_hex(256)
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_DOMAIN
-      id: $$cap_APP_DOMAIN_NAME
-      description: Your Appwrite domain address. When setting a public suffix domain, Appwrite will attempt to issue a valid SSL certificate automatically. When used with a dev domain, Appwrite will assign a self-signed SSL certificate. The default value is 'localhost'.
-      defaultValue: localhost
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_DOMAIN_FUNCTIONS
-      id: $$cap_APP_DOMAIN_FUNCTIONS
-      description: A domain to use for function preview URLs. Setting to empty turns off function preview URLs.
-      defaultValue: localhost
-    - label: _APP_DOMAIN_TARGET
-      id: $$cap_APP_DOMAIN_TARGET
-      description: A DNS A record hostname to serve as a CNAME target for your Appwrite custom domains. You can use the same value as used for the Appwrite '_APP_DOMAIN' variable. The default value is 'localhost'.
-      defaultValue: localhost
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_CONSOLE_WHITELIST_ROOT
-      id: $$cap_APP_CONSOLE_WHITELIST_ROOT
-      description: This option allows you to disable the creation of new users on the Appwrite console. When enabled only 1 user will be able to use the registration form. New users can be added by inviting them to your project. By default this option is enabled.
-      defaultValue: 'enabled'
-      validRegex: /^(enabled|disabled)$/
-    - label: _APP_CONSOLE_WHITELIST_EMAILS
-      id: $$cap_APP_CONSOLE_WHITELIST_EMAILS
-      description: This option allows you to limit creation of new users on the Appwrite console. This option is very useful for small teams or sole developers. To enable it, pass a list of allowed email addresses separated by a comma.
-    - label: _APP_CONSOLE_WHITELIST_IPS
-      id: $$cap_APP_CONSOLE_WHITELIST_IPS
-      description: This last option allows you to limit creation of users in Appwrite console for users sharing the same set of IP addresses. This option is very useful for team working with a VPN service or a company IP.\n\nTo enable/activate this option, pass a list of allowed IP addresses separated by a comma.
-    - label: _APP_SYSTEM_EMAIL_NAME
-      id: $$cap_APP_SYSTEM_EMAIL_NAME
-      description: |-
-        This is the sender name value that will appear on email messages sent to developers from the Appwrite console. You can use url encoded strings for spaces and special chars.
-      defaultValue: Appwrite
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_SYSTEM_EMAIL_ADDRESS
-      id: $$cap_APP_SYSTEM_EMAIL_ADDRESS
-      description: This is the sender email address that will appear on email messages sent to developers from the Appwrite console. You should choose an email address that is allowed to be used from your SMTP server to avoid the server email ending in the users' SPAM folders.
-      defaultValue: team@appwrite.io
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_SYSTEM_RESPONSE_FORMAT
-      id: $$cap_APP_SYSTEM_RESPONSE_FORMAT
-      description: Use this environment variable to set the default Appwrite HTTP response format to support an older version of Appwrite. This option is useful to overcome breaking changes between versions. You can also use the X-Appwrite-Response-Format HTTP request header to overwrite the response for a specific request. This variable accepts any valid Appwrite version. To use the current version format, leave the value of the variable empty.
-    - label: _APP_SYSTEM_SECURITY_EMAIL_ADDRESS
-      id: $$cap_APP_SYSTEM_SECURITY_EMAIL_ADDRESS
-      description: This is the email address used to issue SSL certificates for custom domains or the user agent in your webhooks payload.
-      defaultValue: certs@appwrite.io
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_USAGE_STATS
-      id: $$cap_APP_USAGE_STATS
-      description: This variable allows you to disable the collection and displaying of usage stats. This value is set to 'enabled' by default, to disable the usage stats set the value to 'disabled'. When disabled, it's recommended to turn off the Worker Usage, Influxdb and Telegraf containers for better resource usage.
-      defaultValue: 'enabled'
-      validRegex: /^(enabled|disabled)$/
-    - label: _APP_LOGGING_PROVIDER
-      id: $$cap_APP_LOGGING_PROVIDER
-      description: This variable allows you to enable logging errors to 3rd party providers. This value is empty by default, to enable the logger set the value to one of 'sentry', 'raygun', 'appsignal', 'logowl'
-    - label: _APP_LOGGING_CONFIG
-      description: This variable configures authentication to 3rd party error logging providers. If using Sentry, this should be 'SENTRY_API_KEY;SENTRY_APP_ID'. If using Raygun, this should be Raygun API key. If using AppSignal, this should be AppSignal API key. If using LogOwl, this should be LogOwl Service Ticket.
-      id: $$cap_APP_LOGGING_CONFIG
-    - label: _APP_WORKER_PER_CORE
-      id: $$cap_APP_WORKER_PER_CORE
-      description: Internal Worker per core for the API, Realtime and Executor containers. Can be configured to optimize performance.
-      defaultValue: 6
-      validRegex: /.{1,}/
-    - label: _APP_REDIS_PORT
-      id: $$cap_APP_REDIS_PORT
-      description: Redis server TCP port.
-      defaultValue: 6379
-      validRegex: /.{1,}/
-    - label: _APP_REDIS_USER
-      id: $$cap_APP_REDIS_USER
-      description: Redis server user. This is an optional variable. Default value is an empty string.
-    - label: _APP_REDIS_PASS
-      id: $$cap_APP_REDIS_PASS
-      description: Redis server password. This is an optional variable. Default value is an empty string.
-    - label: _APP_DB_PORT
-      id: $$cap_APP_DB_PORT
-      description: MariaDB server TCP port.
-      defaultValue: 3306
-      validRegex: /.{1,}/
-    - label: _APP_DB_SCHEMA
-      id: $$cap_APP_DB_SCHEMA
-      description: MariaDB server database schema.
+    - id: $$cap_mariadb_version
+      label: MariaDB Version
+      defaultValue: '10.11'
+      description: Check out their Docker page for the valid tags https://hub.docker.com/_/mariadb
+    - id: $$cap_redis_version
+      label: Redis Version
+      defaultValue: '7.2.4-alpine'
+      description: Check out their Docker page for the valid tags https://hub.docker.com/_/redis
+    - id: $$cap_appwrite_version
+      label: Appwrite Version
+      defaultValue: '1.6.0'
+      description: Check out their Docker page for the valid tags https://hub.docker.com/r/appwrite/appwrite
+    - id: $$cap_console_version
+      label: Appwrite Console Version
+      defaultValue: '5.0.12'
+      description: Check out their Docker page for the valid tags https://hub.docker.com/r/appwrite/console
+    - id: $$cap_executor_version
+      label: OpenRuntime Executor Version
+      defaultValue: '0.6.11'
+      description: Check out their Docker page for the valid tags https://hub.docker.com/r/openruntimes/executor
+    - id: $$cap_assistant_version
+      label: Appwrite Assistant Version
+      defaultValue: '0.4.0'
+      description: Check out their Docker page for the valid tags https://hub.docker.com/r/appwrite/assistant
+    - id: $$cap_db_root_pass
+      label: Database Root Password
+      defaultValue: $$cap_gen_random_hex(32)
+    - id: $$cap_db_user
+      label: Database User
       defaultValue: appwrite
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_DB_USER
-      id: $$cap_APP_DB_USER
-      description: MariaDB server user name.
-      defaultValue: user
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_DB_PASS
-      id: $$cap_APP_DB_PASS
-      description: MariaDB server user password.
-      defaultValue: $$cap_gen_random_hex(16)
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_DB_ROOT_PASS
-      id: $$cap_APP_DB_ROOT_PASS
-      description: MariaDB server root password.
-      defaultValue: $$cap_gen_random_hex(16)
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_INFLUXDB_PORT
-      id: $$cap_APP_INFLUXDB_PORT
-      description: InfluxDB server TCP port.
-      defaultValue: 8086
-      validRegex: /.{1,}/
-    - label: _APP_STATSD_PORT
-      id: $$cap_APP_STATSD_PORT
-      description: StatsD server TCP port.
-      defaultValue: 8125
-      validRegex: /.{1,}/
-    - label: _APP_SMTP_HOST
-      id: $$cap_APP_SMTP_HOST
-      description: SMTP server host name address. Use an empty string to disable all mail sending from the server. The default value for this variable is an empty string.
-    - label: _APP_SMTP_PORT
-      id: $$cap_APP_SMTP_PORT
-      description: SMTP server TCP port. Empty by default.
-    - label: _APP_SMTP_SECURE
-      id: $$cap_APP_SMTP_SECURE
-      description: SMTP secure connection protocol. Empty by default, change to 'tls' if running on a secure connection.
-    - label: _APP_SMTP_USERNAME
-      id: $$cap_APP_SMTP_USERNAME
-      description: SMTP server user name. Empty by default.
-    - label: _APP_SMTP_PASSWORD
-      id: $$cap_APP_SMTP_PASSWORD
-      description: SMTP server user password. Empty by default.
-    - label: _APP_SMS_PROVIDER
-      id: $$cap_APP_SMS_PROVIDER
-      description: |-
-        Provider used for delivering SMS for Phone authentication. Use the following format: 'sms://[USER]:[SECRET]@[PROVIDER]'. Available providers are twilio, text-magic, telesign, msg91, and vonage.
-    - label: _APP_SMS_FROM
-      id: $$cap_APP_SMS_FROM
-      description: |-
-        Phone number used for sending out messages. Must start with a leading '+' and maximum of 15 digits without spaces (+123456789).
-    - label: _APP_STORAGE_LIMIT
-      id: $$cap_APP_STORAGE_LIMIT
-      description: Maximum file size allowed for file upload. The default value is 30MB. You should pass your size limit value in bytes.
-      defaultValue: 30000000
-    - label: _APP_STORAGE_PREVIEW_LIMIT
-      id: $$cap_APP_STORAGE_PREVIEW_LIMIT
-      description: Maximum file size allowed for file image preview. The default value is 20MB. You should pass your size limit value in bytes.
-      defaultValue: 20000000
-    - label: _APP_STORAGE_ANTIVIRUS
-      id: $$cap_APP_STORAGE_ANTIVIRUS_ENABLED
-      description: This variable allows you to disable the internal anti-virus scans. This value is set to 'disabled' by default, to enable the scans set the value to 'enabled'. Before enabling, you must add the ClamAV service and depend on it on main Appwrite service.
-      defaultValue: 'disabled'
-    - label: _APP_STORAGE_ANTIVIRUS_HOST
-      id: $$cap_APP_STORAGE_ANTIVIRUS_HOST
-      description: ClamAV server host name address.
-      defaultValue: clamav
-    - label: _APP_STORAGE_ANTIVIRUS_PORT
-      id: $$cap_APP_STORAGE_ANTIVIRUS_PORT
-      description: ClamAV server TCP port.
-      defaultValue: 3310
-      validRegex: /.{1,}/
-    - label: _APP_STORAGE_DEVICE
-      id: $$cap_APP_STORAGE_DEVICE
-      description: Select default storage device. The default value is 'Local'. List of supported adapters are 'Local', 'S3', 'DOSpaces', 'Backblaze', 'Linode' and 'Wasabi'.
-      defaultValue: Local
-      validRegex: /^([^\s^\/])+$/
-    - label: _APP_STORAGE_S3_ACCESS_KEY
-      id: $$cap_APP_STORAGE_S3_ACCESS_KEY
-      description: AWS S3 storage access key. Required when the storage adapter is set to S3. You can get your access key from your AWS console.
-    - label: _APP_STORAGE_S3_SECRET
-      id: $$cap_APP_STORAGE_S3_SECRET
-      description: AWS S3 storage secret key. Required when the storage adapter is set to S3. You can get your secret key from your AWS console.
-    - label: _APP_STORAGE_S3_REGION
-      id: $$cap_APP_STORAGE_S3_REGION
-      description: AWS S3 storage region. Required when storage adapter is set to S3. You can find your region info for your bucket from AWS console.
-      defaultValue: us-east-1
-    - label: _APP_STORAGE_S3_BUCKET
-      id: $$cap_APP_STORAGE_S3_BUCKET
-      description: AWS S3 storage bucket. Required when storage adapter is set to S3. You can create buckets in your AWS console.
-    - label: _APP_STORAGE_DO_SPACES_ACCESS_KEY
-      id: $$cap_APP_STORAGE_DO_SPACES_ACCESS_KEY
-      description: DigitalOcean spaces access key. Required when the storage adapter is set to DOSpaces. You can get your access key from your DigitalOcean console.
-    - label: _APP_STORAGE_DO_SPACES_SECRET
-      id: $$cap_APP_STORAGE_DO_SPACES_SECRET
-      description: DigitalOcean spaces secret key. Required when the storage adapter is set to DOSpaces. You can get your secret key from your DigitalOcean console.
-    - label: _APP_STORAGE_DO_SPACES_REGION
-      id: $$cap_APP_STORAGE_DO_SPACES_REGION
-      description: DigitalOcean spaces region. Required when storage adapter is set to DOSpaces. You can find your region info for your space from DigitalOcean console.
-      defaultValue: us-east-1
-    - label: _APP_STORAGE_DO_SPACES_BUCKET
-      id: $$cap_APP_STORAGE_DO_SPACES_BUCKET
-      description: DigitalOcean spaces bucket. Required when storage adapter is set to DOSpaces. You can create spaces in your DigitalOcean console.
-    - label: _APP_STORAGE_BACKBLAZE_ACCESS_KEY
-      id: $$cap_APP_STORAGE_BACKBLAZE_ACCESS_KEY
-      description: Backblaze access key. Required when the storage adapter is set to Backblaze. Your Backblaze keyID will be your access key. You can get your keyID from your Backblaze console.
-    - label: _APP_STORAGE_BACKBLAZE_SECRET
-      id: $$cap_APP_STORAGE_BACKBLAZE_SECRET
-      description: Backblaze secret key. Required when the storage adapter is set to Backblaze. Your Backblaze applicationKey will be your secret key. You can get your applicationKey from your Backblaze console.
-    - label: _APP_STORAGE_BACKBLAZE_REGION
-      id: $$cap_APP_STORAGE_BACKBLAZE_REGION
-      description: Backblaze region. Required when storage adapter is set to Backblaze. You can find your region info from your Backblaze console.
-      defaultValue: us-west-004
-    - label: _APP_STORAGE_BACKBLAZE_BUCKET
-      id: $$cap_APP_STORAGE_BACKBLAZE_BUCKET
-      description: Backblaze bucket. Required when storage adapter is set to Backblaze. You can create your bucket from your Backblaze console.
-    - label: _APP_STORAGE_LINODE_ACCESS_KEY
-      id: $$cap_APP_STORAGE_LINODE_ACCESS_KEY
-      description: Linode object storage access key. Required when the storage adapter is set to Linode. You can get your access key from your Linode console.
-    - label: _APP_STORAGE_LINODE_SECRET
-      id: $$cap_APP_STORAGE_LINODE_SECRET
-      description: Linode object storage secret key. Required when the storage adapter is set to Linode. You can get your secret key from your Linode console.
-    - label: _APP_STORAGE_LINODE_REGION
-      id: $$cap_APP_STORAGE_LINODE_REGION
-      description: Linode object storage region. Required when storage adapter is set to Linode. You can find your region info from your Linode console.
-      defaultValue: eu-central-1
-    - label: _APP_STORAGE_LINODE_BUCKET
-      id: $$cap_APP_STORAGE_LINODE_BUCKET
-      description: Linode object storage bucket. Required when storage adapter is set to Linode. You can create buckets in your Linode console.
-    - label: _APP_STORAGE_WASABI_ACCESS_KEY
-      id: $$cap_APP_STORAGE_WASABI_ACCESS_KEY
-      description: Wasabi access key. Required when the storage adapter is set to Wasabi. You can get your access key from your Wasabi console.
-    - label: _APP_STORAGE_WASABI_SECRET
-      id: $$cap_APP_STORAGE_WASABI_SECRET
-      description: Wasabi secret key. Required when the storage adapter is set to Wasabi. You can get your secret key from your Wasabi console.
-    - label: _APP_STORAGE_WASABI_REGION
-      id: $$cap_APP_STORAGE_WASABI_REGION
-      description: Wasabi region. Required when storage adapter is set to Wasabi. You can find your region info from your Wasabi console.
-      defaultValue: eu-central-1
-    - label: _APP_STORAGE_WASABI_BUCKET
-      id: $$cap_APP_STORAGE_WASABI_BUCKET
-      description: Wasabi bucket. Required when storage adapter is set to Wasabi. You can create buckets in your Wasabi console.
-    - label: _APP_FUNCTIONS_SIZE_LIMIT
-      id: $$cap_APP_FUNCTIONS_SIZE_LIMIT
-      description: The maximum size deployment in bytes. The default value is 30MB.
-      defaultValue: 30000000
-      validRegex: /.{1,}/
-    - label: _APP_FUNCTIONS_TIMEOUT
-      id: $$cap_APP_FUNCTIONS_TIMEOUT
-      description: The maximum number of seconds allowed as a timeout value when creating a new function. The default value is 900 seconds.
-      defaultValue: 900
-      validRegex: /.{1,}/
-    - label: _APP_FUNCTIONS_BUILD_TIMEOUT
-      id: $$cap_APP_FUNCTIONS_BUILD_TIMEOUT
-      description: The maximum number of seconds allowed as a timeout value when building a new function. The default value is 900 seconds.
-      defaultValue: 900
-      validRegex: /.{1,}/
-    - label: _APP_FUNCTIONS_CPUS
-      id: $$cap_APP_FUNCTIONS_CPUS
-      description: The maximum number of CPU core a single cloud function is allowed to use. Please note that setting a value higher than available cores will result in a function error, which might result in an error. The default value is empty. When it's empty, CPU limit will be disabled.
-    - label: _APP_FUNCTIONS_MEMORY
-      id: $$cap_APP_FUNCTIONS_MEMORY_ALLOCATED
-      description: The maximum amount of memory a single cloud function is allowed to use in megabytes. The default value is empty. When it's empty, memory limit will be disabled.
-    - label: _APP_FUNCTIONS_RUNTIMES
-      id: $$cap_APP_FUNCTIONS_RUNTIMES
-      description: |-
-        This option allows you to enable or disable runtime environments for cloud functions. Disable unused runtimes to save disk space.
-        To enable cloud function runtimes, pass a list of enabled environments separated by a comma.
-        See https://appwrite.io/docs/products/functions/runtimes
-      defaultValue: node-18.0
-    - label: _APP_EXECUTOR_SECRET
-      id: $$cap_APP_EXECUTOR_SECRET
-      description: The secret key used by Appwrite to communicate with the function executor.
-      defaultValue: $$cap_gen_random_hex(16)
-    - label: _APP_FUNCTIONS_INACTIVE_THRESHOLD
-      id: $$cap_APP_FUNCTIONS_INACTIVE_THRESHOLD
-      description: The minimum time a function can be inactive before it's container is shutdown and put to sleep. The default value is 60 seconds
-      defaultValue: 60
-      validRegex: /.{1,}/
-    - label: _APP_MAINTENANCE_INTERVAL
-      id: $$cap_APP_MAINTENANCE_INTERVAL
-      description: Interval value containing the number of seconds that the Appwrite maintenance process should wait before executing system cleanups and optimizations. The default value is 86400 seconds (1 day).
-      defaultValue: 86400
-      validRegex: /.{1,}/
-    - label: _APP_MAINTENANCE_RETENTION_CACHE
-      id: $$cap_APP_MAINTENANCE_RETENTION_CACHE
-      description: The maximum duration (in seconds) upto which to retain cached files. The default value is 2592000 seconds (30 days).
-      defaultValue: 2592000
-      validRegex: /.{1,}/
-    - label: _APP_MAINTENANCE_RETENTION_EXECUTION
-      id: $$cap_APP_MAINTENANCE_RETENTION_EXECUTION
-      description: The maximum duration (in seconds) upto which to retain execution logs. The default value is 1209600 seconds (14 days).
-      defaultValue: 1209600
-      validRegex: /.{1,}/
-    - label: _APP_MAINTENANCE_RETENTION_AUDIT
-      id: $$cap_APP_MAINTENANCE_RETENTION_AUDIT
-      description: The maximum duration (in seconds) upto which to retain audit logs. The default value is 1209600 seconds (14 days).
-      defaultValue: 1209600
-      validRegex: /.{1,}/
-    - label: _APP_MAINTENANCE_RETENTION_ABUSE
-      id: $$cap_APP_MAINTENANCE_RETENTION_ABUSE
-      description: The maximum duration (in seconds) upto which to retain abuse logs. The default value is 86400 seconds (1 day).
-      defaultValue: 86400
-      validRegex: /.{1,}/
-    - label: _APP_MAINTENANCE_RETENTION_USAGE_HOURLY
-      id: $$cap_APP_MAINTENANCE_RETENTION_USAGE_HOURLY
-      description: The maximum duration (in seconds) upto which to retain hourly usage metrics. The default value is 8640000 seconds (100 days).
-      defaultValue: 8640000
-      validRegex: /.{1,}/
-    - label: _APP_MAINTENANCE_RETENTION_SCHEDULES
-      id: $$cap_APP_MAINTENANCE_RETENTION_SCHEDULES
-      description: Schedules deletion interval (in seconds).
-    - label: _APP_FUNCTIONS_MAINTENANCE_INTERVAL
-      id: $$cap_APP_FUNCTIONS_MAINTENANCE_INTERVAL
-      description: Interval value containing the number of seconds that the executor should wait before checking for inactive runtimes. The default value is 3600 seconds (1 hour).
-      defaultValue: 3600
-      validRegex: /.{1,}/
-    - label: _APP_GRAPHQL_MAX_BATCH_SIZE
-      id: $$cap_APP_GRAPHQL_MAX_BATCH_SIZE
-      description: Maximum number of batched queries per request. The default value is 10.
-      defaultValue: 10
-      validRegex: /.{1,}/
-    - label: _APP_GRAPHQL_MAX_COMPLEXITY
-      id: $$cap_APP_GRAPHQL_MAX_COMPLEXITY
-      description: Maximum complexity of a GraphQL query. One field adds one to query complexity. Lists multiply the complexity by the number of items requested. The default value is 250.
-      defaultValue: 250
-      validRegex: /.{1,}/
-    - label: _APP_GRAPHQL_MAX_DEPTH
-      id: $$cap_APP_GRAPHQL_MAX_DEPTH
-      description: Maximum depth of a GraphQL query. One nested field level adds one to query depth. The default value is 3.
-      defaultValue: 3
-      validRegex: /.{1,}/
-    - label: _APP_DOCKER_HUB_USERNAME
-      id: $$cap_APP_DOCKER_HUB_USERNAME
-      description: The username for hub.docker.com. This variable is used to pull images from hub.docker.com.
-    - label: _APP_DOCKER_HUB_PASSWORD
-      id: $$cap_APP_DOCKER_HUB_PASSWORD
-      description: The password for hub.docker.com. This variable is used to pull images from hub.docker.com.
-    - label: _APP_VCS_GITHUB_APP_NAME
-      id: $$cap_APP_VCS_GITHUB_APP_NAME
-      description: Name of your GitHub app. This value should be set to your GitHub application's URL.
-    - label: _APP_VCS_GITHUB_PRIVATE_KEY
-      id: $$cap_APP_VCS_GITHUB_PRIVATE_KEY
-      description: GitHub app RSA private key. You can generate private keys from GitHub application settings.
-    - label: _APP_VCS_GITHUB_APP_ID
-      id: $$cap_APP_VCS_GITHUB_APP_ID
-      description: GitHub application ID. You can find it in your GitHub application details.
-    - label: _APP_VCS_GITHUB_CLIENT_ID
-      id: $$cap_APP_VCS_GITHUB_CLIENT_ID
-      description: GitHub client ID. You can find it in your GitHub application details.
-    - label: _APP_VCS_GITHUB_CLIENT_SECRET
-      id: $$cap_APP_VCS_GITHUB_CLIENT_SECRET
-      description: GitHub client secret. You can generate secrets in your GitHub application settings.
-    - label: _APP_VCS_GITHUB_WEBHOOK_SECRET
-      id: $$cap_APP_VCS_GITHUB_WEBHOOK_SECRET
-      description: GitHub webhook secret. You can configure it in your GitHub application settings under webhook section.
-    - label: _APP_MIGRATIONS_FIREBASE_CLIENT_ID
-      id: $$cap_APP_MIGRATIONS_FIREBASE_CLIENT_ID
-      description: Google OAuth client ID. You can find it in your GCP application settings.
-    - label: _APP_MIGRATIONS_FIREBASE_CLIENT_SECRET
-      id: $$cap_APP_MIGRATIONS_FIREBASE_CLIENT_SECRET
-      description: Google OAuth client secret. You can generate secrets in your GCP application settings.
-    - label: _APP_ASSISTANT_OPENAI_API_KEY
-      id: $$cap_APP_ASSISTANT_OPENAI_API_KEY
-      description: OpenAI API key. You can find it in your OpenAI application settings.
-    - label: _APP_USAGE_AGGREGATION_INTERVAL
-      id: $$cap_APP_USAGE_AGGREGATION_INTERVAL
-      description: Interval value containing the number of seconds that the Appwrite usage process should wait before aggregating stats and syncing it to Database from TimeSeries data. The default value is 30 seconds. Reintroduced in 1.1.0.
-      defaultValue: 30
+    - id: $$cap_db_pass
+      label: Database Password
+      defaultValue: $$cap_gen_random_hex(32)
+    - id: $$cap_db_name
+      label: Database Name
+      defaultValue: appwrite
+    - id: $$cap_redis_pass
+      label: Redis Password
+      defaultValue: $$cap_gen_random_hex(32)
+    - id: $$cap_executor_secret
+      label: Executor Secret
+      defaultValue: $$cap_gen_random_hex(32)
+    - id: $$cap_encryption_key
+      label: Encryption Key
+      defaultValue: $$cap_gen_random_hex(32)
+
+services:
+  $$cap_appname-traefik:
+    image: traefik:2.11
+    restart: unless-stopped
+    command:
+      - --providers.file.directory=/storage/config
+      - --providers.file.watch=true
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.constraints=Label(`traefik.constraint-label-stack`,`appwrite`)
+      - --entrypoints.appwrite_web.address=:80
+      - --entrypoints.appwrite_websecure.address=:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - $$cap_appname-config:/storage/config:ro
+      - $$cap_appname-certificates:/storage/certificates:ro
+    caproverExtra:
+      notExposeAsWebApp: true
+
+  $$cap_appname:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    restart: unless-stopped
+    volumes:
+      - $$cap_appname-uploads:/storage/uploads:rw
+      - $$cap_appname-cache:/storage/cache:rw
+      - $$cap_appname-config:/storage/config:rw
+      - $$cap_appname-certificates:/storage/certificates:rw
+      - $$cap_appname-functions:/storage/functions:rw
+    environment:
+      _APP_ENV: production
+      _APP_DOMAIN: $$cap_appname.$$cap_root_domain
+      _APP_DOMAIN_TARGET: $$cap_appname.$$cap_root_domain
+      _APP_OPENSSL_KEY_V1: $$cap_encryption_key
+      _APP_EXECUTOR_SECRET: $$cap_executor_secret
+      _APP_EXECUTOR_HOST: srv-captain--$$cap_appname-executor
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+      _APP_USAGE_STATS: enabled
+      _APP_OPTIONS_ABUSE: enabled
+      _APP_OPTIONS_FORCE_HTTPS: enabled
+    labels:
+      - traefik.enable=true
+      - traefik.constraint-label-stack=appwrite
+      - traefik.http.services.appwrite_api.loadbalancer.server.port=80
+      - traefik.http.routers.appwrite_api_http.entrypoints=appwrite_web
+      - traefik.http.routers.appwrite_api_http.rule=PathPrefix(`/`)
+      - traefik.http.routers.appwrite_api_http.service=appwrite_api
+      - traefik.http.routers.appwrite_api_https.entrypoints=appwrite_websecure
+      - traefik.http.routers.appwrite_api_https.rule=PathPrefix(`/`)
+      - traefik.http.routers.appwrite_api_https.service=appwrite_api
+      - traefik.http.routers.appwrite_api_https.tls=true
+
+  $$cap_appname-console:
+    image: appwrite/console:$$cap_console_version
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.constraint-label-stack=appwrite
+      - traefik.http.services.appwrite_console.loadbalancer.server.port=80
+      - traefik.http.routers.appwrite_console_http.entrypoints=appwrite_web
+      - traefik.http.routers.appwrite_console_http.rule=PathPrefix(`/console`)
+      - traefik.http.routers.appwrite_console_http.service=appwrite_console
+      - traefik.http.routers.appwrite_console_https.entrypoints=appwrite_websecure
+      - traefik.http.routers.appwrite_console_https.rule=PathPrefix(`/console`)
+      - traefik.http.routers.appwrite_console_https.service=appwrite_console
+      - traefik.http.routers.appwrite_console_https.tls=true
+
+  $$cap_appname-realtime:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    entrypoint: realtime
+    restart: unless-stopped
+    environment:
+      _APP_ENV: production
+      _APP_OPTIONS_ABUSE: enabled
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+    labels:
+      - traefik.enable=true
+      - traefik.constraint-label-stack=appwrite
+      - traefik.http.services.appwrite_realtime.loadbalancer.server.port=80
+      - traefik.http.routers.appwrite_realtime_ws.entrypoints=appwrite_web
+      - traefik.http.routers.appwrite_realtime_ws.rule=PathPrefix(`/v1/realtime`)
+      - traefik.http.routers.appwrite_realtime_ws.service=appwrite_realtime
+      - traefik.http.routers.appwrite_realtime_wss.entrypoints=appwrite_websecure
+      - traefik.http.routers.appwrite_realtime_wss.rule=PathPrefix(`/v1/realtime`)
+      - traefik.http.routers.appwrite_realtime_wss.service=appwrite_realtime
+      - traefik.http.routers.appwrite_realtime_wss.tls=true
+
+  $$cap_appname-executor:
+    image: openruntimes/executor:$$cap_executor_version
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - $$cap_appname-functions:/storage/functions:rw
+      - $$cap_appname-builds:/storage/builds:rw
+      - /tmp:/tmp:rw
+    environment:
+      OPR_EXECUTOR_SECRET: $$cap_executor_secret
+      OPR_EXECUTOR_ENV: production
+    caproverExtra:
+      notExposeAsWebApp: true
+
+  $$cap_appname-worker-functions:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    entrypoint: worker-functions
+    restart: unless-stopped
+    environment:
+      _APP_ENV: production
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+      _APP_EXECUTOR_SECRET: $$cap_executor_secret
+      _APP_EXECUTOR_HOST: srv-captain--$$cap_appname-executor
+    caproverExtra:
+      notExposeAsWebApp: true
+
+  $$cap_appname-worker-deletes:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    entrypoint: worker-deletes
+    restart: unless-stopped
+    volumes:
+      - $$cap_appname-uploads:/storage/uploads:rw
+      - $$cap_appname-cache:/storage/cache:rw
+      - $$cap_appname-functions:/storage/functions:rw
+      - $$cap_appname-builds:/storage/builds:rw
+    environment:
+      _APP_ENV: production
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+    caproverExtra:
+      notExposeAsWebApp: true
+
+  $$cap_appname-worker-audits:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    entrypoint: worker-audits
+    restart: unless-stopped
+    environment:
+      _APP_ENV: production
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+    caproverExtra:
+      notExposeAsWebApp: true
+
+  $$cap_appname-worker-webhooks:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    entrypoint: worker-webhooks
+    restart: unless-stopped
+    environment:
+      _APP_ENV: production
+      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      _APP_REDIS_PORT: 6379
+      _APP_REDIS_USER: default
+      _APP_REDIS_PASS: $$cap_redis_pass
+      _APP_DB_HOST: srv-captain--$$cap_appname-db
+      _APP_DB_PORT: 3306
+      _APP_DB_SCHEMA: $$cap_db_name
+      _APP_DB_USER: $$cap_db_user
+      _APP_DB_PASS: $$cap_db_pass
+    caproverExtra:
+      notExposeAsWebApp: true
+
+  $$cap_appname-assistant:
+    image: appwrite/assistant:$$cap_assistant_version
+    restart: unless-stopped
+    caproverExtra:
+      notExposeAsWebApp: true
+
+  $$cap_appname-db:
+    image: mariadb:$$cap_mariadb_version
+    restart: unless-stopped
+    volumes:
+      - $$cap_appname-mariadb:/var/lib/mysql:rw
+    environment:
+      MYSQL_ROOT_PASSWORD: $$cap_db_root_pass
+      MYSQL_DATABASE: $$cap_db_name
+      MYSQL_USER: $$cap_db_user
+      MYSQL_PASSWORD: $$cap_db_pass
+    command: mysqld --innodb-flush-method=fsync
+    caproverExtra:
+      notExposeAsWebApp: true
+
+  $$cap_appname-redis:
+    image: redis:$$cap_redis_version
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --maxmemory-samples 5
+      --requirepass $$cap_redis_pass
+    volumes:
+      - $$cap_appname-redis:/data:rw
+    caproverExtra:
+      notExposeAsWebApp: true
