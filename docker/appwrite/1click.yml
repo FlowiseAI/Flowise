@@ -39,6 +39,10 @@ caproverOneClickApp:
       label: Appwrite Assistant Version
       defaultValue: '0.4.0'
       description: Check out their Docker page for the valid tags https://hub.docker.com/r/appwrite/assistant
+    - id: $$cap_assistant_openai_key
+      label: OpenAI API Key
+      defaultValue: ''
+      description: Optional - Your OpenAI API key for the Appwrite Assistant feature
     - id: $$cap_db_root_pass
       label: Database Root Password
       defaultValue: $$cap_gen_random_hex(32)
@@ -259,6 +263,8 @@ services:
   $$cap_appname-assistant:
     image: appwrite/assistant:$$cap_assistant_version
     restart: unless-stopped
+    environment:
+      _APP_ASSISTANT_OPENAI_API_KEY: $$cap_assistant_openai_key
     caproverExtra:
       notExposeAsWebApp: true
 
