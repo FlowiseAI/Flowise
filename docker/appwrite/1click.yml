@@ -285,8 +285,12 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - $$cap_appname-config:/storage/config:ro
       - $$cap_appname-certificates:/storage/certificates:ro
+    ports:
+      - "80:80"
+      - "443:443"
     caproverExtra:
       notExposeAsWebApp: true
+      containerHttpPort: '80'
 
   $$cap_appname:
     image: appwrite/appwrite:$$cap_appwrite_version
