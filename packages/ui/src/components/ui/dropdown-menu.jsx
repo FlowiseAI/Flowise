@@ -1,5 +1,6 @@
 import * as React from 'react'
 import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
 import { Popper } from '@mui/base/Popper'
 import { Button } from './button'
 import { cn } from '@/lib/utils'
@@ -80,6 +81,7 @@ DropdownMenuTrigger.propTypes = {
 const DropdownMenuContent = React.forwardRef(
     ({ className, children, side = 'bottom', sideOffset = 4, align = 'start', alignOffset = 0, ...props }, ref) => {
         const { open, anchorEl } = React.useContext(DropdownMenuContext)
+        const customization = useSelector((state) => state.customization)
 
         return (
             <Popper
@@ -96,7 +98,8 @@ const DropdownMenuContent = React.forwardRef(
                     }
                 ]}
                 className={cn(
-                    'z-50 min-w-[8rem] max-w-[16rem] rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
+                    customization.isDarkMode ? 'dark' : '',
+                    'z-50 min-w-[8rem] max-w-[16rem] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md',
                     'data-[state=open]:animate-in data-[state=closed]:animate-out',
                     'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
                     'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
