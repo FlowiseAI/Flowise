@@ -121,13 +121,6 @@ const ChatbotFull = () => {
               apiHost={baseURL}
               chatflowConfig={chatbotOverrideConfig}
               theme={{ chatWindow: chatbotTheme }}
-              roomIds={{
-                '012345678': '4KxYsWCYCmz63wxQhxFZytYD', // CMC UNI thủ tục nhập học
-                '023456781': 'vfFLPcSw6TabMUJ96en3esQR', // CMC UNI Chuyên ngành học
-                '034567812': 'QCu8z3S6kLF4t2mEEZi491Ei', // Học phí
-                '045678123': 'vuZxeabSr5qf2Yug6aK9dRak', // CMC UNI công tác sinh viên
-                '056781234': 'XJHsEH4BbiBimaLdWLN1Eccx' // CMC UNI General
-              }}
             />
           )}
           <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
