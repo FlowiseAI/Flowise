@@ -24,6 +24,7 @@ interface DynamicStructuredToolInput<T extends z.ZodObject<any, any, any, any> =
   extends BaseDynamicToolInput {
   func?: (input: z.infer<T>, runManager?: CallbackManagerForToolRun, flowConfig?: IFlowConfig) => Promise<string>
   schema: T
+  score?: Number
 }
 
 class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>> extends StructuredTool<
@@ -44,6 +45,8 @@ class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObj
 
   private flowObj: any
 
+  score?: Number
+
   constructor(fields: DynamicStructuredToolInput<T>) {
     super(fields)
     this.name = fields.name
@@ -51,6 +54,7 @@ class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObj
     this.func = fields.func
     this.returnDirect = fields.returnDirect ?? this.returnDirect
     this.schema = fields.schema
+    this.score = fields.score
   }
 
   async call(arg: any, configArg?: RunnableConfig | Callbacks, tags?: string[], flowConfig?: IFlowConfig): Promise<string> {
@@ -129,6 +133,7 @@ class Retriever_Tools implements INode {
   baseClasses: string[]
   credential: INodeParams
   inputs: INodeParams[]
+  score: number
 
   constructor() {
     this.label = 'Retriever Tool'
@@ -159,22 +164,22 @@ class Retriever_Tools implements INode {
         name: 'retriever',
         type: 'BaseRetriever'
       },
-      {
-        label: 'Return Full Document Content',
-        name: 'returnFullContent',
-        type: 'boolean',
-        description: 'Whether to return the full content of retrieved documents',
-        optional: true,
-        default: false
-      },
-      {
-        label: 'Return Raw Document',
-        name: 'returnRawDocument',
-        type: 'boolean',
-        description: 'Whether to return the raw document object from the retriever',
-        optional: true,
-        default: false
-      },
+      // {
+      //   label: 'Return Full Document Content',
+      //   name: 'returnFullContent',
+      //   type: 'boolean',
+      //   description: 'Whether to return the full content of retrieved documents',
+      //   optional: true,
+      //   default: false
+      // },
+      // {
+      //   label: 'Return Raw Document',
+      //   name: 'returnRawDocument',
+      //   type: 'boolean',
+      //   description: 'Whether to return the raw document object from the retriever',
+      //   optional: true,
+      //   default: false
+      // },
       {
         label: 'Return Source Documents',
         name: 'returnSourceDocuments',
@@ -192,8 +197,15 @@ class Retriever_Tools implements INode {
           label: 'What can you filter?',
           value: howToUse
         }
+      },
+      {
+        label: 'Score',
+        name: 'score',
+        type: 'number',
+        optional: true
       }
     ]
+    this.score = 0
   }
 
   async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -202,16 +214,18 @@ class Retriever_Tools implements INode {
     const retriever = nodeData.inputs?.retriever as BaseRetriever
     const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
     const retrieverToolMetadataFilter = nodeData.inputs?.retrieverToolMetadataFilter
-
+    const score = nodeData.inputs?.score as number
     const input = {
       name,
-      description
+      description,
+      score
     }
 
     const flow = { chatflowId: options.chatflowid }
 
     const func = async ({ input }: { input: string }, _?: CallbackManagerForToolRun, flowConfig?: IFlowConfig) => {
       if (retrieverToolMetadataFilter) {
+        console.log('🔥 1')
         const flowObj = flowConfig
 
         const metadatafilter =
@@ -231,6 +245,8 @@ class Retriever_Tools implements INode {
       const docs = await retriever.invoke(input)
 
       if (nodeData.inputs?.returnFullContent) {
+        console.log('🔥 3')
+
         // Extract prefixes from docs
         const prefixes = docs
           .map((doc) => doc.metadata?.source?.replace('s3://cts-llm-docs-bucket/', ''))
@@ -289,35 +305,33 @@ class Retriever_Tools implements INode {
           }
         }
       }
+      const filteredDocs = docs.filter((doc) => doc.metadata.score >= this.score && doc.metadata.score <= 1)
 
       const content = nodeData.inputs?.returnRawDocument
         ? JSON.stringify(
-            docs.map((doc) => ({
+            filteredDocs.map((doc) => ({
               pageContent: doc.pageContent,
               metadata: {
-                // source: doc.metadata?.source?.split('/')?.pop(),
                 score: doc.metadata.score,
                 sub_cate_1: doc.metadata?.sub_cate_1
-                // sub_cate_2: doc.metadata?.sub_cate_2,
-                // category: doc.metadata?.category,
-                // sub_cate_3: doc.metadata?.sub_cate_3,
-                // sub_cate_4: doc.metadata?.sub_cate_4
               }
             })),
             null,
             2
           )
-        : docs.map((doc) => doc.pageContent).join('\n\n')
-      const sourceDocuments = JSON.stringify(docs)
+        : filteredDocs.map((doc) => doc.pageContent).join('\n\n')
+
+      const sourceDocuments = JSON.stringify(filteredDocs)
+
       return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments : content
     }
 
     const schema = z.object({
       input: z.string().describe('input to look up in retriever')
     }) as any
-
     const tool = new DynamicStructuredTool({ ...input, func, schema })
     tool.setFlowObject(flow)
+    console.log('🔥 tool', tool)
     return tool
   }
 }
