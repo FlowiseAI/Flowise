@@ -106,7 +106,11 @@ const MainLayout = () => {
                         zIndex: 10
                     }}
                 >
-                    <Toolbar className='px-4 border-b border-border' sx={{ height: `${headerHeight}px` }}>
+                    <Toolbar
+                        // className='px-4 border-b border-border'
+                        className='px-4'
+                        sx={{ height: `${headerHeight}px` }}
+                    >
                         <Header handleSidebarToggle={handleSidebarToggle} sidebarOpen={sidebarOpen} />
                     </Toolbar>
                 </AppBar>
