@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 
@@ -10,6 +10,7 @@ import { IconLayoutGrid, IconList, IconX } from '@tabler/icons-react'
 // components
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
@@ -30,6 +31,7 @@ import marketplacesApi from '@/api/marketplaces'
 // Hooks
 import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
+import useSearchShorcut from '@/hooks/useSearchShortcut'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -37,6 +39,12 @@ import { gridSpacing } from '@/store/constant'
 import useNotifier from '@/utils/useNotifier'
 import { IconChevronDown } from '@tabler/icons-react'
 import { capitalizeWord } from '@/utils/genericHelper'
+import { getOS } from '@/utils/genericHelper'
+
+const os = getOS()
+const isMac = os === 'macos'
+const isDesktop = isMac || os === 'windows' || os === 'linux'
+const keyboardShortcut = isMac ? '⌘ F' : 'Ctrl F'
 
 const badges = ['Popular', 'New']
 const types = ['Chatflow', 'Agentflow', 'Tool']
@@ -51,6 +59,9 @@ const Marketplace = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     useNotifier()
+
+    const searchInputRef = useRef()
+    useSearchShorcut(searchInputRef)
 
     const [isLoading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -197,7 +208,7 @@ const Marketplace = () => {
     function filterFlows(data) {
         return (
             (data.categories ? data.categories.join(',') : '').toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            data.templateName.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
+            (data.templateName || data.name).toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             (data.description && data.description.toLowerCase().indexOf(search.toLowerCase()) > -1)
         )
     }
@@ -235,7 +246,7 @@ const Marketplace = () => {
             filteredData = filteredData.filter(
                 (data) =>
                     (data.categories ? data.categories.join(',') : '').toLowerCase().indexOf(filter.search.toLowerCase()) > -1 ||
-                    data.templateName.toLowerCase().indexOf(filter.search.toLowerCase()) > -1 ||
+                    (data.templateName || data.name).toLowerCase().indexOf(filter.search.toLowerCase()) > -1 ||
                     (data.description && data.description.toLowerCase().indexOf(filter.search.toLowerCase()) > -1)
             )
         }
@@ -373,9 +384,50 @@ const Marketplace = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column'>
-                        <ViewHeader
-                            filters={
-                                <>
+                        <ViewHeader title='Marketplace'>
+                            <ToggleGroup
+                                type='single'
+                                defaultValue='card'
+                                className='p-0 gap-0 rounded-md border border-border box-border divide-x divide-border overflow-hidden shrink-0'
+                                onValueChange={handleViewChange}
+                                size='sm'
+                                value={view}
+                            >
+                                <ToggleGroupItem value='card' aria-label='Grid view' className='rounded-none'>
+                                    <IconLayoutGrid />
+                                </ToggleGroupItem>
+                                <ToggleGroupItem value='list' aria-label='List view' className='rounded-none'>
+                                    <IconList />
+                                </ToggleGroupItem>
+                            </ToggleGroup>
+                        </ViewHeader>
+                        <Tabs defaultValue={COMMUNITY_TEMPLATES_TAB_VALUE} onChange={handleTabChange} value={activeTabValue}>
+                            <Box className='w-full flex items-center justify-between pb-2.5'>
+                                <TabsList className='bg-transparent p-0 gap-2'>
+                                    <TabsTrigger
+                                        className='hover:bg-accent'
+                                        selectedClassName='bg-accent text-accent-foreground shadow-sm'
+                                        value={COMMUNITY_TEMPLATES_TAB_VALUE}
+                                    >
+                                        Community Templates
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        className='hover:bg-accent'
+                                        selectedClassName='bg-accent text-accent-foreground shadow-sm'
+                                        value={MY_TEMPLATES_TAB_VALUE}
+                                    >
+                                        My Templates
+                                    </TabsTrigger>
+                                </TabsList>
+                                <Box className='flex items-center gap-2'>
+                                    <Input
+                                        className='w-[325px]'
+                                        onChange={onSearchChange}
+                                        placeholder='Search by name, description, or node'
+                                        ref={searchInputRef}
+                                        shortcut={isDesktop ? keyboardShortcut : null}
+                                        size='sm'
+                                    />
                                     <DropdownMenu>
                                         <DropdownMenuTrigger size='sm' variant='outline'>
                                             {badgeFilter.length === 0 ? (
@@ -492,60 +544,37 @@ const Marketplace = () => {
                                             ))}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                </>
-                            }
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Name/Description/Node'
-                            title='Marketplace'
-                        >
-                            <ToggleGroup
-                                type='single'
-                                defaultValue='card'
-                                className='p-0 gap-0 rounded-md border border-border box-border divide-x divide-border overflow-hidden shrink-0'
-                                onValueChange={handleViewChange}
-                                size='sm'
-                                value={view}
-                            >
-                                <ToggleGroupItem value='card' aria-label='Grid view' className='rounded-none'>
-                                    <IconLayoutGrid />
-                                </ToggleGroupItem>
-                                <ToggleGroupItem value='list' aria-label='List view' className='rounded-none'>
-                                    <IconList />
-                                </ToggleGroupItem>
-                            </ToggleGroup>
-                        </ViewHeader>
-                        <Tabs defaultValue={COMMUNITY_TEMPLATES_TAB_VALUE} onChange={handleTabChange} value={activeTabValue}>
-                            <Box className='w-full flex items-center justify-between pb-2.5'>
-                                <TabsList className='bg-transparent p-0 gap-2'>
-                                    <TabsTrigger
-                                        className='hover:bg-accent'
-                                        selectedClassName='bg-accent text-accent-foreground shadow-sm'
-                                        value={COMMUNITY_TEMPLATES_TAB_VALUE}
-                                    >
-                                        Community Templates
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        className='hover:bg-accent'
-                                        selectedClassName='bg-accent text-accent-foreground shadow-sm'
-                                        value={MY_TEMPLATES_TAB_VALUE}
-                                    >
-                                        My Templates
-                                    </TabsTrigger>
-                                </TabsList>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger size='sm' variant='outline'>
-                                        {activeTabValue === COMMUNITY_TEMPLATES_TAB_VALUE ? (
-                                            selectedUsecases.length === 0 ? (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger size='sm' variant='outline'>
+                                            {activeTabValue === COMMUNITY_TEMPLATES_TAB_VALUE ? (
+                                                selectedUsecases.length === 0 ? (
+                                                    <>
+                                                        Use Cases
+                                                        <IconChevronDown />
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {selectedUsecases.length > 1
+                                                            ? `${selectedUsecases[0]} + ${selectedUsecases.length - 1}`
+                                                            : `${selectedUsecases[0]}`}
+                                                        <button
+                                                            className='!w-4 !h-4 bg-accent rounded-full p-1 flex items-center justify-center'
+                                                            onClick={() => clearAllUsecases()}
+                                                        >
+                                                            <IconX className='!w-3 !h-3' />
+                                                        </button>
+                                                    </>
+                                                )
+                                            ) : selectedTemplateUsecases.length === 0 ? (
                                                 <>
                                                     Use Cases
                                                     <IconChevronDown />
                                                 </>
                                             ) : (
                                                 <>
-                                                    {selectedUsecases.length > 1
-                                                        ? `${selectedUsecases[0]} + ${selectedUsecases.length - 1}`
-                                                        : `${selectedUsecases[0]}`}
+                                                    {selectedTemplateUsecases.length > 1
+                                                        ? `${selectedTemplateUsecases[0]} + ${selectedTemplateUsecases.length - 1}`
+                                                        : `${selectedTemplateUsecases[0]}`}
                                                     <button
                                                         className='!w-4 !h-4 bg-accent rounded-full p-1 flex items-center justify-center'
                                                         onClick={() => clearAllUsecases()}
@@ -553,68 +582,53 @@ const Marketplace = () => {
                                                         <IconX className='!w-3 !h-3' />
                                                     </button>
                                                 </>
-                                            )
-                                        ) : selectedTemplateUsecases.length === 0 ? (
-                                            <>
-                                                Use Cases
-                                                <IconChevronDown />
-                                            </>
-                                        ) : (
-                                            <>
-                                                {selectedTemplateUsecases.length > 1
-                                                    ? `${selectedTemplateUsecases[0]} + ${selectedTemplateUsecases.length - 1}`
-                                                    : `${selectedTemplateUsecases[0]}`}
-                                                <button
-                                                    className='!w-4 !h-4 bg-accent rounded-full p-1 flex items-center justify-center'
-                                                    onClick={() => clearAllUsecases()}
-                                                >
-                                                    <IconX className='!w-3 !h-3' />
-                                                </button>
-                                            </>
-                                        )}
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align='end' className='w-56'>
-                                        {activeTabValue === COMMUNITY_TEMPLATES_TAB_VALUE
-                                            ? usecases.map((usecase, index) => (
-                                                  <DropdownMenuCheckboxItem
-                                                      disabled={eligibleUsecases.length === 0 ? true : !eligibleUsecases.includes(usecase)}
-                                                      checked={selectedUsecases.includes(usecase)}
-                                                      className='w-full'
-                                                      onCheckedChange={(checked) => {
-                                                          setSelectedUsecases(
-                                                              checked
-                                                                  ? [...selectedUsecases, usecase]
-                                                                  : selectedUsecases.filter((item) => item !== usecase)
-                                                          )
-                                                      }}
-                                                      key={index}
-                                                  >
-                                                      {usecase}
-                                                  </DropdownMenuCheckboxItem>
-                                              ))
-                                            : templateUsecases.map((usecase, index) => (
-                                                  <DropdownMenuCheckboxItem
-                                                      disabled={
-                                                          eligibleTemplateUsecases.length === 0
-                                                              ? true
-                                                              : !eligibleTemplateUsecases.includes(usecase)
-                                                      }
-                                                      checked={selectedTemplateUsecases.includes(usecase)}
-                                                      className='w-full'
-                                                      onCheckedChange={(checked) => {
-                                                          setSelectedTemplateUsecases(
-                                                              checked
-                                                                  ? [...selectedTemplateUsecases, usecase]
-                                                                  : selectedTemplateUsecases.filter((item) => item !== usecase)
-                                                          )
-                                                      }}
-                                                      key={index}
-                                                  >
-                                                      {usecase}
-                                                  </DropdownMenuCheckboxItem>
-                                              ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                            )}
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align='end' className='w-56'>
+                                            {activeTabValue === COMMUNITY_TEMPLATES_TAB_VALUE
+                                                ? usecases.map((usecase, index) => (
+                                                      <DropdownMenuCheckboxItem
+                                                          disabled={
+                                                              eligibleUsecases.length === 0 ? true : !eligibleUsecases.includes(usecase)
+                                                          }
+                                                          checked={selectedUsecases.includes(usecase)}
+                                                          className='w-full'
+                                                          onCheckedChange={(checked) => {
+                                                              setSelectedUsecases(
+                                                                  checked
+                                                                      ? [...selectedUsecases, usecase]
+                                                                      : selectedUsecases.filter((item) => item !== usecase)
+                                                              )
+                                                          }}
+                                                          key={index}
+                                                      >
+                                                          {usecase}
+                                                      </DropdownMenuCheckboxItem>
+                                                  ))
+                                                : templateUsecases.map((usecase, index) => (
+                                                      <DropdownMenuCheckboxItem
+                                                          disabled={
+                                                              eligibleTemplateUsecases.length === 0
+                                                                  ? true
+                                                                  : !eligibleTemplateUsecases.includes(usecase)
+                                                          }
+                                                          checked={selectedTemplateUsecases.includes(usecase)}
+                                                          className='w-full'
+                                                          onCheckedChange={(checked) => {
+                                                              setSelectedTemplateUsecases(
+                                                                  checked
+                                                                      ? [...selectedTemplateUsecases, usecase]
+                                                                      : selectedTemplateUsecases.filter((item) => item !== usecase)
+                                                              )
+                                                          }}
+                                                          key={index}
+                                                      >
+                                                          {usecase}
+                                                      </DropdownMenuCheckboxItem>
+                                                  ))}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </Box>
                             </Box>
                             <TabsContent value={COMMUNITY_TEMPLATES_TAB_VALUE}>
                                 {!view || view === 'card' ? (

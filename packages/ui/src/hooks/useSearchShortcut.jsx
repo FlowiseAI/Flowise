@@ -12,12 +12,12 @@ const useSearchShorcut = (inputRef) => {
         const handleKeyDown = (event) => {
             if ((isMac && event.metaKey && event.key === 'f') || (!isMac && event.ctrlKey && event.key === 'f')) {
                 event.preventDefault()
-                component.focus()
+                component.querySelector('input').focus()
             }
         }
 
         const handleInputEscape = (event) => {
-            if (event.key === 'Escape') component.blur()
+            if (event.key === 'Escape') component.querySelector('input').blur()
         }
 
         component.addEventListener('keydown', handleInputEscape)

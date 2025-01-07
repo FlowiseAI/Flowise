@@ -21,7 +21,6 @@ const keyboardShortcut = isMac ? '⌘ F' : 'Ctrl F'
 
 const ViewHeader = ({
     children,
-    filters = null,
     onSearchChange,
     search,
     searchPlaceholder = 'Search',
@@ -103,7 +102,6 @@ const ViewHeader = ({
                         />
                     )}
                     {children}
-                    {filters}
                 </Box>
             </Toolbar>
         </Box>
@@ -112,7 +110,6 @@ const ViewHeader = ({
 
 ViewHeader.propTypes = {
     children: PropTypes.node,
-    filters: PropTypes.node,
     onSearchChange: PropTypes.func,
     search: PropTypes.bool,
     searchPlaceholder: PropTypes.string,
