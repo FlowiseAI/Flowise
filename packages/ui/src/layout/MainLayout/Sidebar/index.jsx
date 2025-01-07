@@ -50,7 +50,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
           {isAdminPage && (
             <span
               className='flex items-center justify-center text-[36px]'
-              style={{ color: theme.palette.success.dark, fontWeight: 'bold', marginBottom: '26px' }}
+              style={{ color: theme.palette.primary.dark, fontWeight: 'bold', marginBottom: '26px' }}
             >
               Admin
             </span>
