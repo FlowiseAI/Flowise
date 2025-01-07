@@ -214,7 +214,7 @@ class Retriever_Tools implements INode {
     const retriever = nodeData.inputs?.retriever as BaseRetriever
     const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
     const retrieverToolMetadataFilter = nodeData.inputs?.retrieverToolMetadataFilter
-    const score = nodeData.inputs?.score as number
+    const score = +nodeData.inputs?.score
     const input = {
       name,
       description,
@@ -302,7 +302,16 @@ class Retriever_Tools implements INode {
           }
         }
       }
-      const filteredDocs = docs.filter((doc) => doc.metadata.score >= score)
+
+      // Filter documents based on score threshold
+      const filteredDocs = docs.filter((doc) => {
+        // If score is not a number, include the document
+        if (isNaN(+doc.metadata?.score)) return true
+        // If score threshold is set (>= 0), only include docs that meet or exceed it
+        if (score >= 0) return doc.metadata.score >= score
+        // Include all docs if no valid score threshold
+        return true
+      })
 
       const content = nodeData.inputs?.returnRawDocument
         ? JSON.stringify(
