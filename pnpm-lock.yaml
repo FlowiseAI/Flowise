@@ -730,11 +730,11 @@ importers:
         specifier: ^1.1.1
         version: 1.2.1
       cmcts-c-agent-embedding:
-        specifier: 1.0.5
-        version: 1.0.5(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.6
+        version: 1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       cmcts-c-agent-embedding-react:
-        specifier: 1.0.5
-        version: 1.0.5(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.5(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.6
+        version: 1.0.6(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       dccxx-s3-explorer:
         specifier: ^1.0.20
         version: 1.0.20(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
@@ -6542,6 +6542,10 @@ packages:
   '@types/parse-json@4.0.2':
     resolution: { integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw== }
 
+  '@types/pdfjs-dist@2.10.378':
+    resolution: { integrity: sha512-TRdIPqdsvKmPla44kVy4jv5Nt5vjMfVjbIEke1CRULIrwKNRC4lIiZvNYDJvbUMNCFPNIUcOKhXTyMJrX18IMA== }
+    deprecated: This is a stub types definition. pdfjs-dist provides its own type definitions, so you do not need this installed.
+
   '@types/pg-pool@2.0.6':
     resolution: { integrity: sha512-TaAUE5rq2VQYxab5Ts7WZhKNmuN78Q6PiFonTDdpbx8a1H0M1vhy3rhiMjl+e2iHmogyMw7jZF4FrE6eJUy5HQ== }
 
@@ -8151,14 +8155,14 @@ packages:
     engines: { node: '>= 14.15.0' }
     hasBin: true
 
-  cmcts-c-agent-embedding-react@1.0.5:
-    resolution: { integrity: sha512-LUFxdJ8RNkQNY0U/43iA88RnQR5IbnbW0Vp+Vhi08acpRwT2+LtZ0lC+73/XSV7C1ZlGMnfTk4opwF3PC1KvQw== }
+  cmcts-c-agent-embedding-react@1.0.6:
+    resolution: { integrity: sha512-aUv72s9FHLz05yhjyWfGPspBkL2B24dADWjX8puikPuSUFYIIYmSmCbzDmsiFrZOYGeUO4Ryr+0AiHCpOirq+Q== }
     peerDependencies:
       cmcts-c-agent-embedding: '*'
       react: 18.x
 
-  cmcts-c-agent-embedding@1.0.5:
-    resolution: { integrity: sha512-M3AJ4G4yZH3bGWBtNsSmywMC7IFBc52jwzHD35KxxDnsMF4Gc5ektu8nbz4kh3P6gT1huq93XCC2TBUIXkXjCA== }
+  cmcts-c-agent-embedding@1.0.6:
+    resolution: { integrity: sha512-V9DyS7aw9GBRG9uiZnyLTB9cD6tnmViUM4OHc/0Q+2zEFe45/7HsUWEMigKlwCwEq4Q9ekgZMdOpf0pSyE8Bng== }
 
   cmd-shim@5.0.0:
     resolution: { integrity: sha512-qkCtZ59BidfEwHltnJwkyVZn+XQojdAySM1D1gSeh11Z4pW1Kpolkyo53L5noc0nrxmIvyFwTmJRo4xs7FFLPw== }
@@ -25176,6 +25180,13 @@ snapshots:
 
   '@types/parse-json@4.0.2': {}
 
+  '@types/pdfjs-dist@2.10.378(encoding@0.1.13)':
+    dependencies:
+      pdfjs-dist: 3.11.174(encoding@0.1.13)
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+
   '@types/pg-pool@2.0.6':
     dependencies:
       '@types/pg': 8.11.6
@@ -27298,10 +27309,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  cmcts-c-agent-embedding-react@1.0.5(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.5(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding-react@1.0.6(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@ladle/react': 2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-      cmcts-c-agent-embedding: 1.0.5(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+      cmcts-c-agent-embedding: 1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -27315,11 +27326,12 @@ snapshots:
       - terser
       - typescript
 
-  cmcts-c-agent-embedding@1.0.5(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@babel/core': 7.24.0
       '@microsoft/fetch-event-source': 2.0.1
       '@ts-stack/markdown': 1.5.0
+      '@types/pdfjs-dist': 2.10.378(encoding@0.1.13)
       axios: 1.7.9(debug@4.4.0)
       c-agent-embedding: 1.0.4(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       c-agent-embedding-react: 1.0.5(@types/node@20.12.12)(c-agent-embedding@1.0.4(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
@@ -27332,6 +27344,7 @@ snapshots:
       lodash: 4.17.21
       multer: 1.4.5-lts.1
       node-fetch: 3.3.2
+      pdfjs-dist: 3.11.174(encoding@0.1.13)
       prettier: 3.4.2
       solid-element: 1.7.0(solid-js@1.7.1)
       solid-js: 1.7.1
@@ -27339,6 +27352,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
       - debug
+      - encoding
       - less
       - lightningcss
       - react
