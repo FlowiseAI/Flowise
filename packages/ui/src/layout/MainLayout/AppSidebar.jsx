@@ -39,7 +39,7 @@ export function AppSidebar() {
                                             isActive={
                                                 item.id === 'chatflows'
                                                     ? location.pathname === '/' || location.pathname === item.url
-                                                    : location.pathname === item.url
+                                                    : location.pathname === item.url || location.pathname.startsWith(item.url)
                                             }
                                             tooltip={item.title}
                                         >
