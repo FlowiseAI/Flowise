@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { Box, Grid, Typography, useTheme } from '@mui/material'
 
 // components
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 // ===========================|| CONTRACT CARD ||=========================== //
@@ -14,7 +15,14 @@ const ItemCard = ({ data, images, onClick }) => {
     const customization = useSelector((state) => state.customization)
 
     return (
-        <Card className='h-full cursor-pointer duration-200 transition-shadow hover:shadow-lg' onClick={onClick}>
+        <Card className='relative h-full cursor-pointer duration-200 transition-shadow hover:shadow-lg' onClick={onClick}>
+            {data.badge && (
+                <Box className='absolute -top-2 -right-2'>
+                    <Badge className='px-1.5 py-0.5' variant={data.badge === 'POPULAR' ? 'default' : 'destructive'}>
+                        {data.badge}
+                    </Badge>
+                </Box>
+            )}
             <CardHeader>
                 <CardTitle className='flex flex-row items-center text-xl font-semibold'>
                     {data.iconSrc && <img alt='icon' className='w-6 h-6 mr-2 rounded-full' src={data.iconSrc} />}
