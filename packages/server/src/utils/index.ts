@@ -56,15 +56,13 @@ const FILE_ATTACHMENT_PREFIX = 'file_attachment'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
-const USE_AWS_SECRETS_MANAGER = process.env.USE_AWS_SECRETS_MANAGER === 'true'
+const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1' // Default region if not provided
 
 let secretsManagerClient: SecretsManagerClient | null = null
 if (USE_AWS_SECRETS_MANAGER) {
     secretsManagerClient = new SecretsManagerClient({ region: AWS_REGION })
 }
-const CACHE_CREDENTIALS = process.env.CACHE_CREDENTIALS === 'true'
-let credentialsCache = new Map<string, string>()
 
 export const databaseEntities: IDatabaseEntity = {
     ChatFlow: ChatFlow,
@@ -1430,9 +1428,6 @@ export const decryptCredentialData = async (
     componentCredentialName?: string,
     componentCredentials?: IComponentCredentials
 ): Promise<ICredentialDataDecrypted> => {
-    if (credentialsCache.has(encryptedData)) {
-        return JSON.parse(credentialsCache.get(encryptedData) ?? '{}') as ICredentialDataDecrypted
-    }
     let decryptedDataStr: string
 
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
@@ -1463,9 +1458,6 @@ export const decryptCredentialData = async (
         if (componentCredentialName && componentCredentials) {
             const plainDataObj = JSON.parse(decryptedDataStr)
             return redactCredentialWithPasswordType(componentCredentialName, plainDataObj, componentCredentials)
-        }
-        if (CACHE_CREDENTIALS) {
-            credentialsCache.set(encryptedData, decryptedDataStr)
         }
         return JSON.parse(decryptedDataStr)
     } catch (e) {

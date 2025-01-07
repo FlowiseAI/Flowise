@@ -9,21 +9,29 @@ import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariab
 import { AES, enc } from 'crypto-js'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { getFileFromStorage } from './storageUtils'
-import { GetSecretValueCommand } from '@aws-sdk/client-secrets-manager'
-import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
+import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
 export const FLOWISE_CHATID = 'flowise_chatId'
-const USE_AWS_SECRETS_MANAGER = process.env.USE_AWS_SECRETS_MANAGER === 'true'
-const AWS_REGION = process.env.AWS_REGION || 'us-east-1' // Default region if not provided
 
 let secretsManagerClient: SecretsManagerClient | null = null
+const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
 if (USE_AWS_SECRETS_MANAGER) {
-    secretsManagerClient = new SecretsManagerClient({ region: AWS_REGION })
+    const region = process.env.SECRETKEY_AWS_REGION || 'us-east-1' // Default region if not provided
+    const accessKeyId = process.env.SECRETKEY_AWS_ACCESS_KEY
+    const secretAccessKey = process.env.SECRETKEY_AWS_SECRET_KEY
+
+    let credentials: SecretsManagerClientConfig['credentials'] | undefined
+    if (accessKeyId && secretAccessKey) {
+        credentials = {
+            accessKeyId,
+            secretAccessKey
+        }
+    }
+    secretsManagerClient = new SecretsManagerClient({ credentials, region })
 }
-const CACHE_CREDENTIALS = process.env.CACHE_CREDENTIALS === 'true'
-let credentialsCache = new Map<string, string>()
+
 /*
  * List of dependencies allowed to be import in @flowiseai/nodevm
  */
@@ -512,10 +520,6 @@ const getEncryptionKey = async (): Promise<string> => {
  * @returns {Promise<ICommonObject>}
  */
 const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
-    if (credentialsCache.has(encryptedData)) {
-        return JSON.parse(credentialsCache.get(encryptedData) ?? '{}') as ICommonObject
-    }
-
     let decryptedDataStr: string
 
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
@@ -542,9 +546,6 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
 
     if (!decryptedDataStr) return {}
     try {
-        if (CACHE_CREDENTIALS) {
-            credentialsCache.set(encryptedData, decryptedDataStr)
-        }
         return JSON.parse(decryptedDataStr)
     } catch (e) {
         console.error(e)
