@@ -601,22 +601,28 @@ services:
       notExposeAsWebApp: true
 
   $$cap_appname-worker-databases:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    entrypoint: worker-databases
+    restart: unless-stopped
     environment:
-      _APP_ENV: $$cap_app_env
-      _APP_WORKER_PER_CORE: $$cap_worker_per_core
-      _APP_OPENSSL_KEY_V1: $$cap_encryption_key
-      _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
-      _APP_REDIS_PORT: 6379
-      _APP_REDIS_USER: default
-      _APP_REDIS_PASS: $$cap_redis_pass
-      _APP_DB_HOST: srv-captain--$$cap_appname-db
-      _APP_DB_PORT: 3306
-      _APP_DB_SCHEMA: $$cap_db_name
-      _APP_DB_USER: $$cap_db_user
-      _APP_DB_PASS: $$cap_db_pass
-      _APP_LOGGING_CONFIG: $$cap_logging_config
+      - _APP_ENV: $$cap_app_env
+      - _APP_WORKER_PER_CORE: $$cap_worker_per_core
+      - _APP_OPENSSL_KEY_V1: $$cap_encryption_key
+      - _APP_REDIS_HOST: srv-captain--$$cap_appname-redis
+      - _APP_REDIS_PORT: 6379
+      - _APP_REDIS_USER: default
+      - _APP_REDIS_PASS: $$cap_redis_pass
+      - _APP_DB_HOST: srv-captain--$$cap_appname-db
+      - _APP_DB_PORT: 3306
+      - _APP_DB_SCHEMA: $$cap_db_name
+      - _APP_DB_USER: $$cap_db_user
+      - _APP_DB_PASS: $$cap_db_pass
+      - _APP_LOGGING_CONFIG: $$cap_logging_config
 
   $$cap_appname-worker-usage:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    entrypoint: worker-usage
+    restart: unless-stopped
     environment:
       _APP_ENV: $$cap_app_env
       _APP_WORKER_PER_CORE: $$cap_worker_per_core
@@ -634,6 +640,9 @@ services:
       _APP_LOGGING_CONFIG: $$cap_logging_config
 
   $$cap_appname-task-maintenance:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    entrypoint: maintenance
+    restart: unless-stopped
     environment:
       _APP_ENV: $$cap_app_env
       _APP_WORKER_PER_CORE: $$cap_worker_per_core
