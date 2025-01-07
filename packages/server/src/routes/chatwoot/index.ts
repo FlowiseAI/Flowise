@@ -12,18 +12,14 @@ export const CHATWOOT_ACCOUNT_ID = +(process.env.CHATWOOT_ACCOUNT_ID || '1')
 // User routes
 router.post('/connect', async (req: Request, res: Response, next: NextFunction) => {
   const messages = JSON.parse(req.body.messages).chatHistory
-  console.log('🔥 messages:', messages)
   const simplifiedMessages = messages.map(({ message, type }: { message: string; type: string }) => ({ message, type }))
-  console.log('🔥 simplifiedMessages:', simplifiedMessages)
   try {
     const { data: inboxes } = await axios.get(`${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/inboxes`, {
       headers: {
         api_access_token: CHATWOOT_ACCESS_KEY
       }
     })
-    console.log('🔥 inboxes:', inboxes)
     const inboxId = +inboxes.payload?.find((item: any) => item.website_token === req.body.id || item.inbox_identifier === req.body.id)?.id
-    console.log('🔥 inboxId:', inboxId)
     if (!inboxId) throw new Error('inbox not found')
 
     const contactIdentifier = crypto
@@ -36,7 +32,6 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
         ])
       )
       .digest('hex')
-    console.log('🔥 contactIdentifier:', contactIdentifier)
     const { data: searchContacts } = await axios.get(`${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/contacts/search`, {
       params: {
         q: contactIdentifier
@@ -45,7 +40,6 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
         api_access_token: CHATWOOT_ACCESS_KEY
       }
     })
-    console.log('🔥 searchContacts:', searchContacts)
     let contactId = +searchContacts.payload?.[0]?.id
 
     if (!contactId) {
@@ -88,8 +82,6 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
         }
       }
     )
-    console.log('🔥 contactId:', contactId)
-    console.log('🔥 createdConversation:', createdConversation)
 
     for (let i = 1; i < simplifiedMessages.length; i++) {
       await axios.post(

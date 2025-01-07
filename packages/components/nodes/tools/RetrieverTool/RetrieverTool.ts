@@ -164,22 +164,22 @@ class Retriever_Tools implements INode {
         name: 'retriever',
         type: 'BaseRetriever'
       },
-      // {
-      //   label: 'Return Full Document Content',
-      //   name: 'returnFullContent',
-      //   type: 'boolean',
-      //   description: 'Whether to return the full content of retrieved documents',
-      //   optional: true,
-      //   default: false
-      // },
-      // {
-      //   label: 'Return Raw Document',
-      //   name: 'returnRawDocument',
-      //   type: 'boolean',
-      //   description: 'Whether to return the raw document object from the retriever',
-      //   optional: true,
-      //   default: false
-      // },
+      {
+        label: 'Return Full Document Content',
+        name: 'returnFullContent',
+        type: 'boolean',
+        description: 'Whether to return the full content of retrieved documents',
+        optional: true,
+        default: false
+      },
+      {
+        label: 'Return Raw Document',
+        name: 'returnRawDocument',
+        type: 'boolean',
+        description: 'Whether to return the raw document object from the retriever',
+        optional: true,
+        default: false
+      },
       {
         label: 'Return Source Documents',
         name: 'returnSourceDocuments',
@@ -202,10 +202,10 @@ class Retriever_Tools implements INode {
         label: 'Score',
         name: 'score',
         type: 'number',
-        optional: true
+        optional: true,
+        default: 0
       }
     ]
-    this.score = 0
   }
 
   async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -225,7 +225,6 @@ class Retriever_Tools implements INode {
 
     const func = async ({ input }: { input: string }, _?: CallbackManagerForToolRun, flowConfig?: IFlowConfig) => {
       if (retrieverToolMetadataFilter) {
-        console.log('🔥 1')
         const flowObj = flowConfig
 
         const metadatafilter =
@@ -245,8 +244,6 @@ class Retriever_Tools implements INode {
       const docs = await retriever.invoke(input)
 
       if (nodeData.inputs?.returnFullContent) {
-        console.log('🔥 3')
-
         // Extract prefixes from docs
         const prefixes = docs
           .map((doc) => doc.metadata?.source?.replace('s3://cts-llm-docs-bucket/', ''))
@@ -305,7 +302,7 @@ class Retriever_Tools implements INode {
           }
         }
       }
-      const filteredDocs = docs.filter((doc) => doc.metadata.score >= this.score && doc.metadata.score <= 1)
+      const filteredDocs = docs.filter((doc) => doc.metadata.score >= score && doc.metadata.score <= 1)
 
       const content = nodeData.inputs?.returnRawDocument
         ? JSON.stringify(
@@ -331,7 +328,6 @@ class Retriever_Tools implements INode {
     }) as any
     const tool = new DynamicStructuredTool({ ...input, func, schema })
     tool.setFlowObject(flow)
-    console.log('🔥 tool', tool)
     return tool
   }
 }
