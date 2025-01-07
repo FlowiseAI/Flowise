@@ -61,11 +61,10 @@ const edgeTypes = { buttonedge: ButtonEdge }
 
 const Canvas = () => {
   const theme = useTheme()
-  const customization = useSelector((state) => state.customization)
-  const [isDark] = useState(customization.isDarkMode)
+  const { state, pathname } = useLocation()
+  const user = useSelector((state) => state.user)
   const navigate = useNavigate()
 
-  const { state } = useLocation()
   const templateFlowData = state ? state.templateFlowData : ''
 
   const URLpath = document.location.pathname.toString().split('/')
@@ -75,11 +74,13 @@ const Canvas = () => {
   const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
 
   const { confirm } = useConfirm()
-
   const dispatch = useDispatch()
   const canvas = useSelector((state) => state.canvas)
   const [canvasDataStore, setCanvasDataStore] = useState(canvas)
   const [chatflow, setChatflow] = useState(null)
+  const [isAdminPage, setIsAdminPage] = useState(
+    pathname === '/canvas' || pathname === '/agentcanvas' ? true : user?.role === 'ADMIN' ? true : false
+  )
   const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
 
   // ==============================|| Snackbar ||============================== //
@@ -425,6 +426,9 @@ const Canvas = () => {
   // Get specific chatflow successful
   useEffect(() => {
     if (getSpecificChatflowApi.data) {
+      if (user?.role !== 'ADMIN' && getSpecificChatflowApi.data?.userId === user?.id) {
+        setIsAdminPage(true)
+      }
       const chatflow = getSpecificChatflowApi.data
       const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
       setNodes(initialFlow.nodes || [])
@@ -583,85 +587,94 @@ const Canvas = () => {
                 defaultEdgeOptions={{
                   style: { strokeWidth: 2, stroke: '#D0D5DD' }
                 }}
+                {...(!isAdminPage && {
+                  nodesDraggable: false,
+                  nodesConnectable: false,
+                  edgesUpdatable: false,
+                  panOnScroll: false,
+                  zoomOnScroll: false
+                })}
               >
-                <Controls
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                >
-                  <ControlButton
-                    onClick={async () => {
-                      const elk = new ELK()
-                      const nodes = reactFlowInstance.getNodes()
-                      const edges = reactFlowInstance.getEdges()
-                      const elkGraph = {
-                        id: 'root',
-                        layoutOptions: {
-                          'elk.algorithm': 'layered',
-                          'elk.layered.spacing.nodeNodeBetweenLayers': '128',
-                          'elk.spacing.nodeNode': '64',
-                          'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX'
-                        },
-                        children: nodes.map((node) => ({
-                          id: node.id,
-                          width: node.width,
-                          height: node.height,
-                          targetPosition: 'left',
-                          sourcePosition: 'right',
-                          labels: [{ text: node.id }]
-                        })),
-                        edges: edges.map((edge) => ({
-                          id: edge.id,
-                          sources: [edge.source],
-                          targets: [edge.target]
-                        }))
-                      }
-
-                      const layout = await elk.layout(elkGraph)
-
-                      // Find the smallest y-coordinate among all nodes
-                      let minY = Infinity
-                      layout.children?.forEach((child) => {
-                        if (child.y < minY) {
-                          minY = child.y
-                        }
-                      })
-
-                      // Group nodes by x-coordinate
-                      const nodesByX = {}
-                      layout.children?.forEach((child) => {
-                        const xCoord = Math.round(child.x) // Round to handle floating point imprecision
-                        if (!nodesByX[xCoord]) {
-                          nodesByX[xCoord] = []
-                        }
-                        nodesByX[xCoord].push(child)
-                      })
-
-                      // Position nodes, handling overlaps
-                      Object.values(nodesByX).forEach((nodesAtX) => {
-                        let currentY = minY
-                        nodesAtX.forEach((child) => {
-                          const index = nodes.findIndex((e) => e.id === child.id)
-                          if (index > -1) {
-                            nodes[index].position = {
-                              x: child.x,
-                              y: currentY
-                            }
-                            // Update currentY for next node, adding a small gap of 20px between nodes
-                            currentY += child.height + 64
-                          }
-                        })
-                      })
-
-                      reactFlowInstance.setNodes(nodes)
+                {isAdminPage && (
+                  <Controls
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)'
                     }}
                   >
-                    <IconArrowsShuffle size={14} />
-                  </ControlButton>
-                </Controls>
+                    <ControlButton
+                      onClick={async () => {
+                        const elk = new ELK()
+                        const nodes = reactFlowInstance.getNodes()
+                        const edges = reactFlowInstance.getEdges()
+                        const elkGraph = {
+                          id: 'root',
+                          layoutOptions: {
+                            'elk.algorithm': 'layered',
+                            'elk.layered.spacing.nodeNodeBetweenLayers': '128',
+                            'elk.spacing.nodeNode': '64',
+                            'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX'
+                          },
+                          children: nodes.map((node) => ({
+                            id: node.id,
+                            width: node.width,
+                            height: node.height,
+                            targetPosition: 'left',
+                            sourcePosition: 'right',
+                            labels: [{ text: node.id }]
+                          })),
+                          edges: edges.map((edge) => ({
+                            id: edge.id,
+                            sources: [edge.source],
+                            targets: [edge.target]
+                          }))
+                        }
+
+                        const layout = await elk.layout(elkGraph)
+
+                        // Find the smallest y-coordinate among all nodes
+                        let minY = Infinity
+                        layout.children?.forEach((child) => {
+                          if (child.y < minY) {
+                            minY = child.y
+                          }
+                        })
+
+                        // Group nodes by x-coordinate
+                        const nodesByX = {}
+                        layout.children?.forEach((child) => {
+                          const xCoord = Math.round(child.x) // Round to handle floating point imprecision
+                          if (!nodesByX[xCoord]) {
+                            nodesByX[xCoord] = []
+                          }
+                          nodesByX[xCoord].push(child)
+                        })
+
+                        // Position nodes, handling overlaps
+                        Object.values(nodesByX).forEach((nodesAtX) => {
+                          let currentY = minY
+                          nodesAtX.forEach((child) => {
+                            const index = nodes.findIndex((e) => e.id === child.id)
+                            if (index > -1) {
+                              nodes[index].position = {
+                                x: child.x,
+                                y: currentY
+                              }
+                              // Update currentY for next node, adding a small gap of 20px between nodes
+                              currentY += child.height + 64
+                            }
+                          })
+                        })
+
+                        reactFlowInstance.setNodes(nodes)
+                      }}
+                    >
+                      <IconArrowsShuffle size={14} />
+                    </ControlButton>
+                  </Controls>
+                )}
                 <Background
                   color='#aaa'
                   gap={24}
@@ -671,7 +684,7 @@ const Canvas = () => {
                     }
                   }
                 />
-                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={nodesData} node={selectedNode} />
+                {isAdminPage && <AddNodes isAgentCanvas={isAgentCanvas} nodesData={nodesData} node={selectedNode} />}
                 {isSyncNodesButtonEnabled && (
                   <Fab
                     sx={{
