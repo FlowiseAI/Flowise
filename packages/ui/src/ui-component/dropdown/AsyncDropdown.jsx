@@ -152,6 +152,7 @@ export const AsyncDropdown = ({
                             )
                         }}
                         sx={{ height: '100%', '& .MuiInputBase-root': { height: '100%' } }}
+                        key={`${nodeData.id}-${name}-${nodeData.inputs[internalValue]}`}
                     />
                 )}
                 renderOption={(props, option) => (

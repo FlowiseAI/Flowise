@@ -1,14 +1,12 @@
 import PropTypes from 'prop-types'
-import { useContext, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { memo, useContext } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
 
 // project imports
 import NodeCardWrapper from '@/ui-component/cards/NodeCardWrapper'
-import NodeTooltip from '@/ui-component/tooltip/NodeTooltip'
-import { IconButton, Box } from '@mui/material'
+import { Box, Button, ButtonGroup, Stack } from '@mui/material'
 import { IconCopy, IconTrash } from '@tabler/icons-react'
 import { Input } from '@/ui-component/input/Input'
 
@@ -17,22 +15,71 @@ import { flowContext } from '@/store/context/ReactFlowContext'
 
 const StickyNote = ({ data }) => {
     const theme = useTheme()
-    const canvas = useSelector((state) => state.canvas)
     const { deleteNode, duplicateNode } = useContext(flowContext)
     const [inputParam] = data.inputParams
 
-    const [open, setOpen] = useState(false)
-
-    const handleClose = () => {
-        setOpen(false)
-    }
-
-    const handleOpen = () => {
-        setOpen(true)
-    }
-
     return (
-        <>
+        <Stack
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: 0.5,
+                '& > .node-actions': {
+                    visibility: 'hidden',
+                    pointerEvents: 'none'
+                },
+                '&:hover > .node-actions': {
+                    visibility: 'visible',
+                    pointerEvents: 'auto'
+                }
+            }}
+        >
+            <ButtonGroup
+                className='node-actions'
+                sx={{
+                    background: theme.palette.card.main,
+                    borderRadius: '8px',
+                    height: '26px',
+                    '& > button': {
+                        border: 'none',
+                        borderColor: 'transparent',
+                        color: theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit',
+                        minWidth: '28px !important',
+                        width: '24px',
+                        height: '24px',
+                        padding: '0.45rem',
+                        '&:hover': {
+                            border: 'none',
+                            borderRightColor: '#454c59 !important'
+                        }
+                    }
+                }}
+                variant='outlined'
+            >
+                <Button
+                    title='Duplicate'
+                    onClick={() => {
+                        duplicateNode(data.id)
+                    }}
+                    sx={{
+                        '&:hover': { color: theme?.palette.primary.main }
+                    }}
+                >
+                    <IconCopy />
+                </Button>
+                <Button
+                    title='Delete'
+                    onClick={() => {
+                        deleteNode(data.id)
+                    }}
+                    sx={{
+                        '&:hover': { color: 'red' }
+                    }}
+                >
+                    <IconTrash />
+                </Button>
+            </ButtonGroup>
             <NodeCardWrapper
                 content={false}
                 sx={{
@@ -42,57 +89,19 @@ const StickyNote = ({ data }) => {
                 }}
                 border={false}
             >
-                <NodeTooltip
-                    open={!canvas.canvasDialogShow && open}
-                    onClose={handleClose}
-                    onOpen={handleOpen}
-                    disableFocusListener={true}
-                    title={
-                        <div
-                            style={{
-                                background: 'transparent',
-                                display: 'flex',
-                                flexDirection: 'column'
-                            }}
-                        >
-                            <IconButton
-                                title='Duplicate'
-                                onClick={() => {
-                                    duplicateNode(data.id)
-                                }}
-                                sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
-                                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
-                            >
-                                <IconCopy />
-                            </IconButton>
-                            <IconButton
-                                title='Delete'
-                                onClick={() => {
-                                    deleteNode(data.id)
-                                }}
-                                sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
-                                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
-                            >
-                                <IconTrash />
-                            </IconButton>
-                        </div>
-                    }
-                    placement='right-start'
-                >
-                    <Box>
-                        <Input
-                            key={data.id}
-                            inputParam={inputParam}
-                            onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                            value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                            nodes={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getNodes() : []}
-                            edges={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getEdges() : []}
-                            nodeId={data.id}
-                        />
-                    </Box>
-                </NodeTooltip>
+                <Box>
+                    <Input
+                        key={data.id}
+                        inputParam={inputParam}
+                        onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                        value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                        nodes={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getNodes() : []}
+                        edges={inputParam?.acceptVariable && reactFlowInstance ? reactFlowInstance.getEdges() : []}
+                        nodeId={data.id}
+                    />
+                </Box>
             </NodeCardWrapper>
-        </>
+        </Stack>
     )
 }
 
@@ -100,4 +109,4 @@ StickyNote.propTypes = {
     data: PropTypes.object
 }
 
-export default StickyNote
+export default memo(StickyNote)

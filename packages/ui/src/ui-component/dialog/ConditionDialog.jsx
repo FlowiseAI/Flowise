@@ -17,7 +17,7 @@ import NodeInputHandler from '@/views/canvas/NodeInputHandler'
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
-const ConditionDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const ConditionDialog = ({ show, dialogProps, onCancel, onConfirm, onNodeDataChange }) => {
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
@@ -66,6 +66,7 @@ const ConditionDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                         data={data}
                                         isAdditionalParams={true}
                                         disablePadding={true}
+                                        onNodeDataChange={onNodeDataChange}
                                     />
                                 </TabPanel>
                             ))}
@@ -89,7 +90,8 @@ ConditionDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    onNodeDataChange: PropTypes.func
 }
 
 export default ConditionDialog

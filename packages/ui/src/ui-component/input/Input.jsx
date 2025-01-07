@@ -4,7 +4,7 @@ import { FormControl, OutlinedInput, InputBase, Popover } from '@mui/material'
 import SelectVariable from '@/ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
-export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
+export const Input = ({ inputParam, value, nodes, edges, nodeId, onBlur, onChange, disabled = false }) => {
     const [myValue, setMyValue] = useState(value ?? '')
     const [anchorEl, setAnchorEl] = useState(null)
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
@@ -62,9 +62,12 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                         minRows={inputParam.rows ?? 1}
                         value={myValue}
                         name={inputParam.name}
+                        onBlur={(e) => {
+                            onBlur?.(e.target.value)
+                        }}
                         onChange={(e) => {
                             setMyValue(e.target.value)
-                            onChange(e.target.value)
+                            onChange?.(e.target.value)
                         }}
                         inputProps={{
                             step: inputParam.step ?? 1,
@@ -98,9 +101,12 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                         rows={inputParam.rows ?? 1}
                         value={myValue}
                         name={inputParam.name}
+                        onBlur={(e) => {
+                            onBlur?.(e.target.value)
+                        }}
                         onChange={(e) => {
                             setMyValue(e.target.value)
-                            onChange(e.target.value)
+                            onChange?.(e.target.value)
                         }}
                         inputProps={{
                             step: inputParam.step ?? 1,
@@ -143,6 +149,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
 Input.propTypes = {
     inputParam: PropTypes.object,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    onBlur: PropTypes.func,
     onChange: PropTypes.func,
     disabled: PropTypes.bool,
     nodes: PropTypes.array,

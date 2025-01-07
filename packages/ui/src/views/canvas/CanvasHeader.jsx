@@ -2,10 +2,12 @@ import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { useEffect, useRef, useState } from 'react'
+import moment from 'moment'
+import { ActionCreators } from 'redux-undo'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button, CircularProgress } from '@mui/material'
 
 // icons
 import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
@@ -20,20 +22,14 @@ import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
-// API
-import chatflowsApi from '@/api/chatflows'
-
-// Hooks
-import useApi from '@/hooks/useApi'
-
 // utils
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW, RESET_CANVAS } from '@/store/actions'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, isAgentCanvas, isSaving, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -62,8 +58,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
 
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
-    const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
-    const canvas = useSelector((state) => state.canvas)
+    const canvas = useSelector((state) => state.canvas.present)
 
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
@@ -153,11 +148,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
 
     const submitFlowName = () => {
         if (chatflow.id) {
-            const updateBody = {
+            const updatedChatflow = {
+                ...chatflow,
                 name: flowNameRef.current.value
             }
-            updateChatflowApi.request(chatflow.id, updateBody)
+            dispatch({ type: SET_CHATFLOW, chatflow: updatedChatflow })
         }
+        setEditingFlowName(false)
     }
 
     const onAPIDialogClick = () => {
@@ -212,15 +209,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
         handleSaveFlow(flowName)
     }
 
-    useEffect(() => {
-        if (updateChatflowApi.data) {
-            setFlowName(updateChatflowApi.data.name)
-            dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
+    const handleBack = () => {
+        // clear canvas data and history when leaving the canvas
+        dispatch({ type: RESET_CANVAS })
+        dispatch(ActionCreators.clearHistory())
+        if (isAgentCanvas) {
+            window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/agentflows', { replace: true })
+        } else {
+            window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
         }
-        setEditingFlowName(false)
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updateChatflowApi.data])
+    }
 
     useEffect(() => {
         if (chatflow) {
@@ -255,9 +253,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                     }
                                 }}
                                 color='inherit'
-                                onClick={() =>
-                                    window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
-                                }
+                                onClick={handleBack}
                             >
                                 <IconChevronLeft stroke={1.5} size='1.3rem' />
                             </Avatar>
@@ -368,9 +364,29 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                         )}
                     </Box>
                 </Stack>
-                <Box>
+                <Stack flexDirection='row' sx={{ gap: 2 }}>
                     {chatflow?.id && (
-                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <>
+                            {isSaving ? (
+                                <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                    <CircularProgress size={16} />
+                                    <Typography variant='h5'>Saving...</Typography>
+                                </Stack>
+                            ) : (
+                                <Stack sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                    <IconCheck size='1.3rem' />
+                                    <Typography variant='h5'>
+                                        Auto-Saved{' '}
+                                        {moment(chatflow?.updatedDate).isSame(moment(), 'day')
+                                            ? `at ${moment(chatflow?.updatedDate).format('hh:mma')}`
+                                            : `on ${moment(chatflow?.updatedDate).format('MMM D, h:mma')}`}
+                                    </Typography>
+                                </Stack>
+                            )}
+                        </>
+                    )}
+                    {chatflow?.id && (
+                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%' }}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
@@ -391,7 +407,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                             </Avatar>
                         </ButtonBase>
                     )}
-                    <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+                    <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%' }}>
                         <Avatar
                             variant='rounded'
                             sx={{
@@ -430,7 +446,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                             <IconSettings stroke={1.5} size='1.3rem' />
                         </Avatar>
                     </ButtonBase>
-                </Box>
+                </Stack>
             </Stack>
             <Settings
                 chatflow={chatflow}
@@ -485,7 +501,8 @@ CanvasHeader.propTypes = {
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isSaving: PropTypes.bool
 }
 
 export default CanvasHeader

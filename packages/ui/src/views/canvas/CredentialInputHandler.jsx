@@ -92,6 +92,10 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
         setCredentialId(data?.credential ?? '')
     }, [data])
 
+    useEffect(() => {
+        setReloadTimestamp(Date.now().toString())
+    }, [credentialId])
+
     return (
         <div ref={ref}>
             {inputParam && (
@@ -100,6 +104,7 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                         <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
                             <AsyncDropdown
                                 disabled={disabled}
+                                key={`${data.id}-${inputParam.name}-${data.inputs[credentialId]}`}
                                 name={inputParam.name}
                                 nodeData={data}
                                 value={credentialId ?? 'choose an option'}
