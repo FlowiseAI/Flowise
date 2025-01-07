@@ -15,11 +15,17 @@ import MainCard from '@/ui-component/cards/MainCard'
 import Transitions from '@/ui-component/extended/Transitions'
 import settings from '@/menu-items/settings'
 import agentsettings from '@/menu-items/agentsettings'
+import { useLocation } from 'react-router-dom'
 
 // ==============================|| SETTINGS ||============================== //
 
 const Settings = ({ chatflow, isSettingsOpen, anchorEl, isAgentCanvas, onSettingsItemClick, onUploadFile, onClose }) => {
+  const { pathname } = useLocation()
+  const user = useSelector((state) => state.user)
   const theme = useTheme()
+  const [isAdminPage, setIsAdminPage] = useState(
+    pathname === '/canvas' || pathname === '/agentcanvas' ? true : user?.role === 'ADMIN' ? true : false
+  )
   const [settingsMenu, setSettingsMenu] = useState([])
   const customization = useSelector((state) => state.customization)
   const inputFile = useRef(null)
@@ -42,16 +48,27 @@ const Settings = ({ chatflow, isSettingsOpen, anchorEl, isAgentCanvas, onSetting
   }
 
   useEffect(() => {
+    let settingsMenu = []
     if (chatflow && !chatflow.id) {
       const menus = isAgentCanvas ? agentsettings : settings
-      const settingsMenu = menus.children.filter((menu) => menu.id === 'loadChatflow')
-      setSettingsMenu(settingsMenu)
+      settingsMenu = menus.children.filter((menu) => menu.id === 'loadChatflow')
     } else if (chatflow && chatflow.id) {
       const menus = isAgentCanvas ? agentsettings : settings
-      const settingsMenu = menus.children
+      settingsMenu = menus.children
+    }
+
+    if (isAdminPage) {
+      setSettingsMenu(settingsMenu)
+    } else {
+      settingsMenu = settingsMenu.filter(
+        (menu) => menu.id === 'saveAsTemplate' || menu.id === 'loadChatflow' || menu.id === 'exportChatflow'
+      )
       setSettingsMenu(settingsMenu)
     }
-  }, [chatflow, isAgentCanvas])
+    if (user?.role !== 'ADMIN' && chatflow?.userId === user?.id && !isAdminPage) {
+      setIsAdminPage(true)
+    }
+  }, [chatflow, isAgentCanvas, isAdminPage])
 
   useEffect(() => {
     setOpen(isSettingsOpen)

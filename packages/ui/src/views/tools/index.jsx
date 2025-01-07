@@ -23,10 +23,13 @@ import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icon
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 import { useTheme } from '@mui/material/styles'
+import { useSelector } from 'react-redux'
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Tools = () => {
+  const user = useSelector((state) => state.user)
+  const isLogin = user?.id ? true : false
   const theme = useTheme()
   const getAllToolsApi = useApi(toolsApi.getAllTools)
 
@@ -114,10 +117,11 @@ const Tools = () => {
   }
 
   useEffect(() => {
-    getAllToolsApi.request()
-
+    if (isLogin) {
+      getAllToolsApi.request()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isLogin])
 
   useEffect(() => {
     setLoading(getAllToolsApi.loading)
@@ -165,6 +169,7 @@ const Tools = () => {
               </ToggleButtonGroup>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Button
+                  disabled={!isLogin}
                   variant='outlined'
                   onClick={() => inputRef.current.click()}
                   startIcon={<IconFileUpload />}
@@ -175,38 +180,50 @@ const Tools = () => {
                 <input style={{ display: 'none' }} ref={inputRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
               </Box>
               <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
+                <StyledButton
+                  disabled={!isLogin}
+                  variant='contained'
+                  onClick={addNew}
+                  startIcon={<IconPlus />}
+                  sx={{ borderRadius: 2, height: 40 }}
+                >
                   Create
                 </StyledButton>
               </ButtonGroup>
             </ViewHeader>
-            {!view || view === 'card' ? (
+            {isLogin ? (
               <>
-                {isLoading ? (
-                  <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
-                  </Box>
+                {!view || view === 'card' ? (
+                  <>
+                    {isLoading ? (
+                      <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                        <Skeleton variant='rounded' height={160} />
+                        <Skeleton variant='rounded' height={160} />
+                        <Skeleton variant='rounded' height={160} />
+                      </Box>
+                    ) : (
+                      <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                        {getAllToolsApi.data &&
+                          getAllToolsApi.data
+                            ?.filter(filterTools)
+                            .map((data, index) => <ItemCard data={data} key={index} onClick={() => edit(data)} />)}
+                      </Box>
+                    )}
+                  </>
                 ) : (
-                  <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                    {getAllToolsApi.data &&
-                      getAllToolsApi.data
-                        ?.filter(filterTools)
-                        .map((data, index) => <ItemCard data={data} key={index} onClick={() => edit(data)} />)}
-                  </Box>
+                  <ToolsTable data={getAllToolsApi.data} isLoading={isLoading} onSelect={edit} />
+                )}
+                {!isLoading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
+                  <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                    <Box sx={{ p: 2, height: 'auto' }}>
+                      <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
+                    </Box>
+                    <div>Không có tool nào tạo bởi user này.</div>
+                  </Stack>
                 )}
               </>
             ) : (
-              <ToolsTable data={getAllToolsApi.data} isLoading={isLoading} onSelect={edit} />
-            )}
-            {!isLoading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
-              <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                <Box sx={{ p: 2, height: 'auto' }}>
-                  <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={ToolEmptySVG} alt='ToolEmptySVG' />
-                </Box>
-                <div>No Tools Created Yet</div>
-              </Stack>
+              <div>Đăng nhập để xem danh sách tools</div>
             )}
           </Stack>
         )}

@@ -1,5 +1,4 @@
-import express from 'express'
-import { Response } from 'express'
+import express, { Response } from 'express'
 import { IServerSideEventStreamer } from 'flowise-components'
 
 // define a new type that has a client type (INTERNAL or EXTERNAL) and Response type
@@ -93,8 +92,18 @@ export class SSEStreamer implements IServerSideEventStreamer {
       const clientResponse = {
         event: 'sourceDocuments',
         data: data
-          .filter((doc: any) => Boolean(doc?.metadata?.url))
+          .filter((doc: any) => {
+            if (doc?.metadata?.url) return true
+
+            if (doc?.metadata?.source?.endsWith('.pdf')) return true
+            // console.log('doc:', doc)
+
+            return false
+          })
           .map((doc: any) => {
+            if (doc?.metadata?.source?.endsWith('.pdf')) {
+              return doc
+            }
             doc.metadata['source'] = doc.metadata.url
             doc.metadata['x-amz-bedrock-kb-source-uri'] = doc.metadata.url
             delete doc.metadata['pageContent']
@@ -104,7 +113,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
       client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
     }
   }
-  
+
   streamArtifactsEvent(chatId: string, data: any) {
     const client = this.clients[chatId]
     if (client) {

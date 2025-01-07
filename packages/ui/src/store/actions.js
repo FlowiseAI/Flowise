@@ -25,6 +25,31 @@ export const REMOVE_SNACKBAR = 'REMOVE_SNACKBAR'
 export const SHOW_CONFIRM = 'SHOW_CONFIRM'
 export const HIDE_CONFIRM = 'HIDE_CONFIRM'
 
+// action - user reducer
+export const USER_LOGIN_SUCCESS = 'USER_LOGIN_SUCCESS'
+export const USER_LOGOUT = 'USER_LOGOUT'
+
+export const loginAction = (login) => {
+  const key = login.options && login.options.key
+
+  return {
+    type: USER_LOGIN_SUCCESS,
+    payload: {
+      ...login,
+      key: key || new Date().getTime() + Math.random()
+    }
+  }
+}
+
+export const logoutAction = (login) => {
+  const key = login.options && login.options.key
+
+  return {
+    type: USER_LOGOUT,
+    payload: { key }
+  }
+}
+
 export const enqueueSnackbar = (notification) => {
   const key = notification.options && notification.options.key
 

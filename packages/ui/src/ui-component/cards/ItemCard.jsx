@@ -105,6 +105,22 @@ const ItemCard = ({ data, images, onClick }) => {
                 {data.description}
               </span>
             )}
+            {data?.user?.username && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginTop: 10,
+                  overflowWrap: 'break-word',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden'
+                }}
+              >
+                <span>{data?.user?.username || ''}</span>
+              </div>
+            )}
           </Box>
           {images && (
             <Box

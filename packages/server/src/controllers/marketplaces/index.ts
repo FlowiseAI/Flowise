@@ -39,7 +39,7 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
     if ((!req.body && !(req.body.chatflowId || req.body.tool)) || !req.body.name) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: marketplacesService.saveCustomTemplate - body not provided!`)
     }
-    const apiResponse = await marketplacesService.saveCustomTemplate(req.body)
+    const apiResponse = await marketplacesService.saveCustomTemplate(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)

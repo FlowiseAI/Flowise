@@ -9,6 +9,7 @@ import { DeleteResult } from 'typeorm'
 import { CustomTemplate } from '../../database/entities/CustomTemplate'
 
 import chatflowsService from '../chatflows'
+import { User } from '../../database/entities/User'
 
 type ITemplate = {
   badge: string
@@ -145,9 +146,20 @@ const getAllCustomTemplates = async (): Promise<any> => {
   }
 }
 
-const saveCustomTemplate = async (body: any): Promise<any> => {
+const saveCustomTemplate = async (req: any): Promise<any> => {
   try {
+    const { body, user } = req
+
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
     const appServer = getRunningExpressApp()
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
     let flowDataStr = ''
     let derivedFramework = ''
     const customTemplate = new CustomTemplate()
@@ -173,7 +185,7 @@ const saveCustomTemplate = async (body: any): Promise<any> => {
     if (customTemplate.usecases) {
       customTemplate.usecases = JSON.stringify(customTemplate.usecases)
     }
-    const entity = appServer.AppDataSource.getRepository(CustomTemplate).create(customTemplate)
+    const entity = appServer.AppDataSource.getRepository(CustomTemplate).create({ ...customTemplate, userId: foundUser.id })
     entity.flowData = flowDataStr
     const flowTemplate = await appServer.AppDataSource.getRepository(CustomTemplate).save(entity)
     return flowTemplate

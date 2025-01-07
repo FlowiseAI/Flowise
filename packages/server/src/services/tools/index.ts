@@ -6,13 +6,22 @@ import { getAppVersion } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { QueryRunner } from 'typeorm'
+import { User } from '../../database/entities/User'
 
-const createTool = async (requestBody: any): Promise<any> => {
+const createTool = async (req?: any): Promise<any> => {
   try {
+    const { user, body } = req
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
     const appServer = getRunningExpressApp()
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
     const newTool = new Tool()
-    Object.assign(newTool, requestBody)
-    const tool = await appServer.AppDataSource.getRepository(Tool).create(newTool)
+    Object.assign(newTool, body)
+    const tool = appServer.AppDataSource.getRepository(Tool).create({ ...newTool, userId: foundUser.id })
     const dbResponse = await appServer.AppDataSource.getRepository(Tool).save(tool)
     await appServer.telemetry.sendTelemetry('tool_created', {
       version: await getAppVersion(),
@@ -38,11 +47,28 @@ const deleteTool = async (toolId: string): Promise<any> => {
   }
 }
 
-const getAllTools = async (): Promise<Tool[]> => {
+const getAllTools = async (req?: any): Promise<Tool[]> => {
   try {
     const appServer = getRunningExpressApp()
-    const dbResponse = await appServer.AppDataSource.getRepository(Tool).find()
-    return dbResponse
+    const toolRepository = appServer.AppDataSource.getRepository(Tool)
+
+    // If no request object, return all tools
+    if (!req) {
+      return await toolRepository.find()
+    }
+
+    const { user } = req
+    if (!user?.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: User not found or unauthorized')
+    }
+    // Check user exists and get role in single query
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: User not found')
+    }
+
+    return await toolRepository.findBy({ userId: foundUser.id })
   } catch (error) {
     throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getAllTools - ${getErrorMessage(error)}`)
   }

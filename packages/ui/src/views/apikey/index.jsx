@@ -190,6 +190,9 @@ APIKeyRow.propTypes = {
   onDeleteClick: PropTypes.func
 }
 const APIKey = () => {
+  const user = useSelector((state) => state.user)
+  const isLogin = user?.id ? true : false
+
   const theme = useTheme()
   const customization = useSelector((state) => state.customization)
 
@@ -335,10 +338,9 @@ const APIKey = () => {
   }
 
   useEffect(() => {
-    getAllAPIKeysApi.request()
-
+    if (isLogin) getAllAPIKeysApi.request()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isLogin])
 
   useEffect(() => {
     setLoading(getAllAPIKeysApi.loading)
@@ -365,6 +367,7 @@ const APIKey = () => {
           <Stack flexDirection='column' sx={{ gap: 3 }}>
             <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search API Keys' title='API Keys'>
               <Button
+                disabled={!isLogin}
                 variant='outlined'
                 sx={{ borderRadius: 2, height: '100%' }}
                 onClick={uploadDialog}
@@ -374,6 +377,7 @@ const APIKey = () => {
                 Import
               </Button>
               <StyledButton
+                disabled={!isLogin}
                 variant='contained'
                 sx={{ borderRadius: 2, height: '100%' }}
                 onClick={addNew}
@@ -383,103 +387,113 @@ const APIKey = () => {
                 Create Key
               </StyledButton>
             </ViewHeader>
-            {!isLoading && apiKeys.length <= 0 ? (
+
+            {isLogin && !isLoading && apiKeys.length <= 0 && (
               <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                 <Box sx={{ p: 2, height: 'auto' }}>
                   <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={APIEmptySVG} alt='APIEmptySVG' />
                 </Box>
-                <div>No API Keys Yet</div>
+                <div>Không có key nào tạo bởi user này.</div>
               </Stack>
+            )}
+            {isLogin ? (
+              <>
+                {!isLoading && apiKeys.length <= 0 ? (
+                  <></>
+                ) : (
+                  <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                      <TableHead
+                        sx={{
+                          backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
+                          height: 56
+                        }}
+                      >
+                        <TableRow>
+                          <StyledTableCell>Key Name</StyledTableCell>
+                          <StyledTableCell>API Key</StyledTableCell>
+                          <StyledTableCell>Usage</StyledTableCell>
+                          <StyledTableCell>Created</StyledTableCell>
+                          <StyledTableCell> </StyledTableCell>
+                          <StyledTableCell> </StyledTableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {isLoading ? (
+                          <>
+                            <StyledTableRow>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                            </StyledTableRow>
+                            <StyledTableRow>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                              <StyledTableCell>
+                                <Skeleton variant='text' />
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          </>
+                        ) : (
+                          <>
+                            {apiKeys.filter(filterKeys).map((key, index) => (
+                              <APIKeyRow
+                                key={index}
+                                apiKey={key}
+                                showApiKeys={showApiKeys}
+                                onCopyClick={(event) => {
+                                  navigator.clipboard.writeText(key.apiKey)
+                                  setAnchorEl(event.currentTarget)
+                                  setTimeout(() => {
+                                    handleClosePopOver()
+                                  }, 1500)
+                                }}
+                                onShowAPIClick={() => onShowApiKeyClick(key.apiKey)}
+                                open={openPopOver}
+                                anchorEl={anchorEl}
+                                onClose={handleClosePopOver}
+                                theme={theme}
+                                onEditClick={() => edit(key)}
+                                onDeleteClick={() => deleteKey(key)}
+                              />
+                            ))}
+                          </>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </>
             ) : (
-              <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-                <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                  <TableHead
-                    sx={{
-                      backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
-                      height: 56
-                    }}
-                  >
-                    <TableRow>
-                      <StyledTableCell>Key Name</StyledTableCell>
-                      <StyledTableCell>API Key</StyledTableCell>
-                      <StyledTableCell>Usage</StyledTableCell>
-                      <StyledTableCell>Created</StyledTableCell>
-                      <StyledTableCell> </StyledTableCell>
-                      <StyledTableCell> </StyledTableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {isLoading ? (
-                      <>
-                        <StyledTableRow>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                        </StyledTableRow>
-                        <StyledTableRow>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Skeleton variant='text' />
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      </>
-                    ) : (
-                      <>
-                        {apiKeys.filter(filterKeys).map((key, index) => (
-                          <APIKeyRow
-                            key={index}
-                            apiKey={key}
-                            showApiKeys={showApiKeys}
-                            onCopyClick={(event) => {
-                              navigator.clipboard.writeText(key.apiKey)
-                              setAnchorEl(event.currentTarget)
-                              setTimeout(() => {
-                                handleClosePopOver()
-                              }, 1500)
-                            }}
-                            onShowAPIClick={() => onShowApiKeyClick(key.apiKey)}
-                            open={openPopOver}
-                            anchorEl={anchorEl}
-                            onClose={handleClosePopOver}
-                            theme={theme}
-                            onEditClick={() => edit(key)}
-                            onDeleteClick={() => deleteKey(key)}
-                          />
-                        ))}
-                      </>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <div>Đăng nhập để xem danh sách keys</div>
             )}
           </Stack>
         )}

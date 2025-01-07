@@ -3,8 +3,7 @@ import { RunnableConfig } from '@langchain/core/runnables'
 import { BaseMessage } from '@langchain/core/messages'
 import { DataSource, QueryRunner } from 'typeorm'
 import { CheckpointTuple, SaverOptions, SerializerProtocol } from './interface'
-import { IMessage, MemoryMethods } from '../../../src/Interface'
-import { mapChatMessageToBaseMessage } from '../../../src/utils'
+import { IMessage, mapChatMessageToBaseMessage, MemoryMethods } from '../../../src'
 
 export class SqliteSaver extends BaseCheckpointSaver implements MemoryMethods {
   protected isSetup: boolean
@@ -19,12 +18,15 @@ export class SqliteSaver extends BaseCheckpointSaver implements MemoryMethods {
 
   tableName = 'checkpoints'
 
+  numberOfMessages: number | undefined = -1
+
   constructor(config: SaverOptions, serde?: SerializerProtocol<Checkpoint>) {
     super(serde)
     this.config = config
     const { datasourceOptions, threadId } = config
     this.threadId = threadId
     this.datasource = new DataSource(datasourceOptions)
+    this.numberOfMessages = config.numberOfMessages
   }
 
   private async setup(): Promise<void> {
@@ -204,7 +206,9 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
   ): Promise<IMessage[] | BaseMessage[]> {
     if (!overrideSessionId) return []
 
-    const chatMessage = await this.config.appDataSource.getRepository(this.config.databaseEntities['ChatMessage']).find({
+    const repository = this.config.appDataSource.getRepository(this.config.databaseEntities['ChatMessage'])
+
+    let findOptions: any = {
       where: {
         sessionId: overrideSessionId,
         chatflowid: this.config.chatflowid
@@ -212,10 +216,25 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
       order: {
         createdDate: 'ASC'
       }
-    })
+    }
+
+    if (this.numberOfMessages && this.numberOfMessages > 0) {
+      // Get total count of messages
+      const totalCount = await repository.count(findOptions.where)
+
+      // Calculate offset to get the most recent N messages
+      findOptions.skip = Math.max(0, totalCount - this.numberOfMessages)
+      findOptions.take = this.numberOfMessages
+    }
+
+    const chatMessage = await repository.find(findOptions)
 
     if (prependMessages?.length) {
       chatMessage.unshift(...prependMessages)
+      // Re-trim if we have a message limit and prepended messages
+      if (this.numberOfMessages && this.numberOfMessages > 0) {
+        chatMessage.splice(this.numberOfMessages)
+      }
     }
 
     if (returnBaseMessages) {

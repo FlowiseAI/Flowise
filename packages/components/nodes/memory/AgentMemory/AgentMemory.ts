@@ -58,6 +58,13 @@ class AgentMemory_Memory implements INode {
         default: 'sqlite'
       },
       {
+        label: 'Number of Messages',
+        name: 'numberOfMessages',
+        type: 'number',
+        description: 'Number of messages to return from memory. If not specified, return all messages',
+        optional: true
+      },
+      {
         label: 'Database File Path',
         name: 'databaseFilePath',
         type: 'string',
@@ -133,7 +140,8 @@ class AgentMemory_Memory implements INode {
         threadId,
         appDataSource,
         databaseEntities,
-        chatflowid
+        chatflowid,
+        numberOfMessages: nodeData.inputs?.numberOfMessages
       }
       const recordManager = new SqliteSaver(args)
       return recordManager
