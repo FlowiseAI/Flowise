@@ -5,13 +5,13 @@ import { NodeVM } from '@flowiseai/nodevm'
 import { StructuredTool } from '@langchain/core/tools'
 import { ChatMistralAI } from '@langchain/mistralai'
 import { ChatAnthropic } from '@langchain/anthropic'
-import { Runnable, RunnableConfig, mergeConfigs } from '@langchain/core/runnables'
+import { mergeConfigs, Runnable, RunnableConfig } from '@langchain/core/runnables'
 import { AIMessage, BaseMessage, HumanMessage, MessageContentImageUrl, ToolMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { addImagesToMessages, llmSupportsVision } from '../../src/multiModalUtils'
 import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, IVisionChatModal } from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
-import { ChatPromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
+import { BaseMessagePromptTemplateLike, ChatPromptTemplate } from '@langchain/core/prompts'
 
 export const checkCondition = (input: string | number | undefined, condition: string, value: string | number = ''): boolean => {
   if (!input && condition === 'Is Empty') return true
@@ -267,7 +267,35 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
     }
   }
 
-  return messages
+  // fix tool result message
+  for (let i = 0; i < messages.length; i++) {
+    const isPreviousHuman = ['HumanMessage', 'HumanMessageChunk'].includes(messages[i - 1]?.constructor.name)
+    if (isPreviousHuman && ['HumanMessage', 'HumanMessageChunk'].includes(messages[i]?.constructor.name)) {
+      messages[i - 1] = new AIMessage({ ...messages[i - 1] })
+    }
+  }
+
+  const mergedMessages: BaseMessage[] = []
+
+  for (let i = 0; i < messages.length; i++) {
+    const isPreviousMessageAI = ['AIMessageChunk', 'AIMessage'].includes(messages[i - 1]?.constructor.name)
+    const isCurrentMessageAI = ['AIMessageChunk', 'AIMessage'].includes(messages[i]?.constructor.name)
+
+    if (isPreviousMessageAI && isCurrentMessageAI) {
+      messages[i].content = `${messages[i - 1].content}\n\n${messages[i].content}`
+    } else {
+      mergedMessages.push(messages[i])
+    }
+  }
+
+  // If last message is AI, add a human message to avoid validation error
+  if (mergedMessages.length > 0 && ['AIMessageChunk', 'AIMessage'].includes(mergedMessages[mergedMessages.length - 1].constructor.name)) {
+    mergedMessages.push(new HumanMessage({ content: 'Please continue.' }))
+  }
+
+  // console.log('mergedMessages:', mergedMessages)
+
+  return mergedMessages
 }
 
 export class ExtractTool extends StructuredTool {
