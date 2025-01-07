@@ -2,16 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Skeleton, Stack, Tab, Tabs, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Box, Stack, Tab, Tabs, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import PropTypes from 'prop-types'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import ItemCard from '@/ui-component/cards/ItemCard'
-import { gridSpacing } from '@/store/constant'
-import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
-import { FlowListTable } from '@/ui-component/table/FlowListTable'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
@@ -28,13 +24,15 @@ import { baseURL } from '@/store/constant'
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import { useSelector } from 'react-redux'
+import RenderContent from '../chatflows/RenderContent'
 
-// ==============================|| AGENTS ||============================== //
+// ==============================|| AGENTFLOWS ||============================== //
 
 const Agentflows = () => {
   const [value, setValue] = useState(0)
   const user = useSelector((state) => state.user)
-  const isLogin = user?.id ? true : false
+  const isAdmin = user?.role === 'ADMIN'
+  const isLogin = Boolean(user?.id)
   const navigate = useNavigate()
   const theme = useTheme()
 
@@ -45,16 +43,18 @@ const Agentflows = () => {
 
   const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
   const getAllPublicAgentflows = useApi(chatflowsApi.getAllPublicAgentflows)
+  const getAllAgentflowsOfAdmin = useApi(chatflowsApi.getAllAgentflowsOfAdmin)
+
   const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
+
+  const handleChangeTab = (event, newValue) => {
+    setValue(newValue)
+  }
 
   const handleChange = (event, nextView) => {
     if (nextView === null) return
     localStorage.setItem('flowDisplayStyle', nextView)
     setView(nextView)
-  }
-
-  const handleChangeTab = (event, newValue) => {
-    setValue(newValue)
   }
 
   const onSearchChange = (event) => {
@@ -80,6 +80,7 @@ const Agentflows = () => {
     if (isLogin) {
       getAllAgentflows.request()
       getAllPublicAgentflows.request()
+      if (isAdmin) getAllAgentflowsOfAdmin.request()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLogin])
@@ -123,15 +124,13 @@ const Agentflows = () => {
             search={true}
             searchPlaceholder='Search Name or Category'
             title={
-              <>
-                {' '}
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
-                    <Tab label='Publish' {...a11yProps(0)} />
-                    <Tab label='Private' {...a11yProps(1)} />
-                  </Tabs>
-                </Box>
-              </>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
+                  <Tab label='Đã publish' {...a11yProps(0)} />
+                  <Tab label='Cá nhân' {...a11yProps(1)} />
+                  {isAdmin && <Tab label='Admin' {...a11yProps(2)} />}
+                </Tabs>
+              </Box>
             }
           >
             <ToggleButtonGroup sx={{ borderRadius: 2, maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleChange}>
@@ -172,89 +171,50 @@ const Agentflows = () => {
           </ViewHeader>
 
           <CustomTabPanel value={value} index={0}>
-            {(!view || view === 'card') && isLogin ? (
-              <>
-                {isLoading && !getAllPublicAgentflows.data ? (
-                  <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
-                  </Box>
-                ) : (
-                  <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                    {getAllPublicAgentflows.data?.filter(filterFlows).map((data, index) => (
-                      <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                    ))}
-                  </Box>
-                )}
-              </>
-            ) : (
-              isLogin && (
-                <FlowListTable
-                  isAgentCanvas={true}
-                  data={getAllPublicAgentflows.data}
-                  images={images}
-                  isLoading={isLoading}
-                  filterFunction={filterFlows}
-                  updateFlowsApi={getAllPublicAgentflows}
-                  setError={setError}
-                />
-              )
-            )}
             {isLogin ? (
-              !isLoading &&
-              (!getAllPublicAgentflows.data || getAllPublicAgentflows.data.length === 0) && (
-                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                  <Box sx={{ p: 2, height: 'auto' }}>
-                    <img style={{ objectFit: 'cover', height: '12vh', width: 'auto' }} src={AgentsEmptySVG} alt='AgentsEmptySVG' />
-                  </Box>
-                  <div>Người dùng chưa tạo agent nào, tạo mới agent</div>
-                </Stack>
-              )
+              <RenderContent
+                data={getAllPublicAgentflows.data}
+                isLoading={isLoading}
+                filterFunction={filterFlows}
+                goToCanvas={goToCanvas}
+                images={images}
+                view={view}
+                setError={setError}
+                updateFlowsApi={getAllPublicAgentflows}
+              />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>
             )}
           </CustomTabPanel>
           <CustomTabPanel value={value} index={1}>
-            {(!view || view === 'card') && isLogin ? (
-              <>
-                {isLoading && !getAllAgentflows.data ? (
-                  <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
-                    <Skeleton variant='rounded' height={160} />
-                  </Box>
-                ) : (
-                  <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                    {getAllAgentflows.data?.filter(filterFlows).map((data, index) => (
-                      <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                    ))}
-                  </Box>
-                )}
-              </>
-            ) : (
-              isLogin && (
-                <FlowListTable
-                  isAgentCanvas={true}
-                  data={getAllAgentflows.data}
-                  images={images}
-                  isLoading={isLoading}
-                  filterFunction={filterFlows}
-                  updateFlowsApi={getAllAgentflows}
-                  setError={setError}
-                />
-              )
-            )}
             {isLogin ? (
-              !isLoading &&
-              (!getAllAgentflows.data || getAllAgentflows.data.length === 0) && (
-                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                  <Box sx={{ p: 2, height: 'auto' }}>
-                    <img style={{ objectFit: 'cover', height: '12vh', width: 'auto' }} src={AgentsEmptySVG} alt='AgentsEmptySVG' />
-                  </Box>
-                  <div>Người dùng chưa tạo agent nào, tạo mới agent</div>
-                </Stack>
-              )
+              <RenderContent
+                data={getAllAgentflows.data}
+                isLoading={isLoading}
+                filterFunction={filterFlows}
+                goToCanvas={goToCanvas}
+                images={images}
+                view={view}
+                setError={setError}
+                updateFlowsApi={getAllAgentflows}
+              />
+            ) : (
+              <div>Đăng nhập để xem danh sách Agents</div>
+            )}
+          </CustomTabPanel>
+          <CustomTabPanel value={value} index={2}>
+            {isLogin ? (
+              <RenderContent
+                data={getAllAgentflowsOfAdmin.data}
+                isLoading={isLoading}
+                filterFunction={filterFlows}
+                goToCanvas={goToCanvas}
+                images={images}
+                view={view}
+                setError={setError}
+                updateFlowsApi={getAllAgentflowsOfAdmin}
+                isAdmin
+              />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>
             )}
@@ -281,6 +241,7 @@ function CustomTabPanel(props) {
     </div>
   )
 }
+
 CustomTabPanel.propTypes = {
   children: PropTypes.node,
   value: PropTypes.number.isRequired,

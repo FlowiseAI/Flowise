@@ -35,7 +35,6 @@ import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 // ==============================|| CANVAS HEADER ||============================== //
 
 const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
-  console.log('🚀 ~ CanvasHeader ~ chatflow:', chatflow)
   const theme = useTheme()
   const dispatch = useDispatch()
   const navigate = useNavigate()

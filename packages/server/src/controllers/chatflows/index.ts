@@ -50,6 +50,15 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
   }
 }
 
+const getControlChatflowsOfAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const apiResponse = await chatflowsService.getControlChatflowsOfAdmin(req)
+    return res.json(apiResponse)
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getAllPublicChatflows = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const apiResponse = await chatflowsService.getAllPublicChatflows(req)
@@ -193,5 +202,6 @@ export default {
   importChatflows,
   updateChatflow,
   getSinglePublicChatflow,
-  getSinglePublicChatbotConfig
+  getSinglePublicChatbotConfig,
+  getControlChatflowsOfAdmin
 }
