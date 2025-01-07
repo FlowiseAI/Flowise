@@ -302,7 +302,7 @@ class Retriever_Tools implements INode {
           }
         }
       }
-      const filteredDocs = docs.filter((doc) => doc.metadata.score >= score && doc.metadata.score <= 1)
+      const filteredDocs = docs.filter((doc) => doc.metadata.score >= score)
 
       const content = nodeData.inputs?.returnRawDocument
         ? JSON.stringify(
