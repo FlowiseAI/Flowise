@@ -153,7 +153,13 @@ export const processImageMessage = async (llm: BaseChatModel, nodeData: INodeDat
 export const getVM = async (appDataSource: DataSource, databaseEntities: IDatabaseEntity, nodeData: INodeData, flow: ICommonObject) => {
     const variables = await getVars(appDataSource, databaseEntities, nodeData)
 
-    let sandbox: any = {}
+    let sandbox: any = {
+        util: undefined,
+        Symbol: undefined,
+        child_process: undefined,
+        fs: undefined,
+        process: undefined
+    }
     sandbox['$vars'] = prepareSandboxVars(variables)
     sandbox['$flow'] = flow
 
@@ -169,7 +175,10 @@ export const getVM = async (appDataSource: DataSource, databaseEntities: IDataba
         require: {
             external: { modules: deps },
             builtin: builtinDeps
-        }
+        },
+        eval: false,
+        wasm: false,
+        timeout: 10000
     } as any
 
     return new NodeVM(nodeVMOptions)
