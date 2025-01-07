@@ -428,7 +428,8 @@ export enum FollowUpPromptProvider {
     GOOGLE_GENAI = 'chatGoogleGenerativeAI',
     MISTRALAI = 'chatMistralAI',
     OPENAI = 'chatOpenAI',
-    GROQ = 'groqChat'
+    GROQ = 'groqChat',
+    OLLAMA = 'ollama'
 }
 
 export type FollowUpPromptProviderConfig = {
