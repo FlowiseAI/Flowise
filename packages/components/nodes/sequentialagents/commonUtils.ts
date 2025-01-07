@@ -267,10 +267,13 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
     }
   }
 
+  const isAI = (message?: BaseMessage) => message && ['AIMessageChunk', 'AIMessage'].includes(message.constructor.name)
+  const isHuman = (message?: BaseMessage) => message && ['HumanMessage', 'HumanMessageChunk'].includes(message.constructor.name)
+
   // fix tool result message
   for (let i = 0; i < messages.length; i++) {
-    const isPreviousHuman = ['HumanMessage', 'HumanMessageChunk'].includes(messages[i - 1]?.constructor.name)
-    if (isPreviousHuman && ['HumanMessage', 'HumanMessageChunk'].includes(messages[i]?.constructor.name)) {
+    const isPreviousHuman = isHuman(messages[i - 1])
+    if (isPreviousHuman && isHuman(messages[i])) {
       messages[i - 1] = new AIMessage({ ...messages[i - 1] })
     }
   }
@@ -278,8 +281,8 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
   const mergedMessages: BaseMessage[] = []
 
   for (let i = 0; i < messages.length; i++) {
-    const isPreviousMessageAI = ['AIMessageChunk', 'AIMessage'].includes(messages[i - 1]?.constructor.name)
-    const isCurrentMessageAI = ['AIMessageChunk', 'AIMessage'].includes(messages[i]?.constructor.name)
+    const isPreviousMessageAI = isAI(messages[i - 1])
+    const isCurrentMessageAI = isAI(messages[i])
 
     if (isPreviousMessageAI && isCurrentMessageAI) {
       messages[i].content = `${messages[i - 1].content}\n\n${messages[i].content}`
@@ -289,7 +292,7 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
   }
 
   // If last message is AI, add a human message to avoid validation error
-  if (mergedMessages.length > 0 && ['AIMessageChunk', 'AIMessage'].includes(mergedMessages[mergedMessages.length - 1].constructor.name)) {
+  if (mergedMessages.length > 0 && isAI(mergedMessages[mergedMessages.length - 1])) {
     mergedMessages.push(new HumanMessage({ content: 'Please continue.' }))
   }
 
