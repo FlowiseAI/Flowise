@@ -58,7 +58,7 @@ const MainRoutes = {
             element: <Agentflows />
         },
         {
-            path: '/marketplaces',
+            path: '/marketplace',
             element: <Marketplaces />
         },
         {

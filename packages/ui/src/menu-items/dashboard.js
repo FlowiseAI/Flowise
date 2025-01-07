@@ -52,10 +52,10 @@ const dashboard = {
                     breadcrumbs: true
                 },
                 {
-                    id: 'marketplaces',
-                    title: 'Marketplaces',
+                    id: 'marketplace',
+                    title: 'Marketplace',
                     type: 'item',
-                    url: '/marketplaces',
+                    url: '/marketplace',
                     icon: icons.IconBuildingStore,
                     breadcrumbs: true
                 },
