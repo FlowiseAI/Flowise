@@ -56,6 +56,7 @@ import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../Interface.Metrics'
+import { validateChatflowAPIKey } from './validateKey'
 
 /**
  * Build Chatflow
@@ -80,12 +81,12 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     }
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const userMessageDateTime = new Date()
-    // if (!isInternal) {
-    //   const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
-    //   if (!isKeyValidated) {
-    //     throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
-    //   }
-    // }
+    if (!isInternal) {
+      const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
+      if (!isKeyValidated) {
+        throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+      }
+    }
     let fileUploads: IFileUpload[] = []
     let uploadedFilesContent = ''
     if (incomingInput.uploads) {
