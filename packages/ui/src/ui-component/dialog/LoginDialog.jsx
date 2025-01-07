@@ -5,9 +5,8 @@ import PropTypes from 'prop-types'
 import { Dialog, DialogActions, DialogContent, Typography, DialogTitle } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Input } from '@/ui-component/input/Input'
-import { boolean } from 'yup'
 
-const LoginDialog = ({ show, dialogProps, onConfirm, disableBtn, onClose = null }) => {
+const LoginDialog = ({ show, dialogProps, onConfirm, disableBtn = false, onClose = null }) => {
   const portalElement = document.getElementById('portal')
   const usernameInput = {
     label: 'Username',
@@ -68,7 +67,7 @@ LoginDialog.propTypes = {
   dialogProps: PropTypes.object,
   onConfirm: PropTypes.func,
   onClose: PropTypes.func,
-  disableBtn: boolean || undefined
+  disableBtn: PropTypes.bool
 }
 
 export default LoginDialog

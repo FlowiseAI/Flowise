@@ -96,18 +96,18 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
               <StyledTableCell style={{ width: '15%' }} key='1'>
                 User
               </StyledTableCell>
-              <StyledTableCell style={{ width: '25%' }} key='1'>
+              <StyledTableCell style={{ width: '25%' }} key='2'>
                 Category
               </StyledTableCell>
-              <StyledTableCell style={{ width: '15%' }} key='2'>
+              <StyledTableCell style={{ width: '15%' }} key='3'>
                 Nodes
               </StyledTableCell>
-              <StyledTableCell style={{ width: '15%' }} key='3'>
+              <StyledTableCell style={{ width: '15%' }} key='4'>
                 <TableSortLabel active={orderBy === 'updatedDate'} direction={order} onClick={() => handleRequestSort('updatedDate')}>
                   Last Modified Date
                 </TableSortLabel>
               </StyledTableCell>
-              <StyledTableCell style={{ width: '10%' }} key='4'>
+              <StyledTableCell style={{ width: '10%' }} key='5'>
                 Actions
               </StyledTableCell>
             </TableRow>

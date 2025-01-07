@@ -103,6 +103,37 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
   }
 }
 
+const getControlChatflowsOfAdmin = async (req: any): Promise<any[]> => {
+  try {
+    const { user } = req
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
+    const appServer = getRunningExpressApp()
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+
+    if (foundUser.role !== 'ADMIN') {
+      throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Error: documentStoreServices.getAllDocumentStores - Access denied')
+    }
+
+    const type = req.query?.type as ChatflowType
+    const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find({
+      where: { type },
+      relations: ['user']
+    })
+    return dbResponse
+  } catch (error) {
+    throw new InternalFlowiseError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      `Error: chatflowsService.getAllPublicChatflows - ${getErrorMessage(error)}`
+    )
+  }
+}
+
 const getAllPublicChatflows = async (req: any): Promise<any[]> => {
   try {
     const type = req.query?.type as ChatflowType
@@ -379,5 +410,6 @@ export default {
   importChatflows,
   updateChatflow,
   getSinglePublicChatflow,
-  getSinglePublicChatbotConfig
+  getSinglePublicChatbotConfig,
+  getControlChatflowsOfAdmin
 }
