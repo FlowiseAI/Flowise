@@ -2,16 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Skeleton, Stack, Tab, Tabs, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Box, Stack, Tab, Tabs, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import PropTypes from 'prop-types'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import ItemCard from '@/ui-component/cards/ItemCard'
-import { gridSpacing } from '@/store/constant'
-import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
-import { FlowListTable } from '@/ui-component/table/FlowListTable'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
@@ -28,12 +24,14 @@ import { baseURL } from '@/store/constant'
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import { useSelector } from 'react-redux'
+import RenderContent from './RenderContent'
 
 // ==============================|| CHATFLOWS ||============================== //
 
 const Chatflows = () => {
   const [value, setValue] = useState(0)
   const user = useSelector((state) => state.user)
+  const isAdmin = user?.role === 'ADMIN'
   const isLogin = Boolean(user?.id)
   const navigate = useNavigate()
   const theme = useTheme()
@@ -45,6 +43,7 @@ const Chatflows = () => {
 
   const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
   const getAllPublicChatflows = useApi(chatflowsApi.getAllPublicChatflows)
+  const getAllChatflowsOfAdmin = useApi(chatflowsApi.getAllChatflowsOfAdmin)
 
   const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
 
@@ -79,6 +78,7 @@ const Chatflows = () => {
     if (isLogin) {
       getAllChatflowsApi.request()
       getAllPublicChatflows.request()
+      if (isAdmin) getAllChatflowsOfAdmin.request()
     }
   }, [isLogin])
 
@@ -103,43 +103,6 @@ const Chatflows = () => {
     }
   }, [getAllChatflowsApi.data])
 
-  const renderContent = (data, isLoading, filterFunction, updateFlowsApi) => (
-    <>
-      {view === 'card' ? (
-        isLoading ? (
-          <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-            <Skeleton variant='rounded' height={160} />
-            <Skeleton variant='rounded' height={160} />
-            <Skeleton variant='rounded' height={160} />
-          </Box>
-        ) : (
-          <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-            {data?.filter(filterFunction).map((item, index) => (
-              <ItemCard key={index} onClick={() => goToCanvas(item)} data={item} images={images[item.id]} />
-            ))}
-          </Box>
-        )
-      ) : (
-        <FlowListTable
-          data={data}
-          images={images}
-          isLoading={isLoading}
-          filterFunction={filterFunction}
-          updateFlowsApi={updateFlowsApi}
-          setError={setError}
-        />
-      )}
-      {!isLoading && (!data || data.length === 0) && (
-        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-          <Box sx={{ p: 2, height: 'auto' }}>
-            <img style={{ objectFit: 'cover', height: '25vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />
-          </Box>
-          <div>Người dùng chưa tạo chatflow nào, tạo mới chatflow</div>
-        </Stack>
-      )}
-    </>
-  )
-
   return (
     <MainCard>
       {error ? (
@@ -153,8 +116,9 @@ const Chatflows = () => {
             title={
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
-                  <Tab label='Publish' {...a11yProps(0)} />
-                  <Tab label='Private' {...a11yProps(1)} />
+                  <Tab label='Đã publish' {...a11yProps(0)} />
+                  <Tab label='Cá nhân' {...a11yProps(1)} />
+                  {isAdmin && <Tab label='Admin' {...a11yProps(2)} />}
                 </Tabs>
               </Box>
             }
@@ -198,14 +162,49 @@ const Chatflows = () => {
 
           <CustomTabPanel value={value} index={0}>
             {isLogin ? (
-              renderContent(getAllPublicChatflows.data, isLoading, filterFlows, getAllPublicChatflows)
+              <RenderContent
+                data={getAllPublicChatflows.data}
+                isLoading={isLoading}
+                filterFunction={filterFlows}
+                goToCanvas={goToCanvas}
+                images={images}
+                view={view}
+                setError={setError}
+                updateFlowsApi={getAllPublicChatflows}
+              />
             ) : (
               <div>Đăng nhập để xem danh sách Chatflows</div>
             )}
           </CustomTabPanel>
           <CustomTabPanel value={value} index={1}>
             {isLogin ? (
-              renderContent(getAllChatflowsApi.data, isLoading, filterFlows, getAllChatflowsApi)
+              <RenderContent
+                data={getAllChatflowsApi.data}
+                isLoading={isLoading}
+                filterFunction={filterFlows}
+                goToCanvas={goToCanvas}
+                images={images}
+                view={view}
+                setError={setError}
+                updateFlowsApi={getAllChatflowsApi}
+              />
+            ) : (
+              <div>Đăng nhập để xem danh sách Chatflows</div>
+            )}
+          </CustomTabPanel>
+          <CustomTabPanel value={value} index={2}>
+            {isLogin ? (
+              <RenderContent
+                data={getAllChatflowsOfAdmin.data}
+                isLoading={isLoading}
+                filterFunction={filterFlows}
+                goToCanvas={goToCanvas}
+                images={images}
+                view={view}
+                setError={setError}
+                updateFlowsApi={getAllChatflowsOfAdmin}
+                isAdmin
+              />
             ) : (
               <div>Đăng nhập để xem danh sách Chatflows</div>
             )}

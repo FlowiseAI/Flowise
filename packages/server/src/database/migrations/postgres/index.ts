@@ -1,3 +1,3 @@
-import { Init1736153755306 } from './1736153755306-Init'
+import { Init1693891895163 } from './1693891895163-Init'
 
-export const postgresMigrations = []
+export const postgresMigrations = [Init1693891895163]
