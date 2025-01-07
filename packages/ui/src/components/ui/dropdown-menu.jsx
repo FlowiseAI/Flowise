@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { Popper } from '@mui/base/Popper'
 import { Button } from './button'
+import { Checkbox } from './checkbox'
 import { cn } from '@/lib/utils'
 
 const DropdownMenuContext = React.createContext({})
@@ -154,6 +155,40 @@ DropdownMenuItem.propTypes = {
     inset: PropTypes.bool
 }
 
+const DropdownMenuCheckboxItem = React.forwardRef(({ className, children, checked, onCheckedChange, onClick, ...props }, ref) => {
+    return (
+        <button
+            ref={ref}
+            className={cn(
+                'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none',
+                'focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground',
+                'transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                className
+            )}
+            onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onCheckedChange?.(!checked)
+                onClick?.(e)
+            }}
+            {...props}
+        >
+            <span className='absolute left-2 flex h-4 w-4 items-center justify-center'>
+                <Checkbox checked={checked} className='data-[state=checked]:bg-transparent' readOnly />
+            </span>
+            {children}
+        </button>
+    )
+})
+DropdownMenuCheckboxItem.displayName = 'DropdownMenuCheckboxItem'
+DropdownMenuCheckboxItem.propTypes = {
+    checked: PropTypes.bool,
+    children: PropTypes.node,
+    className: PropTypes.string,
+    onCheckedChange: PropTypes.func,
+    onClick: PropTypes.func
+}
+
 const DropdownMenuLabel = React.forwardRef(({ className, inset, ...props }, ref) => (
     <div ref={ref} className={cn('px-2 py-1.5 text-sm font-semibold', inset && 'pl-8', className)} {...props} />
 ))
@@ -171,4 +206,21 @@ DropdownMenuSeparator.propTypes = {
     className: PropTypes.string
 }
 
-export { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger }
+const DropdownMenuShortcut = ({ className, ...props }) => {
+    return <span className={cn('ml-auto text-xs tracking-widest text-muted-foreground', className)} {...props} />
+}
+DropdownMenuShortcut.displayName = 'DropdownMenuShortcut'
+DropdownMenuShortcut.propTypes = {
+    className: PropTypes.string
+}
+
+export {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger
+}
