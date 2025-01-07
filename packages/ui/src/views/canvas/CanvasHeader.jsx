@@ -303,7 +303,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
   return (
     <>
       <Stack flexDirection='row' justifyContent='space-between' sx={{ width: '100%' }}>
-        <Stack className='flex items-center gap-3' flexDirection='row' sx={{ width: '100%', maxWidth: '50%' }}>
+        <Stack className='flex items-center gap-3' flexDirection='row' sx={{ width: '100%' }}>
           <div className='flex items-center'>
             <Box>
               <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
@@ -446,7 +446,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
               >
                 Người tạo: {chatflow.user.username}
               </Typography>
-              {!isAdmin && (
+              {isAdmin && (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Switch
                     checked={isPublicChatflow}
@@ -464,7 +464,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
             </div>
           )}
         </Stack>
-        <Box>
+        <Box className='w-[150px] min-w-[150px] text-end'>
           {isAdminPage && chatflow?.id && (
             <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
               <Avatar
