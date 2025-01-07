@@ -575,6 +575,12 @@ services:
       retries: 5
 
   $$cap_appname-worker-certificates:
+    image: appwrite/appwrite:$$cap_appwrite_version
+    restart: unless-stopped
+    entrypoint: worker-certificates
+    volumes:
+      - $$cap_appname-config:/storage/config:rw
+      - $$cap_appname-certificates:/storage/certificates:rw
     environment:
       _APP_ENV: $$cap_app_env
       _APP_WORKER_PER_CORE: $$cap_worker_per_core
@@ -591,6 +597,8 @@ services:
       _APP_DB_USER: $$cap_db_user
       _APP_DB_PASS: $$cap_db_pass
       _APP_LOGGING_CONFIG: $$cap_logging_config
+    caproverExtra:
+      notExposeAsWebApp: true
 
   $$cap_appname-worker-databases:
     environment:
