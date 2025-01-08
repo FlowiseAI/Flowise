@@ -62,13 +62,14 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                             onChange={(e) => filterSearch(e.target.value)}
                             placeholder='Search credential'
                             startAdornment={
-                                <InputAdornment position='start'>
+                                <InputAdornment className='text-muted-foreground' position='start'>
                                     <IconSearch size={16} stroke={1.5} />
                                 </InputAdornment>
                             }
                             endAdornment={
                                 <InputAdornment
                                     position='end'
+                                    className='text-muted-foreground'
                                     sx={{
                                         cursor: 'pointer',
                                         color: theme.palette.grey[500],

@@ -10,6 +10,7 @@ import { Box, Typography } from '@mui/material'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Select, SelectItem } from '@/components/ui/select'
 
 // Project imports
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
@@ -27,7 +28,6 @@ import useNotifier from '@/utils/useNotifier'
 
 // const
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
-import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 
 const variableTypes = [
     {
@@ -209,14 +209,14 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
                         <Typography>
                             Type<span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
-                        <Dropdown
-                            key={variableType}
-                            name='variableType'
-                            options={variableTypes}
-                            onSelect={(newValue) => setVariableType(newValue)}
-                            value={variableType ?? 'choose an option'}
-                            id='dropdown_variableType'
-                        />
+                        <Select placeholder='Select Variable Type' onValueChange={(value) => setVariableType(value)}>
+                            {variableTypes.map((item) => (
+                                <SelectItem className='flex flex-col items-start' label={item.label} key={item.name} value={item.name}>
+                                    <span className='font-semibold'>{item.label}</span>
+                                    <span className='text-xs'>{item.description}</span>
+                                </SelectItem>
+                            ))}
+                        </Select>
                     </Box>
                     {variableType === 'static' && (
                         <Box>
