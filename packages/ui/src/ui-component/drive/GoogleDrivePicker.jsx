@@ -87,9 +87,8 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
 
             const picker = new window.google.picker.PickerBuilder()
                 .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
-                .setDeveloperKey('AIzaSyCrEZmokZjienF3DA4hsRYXBTQZRkaiS8U')
-                .setAppId('369186654522-csoutg19mdafs790b043o8gkdmcjmqtc.apps.googleusercontent.com')
-                // .setOAuthToken(accessToken)
+                .setDeveloperKey(process.env.NEXT_PUBLIC_GOOGLE_DEVELOPER_KEY)
+                .setAppId(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)
                 .setOAuthToken(accessToken)
                 .addView(view)
                 .setCallback(pickerCallback)
@@ -105,7 +104,6 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
         if (data.action === window.google.picker.Action.PICKED) {
             const files = data.docs
             setSelectedFiles(files)
-            console.log('files=>', files)
             onChange(JSON.stringify(files.map((file) => file.id)))
         }
     }

@@ -243,6 +243,97 @@ const getDocumentStoreFileChunks = async (
     }
 }
 
+// Sync and refresh chunks for a specific loader or store
+const syncAndRefreshChunks = async (storeId: string, fileId: string, userId?: string, organizationId?: string) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+            id: storeId,
+            userId,
+            organizationId
+        })
+        if (!entity) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${storeId} not found`)
+        }
+
+        const loaders = JSON.parse(entity.loaders)
+        const loader = loaders.find((ldr: IDocumentStoreLoader) => ldr.id === fileId)
+
+        if (!loader) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Loader ${fileId} not found`)
+        }
+
+        // Create data object for preview
+        const data: any = {
+            id: loader.id,
+            storeId,
+            loaderId: loader.loaderId,
+            loaderName: loader.loaderName,
+            loaderConfig: loader.loaderConfig,
+            splitterId: loader.splitterId,
+            splitterName: loader.splitterName,
+            splitterConfig: loader.splitterConfig,
+            credential: loader.credential,
+            previewChunkCount: -1 // Get all chunks
+        }
+
+        // Mark loader as syncing
+        loader.status = DocumentStoreStatus.SYNCING
+        entity.status = DocumentStoreStatus.STALE
+        entity.loaders = JSON.stringify(loaders)
+        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+
+        // Delete existing chunks
+        await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).delete({
+            docId: fileId,
+            userId,
+            organizationId
+        })
+
+        // Get fresh documents from Google Drive
+        const docs = await _splitIntoChunks(data)
+
+        // Save new chunks
+        let totalChars = 0
+        for (let i = 0; i < docs.length; i++) {
+            const chunk = docs[i]
+            totalChars += chunk.pageContent.length
+
+            const docChunk: DocumentStoreFileChunk = {
+                userId,
+                organizationId,
+                docId: fileId,
+                storeId: storeId,
+                id: uuidv4(),
+                chunkNo: i + 1,
+                pageContent: chunk.pageContent,
+                metadata: JSON.stringify(chunk.metadata)
+            }
+
+            const dChunk = appServer.AppDataSource.getRepository(DocumentStoreFileChunk).create(docChunk)
+            await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
+        }
+
+        loader.totalChunks = docs.length
+        loader.totalChars = totalChars
+        loader.status = DocumentStoreStatus.SYNC
+
+        // Check if all loaders are synced
+        const allSynced = loaders.every((ldr: IDocumentStoreLoader) => ldr.status === DocumentStoreStatus.SYNC)
+        entity.status = allSynced ? DocumentStoreStatus.SYNC : DocumentStoreStatus.STALE
+        entity.loaders = JSON.stringify(loaders)
+
+        await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
+
+        return getDocumentStoreFileChunks(storeId, fileId, 1, userId, organizationId)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.syncAndRefreshChunks - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 const deleteDocumentStore = async (storeId: string, userId: string, organizationId: string) => {
     try {
         const appServer = getRunningExpressApp()
@@ -1257,6 +1348,7 @@ export default {
     getDocumentStoreById,
     getUsedChatflowNames,
     getDocumentStoreFileChunks,
+    syncAndRefreshChunks,
     updateDocumentStore,
     previewChunks,
     processAndSaveChunks,

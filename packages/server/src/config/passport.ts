@@ -16,8 +16,7 @@ export default function (passport: any) {
                     provider: profile.provider,
                     providerId: profile.id,
                     googleAccessToken: accessToken,
-                    googleRefreshToken: refreshToken,
-                    expiryDate: new Date(Date.now() + 3600 * 1000).getTime()
+                    googleRefreshToken: refreshToken
                 }
                 try {
                     done(null, newCredential)
