@@ -44,7 +44,9 @@
         "SLACK_CLIENT_ID",
         "SLACK_CLIENT_SECRET",
         "VITE_API_URL",
-        "VITE_APP_URL"
+        "VITE_APP_URL",
+        "NEXT_PUBLIC_GOOGLE_DEVELOPER_KEY",
+        "NEXT_PUBLIC_GOOGLE_CLIENT_ID"
     ],
     "pipeline": {
         "//#dev-docker": {

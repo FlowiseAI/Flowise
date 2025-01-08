@@ -161,6 +161,80 @@ class GoogleDrive implements INode {
         return documents
     }
 
+    async syncAndRefresh(nodeData: INodeData): Promise<any> {
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+        const metadata = nodeData.inputs?.metadata
+        const selectedFiles = nodeData.inputs?.selectedFiles as string
+        const pdfUsage = nodeData.inputs?.pdfUsage as string
+        const columnName = nodeData.inputs?.columnName as string
+        const credentialData = nodeData.credential ? JSON.parse(nodeData.credential).plainDataObj : {}
+        const omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const _omitMetadataKeys = omitMetadataKeys === '*' ? '*' : omitMetadataKeys.split(',')
+
+        if (!credentialData || _.isEmpty(credentialData)) {
+            throw new Error('Credentials not found')
+        }
+
+        const credentials = {
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            redirectUrl: '/api/v1/auth/google/callback',
+            accessToken: credentialData.googleAccessToken,
+            refreshToken: credentialData.refreshToken,
+            expiryDate: credentialData.expiryDate
+        }
+
+        const driveService = new DriveService(credentials)
+        const fileIds = JSON.parse(selectedFiles)
+        const documents: Document[] = []
+
+        for (const fileId of fileIds) {
+            const file = await driveService.getFile(fileId)
+            const response = await driveService.downloadFile(fileId)
+
+            // Check if file has been modified
+            const lastModified = new Date(file.modifiedTime).getTime()
+            const currentMetadata = { lastModified, fileId: file.id }
+
+            let docs: Document[] = []
+
+            if (file.mimeType === 'application/vnd.google-apps.document') {
+                docs = [new Document({ pageContent: response.data })]
+            } else if (file.mimeType === 'application/vnd.google-apps.spreadsheet') {
+                docs = await this.processCsvContent(response.data, columnName, textSplitter)
+            } else if (file.mimeType === 'application/pdf') {
+                const buffer = Buffer.from(response.data, 'base64')
+                docs = await this.processPdfFile(buffer, pdfUsage, textSplitter)
+            } else {
+                docs = [new Document({ pageContent: response.data })]
+            }
+
+            // Add metadata to documents
+            docs = docs.map((doc) => ({
+                ...doc,
+                metadata:
+                    _omitMetadataKeys === '*'
+                        ? { ...metadata, ...currentMetadata }
+                        : omit(
+                              {
+                                  ...doc.metadata,
+                                  source: `gdrive://${file.id}`,
+                                  fileId: file.id,
+                                  fileName: file.name,
+                                  mimeType: file.mimeType,
+                                  lastModified,
+                                  ...metadata
+                              },
+                              omitMetadataKeys
+                          )
+            }))
+
+            documents.push(...docs)
+        }
+
+        return documents
+    }
+
     private async processPdfFile(buffer: Buffer, usage: string, textSplitter?: TextSplitter): Promise<Document[]> {
         const loader = new PDFLoader(new Blob([buffer]), {
             splitPages: usage !== 'perFile'

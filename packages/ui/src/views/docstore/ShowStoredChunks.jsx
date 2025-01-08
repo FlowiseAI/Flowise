@@ -5,7 +5,7 @@ import { useNavigate, usePathname } from '@/utils/navigation'
 import ReactJson from 'flowise-react-json-view'
 
 // material-ui
-import { Box, Card, Button, Grid, IconButton, Stack, Typography } from '@mui/material'
+import { Box, Card, Button, Grid, IconButton, Stack, Typography, CircularProgress } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 import CardContent from '@mui/material/CardContent'
 import { IconLanguage, IconX, IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
@@ -218,6 +218,43 @@ const ShowStoredChunks = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChunksApi.data])
 
+    const handleSyncAndRefresh = async () => {
+        try {
+            setLoading(true)
+            const resp = await documentsApi.syncAndRefreshChunks(storeId, fileId)
+            if (resp.data) {
+                enqueueSnackbar({
+                    message: 'Document chunks successfully synced and refreshed!',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                await getChunksApi.request(storeId, fileId, currentPage)
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || 'Failed to sync and refresh chunks'
+            enqueueSnackbar({
+                message: errorMessage,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
     return (
         <>
             <MainCard style={{ position: 'relative' }}>
@@ -228,7 +265,14 @@ const ShowStoredChunks = () => {
                         title={getChunksApi.data?.file?.loaderName || getChunksApi.data?.storeName}
                         description={getChunksApi.data?.file?.splitterName || getChunksApi.data?.description}
                         onBack={() => navigate(-1)}
-                    ></ViewHeader>
+                    >
+                        {getChunksApi.data?.file?.loaderId === 'googleDrive' && (
+                            <Button variant='outlined' color='primary' onClick={handleSyncAndRefresh} disabled={loading}>
+                                {loading ? <CircularProgress size={20} color='inherit' sx={{ mr: 1 }} /> : null}
+                                {loading ? 'Syncing...' : 'Sync and Refresh'}
+                            </Button>
+                        )}
+                    </ViewHeader>
                     <div style={{ width: '100%' }}>
                         {fileNames.length > 0 && (
                             <Grid sx={{ mt: 1 }} container>
