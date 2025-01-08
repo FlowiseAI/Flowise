@@ -284,7 +284,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 const reader = new FileReader()
                 const { name } = file
                 // Only add files
-                if (!imageUploadAllowedTypes.includes(file.type)) {
+                if (!file.type || !imageUploadAllowedTypes.includes(file.type)) {
                     uploadedFiles.push({ file, type: fullFileUpload ? 'file:full' : 'file:rag' })
                 }
                 files.push(
@@ -363,7 +363,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 return
             }
             // Only add files
-            if (!imageUploadAllowedTypes.includes(file.type)) {
+            if (!file.type || !imageUploadAllowedTypes.includes(file.type)) {
                 uploadedFiles.push({ file, type: fullFileUpload ? 'file:full' : 'file:rag' })
             }
             const reader = new FileReader()

@@ -54,10 +54,19 @@ function a11yProps(index) {
     }
 }
 
-const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager']
-const allowedAgentModel = {}
-const exceptions = {
-    Memory: ['agentMemory']
+const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager', 'Utilities']
+
+const agentMemoryNodes = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory']
+
+// Show blacklisted nodes (exceptions) for agent canvas
+const exceptionsForAgentCanvas = {
+    Memory: agentMemoryNodes,
+    Utilities: ['getVariable', 'setVariable', 'stickyNote']
+}
+
+// Hide some nodes from the chatflow canvas
+const blacklistForChatflowCanvas = {
+    Memory: agentMemoryNodes
 }
 
 const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
@@ -87,11 +96,16 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         filterSearch(searchValue, newValue)
     }
 
-    const addException = () => {
+    const addException = (category) => {
         let nodes = []
-        for (const category in exceptions) {
-            const nodeNames = exceptions[category]
-            nodes.push(...nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name)))
+        if (category) {
+            const nodeNames = exceptionsForAgentCanvas[category] || []
+            nodes = nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name))
+        } else {
+            for (const category in exceptionsForAgentCanvas) {
+                const nodeNames = exceptionsForAgentCanvas[category]
+                nodes.push(...nodesData.filter((nd) => nd.category === category && nodeNames.includes(nd.name)))
+            }
         }
         return nodes
     }
@@ -108,7 +122,13 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             })
             return passed
         }
-        const nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents' && nd.category !== 'Sequential Agents')
+        let nodes = nodesData.filter((nd) => nd.category !== 'Multi Agents' && nd.category !== 'Sequential Agents')
+
+        for (const category in blacklistForChatflowCanvas) {
+            const nodeNames = blacklistForChatflowCanvas[category]
+            nodes = nodes.filter((nd) => !nodeNames.includes(nd.name))
+        }
+
         const passed = nodes.filter((nd) => {
             const passesName = nd.name.toLowerCase().includes(value.toLowerCase())
             const passesLabel = nd.label.toLowerCase().includes(value.toLowerCase())
@@ -163,18 +183,12 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                     const nodes = result[category].filter((nd) => !nd.tags || !nd.tags.includes('LlamaIndex'))
                     if (!nodes.length) continue
 
-                    // Only allow specific models for specific categories
-                    if (Object.keys(allowedAgentModel).includes(category)) {
-                        const allowedModels = allowedAgentModel[category]
-                        filteredResult[category] = nodes.filter((nd) => allowedModels.includes(nd.name))
-                    } else {
-                        filteredResult[category] = nodes
-                    }
+                    filteredResult[category] = nodes
                 }
 
-                // Allow exceptions
-                if (Object.keys(exceptions).includes(category)) {
-                    filteredResult[category] = addException()
+                // Allow exceptionsForAgentCanvas
+                if (Object.keys(exceptionsForAgentCanvas).includes(category)) {
+                    filteredResult[category] = addException(category)
                 }
             }
             setNodes(filteredResult)
@@ -197,8 +211,13 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                 if (category === 'Multi Agents' || category === 'Sequential Agents') {
                     continue
                 }
+                if (Object.keys(blacklistForChatflowCanvas).includes(category)) {
+                    const nodes = blacklistForChatflowCanvas[category]
+                    result[category] = result[category].filter((nd) => !nodes.includes(nd.name))
+                }
                 filteredResult[category] = result[category]
             }
+
             setNodes(filteredResult)
             setCategoryExpanded(accordianCategories)
         }

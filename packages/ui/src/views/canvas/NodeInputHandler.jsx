@@ -9,7 +9,7 @@ import { Popper, Box, Typography, Tooltip, IconButton, Button, TextField } from 
 import { useGridApiContext } from '@mui/x-data-grid'
 import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconEdit, IconAlertTriangle, IconBulb } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconEdit, IconAlertTriangle, IconBulb, IconRefresh } from '@tabler/icons-react'
 import { Tabs } from '@mui/base/Tabs'
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 
@@ -29,7 +29,7 @@ import { TabPanel } from '@/ui-component/tabs/TabPanel'
 import { TabsList } from '@/ui-component/tabs/TabsList'
 import { Tab } from '@/ui-component/tabs/Tab'
 import ToolDialog from '@/views/tools/ToolDialog'
-import AssistantDialog from '@/views/assistants/AssistantDialog'
+import AssistantDialog from '@/views/assistants/openai/AssistantDialog'
 import FormatPromptValuesDialog from '@/ui-component/dialog/FormatPromptValuesDialog'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import ConditionDialog from '@/ui-component/dialog/ConditionDialog'
@@ -738,7 +738,7 @@ const NodeInputHandler = ({
                         {inputParam.type === 'asyncOptions' && (
                             <>
                                 {data.inputParams.length === 1 && <div style={{ marginTop: 10 }} />}
-                                <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row' }}>
+                                <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row', alignContent: 'center' }}>
                                     <AsyncDropdown
                                         disabled={disabled}
                                         name={inputParam.name}
@@ -756,6 +756,16 @@ const NodeInputHandler = ({
                                             onClick={() => editAsyncOption(inputParam.name, data.inputs[inputParam.name])}
                                         >
                                             <IconEdit />
+                                        </IconButton>
+                                    )}
+                                    {inputParam.refresh && (
+                                        <IconButton
+                                            title='Refresh'
+                                            color='primary'
+                                            size='small'
+                                            onClick={() => setReloadTimestamp(Date.now().toString())}
+                                        >
+                                            <IconRefresh />
                                         </IconButton>
                                     )}
                                 </div>

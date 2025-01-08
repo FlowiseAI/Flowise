@@ -10,6 +10,7 @@ import { AES, enc } from 'crypto-js'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { getFileFromStorage } from './storageUtils'
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
+import { customGet } from '../nodes/sequentialagents/commonUtils'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -1039,4 +1040,40 @@ export const mapMimeTypeToExt = (mimeType: string) => {
 // remove invalid markdown image pattern: ![<some-string>](<some-string>)
 export const removeInvalidImageMarkdown = (output: string): string => {
     return typeof output === 'string' ? output.replace(/!\[.*?\]\((?!https?:\/\/).*?\)/g, '') : output
+}
+
+/**
+ * Extract output from array
+ * @param {any} output
+ * @returns {string}
+ */
+export const extractOutputFromArray = (output: any): string => {
+    if (Array.isArray(output)) {
+        return output.map((o) => o.text).join('\n')
+    } else if (typeof output === 'object') {
+        if (output.text) return output.text
+        else return JSON.stringify(output)
+    }
+    return output
+}
+
+/**
+ * Loop through the object and replace the key with the value
+ * @param {any} obj
+ * @param {any} sourceObj
+ * @returns {any}
+ */
+export const resolveFlowObjValue = (obj: any, sourceObj: any): any => {
+    if (typeof obj === 'object' && obj !== null) {
+        const resolved: any = Array.isArray(obj) ? [] : {}
+        for (const key in obj) {
+            const value = obj[key]
+            resolved[key] = resolveFlowObjValue(value, sourceObj)
+        }
+        return resolved
+    } else if (typeof obj === 'string' && obj.startsWith('$flow')) {
+        return customGet(sourceObj, obj)
+    } else {
+        return obj
+    }
 }

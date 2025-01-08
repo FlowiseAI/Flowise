@@ -122,10 +122,12 @@ export const addSingleFileToStorage = async (mime: string, bf: Buffer, fileName:
 
 export const getFileFromStorage = async (file: string, ...paths: string[]): Promise<Buffer> => {
     const storageType = getStorageType()
+    const sanitizedFilename = _sanitizeFilename(file)
+
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
 
-        let Key = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + file
+        let Key = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + sanitizedFilename
         if (Key.startsWith('/')) {
             Key = Key.substring(1)
         }
@@ -147,7 +149,7 @@ export const getFileFromStorage = async (file: string, ...paths: string[]): Prom
         const buffer = Buffer.concat(response.Body.toArray())
         return buffer
     } else {
-        const fileInStorage = path.join(getStoragePath(), ...paths, file)
+        const fileInStorage = path.join(getStoragePath(), ...paths, sanitizedFilename)
         return fs.readFileSync(fileInStorage)
     }
 }

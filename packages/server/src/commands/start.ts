@@ -60,7 +60,8 @@ export default class Start extends Command {
         FLOWISE_SECRETKEY_OVERWRITE: Flags.string(),
         SECRETKEY_AWS_ACCESS_KEY: Flags.string(),
         SECRETKEY_AWS_SECRET_KEY: Flags.string(),
-        SECRETKEY_AWS_REGION: Flags.string()
+        SECRETKEY_AWS_REGION: Flags.string(),
+        DISABLED_NODES: Flags.string()
     }
 
     async stopProcess() {
@@ -104,6 +105,7 @@ export default class Start extends Command {
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
         if (flags.DISABLE_CHATFLOW_REUSE) process.env.DISABLE_CHATFLOW_REUSE = flags.DISABLE_CHATFLOW_REUSE
         if (flags.SHOW_COMMUNITY_NODES) process.env.SHOW_COMMUNITY_NODES = flags.SHOW_COMMUNITY_NODES
+        if (flags.DISABLED_NODES) process.env.DISABLED_NODES = flags.DISABLED_NODES
 
         // Authorization
         if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME

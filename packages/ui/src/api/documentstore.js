@@ -27,6 +27,8 @@ const getVectorStoreProviders = () => client.get('/document-store/components/vec
 const getEmbeddingProviders = () => client.get('/document-store/components/embeddings')
 const getRecordManagerProviders = () => client.get('/document-store/components/recordmanager')
 
+const generateDocStoreToolDesc = (storeId, body) => client.post('/document-store/generate-tool-desc/' + storeId, body)
+
 export default {
     getAllDocumentStores,
     getSpecificDocumentStore,
@@ -49,5 +51,6 @@ export default {
     deleteVectorStoreDataFromStore,
     updateVectorStoreConfig,
     saveProcessingLoader,
-    refreshLoader
+    refreshLoader,
+    generateDocStoreToolDesc
 }

@@ -66,7 +66,7 @@ class MultiPromptChain_Chains implements INode {
             promptNames,
             promptDescriptions,
             promptTemplates,
-            llmChainOpts: { verbose: process.env.DEBUG === 'true' ? true : false }
+            llmChainOpts: { verbose: process.env.DEBUG === 'true' }
         })
 
         return chain

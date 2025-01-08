@@ -1,11 +1,11 @@
 import express from 'express'
 import multer from 'multer'
-import path from 'path'
 import vectorsController from '../../controllers/vectors'
+import { getUploadPath } from '../../utils'
 
 const router = express.Router()
 
-const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
+const upload = multer({ dest: getUploadPath() })
 
 // CREATE
 router.post(

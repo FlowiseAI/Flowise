@@ -28,11 +28,23 @@ export abstract class VectorStoreDriver {
     }
 
     getTableName() {
-        return getTableName(this.nodeData)
+        return this.sanitizeTableName(getTableName(this.nodeData))
     }
 
     getEmbeddings() {
         return this.nodeData.inputs?.embeddings as Embeddings
+    }
+
+    sanitizeTableName(tableName: string): string {
+        // Trim and normalize case, turn whitespace into underscores
+        tableName = tableName.trim().toLowerCase().replace(/\s+/g, '_')
+
+        // Validate using a regex (alphanumeric and underscores only)
+        if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
+            throw new Error('Invalid table name')
+        }
+
+        return tableName
     }
 
     async getCredentials() {
