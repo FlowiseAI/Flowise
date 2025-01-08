@@ -6,7 +6,7 @@ import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
 import { ICredentialReturnResponse } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { User } from '../../database/entities/User'
+import { User, UserRole } from '../../database/entities/User'
 
 const createCredential = async (req: any) => {
   try {
@@ -97,12 +97,30 @@ const getAllCredentials = async (req: any) => {
   }
 }
 
-const getCredentialById = async (credentialId: string): Promise<any> => {
+const getCredentialById = async (req: any): Promise<any> => {
   try {
+    const { user } = req
+    const credentialId = req.params.id
     const appServer = getRunningExpressApp()
-    const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-      id: credentialId
-    })
+
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    let credential
+    if (foundUser.role !== UserRole.ADMIN) {
+      credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
+        id: credentialId,
+        userId: user.id
+      })
+    } else {
+      credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
+        id: credentialId
+      })
+    }
     if (!credential) {
       throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
     }

@@ -6,7 +6,7 @@ import { getAppVersion } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { QueryRunner } from 'typeorm'
-import { User } from '../../database/entities/User'
+import { User, UserRole } from '../../database/entities/User'
 
 const createTool = async (req?: any): Promise<any> => {
   try {
@@ -74,12 +74,30 @@ const getAllTools = async (req?: any): Promise<Tool[]> => {
   }
 }
 
-const getToolById = async (toolId: string): Promise<any> => {
+const getToolById = async (req: any): Promise<any> => {
   try {
+    const { user } = req
+    const toolId = req.params.id
     const appServer = getRunningExpressApp()
-    const dbResponse = await appServer.AppDataSource.getRepository(Tool).findOneBy({
-      id: toolId
-    })
+
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    let dbResponse
+    if (foundUser.role !== UserRole.ADMIN) {
+      dbResponse = await appServer.AppDataSource.getRepository(Tool).findOneBy({
+        id: toolId,
+        userId: user.id
+      })
+    } else {
+      dbResponse = await appServer.AppDataSource.getRepository(Tool).findOneBy({
+        id: toolId
+      })
+    }
     if (!dbResponse) {
       throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Tool ${toolId} not found`)
     }
