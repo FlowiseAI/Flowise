@@ -41,7 +41,7 @@ const getToolById = async (req: Request, res: Response, next: NextFunction) => {
     if (typeof req.params === 'undefined' || !req.params.id) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.getToolById - id not provided!`)
     }
-    const apiResponse = await toolsService.getToolById(req.params.id)
+    const apiResponse = await toolsService.getToolById(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)

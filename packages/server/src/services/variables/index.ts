@@ -68,12 +68,30 @@ const getAllVariables = async (req?: any) => {
   }
 }
 
-const getVariableById = async (variableId: string) => {
+const getVariableById = async (req: any) => {
   try {
+    const { user } = req
+    const variableId = req.params.id
     const appServer = getRunningExpressApp()
-    const dbResponse = await appServer.AppDataSource.getRepository(Variable).findOneBy({
-      id: variableId
-    })
+
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    let dbResponse
+    if (foundUser.role !== UserRole.ADMIN) {
+      dbResponse = await appServer.AppDataSource.getRepository(Variable).findOneBy({
+        id: variableId,
+        userId: user.id
+      })
+    } else {
+      dbResponse = await appServer.AppDataSource.getRepository(Variable).findOneBy({
+        id: variableId
+      })
+    }
     return dbResponse
   } catch (error) {
     throw new InternalFlowiseError(

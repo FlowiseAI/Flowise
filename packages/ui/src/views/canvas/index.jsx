@@ -425,19 +425,23 @@ const Canvas = () => {
 
   // Get specific chatflow successful
   useEffect(() => {
-    if (getSpecificChatflowApi.data) {
-      if (user?.role !== 'ADMIN' && getSpecificChatflowApi.data?.userId === user?.id) {
+    if (getSpecificChatflowApi?.data) {
+      const chatflow = getSpecificChatflowApi.data
+      if (user?.role !== 'ADMIN' && chatflow?.userId === user?.id) {
         setIsAdminPage(true)
       }
-      const chatflow = getSpecificChatflowApi.data
-      const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
+      if (!chatflow?.isPublic && user?.role !== 'ADMIN' && chatflow?.userId !== user?.id) {
+        return navigate(isAgentCanvas ? '/agentflows' : '/')
+      }
+
+      const initialFlow = chatflow?.flowData ? JSON.parse(chatflow.flowData) : []
       setNodes(initialFlow.nodes || [])
       setEdges(initialFlow.edges || [])
       dispatch({ type: SET_CHATFLOW, chatflow })
-    } else if (getSpecificChatflowApi.error) {
+    } else if (getSpecificChatflowApi?.error) {
       errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
+      return navigate(isAgentCanvas ? '/agentflows' : '/')
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getSpecificChatflowApi.data, getSpecificChatflowApi.error])
 

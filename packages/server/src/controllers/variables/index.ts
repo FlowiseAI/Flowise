@@ -48,7 +48,7 @@ const updateVariable = async (req: Request, res: Response, next: NextFunction) =
     if (typeof req.body === 'undefined') {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Error: variablesController.updateVariable - body not provided!')
     }
-    const variable = await variablesService.getVariableById(req.params.id)
+    const variable = await variablesService.getVariableById(req)
     if (!variable) {
       return res.status(404).send(`Variable ${req.params.id} not found in the database`)
     }
