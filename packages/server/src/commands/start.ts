@@ -26,8 +26,6 @@ export default class Start extends Command {
         BLOB_STORAGE_PATH: Flags.string(),
         APIKEY_STORAGE_TYPE: Flags.string(),
         APIKEY_PATH: Flags.string(),
-        SECRETKEY_PATH: Flags.string(),
-        FLOWISE_SECRETKEY_OVERWRITE: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
@@ -57,6 +55,12 @@ export default class Start extends Command {
         S3_ENDPOINT_URL: Flags.string(),
         S3_FORCE_PATH_STYLE: Flags.string(),
         SHOW_COMMUNITY_NODES: Flags.string(),
+        SECRETKEY_STORAGE_TYPE: Flags.string(),
+        SECRETKEY_PATH: Flags.string(),
+        FLOWISE_SECRETKEY_OVERWRITE: Flags.string(),
+        SECRETKEY_AWS_ACCESS_KEY: Flags.string(),
+        SECRETKEY_AWS_SECRET_KEY: Flags.string(),
+        SECRETKEY_AWS_REGION: Flags.string(),
         DISABLED_NODES: Flags.string()
     }
 
@@ -113,8 +117,12 @@ export default class Start extends Command {
         if (flags.FLOWISE_FILE_SIZE_LIMIT) process.env.FLOWISE_FILE_SIZE_LIMIT = flags.FLOWISE_FILE_SIZE_LIMIT
 
         // Credentials
+        if (flags.SECRETKEY_STORAGE_TYPE) process.env.SECRETKEY_STORAGE_TYPE = flags.SECRETKEY_STORAGE_TYPE
         if (flags.SECRETKEY_PATH) process.env.SECRETKEY_PATH = flags.SECRETKEY_PATH
         if (flags.FLOWISE_SECRETKEY_OVERWRITE) process.env.FLOWISE_SECRETKEY_OVERWRITE = flags.FLOWISE_SECRETKEY_OVERWRITE
+        if (flags.SECRETKEY_AWS_ACCESS_KEY) process.env.SECRETKEY_AWS_ACCESS_KEY = flags.SECRETKEY_AWS_ACCESS_KEY
+        if (flags.SECRETKEY_AWS_SECRET_KEY) process.env.SECRETKEY_AWS_SECRET_KEY = flags.SECRETKEY_AWS_SECRET_KEY
+        if (flags.SECRETKEY_AWS_REGION) process.env.SECRETKEY_AWS_REGION = flags.SECRETKEY_AWS_REGION
 
         // Logs
         if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
