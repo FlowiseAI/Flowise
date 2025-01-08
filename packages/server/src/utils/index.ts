@@ -1405,7 +1405,7 @@ export const getEncryptionKey = async (): Promise<string> => {
 }
 
 /**
- * Encrypt credential data using AWS Secrets Manager if USE_AWS_SECRETS_MANAGER is set to true.
+ * Encrypt credential data
  * @param {ICredentialDataDecrypted} plainDataObj
  * @returns {Promise<string>}
  */
@@ -1447,7 +1447,7 @@ export const encryptCredentialData = async (plainDataObj: ICredentialDataDecrypt
 }
 
 /**
- * Decrypt credential data using AWS Secrets Manager if USE_AWS_SECRETS_MANAGER is set to true.
+ * Decrypt credential data
  * @param {string} encryptedData
  * @param {string} componentCredentialName
  * @param {IComponentCredentials} componentCredentials
