@@ -7,10 +7,14 @@ import { z } from 'zod'
 import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
+import { omit } from 'lodash'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 import { customGet } from '../nodes/sequentialagents/commonUtils'
+import { TextSplitter } from 'langchain/text_splitter'
+import { DocumentLoader } from 'langchain/document_loaders/base'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -1076,4 +1080,69 @@ export const resolveFlowObjValue = (obj: any, sourceObj: any): any => {
     } else {
         return obj
     }
+}
+
+export const handleDocumentLoaderOutput = (docs: Document[], output: string) => {
+    if (output === 'document') {
+        return docs
+    } else {
+        let finaltext = ''
+        for (const doc of docs) {
+            finaltext += `${doc.pageContent}\n`
+        }
+        return handleEscapeCharacters(finaltext, false)
+    }
+}
+
+export const parseDocumentLoaderMetadata = (metadata: object | string): object => {
+    if (!metadata) return {}
+
+    if (typeof metadata !== 'object') {
+        return JSON.parse(metadata)
+    }
+
+    return metadata
+}
+
+export const handleDocumentLoaderMetadata = (
+    docs: Document[],
+    _omitMetadataKeys: string,
+    metadata: object | string = {},
+    sourceIdKey?: string
+) => {
+    let omitMetadataKeys: string[] = []
+    if (_omitMetadataKeys) {
+        omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+    }
+
+    metadata = parseDocumentLoaderMetadata(metadata)
+
+    return docs.map((doc) => ({
+        ...doc,
+        metadata:
+            _omitMetadataKeys === '*'
+                ? metadata
+                : omit(
+                      {
+                          ...metadata,
+                          ...doc.metadata,
+                          ...(sourceIdKey ? { [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey } : undefined)
+                      },
+                      omitMetadataKeys
+                  )
+    }))
+}
+
+export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, textSplitter?: TextSplitter) => {
+    let docs: Document[] = []
+
+    if (textSplitter) {
+        let splittedDocs = await loader.load()
+        splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+        docs = splittedDocs
+    } else {
+        docs = await loader.load()
+    }
+
+    return docs
 }
