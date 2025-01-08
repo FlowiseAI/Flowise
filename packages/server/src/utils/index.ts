@@ -54,19 +54,34 @@ import { DocumentStore } from '../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
-import { CreateSecretCommand, GetSecretValueCommand, PutSecretValueCommand } from '@aws-sdk/client-secrets-manager'
-import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager'
+import {
+    CreateSecretCommand,
+    GetSecretValueCommand,
+    PutSecretValueCommand,
+    SecretsManagerClient,
+    SecretsManagerClientConfig
+} from '@aws-sdk/client-secrets-manager'
+
 const QUESTION_VAR_PREFIX = 'question'
 const FILE_ATTACHMENT_PREFIX = 'file_attachment'
 const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
-const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
-const AWS_REGION = process.env.AWS_REGION || 'us-east-1' // Default region if not provided
-
 let secretsManagerClient: SecretsManagerClient | null = null
+const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
 if (USE_AWS_SECRETS_MANAGER) {
-    secretsManagerClient = new SecretsManagerClient({ region: AWS_REGION })
+    const region = process.env.SECRETKEY_AWS_REGION || 'us-east-1' // Default region if not provided
+    const accessKeyId = process.env.SECRETKEY_AWS_ACCESS_KEY
+    const secretAccessKey = process.env.SECRETKEY_AWS_SECRET_KEY
+
+    let credentials: SecretsManagerClientConfig['credentials'] | undefined
+    if (accessKeyId && secretAccessKey) {
+        credentials = {
+            accessKeyId,
+            secretAccessKey
+        }
+    }
+    secretsManagerClient = new SecretsManagerClient({ credentials, region })
 }
 
 export const databaseEntities: IDatabaseEntity = {
