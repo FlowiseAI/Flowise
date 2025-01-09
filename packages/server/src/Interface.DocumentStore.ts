@@ -70,6 +70,8 @@ export interface IDocumentStoreLoaderForPreview extends IDocumentStoreLoader {
 
 export interface IDocumentStoreUpsertData {
     docId: string
+    metadata?: string | object
+    replaceExisting?: boolean
     loader?: {
         name: string
         config: ICommonObject
