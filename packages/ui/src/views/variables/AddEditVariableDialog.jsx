@@ -209,7 +209,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
                         <Typography>
                             Type<span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
-                        <Select placeholder='Select Variable Type' onValueChange={(value) => setVariableType(value)}>
+                        <Select placeholder='Select Variable Type' onValueChange={(value) => setVariableType(value)} value={variableType}>
                             {variableTypes.map((item) => (
                                 <SelectItem className='flex flex-col items-start' label={item.label} key={item.name} value={item.name}>
                                     <span className='font-semibold'>{item.label}</span>
