@@ -428,6 +428,27 @@ const generateDocStoreToolDesc = async (req: Request, res: Response, next: NextF
     }
 }
 
+const getDocStoreConfigs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.getDocStoreConfigs - storeId not provided!`
+            )
+        }
+        if (typeof req.params.loaderId === 'undefined' || req.params.loaderId === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.getDocStoreConfigs - doc loader Id not provided!`
+            )
+        }
+        const apiResponse = await documentStoreService.findDocStoreAvailableConfigs(req.params.id, req.params.loaderId)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     deleteDocumentStore,
     createDocumentStore,
@@ -453,5 +474,6 @@ export default {
     upsertDocStoreMiddleware,
     refreshDocStoreMiddleware,
     saveProcessingLoader,
-    generateDocStoreToolDesc
+    generateDocStoreToolDesc,
+    getDocStoreConfigs
 }
