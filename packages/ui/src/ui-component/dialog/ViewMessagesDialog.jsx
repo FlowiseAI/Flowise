@@ -672,7 +672,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(chatPK))
                 }
             }
-        } else if (getChatmessageApi.error){
+        } else if (getChatmessageApi.error) {
             setChatLogs(null)
         }
 

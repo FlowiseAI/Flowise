@@ -33,7 +33,7 @@ const getFeedbackTypeFilters = (_feedbackTypeFilters: ChatMessageRatingType[]): 
 }
 
 const createChatMessage = async (req: Request, res: Response, next: NextFunction) => {
-    // createChatMessage handles DISABLE_MESSAGE_SAVING check for us and will return null. 
+    // createChatMessage handles DISABLE_MESSAGE_SAVING check for us and will return null
     try {
         if (!req.body) {
             throw new InternalFlowiseError(
