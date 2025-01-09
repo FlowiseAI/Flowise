@@ -53,7 +53,7 @@ const createChatMessage = async (req: Request, res: Response, next: NextFunction
 }
 
 const getAllChatMessages = async (req: Request, res: Response, next: NextFunction) => {
-    if (process.env.DISABLE_MESSAGE_SAVING) {
+    if (process.env.DISABLE_MESSAGE_SAVING === 'true') {
         return res.status(500).send('Error: chatMessagesController.createChatMessage - chat message storage disabled!')
     }
 

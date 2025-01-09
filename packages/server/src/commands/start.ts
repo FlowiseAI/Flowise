@@ -48,6 +48,7 @@ export default class Start extends Command {
         LANGCHAIN_API_KEY: Flags.string(),
         LANGCHAIN_PROJECT: Flags.string(),
         DISABLE_FLOWISE_TELEMETRY: Flags.string(),
+        DISABLE_MESSAGE_SAVING: Flags.string(),
         MODEL_LIST_CONFIG_JSON: Flags.string(),
         STORAGE_TYPE: Flags.string(),
         S3_STORAGE_BUCKET_NAME: Flags.string(),
@@ -143,6 +144,9 @@ export default class Start extends Command {
 
         // Telemetry
         if (flags.DISABLE_FLOWISE_TELEMETRY) process.env.DISABLE_FLOWISE_TELEMETRY = flags.DISABLE_FLOWISE_TELEMETRY
+
+        // Message logs
+        if (flags.DISABLE_MESSAGE_SAVING) process.env.DISABLE_MESSAGE_SAVING = flags.DISABLE_MESSAGE_SAVING
 
         // Model list config
         if (flags.MODEL_LIST_CONFIG_JSON) process.env.MODEL_LIST_CONFIG_JSON = flags.MODEL_LIST_CONFIG_JSON

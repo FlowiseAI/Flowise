@@ -25,7 +25,7 @@ export class NodesPool {
      */
     private async initializeNodes() {
         let disabled_nodes = process.env.DISABLED_NODES ? process.env.DISABLED_NODES.split(',') : []
-        if (process.env.DISABLE_MESSAGE_SAVING){
+        if (process.env.DISABLE_MESSAGE_SAVING === 'true'){
             disabled_nodes = disabled_nodes.concat([
                 'bufferMemory',
                 'bufferWindowMemory',

@@ -9,7 +9,7 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 export const utilAddChatMessage = async (chatMessage: Partial<IChatMessage>, chatflow: IChatFlow | null = null): Promise<ChatMessage | null> => {
     const appServer = getRunningExpressApp()
 
-    if (process.env.DISABLE_MESSAGE_SAVING){
+    if (process.env.DISABLE_MESSAGE_SAVING === 'true'){
         return null
     }
 
