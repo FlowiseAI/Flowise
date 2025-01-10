@@ -1,6 +1,6 @@
-import { INode, INodeParams } from '../../../src/Interface'
+import { INode, INodeParams } from '../../src/Interface'
 
-class Oauth_Custom_Nodes implements INode {
+class GoogleOauth implements INode {
     label: string
     name: string
     version: number
@@ -18,7 +18,7 @@ class Oauth_Custom_Nodes implements INode {
         this.version = 1.0
         this.type = 'GoogleOauth'
         this.icon = 'google.svg'
-        this.category = 'Custom Nodes'
+        this.category = 'Oauth'
         // this.description = 'Authenticate with Google OAuth'
         this.baseClasses = [this.type]
         this.credential = {
@@ -67,4 +67,4 @@ class Oauth_Custom_Nodes implements INode {
     }
 }
 
-module.exports = { nodeClass: Oauth_Custom_Nodes }
+module.exports = { nodeClass: GoogleOauth }

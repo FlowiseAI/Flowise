@@ -126,8 +126,8 @@ export class App {
             next()
         })
         const whitelistURLs = [
-            '/api/v1/auth/google',
-            '/api/v1/auth/google/callback',
+            '/api/v1/google-auth',
+            process.env.GOOGLE_CALLBACK_URL ?? '/api/v1/google-auth/callback',
             '/api/v1/verify/apikey/',
             '/api/v1/chatflows/apikey/',
             '/api/v1/public-chatflows',

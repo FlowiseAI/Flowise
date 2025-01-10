@@ -1,4 +1,4 @@
-import { INode, INodeData, INodeParams } from '../../../../src/Interface'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { Document } from 'langchain/document'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
@@ -107,7 +107,7 @@ class GoogleDrive implements INode {
         const credentials = {
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            redirectUrl: '/api/v1/auth/google/callback',
+            redirectUrl: process.env.GOOGLE_CALLBACK_URL,
             accessToken: credentialData.googleAccessToken,
             refreshToken: credentialData.refreshToken,
             expiryDate: credentialData.expiryDate
@@ -178,7 +178,7 @@ class GoogleDrive implements INode {
         const credentials = {
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            redirectUrl: '/api/v1/auth/google/callback',
+            redirectUrl: process.env.GOOGLE_CALLBACK_URL,
             accessToken: credentialData.googleAccessToken,
             refreshToken: credentialData.refreshToken,
             expiryDate: credentialData.expiryDate
