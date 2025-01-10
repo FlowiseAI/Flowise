@@ -51,6 +51,7 @@ export class RateLimiterManager {
                     standardHeaders: true,
                     legacyHeaders: false,
                     store: new RedisStore({
+                        prefix: `rl:${id}`,
                         // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
                         sendCommand: (...args: string[]) => this.redisClient.call(...args)
                     }),
