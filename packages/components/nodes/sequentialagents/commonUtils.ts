@@ -292,8 +292,9 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
   }
 
   // If last message is AI, add a human message to avoid validation error
-  if (mergedMessages.length > 0 && isAI(mergedMessages[mergedMessages.length - 1])) {
-    mergedMessages.push(new HumanMessage({ content: 'Please continue.' }))
+  if (mergedMessages.length > 0 && ['AIMessageChunk', 'AIMessage'].includes(mergedMessages[mergedMessages.length - 1].constructor.name)) {
+    // mergedMessages.push(new HumanMessage({ content: 'Please continue.' }))
+    mergedMessages.pop()
   }
 
   // console.log('mergedMessages:', mergedMessages)
