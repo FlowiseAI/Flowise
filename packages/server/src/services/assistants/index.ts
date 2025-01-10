@@ -15,6 +15,7 @@ import { DocumentStore } from '../../database/entities/DocumentStore'
 import { ICommonObject } from 'flowise-components'
 import logger from '../../utils/logger'
 import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
+import { INPUT_PARAMS_TYPE } from '../../utils/constants'
 
 const createAssistant = async (requestBody: any): Promise<Assistant> => {
     try {
@@ -425,26 +426,11 @@ const getDocumentStores = async (): Promise<any> => {
 const getTools = async (): Promise<any> => {
     try {
         const tools = await nodesService.getAllNodesForCategory('Tools')
-        const whitelistTypes = [
-            'asyncOptions',
-            'options',
-            'multiOptions',
-            'datagrid',
-            'string',
-            'number',
-            'boolean',
-            'password',
-            'json',
-            'code',
-            'date',
-            'file',
-            'folder',
-            'tabs'
-        ]
+
         // filter out those tools that input params type are not in the list
         const filteredTools = tools.filter((tool) => {
             const inputs = tool.inputs || []
-            return inputs.every((input) => whitelistTypes.includes(input.type))
+            return inputs.every((input) => INPUT_PARAMS_TYPE.includes(input.type))
         })
         return filteredTools
     } catch (error) {

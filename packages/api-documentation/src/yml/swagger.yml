@@ -628,8 +628,8 @@ paths:
                 - document-store
             security:
                 - bearerAuth: []
-            summary: Upsert new document to document store
-            description: Upsert new document to document store
+            summary: Upsert document to document store
+            description: Upsert document to document store
             operationId: upsertDocument
             parameters:
                 - in: path
@@ -2326,6 +2326,13 @@ components:
                     type: string
                     format: uuid
                     description: Document ID within the store. If provided, existing configuration from the document will be used for the new document
+                metadata:
+                    type: object
+                    description: Metadata associated with the document
+                    example: { 'foo': 'bar' }
+                replaceExisting:
+                    type: boolean
+                    description: Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store
                 loader:
                     type: object
                     properties:

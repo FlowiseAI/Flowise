@@ -143,21 +143,6 @@ export const executeUpsert = async ({
     const availableVariables = await appDataSource.getRepository(Variable).find()
     const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
-    /* For "files" input, add a new node override with the actual input name such as pdfFile, txtFile, etc.
-     * https://github.com/FlowiseAI/Flowise/pull/3569
-     */
-    for (const nodeLabel in nodeOverrides) {
-        const params = nodeOverrides[nodeLabel]
-        const enabledFileParam = params.find((param) => param.enabled && param.name === 'files')
-        if (enabledFileParam) {
-            const fileInputFieldFromExt = mapExtToInputField(enabledFileParam.type)
-            nodeOverrides[nodeLabel].push({
-                ...enabledFileParam,
-                name: fileInputFieldFromExt
-            })
-        }
-    }
-
     const upsertedResult = await buildFlow({
         startingNodeIds,
         reactFlowNodes: nodes,

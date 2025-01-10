@@ -23,7 +23,14 @@ import {
     ConversationHistorySelection
 } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX, ARTIFACTS_PREFIX } from '../../../src/agents'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, removeInvalidImageMarkdown } from '../../../src/utils'
+import {
+    extractOutputFromArray,
+    getInputVariables,
+    getVars,
+    handleEscapeCharacters,
+    prepareSandboxVars,
+    removeInvalidImageMarkdown
+} from '../../../src/utils'
 import {
     customGet,
     getVM,
@@ -827,6 +834,7 @@ async function agentNode(
         }
 
         let outputContent = typeof result === 'string' ? result : result.content || result.output
+        outputContent = extractOutputFromArray(outputContent)
         outputContent = removeInvalidImageMarkdown(outputContent)
 
         if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {

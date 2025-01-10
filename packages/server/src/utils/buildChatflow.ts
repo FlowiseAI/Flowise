@@ -1,4 +1,6 @@
 import { Request } from 'express'
+import * as fs from 'fs'
+import * as path from 'path'
 import { DataSource } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
 import { omit } from 'lodash'
@@ -8,7 +10,10 @@ import {
     ICommonObject,
     addSingleFileToStorage,
     generateFollowUpPrompts,
-    IAction
+    IAction,
+    addArrayFilesToStorage,
+    mapMimeTypeToInputField,
+    mapExtToInputField
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -206,6 +211,7 @@ export const executeFlow = async ({
     sseStreamer,
     baseURL,
     isInternal,
+    files,
     signal
 }: IExecuteFlowParams) => {
     const question = incomingInput.question
@@ -282,6 +288,56 @@ export const executeFlow = async ({
                 uploadedFilesContent += `<doc name='${upload.name}'>${upload.data}</doc>\n\n`
                 fileUploads[i] = omit(upload, ['data'])
             }
+        }
+    }
+
+    // Process form data body with files
+    if (files?.length) {
+        const overrideConfig: ICommonObject = { ...incomingInput }
+        for (const file of files) {
+            const fileNames: string[] = []
+            const fileBuffer = fs.readFileSync(file.path)
+            // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
+            file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+            const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
+
+            const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
+
+            const fileExtension = path.extname(file.originalname)
+
+            const fileInputFieldFromExt = mapExtToInputField(fileExtension)
+
+            let fileInputField = 'txtFile'
+
+            if (fileInputFieldFromExt !== 'txtFile') {
+                fileInputField = fileInputFieldFromExt
+            } else if (fileInputFieldFromMimeType !== 'txtFile') {
+                fileInputField = fileInputFieldFromExt
+            }
+
+            if (overrideConfig[fileInputField]) {
+                const existingFileInputField = overrideConfig[fileInputField].replace('FILE-STORAGE::', '')
+                const existingFileInputFieldArray = JSON.parse(existingFileInputField)
+
+                const newFileInputField = storagePath.replace('FILE-STORAGE::', '')
+                const newFileInputFieldArray = JSON.parse(newFileInputField)
+
+                const updatedFieldArray = existingFileInputFieldArray.concat(newFileInputFieldArray)
+
+                overrideConfig[fileInputField] = `FILE-STORAGE::${JSON.stringify(updatedFieldArray)}`
+            } else {
+                overrideConfig[fileInputField] = storagePath
+            }
+
+            fs.unlinkSync(file.path)
+        }
+        if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
+            overrideConfig.vars = JSON.parse(overrideConfig.vars)
+        }
+        incomingInput = {
+            ...incomingInput,
+            overrideConfig,
+            chatId
         }
     }
 
@@ -678,6 +734,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const baseURL = `${httpProtocol}://${req.get('host')}`
     const incomingInput: IncomingInput = req.body
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
+    const files = (req.files as Express.Multer.File[]) || []
 
     try {
         // Validate API Key if its external API request
@@ -694,6 +751,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             chatId,
             baseURL,
             isInternal,
+            files,
             appDataSource: appServer.AppDataSource,
             sseStreamer: appServer.sseStreamer,
             telemetry: appServer.telemetry,

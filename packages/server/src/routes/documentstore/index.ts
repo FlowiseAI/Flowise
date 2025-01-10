@@ -21,6 +21,8 @@ router.get('/store/:id', documentStoreController.getDocumentStoreById)
 router.put('/store/:id', documentStoreController.updateDocumentStore)
 // Delete documentStore
 router.delete('/store/:id', documentStoreController.deleteDocumentStore)
+// Get document store configs
+router.get('/store-configs/:id/:loaderId', documentStoreController.getDocStoreConfigs)
 
 /** Component Nodes = Document Store - Loaders */
 // Get all loaders
