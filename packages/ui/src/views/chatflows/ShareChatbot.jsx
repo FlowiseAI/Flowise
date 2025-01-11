@@ -72,7 +72,15 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
     const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
     const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultConfig.fontSize)
     const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultConfig.poweredByTextColor)
-    const [showAgentMessages, setShowAgentMessages] = useState(chatbotConfig?.showAgentMessages || (isAgentCanvas ? true : undefined))
+
+    const getShowAgentMessagesStatus = () => {
+        if (chatbotConfig?.showAgentMessages !== undefined) {
+            return chatbotConfig?.showAgentMessages
+        } else {
+            return isAgentCanvas ? true : undefined
+        }
+    }
+    const [showAgentMessages, setShowAgentMessages] = useState(getShowAgentMessagesStatus())
 
     const [botMessageBackgroundColor, setBotMessageBackgroundColor] = useState(
         chatbotConfig?.botMessage?.backgroundColor ?? defaultConfig.botMessage.backgroundColor
