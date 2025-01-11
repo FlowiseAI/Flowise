@@ -267,12 +267,6 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
 
-        // chatFlowPool is initialized only when a flow is opened
-        // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
-        if (appServer.chatflowPool) {
-            // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
-            appServer.chatflowPool.updateInSync(chatflow.id, false)
-        }
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(

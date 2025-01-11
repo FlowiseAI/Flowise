@@ -1,5 +1,5 @@
-import { flatten, isEqual } from 'lodash'
-import { Pinecone, PineconeConfiguration } from '@pinecone-database/pinecone'
+import { flatten } from 'lodash'
+import { Pinecone } from '@pinecone-database/pinecone'
 import { PineconeStoreParams, PineconeStore } from '@langchain/pinecone'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
@@ -8,23 +8,6 @@ import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, Indexi
 import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, howToUseFileUpload, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
-
-let pineconeClientSingleton: Pinecone
-let pineconeClientOption: PineconeConfiguration
-
-const getPineconeClient = (option: PineconeConfiguration) => {
-    if (!pineconeClientSingleton) {
-        // if client doesn't exists
-        pineconeClientSingleton = new Pinecone(option)
-        pineconeClientOption = option
-        return pineconeClientSingleton
-    } else if (pineconeClientSingleton && !isEqual(option, pineconeClientOption)) {
-        // if client exists but option changed
-        pineconeClientSingleton = new Pinecone(option)
-        return pineconeClientSingleton
-    }
-    return pineconeClientSingleton
-}
 
 class Pinecone_VectorStores implements INode {
     label: string
@@ -155,7 +138,7 @@ class Pinecone_VectorStores implements INode {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
 
-            const client = getPineconeClient({ apiKey: pineconeApiKey })
+            const client = new Pinecone({ apiKey: pineconeApiKey })
 
             const pineconeIndex = client.Index(_index)
 
@@ -211,7 +194,7 @@ class Pinecone_VectorStores implements INode {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
 
-            const client = getPineconeClient({ apiKey: pineconeApiKey })
+            const client = new Pinecone({ apiKey: pineconeApiKey })
 
             const pineconeIndex = client.Index(_index)
 
@@ -253,7 +236,7 @@ class Pinecone_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const pineconeApiKey = getCredentialParam('pineconeApiKey', credentialData, nodeData)
 
-        const client = getPineconeClient({ apiKey: pineconeApiKey })
+        const client = new Pinecone({ apiKey: pineconeApiKey })
 
         const pineconeIndex = client.Index(index)
 

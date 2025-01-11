@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
 import vectorsService from '../../services/vectors'
-import { getRateLimiter } from '../../utils/rateLimit'
+import { RateLimiterManager } from '../../utils/rateLimit'
 
 const getRateLimiterMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        return getRateLimiter(req, res, next)
+        return RateLimiterManager.getInstance().getRateLimiter()(req, res, next)
     } catch (error) {
         next(error)
     }

@@ -36,7 +36,8 @@ import {
     IDatabaseEntity,
     IMessage,
     FlowiseMemory,
-    IFileUpload
+    IFileUpload,
+    mapExtToInputField
 } from 'flowise-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
@@ -558,7 +559,6 @@ export const buildFlow = async ({
             if (isUpsert) upsertHistory['flowData'] = saveUpsertFlowData(flowNodeData, upsertHistory)
 
             const reactFlowNodeData: INodeData = await resolveVariables(
-                appDataSource,
                 flowNodeData,
                 flowNodes,
                 question,
@@ -760,10 +760,9 @@ export const clearSessionMemory = async (
 }
 
 const getGlobalVariable = async (
-    appDataSource: DataSource,
     overrideConfig?: ICommonObject,
     availableVariables: IVariable[] = [],
-    variableOverrides?: ICommonObject[]
+    variableOverrides: ICommonObject[] = []
 ) => {
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
@@ -824,13 +823,12 @@ const getGlobalVariable = async (
  * @returns {string}
  */
 export const getVariableValue = async (
-    appDataSource: DataSource,
     paramValue: string | object,
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
     isAcceptVariable = false,
-    flowData?: ICommonObject,
+    flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
@@ -875,7 +873,7 @@ export const getVariableValue = async (
             }
 
             if (variableFullPath.startsWith('$vars.')) {
-                const vars = await getGlobalVariable(appDataSource, flowData, availableVariables, variableOverrides)
+                const vars = await getGlobalVariable(flowConfig, availableVariables, variableOverrides)
                 const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
                 if (variableValue) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
@@ -883,8 +881,8 @@ export const getVariableValue = async (
                 }
             }
 
-            if (variableFullPath.startsWith('$flow.') && flowData) {
-                const variableValue = get(flowData, variableFullPath.replace('$flow.', ''))
+            if (variableFullPath.startsWith('$flow.') && flowConfig) {
+                const variableValue = get(flowConfig, variableFullPath.replace('$flow.', ''))
                 if (variableValue) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
@@ -978,12 +976,11 @@ export const getVariableValue = async (
  * @returns {INodeData}
  */
 export const resolveVariables = async (
-    appDataSource: DataSource,
     reactFlowNodeData: INodeData,
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
-    flowData?: ICommonObject,
+    flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
@@ -998,13 +995,12 @@ export const resolveVariables = async (
                 const resolvedInstances = []
                 for (const param of paramValue) {
                     const resolvedInstance = await getVariableValue(
-                        appDataSource,
                         param,
                         reactFlowNodes,
                         question,
                         chatHistory,
                         undefined,
-                        flowData,
+                        flowConfig,
                         uploadedFilesContent,
                         availableVariables,
                         variableOverrides
@@ -1015,13 +1011,12 @@ export const resolveVariables = async (
             } else {
                 const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
                 const resolvedInstance = await getVariableValue(
-                    appDataSource,
                     paramValue,
                     reactFlowNodes,
                     question,
                     chatHistory,
                     isAcceptVariable,
-                    flowData,
+                    flowConfig,
                     uploadedFilesContent,
                     availableVariables,
                     variableOverrides
@@ -1768,6 +1763,33 @@ export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
         const apiOverrideStatus: boolean =
             apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
 
+        /* For "files" input, add a new node override with the actual input name such as pdfFile, txtFile, etc, to allow overriding the input
+         * https://github.com/FlowiseAI/Flowise/pull/3569
+         */
+        for (const nodeLabel in nodeOverrides) {
+            const params = nodeOverrides[nodeLabel]
+            const enabledFileParam = params.find((param) => param.enabled && param.name === 'files')
+            if (enabledFileParam) {
+                if (enabledFileParam.type.includes(',')) {
+                    const fileInputFieldsFromExt = enabledFileParam.type.split(',').map((fileType) => mapExtToInputField(fileType.trim()))
+                    for (const fileInputFieldFromExt of fileInputFieldsFromExt) {
+                        if (nodeOverrides[nodeLabel].some((param) => param.name === fileInputFieldFromExt)) {
+                            continue
+                        }
+                        nodeOverrides[nodeLabel].push({
+                            ...enabledFileParam,
+                            name: fileInputFieldFromExt
+                        })
+                    }
+                } else {
+                    const fileInputFieldFromExt = mapExtToInputField(enabledFileParam.type)
+                    nodeOverrides[nodeLabel].push({
+                        ...enabledFileParam,
+                        name: fileInputFieldFromExt
+                    })
+                }
+            }
+        }
         return { nodeOverrides, variableOverrides, apiOverrideStatus }
     } catch (error) {
         return { nodeOverrides: {}, variableOverrides: [], apiOverrideStatus: false }
