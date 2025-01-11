@@ -617,6 +617,9 @@ importers:
             reflect-metadata:
                 specifier: ^0.1.13
                 version: 0.1.14
+            s3-streamlogger:
+                specifier: ^1.11.0
+                version: 1.11.0
             sanitize-html:
                 specifier: ^2.11.0
                 version: 2.12.1
@@ -14350,6 +14353,9 @@ packages:
     rxjs@7.8.1:
         resolution: { integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg== }
 
+    s3-streamlogger@1.11.0:
+        resolution: { integrity: sha512-53hpmOaS8YAEF7IWc/m2QdH0EyWXWtBQm0NbPYjBkMWklAc0sOt9vE2ypC4QU7tkEym3c/X/NYfs92fkfpRNrw== }
+
     sade@1.8.1:
         resolution: { integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A== }
         engines: { node: '>=6' }
@@ -14919,6 +14925,10 @@ packages:
 
     streamx@2.16.1:
         resolution: { integrity: sha512-m9QYj6WygWyWa3H1YY69amr4nVgy61xfjys7xO7kviL5rfIEc2naf+ewFiOA+aEJD7y0JO3h2GoiUv4TDwEGzQ== }
+
+    strftime@0.10.3:
+        resolution: { integrity: sha512-DZrDUeIF73eKJ4/GgGuv8UHWcUQPYDYfDeQFj3jrx+JZl6GQE656MbHIpvbo4mEG9a5DgS8GRCc5DxJXD2udDQ== }
+        engines: { node: '>=0.2.0' }
 
     string-argv@0.3.2:
         resolution: { integrity: sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q== }
@@ -34930,6 +34940,13 @@ snapshots:
         dependencies:
             tslib: 2.6.2
 
+    s3-streamlogger@1.11.0:
+        dependencies:
+            '@aws-sdk/client-s3': 3.529.1
+            strftime: 0.10.3
+        transitivePeerDependencies:
+            - aws-crt
+
     sade@1.8.1:
         dependencies:
             mri: 1.2.0
@@ -35625,6 +35642,8 @@ snapshots:
             queue-tick: 1.0.1
         optionalDependencies:
             bare-events: 2.2.1
+
+    strftime@0.10.3: {}
 
     string-argv@0.3.2: {}
 
