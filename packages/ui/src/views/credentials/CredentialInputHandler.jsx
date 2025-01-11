@@ -97,7 +97,7 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
                             <Input
                                 key={data[inputParam.name]}
-                                disabled={disabled}
+                                disabled={disabled || inputParam.disabled}
                                 inputParam={inputParam}
                                 onChange={(newValue) => (data[inputParam.name] = newValue)}
                                 value={data[inputParam.name] ?? inputParam.default ?? ''}

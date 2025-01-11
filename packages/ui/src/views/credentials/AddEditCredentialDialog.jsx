@@ -232,6 +232,70 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         }
     }
 
+    const handleGoogleOAuth = () => {
+        const width = 500
+        const height = 600
+        const left = window.screenX + (window.outerWidth - width) / 2
+        const top = window.screenY + (window.outerHeight - height) / 2
+        const features = `
+            width=${width},
+            height=${height},
+            left=${left},
+            top=${top},
+            status=yes,
+            toolbar=no,
+            location=no,
+            menubar=no,
+            resizable=yes,
+            scrollbars=yes
+        `.replace(/\s/g, '')
+
+        const authWindow = window.open(`${baseURL}/api/v1/google-auth`, 'Google Auth', features)
+
+        // Listen for messages from the popup
+        const handleMessage = (event) => {
+            if (event.data?.type === 'AUTH_SUCCESS' && event.data.user) {
+                setCredentialData(event.data.user)
+
+                // Show success message
+                enqueueSnackbar({
+                    message: 'Successfully authenticated with Google',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                authWindow?.close()
+            }
+            if (event.data?.type === 'AUTH_ERROR') {
+                console.error('Authentication error:', event.data.error)
+
+                enqueueSnackbar({
+                    message: 'Failed to authenticate with Google',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+
+            window.removeEventListener('message', handleMessage)
+        }
+
+        // Add the event listener
+        window.addEventListener('message', handleMessage)
+    }
+
     const component = show ? (
         <Dialog
             fullWidth
@@ -311,6 +375,35 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                     componentCredential.inputs.map((inputParam, index) => (
                         <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />
                     ))}
+                {componentCredential && componentCredential.name === 'googleOAuth' && (
+                    <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+                        <StyledButton
+                            variant='contained'
+                            onClick={handleGoogleOAuth}
+                            disabled={componentCredential.name === 'googleOAuth' && !name}
+                            startIcon={
+                                <img
+                                    alt={componentCredential.name}
+                                    src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
+                                    style={{ width: 20, height: 20 }}
+                                />
+                            }
+                            sx={{
+                                backgroundColor: 'white',
+                                color: 'black',
+                                '&:hover': {
+                                    backgroundColor: 'lightgray'
+                                },
+                                '&:disabled': {
+                                    backgroundColor: 'lightgray',
+                                    color: 'gray'
+                                }
+                            }}
+                        >
+                            Authorize with Google
+                        </StyledButton>
+                    </Box>
+                )}
                 <Box sx={{ p: 2 }}>
                     <Typography variant='h4' sx={{ mb: 1 }}>
                         Credential visibility
@@ -347,7 +440,11 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             </DialogContent>
             <DialogActions>
                 <StyledButton
-                    disabled={!name}
+                    disabled={
+                        componentCredential.name === 'googleOAuth'
+                            ? !(credentialData && Object.keys(credentialData).length > 0 && name)
+                            : !name
+                    }
                     variant='contained'
                     onClick={() => (dialogProps.type === 'ADD' ? addNewCredential() : saveCredential())}
                 >

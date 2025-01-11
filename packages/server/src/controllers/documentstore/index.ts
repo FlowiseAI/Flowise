@@ -100,6 +100,20 @@ const getDocumentStoreFileChunks = async (req: Request, res: Response, next: Nex
         next(error)
     }
 }
+const syncAndRefreshChunks = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { storeId, fileId } = req.params
+
+        if (!storeId || !fileId) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Store ID and File ID are required')
+        }
+
+        const apiResponse = await documentStoreService.syncAndRefreshChunks(storeId, fileId, req.user?.id!, req.user?.organizationId!)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
 
 const deleteDocumentStoreFileChunk = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -365,6 +379,7 @@ export default {
     deleteLoaderFromDocumentStore,
     getDocumentStoreById,
     getDocumentStoreFileChunks,
+    syncAndRefreshChunks,
     updateDocumentStore,
     processFileChunks,
     previewFileChunks,

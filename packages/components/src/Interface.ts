@@ -94,6 +94,7 @@ export interface INodeParams {
     hint?: Record<string, string>
     tabIdentifier?: string
     tabs?: Array<INodeParams>
+    disabled?: boolean
 }
 
 export interface INodeExecutionData {

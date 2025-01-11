@@ -13,6 +13,7 @@ const editChunkFromStore = (storeId, loaderId, chunkId, body) =>
     client.put(`/document-store/chunks/${storeId}/${loaderId}/${chunkId}`, body)
 
 const getFileChunks = (storeId, fileId, pageNo) => client.get(`/document-store/chunks/${storeId}/${fileId}/${pageNo}`)
+const syncAndRefreshChunks = (storeId, fileId) => client.post(`/document-store/chunks/sync/${storeId}/${fileId}`)
 const previewChunks = (body) => client.post('/document-store/loader/preview', body)
 const processChunks = (body) => client.post(`/document-store/loader/process`, body)
 
@@ -45,5 +46,6 @@ export default {
     saveVectorStoreConfig,
     queryVectorStore,
     deleteVectorStoreDataFromStore,
-    updateVectorStoreConfig
+    updateVectorStoreConfig,
+    syncAndRefreshChunks
 }
