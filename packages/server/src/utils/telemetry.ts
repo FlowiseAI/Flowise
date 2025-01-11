@@ -2,7 +2,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { PostHog } from 'posthog-node'
 import path from 'path'
 import fs from 'fs'
-import { getUserHome, getUserSettingsFilePath } from '.'
+import { getUserHome } from '.'
+import { getUserSettingsFilePath } from 'flowise-components'
 
 export class Telemetry {
     postHog?: PostHog

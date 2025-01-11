@@ -1691,21 +1691,6 @@ export const getTelemetryFlowObj = (nodes: IReactFlowNode[], edges: IReactFlowEd
 }
 
 /**
- * Get user settings file
- * TODO: move env variables to settings json file, easier configuration
- */
-export const getUserSettingsFilePath = () => {
-    if (process.env.SECRETKEY_PATH) return path.join(process.env.SECRETKEY_PATH, 'settings.json')
-    const checkPaths = [path.join(getUserHome(), '.flowise', 'settings.json')]
-    for (const checkPath of checkPaths) {
-        if (fs.existsSync(checkPath)) {
-            return checkPath
-        }
-    }
-    return ''
-}
-
-/**
  * Get app current version
  */
 export const getAppVersion = async () => {
@@ -1772,10 +1757,4 @@ export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
     } catch (error) {
         return { nodeOverrides: {}, variableOverrides: [], apiOverrideStatus: false }
     }
-}
-
-export const getUploadPath = (): string => {
-    return process.env.BLOB_STORAGE_PATH
-        ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads')
-        : path.join(getUserHome(), '.flowise', 'uploads')
 }
