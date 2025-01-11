@@ -41,7 +41,9 @@ import nextAgentGIF from './../../../../packages/ui/src/assets/images/next-agent
 import multiagent_supervisorPNG from './../../../../packages/ui/src/assets/images/multiagent_supervisor.png'
 import multiagent_workerPNG from './../../../../packages/ui/src/assets/images/multiagent_worker.png'
 import { isValidURL, removeDuplicateURL } from '../../../../packages/ui/src/utils/genericHelper.js'
-import SourceDocDialog from '../../../../packages/ui/src/ui-component/dialog/SourceDocDialog'
+import dynamic from 'next/dynamic'
+
+const SourceDocDialog = dynamic(() => import('../../../../packages/ui/src/ui-component/dialog/SourceDocDialog'))
 
 interface MessageExtra {
     prompt?: string
