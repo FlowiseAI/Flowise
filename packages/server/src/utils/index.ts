@@ -36,11 +36,13 @@ import {
     IDatabaseEntity,
     IMessage,
     FlowiseMemory,
-    IFileUpload
+    IFileUpload,
+    getS3Config
 } from 'flowise-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
-
+import multer from 'multer'
+import multerS3 from 'multer-s3'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
@@ -1778,4 +1780,39 @@ export const getUploadPath = (): string => {
     return process.env.BLOB_STORAGE_PATH
         ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads')
         : path.join(getUserHome(), '.flowise', 'uploads')
+}
+
+const getOrgId = () => {
+    const settingsContent = fs.readFileSync(getUserSettingsFilePath(), 'utf8')
+    try {
+        const settings = JSON.parse(settingsContent)
+        return settings.instanceId
+    } catch (error) {
+        return ''
+    }
+}
+
+export const getMulterStorage = () => {
+    const storageType = process.env.STORAGE_TYPE ? process.env.STORAGE_TYPE : 'local'
+
+    if (storageType === 's3') {
+        const s3Client = getS3Config().s3Client
+        const Bucket = getS3Config().Bucket
+
+        const upload = multer({
+            storage: multerS3({
+                s3: s3Client,
+                bucket: Bucket,
+                metadata: function (req, file, cb) {
+                    cb(null, { fieldName: file.fieldname, originalName: file.originalname, orgId: getOrgId() })
+                },
+                key: function (req, file, cb) {
+                    cb(null, `${getOrgId()}/${Date.now().toString()}`)
+                }
+            })
+        })
+        return upload
+    } else {
+        return multer({ dest: getUploadPath() })
+    }
 }

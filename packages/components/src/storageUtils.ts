@@ -11,8 +11,6 @@ import {
 import { Readable } from 'node:stream'
 import { getUserHome } from './utils'
 import sanitize from 'sanitize-filename'
-import multer from 'multer'
-import multerS3 from 'multer-s3'
 
 /**
  * Get user settings file
@@ -43,31 +41,6 @@ const getUploadPath = (): string => {
     return process.env.BLOB_STORAGE_PATH
         ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads', getOrgId())
         : path.join(getUserHome(), '.flowise', 'uploads', getOrgId())
-}
-
-export const getMulterStorage = () => {
-    const storageType = getStorageType()
-
-    if (storageType === 's3') {
-        const s3Client = getS3Config().s3Client
-        const Bucket = getS3Config().Bucket
-
-        const upload = multer({
-            storage: multerS3({
-                s3: s3Client,
-                bucket: Bucket,
-                metadata: function (req, file, cb) {
-                    cb(null, { fieldName: file.fieldname, originalName: file.originalname, orgId: getOrgId() })
-                },
-                key: function (req, file, cb) {
-                    cb(null, `${getOrgId()}/${Date.now().toString()}`)
-                }
-            })
-        })
-        return upload
-    } else {
-        return multer({ dest: getUploadPath() })
-    }
 }
 
 export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: string, fileNames: string[]) => {
