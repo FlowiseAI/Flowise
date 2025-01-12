@@ -1,9 +1,12 @@
 import express from 'express'
+import multer from 'multer'
 import openaiAssistantsController from '../../controllers/openai-assistants'
-import { getMulterStorage } from 'flowise-components'
+import { getUploadPath } from '../../utils'
 
 const router = express.Router()
+const upload = multer({ dest: getUploadPath() })
+
 router.post('/download/', openaiAssistantsController.getFileFromAssistant)
-router.post('/upload/', getMulterStorage().array('files'), openaiAssistantsController.uploadAssistantFiles)
+router.post('/upload/', upload.array('files'), openaiAssistantsController.uploadAssistantFiles)
 
 export default router
