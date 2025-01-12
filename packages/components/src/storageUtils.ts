@@ -11,64 +11,6 @@ import {
 import { Readable } from 'node:stream'
 import { getUserHome } from './utils'
 import sanitize from 'sanitize-filename'
-import multer from 'multer'
-const multerS3 = require('multer-s3')
-
-/**
- * Get user settings file
- * TODO: move env variables to settings json file, easier configuration
- */
-export const getUserSettingsFilePath = () => {
-    if (process.env.SECRETKEY_PATH) return path.join(process.env.SECRETKEY_PATH, 'settings.json')
-    const checkPaths = [path.join(getUserHome(), '.flowise', 'settings.json')]
-    for (const checkPath of checkPaths) {
-        if (fs.existsSync(checkPath)) {
-            return checkPath
-        }
-    }
-    return ''
-}
-
-export const getOrgId = () => {
-    const settingsContent = fs.readFileSync(getUserSettingsFilePath(), 'utf8')
-    try {
-        const settings = JSON.parse(settingsContent)
-        return settings.instanceId
-    } catch (error) {
-        return ''
-    }
-}
-
-const getUploadPath = (): string => {
-    return process.env.BLOB_STORAGE_PATH
-        ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads', getOrgId())
-        : path.join(getUserHome(), '.flowise', 'uploads', getOrgId())
-}
-
-export const getMulterStorage = () => {
-    const storageType = getStorageType()
-
-    if (storageType === 's3') {
-        const s3Client = getS3Config().s3Client
-        const Bucket = getS3Config().Bucket
-
-        const upload = multer({
-            storage: multerS3({
-                s3: s3Client,
-                bucket: Bucket,
-                metadata: function (req: Request, file: Express.Multer.File, cb: (error: any, metadata: any) => void) {
-                    cb(null, { fieldName: file.fieldname, originalName: file.originalname, orgId: getOrgId() })
-                },
-                key: function (req: Request, file: Express.Multer.File, cb: (error: any, metadata: any) => void) {
-                    cb(null, `${getOrgId()}/${Date.now().toString()}`)
-                }
-            })
-        })
-        return upload
-    } else {
-        return multer({ dest: getUploadPath() })
-    }
-}
 
 export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: string, fileNames: string[]) => {
     const storageType = getStorageType()
@@ -178,37 +120,6 @@ export const addSingleFileToStorage = async (mime: string, bf: Buffer, fileName:
     }
 }
 
-export const getFileFromUpload = async (filePath: string): Promise<Buffer> => {
-    const storageType = getStorageType()
-    if (storageType === 's3') {
-        const { s3Client, Bucket } = getS3Config()
-
-        let Key = filePath
-        // remove the first '/' if it exists
-        if (Key.startsWith('/')) {
-            Key = Key.substring(1)
-        }
-        const getParams = {
-            Bucket,
-            Key
-        }
-
-        const response = await s3Client.send(new GetObjectCommand(getParams))
-        const body = response.Body
-        if (body instanceof Readable) {
-            const streamToString = await body.transformToString('base64')
-            if (streamToString) {
-                return Buffer.from(streamToString, 'base64')
-            }
-        }
-        // @ts-ignore
-        const buffer = Buffer.concat(response.Body.toArray())
-        return buffer
-    } else {
-        return fs.readFileSync(filePath)
-    }
-}
-
 export const getFileFromStorage = async (file: string, ...paths: string[]): Promise<Buffer> => {
     const storageType = getStorageType()
     const sanitizedFilename = _sanitizeFilename(file)
@@ -269,20 +180,6 @@ export const removeFilesFromStorage = async (...paths: string[]) => {
     } else {
         const directory = path.join(getStoragePath(), ...paths)
         _deleteLocalFolderRecursive(directory)
-    }
-}
-
-export const removeSpecificFileFromUpload = async (filePath: string) => {
-    const storageType = getStorageType()
-    if (storageType === 's3') {
-        let Key = filePath
-        // remove the first '/' if it exists
-        if (Key.startsWith('/')) {
-            Key = Key.substring(1)
-        }
-        await _deleteS3Folder(Key)
-    } else {
-        fs.unlinkSync(filePath)
     }
 }
 

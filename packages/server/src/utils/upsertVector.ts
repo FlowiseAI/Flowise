@@ -1,15 +1,8 @@
 import { Request } from 'express'
+import * as fs from 'fs'
 import * as path from 'path'
 import { cloneDeep, omit } from 'lodash'
-import {
-    ICommonObject,
-    IMessage,
-    addArrayFilesToStorage,
-    mapMimeTypeToInputField,
-    mapExtToInputField,
-    getFileFromUpload,
-    removeSpecificFileFromUpload
-} from 'flowise-components'
+import { ICommonObject, IMessage, addArrayFilesToStorage, mapMimeTypeToInputField, mapExtToInputField } from 'flowise-components'
 import logger from '../utils/logger'
 import {
     buildFlow,
@@ -64,7 +57,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             const overrideConfig: ICommonObject = { ...req.body }
             for (const file of files) {
                 const fileNames: string[] = []
-                const fileBuffer = await getFileFromUpload(file.path ?? file.key)
+                const fileBuffer = fs.readFileSync(file.path)
                 // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
                 file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
@@ -97,7 +90,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
                     overrideConfig[fileInputField] = storagePath
                 }
 
-                await removeSpecificFileFromUpload(file.path ?? file.key)
+                fs.unlinkSync(file.path)
             }
             if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
                 overrideConfig.vars = JSON.parse(overrideConfig.vars)

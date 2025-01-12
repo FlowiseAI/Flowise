@@ -1,11 +1,11 @@
 import OpenAI from 'openai'
+import fs from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { decryptCredentialData } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Credential } from '../../database/entities/Credential'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { getFileFromUpload, removeSpecificFileFromUpload } from 'flowise-components'
 
 // ----------------------------------------
 // Assistants
@@ -101,14 +101,13 @@ const uploadFilesToAssistant = async (credentialId: string, files: { filePath: s
     const uploadedFiles = []
 
     for (const file of files) {
-        const fileBuffer = await getFileFromUpload(file.filePath)
-        const toFile = await OpenAI.toFile(fileBuffer, file.fileName)
+        const toFile = await OpenAI.toFile(fs.readFileSync(file.filePath), file.fileName)
         const createdFile = await openai.files.create({
             file: toFile,
             purpose: 'assistants'
         })
         uploadedFiles.push(createdFile)
-        await removeSpecificFileFromUpload(file.filePath)
+        fs.unlinkSync(file.filePath)
     }
 
     return uploadedFiles

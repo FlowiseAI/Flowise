@@ -9,9 +9,7 @@ import {
     mapMimeTypeToInputField,
     mapExtToInputField,
     generateFollowUpPrompts,
-    IServerSideEventStreamer,
-    getFileFromUpload,
-    removeSpecificFileFromUpload
+    IServerSideEventStreamer
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -51,6 +49,7 @@ import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
 import { v4 as uuidv4 } from 'uuid'
 import { omit } from 'lodash'
+import * as fs from 'fs'
 import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
 import { buildAgentGraph } from './buildAgentGraph'
@@ -163,7 +162,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const overrideConfig: ICommonObject = { ...req.body }
             const fileNames: string[] = []
             for (const file of files) {
-                const fileBuffer = await getFileFromUpload(file.path ?? file.key)
+                const fileBuffer = fs.readFileSync(file.path)
                 // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
                 file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
@@ -196,7 +195,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                     overrideConfig[fileInputField] = storagePath
                 }
 
-                await removeSpecificFileFromUpload(file.path ?? file.key)
+                fs.unlinkSync(file.path)
             }
             if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
                 overrideConfig.vars = JSON.parse(overrideConfig.vars)

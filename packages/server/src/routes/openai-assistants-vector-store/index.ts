@@ -1,8 +1,10 @@
 import express from 'express'
+import multer from 'multer'
 import openaiAssistantsVectorStoreController from '../../controllers/openai-assistants-vector-store'
-import { getMulterStorage } from 'flowise-components'
+import { getUploadPath } from '../../utils'
 
 const router = express.Router()
+const upload = multer({ dest: getUploadPath() })
 
 // CREATE
 router.post('/', openaiAssistantsVectorStoreController.createAssistantVectorStore)
@@ -20,7 +22,7 @@ router.put(['/', '/:id'], openaiAssistantsVectorStoreController.updateAssistantV
 router.delete(['/', '/:id'], openaiAssistantsVectorStoreController.deleteAssistantVectorStore)
 
 // POST
-router.post('/:id', getMulterStorage().array('files'), openaiAssistantsVectorStoreController.uploadFilesToAssistantVectorStore)
+router.post('/:id', upload.array('files'), openaiAssistantsVectorStoreController.uploadFilesToAssistantVectorStore)
 
 // DELETE
 router.patch(['/', '/:id'], openaiAssistantsVectorStoreController.deleteFilesFromAssistantVectorStore)
