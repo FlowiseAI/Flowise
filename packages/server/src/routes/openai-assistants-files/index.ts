@@ -1,12 +1,10 @@
 import express from 'express'
-import multer from 'multer'
 import openaiAssistantsController from '../../controllers/openai-assistants'
-import { getUploadPath } from '../../utils'
+import { getMulterStorage } from '../../utils'
 
 const router = express.Router()
-const upload = multer({ dest: getUploadPath() })
 
 router.post('/download/', openaiAssistantsController.getFileFromAssistant)
-router.post('/upload/', upload.array('files'), openaiAssistantsController.uploadAssistantFiles)
+router.post('/upload/', getMulterStorage().array('files'), openaiAssistantsController.uploadAssistantFiles)
 
 export default router
