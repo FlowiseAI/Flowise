@@ -12,37 +12,6 @@ import { Readable } from 'node:stream'
 import { getUserHome } from './utils'
 import sanitize from 'sanitize-filename'
 
-/**
- * Get user settings file
- * TODO: move env variables to settings json file, easier configuration
- */
-export const getUserSettingsFilePath = () => {
-    if (process.env.SECRETKEY_PATH) return path.join(process.env.SECRETKEY_PATH, 'settings.json')
-    const checkPaths = [path.join(getUserHome(), '.flowise', 'settings.json')]
-    for (const checkPath of checkPaths) {
-        if (fs.existsSync(checkPath)) {
-            return checkPath
-        }
-    }
-    return ''
-}
-
-export const getOrgId = () => {
-    const settingsContent = fs.readFileSync(getUserSettingsFilePath(), 'utf8')
-    try {
-        const settings = JSON.parse(settingsContent)
-        return settings.instanceId
-    } catch (error) {
-        return ''
-    }
-}
-
-const getUploadPath = (): string => {
-    return process.env.BLOB_STORAGE_PATH
-        ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads', getOrgId())
-        : path.join(getUserHome(), '.flowise', 'uploads', getOrgId())
-}
-
 export const addBase64FilesToStorage = async (fileBase64: string, chatflowid: string, fileNames: string[]) => {
     const storageType = getStorageType()
     if (storageType === 's3') {
