@@ -1,7 +1,13 @@
 import { Request } from 'express'
 import * as path from 'path'
-import * as fs from 'fs'
-import { addArrayFilesToStorage, IDocument, mapExtToInputField, mapMimeTypeToInputField } from 'flowise-components'
+import {
+    addArrayFilesToStorage,
+    getFileFromUpload,
+    IDocument,
+    mapExtToInputField,
+    mapMimeTypeToInputField,
+    removeSpecificFileFromUpload
+} from 'flowise-components'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { getErrorMessage } from '../errors/utils'
 
@@ -41,7 +47,7 @@ export const createFileAttachment = async (req: Request) => {
     if (files.length) {
         const isBase64 = req.body.base64
         for (const file of files) {
-            const fileBuffer = fs.readFileSync(file.path)
+            const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             const fileNames: string[] = []
 
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
@@ -63,7 +69,7 @@ export const createFileAttachment = async (req: Request) => {
                 fileInputField = fileInputFieldFromExt
             }
 
-            fs.unlinkSync(file.path)
+            await removeSpecificFileFromUpload(file.path ?? file.key)
 
             try {
                 const nodeData = {

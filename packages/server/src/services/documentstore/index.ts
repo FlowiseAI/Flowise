@@ -1,17 +1,18 @@
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { DocumentStore } from '../../database/entities/DocumentStore'
-import * as fs from 'fs'
 import * as path from 'path'
 import {
     addArrayFilesToStorage,
     addSingleFileToStorage,
     getFileFromStorage,
+    getFileFromUpload,
     ICommonObject,
     IDocument,
     mapExtToInputField,
     mapMimeTypeToInputField,
     removeFilesFromStorage,
-    removeSpecificFileFromStorage
+    removeSpecificFileFromStorage,
+    removeSpecificFileFromUpload
 } from 'flowise-components'
 import {
     addLoaderSource,
@@ -1441,7 +1442,7 @@ const upsertDocStoreMiddleware = async (
         const filesLoaderConfig: ICommonObject = {}
         for (const file of files) {
             const fileNames: string[] = []
-            const fileBuffer = fs.readFileSync(file.path)
+            const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
 
@@ -1481,7 +1482,7 @@ const upsertDocStoreMiddleware = async (
                 filesLoaderConfig[fileInputField] = JSON.stringify([storagePath])
             }
 
-            fs.unlinkSync(file.path)
+            await removeSpecificFileFromUpload(file.path ?? file.key)
         }
 
         loaderConfig = {
