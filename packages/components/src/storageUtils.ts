@@ -12,7 +12,7 @@ import { Readable } from 'node:stream'
 import { getUserHome } from './utils'
 import sanitize from 'sanitize-filename'
 import multer from 'multer'
-import multerS3 from 'multer-s3'
+const multerS3 = require('multer-s3')
 
 /**
  * Get user settings file
@@ -56,10 +56,10 @@ export const getMulterStorage = () => {
             storage: multerS3({
                 s3: s3Client,
                 bucket: Bucket,
-                metadata: function (req, file, cb) {
+                metadata: function (req: Request, file: Express.Multer.File, cb: (error: any, metadata: any) => void) {
                     cb(null, { fieldName: file.fieldname, originalName: file.originalname, orgId: getOrgId() })
                 },
-                key: function (req, file, cb) {
+                key: function (req: Request, file: Express.Multer.File, cb: (error: any, metadata: any) => void) {
                     cb(null, `${getOrgId()}/${Date.now().toString()}`)
                 }
             })

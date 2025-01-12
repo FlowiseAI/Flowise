@@ -651,9 +651,6 @@ importers:
             '@types/multer':
                 specifier: ^1.4.7
                 version: 1.4.11
-            '@types/multer-s3':
-                specifier: ^3.0.3
-                version: 3.0.3
             '@types/sanitize-html':
                 specifier: ^2.9.5
                 version: 2.11.0
@@ -6188,9 +6185,6 @@ packages:
 
     '@types/ms@0.7.34':
         resolution: { integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g== }
-
-    '@types/multer-s3@3.0.3':
-        resolution: { integrity: sha512-VgWygI9UwyS7loLithUUi0qAMIDWdNrERS2Sb06UuPYiLzKuIFn2NgL7satyl4v8sh/LLoU7DiPanvbQaRg9Yg== }
 
     '@types/multer@1.4.11':
         resolution: { integrity: sha512-svK240gr6LVWvv3YGyhLlA+6LRRWA4mnGIU7RcNmgjBYFl6665wcXrRfxGp5tEPVHUNm5FMcmq7too9bxCwX/w== }
@@ -24464,14 +24458,6 @@ snapshots:
     '@types/minimatch@3.0.5': {}
 
     '@types/ms@0.7.34': {}
-
-    '@types/multer-s3@3.0.3':
-        dependencies:
-            '@aws-sdk/client-s3': 3.529.1
-            '@types/multer': 1.4.11
-            '@types/node': 20.12.12
-        transitivePeerDependencies:
-            - aws-crt
 
     '@types/multer@1.4.11':
         dependencies:
