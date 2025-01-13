@@ -13,6 +13,8 @@ import anthropicIcon from '@/assets/images/anthropic.svg'
 import azureOpenAiIcon from '@/assets/images/azure_openai.svg'
 import mistralAiIcon from '@/assets/images/mistralai.svg'
 import openAiIcon from '@/assets/images/openai.svg'
+import groqIcon from '@/assets/images/groq.png'
+import ollamaIcon from '@/assets/images/ollama.svg'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
 import { Input } from '@/ui-component/input/Input'
@@ -32,8 +34,10 @@ const FollowUpPromptProviders = {
     ANTHROPIC: 'chatAnthropic',
     AZURE_OPENAI: 'azureChatOpenAI',
     GOOGLE_GENAI: 'chatGoogleGenerativeAI',
+    GROQ: 'groqChat',
     MISTRALAI: 'chatMistralAI',
-    OPENAI: 'chatOpenAI'
+    OPENAI: 'chatOpenAI',
+    OLLAMA: 'ollama'
 }
 
 const followUpPromptsOptions = {
@@ -149,6 +153,42 @@ const followUpPromptsOptions = {
             }
         ]
     },
+    [FollowUpPromptProviders.GROQ]: {
+        label: 'Groq',
+        name: FollowUpPromptProviders.GROQ,
+        icon: groqIcon,
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['groqApi']
+            },
+            {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'asyncOptions',
+                loadMethod: 'listModels'
+            },
+            {
+                label: 'Prompt',
+                name: 'prompt',
+                type: 'string',
+                rows: 4,
+                description: promptDescription,
+                optional: true,
+                default: defaultPrompt
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                default: 0.9
+            }
+        ]
+    },
     [FollowUpPromptProviders.MISTRALAI]: {
         label: 'Mistral AI',
         name: FollowUpPromptProviders.MISTRALAI,
@@ -221,6 +261,38 @@ const followUpPromptsOptions = {
                 step: 0.1,
                 optional: true,
                 default: 0.9
+            }
+        ]
+    },
+    [FollowUpPromptProviders.OLLAMA]: {
+        label: 'Ollama',
+        name: FollowUpPromptProviders.OLLAMA,
+        icon: ollamaIcon,
+        inputs: [
+            {
+                label: 'Model Name',
+                name: 'modelName',
+                type: 'string',
+                placeholder: 'llama2',
+                description: 'Name of the Ollama model to use',
+                default: 'llama3.2-vision:latest'
+            },
+            {
+                label: 'Prompt',
+                name: 'prompt',
+                type: 'string',
+                rows: 4,
+                description: promptDescription,
+                optional: true,
+                default: defaultPrompt
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                default: 0.7
             }
         ]
     }

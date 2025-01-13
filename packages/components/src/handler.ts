@@ -300,7 +300,7 @@ class ExtendedLunaryHandler extends LunaryHandler {
                 await this.initThread()
             }
 
-            const messageText = inputs.input
+            const messageText = inputs.input || inputs.question
 
             const messageId = this.thread.trackMessage({
                 content: messageText,
