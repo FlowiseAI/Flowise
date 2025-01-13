@@ -150,6 +150,11 @@ paths:
                       type: string
                       enum: [THUMBS_UP, THUMBS_DOWN]
                   description: Filter by feedback type
+                - in: query
+                  name: hardDelete
+                  schema:
+                      type: boolean
+                  description: If hardDelete is true, messages will be deleted from the third party service as well
             responses:
                 '200':
                     description: Chat messages deleted successfully
