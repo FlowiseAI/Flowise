@@ -8,7 +8,7 @@ const createCredential = async (req: Request, res: Response, next: NextFunction)
     if (!req.body) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: credentialsController.createCredential - body not provided!`)
     }
-    const apiResponse = await credentialsService.createCredential(req.body)
+    const apiResponse = await credentialsService.createCredential(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -29,7 +29,7 @@ const deleteCredentials = async (req: Request, res: Response, next: NextFunction
 
 const getAllCredentials = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const apiResponse = await credentialsService.getAllCredentials(req.query.credentialName)
+    const apiResponse = await credentialsService.getAllCredentials(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -41,7 +41,7 @@ const getCredentialById = async (req: Request, res: Response, next: NextFunction
     if (typeof req.params === 'undefined' || !req.params.id) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: credentialsController.getCredentialById - id not provided!`)
     }
-    const apiResponse = await credentialsService.getCredentialById(req.params.id)
+    const apiResponse = await credentialsService.getCredentialById(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)

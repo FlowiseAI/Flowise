@@ -4,8 +4,9 @@ import apiKeyService from '../../services/apikey'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { updateRateLimiter } from '../../utils/rateLimit'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { ChatflowType } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { User } from '../../database/entities/User'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -49,9 +50,27 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
   }
 }
 
+const getControlChatflowsOfAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const apiResponse = await chatflowsService.getControlChatflowsOfAdmin(req)
+    return res.json(apiResponse)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getAllPublicChatflows = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const apiResponse = await chatflowsService.getAllPublicChatflows(req)
+    return res.json(apiResponse)
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType)
+    const apiResponse = await chatflowsService.getAllChatflows(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -87,15 +106,23 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
   }
 }
 
-const saveChatflow = async (req: Request, res: Response, next: NextFunction) => {
+const saveChatflow = async (req: any, res: Response, next: NextFunction) => {
   try {
-    if (!req.body) {
+    const { body, user } = req
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const appServer = getRunningExpressApp()
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    if (!body) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.saveChatflow - body not provided!`)
     }
-    const body = req.body
     const newChatFlow = new ChatFlow()
     Object.assign(newChatFlow, body)
-    const apiResponse = await chatflowsService.saveChatflow(newChatFlow)
+    const apiResponse = await chatflowsService.saveChatflow({ ...newChatFlow, userId: foundUser.id })
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -168,11 +195,13 @@ export default {
   checkIfChatflowIsValidForUploads,
   deleteChatflow,
   getAllChatflows,
+  getAllPublicChatflows,
   getChatflowByApiKey,
   getChatflowById,
   saveChatflow,
   importChatflows,
   updateChatflow,
   getSinglePublicChatflow,
-  getSinglePublicChatbotConfig
+  getSinglePublicChatbotConfig,
+  getControlChatflowsOfAdmin
 }

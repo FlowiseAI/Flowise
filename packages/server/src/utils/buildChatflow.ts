@@ -45,7 +45,6 @@ import {
   isSameChatId,
   getAPIOverrideConfig
 } from '../utils'
-import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
 import { v4 as uuidv4 } from 'uuid'
 import { omit } from 'lodash'
@@ -57,6 +56,7 @@ import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../Interface.Metrics'
+import { validateChatflowAPIKey } from './validateKey'
 
 /**
  * Build Chatflow
@@ -79,7 +79,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     if (!chatflow) {
       throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
-
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const userMessageDateTime = new Date()
     if (!isInternal) {
@@ -88,7 +87,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
       }
     }
-
     let fileUploads: IFileUpload[] = []
     let uploadedFilesContent = ''
     if (incomingInput.uploads) {
@@ -215,7 +213,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const edges = parsedFlowData.edges
 
     const apiMessageId = uuidv4()
-
     /*** Get session ID ***/
     const memoryNode = findMemoryNode(nodes, edges)
     const memoryType = memoryNode?.data?.label

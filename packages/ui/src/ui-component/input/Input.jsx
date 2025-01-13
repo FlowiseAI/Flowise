@@ -6,10 +6,14 @@ import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 import { S3Explorer } from 'dccxx-s3-explorer'
 
 import 'dccxx-s3-explorer/dist/style.css'
+import { useSelector } from 'react-redux'
 
 import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'http://98.84.90.54:8001'
 
 export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
+  const user = useSelector((state) => state.user)
+  const displayPrefixes = user?.displayPrefixes ? JSON?.parse(user?.displayPrefixes.replace(/'/g, '"')) : []
+
   const [myValue, setMyValue] = useState(value ?? '')
   const [openVariableDialog, setOpenVariableDialog] = useState(false)
   const [openS3Dialog, setOpenS3Dialog] = useState(false)
@@ -171,6 +175,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
             rootPrefix=''
             asSelector={true}
             onSelected={handleS3FilesSelected}
+            displayPrefixes={displayPrefixes}
           />
         </Dialog>
       )}

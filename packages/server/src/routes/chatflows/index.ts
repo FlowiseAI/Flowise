@@ -10,6 +10,8 @@ router.post('/importchatflows', chatflowsController.importChatflows)
 router.get('/', chatflowsController.getAllChatflows)
 router.get(['/', '/:id'], chatflowsController.getChatflowById)
 router.get(['/apikey/', '/apikey/:apikey'], chatflowsController.getChatflowByApiKey)
+router.get('/public/all', chatflowsController.getAllPublicChatflows)
+router.get('/admin/all', chatflowsController.getControlChatflowsOfAdmin)
 
 // UPDATE
 router.put(['/', '/:id'], chatflowsController.updateChatflow)

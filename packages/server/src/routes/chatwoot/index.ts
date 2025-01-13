@@ -5,12 +5,14 @@ import { v4 } from 'uuid'
 
 const router: Router = express.Router()
 
-export const CHATWOOT_ACCESS_KEY = process.env.CHATWOOT_ACCESS_KEY || 'b4RScnnsA6Nc4sfPQe2B9XY1' // test only
-export const CHATWOOT_BASE_URL = process.env.CHATWOOT_BASE_URL || 'http://203.145.47.214:8003' // test only
-export const CHATWOOT_ACCOUNT_ID = 2
+export const CHATWOOT_ACCESS_KEY = process.env.CHATWOOT_ACCESS_KEY || 'qKRx1AotBFinhP6f7NpwjgWo' // test only
+export const CHATWOOT_BASE_URL = process.env.CHATWOOT_BASE_URL || 'https://chatwoot-web.dev.studio.ai.vn' // test only
+export const CHATWOOT_ACCOUNT_ID = +(process.env.CHATWOOT_ACCOUNT_ID || '1')
 
 // User routes
 router.post('/connect', async (req: Request, res: Response, next: NextFunction) => {
+  const messages = JSON.parse(req.body.messages).chatHistory
+  const simplifiedMessages = messages.map(({ message, type }: { message: string; type: string }) => ({ message, type }))
   try {
     const { data: inboxes } = await axios.get(`${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/inboxes`, {
       headers: {
@@ -18,7 +20,6 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
       }
     })
     const inboxId = +inboxes.payload?.find((item: any) => item.website_token === req.body.id || item.inbox_identifier === req.body.id)?.id
-
     if (!inboxId) throw new Error('inbox not found')
 
     const contactIdentifier = crypto
@@ -31,7 +32,6 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
         ])
       )
       .digest('hex')
-
     const { data: searchContacts } = await axios.get(`${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/contacts/search`, {
       params: {
         q: contactIdentifier
@@ -83,9 +83,25 @@ router.post('/connect', async (req: Request, res: Response, next: NextFunction) 
       }
     )
 
+    for (let i = 1; i < simplifiedMessages.length; i++) {
+      await axios.post(
+        `${CHATWOOT_BASE_URL}/api/v1/accounts/${CHATWOOT_ACCOUNT_ID}/conversations/${createdConversation.id}/messages`,
+        {
+          content: simplifiedMessages[i].message,
+          message_type: simplifiedMessages[i].type === 'apiMessage' ? 'outgoing' : 'incoming',
+          private: true
+        },
+        {
+          headers: {
+            api_access_token: CHATWOOT_ACCESS_KEY
+          }
+        }
+      )
+    }
+
     return res.json({ contactId, conversation: createdConversation })
   } catch (e: any) {
-    console.log('[Request error]', e?.response?.data)
+    console.log('[Request error]', e?.response?.data || e.toString())
     next(e)
   }
 })

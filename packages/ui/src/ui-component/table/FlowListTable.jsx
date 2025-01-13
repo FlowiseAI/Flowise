@@ -93,18 +93,21 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                   Name
                 </TableSortLabel>
               </StyledTableCell>
-              <StyledTableCell style={{ width: '25%' }} key='1'>
+              <StyledTableCell style={{ width: '15%' }} key='1'>
+                User
+              </StyledTableCell>
+              <StyledTableCell style={{ width: '25%' }} key='2'>
                 Category
               </StyledTableCell>
-              <StyledTableCell style={{ width: '30%' }} key='2'>
+              <StyledTableCell style={{ width: '15%' }} key='3'>
                 Nodes
               </StyledTableCell>
-              <StyledTableCell style={{ width: '15%' }} key='3'>
+              <StyledTableCell style={{ width: '15%' }} key='4'>
                 <TableSortLabel active={orderBy === 'updatedDate'} direction={order} onClick={() => handleRequestSort('updatedDate')}>
                   Last Modified Date
                 </TableSortLabel>
               </StyledTableCell>
-              <StyledTableCell style={{ width: '10%' }} key='4'>
+              <StyledTableCell style={{ width: '10%' }} key='5'>
                 Actions
               </StyledTableCell>
             </TableRow>
@@ -183,13 +186,26 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                         }}
                       >
                         &nbsp;
+                        {row?.user?.username ? row?.user?.username : ''}
+                      </div>
+                    </StyledTableCell>
+                    <StyledTableCell key='2'>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          flexWrap: 'wrap',
+                          marginTop: 5
+                        }}
+                      >
+                        &nbsp;
                         {row.category &&
                           row.category
                             .split(';')
                             .map((tag, index) => <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />)}
                       </div>
                     </StyledTableCell>
-                    <StyledTableCell key='2'>
+                    <StyledTableCell key='3'>
                       {images[row.id] && (
                         <Box
                           sx={{
@@ -236,8 +252,8 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                         </Box>
                       )}
                     </StyledTableCell>
-                    <StyledTableCell key='3'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
-                    <StyledTableCell key='4'>
+                    <StyledTableCell key='4'>{moment(row.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                    <StyledTableCell key='5'>
                       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
                         <FlowListMenu isAgentCanvas={isAgentCanvas} chatflow={row} setError={setError} updateFlowsApi={updateFlowsApi} />
                       </Stack>

@@ -730,11 +730,11 @@ importers:
         specifier: ^1.1.1
         version: 1.2.1
       cmcts-c-agent-embedding:
-        specifier: 1.0.2
-        version: 1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.6
+        version: 1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       cmcts-c-agent-embedding-react:
-        specifier: 1.0.2
-        version: 1.0.2(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.6
+        version: 1.0.6(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       dccxx-s3-explorer:
         specifier: ^1.0.20
         version: 1.0.20(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
@@ -1455,12 +1455,6 @@ packages:
 
   '@babel/helper-create-class-features-plugin@7.24.0':
     resolution: { integrity: sha512-QAH+vfvts51BCsNZ2PhY6HAggnlS6omLLFTsIpeqZk/MmJ6cW7tgz5yRv0fMJThcr6FmbMrENh1RgrWPTYA76g== }
-    engines: { node: '>=6.9.0' }
-    peerDependencies:
-      '@babel/core': ^7.0.0
-
-  '@babel/helper-create-class-features-plugin@7.24.5':
-    resolution: { integrity: sha512-uRc4Cv8UQWnE4NXlYTIIdM7wfFkOqlFztcC/gVXDKohKoVB3OyonfelUBaJzSwpBntZ2KYGF/9S7asCHsXwW6g== }
     engines: { node: '>=6.9.0' }
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -6548,6 +6542,10 @@ packages:
   '@types/parse-json@4.0.2':
     resolution: { integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw== }
 
+  '@types/pdfjs-dist@2.10.378':
+    resolution: { integrity: sha512-TRdIPqdsvKmPla44kVy4jv5Nt5vjMfVjbIEke1CRULIrwKNRC4lIiZvNYDJvbUMNCFPNIUcOKhXTyMJrX18IMA== }
+    deprecated: This is a stub types definition. pdfjs-dist provides its own type definitions, so you do not need this installed.
+
   '@types/pg-pool@2.0.6':
     resolution: { integrity: sha512-TaAUE5rq2VQYxab5Ts7WZhKNmuN78Q6PiFonTDdpbx8a1H0M1vhy3rhiMjl+e2iHmogyMw7jZF4FrE6eJUy5HQ== }
 
@@ -8157,14 +8155,14 @@ packages:
     engines: { node: '>= 14.15.0' }
     hasBin: true
 
-  cmcts-c-agent-embedding-react@1.0.2:
-    resolution: { integrity: sha512-a63TS8Mh449nrQRz1GXi8YLDUTPSTE8x61C8wUJ6Y0BPeaIGiZhZZKZ3ILuK6q9UTekAAKcrTL2AOmnYQOW6JA== }
+  cmcts-c-agent-embedding-react@1.0.6:
+    resolution: { integrity: sha512-aUv72s9FHLz05yhjyWfGPspBkL2B24dADWjX8puikPuSUFYIIYmSmCbzDmsiFrZOYGeUO4Ryr+0AiHCpOirq+Q== }
     peerDependencies:
       cmcts-c-agent-embedding: '*'
       react: 18.x
 
-  cmcts-c-agent-embedding@1.0.2:
-    resolution: { integrity: sha512-vFuJRCW+r9a50eQPBCkVAr8MUsTxTD/L+aknTrgEAVSRJXZCQJPLna4X2IS69KLQKtZWulGjc+O0o0ZS4YK2Hw== }
+  cmcts-c-agent-embedding@1.0.6:
+    resolution: { integrity: sha512-V9DyS7aw9GBRG9uiZnyLTB9cD6tnmViUM4OHc/0Q+2zEFe45/7HsUWEMigKlwCwEq4Q9ekgZMdOpf0pSyE8Bng== }
 
   cmd-shim@5.0.0:
     resolution: { integrity: sha512-qkCtZ59BidfEwHltnJwkyVZn+XQojdAySM1D1gSeh11Z4pW1Kpolkyo53L5noc0nrxmIvyFwTmJRo4xs7FFLPw== }
@@ -9892,15 +9890,6 @@ packages:
 
   follow-redirects@1.15.5:
     resolution: { integrity: sha512-vSFWUON1B+yAw1VN4xMfxgn5fTUiaOzAJCKBwIIgT/+7CuGy9+r+5gITvP62j3RmaD5Ph65UaERdOSRGUzZtgw== }
-    engines: { node: '>=4.0' }
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-
-  follow-redirects@1.15.6:
-    resolution: { integrity: sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA== }
     engines: { node: '>=4.0' }
     peerDependencies:
       debug: '*'
@@ -17578,7 +17567,7 @@ snapshots:
     dependencies:
       '@aws-crypto/util': 5.2.0
       '@aws-sdk/types': 3.609.0
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   '@aws-crypto/supports-web-crypto@3.0.0':
     dependencies:
@@ -18961,21 +18950,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-create-class-features-plugin@7.24.5(@babel/core@7.24.0)':
-    dependencies:
-      '@babel/core': 7.24.0
-      '@babel/helper-annotate-as-pure': 7.25.9
-      '@babel/helper-environment-visitor': 7.22.20
-      '@babel/helper-function-name': 7.23.0
-      '@babel/helper-member-expression-to-functions': 7.25.9
-      '@babel/helper-optimise-call-expression': 7.25.9
-      '@babel/helper-replace-supers': 7.25.9(@babel/core@7.24.0)
-      '@babel/helper-skip-transparent-expression-wrappers': 7.25.9
-      '@babel/helper-split-export-declaration': 7.24.5
-      semver: 6.3.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/helper-create-class-features-plugin@7.25.9(@babel/core@7.24.0)':
     dependencies:
       '@babel/core': 7.24.0
@@ -19487,7 +19461,7 @@ snapshots:
   '@babel/plugin-transform-class-properties@7.23.3(@babel/core@7.24.0)':
     dependencies:
       '@babel/core': 7.24.0
-      '@babel/helper-create-class-features-plugin': 7.24.5(@babel/core@7.24.0)
+      '@babel/helper-create-class-features-plugin': 7.25.9(@babel/core@7.24.0)
       '@babel/helper-plugin-utils': 7.25.9
     transitivePeerDependencies:
       - supports-color
@@ -19503,7 +19477,7 @@ snapshots:
   '@babel/plugin-transform-class-static-block@7.23.4(@babel/core@7.24.0)':
     dependencies:
       '@babel/core': 7.24.0
-      '@babel/helper-create-class-features-plugin': 7.24.5(@babel/core@7.24.0)
+      '@babel/helper-create-class-features-plugin': 7.25.9(@babel/core@7.24.0)
       '@babel/helper-plugin-utils': 7.25.9
       '@babel/plugin-syntax-class-static-block': 7.14.5(@babel/core@7.24.0)
     transitivePeerDependencies:
@@ -19902,7 +19876,7 @@ snapshots:
   '@babel/plugin-transform-private-methods@7.23.3(@babel/core@7.24.0)':
     dependencies:
       '@babel/core': 7.24.0
-      '@babel/helper-create-class-features-plugin': 7.24.5(@babel/core@7.24.0)
+      '@babel/helper-create-class-features-plugin': 7.25.9(@babel/core@7.24.0)
       '@babel/helper-plugin-utils': 7.25.9
     transitivePeerDependencies:
       - supports-color
@@ -19919,7 +19893,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.24.0
       '@babel/helper-annotate-as-pure': 7.22.5
-      '@babel/helper-create-class-features-plugin': 7.24.5(@babel/core@7.24.0)
+      '@babel/helper-create-class-features-plugin': 7.25.9(@babel/core@7.24.0)
       '@babel/helper-plugin-utils': 7.25.9
       '@babel/plugin-syntax-private-property-in-object': 7.14.5(@babel/core@7.24.0)
     transitivePeerDependencies:
@@ -20102,7 +20076,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.24.0
       '@babel/helper-annotate-as-pure': 7.22.5
-      '@babel/helper-create-class-features-plugin': 7.24.5(@babel/core@7.24.0)
+      '@babel/helper-create-class-features-plugin': 7.25.9(@babel/core@7.24.0)
       '@babel/helper-plugin-utils': 7.25.9
       '@babel/plugin-syntax-typescript': 7.23.3(@babel/core@7.24.0)
     transitivePeerDependencies:
@@ -20472,7 +20446,7 @@ snapshots:
       async-mutex: 0.5.0
       bottleneck: 2.19.5
       crypto-js: 4.2.0
-      dotenv: 16.4.5
+      dotenv: 16.4.7
       express: 4.21.1
       node-fetch: 2.7.0(encoding@0.1.13)
       rollup: 3.29.4
@@ -21812,7 +21786,7 @@ snapshots:
       '@types/qs': 6.9.12
       form-data: 4.0.1
       js-base64: 3.7.7
-      qs: 6.12.1
+      qs: 6.13.0
     optionalDependencies:
       node-fetch: 2.7.0(encoding@0.1.13)
 
@@ -22402,7 +22376,7 @@ snapshots:
       chalk: 4.1.2
       clean-stack: 3.0.1
       cli-progress: 3.12.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0(supports-color@8.1.1)
       ejs: 3.1.9
       get-package-type: 0.1.0
       globby: 11.1.0
@@ -22419,7 +22393,7 @@ snapshots:
       supports-color: 8.1.1
       supports-hyperlinks: 2.3.0
       ts-node: 10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)
-      tslib: 2.6.2
+      tslib: 2.8.1
       widest-line: 3.1.0
       wordwrap: 1.0.0
       wrap-ansi: 7.0.0
@@ -22455,7 +22429,7 @@ snapshots:
     dependencies:
       '@oclif/core': 2.15.0(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)
       chalk: 4.1.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0(supports-color@5.5.0)
       http-call: 5.3.0
       lodash.template: 4.5.0
       semver: 7.6.3
@@ -23280,7 +23254,7 @@ snapshots:
   '@puppeteer/browsers@1.4.6(typescript@5.5.2)':
     dependencies:
       debug: 4.3.4(supports-color@8.1.1)
-      extract-zip: 2.0.1(supports-color@8.1.1)
+      extract-zip: 2.0.1
       progress: 2.0.3
       proxy-agent: 6.3.0
       tar-fs: 3.0.4
@@ -25206,6 +25180,13 @@ snapshots:
 
   '@types/parse-json@4.0.2': {}
 
+  '@types/pdfjs-dist@2.10.378(encoding@0.1.13)':
+    dependencies:
+      pdfjs-dist: 3.11.174(encoding@0.1.13)
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+
   '@types/pg-pool@2.0.6':
     dependencies:
       '@types/pg': 8.11.6
@@ -26267,16 +26248,16 @@ snapshots:
 
   axios@1.6.7:
     dependencies:
-      follow-redirects: 1.15.5(debug@4.3.4)
-      form-data: 4.0.0
+      follow-redirects: 1.15.9(debug@4.4.0)
+      form-data: 4.0.1
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
 
   axios@1.7.2:
     dependencies:
-      follow-redirects: 1.15.6
-      form-data: 4.0.0
+      follow-redirects: 1.15.9(debug@4.4.0)
+      form-data: 4.0.1
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
@@ -26289,9 +26270,9 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  axios@1.7.9(debug@4.3.4):
+  axios@1.7.9(debug@4.4.0):
     dependencies:
-      follow-redirects: 1.15.9(debug@4.3.4)
+      follow-redirects: 1.15.9(debug@4.4.0)
       form-data: 4.0.1
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -26877,7 +26858,7 @@ snapshots:
       '@babel/core': 7.24.0
       '@microsoft/fetch-event-source': 2.0.1
       '@ts-stack/markdown': 1.5.0
-      axios: 1.7.9(debug@4.3.4)
+      axios: 1.7.9(debug@4.4.0)
       c-agent-embedding-react: 1.0.5(@types/node@20.12.12)(c-agent-embedding@1.0.4(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       cors: 2.8.5
       cross-env: 7.0.3
@@ -27312,15 +27293,15 @@ snapshots:
 
   cmake-js@7.3.0:
     dependencies:
-      axios: 1.7.9(debug@4.3.4)
-      debug: 4.3.4(supports-color@8.1.1)
+      axios: 1.7.9(debug@4.4.0)
+      debug: 4.4.0(supports-color@5.5.0)
       fs-extra: 11.2.0
       lodash.isplainobject: 4.0.6
       memory-stream: 1.0.0
       node-api-headers: 1.1.0
       npmlog: 6.0.2
       rc: 1.2.8
-      semver: 7.6.0
+      semver: 7.6.3
       tar: 6.2.0
       url-join: 4.0.1
       which: 2.0.2
@@ -27328,10 +27309,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  cmcts-c-agent-embedding-react@1.0.2(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding-react@1.0.6(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@ladle/react': 2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-      cmcts-c-agent-embedding: 1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+      cmcts-c-agent-embedding: 1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -27345,12 +27326,13 @@ snapshots:
       - terser
       - typescript
 
-  cmcts-c-agent-embedding@1.0.2(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@babel/core': 7.24.0
       '@microsoft/fetch-event-source': 2.0.1
       '@ts-stack/markdown': 1.5.0
-      axios: 1.7.9(debug@4.3.4)
+      '@types/pdfjs-dist': 2.10.378(encoding@0.1.13)
+      axios: 1.7.9(debug@4.4.0)
       c-agent-embedding: 1.0.4(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       c-agent-embedding-react: 1.0.5(@types/node@20.12.12)(c-agent-embedding@1.0.4(@types/node@20.12.12)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       cors: 2.8.5
@@ -27362,6 +27344,7 @@ snapshots:
       lodash: 4.17.21
       multer: 1.4.5-lts.1
       node-fetch: 3.3.2
+      pdfjs-dist: 3.11.174(encoding@0.1.13)
       prettier: 3.4.2
       solid-element: 1.7.0(solid-js@1.7.1)
       solid-js: 1.7.1
@@ -27369,6 +27352,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
       - debug
+      - encoding
       - less
       - lightningcss
       - react
@@ -28059,7 +28043,7 @@ snapshots:
       '@tanstack/react-router': 1.91.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-table': 8.20.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ahooks: 3.8.4(react@18.3.1)
-      axios: 1.7.9(debug@4.3.4)
+      axios: 1.7.9(debug@4.4.0)
       class-variance-authority: 0.7.1
       clsx: 2.1.1
       dayjs: 1.11.13
@@ -28107,17 +28091,21 @@ snapshots:
     optionalDependencies:
       supports-color: 8.1.1
 
-  debug@4.3.7(supports-color@8.1.1):
+  debug@4.3.7:
     dependencies:
       ms: 2.1.3
-    optionalDependencies:
-      supports-color: 8.1.1
 
   debug@4.4.0(supports-color@5.5.0):
     dependencies:
       ms: 2.1.3
     optionalDependencies:
       supports-color: 5.5.0
+
+  debug@4.4.0(supports-color@8.1.1):
+    dependencies:
+      ms: 2.1.3
+    optionalDependencies:
+      supports-color: 8.1.1
 
   debuglog@1.0.1: {}
 
@@ -28490,7 +28478,7 @@ snapshots:
   engine.io-client@6.5.3(bufferutil@4.0.8):
     dependencies:
       '@socket.io/component-emitter': 3.1.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7
       engine.io-parser: 5.2.2
       ws: 8.11.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       xmlhttprequest-ssl: 2.0.0
@@ -28965,7 +28953,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.3
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.3.7
       doctrine: 3.0.0
       escape-string-regexp: 4.0.0
       eslint-scope: 7.2.2
@@ -29276,9 +29264,19 @@ snapshots:
 
   extract-files@9.0.0: {}
 
+  extract-zip@2.0.1:
+    dependencies:
+      debug: 4.4.0(supports-color@5.5.0)
+      get-stream: 5.2.0
+      yauzl: 2.10.0
+    optionalDependencies:
+      '@types/yauzl': 2.10.3
+    transitivePeerDependencies:
+      - supports-color
+
   extract-zip@2.0.1(supports-color@8.1.1):
     dependencies:
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0(supports-color@8.1.1)
       get-stream: 5.2.0
       yauzl: 2.10.0
     optionalDependencies:
@@ -29575,12 +29573,6 @@ snapshots:
   fn.name@1.1.0: {}
 
   follow-redirects@1.15.5(debug@4.3.4):
-    optionalDependencies:
-      debug: 4.3.4(supports-color@8.1.1)
-
-  follow-redirects@1.15.6: {}
-
-  follow-redirects@1.15.9(debug@4.3.4):
     optionalDependencies:
       debug: 4.3.4(supports-color@8.1.1)
 
@@ -30553,7 +30545,7 @@ snapshots:
     dependencies:
       '@tootallnate/once': 2.0.0
       agent-base: 6.0.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -30579,7 +30571,7 @@ snapshots:
   http-proxy@1.18.1:
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.15.9(debug@4.3.4)
+      follow-redirects: 1.15.9(debug@4.4.0)
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -30600,7 +30592,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -34655,7 +34647,7 @@ snapshots:
   postcss@8.4.39:
     dependencies:
       nanoid: 3.3.7
-      picocolors: 1.0.1
+      picocolors: 1.1.1
       source-map-js: 1.2.0
 
   postcss@8.4.49:
@@ -35534,7 +35526,7 @@ snapshots:
 
   rechoir@0.6.2:
     dependencies:
-      resolve: 1.22.8
+      resolve: 1.22.9
 
   recursive-readdir@2.2.3:
     dependencies:
@@ -38710,7 +38702,7 @@ snapshots:
       cli-table: 0.3.11
       commander: 7.1.0
       dateformat: 4.6.3
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0(supports-color@5.5.0)
       diff: 5.2.0
       error: 10.4.0
       escape-string-regexp: 4.0.0
@@ -38747,7 +38739,7 @@ snapshots:
     dependencies:
       chalk: 4.1.2
       dargs: 7.0.0
-      debug: 4.3.7(supports-color@8.1.1)
+      debug: 4.4.0(supports-color@5.5.0)
       execa: 5.1.1
       github-username: 6.0.0(encoding@0.1.13)
       lodash: 4.17.21

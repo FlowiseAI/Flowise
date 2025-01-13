@@ -142,3 +142,7 @@ video {
 .usermessage img {
   height: fit-content !important;
 }
+
+img[alt='agentPNG'] {
+  height: 25px !important;
+}

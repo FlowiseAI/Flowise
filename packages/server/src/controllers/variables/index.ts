@@ -12,7 +12,7 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
     const body = req.body
     const newVariable = new Variable()
     Object.assign(newVariable, body)
-    const apiResponse = await variablesService.createVariable(newVariable)
+    const apiResponse = await variablesService.createVariable(req, newVariable)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -33,7 +33,7 @@ const deleteVariable = async (req: Request, res: Response, next: NextFunction) =
 
 const getAllVariables = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const apiResponse = await variablesService.getAllVariables()
+    const apiResponse = await variablesService.getAllVariables(req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -48,7 +48,7 @@ const updateVariable = async (req: Request, res: Response, next: NextFunction) =
     if (typeof req.body === 'undefined') {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Error: variablesController.updateVariable - body not provided!')
     }
-    const variable = await variablesService.getVariableById(req.params.id)
+    const variable = await variablesService.getVariableById(req)
     if (!variable) {
       return res.status(404).send(`Variable ${req.params.id} not found in the database`)
     }

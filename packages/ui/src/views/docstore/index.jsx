@@ -50,9 +50,9 @@ import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STO
 
 // eslint-disable-next-line react/prop-types
 const Documents = ({ storeType = import.meta.env.VITE_DOCUMENT_STORE_TYPE }) => {
-  const dataLogin = localStorage.getItem('dataLogin') ? JSON.parse(localStorage.getItem('dataLogin')) : {}
-  const isLogin = dataLogin?.user?.id ? true : false
-  const displayPrefixes = dataLogin?.user?.displayPrefixes ? JSON?.parse(dataLogin?.user?.displayPrefixes.replace(/'/g, '"')) : []
+  const user = useSelector((state) => state.user)
+  const isLogin = user?.id ? true : false
+  const displayPrefixes = user?.displayPrefixes ? JSON?.parse(user?.displayPrefixes.replace(/'/g, '"')) : []
 
   const theme = useTheme()
   const customization = useSelector((state) => state.customization)
@@ -104,10 +104,11 @@ const Documents = ({ storeType = import.meta.env.VITE_DOCUMENT_STORE_TYPE }) => 
   }
 
   useEffect(() => {
-    getAllDocumentStores.request()
-
+    if (isLogin) {
+      getAllDocumentStores.request()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isLogin])
 
   useEffect(() => {
     if (getAllDocumentStores.data) {
@@ -170,7 +171,7 @@ const Documents = ({ storeType = import.meta.env.VITE_DOCUMENT_STORE_TYPE }) => 
         <>
           {error ? (
             <ErrorBoundary error={error} />
-          ) : (
+          ) : isLogin ? (
             <Stack flexDirection='column' sx={{ gap: 3 }}>
               <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name' title='Document Store'>
                 <ToggleButtonGroup sx={{ borderRadius: 2, maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleChange}>
@@ -342,10 +343,12 @@ const Documents = ({ storeType = import.meta.env.VITE_DOCUMENT_STORE_TYPE }) => 
                   <Box sx={{ p: 2, height: 'auto' }}>
                     <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={doc_store_empty} alt='doc_store_empty' />
                   </Box>
-                  <div>No Document Stores Created Yet</div>
+                  <div>Không có tài liệu nào tạo bởi user này.</div>
                 </Stack>
               )}
             </Stack>
+          ) : (
+            <div>Đăng nhập để xem Tài liệu.</div>
           )}
           {showDialog && (
             <AddDocStoreDialog dialogProps={dialogProps} show={showDialog} onCancel={() => setShowDialog(false)} onConfirm={onConfirm} />

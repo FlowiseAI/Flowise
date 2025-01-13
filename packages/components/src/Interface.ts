@@ -1,6 +1,9 @@
 import { BaseMessage } from '@langchain/core/messages'
-import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
+import { BufferMemory, BufferWindowMemory, ConversationSummaryBufferMemory, ConversationSummaryMemory } from 'langchain/memory'
 import { Moderation } from '../nodes/moderation/Moderation'
+import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { Document } from '@langchain/core/documents'
 
 /**
  * Types
@@ -272,10 +275,6 @@ export interface IDocument<Metadata extends Record<string, any> = Record<string,
 /**
  * Classes
  */
-
-import { PromptTemplate as LangchainPromptTemplate, PromptTemplateInput } from '@langchain/core/prompts'
-import { VectorStore } from '@langchain/core/vectorstores'
-import { Document } from '@langchain/core/documents'
 
 export class PromptTemplate extends LangchainPromptTemplate {
   promptValues: ICommonObject

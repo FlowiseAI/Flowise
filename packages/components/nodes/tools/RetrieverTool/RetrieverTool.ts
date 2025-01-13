@@ -8,6 +8,7 @@ import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { customGet } from '../../sequentialagents/commonUtils'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
+import axios from 'axios'
 
 const howToUse = `Add additional filters to vector store. You can also filter with flow config, including the current "state":
 - \`$flow.sessionId\`
@@ -23,6 +24,7 @@ interface DynamicStructuredToolInput<T extends z.ZodObject<any, any, any, any> =
   extends BaseDynamicToolInput {
   func?: (input: z.infer<T>, runManager?: CallbackManagerForToolRun, flowConfig?: IFlowConfig) => Promise<string>
   schema: T
+  score?: Number
 }
 
 class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>> extends StructuredTool<
@@ -43,6 +45,8 @@ class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObj
 
   private flowObj: any
 
+  score?: Number
+
   constructor(fields: DynamicStructuredToolInput<T>) {
     super(fields)
     this.name = fields.name
@@ -50,6 +54,7 @@ class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObj
     this.func = fields.func
     this.returnDirect = fields.returnDirect ?? this.returnDirect
     this.schema = fields.schema
+    this.score = fields.score
   }
 
   async call(arg: any, configArg?: RunnableConfig | Callbacks, tags?: string[], flowConfig?: IFlowConfig): Promise<string> {
@@ -128,6 +133,7 @@ class Retriever_Tools implements INode {
   baseClasses: string[]
   credential: INodeParams
   inputs: INodeParams[]
+  score: number
 
   constructor() {
     this.label = 'Retriever Tool'
@@ -159,6 +165,22 @@ class Retriever_Tools implements INode {
         type: 'BaseRetriever'
       },
       {
+        label: 'Return Full Document Content',
+        name: 'returnFullContent',
+        type: 'boolean',
+        description: 'Whether to return the full content of retrieved documents',
+        optional: true,
+        default: false
+      },
+      {
+        label: 'Return Raw Document',
+        name: 'returnRawDocument',
+        type: 'boolean',
+        description: 'Whether to return the raw document object from the retriever',
+        optional: true,
+        default: false
+      },
+      {
         label: 'Return Source Documents',
         name: 'returnSourceDocuments',
         type: 'boolean',
@@ -175,6 +197,13 @@ class Retriever_Tools implements INode {
           label: 'What can you filter?',
           value: howToUse
         }
+      },
+      {
+        label: 'Score',
+        name: 'score',
+        type: 'number',
+        optional: true,
+        default: 0
       }
     ]
   }
@@ -185,10 +214,11 @@ class Retriever_Tools implements INode {
     const retriever = nodeData.inputs?.retriever as BaseRetriever
     const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
     const retrieverToolMetadataFilter = nodeData.inputs?.retrieverToolMetadataFilter
-
+    const score = +nodeData.inputs?.score
     const input = {
       name,
-      description
+      description,
+      score
     }
 
     const flow = { chatflowId: options.chatflowid }
@@ -212,15 +242,99 @@ class Retriever_Tools implements INode {
         vectorStore.filter = newMetadataFilter
       }
       const docs = await retriever.invoke(input)
-      const content = docs.map((doc) => doc.pageContent).join('\n\n')
-      const sourceDocuments = JSON.stringify(docs)
+
+      if (nodeData.inputs?.returnFullContent) {
+        // Extract prefixes from docs
+        const prefixes = docs
+          .map((doc) => doc.metadata?.source?.replace('s3://cts-llm-docs-bucket/', ''))
+          .filter((prefix): prefix is string => typeof prefix === 'string')
+
+        if (prefixes.length > 0) {
+          try {
+            // Call API to get full content
+            const response = await axios.post(
+              `${process.env.PDF_KNOWLEDGE_BASE_API_URL || 'http://3.231.34.3:8001'}/knowledge_base/get_pdf_content`,
+              {
+                prefix_list: prefixes
+              }
+            )
+
+            interface ContentItem {
+              content: string
+              prefix: string
+            }
+
+            const result = response.data as { data: ContentItem[] }
+
+            // Create prefix -> content mapping
+            const contentMap = new Map<string, string>()
+            const updatedDocs = new Set<string>() // Track which docs were updated from API
+            result.data.forEach((item: ContentItem) => {
+              contentMap.set(item.prefix, item.content)
+            })
+
+            // Replace doc content with full content from API and track updated docs
+            docs.forEach((doc) => {
+              const prefix = doc.metadata?.source?.replace('s3://cts-llm-docs-bucket/', '')
+              if (typeof prefix === 'string' && contentMap.has(prefix)) {
+                doc.pageContent = contentMap.get(prefix) as string
+                updatedDocs.add(doc.metadata?.source)
+              }
+            })
+
+            // Deduplicate docs that were updated from API based on source
+            const uniqueSources = new Map()
+            const uniqueDocs = docs.filter((doc) => {
+              if (!updatedDocs.has(doc.metadata?.source)) {
+                return true // Keep docs not updated from API
+              }
+              if (!uniqueSources.has(doc.metadata?.source)) {
+                uniqueSources.set(doc.metadata?.source, true)
+                return true
+              }
+              return false
+            })
+
+            // Update original array in place
+            docs.splice(0, docs.length, ...uniqueDocs)
+          } catch (error) {
+            console.error('Error fetching full content:', error)
+          }
+        }
+      }
+
+      // Filter documents based on score threshold
+      const filteredDocs = docs.filter((doc) => {
+        // If score is not a number, include the document
+        if (isNaN(+doc.metadata?.score)) return true
+        // If score threshold is set (>= 0), only include docs that meet or exceed it
+        if (score >= 0) return doc.metadata.score >= score
+        // Include all docs if no valid score threshold
+        return true
+      })
+
+      const content = nodeData.inputs?.returnRawDocument
+        ? JSON.stringify(
+            filteredDocs.map((doc) => ({
+              pageContent: doc.pageContent,
+              metadata: {
+                score: doc.metadata.score,
+                sub_cate_1: doc.metadata?.sub_cate_1
+              }
+            })),
+            null,
+            2
+          )
+        : filteredDocs.map((doc) => doc.pageContent).join('\n\n')
+
+      const sourceDocuments = JSON.stringify(filteredDocs)
+
       return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments : content
     }
 
     const schema = z.object({
       input: z.string().describe('input to look up in retriever')
     }) as any
-
     const tool = new DynamicStructuredTool({ ...input, func, schema })
     tool.setFlowObject(flow)
     return tool

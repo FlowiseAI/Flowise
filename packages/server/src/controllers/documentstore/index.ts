@@ -24,16 +24,16 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
     }
     const body = req.body
     const docStore = DocumentStoreDTO.toEntity(body)
-    const apiResponse = await documentStoreService.createDocumentStore(docStore)
+    const apiResponse = await documentStoreService.createDocumentStore(docStore, req)
     return res.json(apiResponse)
   } catch (error) {
     next(error)
   }
 }
 
-const getAllDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
+const getAllDocumentStores = async (req: any, res: Response, next: NextFunction) => {
   try {
-    const apiResponse = await documentStoreService.getAllDocumentStores()
+    const apiResponse = await documentStoreService.getAllDocumentStores(req)
     return res.json(DocumentStoreDTO.fromEntities(apiResponse))
   } catch (error) {
     next(error)

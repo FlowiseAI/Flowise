@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 // material-ui
 import { useTheme } from '@mui/material/styles'
@@ -14,7 +14,7 @@ import ProfileSection from './ProfileSection'
 import { IconMenu2 } from '@tabler/icons-react'
 
 // store
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_DARKMODE } from '@/store/actions'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_DARKMODE, logoutAction } from '@/store/actions'
 import LoginDialog from '@/ui-component/dialog/LoginDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import useApi from '@/hooks/useApi'
@@ -33,6 +33,10 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
   const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
   const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+  const logout = (...args) => dispatch(logoutAction(...args))
+
+  const user = useSelector((state) => state.user)
+  const isLogin = user?.id ? true : false
 
   const [loginDialogOpen, setLoginDialogOpen] = useState(false)
   const [loginDialogProps] = useState({
@@ -41,14 +45,9 @@ const Header = ({ handleLeftDrawerToggle }) => {
   })
 
   const loginApi = useApi(userApi.loginUser)
-  const getUserById = useApi(userApi.getUserById)
 
   const theme = useTheme()
   const navigate = useNavigate()
-
-  const dataLogin = useMemo(() => (localStorage.getItem('dataLogin') ? JSON?.parse(localStorage.getItem('dataLogin')) : {}), [])
-  const isLogin = dataLogin?.user?.id ? true : false
-  const idUser = dataLogin?.user?.id ?? null
 
   const customization = useSelector((state) => state.customization)
   const [isDark, setIsDark] = useState(customization.isDarkMode)
@@ -59,15 +58,9 @@ const Header = ({ handleLeftDrawerToggle }) => {
     localStorage.setItem('isDarkMode', !isDark)
   }
 
-  const handleGetUserById = useCallback(async () => {
-    const resData = await getUserById.request(idUser)
-    if (resData) {
-      localStorage.setItem('dataLogin', JSON.stringify({ ...dataLogin, user: resData }))
-    }
-  }, [getUserById, idUser, dataLogin])
-
   const handleLogout = () => {
     localStorage.removeItem('dataLogin')
+    logout({})
     navigate(0)
   }
 
@@ -75,6 +68,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
     const resData = await loginApi.request({ username, password })
     if (loginApi.error) {
       localStorage.removeItem('dataLogin')
+      logout({})
       if (loginApi.error.response.data.message) {
         return enqueueSnackbar({
           message: loginApi.error.response.data.message,
@@ -103,6 +97,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
     if (resData) {
       localStorage.setItem('dataLogin', JSON.stringify(resData))
+      // login(resData?.user)
       setLoginDialogOpen(false)
       enqueueSnackbar({
         message: 'Đăng nhập thành công.',
@@ -126,13 +121,6 @@ const Header = ({ handleLeftDrawerToggle }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDark])
-
-  useEffect(() => {
-    if (idUser) {
-      handleGetUserById()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <>
@@ -174,7 +162,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
       {/*<MaterialUISwitch checked={isDark} onChange={changeDarkMode} />*/}
       <Box sx={{ ml: 2 }}></Box>
       {isLogin ? (
-        <ProfileSection handleLogout={handleLogout} username={dataLogin.user.username ?? ''} />
+        <ProfileSection handleLogout={handleLogout} username={user.username ?? ''} />
       ) : (
         <>
           {' '}
@@ -200,6 +188,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             dialogProps={loginDialogProps}
             onConfirm={onLoginClick}
             onClose={() => setLoginDialogOpen(false)}
+            disableBtn={loginApi.loading || undefined}
           />
           <ConfirmDialog />
         </>

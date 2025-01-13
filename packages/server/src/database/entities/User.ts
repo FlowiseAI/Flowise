@@ -1,4 +1,6 @@
 import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, UpdateDateColumn } from 'typeorm'
+import { ChatFlow } from './ChatFlow'
+import { OneToMany } from 'typeorm'
 
 /* eslint-disable */
 
@@ -29,6 +31,9 @@ export class User {
 
   @Column({ type: 'varchar', length: 255 })
   password: string
+
+  @OneToMany(() => ChatFlow, (chatFlow) => chatFlow.user)
+  chatFlows: ChatFlow[]
 
   @Column({ type: 'timestamp' })
   @CreateDateColumn()
