@@ -115,10 +115,10 @@ model_list:
       source: 'https://ai.google.dev/pricing'
 litellm_settings:
   #  logging
-  success_callback: ['langfuse']
-  langfuse_public_key: 'pk-lf-57e0f66e-3813-4444-962e-79ea717f9e5d'
-  langfuse_secret: 'sk-lf-0c3c2fa9-4be4-4153-98c8-fb56a5d49c2f'
-  langfuse_host: 'https://us.cloud.langfuse.com'
+  #  success_callback: ['langfuse']
+  #  langfuse_public_key: 'pk-lf-57e0f66e-3813-4444-962e-79ea717f9e5d'
+  #  langfuse_secret: 'sk-lf-0c3c2fa9-4be4-4153-98c8-fb56a5d49c2f'
+  #  langfuse_host: 'https://us.cloud.langfuse.com'
   #
   request_timeout: 600
   set_verbose: false
