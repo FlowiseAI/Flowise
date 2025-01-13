@@ -62,12 +62,14 @@ paths:
                   name: startDate
                   schema:
                       type: string
+                      example: 2025-01-01T11:28:36.000Z
                   format: date-time
                   description: Filter by start date
                 - in: query
                   name: endDate
                   schema:
                       type: string
+                      example: 2025-01-13T11:28:36.000Z
                   format: date-time
                   description: Filter by end date
                 - in: query
@@ -80,7 +82,7 @@ paths:
                   schema:
                       type: string
                       enum: [THUMBS_UP, THUMBS_DOWN]
-                  description: Filter by feedback type
+                  description: Filter by feedback type. Only applicable if feedback is true
             responses:
                 '200':
                     description: A list of chat messages
@@ -130,6 +132,29 @@ paths:
                       type: string
                       enum: [INTERNAL, EXTERNAL]
                   description: Filter by chat type
+                - in: query
+                  name: startDate
+                  schema:
+                      type: string
+                      example: 2025-01-01T11:28:36.000Z
+                  description: Filter by start date
+                - in: query
+                  name: endDate
+                  schema:
+                      type: string
+                      example: 2025-01-13T11:28:36.000Z
+                  description: Filter by end date
+                - in: query
+                  name: feedbackType
+                  schema:
+                      type: string
+                      enum: [THUMBS_UP, THUMBS_DOWN]
+                  description: Filter by feedback type
+                - in: query
+                  name: hardDelete
+                  schema:
+                      type: boolean
+                  description: If hardDelete is true, messages will be deleted from the third party service as well
             responses:
                 '200':
                     description: Chat messages deleted successfully
