@@ -390,7 +390,6 @@ const FollowUpPrompts = ({ dialogProps }) => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
-            console.log(error)
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
                 message: `Failed to save follow-up prompts configuration: ${errorData}`,
