@@ -154,6 +154,7 @@ const LoaderConfigPreviewChunks = () => {
         if (checkMandatoryFields()) {
             setLoading(true)
             const config = prepareConfig()
+            config.loaderId === 'googleDrive' && (config.credential = JSON.stringify(selectedCredentialData))
             config.previewChunkCount = previewChunkCount
 
             try {

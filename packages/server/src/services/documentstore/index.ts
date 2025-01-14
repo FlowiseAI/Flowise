@@ -591,11 +591,17 @@ const _splitIntoChunks = async (data: IDocumentStoreLoaderForPreview) => {
         }
         const nodeInstanceFilePath = appServer.nodesPool.componentNodes[data.loaderId].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
-        // doc loader configs
         const nodeData = {
             credential: data.credential || undefined,
-            inputs: { ...data.loaderConfig, textSplitter: splitterInstance },
+            inputs: {
+                ...data.loaderConfig,
+                textSplitter: splitterInstance
+            },
             outputs: { output: 'document' }
+        }
+        if (data.loaderId === 'googleDrive') {
+            nodeData.inputs.pdfUsage = data.loaderConfig.pdfUsage || 'perPage'
+            nodeData.inputs.selectedFiles = data.loaderConfig.selectedFiles || '[]'
         }
         const options: ICommonObject = {
             chatflowid: uuidv4(),

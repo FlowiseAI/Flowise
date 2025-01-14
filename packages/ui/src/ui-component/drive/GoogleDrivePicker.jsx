@@ -1,15 +1,14 @@
 import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
-import { Button } from '@mui/material'
+import { Button, List, ListItem, ListItemAvatar, ListItemText, Avatar } from '@mui/material'
 import useApi from '@/hooks/useApi'
 import credentialsApi from '@/api/credentials'
 
 export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, credentialData, handleCredentialDataChange }) => {
     const [pickerInited, setPickerInited] = useState(false)
-    const [selectedFiles, setSelectedFiles] = useState([])
+    const [selectedFiles, setSelectedFiles] = useState(value ? JSON.parse(value) : [])
     const [accessToken, setAccessToken] = useState(null)
     const getCredentialDataApi = useApi(credentialsApi.getSpecificCredential)
-
     useEffect(() => {
         if (credentialId) {
             getCredentialDataApi.request(credentialId)
@@ -102,26 +101,67 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
 
     const pickerCallback = (data) => {
         if (data.action === window.google.picker.Action.PICKED) {
-            const files = data.docs
+            const files = data.docs.map((file) => ({ fileId: file.id, fileName: file.name, iconUrl: file.iconUrl }))
             setSelectedFiles(files)
-            onChange(JSON.stringify(files.map((file) => file.id)))
+            onChange(JSON.stringify(files))
         }
     }
 
+    console.log('selectedFiles=>', selectedFiles, value)
+
     return (
-        <div style={{ margin: '20px 0px' }}>
-            <Button variant='outlined' onClick={createPicker} disabled={!pickerInited || disabled}>
+        <div style={{ margin: '10px 0px 0 0' }}>
+            <Button
+                variant='outlined'
+                onClick={createPicker}
+                disabled={!pickerInited || disabled}
+                sx={{
+                    mb: 2,
+                    '&.Mui-disabled': {
+                        color: 'gray',
+                        borderColor: 'gray'
+                    }
+                }}
+            >
                 Select Files from Google Drive
             </Button>
             {selectedFiles.length > 0 && (
-                <div style={{ marginTop: '10px' }}>
-                    <strong>Selected files:</strong>
-                    <ul>
-                        {selectedFiles.map((file) => (
-                            <li key={file.id}>{file.name}</li>
-                        ))}
-                    </ul>
-                </div>
+                <List sx={{ bgcolor: 'background.paper', p: 0 }}>
+                    {selectedFiles.map((file) => (
+                        <ListItem
+                            key={file.fileId}
+                            sx={{
+                                borderRadius: 1,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                p: 0
+                            }}
+                        >
+                            <ListItemAvatar>
+                                <Avatar
+                                    src={file.iconUrl}
+                                    alt={file.fileName}
+                                    variant='rounded'
+                                    sx={{
+                                        bgcolor: 'background.paper',
+                                        '& img': {
+                                            width: '24px',
+                                            height: '24px'
+                                        }
+                                    }}
+                                />
+                            </ListItemAvatar>
+                            <ListItemText
+                                primary={file.fileName}
+                                sx={{
+                                    '& .MuiListItemText-primary': {
+                                        fontSize: '0.875rem'
+                                    }
+                                }}
+                            />
+                        </ListItem>
+                    ))}
+                </List>
             )}
         </div>
     )
