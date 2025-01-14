@@ -1745,15 +1745,6 @@ export const convertToValidFilename = (word: string) => {
         .toLowerCase()
 }
 
-export const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
-    const date = new Date(dateTimeStr)
-    if (isNaN(date.getTime())) {
-        return undefined
-    }
-    setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
-    return date
-}
-
 export const aMonthAgo = () => {
     const date = new Date()
     date.setMonth(new Date().getMonth() - 1)
