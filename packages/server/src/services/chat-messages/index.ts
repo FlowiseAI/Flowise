@@ -34,28 +34,24 @@ const getAllChatMessages = async (
     sessionId?: string,
     startDate?: string,
     endDate?: string,
-    startDateTime?: string,
-    endDateTime?: string,
     messageId?: string,
     feedback?: boolean,
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<ChatMessage[]> => {
     try {
-        const dbResponse = await utilGetChatMessage(
-            chatflowId,
-            chatTypeFilter,
+        const dbResponse = await utilGetChatMessage({
+            chatflowid: chatflowId,
+            chatType: chatTypeFilter,
             sortOrder,
             chatId,
             memoryType,
             sessionId,
             startDate,
             endDate,
-            startDateTime,
-            endDateTime,
             messageId,
             feedback,
             feedbackTypes
-        )
+        })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -75,16 +71,14 @@ const getAllInternalChatMessages = async (
     sessionId?: string,
     startDate?: string,
     endDate?: string,
-    startDateTime?: string,
-    endDateTime?: string,
     messageId?: string,
     feedback?: boolean,
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<ChatMessage[]> => {
     try {
-        const dbResponse = await utilGetChatMessage(
-            chatflowId,
-            chatTypeFilter,
+        const dbResponse = await utilGetChatMessage({
+            chatflowid: chatflowId,
+            chatType: chatTypeFilter,
             sortOrder,
             chatId,
             memoryType,
@@ -92,11 +86,9 @@ const getAllInternalChatMessages = async (
             startDate,
             endDate,
             messageId,
-            startDateTime,
-            endDateTime,
             feedback,
             feedbackTypes
-        )
+        })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(

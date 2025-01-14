@@ -3,7 +3,7 @@ import { ChatMessageRatingType, ChatType } from '../Interface'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
-import { aMonthAgo, setDateToStartOrEndOfDay } from '.'
+import { aMonthAgo } from '.'
 
 /**
  * Method that get chat messages.
@@ -18,28 +18,34 @@ import { aMonthAgo, setDateToStartOrEndOfDay } from '.'
  * @param {boolean} feedback
  * @param {ChatMessageRatingType[]} feedbackTypes
  */
-export const utilGetChatMessage = async (
-    chatflowid: string,
-    chatType: ChatType | undefined,
-    sortOrder: string = 'ASC',
-    chatId?: string,
-    memoryType?: string,
-    sessionId?: string,
-    startDate?: string,
-    endDate?: string,
-    startDateTime?: string,
-    endDateTime?: string,
-    messageId?: string,
-    feedback?: boolean,
+interface GetChatMessageParams {
+    chatflowid: string
+    chatType?: ChatType
+    sortOrder?: string
+    chatId?: string
+    memoryType?: string
+    sessionId?: string
+    startDate?: string
+    endDate?: string
+    messageId?: string
+    feedback?: boolean
     feedbackTypes?: ChatMessageRatingType[]
-): Promise<ChatMessage[]> => {
+}
+
+export const utilGetChatMessage = async ({
+    chatflowid,
+    chatType,
+    sortOrder = 'ASC',
+    chatId,
+    memoryType,
+    sessionId,
+    startDate,
+    endDate,
+    messageId,
+    feedback,
+    feedbackTypes
+}: GetChatMessageParams): Promise<ChatMessage[]> => {
     const appServer = getRunningExpressApp()
-
-    let fromDate
-    if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
-
-    let toDate
-    if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
 
     if (feedback) {
         const query = await appServer.AppDataSource.getRepository(ChatMessage).createQueryBuilder('chat_message')
@@ -64,16 +70,11 @@ export const utilGetChatMessage = async (
         }
 
         // set date range
-        query.andWhere('chat_message.createdDate BETWEEN :fromDate AND :toDate', {
-            fromDate: fromDate ?? aMonthAgo(),
-            toDate: toDate ?? new Date()
-        })
-
-        if (startDateTime) {
-            query.andWhere('chat_message.createdDate >= :startDateTime', { startDateTime: new Date(startDateTime) })
+        if (startDate) {
+            query.andWhere('chat_message.createdDate >= :startDateTime', { startDateTime: startDate ? new Date(startDate) : aMonthAgo() })
         }
-        if (endDateTime) {
-            query.andWhere('chat_message.createdDate <= :endDateTime', { endDateTime: new Date(endDateTime) })
+        if (endDate) {
+            query.andWhere('chat_message.createdDate <= :endDateTime', { endDateTime: endDate ? new Date(endDate) : new Date() })
         }
 
         // sort
@@ -100,21 +101,13 @@ export const utilGetChatMessage = async (
     }
 
     let createdDateQuery
-    if (fromDate || toDate) {
-        if (fromDate && toDate) {
-            createdDateQuery = Between(fromDate, toDate)
-        } else if (fromDate) {
-            createdDateQuery = MoreThanOrEqual(fromDate)
-        } else if (toDate) {
-            createdDateQuery = LessThanOrEqual(toDate)
-        }
-    } else if (startDateTime || endDateTime) {
-        if (startDateTime && endDateTime) {
-            createdDateQuery = Between(new Date(startDateTime), new Date(endDateTime))
-        } else if (startDateTime) {
-            createdDateQuery = MoreThanOrEqual(new Date(startDateTime))
-        } else if (endDateTime) {
-            createdDateQuery = LessThanOrEqual(new Date(endDateTime))
+    if (startDate || endDate) {
+        if (startDate && endDate) {
+            createdDateQuery = Between(new Date(startDate), new Date(endDate))
+        } else if (startDate) {
+            createdDateQuery = MoreThanOrEqual(new Date(startDate))
+        } else if (endDate) {
+            createdDateQuery = LessThanOrEqual(new Date(endDate))
         }
     }
 

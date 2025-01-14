@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { ChatMessageRatingType, ChatType, IReactFlowObject } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
 import chatMessagesService from '../../services/chat-messages'
-import { aMonthAgo, clearSessionMemory, setDateToStartOrEndOfDay } from '../../utils'
+import { aMonthAgo, clearSessionMemory } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Between, DeleteResult, FindOptionsWhere } from 'typeorm'
 import { ChatMessage } from '../../database/entities/ChatMessage'
@@ -71,8 +71,6 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
         const messageId = req.query?.messageId as string | undefined
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
-        const startDateTime = req.query?.startDateTime as string | undefined
-        const endDateTime = req.query?.endDateTime as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
         let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
         if (feedbackTypeFilters) {
@@ -93,8 +91,6 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             sessionId,
             startDate,
             endDate,
-            startDateTime,
-            endDateTime,
             messageId,
             feedback,
             feedbackTypeFilters
@@ -115,8 +111,6 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
         const messageId = req.query?.messageId as string | undefined
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
-        const startDateTime = req.query?.startDateTime as string | undefined
-        const endDateTime = req.query?.endDateTime as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
         let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
         if (feedbackTypeFilters) {
@@ -131,8 +125,6 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             sessionId,
             startDate,
             endDate,
-            startDateTime,
-            endDateTime,
             messageId,
             feedback,
             feedbackTypeFilters
@@ -166,8 +158,6 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         const _chatType = req.query?.chatType as string | undefined
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
-        const startDateTime = req.query?.startDateTime as string | undefined
-        const endDateTime = req.query?.endDateTime as string | undefined
         const isClearFromViewMessageDialog = req.query?.isClearFromViewMessageDialog as string | undefined
         let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
         if (feedbackTypeFilters) {
@@ -177,21 +167,14 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         if (!chatId) {
             const isFeedback = feedbackTypeFilters?.length ? true : false
             const hardDelete = req.query?.hardDelete as boolean | undefined
-            const messages = await utilGetChatMessage(
+            const messages = await utilGetChatMessage({
                 chatflowid,
-                _chatType as ChatType | undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
+                chatType: _chatType as ChatType | undefined,
                 startDate,
                 endDate,
-                startDateTime,
-                endDateTime,
-                undefined,
-                isFeedback,
-                feedbackTypeFilters
-            )
+                feedback: isFeedback,
+                feedbackTypes: feedbackTypeFilters
+            })
             const messageIds = messages.map((message) => message.id)
 
             if (messages.length === 0) {
@@ -255,8 +238,8 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
             if (sessionId) deleteOptions.sessionId = sessionId
             if (_chatType) deleteOptions.chatType = _chatType
             if (startDate && endDate) {
-                const fromDate = setDateToStartOrEndOfDay(startDate, 'start')
-                const toDate = setDateToStartOrEndOfDay(endDate, 'end')
+                const fromDate = new Date(startDate)
+                const toDate = new Date(endDate)
                 deleteOptions.createdDate = Between(fromDate ?? aMonthAgo(), toDate ?? new Date())
             }
             const apiResponse = await chatMessagesService.removeAllChatMessages(chatId, chatflowid, deleteOptions)
