@@ -2,9 +2,9 @@ import { Request, Response, NextFunction } from 'express'
 import { ChatMessageRatingType, ChatType, IReactFlowObject } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
 import chatMessagesService from '../../services/chat-messages'
-import { aMonthAgo, clearSessionMemory, setDateToStartOrEndOfDay } from '../../utils'
+import { aMonthAgo, clearSessionMemory } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Between, FindOptionsWhere } from 'typeorm'
+import { Between, DeleteResult, FindOptionsWhere } from 'typeorm'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
@@ -167,20 +167,20 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         if (!chatId) {
             const isFeedback = feedbackTypeFilters?.length ? true : false
             const hardDelete = req.query?.hardDelete as boolean | undefined
-            const messages = await utilGetChatMessage(
+            const messages = await utilGetChatMessage({
                 chatflowid,
-                _chatType as ChatType | undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
+                chatType: _chatType as ChatType | undefined,
                 startDate,
                 endDate,
-                undefined,
-                isFeedback,
-                feedbackTypeFilters
-            )
+                feedback: isFeedback,
+                feedbackTypes: feedbackTypeFilters
+            })
             const messageIds = messages.map((message) => message.id)
+
+            if (messages.length === 0) {
+                const result: DeleteResult = { raw: [], affected: 0 }
+                return res.json(result)
+            }
 
             // Categorize by chatId_memoryType_sessionId
             const chatIdMap = new Map<string, ChatMessage[]>()
@@ -238,8 +238,8 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
             if (sessionId) deleteOptions.sessionId = sessionId
             if (_chatType) deleteOptions.chatType = _chatType
             if (startDate && endDate) {
-                const fromDate = setDateToStartOrEndOfDay(startDate, 'start')
-                const toDate = setDateToStartOrEndOfDay(endDate, 'end')
+                const fromDate = new Date(startDate)
+                const toDate = new Date(endDate)
                 deleteOptions.createdDate = Between(fromDate ?? aMonthAgo(), toDate ?? new Date())
             }
             const apiResponse = await chatMessagesService.removeAllChatMessages(chatId, chatflowid, deleteOptions)

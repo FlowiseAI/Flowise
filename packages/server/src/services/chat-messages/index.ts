@@ -39,9 +39,9 @@ const getAllChatMessages = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<ChatMessage[]> => {
     try {
-        const dbResponse = await utilGetChatMessage(
-            chatflowId,
-            chatTypeFilter,
+        const dbResponse = await utilGetChatMessage({
+            chatflowid: chatflowId,
+            chatType: chatTypeFilter,
             sortOrder,
             chatId,
             memoryType,
@@ -51,7 +51,7 @@ const getAllChatMessages = async (
             messageId,
             feedback,
             feedbackTypes
-        )
+        })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -76,9 +76,9 @@ const getAllInternalChatMessages = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<ChatMessage[]> => {
     try {
-        const dbResponse = await utilGetChatMessage(
-            chatflowId,
-            chatTypeFilter,
+        const dbResponse = await utilGetChatMessage({
+            chatflowid: chatflowId,
+            chatType: chatTypeFilter,
             sortOrder,
             chatId,
             memoryType,
@@ -88,7 +88,7 @@ const getAllInternalChatMessages = async (
             messageId,
             feedback,
             feedbackTypes
-        )
+        })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
