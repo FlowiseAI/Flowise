@@ -27,6 +27,8 @@ export const utilGetChatMessage = async (
     sessionId?: string,
     startDate?: string,
     endDate?: string,
+    startDateTime?: string,
+    endDateTime?: string,
     messageId?: string,
     feedback?: boolean,
     feedbackTypes?: ChatMessageRatingType[]
@@ -66,6 +68,14 @@ export const utilGetChatMessage = async (
             fromDate: fromDate ?? aMonthAgo(),
             toDate: toDate ?? new Date()
         })
+
+        if (startDateTime) {
+            query.andWhere('chat_message.createdDate >= :startDateTime', { startDateTime: new Date(startDateTime) })
+        }
+        if (endDateTime) {
+            query.andWhere('chat_message.createdDate <= :endDateTime', { endDateTime: new Date(endDateTime) })
+        }
+
         // sort
         query.orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
 
@@ -98,6 +108,8 @@ export const utilGetChatMessage = async (
             sessionId: sessionId ?? undefined,
             ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
             ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
+            ...(startDateTime && { createdDate: MoreThanOrEqual(new Date(startDateTime)) }),
+            ...(endDateTime && { createdDate: LessThanOrEqual(new Date(endDateTime)) }),
             id: messageId ?? undefined
         },
         order: {

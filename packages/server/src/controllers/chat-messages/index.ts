@@ -71,6 +71,8 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
         const messageId = req.query?.messageId as string | undefined
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
+        const startDateTime = req.query?.startDateTime as string | undefined
+        const endDateTime = req.query?.endDateTime as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
         let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
         if (feedbackTypeFilters) {
@@ -91,6 +93,8 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
             sessionId,
             startDate,
             endDate,
+            startDateTime,
+            endDateTime,
             messageId,
             feedback,
             feedbackTypeFilters
@@ -111,6 +115,8 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
         const messageId = req.query?.messageId as string | undefined
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
+        const startDateTime = req.query?.startDateTime as string | undefined
+        const endDateTime = req.query?.endDateTime as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
         let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
         if (feedbackTypeFilters) {
@@ -125,6 +131,8 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             sessionId,
             startDate,
             endDate,
+            startDateTime,
+            endDateTime,
             messageId,
             feedback,
             feedbackTypeFilters
@@ -158,6 +166,8 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         const _chatType = req.query?.chatType as string | undefined
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
+        const startDateTime = req.query?.startDateTime as string | undefined
+        const endDateTime = req.query?.endDateTime as string | undefined
         const isClearFromViewMessageDialog = req.query?.isClearFromViewMessageDialog as string | undefined
         let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
         if (feedbackTypeFilters) {
@@ -176,6 +186,8 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
                 undefined,
                 startDate,
                 endDate,
+                startDateTime,
+                endDateTime,
                 undefined,
                 isFeedback,
                 feedbackTypeFilters

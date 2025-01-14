@@ -34,6 +34,8 @@ const getAllChatMessages = async (
     sessionId?: string,
     startDate?: string,
     endDate?: string,
+    startDateTime?: string,
+    endDateTime?: string,
     messageId?: string,
     feedback?: boolean,
     feedbackTypes?: ChatMessageRatingType[]
@@ -48,6 +50,8 @@ const getAllChatMessages = async (
             sessionId,
             startDate,
             endDate,
+            startDateTime,
+            endDateTime,
             messageId,
             feedback,
             feedbackTypes
@@ -71,6 +75,8 @@ const getAllInternalChatMessages = async (
     sessionId?: string,
     startDate?: string,
     endDate?: string,
+    startDateTime?: string,
+    endDateTime?: string,
     messageId?: string,
     feedback?: boolean,
     feedbackTypes?: ChatMessageRatingType[]
@@ -86,6 +92,8 @@ const getAllInternalChatMessages = async (
             startDate,
             endDate,
             messageId,
+            startDateTime,
+            endDateTime,
             feedback,
             feedbackTypes
         )

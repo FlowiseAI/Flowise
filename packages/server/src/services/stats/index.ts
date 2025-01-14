@@ -26,6 +26,8 @@ const getChatflowStats = async (
             undefined,
             startDate,
             endDate,
+            undefined,
+            undefined,
             messageId,
             feedback,
             feedbackTypes
