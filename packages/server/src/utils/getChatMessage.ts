@@ -1,4 +1,4 @@
-import { MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
+import { MoreThanOrEqual, LessThanOrEqual, Between, FindOptionsWhere, MoreThan } from 'typeorm'
 import { ChatMessageRatingType, ChatType } from '../Interface'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'
@@ -99,6 +99,25 @@ export const utilGetChatMessage = async (
         return messages
     }
 
+    let createdDateQuery
+    if (fromDate || toDate) {
+        if (fromDate && toDate) {
+            createdDateQuery = Between(fromDate, toDate);
+        } else if (fromDate) {
+            createdDateQuery = MoreThanOrEqual(fromDate);
+        } else if (toDate) {
+            createdDateQuery = LessThanOrEqual(toDate);
+        }
+    } else if (startDateTime || endDateTime) {
+        if (startDateTime && endDateTime) {
+            createdDateQuery = Between(new Date(startDateTime), new Date(endDateTime));
+        } else if (startDateTime) {
+            createdDateQuery = MoreThanOrEqual(new Date(startDateTime));
+        } else if (endDateTime) {
+            createdDateQuery = LessThanOrEqual(new Date(endDateTime));
+        }
+    }
+
     return await appServer.AppDataSource.getRepository(ChatMessage).find({
         where: {
             chatflowid,
@@ -106,10 +125,7 @@ export const utilGetChatMessage = async (
             chatId,
             memoryType: memoryType ?? undefined,
             sessionId: sessionId ?? undefined,
-            ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
-            ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
-            ...(startDateTime && { createdDate: MoreThanOrEqual(new Date(startDateTime)) }),
-            ...(endDateTime && { createdDate: LessThanOrEqual(new Date(endDateTime)) }),
+            createdDate: createdDateQuery,
             id: messageId ?? undefined
         },
         order: {
