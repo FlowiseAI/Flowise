@@ -1,4 +1,4 @@
-import { MoreThanOrEqual, LessThanOrEqual, Between, FindOptionsWhere, MoreThan } from 'typeorm'
+import { MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
 import { ChatMessageRatingType, ChatType } from '../Interface'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'
@@ -102,19 +102,19 @@ export const utilGetChatMessage = async (
     let createdDateQuery
     if (fromDate || toDate) {
         if (fromDate && toDate) {
-            createdDateQuery = Between(fromDate, toDate);
+            createdDateQuery = Between(fromDate, toDate)
         } else if (fromDate) {
-            createdDateQuery = MoreThanOrEqual(fromDate);
+            createdDateQuery = MoreThanOrEqual(fromDate)
         } else if (toDate) {
-            createdDateQuery = LessThanOrEqual(toDate);
+            createdDateQuery = LessThanOrEqual(toDate)
         }
     } else if (startDateTime || endDateTime) {
         if (startDateTime && endDateTime) {
-            createdDateQuery = Between(new Date(startDateTime), new Date(endDateTime));
+            createdDateQuery = Between(new Date(startDateTime), new Date(endDateTime))
         } else if (startDateTime) {
-            createdDateQuery = MoreThanOrEqual(new Date(startDateTime));
+            createdDateQuery = MoreThanOrEqual(new Date(startDateTime))
         } else if (endDateTime) {
-            createdDateQuery = LessThanOrEqual(new Date(endDateTime));
+            createdDateQuery = LessThanOrEqual(new Date(endDateTime))
         }
     }
 

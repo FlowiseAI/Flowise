@@ -197,7 +197,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
             if (messages.length === 0) {
                 const result: DeleteResult = { raw: [], affected: 0 }
                 return res.json(result)
-            } 
+            }
 
             // Categorize by chatId_memoryType_sessionId
             const chatIdMap = new Map<string, ChatMessage[]>()
