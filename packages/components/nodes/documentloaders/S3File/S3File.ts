@@ -1,4 +1,3 @@
-import { omit } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { S3Loader } from '@langchain/community/document_loaders/web/s3'
 import {
@@ -8,7 +7,13 @@ import {
     SkipInferTableTypes,
     HiResModelName
 } from '@langchain/community/document_loaders/fs/unstructured'
-import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
+import {
+    getCredentialData,
+    getCredentialParam,
+    handleDocumentLoaderDocuments,
+    handleDocumentLoaderMetadata,
+    handleDocumentLoaderOutput
+} from '../../../src/utils'
 import { S3Client, GetObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3'
 import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { Readable } from 'node:stream'
@@ -483,11 +488,6 @@ class S3_DocumentLoaders implements INode {
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
 
-        let omitMetadataKeys: string[] = []
-        if (_omitMetadataKeys) {
-            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
-        }
-
         let credentials: S3ClientConfig['credentials'] | undefined
 
         if (nodeData.credential) {
@@ -572,56 +572,15 @@ class S3_DocumentLoaders implements INode {
 
                 const unstructuredLoader = new UnstructuredLoader(filePath, obj)
 
-                let docs = await unstructuredLoader.load()
+                let docs = await handleDocumentLoaderDocuments(unstructuredLoader)
 
-                if (metadata) {
-                    const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-                    docs = docs.map((doc) => ({
-                        ...doc,
-                        metadata:
-                            _omitMetadataKeys === '*'
-                                ? {
-                                      ...parsedMetadata
-                                  }
-                                : omit(
-                                      {
-                                          ...doc.metadata,
-                                          ...parsedMetadata,
-                                          [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                                      },
-                                      omitMetadataKeys
-                                  )
-                    }))
-                } else {
-                    docs = docs.map((doc) => ({
-                        ...doc,
-                        metadata:
-                            _omitMetadataKeys === '*'
-                                ? {}
-                                : omit(
-                                      {
-                                          ...doc.metadata,
-                                          [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                                      },
-                                      omitMetadataKeys
-                                  )
-                    }))
-                }
+                docs = handleDocumentLoaderMetadata(docs, _omitMetadataKeys, metadata, sourceIdKey)
 
-                fsDefault.rmSync(path.dirname(filePath), { recursive: true })
-
-                if (output === 'document') {
-                    return docs
-                } else {
-                    let finaltext = ''
-                    for (const doc of docs) {
-                        finaltext += `${doc.pageContent}\n`
-                    }
-                    return handleEscapeCharacters(finaltext, false)
-                }
+                return handleDocumentLoaderOutput(docs, output)
             } catch {
-                fsDefault.rmSync(path.dirname(filePath), { recursive: true })
                 throw new Error(`Failed to load file ${filePath} using unstructured loader.`)
+            } finally {
+                fsDefault.rmSync(path.dirname(filePath), { recursive: true })
             }
         }
 

@@ -388,6 +388,9 @@ importers:
             openai:
                 specifier: 4.57.3
                 version: 4.57.3(encoding@0.1.13)(zod@3.22.4)
+            papaparse:
+                specifier: ^5.4.1
+                version: 5.4.1
             pdf-parse:
                 specifier: ^1.1.1
                 version: 1.1.1
@@ -458,6 +461,9 @@ importers:
             '@types/object-hash':
                 specifier: ^3.0.2
                 version: 3.0.6
+            '@types/papaparse':
+                specifier: ^5.3.15
+                version: 5.3.15
             '@types/pg':
                 specifier: ^8.10.2
                 version: 8.11.2
@@ -6365,8 +6371,8 @@ packages:
     '@types/object-hash@3.0.6':
         resolution: { integrity: sha512-fOBV8C1FIu2ELinoILQ+ApxcUKz4ngq+IWUYrxSGjXzzjUALijilampwkMgEtJ+h2njAW3pi853QpzNVCHB73w== }
 
-    '@types/papaparse@5.3.14':
-        resolution: { integrity: sha512-LxJ4iEFcpqc6METwp9f6BV6VVc43m6MfH0VqFosHvrUgfXiFe6ww7R3itkOQ+TCK6Y+Iv/+RnnvtRZnkc5Kc9g== }
+    '@types/papaparse@5.3.15':
+        resolution: { integrity: sha512-JHe6vF6x/8Z85nCX4yFdDslN11d+1pr12E526X8WAfhadOeaOTx5AuIkvDKIBopfvlzpzkdMx4YyvSKCM9oqtw== }
 
     '@types/parse-json@4.0.2':
         resolution: { integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw== }
@@ -24808,7 +24814,7 @@ snapshots:
 
     '@types/object-hash@3.0.6': {}
 
-    '@types/papaparse@5.3.14':
+    '@types/papaparse@5.3.15':
         dependencies:
             '@types/node': 20.12.12
 
@@ -31514,7 +31520,7 @@ snapshots:
             '@pinecone-database/pinecone': 2.2.2
             '@qdrant/js-client-rest': 1.9.0(typescript@5.5.2)
             '@types/lodash': 4.17.4
-            '@types/papaparse': 5.3.14
+            '@types/papaparse': 5.3.15
             '@types/pg': 8.11.6
             '@xenova/transformers': 2.17.1
             '@zilliz/milvus2-sdk-node': 2.4.2
