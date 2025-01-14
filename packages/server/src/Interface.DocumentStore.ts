@@ -70,6 +70,8 @@ export interface IDocumentStoreLoaderForPreview extends IDocumentStoreLoader {
 
 export interface IDocumentStoreUpsertData {
     docId: string
+    metadata?: string | object
+    replaceExisting?: boolean
     loader?: {
         name: string
         config: ICommonObject
@@ -154,19 +156,19 @@ export const addLoaderSource = (loader: IDocumentStoreLoader, isGetFileNameOnly 
         case 'jsonlinesFile':
         case 'txtFile':
             source = isGetFileNameOnly
-                ? getFileName(loader.loaderConfig[loader.loaderId])
-                : loader.loaderConfig[loader.loaderId]?.replace('FILE-STORAGE::', '') || 'None'
+                ? getFileName(loader.loaderConfig?.[loader.loaderId])
+                : loader.loaderConfig?.[loader.loaderId]?.replace('FILE-STORAGE::', '') || 'None'
             break
         case 'apiLoader':
-            source = loader.loaderConfig.url + ' (' + loader.loaderConfig.method + ')'
+            source = loader.loaderConfig?.url + ' (' + loader.loaderConfig?.method + ')'
             break
         case 'cheerioWebScraper':
         case 'playwrightWebScraper':
         case 'puppeteerWebScraper':
-            source = loader.loaderConfig.url || 'None'
+            source = loader.loaderConfig?.url || 'None'
             break
         case 'unstructuredFileLoader':
-            source = handleUnstructuredFileLoader(loader.loaderConfig, isGetFileNameOnly)
+            source = handleUnstructuredFileLoader(loader.loaderConfig || {}, isGetFileNameOnly)
             break
         default:
             source = 'None'

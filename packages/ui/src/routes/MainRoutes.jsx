@@ -98,27 +98,27 @@ const MainRoutes = {
             element: <Documents />
         },
         {
-            path: '/document-stores/:id',
+            path: '/document-stores/:storeId',
             element: <DocumentStoreDetail />
         },
         {
-            path: '/document-stores/chunks/:id/:id',
+            path: '/document-stores/chunks/:storeId/:fileId',
             element: <ShowStoredChunks />
         },
         {
-            path: '/document-stores/:id/:name',
+            path: '/document-stores/:storeId/:name',
             element: <LoaderConfigPreviewChunks />
         },
         {
-            path: '/document-stores/vector/:id',
+            path: '/document-stores/vector/:storeId',
             element: <VectorStoreConfigure />
         },
         {
-            path: '/document-stores/vector/:id/:docId',
+            path: '/document-stores/vector/:storeId/:docId',
             element: <VectorStoreConfigure />
         },
         {
-            path: '/document-stores/query/:id',
+            path: '/document-stores/query/:storeId',
             element: <VectorStoreQuery />
         }
     ]

@@ -19,6 +19,18 @@ export class PostgresSaver extends BaseCheckpointSaver implements MemoryMethods 
         this.threadId = threadId
     }
 
+    sanitizeTableName(tableName: string): string {
+        // Trim and normalize case, turn whitespace into underscores
+        tableName = tableName.trim().toLowerCase().replace(/\s+/g, '_')
+
+        // Validate using a regex (alphanumeric and underscores only)
+        if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
+            throw new Error('Invalid table name')
+        }
+
+        return tableName
+    }
+
     private async getDataSource(): Promise<DataSource> {
         const { datasourceOptions } = this.config
         if (!datasourceOptions) {
@@ -40,8 +52,9 @@ export class PostgresSaver extends BaseCheckpointSaver implements MemoryMethods 
 
         try {
             const queryRunner = dataSource.createQueryRunner()
+            const tableName = this.sanitizeTableName(this.tableName)
             await queryRunner.manager.query(`
-CREATE TABLE IF NOT EXISTS ${this.tableName} (
+CREATE TABLE IF NOT EXISTS ${tableName} (
     thread_id TEXT NOT NULL,
     checkpoint_id TEXT NOT NULL,
     parent_id TEXT,
@@ -63,12 +76,13 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
 
         const thread_id = config.configurable?.thread_id || this.threadId
         const checkpoint_id = config.configurable?.checkpoint_id
+        const tableName = this.sanitizeTableName(this.tableName)
 
         if (checkpoint_id) {
             try {
                 const queryRunner = dataSource.createQueryRunner()
                 const keys = [thread_id, checkpoint_id]
-                const sql = `SELECT checkpoint, parent_id, metadata FROM ${this.tableName} WHERE thread_id = $1 AND checkpoint_id = $2`
+                const sql = `SELECT checkpoint, parent_id, metadata FROM ${tableName} WHERE thread_id = $1 AND checkpoint_id = $2`
 
                 const rows = await queryRunner.manager.query(sql, keys)
                 await queryRunner.release()
@@ -89,8 +103,8 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
                     }
                 }
             } catch (error) {
-                console.error(`Error retrieving ${this.tableName}`, error)
-                throw new Error(`Error retrieving ${this.tableName}`)
+                console.error(`Error retrieving ${tableName}`, error)
+                throw new Error(`Error retrieving ${tableName}`)
             } finally {
                 await dataSource.destroy()
             }
@@ -98,7 +112,7 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
             try {
                 const queryRunner = dataSource.createQueryRunner()
                 const keys = [thread_id]
-                const sql = `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${this.tableName} WHERE thread_id = $1 ORDER BY checkpoint_id DESC LIMIT 1`
+                const sql = `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${tableName} WHERE thread_id = $1 ORDER BY checkpoint_id DESC LIMIT 1`
 
                 const rows = await queryRunner.manager.query(sql, keys)
                 await queryRunner.release()
@@ -124,8 +138,8 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
                     }
                 }
             } catch (error) {
-                console.error(`Error retrieving ${this.tableName}`, error)
-                throw new Error(`Error retrieving ${this.tableName}`)
+                console.error(`Error retrieving ${tableName}`, error)
+                throw new Error(`Error retrieving ${tableName}`)
             } finally {
                 await dataSource.destroy()
             }
@@ -139,7 +153,8 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
 
         const queryRunner = dataSource.createQueryRunner()
         const thread_id = config.configurable?.thread_id || this.threadId
-        let sql = `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${this.tableName} WHERE thread_id = $1`
+        const tableName = this.sanitizeTableName(this.tableName)
+        let sql = `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${tableName} WHERE thread_id = $1`
         const args = [thread_id]
 
         if (before?.configurable?.checkpoint_id) {
@@ -179,8 +194,8 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
                 }
             }
         } catch (error) {
-            console.error(`Error listing ${this.tableName}`, error)
-            throw new Error(`Error listing ${this.tableName}`)
+            console.error(`Error listing ${tableName}`, error)
+            throw new Error(`Error listing ${tableName}`)
         } finally {
             await dataSource.destroy()
         }
@@ -200,8 +215,9 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
                 Buffer.from(this.serde.stringify(checkpoint)), // Encode to binary
                 Buffer.from(this.serde.stringify(metadata)) // Encode to binary
             ]
+            const tableName = this.sanitizeTableName(this.tableName)
 
-            const query = `INSERT INTO ${this.tableName} (thread_id, checkpoint_id, parent_id, checkpoint, metadata)
+            const query = `INSERT INTO ${tableName} (thread_id, checkpoint_id, parent_id, checkpoint, metadata)
                            VALUES ($1, $2, $3, $4, $5)
                            ON CONFLICT (thread_id, checkpoint_id)
                            DO UPDATE SET checkpoint = EXCLUDED.checkpoint, metadata = EXCLUDED.metadata`
@@ -230,8 +246,9 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
 
         const dataSource = await this.getDataSource()
         await this.setup(dataSource)
+        const tableName = this.sanitizeTableName(this.tableName)
 
-        const query = `DELETE FROM "${this.tableName}" WHERE thread_id = $1;`
+        const query = `DELETE FROM "${tableName}" WHERE thread_id = $1;`
 
         try {
             const queryRunner = dataSource.createQueryRunner()

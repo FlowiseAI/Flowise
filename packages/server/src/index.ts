@@ -25,12 +25,27 @@ import { validateAPIKey } from './utils/validateKey'
 import { IMetricsProvider } from './Interface.Metrics'
 import { Prometheus } from './metrics/Prometheus'
 import { OpenTelemetry } from './metrics/OpenTelemetry'
+import { WHITELIST_URLS } from './utils/constants'
 import 'global-agent/bootstrap'
 
 declare global {
     namespace Express {
         interface Request {
             io?: Server
+        }
+        namespace Multer {
+            interface File {
+                bucket: string
+                key: string
+                acl: string
+                contentType: string
+                contentDisposition: null
+                storageClass: string
+                serverSideEncryption: null
+                metadata: any
+                location: string
+                etag: string
+            }
         }
     }
 }
@@ -124,27 +139,7 @@ export class App {
             next()
         })
 
-        const whitelistURLs = [
-            '/api/v1/verify/apikey/',
-            '/api/v1/chatflows/apikey/',
-            '/api/v1/public-chatflows',
-            '/api/v1/public-chatbotConfig',
-            '/api/v1/prediction/',
-            '/api/v1/vector/upsert/',
-            '/api/v1/node-icon/',
-            '/api/v1/components-credentials-icon/',
-            '/api/v1/chatflows-streaming',
-            '/api/v1/chatflows-uploads',
-            '/api/v1/openai-assistants-file/download',
-            '/api/v1/feedback',
-            '/api/v1/leads',
-            '/api/v1/get-upload-file',
-            '/api/v1/ip',
-            '/api/v1/ping',
-            '/api/v1/version',
-            '/api/v1/attachments',
-            '/api/v1/metrics'
-        ]
+        const whitelistURLs = WHITELIST_URLS
         const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
         const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
 
