@@ -45,6 +45,7 @@ class CustomDocumentLoader_DocumentLoaders implements INode {
                 label: 'Javascript Function',
                 name: 'javascriptFunction',
                 type: 'code',
+                optional: true,
                 description: `Must return an array of document objects containing metadata and pageContent if "Document" is selected in the output. If "Text" is selected in the output, it must return a string.`,
                 placeholder: `return [
   {
