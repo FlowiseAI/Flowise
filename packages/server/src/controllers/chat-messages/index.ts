@@ -4,7 +4,7 @@ import chatflowsService from '../../services/chatflows'
 import chatMessagesService from '../../services/chat-messages'
 import { aMonthAgo, clearSessionMemory, setDateToStartOrEndOfDay } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Between, FindOptionsWhere } from 'typeorm'
+import { Between, DeleteResult, FindOptionsWhere } from 'typeorm'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
@@ -193,6 +193,11 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
                 feedbackTypeFilters
             )
             const messageIds = messages.map((message) => message.id)
+
+            if (messages.length === 0) {
+                const result: DeleteResult = { raw: [], affected: 0 }
+                return res.json(result)
+            } 
 
             // Categorize by chatId_memoryType_sessionId
             const chatIdMap = new Map<string, ChatMessage[]>()
