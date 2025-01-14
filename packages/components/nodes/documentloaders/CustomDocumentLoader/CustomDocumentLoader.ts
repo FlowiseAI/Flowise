@@ -26,6 +26,13 @@ class CustomDocumentLoader_DocumentLoaders implements INode {
         this.baseClasses = [this.type]
         this.inputs = [
             {
+                label: 'LLM Node Output',
+                name: 'llmOutput',
+                type: 'LLMNode',
+                optional: true,
+                description: 'Connect to an LLM Node to process its output as a document'
+            },
+            {
                 label: 'Input Variables',
                 name: 'functionInputVariables',
                 description: 'Input variables can be used in the function with prefix $. For example: $var',
@@ -69,8 +76,30 @@ class CustomDocumentLoader_DocumentLoaders implements INode {
         const output = nodeData.outputs?.output as string
         const javascriptFunction = nodeData.inputs?.javascriptFunction as string
         const functionInputVariablesRaw = nodeData.inputs?.functionInputVariables
+        const llmOutput = nodeData.inputs?.llmOutput
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
+
+        // If LLM output is provided and no custom function, process it directly
+        if (llmOutput && !javascriptFunction) {
+            if (output === 'document') {
+                return [{
+                    pageContent: llmOutput.content,
+                    metadata: {
+                        source: 'llm_node',
+                        name: llmOutput.name || '',
+                        timestamp: new Date().toISOString(),
+                        nodeId: llmOutput.additional_kwargs?.nodeId,
+                        ...(llmOutput.additional_kwargs || {}),
+                        ...(llmOutput.response_metadata || {}),
+                        tool_calls: llmOutput.tool_calls || [],
+                        usage_metadata: llmOutput.usage_metadata || {}
+                    }
+                }]
+            } else if (output === 'text') {
+                return llmOutput.content || ''
+            }
+        }
 
         const variables = await getVars(appDataSource, databaseEntities, nodeData)
         const flow = {
