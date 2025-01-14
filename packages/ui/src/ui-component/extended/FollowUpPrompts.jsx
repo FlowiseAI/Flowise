@@ -354,16 +354,20 @@ const FollowUpPrompts = ({ dialogProps }) => {
             chatbotConfig.followUpPrompts = value.followUpPrompts
 
             // if the prompt is not set, save the default prompt
-            if (!followUpPromptsConfig[followUpPromptsConfig.selectedProvider].prompt) {
-                followUpPromptsConfig[followUpPromptsConfig.selectedProvider].prompt = followUpPromptsOptions[
-                    followUpPromptsConfig.selectedProvider
-                ].inputs.find((input) => input.name === 'prompt').default
-            }
+            const selectedProvider = followUpPromptsConfig.selectedProvider
 
-            if (!followUpPromptsConfig[followUpPromptsConfig.selectedProvider].temperature) {
-                followUpPromptsConfig[followUpPromptsConfig.selectedProvider].temperature = followUpPromptsOptions[
-                    followUpPromptsConfig.selectedProvider
-                ].inputs.find((input) => input.name === 'temperature').default
+            if (selectedProvider && followUpPromptsConfig[selectedProvider] && followUpPromptsOptions[selectedProvider]) {
+                if (!followUpPromptsConfig[selectedProvider].prompt) {
+                    followUpPromptsConfig[selectedProvider].prompt = followUpPromptsOptions[selectedProvider].inputs.find(
+                        (input) => input.name === 'prompt'
+                    )?.default
+                }
+
+                if (!followUpPromptsConfig[selectedProvider].temperature) {
+                    followUpPromptsConfig[selectedProvider].temperature = followUpPromptsOptions[selectedProvider].inputs.find(
+                        (input) => input.name === 'temperature'
+                    )?.default
+                }
             }
 
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
@@ -386,6 +390,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
             }
         } catch (error) {
+            console.log(error)
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
                 message: `Failed to save follow-up prompts configuration: ${errorData}`,
@@ -462,7 +467,6 @@ const FollowUpPrompts = ({ dialogProps }) => {
                         <Typography variant='h5'>Providers</Typography>
                         <FormControl fullWidth>
                             <Select size='small' value={selectedProvider} onChange={handleSelectedProviderChange}>
-                                <MenuItem value='none'>None</MenuItem>
                                 {Object.values(followUpPromptsOptions).map((provider) => (
                                     <MenuItem key={provider.name} value={provider.name}>
                                         {provider.label}
