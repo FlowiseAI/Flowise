@@ -427,7 +427,9 @@ export enum FollowUpPromptProvider {
     AZURE_OPENAI = 'azureChatOpenAI',
     GOOGLE_GENAI = 'chatGoogleGenerativeAI',
     MISTRALAI = 'chatMistralAI',
-    OPENAI = 'chatOpenAI'
+    OPENAI = 'chatOpenAI',
+    GROQ = 'groqChat',
+    OLLAMA = 'ollama'
 }
 
 export type FollowUpPromptProviderConfig = {

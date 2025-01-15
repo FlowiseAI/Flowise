@@ -80,7 +80,7 @@ class UpstashRedisBackedChatMemory_Memory implements INode {
                 label: 'Session Timeouts',
                 name: 'sessionTTL',
                 type: 'number',
-                description: 'Omit this parameter to make sessions never expire',
+                description: 'Seconds till a session expires. If not specified, the session will never expire.',
                 additionalParams: true,
                 optional: true
             },

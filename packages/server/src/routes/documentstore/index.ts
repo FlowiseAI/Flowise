@@ -1,12 +1,10 @@
 import express from 'express'
-import multer from 'multer'
-import { getUploadPath } from '../../utils'
 import documentStoreController from '../../controllers/documentstore'
+import { getMulterStorage } from '../../utils'
 
 const router = express.Router()
-const upload = multer({ dest: getUploadPath() })
 
-router.post(['/upsert/', '/upsert/:id'], upload.array('files'), documentStoreController.upsertDocStoreMiddleware)
+router.post(['/upsert/', '/upsert/:id'], getMulterStorage().array('files'), documentStoreController.upsertDocStoreMiddleware)
 
 router.post(['/refresh/', '/refresh/:id'], documentStoreController.refreshDocStoreMiddleware)
 
@@ -21,6 +19,8 @@ router.get('/store/:id', documentStoreController.getDocumentStoreById)
 router.put('/store/:id', documentStoreController.updateDocumentStore)
 // Delete documentStore
 router.delete('/store/:id', documentStoreController.deleteDocumentStore)
+// Get document store configs
+router.get('/store-configs/:id/:loaderId', documentStoreController.getDocStoreConfigs)
 
 /** Component Nodes = Document Store - Loaders */
 // Get all loaders

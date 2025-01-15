@@ -99,7 +99,25 @@ export const transformObjectPropertyToFunction = (obj: ICommonObject, state: ISe
                     (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === parsedValue.id
                 )
                 const messageOutput = messageOutputs[messageOutputs.length - 1]
-                if (messageOutput) value = messageOutput.content
+                if (messageOutput) {
+                    // if messageOutput.content is a string, set value to the content
+                    if (typeof messageOutput.content === 'string') value = messageOutput.content
+                    // if messageOutput.content is an array
+                    else if (Array.isArray(messageOutput.content)) {
+                        if (messageOutput.content.length === 0) {
+                            throw new Error(`Message output content is an empty array for node ${parsedValue.id}`)
+                        }
+                        // Get the first element of the array
+                        const messageOutputContentFirstElement: any = messageOutput.content[0]
+
+                        if (typeof messageOutputContentFirstElement === 'string') value = messageOutputContentFirstElement
+                        // If messageOutputContentFirstElement is an object and has a text property, set value to the text property
+                        else if (typeof messageOutputContentFirstElement === 'object' && messageOutputContentFirstElement.text)
+                            value = messageOutputContentFirstElement.text
+                        // Otherwise, stringify the messageOutputContentFirstElement
+                        else value = JSON.stringify(messageOutputContentFirstElement)
+                    }
+                }
             }
         } catch (e) {
             // do nothing
@@ -135,7 +153,13 @@ export const processImageMessage = async (llm: BaseChatModel, nodeData: INodeDat
 export const getVM = async (appDataSource: DataSource, databaseEntities: IDatabaseEntity, nodeData: INodeData, flow: ICommonObject) => {
     const variables = await getVars(appDataSource, databaseEntities, nodeData)
 
-    let sandbox: any = {}
+    let sandbox: any = {
+        util: undefined,
+        Symbol: undefined,
+        child_process: undefined,
+        fs: undefined,
+        process: undefined
+    }
     sandbox['$vars'] = prepareSandboxVars(variables)
     sandbox['$flow'] = flow
 
@@ -151,7 +175,10 @@ export const getVM = async (appDataSource: DataSource, databaseEntities: IDataba
         require: {
             external: { modules: deps },
             builtin: builtinDeps
-        }
+        },
+        eval: false,
+        wasm: false,
+        timeout: 10000
     } as any
 
     return new NodeVM(nodeVMOptions)

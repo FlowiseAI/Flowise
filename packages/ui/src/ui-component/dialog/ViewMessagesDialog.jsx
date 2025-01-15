@@ -167,28 +167,32 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     let storagePath = ''
 
     const onStartDateSelected = (date) => {
-        setStartDate(date)
+        const updatedDate = new Date(date)
+        updatedDate.setHours(0, 0, 0, 0)
+        setStartDate(updatedDate)
         getChatmessageApi.request(dialogProps.chatflow.id, {
-            startDate: date,
+            startDate: updatedDate,
             endDate: endDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
         getStatsApi.request(dialogProps.chatflow.id, {
-            startDate: date,
+            startDate: updatedDate,
             endDate: endDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
     }
 
     const onEndDateSelected = (date) => {
-        setEndDate(date)
+        const updatedDate = new Date(date)
+        updatedDate.setHours(23, 59, 59, 999)
+        setEndDate(updatedDate)
         getChatmessageApi.request(dialogProps.chatflow.id, {
-            endDate: date,
+            endDate: updatedDate,
             startDate: startDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
         getStatsApi.request(dialogProps.chatflow.id, {
-            endDate: date,
+            endDate: updatedDate,
             startDate: startDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
@@ -337,8 +341,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
             if (chatmsg.agentReasoning) msg.agentReasoning = chatmsg.agentReasoning
             if (chatmsg.artifacts) {
-                obj.artifacts = chatmsg.artifacts
-                obj.artifacts.forEach((artifact) => {
+                msg.artifacts = chatmsg.artifacts
+                msg.artifacts.forEach((artifact) => {
                     if (artifact.type === 'png' || artifact.type === 'jpeg') {
                         artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
                             chatmsg.chatId
