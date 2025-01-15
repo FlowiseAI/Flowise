@@ -73,7 +73,7 @@
         "assemblyai": "^4.2.2",
         "axios": "1.6.2",
         "cheerio": "^1.0.0-rc.12",
-        "chromadb": "^1.5.11",
+        "chromadb": "^1.10.0",
         "cohere-ai": "^7.7.5",
         "composio-core": "^0.4.7",
         "couchbase": "4.4.1",
