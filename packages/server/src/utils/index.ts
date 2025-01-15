@@ -1067,12 +1067,12 @@ export const replaceInputsWithConfig = (
              * Several conditions:
              * 1. If config is 'analytics', always allow it
              * 2. If config is 'vars', check its object and filter out the variables that are not enabled for override
-             * 3. If typeof config is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
+             * 3. If typeof config's value is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
              * Example:
              * "systemMessagePrompt": {
              *  "chatPromptTemplate_0": "You are an assistant"
              * }
-             * 4. If typeof config is a string, check if the parameter is enabled
+             * 4. If typeof config's value is a string, check if the parameter is enabled
              * Example:
              * "systemMessagePrompt": "You are an assistant"
              */
