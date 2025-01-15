@@ -209,7 +209,11 @@ export const convertStructuredSchemaToZod = (schema: string | object): ICommonOb
 }
 
 export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) => {
+  const isAI = (message?: BaseMessage) => message && ['AIMessageChunk', 'AIMessage'].includes(message.constructor.name)
+  const isHuman = (message?: BaseMessage) => message && ['HumanMessage', 'HumanMessageChunk'].includes(message.constructor.name)
+
   const messages: BaseMessage[] = []
+
   for (const message of state.messages as unknown as BaseMessage[]) {
     // Sometimes Anthropic can return a message with content types of array, ignore that EXECEPT when tool calls are present
     if ((message as any).tool_calls?.length && message.content !== '') {
@@ -219,6 +223,23 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
     if (typeof message.content === 'string') {
       messages.push(message)
     }
+  }
+
+  const hasOnlyHumanMessages = messages.findIndex((message) => isAI(message)) === -1
+
+  if (hasOnlyHumanMessages) {
+    const tempMessages: BaseMessage[] = []
+    messages.forEach((message) => {
+      if (message.name) {
+        // ignore
+      } else if (message.additional_kwargs?.nodeId || Object.keys(message.response_metadata || {}).length) {
+        tempMessages.push(new AIMessage({ ...message }))
+      } else {
+        tempMessages.push(message)
+      }
+    })
+    messages.length = 0
+    messages.push(...tempMessages)
   }
 
   const isToolMessage = (message: BaseMessage) => message instanceof ToolMessage || message.constructor.name === 'ToolMessageChunk'
@@ -266,9 +287,6 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
       }
     }
   }
-
-  const isAI = (message?: BaseMessage) => message && ['AIMessageChunk', 'AIMessage'].includes(message.constructor.name)
-  const isHuman = (message?: BaseMessage) => message && ['HumanMessage', 'HumanMessageChunk'].includes(message.constructor.name)
 
   // fix tool result message
   for (let i = 0; i < messages.length; i++) {
