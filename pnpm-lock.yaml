@@ -736,8 +736,8 @@ importers:
         specifier: 1.0.6
         version: 1.0.6(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       dccxx-s3-explorer:
-        specifier: ^1.0.21
-        version: 1.0.21(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
+        specifier: ^1.0.24
+        version: 1.0.24(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
       dotenv:
         specifier: ^16.0.0
         version: 16.4.5
@@ -6317,9 +6317,6 @@ packages:
   '@types/d3-random@3.0.3':
     resolution: { integrity: sha512-Imagg1vJ3y76Y2ea0871wpabqp613+8/r0mCLEBfdtqC7xMSfj9idOnmBYyMoULfHePJyxMAw3nWhJxzc+LFwQ== }
 
-  '@types/d3-scale-chromatic@3.0.3':
-    resolution: { integrity: sha512-laXM4+1o5ImZv3RpFAsTRn3TEkzqkytiOY0Dz0sq5cnd1dtNlk6sHLon4OvqaiJb28T0S/TdsBI3Sjsy+keJrw== }
-
   '@types/d3-scale-chromatic@3.1.0':
     resolution: { integrity: sha512-iWMJgwkK7yTRmWqRB5plb1kadXyQ5Sj8V/zYlFGMUBbIPKQScw+Dku9cAAMgJG+z5GYDoMjWGLVOvjghDEFnKQ== }
 
@@ -6343,9 +6340,6 @@ packages:
 
   '@types/d3-time@1.1.4':
     resolution: { integrity: sha512-JIvy2HjRInE+TXOmIGN5LCmeO0hkFZx5f9FZ7kiN+D+YTcc8pptsiLiuHsvwxwC7VVKmJ2ExHUgNlAiV7vQM9g== }
-
-  '@types/d3-time@3.0.3':
-    resolution: { integrity: sha512-2p6olUZ4w3s+07q3Tm2dbiMZy5pCDfYwtLXXHUnVzXgQlZ/OyPtUz6OL382BkOuGlLXqfT+wqv8Fw2v8/0geBw== }
 
   '@types/d3-time@3.0.4':
     resolution: { integrity: sha512-yuzZug1nkAAaBlBBikKZTgzCeA+k1uy4ZFwWANOfKw5z5LRhV0gNA7gNkKm7HoK+HRN0wX3EkxGk0fpbWhmB7g== }
@@ -8755,8 +8749,8 @@ packages:
   dayjs@1.11.13:
     resolution: { integrity: sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg== }
 
-  dccxx-s3-explorer@1.0.21:
-    resolution: { integrity: sha512-JtR8dDBa5/xNaSlqai4dX93/6+oHEdk8Wo12Z5Ny12RQFknyXVaUNgxoupDsm6ymTpsvhvSdCQNH3Np7eur8gg== }
+  dccxx-s3-explorer@1.0.24:
+    resolution: { integrity: sha512-v4C8Tyxo7N9OGXUODbRhEOxiVH47PAx7sNih+j0SQ9N8cOQpY29N7QCefigh16fTmK7X7JVbNufuwnej36zI0Q== }
 
   debug@2.6.9:
     resolution: { integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA== }
@@ -24908,8 +24902,6 @@ snapshots:
 
   '@types/d3-random@3.0.3': {}
 
-  '@types/d3-scale-chromatic@3.0.3': {}
-
   '@types/d3-scale-chromatic@3.1.0': {}
 
   '@types/d3-scale@4.0.8':
@@ -24929,8 +24921,6 @@ snapshots:
   '@types/d3-time-format@4.0.3': {}
 
   '@types/d3-time@1.1.4': {}
-
-  '@types/d3-time@3.0.3': {}
 
   '@types/d3-time@3.0.4': {}
 
@@ -24969,10 +24959,10 @@ snapshots:
       '@types/d3-quadtree': 3.0.6
       '@types/d3-random': 3.0.3
       '@types/d3-scale': 4.0.8
-      '@types/d3-scale-chromatic': 3.0.3
+      '@types/d3-scale-chromatic': 3.1.0
       '@types/d3-selection': 3.0.10
       '@types/d3-shape': 3.1.6
-      '@types/d3-time': 3.0.3
+      '@types/d3-time': 3.0.4
       '@types/d3-time-format': 4.0.3
       '@types/d3-timer': 3.0.2
       '@types/d3-transition': 3.0.8
@@ -25237,7 +25227,7 @@ snapshots:
 
   '@types/react@18.2.65':
     dependencies:
-      '@types/prop-types': 15.7.11
+      '@types/prop-types': 15.7.14
       '@types/scheduler': 0.16.8
       csstype: 3.1.3
 
@@ -28024,7 +28014,7 @@ snapshots:
 
   dayjs@1.11.13: {}
 
-  dccxx-s3-explorer@1.0.21(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))):
+  dccxx-s3-explorer@1.0.24(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))):
     dependencies:
       '@hookform/resolvers': 3.9.1(react-hook-form@7.54.1(react@18.2.0))
       '@nivo/bar': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
