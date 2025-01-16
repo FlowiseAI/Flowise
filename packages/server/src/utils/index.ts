@@ -879,7 +879,7 @@ export const getVariableValue = async (
             if (variableFullPath.startsWith('$vars.')) {
                 const vars = await getGlobalVariable(appDataSource, flowData, availableVariables, variableOverrides)
                 const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
-                if (variableValue) {
+                if (variableValue != null) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
                 }
@@ -887,7 +887,7 @@ export const getVariableValue = async (
 
             if (variableFullPath.startsWith('$flow.') && flowData) {
                 const variableValue = get(flowData, variableFullPath.replace('$flow.', ''))
-                if (variableValue) {
+                if (variableValue != null) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
                 }
