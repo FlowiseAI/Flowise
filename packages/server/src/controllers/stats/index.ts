@@ -3,7 +3,6 @@ import { Request, Response, NextFunction } from 'express'
 import statsService from '../../services/stats'
 import { ChatMessageRatingType, ChatType } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getErrorMessage } from '../../errors/utils'
 
 const getChatflowStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -11,27 +10,22 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: statsController.getChatflowStats - id not provided!`)
         }
         const chatflowid = req.params.id
-        let chatTypeFilter = req.query?.chatType as ChatType | undefined
+        const _chatTypes = req.query?.chatType as string | undefined
+        let chatTypes: ChatType[] | undefined
+        if (_chatTypes) {
+            try {
+                if (Array.isArray(_chatTypes)) {
+                    chatTypes = _chatTypes
+                } else {
+                    chatTypes = JSON.parse(_chatTypes)
+                }
+            } catch (e) {
+                chatTypes = [_chatTypes as ChatType]
+            }
+        }
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
         let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
-        if (chatTypeFilter) {
-            try {
-                const chatTypeFilterArray = JSON.parse(chatTypeFilter)
-                if (chatTypeFilterArray.includes(ChatType.EXTERNAL) && chatTypeFilterArray.includes(ChatType.INTERNAL)) {
-                    chatTypeFilter = undefined
-                } else if (chatTypeFilterArray.includes(ChatType.EXTERNAL)) {
-                    chatTypeFilter = ChatType.EXTERNAL
-                } else if (chatTypeFilterArray.includes(ChatType.INTERNAL)) {
-                    chatTypeFilter = ChatType.INTERNAL
-                }
-            } catch (e) {
-                throw new InternalFlowiseError(
-                    StatusCodes.INTERNAL_SERVER_ERROR,
-                    `Error: statsController.getChatflowStats - ${getErrorMessage(e)}`
-                )
-            }
-        }
         if (feedbackTypeFilters) {
             try {
                 const feedbackTypeFilterArray = JSON.parse(JSON.stringify(feedbackTypeFilters))
@@ -51,15 +45,7 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
                 return res.status(500).send(e)
             }
         }
-        const apiResponse = await statsService.getChatflowStats(
-            chatflowid,
-            chatTypeFilter,
-            startDate,
-            endDate,
-            '',
-            true,
-            feedbackTypeFilters
-        )
+        const apiResponse = await statsService.getChatflowStats(chatflowid, chatTypes, startDate, endDate, '', true, feedbackTypeFilters)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
