@@ -10,7 +10,6 @@ import logger from '../../utils/logger'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { QueueEventsProducer } from 'bullmq'
 
 // Add chatmessages for chatflowid
 const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
@@ -164,12 +163,7 @@ const abortChatMessage = async (chatId: string, chatflowid: string) => {
         const id = `${chatflowid}_${chatId}`
 
         if (process.env.MODE === MODE.QUEUE) {
-            const predictionQueue = appServer.queueManager.getQueue('prediction')
-            const connection = appServer.queueManager.getConnection()
-            const queueEventsProducer = new QueueEventsProducer(predictionQueue.getQueueName(), {
-                connection
-            })
-            await queueEventsProducer.publishEvent({
+            await appServer.queueManager.getPredictionQueueEventsProducer().publishEvent({
                 eventName: 'abort',
                 id
             })

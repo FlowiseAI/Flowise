@@ -6,7 +6,7 @@ import { Telemetry } from '../utils/telemetry'
 import { CachePool } from '../CachePool'
 import { DataSource } from 'typeorm'
 import { AbortControllerPool } from '../AbortControllerPool'
-import { RedisOptions } from 'bullmq'
+import { QueueEventsProducer, RedisOptions } from 'bullmq'
 import { createBullBoard } from 'bull-board'
 import { BullMQAdapter } from 'bull-board/bullMQAdapter'
 import { Express } from 'express'
@@ -20,6 +20,7 @@ export class QueueManager {
     private queues: Map<string, BaseQueue> = new Map()
     private connection: RedisOptions
     private bullBoardRouter?: Express
+    private predictionQueueEventsProducer?: QueueEventsProducer
 
     private constructor() {
         let tlsOpts = undefined
@@ -65,6 +66,11 @@ export class QueueManager {
         return queue
     }
 
+    public getPredictionQueueEventsProducer(): QueueEventsProducer {
+        if (!this.predictionQueueEventsProducer) throw new Error('Prediction queue events producer not found')
+        return this.predictionQueueEventsProducer
+    }
+
     public getBullBoardRouter(): Express {
         if (!this.bullBoardRouter) throw new Error('BullBoard router not found')
         return this.bullBoardRouter
@@ -102,6 +108,9 @@ export class QueueManager {
             abortControllerPool
         })
         this.registerQueue('prediction', predictionQueue)
+        this.predictionQueueEventsProducer = new QueueEventsProducer(predictionQueue.getQueueName(), {
+            connection: this.connection
+        })
 
         const upsertionQueueName = `${QUEUE_NAME}-upsertion`
         const upsertionQueue = new UpsertQueue(upsertionQueueName, this.connection, {
