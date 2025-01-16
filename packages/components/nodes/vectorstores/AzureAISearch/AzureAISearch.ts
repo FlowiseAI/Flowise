@@ -112,7 +112,7 @@ class AzureAISearch_VectorStores implements INode {
             // Get input data
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
-            const indexName = nodeData.inputs?.azureAIIndexName as string
+            const indexName = nodeData.inputs?.azureAISearchIndexName as string
 
             // Get credential data
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -143,7 +143,7 @@ class AzureAISearch_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const indexName = nodeData.inputs?.azureAIIndexName as string
+        const indexName = nodeData.inputs?.azureAISearchIndexName as string
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const azureAISearchMetadataFilter = nodeData.inputs?.azureAISearchMetadataFilter as string
         const azureAISearchType = nodeData.inputs?.azureAISearchType as 'similarity' | 'similarity_hybrid' | 'semantic_hybrid'

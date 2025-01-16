@@ -22,7 +22,7 @@ class AzureAISearchAuth implements INodeCredential {
                 label: 'AzureAI Search API Key',
                 name: 'azureSearchApiKey',
                 type: 'password',
-                description: 'The admin key can be found under the "Keys" section of your instance.'
+                description: 'The admin API key can be found under the  "Keys" section of your instance.'
             }
         ]
     }
