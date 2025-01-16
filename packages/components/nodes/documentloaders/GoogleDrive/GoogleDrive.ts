@@ -110,8 +110,8 @@ class GoogleDrive implements INode {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             redirectUrl: process.env.GOOGLE_CALLBACK_URL,
             accessToken: credentialData.googleAccessToken,
-            refreshToken: credentialData.refreshToken,
-            expiryDate: credentialData.expiryDate
+            refreshToken: credentialData.googleRefreshToken,
+            expiresAt: credentialData.expiresAt
         }
 
         const driveService = new DriveService(credentials)

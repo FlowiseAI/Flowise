@@ -3,11 +3,18 @@ import { useEffect, useState } from 'react'
 import { Button, List, ListItem, ListItemAvatar, ListItemText, Avatar } from '@mui/material'
 import useApi from '@/hooks/useApi'
 import credentialsApi from '@/api/credentials'
+import { IconX } from '@tabler/icons-react'
+import { useDispatch } from 'react-redux'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, credentialData, handleCredentialDataChange }) => {
+    const dispatch = useDispatch()
     const [pickerInited, setPickerInited] = useState(false)
     const [selectedFiles, setSelectedFiles] = useState(value ? JSON.parse(value) : [])
     const [accessToken, setAccessToken] = useState(null)
+    const [isTokenExpired, setIsTokenExpired] = useState(false)
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
     const getCredentialDataApi = useApi(credentialsApi.getSpecificCredential)
     useEffect(() => {
         if (credentialId) {
@@ -17,6 +24,11 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
 
     useEffect(() => {
         if (getCredentialDataApi.data) {
+            const expiresAt = new Date(getCredentialDataApi.data?.plainDataObj.expiresAt)
+            const now = new Date()
+            const isExpired = expiresAt < now
+
+            setIsTokenExpired(isExpired)
             setAccessToken(getCredentialDataApi.data?.plainDataObj.googleAccessToken ?? '')
             handleCredentialDataChange(getCredentialDataApi.data)
         }
@@ -107,14 +119,46 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
         }
     }
 
-    console.log('selectedFiles=>', selectedFiles, value)
-
+    const handleRefreshAccessToken = async () => {
+        try {
+            const response = await credentialsApi.refreshAccessToken({ credentialId })
+            if (response.status === 200) {
+                setIsTokenExpired(false)
+                enqueueSnackbar({
+                    message: 'Successfully refreshed access token',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
+        } catch (error) {
+            console.error('Error refreshing access token:', error)
+            enqueueSnackbar({
+                message: 'Error refreshing access token',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+    }
     return (
         <div style={{ margin: '10px 0px 0 0' }}>
             <Button
                 variant='outlined'
                 onClick={createPicker}
-                disabled={!pickerInited || disabled}
+                disabled={!pickerInited || disabled || isTokenExpired}
                 sx={{
                     mb: 2,
                     '&.Mui-disabled': {
@@ -125,6 +169,28 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
             >
                 Select Files from Google Drive
             </Button>
+            {isTokenExpired && (
+                <Button
+                    variant='outlined'
+                    onClick={handleRefreshAccessToken}
+                    disabled={!isTokenExpired || !credentialId}
+                    sx={{
+                        mb: 2,
+                        ml: 2,
+                        '&.Mui-disabled': {
+                            color: 'gray',
+                            borderColor: 'gray'
+                        }
+                    }}
+                >
+                    Refresh Access Token
+                </Button>
+            )}
+            {isTokenExpired && (
+                <div style={{ color: 'red', marginBottom: '10px' }}>
+                    Access token has expired. Please re-authenticate or refresh the access token.
+                </div>
+            )}
             {selectedFiles.length > 0 && (
                 <List sx={{ bgcolor: 'background.paper', p: 0 }}>
                     {selectedFiles.map((file) => (

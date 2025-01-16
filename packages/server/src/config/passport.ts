@@ -10,13 +10,16 @@ export default function (passport: any) {
                 proxy: true
             },
             async (accessToken, refreshToken, profile, done) => {
+                const expiresAt = new Date()
+                expiresAt.setHours(expiresAt.getHours() + 1)
                 const newCredential = {
                     fullName: profile.displayName,
                     email: profile.emails?.[0]?.value ?? '',
                     provider: profile.provider,
                     providerId: profile.id,
                     googleAccessToken: accessToken,
-                    googleRefreshToken: refreshToken
+                    googleRefreshToken: refreshToken,
+                    expiresAt
                 }
                 try {
                     done(null, newCredential)

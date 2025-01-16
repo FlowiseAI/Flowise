@@ -16,6 +16,8 @@ const updateCredential = (id, body) => client.put(`/credentials/${id}`, body)
 
 const deleteCredential = (id) => client.delete(`/credentials/${id}`)
 
+const refreshAccessToken = (body) => client.post(`/credentials/refresh-token`, body)
+
 export default {
     getAllCredentials,
     getCredentialsByName,
@@ -24,5 +26,6 @@ export default {
     getSpecificComponentCredential,
     createCredential,
     updateCredential,
-    deleteCredential
+    deleteCredential,
+    refreshAccessToken
 }
