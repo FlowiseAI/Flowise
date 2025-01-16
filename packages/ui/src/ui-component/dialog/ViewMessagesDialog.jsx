@@ -676,10 +676,12 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     getChatmessageFromPKApi.request(dialogProps.chatflow.id, transformChatPKToParams(chatPK))
                 }
             }
+        } else if (getChatmessageApi.error) {
+            setChatLogs(null)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getChatmessageApi.data])
+    }, [getChatmessageApi.data, getChatmessageApi.error])
 
     useEffect(() => {
         if (getStatsApi.data) {
@@ -939,6 +941,19 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                         />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
+                        {chatlogs == null && (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }} flexDirection='column'>
+                                <Box sx={{ p: 5, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                        src={msgEmptySVG}
+                                        alt='msgEmptySVG'
+                                    />
+                                </Box>
+                                <div>Messages logs are disabled.</div>
+                                <div>Please reconfigure your Flowise instance or enable an analytics integration</div>
+                            </Stack>
+                        )}
                         {chatlogs && chatlogs.length == 0 && (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }} flexDirection='column'>
                                 <Box sx={{ p: 5, height: 'auto' }}>
