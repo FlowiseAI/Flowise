@@ -1,4 +1,4 @@
-import { MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
+import { MoreThanOrEqual, LessThanOrEqual, Between, In } from 'typeorm'
 import { ChatMessageRatingType, ChatType } from '../Interface'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'
@@ -8,7 +8,7 @@ import { aMonthAgo } from '.'
 /**
  * Method that get chat messages.
  * @param {string} chatflowid
- * @param {ChatType} chatType
+ * @param {ChatType[]} chatTypes
  * @param {string} sortOrder
  * @param {string} chatId
  * @param {string} memoryType
@@ -20,7 +20,7 @@ import { aMonthAgo } from '.'
  */
 interface GetChatMessageParams {
     chatflowid: string
-    chatType?: ChatType
+    chatTypes?: ChatType[]
     sortOrder?: string
     chatId?: string
     memoryType?: string
@@ -34,7 +34,7 @@ interface GetChatMessageParams {
 
 export const utilGetChatMessage = async ({
     chatflowid,
-    chatType,
+    chatTypes,
     sortOrder = 'ASC',
     chatId,
     memoryType,
@@ -56,8 +56,8 @@ export const utilGetChatMessage = async ({
             .where('chat_message.chatflowid = :chatflowid', { chatflowid })
 
         // based on which parameters are available add `andWhere` clauses to the query
-        if (chatType) {
-            query.andWhere('chat_message.chatType = :chatType', { chatType })
+        if (chatTypes && chatTypes.length > 0) {
+            query.andWhere('chat_message.chatType IN (:...chatTypes)', { chatTypes })
         }
         if (chatId) {
             query.andWhere('chat_message.chatId = :chatId', { chatId })
@@ -114,7 +114,7 @@ export const utilGetChatMessage = async ({
     return await appServer.AppDataSource.getRepository(ChatMessage).find({
         where: {
             chatflowid,
-            chatType,
+            chatType: chatTypes?.length ? In(chatTypes) : undefined,
             chatId,
             memoryType: memoryType ?? undefined,
             sessionId: sessionId ?? undefined,

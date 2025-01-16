@@ -27,7 +27,7 @@ const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
 // Get all chatmessages from chatflowid
 const getAllChatMessages = async (
     chatflowId: string,
-    chatTypeFilter: ChatType | undefined,
+    chatTypes: ChatType[] | undefined,
     sortOrder: string = 'ASC',
     chatId?: string,
     memoryType?: string,
@@ -41,7 +41,7 @@ const getAllChatMessages = async (
     try {
         const dbResponse = await utilGetChatMessage({
             chatflowid: chatflowId,
-            chatType: chatTypeFilter,
+            chatTypes,
             sortOrder,
             chatId,
             memoryType,
@@ -64,7 +64,7 @@ const getAllChatMessages = async (
 // Get internal chatmessages from chatflowid
 const getAllInternalChatMessages = async (
     chatflowId: string,
-    chatTypeFilter: ChatType | undefined,
+    chatTypes: ChatType[] | undefined,
     sortOrder: string = 'ASC',
     chatId?: string,
     memoryType?: string,
@@ -78,7 +78,7 @@ const getAllInternalChatMessages = async (
     try {
         const dbResponse = await utilGetChatMessage({
             chatflowid: chatflowId,
-            chatType: chatTypeFilter,
+            chatTypes,
             sortOrder,
             chatId,
             memoryType,
