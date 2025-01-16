@@ -263,9 +263,7 @@ const previewFileChunks = async (req: Request, res: Response, next: NextFunction
         }
         const body = req.body
         body.preview = true
-        const appDataSource = getRunningExpressApp().AppDataSource
-        const componentNodes = getRunningExpressApp().nodesPool.componentNodes
-        const apiResponse = await documentStoreService.previewChunks(appDataSource, componentNodes, body)
+        const apiResponse = await documentStoreService.previewChunksMiddleware(body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

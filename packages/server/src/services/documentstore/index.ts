@@ -30,7 +30,8 @@ import {
     IExecuteVectorStoreInsert,
     INodeData,
     MODE,
-    IOverrideConfig
+    IOverrideConfig,
+    IExecutePreviewLoader
 } from '../../Interface'
 import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
 import { v4 as uuidv4 } from 'uuid'
@@ -575,7 +576,45 @@ const _normalizeFilePaths = async (appDataSource: DataSource, data: IDocumentSto
     data.rehydrated = rehydrated
 }
 
-const previewChunks = async (appDataSource: DataSource, componentNodes: IComponentNodes, data: IDocumentStoreLoaderForPreview) => {
+const previewChunksMiddleware = async (data: IDocumentStoreLoaderForPreview) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const appDataSource = appServer.AppDataSource
+        const componentNodes = appServer.nodesPool.componentNodes
+
+        const executeData: IExecutePreviewLoader = {
+            appDataSource,
+            componentNodes,
+            data,
+            isPreviewOnly: true
+        }
+
+        if (process.env.MODE === MODE.QUEUE) {
+            const upsertQueue = appServer.queueManager.getQueue('upsert')
+            const job = await upsertQueue.addJob(
+                omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
+            )
+            logger.debug(`[server]: Job added to queue: ${job.id}`)
+
+            const queueEvents = upsertQueue.getQueueEvents()
+            const result = await job.waitUntilFinished(queueEvents)
+
+            if (!result) {
+                throw new Error('Job execution failed')
+            }
+            return result
+        }
+
+        return await previewChunks(executeData)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.previewChunksMiddleware - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+export const previewChunks = async ({ appDataSource, componentNodes, data }: IExecutePreviewLoader) => {
     try {
         if (data.preview) {
             if (
@@ -756,7 +795,12 @@ const _saveChunksToStorage = async (
         await _normalizeFilePaths(appDataSource, data, entity)
 
         //step 2: split the file into chunks
-        const response = await previewChunks(appDataSource, componentNodes, data)
+        const response = await previewChunks({
+            appDataSource,
+            componentNodes,
+            data,
+            isPreviewOnly: false
+        })
 
         //step 3: remove all files associated with the loader
         const existingLoaders = JSON.parse(entity.loaders)
@@ -1986,7 +2030,7 @@ export default {
     getUsedChatflowNames,
     getDocumentStoreFileChunks,
     updateDocumentStore,
-    previewChunks,
+    previewChunksMiddleware,
     saveProcessingLoader,
     processLoaderMiddleware,
     deleteDocumentStoreFileChunk,

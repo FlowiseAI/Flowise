@@ -1,10 +1,17 @@
 import { DataSource } from 'typeorm'
-import { IComponentNodes, IExecuteDocStoreUpsert, IExecuteFlowParams, IExecuteProcessLoader, IExecuteVectorStoreInsert } from '../Interface'
+import {
+    IComponentNodes,
+    IExecuteDocStoreUpsert,
+    IExecuteFlowParams,
+    IExecutePreviewLoader,
+    IExecuteProcessLoader,
+    IExecuteVectorStoreInsert
+} from '../Interface'
 import { Telemetry } from '../utils/telemetry'
 import { CachePool } from '../CachePool'
 import { BaseQueue } from './BaseQueue'
 import { executeUpsert } from '../utils/upsertVector'
-import { executeDocStoreUpsert, insertIntoVectorStore, processLoader } from '../services/documentstore'
+import { executeDocStoreUpsert, insertIntoVectorStore, previewChunks, processLoader } from '../services/documentstore'
 import { RedisOptions } from 'bullmq'
 import logger from '../utils/logger'
 
@@ -39,11 +46,19 @@ export class UpsertQueue extends BaseQueue {
         return this.queue
     }
 
-    async processJob(data: IExecuteFlowParams | IExecuteDocStoreUpsert | IExecuteProcessLoader | IExecuteVectorStoreInsert) {
+    async processJob(
+        data: IExecuteFlowParams | IExecuteDocStoreUpsert | IExecuteProcessLoader | IExecuteVectorStoreInsert | IExecutePreviewLoader
+    ) {
         if (this.appDataSource) data.appDataSource = this.appDataSource
         if (this.telemetry) data.telemetry = this.telemetry
-        if (this.cachePool) (data as any).cachePool = this.cachePool
+        if (this.cachePool) data.cachePool = this.cachePool
         if (this.componentNodes) data.componentNodes = this.componentNodes
+
+        // document-store/loader/preview
+        if (Object.prototype.hasOwnProperty.call(data, 'isPreviewOnly')) {
+            logger.info('Previewing loader...')
+            return await previewChunks(data as IExecutePreviewLoader)
+        }
 
         // document-store/loader/process/:loaderId
         if (Object.prototype.hasOwnProperty.call(data, 'isProcessWithoutUpsert')) {

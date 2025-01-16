@@ -3,6 +3,7 @@ import { DocumentStore } from './database/entities/DocumentStore'
 import { DataSource } from 'typeorm'
 import { IComponentNodes } from './Interface'
 import { Telemetry } from './utils/telemetry'
+import { CachePool } from './CachePool'
 
 export enum DocumentStoreStatus {
     EMPTY_SYNC = 'EMPTY',
@@ -119,6 +120,7 @@ export interface IUpsertQueueAppServer {
     appDataSource: DataSource
     componentNodes: IComponentNodes
     telemetry: Telemetry
+    cachePool?: CachePool
 }
 
 export interface IExecuteDocStoreUpsert extends IUpsertQueueAppServer {
@@ -126,6 +128,12 @@ export interface IExecuteDocStoreUpsert extends IUpsertQueueAppServer {
     totalItems: IDocumentStoreUpsertData[]
     files: Express.Multer.File[]
     isRefreshAPI: boolean
+}
+
+export interface IExecutePreviewLoader extends Omit<IUpsertQueueAppServer, 'telemetry'> {
+    data: IDocumentStoreLoaderForPreview
+    isPreviewOnly: boolean
+    telemetry?: Telemetry
 }
 
 export interface IExecuteProcessLoader extends IUpsertQueueAppServer {
