@@ -8,6 +8,7 @@ import { sqliteMigrations } from './database/migrations/sqlite'
 import { mysqlMigrations } from './database/migrations/mysql'
 import { mariadbMigrations } from './database/migrations/mariadb'
 import { postgresMigrations } from './database/migrations/postgres'
+import { mssqlMigrations } from './database/migrations/mssql'
 
 let appDataSource: DataSource
 
@@ -74,6 +75,24 @@ export const init = async (): Promise<void> => {
                 migrationsRun: false,
                 entities: Object.values(entities),
                 migrations: postgresMigrations
+            })
+            break
+        case 'mssql':
+            appDataSource = new DataSource({
+                type: 'mssql',
+                host: process.env.DATABASE_HOST,
+                port: parseInt(process.env.DATABASE_PORT || '1433'),
+                username: process.env.DATABASE_USER,
+                password: process.env.DATABASE_PASSWORD,
+                database: process.env.DATABASE_NAME,
+                schema: process.env.DATABASE_SCHEMA,
+                synchronize: false,
+                migrationsRun: false,
+                entities: Object.values(entities),
+                migrations: mssqlMigrations,
+                options: {
+                    trustServerCertificate: process.env.DATABASE_TRUST_SERVER_CERTIFICATE !== 'false'
+                }
             })
             break
         default:
