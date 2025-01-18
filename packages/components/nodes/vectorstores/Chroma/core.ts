@@ -37,10 +37,10 @@ export class ChromaExtended extends Chroma {
                     }
                 }
                 if (this.chromaTenant) {
-                    obj.tenant = this.chromaTenant;
+                    obj.tenant = this.chromaTenant
                 }
                 if (this.chromaDatabase) {
-                    obj.database = this.chromaDatabase;
+                    obj.database = this.chromaDatabase
                 }
                 this.index = new ChromaClient(obj)
             }
