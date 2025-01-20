@@ -7,7 +7,7 @@ import { AgentStep } from '@langchain/core/agents'
 import { renderTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from 'langchain/agents'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, transformBracesWithColon } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import {
     IVisionChatModal,
@@ -218,7 +218,7 @@ const prepareAgent = async (
     let tools = nodeData.inputs?.tools as Tool[]
     tools = flatten(tools)
     const memory = nodeData.inputs?.memory as FlowiseMemory
-    const systemMessage = nodeData.inputs?.systemMessage as string
+    let systemMessage = nodeData.inputs?.systemMessage as string
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
     const prependMessages = options?.prependMessages
@@ -227,6 +227,8 @@ const prepareAgent = async (
         llm: model,
         toolNames: tools.map((tool) => tool.name)
     })
+
+    systemMessage = transformBracesWithColon(systemMessage)
 
     const prompt = ChatConversationalAgent.createPrompt(tools, {
         systemMessage: systemMessage ? systemMessage : DEFAULT_PREFIX,

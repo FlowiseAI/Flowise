@@ -6,7 +6,7 @@ import { SqlDatabaseChain, SqlDatabaseChainInput, DEFAULT_SQL_DATABASE_PROMPT } 
 import { SqlDatabase } from 'langchain/sql_db'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { getBaseClasses, getInputVariables } from '../../../src/utils'
+import { getBaseClasses, getInputVariables, transformBracesWithColon } from '../../../src/utils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
@@ -247,6 +247,7 @@ const getSQLDBChain = async (
     }
 
     if (customPrompt) {
+        customPrompt = transformBracesWithColon(customPrompt)
         const options: PromptTemplateInput = {
             template: customPrompt,
             inputVariables: getInputVariables(customPrompt)
