@@ -4,6 +4,7 @@ import { hostname } from 'node:os'
 import config from './config' // should be replaced by node-config or similar
 import { createLogger, transports, format } from 'winston'
 import { NextFunction, Request, Response } from 'express'
+import { S3ClientConfig } from '@aws-sdk/client-s3'
 
 const { S3StreamLogger } = require('s3-streamlogger')
 
@@ -20,13 +21,13 @@ if (process.env.STORAGE_TYPE === 's3') {
     const customURL = process.env.S3_ENDPOINT_URL
     const forcePathStyle = process.env.S3_FORCE_PATH_STYLE === 'true'
 
-    const s3Config = {
+    const s3Config: S3ClientConfig = {
         region: region,
         endpoint: customURL,
         forcePathStyle: forcePathStyle,
         credentials: {
-            accessKeyId: accessKeyId,
-            secretAccessKey: secretAccessKey
+            accessKeyId: accessKeyId as string,
+            secretAccessKey: secretAccessKey as string
         }
     }
 
