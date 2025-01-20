@@ -1,4 +1,4 @@
-import { AzureOpenAIInput, OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
+import { AzureOpenAIInput, ClientOptions, LegacyOpenAIInput, OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -23,7 +23,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'Azure OpenAI Embeddings'
         this.name = 'azureOpenAIEmbeddings'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AzureOpenAIEmbeddings'
         this.icon = 'Azure.svg'
         this.category = 'Embeddings'
@@ -58,6 +58,13 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
                 type: 'string',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'BaseOptions',
+                name: 'baseOptions',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -66,6 +73,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
         const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basepath as string
+        const baseOptions = nodeData.inputs?.baseOptions
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
@@ -73,7 +81,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
         const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
-        const obj: Partial<OpenAIEmbeddingsParams> & Partial<AzureOpenAIInput> = {
+        const obj: Partial<OpenAIEmbeddingsParams> & Partial<AzureOpenAIInput> & { configuration?: ClientOptions & LegacyOpenAIInput } = {
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,
@@ -83,6 +91,16 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
 
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (baseOptions) {
+            try {
+                const parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                obj.configuration = {
+                    defaultHeaders: parsedBaseOptions
+                }
+            } catch (exception) {
+                console.error('Error parsing base options', exception)
+            }
+        }
 
         const model = new OpenAIEmbeddings(obj)
         return model
