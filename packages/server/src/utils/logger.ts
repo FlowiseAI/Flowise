@@ -23,7 +23,7 @@ if (process.env.STORAGE_TYPE === 's3') {
     const s3Config = {
         region: region,
         endpoint: customURL,
-        s3ForcePathStyle: forcePathStyle,
+        forcePathStyle: forcePathStyle,
         credentials: {
             accessKeyId: accessKeyId,
             secretAccessKey: secretAccessKey
