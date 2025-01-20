@@ -104,7 +104,8 @@
         "sqlite3": "^5.1.6",
         "typeorm": "^0.3.6",
         "uuid": "^9.0.1",
-        "winston": "^3.9.0"
+        "winston": "^3.9.0",
+        "mssql": "^11.0.1"
     },
     "devDependencies": {
         "@types/content-disposition": "0.5.8",
