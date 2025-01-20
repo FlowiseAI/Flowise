@@ -271,12 +271,37 @@ export const getInputVariables = (paramValue: string): string[] => {
             const variableStartIdx = variableStack[variableStack.length - 1].startIdx
             const variableEndIdx = startIdx
             const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
-            inputVariables.push(variableFullPath)
+            if (!variableFullPath.includes(':')) inputVariables.push(variableFullPath)
             variableStack.pop()
         }
         startIdx += 1
     }
     return inputVariables
+}
+
+/**
+ * Transform curly braces into double curly braces if the content includes a colon.
+ * @param input - The original string that may contain { ... } segments.
+ * @returns The transformed string, where { ... } containing a colon has been replaced with {{ ... }}.
+ */
+export const transformBracesWithColon = (input: string): string => {
+    // This regex will match anything of the form `{ ... }` (no nested braces).
+    // `[^{}]*` means: match any characters that are not `{` or `}` zero or more times.
+    const regex = /\{([^{}]*?)\}/g
+
+    return input.replace(regex, (match, groupContent) => {
+        // groupContent is the text inside the braces `{ ... }`.
+
+        if (groupContent.includes(':')) {
+            // If there's a colon in the content, we turn { ... } into {{ ... }}
+            // The match is the full string like: "{ answer: hello }"
+            // groupContent is the inner part like: " answer: hello "
+            return `{{${groupContent}}}`
+        } else {
+            // Otherwise, leave it as is
+            return match
+        }
+    })
 }
 
 /**

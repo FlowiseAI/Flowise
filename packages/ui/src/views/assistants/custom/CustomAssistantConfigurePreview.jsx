@@ -12,7 +12,16 @@ import useConfirm from '@/hooks/useConfirm'
 // Material-UI
 import { IconButton, Avatar, ButtonBase, Toolbar, Box, Button, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCode, IconArrowLeft, IconDeviceFloppy, IconSettings, IconX, IconTrash, IconWand } from '@tabler/icons-react'
+import {
+    IconCode,
+    IconArrowLeft,
+    IconDeviceFloppy,
+    IconSettings,
+    IconX,
+    IconTrash,
+    IconWand,
+    IconArrowsMaximize
+} from '@tabler/icons-react'
 
 // Project import
 import MainCard from '@/ui-component/cards/MainCard'
@@ -30,6 +39,7 @@ import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 import Settings from '@/views/settings'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import PromptGeneratorDialog from '@/ui-component/dialog/PromptGeneratorDialog'
+import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 
 // API
 import assistantsApi from '@/api/assistants'
@@ -101,6 +111,8 @@ const CustomAssistantConfigurePreview = () => {
     const [isSettingsOpen, setSettingsOpen] = useState(false)
     const [assistantPromptGeneratorDialogOpen, setAssistantPromptGeneratorDialogOpen] = useState(false)
     const [assistantPromptGeneratorDialogProps, setAssistantPromptGeneratorDialogProps] = useState({})
+    const [showExpandDialog, setShowExpandDialog] = useState(false)
+    const [expandDialogProps, setExpandDialogProps] = useState({})
 
     const [loading, setLoading] = useState(false)
     const [loadingAssistant, setLoadingAssistant] = useState(true)
@@ -523,6 +535,21 @@ const CustomAssistantConfigurePreview = () => {
                 })
             }
         }
+    }
+
+    const onExpandDialogClicked = (value) => {
+        const dialogProps = {
+            value,
+            inputParam: {
+                label: 'Instructions',
+                name: 'instructions',
+                type: 'string'
+            },
+            confirmButtonName: 'Save',
+            cancelButtonName: 'Cancel'
+        }
+        setExpandDialogProps(dialogProps)
+        setShowExpandDialog(true)
     }
 
     const generateDocStoreToolDesc = async (storeId) => {
@@ -955,6 +982,18 @@ const CustomAssistantConfigurePreview = () => {
                                                     Instructions<span style={{ color: 'red' }}>&nbsp;*</span>
                                                 </Typography>
                                                 <div style={{ flex: 1 }}></div>
+                                                <IconButton
+                                                    size='small'
+                                                    sx={{
+                                                        height: 25,
+                                                        width: 25
+                                                    }}
+                                                    title='Expand'
+                                                    color='secondary'
+                                                    onClick={() => onExpandDialogClicked(customAssistantInstruction)}
+                                                >
+                                                    <IconArrowsMaximize />
+                                                </IconButton>
                                                 {selectedChatModel?.name && (
                                                     <Button
                                                         title='Generate instructions using model'
@@ -1329,6 +1368,15 @@ const CustomAssistantConfigurePreview = () => {
                     setAssistantPromptGeneratorDialogOpen(false)
                 }}
             />
+            <ExpandTextDialog
+                show={showExpandDialog}
+                dialogProps={expandDialogProps}
+                onCancel={() => setShowExpandDialog(false)}
+                onConfirm={(newValue) => {
+                    setCustomAssistantInstruction(newValue)
+                    setShowExpandDialog(false)
+                }}
+            ></ExpandTextDialog>
             <ConfirmDialog />
         </>
     )

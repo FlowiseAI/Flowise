@@ -16,7 +16,7 @@ import {
     ISeqAgentNode,
     ISeqAgentsState
 } from '../../../src/Interface'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, transformBracesWithColon } from '../../../src/utils'
 import {
     ExtractTool,
     checkCondition,
@@ -388,7 +388,9 @@ class ConditionAgent_SeqAgents implements INode {
         const output = nodeData.outputs?.output as string
         const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
         let agentPrompt = nodeData.inputs?.systemMessagePrompt as string
+        agentPrompt = transformBracesWithColon(agentPrompt)
         let humanPrompt = nodeData.inputs?.humanMessagePrompt as string
+        humanPrompt = transformBracesWithColon(humanPrompt)
         const promptValuesStr = nodeData.inputs?.promptValues
         const conditionAgentStructuredOutput = nodeData.inputs?.conditionAgentStructuredOutput
         const model = nodeData.inputs?.model as BaseChatModel
