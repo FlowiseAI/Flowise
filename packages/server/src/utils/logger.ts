@@ -47,7 +47,7 @@ if (process.env.STORAGE_TYPE === 's3') {
     s3ServerReqStream = new S3StreamLogger({
         bucket: s3Bucket,
         folder: 'logs/requests',
-        name_format: `server-requests-%Y-%m-%d-%H-%M-%S-%L-${hostname()}.log`,
+        name_format: `server-requests-%Y-%m-%d-%H-%M-%S-%L-${hostname()}.log.jsonl`,
         config: s3Config
     })
 }
