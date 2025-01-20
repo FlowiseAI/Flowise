@@ -39,14 +39,14 @@ if (process.env.STORAGE_TYPE === 's3') {
 
     s3ErrorStream = new S3StreamLogger({
         bucket: s3Bucket,
-        folder: 'logs/server',
+        folder: 'logs/error',
         name_format: `server-error-%Y-%m-%d-%H-%M-%S-%L-${hostname()}.log`,
         config: s3Config
     })
 
     s3ServerReqStream = new S3StreamLogger({
         bucket: s3Bucket,
-        folder: 'logs/server',
+        folder: 'logs/requests',
         name_format: `server-requests-%Y-%m-%d-%H-%M-%S-%L-${hostname()}.log`,
         config: s3Config
     })
