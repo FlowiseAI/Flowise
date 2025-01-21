@@ -29,6 +29,25 @@ import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import { WHITELIST_URLS } from './utils/constants'
 import 'global-agent/bootstrap'
 
+declare global {
+    namespace Express {
+        namespace Multer {
+            interface File {
+                bucket: string
+                key: string
+                acl: string
+                contentType: string
+                contentDisposition: null
+                storageClass: string
+                serverSideEncryption: null
+                metadata: any
+                location: string
+                etag: string
+            }
+        }
+    }
+}
+
 export class App {
     app: express.Application
     nodesPool: NodesPool

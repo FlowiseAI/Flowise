@@ -29,7 +29,8 @@ import {
     getVars,
     handleEscapeCharacters,
     prepareSandboxVars,
-    removeInvalidImageMarkdown
+    removeInvalidImageMarkdown,
+    transformBracesWithColon
 } from '../../../src/utils'
 import {
     customGet,
@@ -456,7 +457,9 @@ class Agent_SeqAgents implements INode {
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
         let agentSystemPrompt = nodeData.inputs?.systemMessagePrompt as string
+        agentSystemPrompt = transformBracesWithColon(agentSystemPrompt)
         let agentHumanPrompt = nodeData.inputs?.humanMessagePrompt as string
+        agentHumanPrompt = transformBracesWithColon(agentHumanPrompt)
         const agentLabel = nodeData.inputs?.agentName as string
         const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
         const maxIterations = nodeData.inputs?.maxIterations as string

@@ -27,7 +27,7 @@ const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
 // Get all chatmessages from chatflowid
 const getAllChatMessages = async (
     chatflowId: string,
-    chatTypeFilter: ChatType | undefined,
+    chatTypes: ChatType[] | undefined,
     sortOrder: string = 'ASC',
     chatId?: string,
     memoryType?: string,
@@ -39,9 +39,9 @@ const getAllChatMessages = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<ChatMessage[]> => {
     try {
-        const dbResponse = await utilGetChatMessage(
-            chatflowId,
-            chatTypeFilter,
+        const dbResponse = await utilGetChatMessage({
+            chatflowid: chatflowId,
+            chatTypes,
             sortOrder,
             chatId,
             memoryType,
@@ -51,7 +51,7 @@ const getAllChatMessages = async (
             messageId,
             feedback,
             feedbackTypes
-        )
+        })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -64,7 +64,7 @@ const getAllChatMessages = async (
 // Get internal chatmessages from chatflowid
 const getAllInternalChatMessages = async (
     chatflowId: string,
-    chatTypeFilter: ChatType | undefined,
+    chatTypes: ChatType[] | undefined,
     sortOrder: string = 'ASC',
     chatId?: string,
     memoryType?: string,
@@ -76,9 +76,9 @@ const getAllInternalChatMessages = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<ChatMessage[]> => {
     try {
-        const dbResponse = await utilGetChatMessage(
-            chatflowId,
-            chatTypeFilter,
+        const dbResponse = await utilGetChatMessage({
+            chatflowid: chatflowId,
+            chatTypes,
             sortOrder,
             chatId,
             memoryType,
@@ -88,7 +88,7 @@ const getAllInternalChatMessages = async (
             messageId,
             feedback,
             feedbackTypes
-        )
+        })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(

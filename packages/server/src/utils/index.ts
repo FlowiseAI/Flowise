@@ -37,11 +37,13 @@ import {
     IMessage,
     FlowiseMemory,
     IFileUpload,
-    mapExtToInputField
+    mapExtToInputField,
+    getS3Config
 } from 'flowise-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
-
+import multer from 'multer'
+import multerS3 from 'multer-s3'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
@@ -875,7 +877,7 @@ export const getVariableValue = async (
             if (variableFullPath.startsWith('$vars.')) {
                 const vars = await getGlobalVariable(flowConfig, availableVariables, variableOverrides)
                 const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
-                if (variableValue) {
+                if (variableValue != null) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
                 }
@@ -883,7 +885,7 @@ export const getVariableValue = async (
 
             if (variableFullPath.startsWith('$flow.') && flowConfig) {
                 const variableValue = get(flowConfig, variableFullPath.replace('$flow.', ''))
-                if (variableValue) {
+                if (variableValue != null) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
                 }
@@ -1060,12 +1062,12 @@ export const replaceInputsWithConfig = (
              * Several conditions:
              * 1. If config is 'analytics', always allow it
              * 2. If config is 'vars', check its object and filter out the variables that are not enabled for override
-             * 3. If typeof config is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
+             * 3. If typeof config's value is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
              * Example:
              * "systemMessagePrompt": {
              *  "chatPromptTemplate_0": "You are an assistant"
              * }
-             * 4. If typeof config is a string, check if the parameter is enabled
+             * 4. If typeof config's value is a string, check if the parameter is enabled
              * Example:
              * "systemMessagePrompt": "You are an assistant"
              */
@@ -1738,15 +1740,6 @@ export const convertToValidFilename = (word: string) => {
         .toLowerCase()
 }
 
-export const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
-    const date = new Date(dateTimeStr)
-    if (isNaN(date.getTime())) {
-        return undefined
-    }
-    setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
-    return date
-}
-
 export const aMonthAgo = () => {
     const date = new Date()
     date.setMonth(new Date().getMonth() - 1)
@@ -1800,4 +1793,39 @@ export const getUploadPath = (): string => {
     return process.env.BLOB_STORAGE_PATH
         ? path.join(process.env.BLOB_STORAGE_PATH, 'uploads')
         : path.join(getUserHome(), '.flowise', 'uploads')
+}
+
+const getOrgId = () => {
+    const settingsContent = fs.readFileSync(getUserSettingsFilePath(), 'utf8')
+    try {
+        const settings = JSON.parse(settingsContent)
+        return settings.instanceId
+    } catch (error) {
+        return ''
+    }
+}
+
+export const getMulterStorage = () => {
+    const storageType = process.env.STORAGE_TYPE ? process.env.STORAGE_TYPE : 'local'
+
+    if (storageType === 's3') {
+        const s3Client = getS3Config().s3Client
+        const Bucket = getS3Config().Bucket
+
+        const upload = multer({
+            storage: multerS3({
+                s3: s3Client,
+                bucket: Bucket,
+                metadata: function (req, file, cb) {
+                    cb(null, { fieldName: file.fieldname, originalName: file.originalname, orgId: getOrgId() })
+                },
+                key: function (req, file, cb) {
+                    cb(null, `${getOrgId()}/${Date.now().toString()}`)
+                }
+            })
+        })
+        return upload
+    } else {
+        return multer({ dest: getUploadPath() })
+    }
 }

@@ -4,7 +4,7 @@ import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
-class ChatCerebras_ChatModels implements INode {
+class ChatOpenRouter_ChatModels implements INode {
     label: string
     name: string
     version: number
@@ -17,19 +17,19 @@ class ChatCerebras_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatCerebras'
-        this.name = 'chatCerebras'
-        this.version = 2.0
-        this.type = 'ChatCerebras'
-        this.icon = 'cerebras.png'
+        this.label = 'ChatOpenRouter'
+        this.name = 'chatOpenRouter'
+        this.version = 1.0
+        this.type = 'ChatOpenRouter'
+        this.icon = 'openRouter.svg'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around Cerebras Inference API'
+        this.description = 'Wrapper around Open Router Inference API'
         this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['cerebrasAIApi'],
+            credentialNames: ['openRouterApi'],
             optional: true
         }
         this.inputs = [
@@ -43,7 +43,7 @@ class ChatCerebras_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'llama3.1-8b'
+                placeholder: 'openai/gpt-3.5-turbo'
             },
             {
                 label: 'Temperature',
@@ -106,7 +106,7 @@ class ChatCerebras_ChatModels implements INode {
                 name: 'basepath',
                 type: 'string',
                 optional: true,
-                default: 'https://api.cerebras.ai/v1',
+                default: 'https://openrouter.ai/api/v1',
                 additionalParams: true
             },
             {
@@ -128,17 +128,17 @@ class ChatCerebras_ChatModels implements INode {
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
         const streaming = nodeData.inputs?.streaming as boolean
-        const basePath = nodeData.inputs?.basepath as string
+        const basePath = (nodeData.inputs?.basepath as string) || 'https://openrouter.ai/api/v1'
         const baseOptions = nodeData.inputs?.baseOptions
         const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const cerebrasAIApiKey = getCredentialParam('cerebrasApiKey', credentialData, nodeData)
+        const openRouterApiKey = getCredentialParam('openRouterApiKey', credentialData, nodeData)
 
         const obj: Partial<OpenAIChatInput> & BaseLLMParams = {
             temperature: parseFloat(temperature),
             modelName,
-            openAIApiKey: cerebrasAIApiKey,
+            openAIApiKey: openRouterApiKey,
             streaming: streaming ?? true
         }
 
@@ -166,4 +166,4 @@ class ChatCerebras_ChatModels implements INode {
     }
 }
 
-module.exports = { nodeClass: ChatCerebras_ChatModels }
+module.exports = { nodeClass: ChatOpenRouter_ChatModels }

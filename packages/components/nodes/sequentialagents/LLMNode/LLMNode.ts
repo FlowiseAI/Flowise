@@ -18,7 +18,14 @@ import {
     ConversationHistorySelection
 } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
-import { extractOutputFromArray, getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import {
+    extractOutputFromArray,
+    getInputVariables,
+    getVars,
+    handleEscapeCharacters,
+    prepareSandboxVars,
+    transformBracesWithColon
+} from '../../../src/utils'
 import {
     ExtractTool,
     convertStructuredSchemaToZod,
@@ -388,7 +395,9 @@ class LLMNode_SeqAgents implements INode {
         tools = flatten(tools)
 
         let systemPrompt = nodeData.inputs?.systemMessagePrompt as string
+        systemPrompt = transformBracesWithColon(systemPrompt)
         let humanPrompt = nodeData.inputs?.humanMessagePrompt as string
+        humanPrompt = transformBracesWithColon(humanPrompt)
         const llmNodeLabel = nodeData.inputs?.llmNodeName as string
         const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
         const model = nodeData.inputs?.model as BaseChatModel

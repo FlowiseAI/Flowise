@@ -7,10 +7,14 @@ import { z } from 'zod'
 import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
+import { omit } from 'lodash'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 import { customGet } from '../nodes/sequentialagents/commonUtils'
+import { TextSplitter } from 'langchain/text_splitter'
+import { DocumentLoader } from 'langchain/document_loaders/base'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -267,12 +271,37 @@ export const getInputVariables = (paramValue: string): string[] => {
             const variableStartIdx = variableStack[variableStack.length - 1].startIdx
             const variableEndIdx = startIdx
             const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
-            inputVariables.push(variableFullPath)
+            if (!variableFullPath.includes(':')) inputVariables.push(variableFullPath)
             variableStack.pop()
         }
         startIdx += 1
     }
     return inputVariables
+}
+
+/**
+ * Transform curly braces into double curly braces if the content includes a colon.
+ * @param input - The original string that may contain { ... } segments.
+ * @returns The transformed string, where { ... } containing a colon has been replaced with {{ ... }}.
+ */
+export const transformBracesWithColon = (input: string): string => {
+    // This regex will match anything of the form `{ ... }` (no nested braces).
+    // `[^{}]*` means: match any characters that are not `{` or `}` zero or more times.
+    const regex = /\{([^{}]*?)\}/g
+
+    return input.replace(regex, (match, groupContent) => {
+        // groupContent is the text inside the braces `{ ... }`.
+
+        if (groupContent.includes(':')) {
+            // If there's a colon in the content, we turn { ... } into {{ ... }}
+            // The match is the full string like: "{ answer: hello }"
+            // groupContent is the inner part like: " answer: hello "
+            return `{{${groupContent}}}`
+        } else {
+            // Otherwise, leave it as is
+            return match
+        }
+    })
 }
 
 /**
@@ -1076,4 +1105,69 @@ export const resolveFlowObjValue = (obj: any, sourceObj: any): any => {
     } else {
         return obj
     }
+}
+
+export const handleDocumentLoaderOutput = (docs: Document[], output: string) => {
+    if (output === 'document') {
+        return docs
+    } else {
+        let finaltext = ''
+        for (const doc of docs) {
+            finaltext += `${doc.pageContent}\n`
+        }
+        return handleEscapeCharacters(finaltext, false)
+    }
+}
+
+export const parseDocumentLoaderMetadata = (metadata: object | string): object => {
+    if (!metadata) return {}
+
+    if (typeof metadata !== 'object') {
+        return JSON.parse(metadata)
+    }
+
+    return metadata
+}
+
+export const handleDocumentLoaderMetadata = (
+    docs: Document[],
+    _omitMetadataKeys: string,
+    metadata: object | string = {},
+    sourceIdKey?: string
+) => {
+    let omitMetadataKeys: string[] = []
+    if (_omitMetadataKeys) {
+        omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+    }
+
+    metadata = parseDocumentLoaderMetadata(metadata)
+
+    return docs.map((doc) => ({
+        ...doc,
+        metadata:
+            _omitMetadataKeys === '*'
+                ? metadata
+                : omit(
+                      {
+                          ...metadata,
+                          ...doc.metadata,
+                          ...(sourceIdKey ? { [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey } : undefined)
+                      },
+                      omitMetadataKeys
+                  )
+    }))
+}
+
+export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, textSplitter?: TextSplitter) => {
+    let docs: Document[] = []
+
+    if (textSplitter) {
+        let splittedDocs = await loader.load()
+        splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+        docs = splittedDocs
+    } else {
+        docs = await loader.load()
+    }
+
+    return docs
 }

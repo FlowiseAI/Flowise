@@ -1,5 +1,4 @@
 import { Request } from 'express'
-import * as fs from 'fs'
 import * as path from 'path'
 import { DataSource } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
@@ -13,7 +12,9 @@ import {
     IAction,
     addArrayFilesToStorage,
     mapMimeTypeToInputField,
-    mapExtToInputField
+    mapExtToInputField,
+    getFileFromUpload,
+    removeSpecificFileFromUpload
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -296,7 +297,7 @@ export const executeFlow = async ({
         const overrideConfig: ICommonObject = { ...incomingInput }
         for (const file of files) {
             const fileNames: string[] = []
-            const fileBuffer = fs.readFileSync(file.path)
+            const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
             const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
@@ -329,7 +330,7 @@ export const executeFlow = async ({
                 overrideConfig[fileInputField] = storagePath
             }
 
-            fs.unlinkSync(file.path)
+            await removeSpecificFileFromUpload(file.path ?? file.key)
         }
         if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
             overrideConfig.vars = JSON.parse(overrideConfig.vars)
