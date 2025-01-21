@@ -100,15 +100,10 @@ const Sidebar = ({ drawerOpen, drawerToggle, window, toggleSettingsPopper }) => 
                 open={drawerOpen}
                 sx={{
                     '& .MuiDrawer-paper': {
-                        width: drawerWidth,
-                        background: theme.palette.background.default,
-                        color: theme.palette.text.primary,
-                        [theme.breakpoints.up('md')]: {
-                            top: `${headerHeight}px`
-                        },
-                        borderRight: drawerOpen ? '1px solid' : 'none',
-                        borderColor: drawerOpen ? theme.palette.primary[200] + 75 : 'transparent',
-                        zIndex: 1000
+                        background: 'linear-gradient(180.16deg, #02a84b, #016841)',
+                        backgroundColor: '#EDF0F3',
+                        borderRight: 'none',
+                        zIndex: 1200
                     }
                 }}
                 ModalProps={{ keepMounted: true }}
