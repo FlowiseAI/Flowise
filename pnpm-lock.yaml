@@ -730,11 +730,11 @@ importers:
         specifier: ^1.1.1
         version: 1.2.1
       cmcts-c-agent-embedding:
-        specifier: 1.0.6
-        version: 1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.7
+        version: 1.0.7(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       cmcts-c-agent-embedding-react:
-        specifier: 1.0.6
-        version: 1.0.6(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.7
+        version: 1.0.7(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.7(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       dccxx-s3-explorer:
         specifier: ^1.0.24
         version: 1.0.24(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
@@ -8149,14 +8149,14 @@ packages:
     engines: { node: '>= 14.15.0' }
     hasBin: true
 
-  cmcts-c-agent-embedding-react@1.0.6:
-    resolution: { integrity: sha512-aUv72s9FHLz05yhjyWfGPspBkL2B24dADWjX8puikPuSUFYIIYmSmCbzDmsiFrZOYGeUO4Ryr+0AiHCpOirq+Q== }
+  cmcts-c-agent-embedding-react@1.0.7:
+    resolution: { integrity: sha512-x1tZ1Axmah3oFlHtW3cq4mI5JpU/CX1Jq4cYTOfC+UUtyVe7oZ/kgcULKf50ADlmieae19wWk1RSMiri8KXUKA== }
     peerDependencies:
       cmcts-c-agent-embedding: '*'
       react: 18.x
 
-  cmcts-c-agent-embedding@1.0.6:
-    resolution: { integrity: sha512-V9DyS7aw9GBRG9uiZnyLTB9cD6tnmViUM4OHc/0Q+2zEFe45/7HsUWEMigKlwCwEq4Q9ekgZMdOpf0pSyE8Bng== }
+  cmcts-c-agent-embedding@1.0.7:
+    resolution: { integrity: sha512-wHe4IQU85omyJYRJv84PB4/wesn7eeNRxTzNAW3JuzH5vJFMHrXeF+r6PKSLp+VVoXxZAZMJzBhZG9U9NTWT/w== }
 
   cmd-shim@5.0.0:
     resolution: { integrity: sha512-qkCtZ59BidfEwHltnJwkyVZn+XQojdAySM1D1gSeh11Z4pW1Kpolkyo53L5noc0nrxmIvyFwTmJRo4xs7FFLPw== }
@@ -21116,7 +21116,7 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hookform/resolvers@3.9.1(react-hook-form@7.54.1(react@18.2.0))':
+  '@hookform/resolvers@3.9.1(react-hook-form@7.54.1(react@18.3.1))':
     dependencies:
       react-hook-form: 7.54.1(react@18.3.1)
 
@@ -27299,10 +27299,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  cmcts-c-agent-embedding-react@1.0.6(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding-react@1.0.7(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.7(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@ladle/react': 2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-      cmcts-c-agent-embedding: 1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+      cmcts-c-agent-embedding: 1.0.7(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -27316,7 +27316,7 @@ snapshots:
       - terser
       - typescript
 
-  cmcts-c-agent-embedding@1.0.6(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding@1.0.7(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@babel/core': 7.24.0
       '@microsoft/fetch-event-source': 2.0.1
@@ -28016,7 +28016,7 @@ snapshots:
 
   dccxx-s3-explorer@1.0.24(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))):
     dependencies:
-      '@hookform/resolvers': 3.9.1(react-hook-form@7.54.1(react@18.2.0))
+      '@hookform/resolvers': 3.9.1(react-hook-form@7.54.1(react@18.3.1))
       '@nivo/bar': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@nivo/core': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@nivo/line': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
