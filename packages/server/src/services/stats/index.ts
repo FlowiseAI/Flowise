@@ -9,7 +9,7 @@ import { getErrorMessage } from '../../errors/utils'
 // get stats for showing in chatflow
 const getChatflowStats = async (
     chatflowid: string,
-    chatTypeFilter: ChatType | undefined,
+    chatTypes: ChatType[] | undefined,
     startDate?: string,
     endDate?: string,
     messageId?: string,
@@ -17,19 +17,15 @@ const getChatflowStats = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<any> => {
     try {
-        const chatmessages = (await utilGetChatMessage(
+        const chatmessages = (await utilGetChatMessage({
             chatflowid,
-            chatTypeFilter,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
+            chatTypes,
             startDate,
             endDate,
             messageId,
             feedback,
             feedbackTypes
-        )) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
+        })) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
         const totalMessages = chatmessages.length
         const totalFeedback = chatmessages.filter((message) => message?.feedback).length
         const positiveFeedback = chatmessages.filter((message) => message?.feedback?.rating === 'THUMBS_UP').length

@@ -19,6 +19,18 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
         this.threadId = threadId
     }
 
+    sanitizeTableName(tableName: string): string {
+        // Trim and normalize case, turn whitespace into underscores
+        tableName = tableName.trim().toLowerCase().replace(/\s+/g, '_')
+
+        // Validate using a regex (alphanumeric and underscores only)
+        if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
+            throw new Error('Invalid table name')
+        }
+
+        return tableName
+    }
+
     private async getDataSource(): Promise<DataSource> {
         const { datasourceOptions } = this.config
         if (!datasourceOptions) {
@@ -38,8 +50,9 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
 
         try {
             const queryRunner = dataSource.createQueryRunner()
+            const tableName = this.sanitizeTableName(this.tableName)
             await queryRunner.manager.query(`
-                CREATE TABLE IF NOT EXISTS ${this.tableName} (
+                CREATE TABLE IF NOT EXISTS ${tableName} (
                     thread_id VARCHAR(255) NOT NULL,
                     checkpoint_id VARCHAR(255) NOT NULL,
                     parent_id VARCHAR(255),
@@ -62,12 +75,13 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
 
         const thread_id = config.configurable?.thread_id || this.threadId
         const checkpoint_id = config.configurable?.checkpoint_id
+        const tableName = this.sanitizeTableName(this.tableName)
 
         try {
             const queryRunner = dataSource.createQueryRunner()
             const sql = checkpoint_id
-                ? `SELECT checkpoint, parent_id, metadata FROM ${this.tableName} WHERE thread_id = ? AND checkpoint_id = ?`
-                : `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${this.tableName} WHERE thread_id = ? ORDER BY checkpoint_id DESC LIMIT 1`
+                ? `SELECT checkpoint, parent_id, metadata FROM ${tableName} WHERE thread_id = ? AND checkpoint_id = ?`
+                : `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${tableName} WHERE thread_id = ? ORDER BY checkpoint_id DESC LIMIT 1`
 
             const rows = await queryRunner.manager.query(sql, checkpoint_id ? [thread_id, checkpoint_id] : [thread_id])
             await queryRunner.release()
@@ -108,7 +122,8 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
         const queryRunner = dataSource.createQueryRunner()
         try {
             const threadId = config.configurable?.thread_id || this.threadId
-            let sql = `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${this.tableName} WHERE thread_id = ? ${
+            const tableName = this.sanitizeTableName(this.tableName)
+            let sql = `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${tableName} WHERE thread_id = ? ${
                 before ? 'AND checkpoint_id < ?' : ''
             } ORDER BY checkpoint_id DESC`
             if (limit) {
@@ -163,8 +178,9 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
                 Buffer.from(this.serde.stringify(checkpoint)), // Encode to binary
                 Buffer.from(this.serde.stringify(metadata)) // Encode to binary
             ]
+            const tableName = this.sanitizeTableName(this.tableName)
 
-            const query = `INSERT INTO ${this.tableName} (thread_id, checkpoint_id, parent_id, checkpoint, metadata)
+            const query = `INSERT INTO ${tableName} (thread_id, checkpoint_id, parent_id, checkpoint, metadata)
                            VALUES (?, ?, ?, ?, ?)
                            ON DUPLICATE KEY UPDATE checkpoint = VALUES(checkpoint), metadata = VALUES(metadata)`
 
@@ -190,10 +206,11 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
 
         const dataSource = await this.getDataSource()
         await this.setup(dataSource)
+        const tableName = this.sanitizeTableName(this.tableName)
 
         try {
             const queryRunner = dataSource.createQueryRunner()
-            const query = `DELETE FROM ${this.tableName} WHERE thread_id = ?;`
+            const query = `DELETE FROM ${tableName} WHERE thread_id = ?;`
             await queryRunner.manager.query(query, [threadId])
             await queryRunner.release()
         } catch (error) {

@@ -569,32 +569,24 @@ export const generateRandomGradient = () => {
     return gradient
 }
 
-export const getInputVariables = (paramValue) => {
-    let returnVal = paramValue
-    const variableStack = []
-    const inputVariables = []
-    let startIdx = 0
-    const endIdx = returnVal.length
+export const getInputVariables = (input) => {
+    // This regex will match single curly-braced substrings
+    const pattern = /\{([^{}]+)\}/g
+    const results = []
 
-    while (startIdx < endIdx) {
-        const substr = returnVal.substring(startIdx, startIdx + 1)
+    let match
 
-        // Store the opening double curly bracket
-        if (substr === '{') {
-            variableStack.push({ substr, startIdx: startIdx + 1 })
+    while ((match = pattern.exec(input)) !== null) {
+        const inside = match[1].trim()
+
+        // Check if there's a colon
+        if (!inside.includes(':')) {
+            // If there's no colon, add to results
+            results.push(inside)
         }
-
-        // Found the complete variable
-        if (substr === '}' && variableStack.length > 0 && variableStack[variableStack.length - 1].substr === '{') {
-            const variableStartIdx = variableStack[variableStack.length - 1].startIdx
-            const variableEndIdx = startIdx
-            const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
-            inputVariables.push(variableFullPath)
-            variableStack.pop()
-        }
-        startIdx += 1
     }
-    return inputVariables
+
+    return results
 }
 
 export const removeDuplicateURL = (message) => {

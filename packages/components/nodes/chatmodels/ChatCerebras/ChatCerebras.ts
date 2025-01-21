@@ -135,7 +135,7 @@ class ChatCerebras_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const cerebrasAIApiKey = getCredentialParam('cerebrasApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { cerebrasAIApiKey?: string } = {
+        const obj: Partial<OpenAIChatInput> & BaseLLMParams = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: cerebrasAIApiKey,

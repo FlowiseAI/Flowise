@@ -27,7 +27,7 @@ class ChatIBMWatsonx_ChatModels implements INode {
     constructor() {
         this.label = 'ChatIBMWatsonx'
         this.name = 'chatIBMWatsonx'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatIBMWatsonx'
         this.icon = 'ibm.png'
         this.category = 'Chat Models'
@@ -75,6 +75,59 @@ class ChatIBMWatsonx_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Frequency Penalty',
+                name: 'frequencyPenalty',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true,
+                description:
+                    "Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+            },
+            {
+                label: 'Log Probs',
+                name: 'logprobs',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                additionalParams: true,
+                description:
+                    'Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message.'
+            },
+            {
+                label: 'N',
+                name: 'n',
+                type: 'number',
+                step: 1,
+                default: 1,
+                optional: true,
+                additionalParams: true,
+                description:
+                    'How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep n as 1 to minimize costs.'
+            },
+            {
+                label: 'Presence Penalty',
+                name: 'presencePenalty',
+                type: 'number',
+                step: 1,
+                default: 1,
+                optional: true,
+                additionalParams: true,
+                description:
+                    "Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+            },
+            {
+                label: 'Top P',
+                name: 'topP',
+                type: 'number',
+                step: 0.1,
+                default: 0.1,
+                optional: true,
+                additionalParams: true,
+                description:
+                    'An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.'
             }
         ]
     }
@@ -84,6 +137,11 @@ class ChatIBMWatsonx_ChatModels implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
+        const logprobs = nodeData.inputs?.logprobs as boolean
+        const n = nodeData.inputs?.n as string
+        const presencePenalty = nodeData.inputs?.presencePenalty as string
+        const topP = nodeData.inputs?.topP as string
         const streaming = nodeData.inputs?.streaming as boolean
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -111,6 +169,11 @@ class ChatIBMWatsonx_ChatModels implements INode {
         }
         if (cache) obj.cache = cache
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (frequencyPenalty) obj.frequencyPenalty = parseInt(frequencyPenalty, 10)
+        if (logprobs) obj.logprobs = logprobs
+        if (n) obj.maxTokens = parseInt(n, 10)
+        if (presencePenalty) obj.presencePenalty = parseInt(presencePenalty, 10)
+        if (topP) obj.topP = parseFloat(topP)
 
         const model = new ChatWatsonx(obj)
         return model
