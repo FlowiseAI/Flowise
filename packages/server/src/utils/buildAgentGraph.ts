@@ -992,6 +992,7 @@ Format your responses following this template:
 
 
 "Final Answer:" is a REQUIRED keyword, please ensure that this keyword always appears before your final answer so that the system can extract your final answer.
+Final Answer cannot contain thought, action, action input, or observation information. To clearly visualize, divide the answer into sections and the Final Answer section is always at the end.
 </administrator>${retryTimes > 0 ? '\n\nYou are missing the "Final Answer:" keyword in your final answer.' : ''}`
 
   /*** Start processing every Agent nodes ***/
