@@ -64,8 +64,11 @@ export const buildAgentGraph = async (
   baseURL?: string,
   sseStreamer?: IServerSideEventStreamer,
   shouldStreamResponse?: boolean,
-  uploadedFilesContent?: string
+  uploadedFilesContent?: string,
+  retryTimes?: number
 ): Promise<any> => {
+  retryTimes = retryTimes ?? 0
+
   try {
     const appServer = getRunningExpressApp()
     const chatflowid = chatflow.id
@@ -386,7 +389,25 @@ export const buildAgentGraph = async (
           }
         }
 
+        clearTimeout(sendLoadingMessageFnId)
+
         if (isSequential && !streamable) {
+          if (retryTimes < 3) {
+            return buildAgentGraph(
+              chatflow,
+              chatId,
+              apiMessageId,
+              sessionId,
+              incomingInput,
+              isInternal,
+              baseURL,
+              sseStreamer,
+              shouldStreamResponse,
+              uploadedFilesContent,
+              retryTimes + 1
+            )
+          }
+
           try {
             //  {"sub_queries":["Xin chào! Để tôi có thể hỗ trợ bạn tốt hơn về vấn đề học phí, tôi cần biết thêm một số thông tin. Bạn có thể cho tôi biết tên và số điện thoại của bạn được không?"],"convesation_related":false,"worker_call":false,"name":"None","phone_number":"None","human_support":false,"unsatisfied_times":0}
             const jsonAnswer = JSON.parse(totalStreamText)
@@ -403,7 +424,6 @@ export const buildAgentGraph = async (
         }
 
         // console.log('totalStreamText:', JSON.stringify(totalStreamText))
-        clearTimeout(sendLoadingMessageFnId)
 
         /*
          * For multi agents mode, sometimes finalResult is empty
@@ -756,6 +776,7 @@ type SeqAgentsGraphParams = {
   threadId?: string
   action?: IAction
   uploadedFilesContent?: string
+  retryTimes?: number
 }
 
 const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
@@ -771,7 +792,8 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
     overrideConfig = {},
     threadId,
     action,
-    uploadedFilesContent
+    uploadedFilesContent,
+    retryTimes = 0
   } = params
 
   let question = params.question
@@ -970,7 +992,7 @@ Format your responses following this template:
 
 
 "Final Answer:" is a REQUIRED keyword, please ensure that this keyword always appears before your final answer so that the system can extract your final answer.
-</administrator>`
+</administrator>${retryTimes > 0 ? '\n\nYou are missing the "Final Answer:" keyword in your final answer.' : ''}`
 
   /*** Start processing every Agent nodes ***/
   for (const agentNodeId of getSortedDepthNodes(depthQueue)) {
