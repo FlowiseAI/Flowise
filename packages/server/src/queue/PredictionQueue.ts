@@ -53,8 +53,9 @@ export class PredictionQueue extends BaseQueue {
         if (this.redisPublisher) data.sseStreamer = this.redisPublisher
 
         if (this.abortControllerPool) {
+            const abortControllerId = `${data.chatflow.id}_${data.chatId}`
             const signal = new AbortController()
-            this.abortControllerPool.add(`${data.chatflow.id}_${data.chatId}`, signal)
+            this.abortControllerPool.add(abortControllerId, signal)
             data.signal = signal
         }
 

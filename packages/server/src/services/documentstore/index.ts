@@ -49,7 +49,7 @@ import { cloneDeep, omit } from 'lodash'
 import { DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR } from '../../utils/prompt'
 import { DataSource } from 'typeorm'
 import { Telemetry } from '../../utils/telemetry'
-import { INPUT_PARAMS_TYPE } from '../../utils/constants'
+import { INPUT_PARAMS_TYPE, OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
@@ -592,9 +592,7 @@ const previewChunksMiddleware = async (data: IDocumentStoreLoaderForPreview) => 
 
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
-            const job = await upsertQueue.addJob(
-                omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
-            )
+            const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
             logger.debug(`[server]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
@@ -759,9 +757,7 @@ const processLoaderMiddleware = async (data: IDocumentStoreLoaderForPreview, doc
 
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
-            const job = await upsertQueue.addJob(
-                omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
-            )
+            const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
             logger.debug(`[server]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
@@ -1103,9 +1099,7 @@ const insertIntoVectorStoreMiddleware = async (data: ICommonObject, isStrictSave
 
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
-            const job = await upsertQueue.addJob(
-                omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
-            )
+            const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
             logger.debug(`[server]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
@@ -1198,7 +1192,6 @@ const _insertIntoVectorStoreWorkerThread = async (
             type: ChatType.INTERNAL,
             flowGraph: omit(indexResult['result'], ['totalKeys', 'addedDocs'])
         })
-        // TODO: appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
 
         entity.status = DocumentStoreStatus.UPSERTED
         await appDataSource.getRepository(DocumentStore).save(entity)
@@ -1740,9 +1733,7 @@ const upsertDocStoreMiddleware = async (storeId: string, data: IDocumentStoreUps
 
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
-            const job = await upsertQueue.addJob(
-                omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
-            )
+            const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
             logger.debug(`[server]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
@@ -1800,9 +1791,7 @@ const refreshDocStoreMiddleware = async (storeId: string, data?: IDocumentStoreR
 
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
-            const job = await upsertQueue.addJob(
-                omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
-            )
+            const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
             logger.debug(`[server]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()

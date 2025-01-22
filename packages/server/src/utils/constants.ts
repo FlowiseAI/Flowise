@@ -20,6 +20,8 @@ export const WHITELIST_URLS = [
     '/api/v1/metrics'
 ]
 
+export const OMIT_QUEUE_JOB_DATA = ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool']
+
 export const INPUT_PARAMS_TYPE = [
     'asyncOptions',
     'options',

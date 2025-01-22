@@ -5,6 +5,7 @@ import { DocumentStore } from '../../database/entities/DocumentStore'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { DocumentStoreDTO } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 
 const createDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -286,8 +287,14 @@ const insertIntoVectorStore = async (req: Request, res: Response, next: NextFunc
         }
         const body = req.body
         const apiResponse = await documentStoreService.insertIntoVectorStoreMiddleware(body)
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.SUCCESS
+        })
         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.FAILURE
+        })
         next(error)
     }
 }
@@ -389,8 +396,14 @@ const upsertDocStoreMiddleware = async (req: Request, res: Response, next: NextF
         const body = req.body
         const files = (req.files as Express.Multer.File[]) || []
         const apiResponse = await documentStoreService.upsertDocStoreMiddleware(req.params.id, body, files)
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.SUCCESS
+        })
         return res.json(apiResponse)
     } catch (error) {
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.FAILURE
+        })
         next(error)
     }
 }
@@ -405,8 +418,14 @@ const refreshDocStoreMiddleware = async (req: Request, res: Response, next: Next
         }
         const body = req.body
         const apiResponse = await documentStoreService.refreshDocStoreMiddleware(req.params.id, body)
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.SUCCESS
+        })
         return res.json(apiResponse)
     } catch (error) {
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.FAILURE
+        })
         next(error)
     }
 }

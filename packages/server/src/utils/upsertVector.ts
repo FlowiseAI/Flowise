@@ -33,6 +33,7 @@ import { getErrorMessage } from '../errors/utils'
 import { v4 as uuidv4 } from 'uuid'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../Interface.Metrics'
 import { Variable } from '../database/entities/Variable'
+import { OMIT_QUEUE_JOB_DATA } from './constants'
 
 export const executeUpsert = async ({
     componentNodes,
@@ -272,9 +273,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
 
-            const job = await upsertQueue.addJob(
-                omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
-            )
+            const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
             logger.debug(`[server]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()

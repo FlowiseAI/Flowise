@@ -61,6 +61,7 @@ import { utilAddChatMessage } from './addChatMesage'
 import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
+import { OMIT_QUEUE_JOB_DATA } from './constants'
 
 /*
  * Initialize the ending node to be executed
@@ -149,13 +150,17 @@ const getChatHistory = async ({
     chatId: string
     isInternal: boolean
     isAgentFlow: boolean
-}) => {
+}): Promise<IMessage[]> => {
     const prependMessages = incomingInput.history ?? []
     let chatHistory: IMessage[] = []
 
     if (isAgentFlow) {
-        const agentMemoryList = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory']
-        const memoryNode = nodes.find((node) => agentMemoryList.includes(node.data.name))
+        const startNode = nodes.find((node) => node.data.name === 'seqStart')
+        if (!startNode?.data?.inputs?.memory) return []
+
+        const memoryNodeId = startNode.data.inputs.memory.split('.')[0].replace('{{', '')
+        const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
+
         if (memoryNode) {
             chatHistory = await getSessionChatHistory(
                 chatflowid,
@@ -196,6 +201,23 @@ const getChatHistory = async ({
     }
 
     return chatHistory
+}
+
+/**
+ * Show output of setVariable nodes
+ * @param reactFlowNodes
+ * @returns {Record<string, unknown>}
+ */
+const getSetVariableNodesOutput = (reactFlowNodes: IReactFlowNode[]) => {
+    const flowVariables = {} as Record<string, unknown>
+    for (const node of reactFlowNodes) {
+        if (node.data.name === 'setVariable' && (node.data.inputs?.showOutput === true || node.data.inputs?.showOutput === 'true')) {
+            const outputResult = node.data.instance
+            const variableKey = node.data.inputs?.variableName
+            flowVariables[variableKey] = outputResult
+        }
+    }
+    return flowVariables
 }
 
 /*
@@ -431,6 +453,8 @@ export const executeFlow = async ({
         baseURL
     })
 
+    const setVariableNodesOutput = getSetVariableNodesOutput(reactFlowNodes)
+
     if (isAgentFlow) {
         const agentflow = chatflow
         const streamResults = await buildAgentGraph({
@@ -548,6 +572,7 @@ export const executeFlow = async ({
             if (memoryType) result.memoryType = memoryType
             if (agentReasoning?.length) result.agentReasoning = agentReasoning
             if (finalAction && Object.keys(finalAction).length) result.action = finalAction
+            if (Object.keys(setVariableNodesOutput).length) result.flowVariables = setVariableNodesOutput
             result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
 
             return result
@@ -664,6 +689,7 @@ export const executeFlow = async ({
 
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
+        if (Object.keys(setVariableNodesOutput).length) result.flowVariables = setVariableNodesOutput
 
         return result
     }
@@ -736,6 +762,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const incomingInput: IncomingInput = req.body
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const files = (req.files as Express.Multer.File[]) || []
+    const abortControllerId = `${chatflow.id}_${chatId}`
 
     try {
         // Validate API Key if its external API request
@@ -762,14 +789,12 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         if (process.env.MODE === MODE.QUEUE) {
             const predictionQueue = appServer.queueManager.getQueue('prediction')
-            const job = await predictionQueue.addJob(
-                omit(executeData, ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool'])
-            )
+            const job = await predictionQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
             logger.debug(`[server]: Job added to queue: ${job.id}`)
 
             const queueEvents = predictionQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
-
+            appServer.abortControllerPool.remove(abortControllerId)
             if (!result) {
                 throw new Error('Job execution failed')
             }
@@ -777,11 +802,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
             return result
         } else {
+            // Add abort controller to the pool
             const signal = new AbortController()
-            appServer.abortControllerPool.add(`${chatflow.id}_${chatId}`, signal)
+            appServer.abortControllerPool.add(abortControllerId, signal)
             executeData.signal = signal
+
             const result = await executeFlow(executeData)
-            appServer.abortControllerPool.remove(`${chatflow.id}_${chatId}`)
+
+            appServer.abortControllerPool.remove(abortControllerId)
             incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
             return result
         }
