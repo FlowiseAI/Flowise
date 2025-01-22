@@ -1110,8 +1110,11 @@ export const replaceInputsWithConfig = (
                     continue
                 }
             } else {
-                // Only proceed if the parameter is enabled
-                if (!isParameterEnabled(flowNodeData.label, config)) {
+                // Skip if it is an override "files" input, such as pdfFile, txtFile, etc
+                if (typeof overrideConfig[config] === 'string' && overrideConfig[config].includes('FILE-STORAGE::')) {
+                    // pass
+                } else if (!isParameterEnabled(flowNodeData.label, config)) {
+                    // Only proceed if the parameter is enabled
                     continue
                 }
             }
