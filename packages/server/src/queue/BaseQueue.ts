@@ -5,7 +5,7 @@ import logger from '../utils/logger'
 const QUEUE_REDIS_EVENT_STREAM_MAX_LEN = process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN
     ? parseInt(process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN)
     : 10000
-const WORKER_CONCURRENCY = process.env.WORKER_CONCURRENCY ? parseInt(process.env.WORKER_CONCURRENCY) : 300
+const WORKER_CONCURRENCY = process.env.WORKER_CONCURRENCY ? parseInt(process.env.WORKER_CONCURRENCY) : 100000
 
 export abstract class BaseQueue {
     protected queue: Queue
