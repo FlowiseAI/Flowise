@@ -23,7 +23,7 @@ const createInternalPrediction = async (req: Request, res: Response, next: NextF
 const createAndStreamInternalPrediction = async (req: Request, res: Response, next: NextFunction) => {
     const chatId = req.body.chatId
     const sseStreamer = getRunningExpressApp().sseStreamer
-    const redisSubscriber = getRunningExpressApp().redisSubscriber
+
     try {
         sseStreamer.addClient(chatId, res)
         res.setHeader('Content-Type', 'text/event-stream')
@@ -33,7 +33,7 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
         res.flushHeaders()
 
         if (process.env.MODE === MODE.QUEUE) {
-            redisSubscriber.subscribe(chatId)
+            getRunningExpressApp().redisSubscriber.subscribe(chatId)
         }
 
         const apiResponse = await utilBuildChatflow(req, true)

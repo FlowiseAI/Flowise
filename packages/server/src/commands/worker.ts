@@ -59,7 +59,7 @@ export default class Worker extends BaseCommand {
         await appDataSource.initialize()
         await appDataSource.runMigrations({ transaction: 'each' })
 
-        // Initialize chatflow pool
+        // Initialize abortcontroller pool
         const abortControllerPool = new AbortControllerPool()
 
         // Init telemetry
@@ -85,10 +85,14 @@ export default class Worker extends BaseCommand {
 
     async stopProcess() {
         try {
+            const queueManager = QueueManager.getInstance()
+            const predictionWorker = queueManager.getQueue('prediction').getWorker()
             logger.info(`Shutting down Flowise Prediction Worker ${this.predictionWorkerId}...`)
+            await predictionWorker.close()
+
+            const upsertWorker = queueManager.getQueue('upsert').getWorker()
             logger.info(`Shutting down Flowise Upsertion Worker ${this.upsertionWorkerId}...`)
-            //const serverApp = Server.getInstance()
-            //if (serverApp) await serverApp.stopApp()
+            await upsertWorker.close()
         } catch (error) {
             logger.error('There was an error shutting down Flowise Worker...', error)
             await this.failExit()

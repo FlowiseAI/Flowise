@@ -11,6 +11,7 @@ export abstract class BaseQueue {
     protected queue: Queue
     protected queueEvents: QueueEvents
     protected connection: RedisOptions
+    private worker: Worker
 
     constructor(queueName: string, connection: RedisOptions) {
         this.connection = connection
@@ -27,13 +28,17 @@ export abstract class BaseQueue {
 
     abstract getQueue(): Queue
 
+    public getWorker(): Worker {
+        return this.worker
+    }
+
     public async addJob(jobData: any): Promise<Job> {
         const jobId = jobData.id || uuidv4()
         return await this.queue.add(jobId, jobData, { removeOnFail: true })
     }
 
     public createWorker(concurrency: number = WORKER_CONCURRENCY): Worker {
-        return new Worker(
+        this.worker = new Worker(
             this.queue.name,
             async (job: Job) => {
                 const start = new Date().getTime()
@@ -48,6 +53,7 @@ export abstract class BaseQueue {
                 concurrency
             }
         )
+        return this.worker
     }
 
     public async getJobs(): Promise<Job[]> {

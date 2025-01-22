@@ -56,7 +56,6 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             const isStreamingRequested = req.body.streaming === 'true' || req.body.streaming === true
             if (streamable?.isStreaming && isStreamingRequested) {
                 const sseStreamer = getRunningExpressApp().sseStreamer
-                const redisSubscriber = getRunningExpressApp().redisSubscriber
 
                 let chatId = req.body.chatId
                 if (!req.body.chatId) {
@@ -72,11 +71,11 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                     res.flushHeaders()
 
                     if (process.env.MODE === MODE.QUEUE) {
-                        redisSubscriber.subscribe(chatId)
+                        getRunningExpressApp().redisSubscriber.subscribe(chatId)
                     }
 
                     const apiResponse = await predictionsServices.buildChatflow(req)
-                    if (apiResponse) sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
+                    sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
                 } catch (error) {
                     if (chatId) {
                         sseStreamer.streamErrorEvent(chatId, getErrorMessage(error))
@@ -87,7 +86,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                 }
             } else {
                 const apiResponse = await predictionsServices.buildChatflow(req)
-                if (apiResponse) return res.json(apiResponse)
+                return res.json(apiResponse)
             }
         } else {
             const isStreamingRequested = req.body.streaming === 'true' || req.body.streaming === true

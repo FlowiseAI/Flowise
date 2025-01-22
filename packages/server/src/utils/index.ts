@@ -37,7 +37,6 @@ import {
     IMessage,
     FlowiseMemory,
     IFileUpload,
-    mapExtToInputField,
     getS3Config
 } from 'flowise-components'
 import { randomBytes } from 'crypto'
@@ -1759,33 +1758,6 @@ export const getAPIOverrideConfig = (chatflow: IChatFlow) => {
         const apiOverrideStatus: boolean =
             apiConfig.overrideConfig && apiConfig.overrideConfig.status ? apiConfig.overrideConfig.status : false
 
-        /* For "files" input, add a new node override with the actual input name such as pdfFile, txtFile, etc, to allow overriding the input
-         * https://github.com/FlowiseAI/Flowise/pull/3569
-         */
-        for (const nodeLabel in nodeOverrides) {
-            const params = nodeOverrides[nodeLabel]
-            const enabledFileParam = params.find((param) => param.enabled && param.name === 'files')
-            if (enabledFileParam) {
-                if (enabledFileParam.type.includes(',')) {
-                    const fileInputFieldsFromExt = enabledFileParam.type.split(',').map((fileType) => mapExtToInputField(fileType.trim()))
-                    for (const fileInputFieldFromExt of fileInputFieldsFromExt) {
-                        if (nodeOverrides[nodeLabel].some((param) => param.name === fileInputFieldFromExt)) {
-                            continue
-                        }
-                        nodeOverrides[nodeLabel].push({
-                            ...enabledFileParam,
-                            name: fileInputFieldFromExt
-                        })
-                    }
-                } else {
-                    const fileInputFieldFromExt = mapExtToInputField(enabledFileParam.type)
-                    nodeOverrides[nodeLabel].push({
-                        ...enabledFileParam,
-                        name: fileInputFieldFromExt
-                    })
-                }
-            }
-        }
         return { nodeOverrides, variableOverrides, apiOverrideStatus }
     } catch (error) {
         return { nodeOverrides: {}, variableOverrides: [], apiOverrideStatus: false }
