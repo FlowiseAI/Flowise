@@ -957,17 +957,19 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
 
 <administrator>
 ### Responses-Format (except for "Final Answer:" which is mandatory, the rest can be combined with the user's prompt above):
-Format your responses following this template ("Final Answer:" is a keyword, please ensure that this keyword always appears before your final answer so that the system can extract your final answer):
+Format your responses following this template:
 
-- Thought: consider what step we're on and what to do next (briefly under 30 words) - optional
-- Action: action to take, it can be call tool if needed (briefly under 30 words) - optional
-- Action Input: input of the tool (if action needs to use the tool) (briefly under 30 words) - optional
-- Observation: output of the tool (briefly under 30 words) - optional
+- thought: consider what step we're on and what to do next (briefly under 30 words) - optional
+- action: action to take, it can be call tool if needed (briefly under 30 words) - optional
+- action Input: input of the tool (if action needs to use the tool) (briefly under 30 words) - optional
+- observation: output of the tool (briefly under 30 words) - optional
 
 ... (repeat if needed)
 
 - Final Answer:
 
+
+"Final Answer:" is a REQUIRED keyword, please ensure that this keyword always appears before your final answer so that the system can extract your final answer.
 </administrator>`
 
   /*** Start processing every Agent nodes ***/
