@@ -402,7 +402,7 @@ export const buildAgentGraph = async (
           }
         }
 
-        console.log('totalStreamText:', JSON.stringify(totalStreamText))
+        // console.log('totalStreamText:', JSON.stringify(totalStreamText))
         clearTimeout(sendLoadingMessageFnId)
 
         /*
@@ -959,10 +959,10 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
 ### Responses-Format (except for "Final Answer:" which is mandatory, the rest can be combined with the user's prompt above):
 Format your responses following this template ("Final Answer:" is a keyword, please ensure that this keyword always appears before your final answer so that the system can extract your final answer):
 
-- thought: consider what step we're on and what to do next (briefly under 30 words) - optional
-- action: action to take, it can be call tool if needed (briefly under 30 words) - optional
-- action input: input of the tool (if action needs to use the tool) (briefly under 30 words) - optional
-- observation: output of the tool (briefly under 30 words) - optional
+- Thought: consider what step we're on and what to do next (briefly under 30 words) - optional
+- Action: action to take, it can be call tool if needed (briefly under 30 words) - optional
+- Action Input: input of the tool (if action needs to use the tool) (briefly under 30 words) - optional
+- Observation: output of the tool (briefly under 30 words) - optional
 
 ... (repeat if needed)
 
