@@ -582,6 +582,10 @@
                 {
                     "label": "deepseek-coder",
                     "name": "deepseek-coder"
+                },
+                {
+                    "label": "deepseek-reasoner",
+                    "name": "deepseek-reasoner"
                 }
             ]
         },
