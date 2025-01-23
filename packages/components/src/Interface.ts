@@ -94,6 +94,8 @@ export interface INodeParams {
     tabIdentifier?: string
     tabs?: Array<INodeParams>
     refresh?: boolean
+    freeSolo?: boolean
+    loadPreviousNodes?: boolean
 }
 
 export interface INodeExecutionData {

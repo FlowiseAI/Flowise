@@ -26,9 +26,11 @@ class Loop_SeqAgents implements INode {
         this.documentation = 'https://docs.flowiseai.com/using-flowise/agentflows/sequential-agents#id-9.-loop-node'
         this.inputs = [
             {
-                label: 'Agent | Condition | LLM | Tool Node | CustomFunction',
+                label: 'Sequential Node',
                 name: 'sequentialNode',
-                type: 'Agent | Condition | LLMNode | ToolNode | CustomFunction',
+                type: 'Agent | Condition | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
+                description:
+                    'Can be connected to one of the following nodes: Agent, Condition, LLM Node, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {

@@ -182,7 +182,7 @@ class LLMNode_SeqAgents implements INode {
     constructor() {
         this.label = 'LLM Node'
         this.name = 'seqLLMNode'
-        this.version = 4.0
+        this.version = 4.1
         this.type = 'LLMNode'
         this.icon = 'llmNode.svg'
         this.category = 'Sequential Agents'
@@ -261,20 +261,11 @@ class LLMNode_SeqAgents implements INode {
                 additionalParams: true
             },
             {
-                label: 'Messages History',
-                name: 'messageHistory',
-                description:
-                    'Return a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
-                type: 'code',
-                hideCodeExecute: true,
-                codeExample: messageHistoryExample,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Start | Agent | Condition | LLM | Tool Node | CustomFunction',
+                label: 'Sequential Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | Condition | LLMNode | ToolNode | CustomFunction',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
+                description:
+                    'Can be connected to one of the following nodes: Start, Agent, Condition, LLM, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {

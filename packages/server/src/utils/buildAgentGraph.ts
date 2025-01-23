@@ -904,8 +904,8 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
         const agentNode = reactFlowNodes.find((node) => node.id === agentNodeId)
         if (!agentNode) continue
 
-        const eligibleSeqNodes = ['seqAgent', 'seqEnd', 'seqLoop', 'seqToolNode', 'seqLLMNode', 'seqCustomFunction']
-        const nodesToAdd = ['seqAgent', 'seqToolNode', 'seqLLMNode', 'seqCustomFunction']
+        const eligibleSeqNodes = ['seqAgent', 'seqEnd', 'seqLoop', 'seqToolNode', 'seqLLMNode', 'seqCustomFunction', 'seqExecuteFlow']
+        const nodesToAdd = ['seqAgent', 'seqToolNode', 'seqLLMNode', 'seqCustomFunction', 'seqExecuteFlow']
 
         if (eligibleSeqNodes.includes(agentNode.data.name)) {
             try {
