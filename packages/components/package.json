@@ -125,7 +125,6 @@
         "redis": "^4.6.7",
         "replicate": "^0.31.1",
         "sanitize-filename": "^1.6.3",
-        "socket.io": "^4.6.1",
         "srt-parser-2": "^1.2.3",
         "typeorm": "^0.3.6",
         "weaviate-ts-client": "^1.1.0",

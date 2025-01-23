@@ -406,12 +406,9 @@ export interface IStateWithMessages extends ICommonObject {
 }
 
 export interface IServerSideEventStreamer {
-    streamEvent(chatId: string, data: string): void
     streamStartEvent(chatId: string, data: any): void
-
     streamTokenEvent(chatId: string, data: string): void
     streamCustomEvent(chatId: string, eventType: string, data: any): void
-
     streamSourceDocumentsEvent(chatId: string, data: any): void
     streamUsedToolsEvent(chatId: string, data: any): void
     streamFileAnnotationsEvent(chatId: string, data: any): void

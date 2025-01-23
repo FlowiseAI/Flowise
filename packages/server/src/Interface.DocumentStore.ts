@@ -1,5 +1,9 @@
 import { ICommonObject } from 'flowise-components'
 import { DocumentStore } from './database/entities/DocumentStore'
+import { DataSource } from 'typeorm'
+import { IComponentNodes } from './Interface'
+import { Telemetry } from './utils/telemetry'
+import { CachePool } from './CachePool'
 
 export enum DocumentStoreStatus {
     EMPTY_SYNC = 'EMPTY',
@@ -110,6 +114,38 @@ export interface IDocumentStoreLoaderFile {
 export interface IDocumentStoreWhereUsed {
     id: string
     name: string
+}
+
+export interface IUpsertQueueAppServer {
+    appDataSource: DataSource
+    componentNodes: IComponentNodes
+    telemetry: Telemetry
+    cachePool?: CachePool
+}
+
+export interface IExecuteDocStoreUpsert extends IUpsertQueueAppServer {
+    storeId: string
+    totalItems: IDocumentStoreUpsertData[]
+    files: Express.Multer.File[]
+    isRefreshAPI: boolean
+}
+
+export interface IExecutePreviewLoader extends Omit<IUpsertQueueAppServer, 'telemetry'> {
+    data: IDocumentStoreLoaderForPreview
+    isPreviewOnly: boolean
+    telemetry?: Telemetry
+}
+
+export interface IExecuteProcessLoader extends IUpsertQueueAppServer {
+    data: IDocumentStoreLoaderForPreview
+    docLoaderId: string
+    isProcessWithoutUpsert: boolean
+}
+
+export interface IExecuteVectorStoreInsert extends IUpsertQueueAppServer {
+    data: ICommonObject
+    isStrictSave: boolean
+    isVectorStoreInsert: boolean
 }
 
 const getFileName = (fileBase64: string) => {

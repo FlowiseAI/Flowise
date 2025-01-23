@@ -7,7 +7,7 @@ import { howToUseFileUpload } from '../VectorStoreUtils'
 import { VectorStore } from '@langchain/core/vectorstores'
 import { VectorStoreDriver } from './driver/Base'
 import { TypeORMDriver } from './driver/TypeORM'
-import { PGVectorDriver } from './driver/PGVector'
+// import { PGVectorDriver } from './driver/PGVector'
 import { getContentColumnName, getDatabase, getHost, getPort, getTableName } from './utils'
 
 const serverCredentialsExists = !!process.env.POSTGRES_VECTORSTORE_USER && !!process.env.POSTGRES_VECTORSTORE_PASSWORD
@@ -91,7 +91,7 @@ class Postgres_VectorStores implements INode {
                 additionalParams: true,
                 optional: true
             },
-            {
+            /*{
                 label: 'Driver',
                 name: 'driver',
                 type: 'options',
@@ -109,7 +109,7 @@ class Postgres_VectorStores implements INode {
                 ],
                 optional: true,
                 additionalParams: true
-            },
+            },*/
             {
                 label: 'Distance Strategy',
                 name: 'distanceStrategy',
@@ -300,14 +300,15 @@ class Postgres_VectorStores implements INode {
     }
 
     static getDriverFromConfig(nodeData: INodeData, options: ICommonObject): VectorStoreDriver {
-        switch (nodeData.inputs?.driver) {
+        /*switch (nodeData.inputs?.driver) {
             case 'typeorm':
                 return new TypeORMDriver(nodeData, options)
             case 'pgvector':
                 return new PGVectorDriver(nodeData, options)
             default:
                 return new TypeORMDriver(nodeData, options)
-        }
+        }*/
+        return new TypeORMDriver(nodeData, options)
     }
 }
 
