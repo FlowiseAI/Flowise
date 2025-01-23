@@ -9,7 +9,9 @@ import {
     mapMimeTypeToInputField,
     mapExtToInputField,
     generateFollowUpPrompts,
-    IServerSideEventStreamer
+    IServerSideEventStreamer,
+    getFileFromUpload,
+    removeSpecificFileFromUpload
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -49,7 +51,6 @@ import { validateChatflowAPIKey } from './validateKey'
 import { databaseEntities } from '.'
 import { v4 as uuidv4 } from 'uuid'
 import { omit } from 'lodash'
-import * as fs from 'fs'
 import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
 import { buildAgentGraph } from './buildAgentGraph'
@@ -57,6 +58,7 @@ import { getErrorMessage } from '../errors/utils'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../Interface.Metrics'
+import { Variable } from '../database/entities/Variable'
 
 /**
  * Build Chatflow
@@ -161,7 +163,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const overrideConfig: ICommonObject = { ...req.body }
             const fileNames: string[] = []
             for (const file of files) {
-                const fileBuffer = fs.readFileSync(file.path)
+                const fileBuffer = await getFileFromUpload(file.path ?? file.key)
                 // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
                 file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
@@ -194,7 +196,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                     overrideConfig[fileInputField] = storagePath
                 }
 
-                fs.unlinkSync(file.path)
+                await removeSpecificFileFromUpload(file.path ?? file.key)
             }
             if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
                 overrideConfig.vars = JSON.parse(overrideConfig.vars)
@@ -350,6 +352,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const startingNodes = nodes.filter((nd) => startingNodeIds.includes(nd.id))
 
             /*** Get API Config ***/
+            const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
             const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
             logger.debug(`[server]: Start building chatflow ${chatflowid}`)
@@ -373,6 +376,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 overrideConfig: incomingInput?.overrideConfig,
                 apiOverrideStatus,
                 nodeOverrides,
+                availableVariables,
                 variableOverrides,
                 cachePool: appServer.cachePool,
                 isUpsert: false,
@@ -427,6 +431,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
                 chatHistory,
                 flowData,
                 uploadedFilesContent,
+                availableVariables,
                 variableOverrides
             )
             nodeToExecuteData = reactFlowNodeData

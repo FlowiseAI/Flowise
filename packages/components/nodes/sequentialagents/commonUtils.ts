@@ -9,7 +9,14 @@ import { Runnable, RunnableConfig, mergeConfigs } from '@langchain/core/runnable
 import { AIMessage, BaseMessage, HumanMessage, MessageContentImageUrl, ToolMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { addImagesToMessages, llmSupportsVision } from '../../src/multiModalUtils'
-import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, IVisionChatModal } from '../../src/Interface'
+import {
+    ICommonObject,
+    IDatabaseEntity,
+    INodeData,
+    ISeqAgentsState,
+    IVisionChatModal,
+    ConversationHistorySelection
+} from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
 import { ChatPromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 
@@ -92,7 +99,25 @@ export const transformObjectPropertyToFunction = (obj: ICommonObject, state: ISe
                     (message) => message.additional_kwargs && message.additional_kwargs?.nodeId === parsedValue.id
                 )
                 const messageOutput = messageOutputs[messageOutputs.length - 1]
-                if (messageOutput) value = messageOutput.content
+                if (messageOutput) {
+                    // if messageOutput.content is a string, set value to the content
+                    if (typeof messageOutput.content === 'string') value = messageOutput.content
+                    // if messageOutput.content is an array
+                    else if (Array.isArray(messageOutput.content)) {
+                        if (messageOutput.content.length === 0) {
+                            throw new Error(`Message output content is an empty array for node ${parsedValue.id}`)
+                        }
+                        // Get the first element of the array
+                        const messageOutputContentFirstElement: any = messageOutput.content[0]
+
+                        if (typeof messageOutputContentFirstElement === 'string') value = messageOutputContentFirstElement
+                        // If messageOutputContentFirstElement is an object and has a text property, set value to the text property
+                        else if (typeof messageOutputContentFirstElement === 'object' && messageOutputContentFirstElement.text)
+                            value = messageOutputContentFirstElement.text
+                        // Otherwise, stringify the messageOutputContentFirstElement
+                        else value = JSON.stringify(messageOutputContentFirstElement)
+                    }
+                }
             }
         } catch (e) {
             // do nothing
@@ -128,7 +153,13 @@ export const processImageMessage = async (llm: BaseChatModel, nodeData: INodeDat
 export const getVM = async (appDataSource: DataSource, databaseEntities: IDatabaseEntity, nodeData: INodeData, flow: ICommonObject) => {
     const variables = await getVars(appDataSource, databaseEntities, nodeData)
 
-    let sandbox: any = {}
+    let sandbox: any = {
+        util: undefined,
+        Symbol: undefined,
+        child_process: undefined,
+        fs: undefined,
+        process: undefined
+    }
     sandbox['$vars'] = prepareSandboxVars(variables)
     sandbox['$flow'] = flow
 
@@ -144,7 +175,10 @@ export const getVM = async (appDataSource: DataSource, databaseEntities: IDataba
         require: {
             external: { modules: deps },
             builtin: builtinDeps
-        }
+        },
+        eval: false,
+        wasm: false,
+        timeout: 10000
     } as any
 
     return new NodeVM(nodeVMOptions)
@@ -205,6 +239,34 @@ export const convertStructuredSchemaToZod = (schema: string | object): ICommonOb
         return zodObj
     } catch (e) {
         throw new Error(e)
+    }
+}
+
+/**
+ * Filter the conversation history based on the selected option.
+ *
+ * @param historySelection - The selected history option.
+ * @param input - The user input.
+ * @param state - The current state of the sequential llm or agent node.
+ */
+export function filterConversationHistory(
+    historySelection: ConversationHistorySelection,
+    input: string,
+    state: ISeqAgentsState
+): BaseMessage[] {
+    switch (historySelection) {
+        case 'user_question':
+            return [new HumanMessage(input)]
+        case 'last_message':
+            // @ts-ignore
+            return state.messages?.length ? [state.messages[state.messages.length - 1] as BaseMessage] : []
+        case 'empty':
+            return []
+        case 'all_messages':
+            // @ts-ignore
+            return (state.messages as BaseMessage[]) ?? []
+        default:
+            throw new Error(`Unhandled conversationHistorySelection: ${historySelection}`)
     }
 }
 

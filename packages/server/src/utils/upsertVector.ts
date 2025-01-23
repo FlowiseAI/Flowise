@@ -1,8 +1,15 @@
 import { Request } from 'express'
-import * as fs from 'fs'
 import * as path from 'path'
 import { cloneDeep, omit } from 'lodash'
-import { ICommonObject, IMessage, addArrayFilesToStorage, mapMimeTypeToInputField, mapExtToInputField } from 'flowise-components'
+import {
+    ICommonObject,
+    IMessage,
+    addArrayFilesToStorage,
+    mapMimeTypeToInputField,
+    mapExtToInputField,
+    getFileFromUpload,
+    removeSpecificFileFromUpload
+} from 'flowise-components'
 import logger from '../utils/logger'
 import {
     buildFlow,
@@ -25,6 +32,7 @@ import { StatusCodes } from 'http-status-codes'
 import { getErrorMessage } from '../errors/utils'
 import { v4 as uuidv4 } from 'uuid'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../Interface.Metrics'
+import { Variable } from '../database/entities/Variable'
 /**
  * Upsert documents
  * @param {Request} req
@@ -56,7 +64,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             const overrideConfig: ICommonObject = { ...req.body }
             for (const file of files) {
                 const fileNames: string[] = []
-                const fileBuffer = fs.readFileSync(file.path)
+                const fileBuffer = await getFileFromUpload(file.path ?? file.key)
                 // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
                 file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
                 const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
@@ -89,7 +97,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
                     overrideConfig[fileInputField] = storagePath
                 }
 
-                fs.unlinkSync(file.path)
+                await removeSpecificFileFromUpload(file.path ?? file.key)
             }
             if (overrideConfig.vars && typeof overrideConfig.vars === 'string') {
                 overrideConfig.vars = JSON.parse(overrideConfig.vars)
@@ -157,20 +165,8 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
         /*** Get API Config ***/
+        const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
         const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
-
-        // For "files" input, add a new node override with the actual input name such as pdfFile, txtFile, etc.
-        for (const nodeLabel in nodeOverrides) {
-            const params = nodeOverrides[nodeLabel]
-            const enabledFileParam = params.find((param) => param.enabled && param.name === 'files')
-            if (enabledFileParam) {
-                const fileInputFieldFromExt = mapExtToInputField(enabledFileParam.type)
-                nodeOverrides[nodeLabel].push({
-                    ...enabledFileParam,
-                    name: fileInputFieldFromExt
-                })
-            }
-        }
 
         const upsertedResult = await buildFlow({
             startingNodeIds,
@@ -189,6 +185,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             overrideConfig: incomingInput?.overrideConfig,
             apiOverrideStatus,
             nodeOverrides,
+            availableVariables,
             variableOverrides,
             cachePool: appServer.cachePool,
             isUpsert,

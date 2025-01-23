@@ -1,6 +1,6 @@
 import { INodeParams, INodeCredential } from '../src/Interface'
 
-class OpenAPIAuth implements INodeCredential {
+class OpenRouterAPIAuth implements INodeCredential {
     label: string
     name: string
     version: number
@@ -8,18 +8,18 @@ class OpenAPIAuth implements INodeCredential {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'OpenAPI Auth Token'
-        this.name = 'openAPIAuth'
+        this.label = 'OpenRouter API Key'
+        this.name = 'openRouterApi'
         this.version = 1.0
         this.inputs = [
             {
-                label: 'OpenAPI Token',
-                name: 'openAPIToken',
+                label: 'OpenRouter API Key',
+                name: 'openRouterApiKey',
                 type: 'password',
-                description: 'Auth Token. For example: Bearer <TOKEN>'
+                description: 'API Key'
             }
         ]
     }
 }
 
-module.exports = { credClass: OpenAPIAuth }
+module.exports = { credClass: OpenRouterAPIAuth }

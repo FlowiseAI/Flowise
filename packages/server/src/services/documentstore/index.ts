@@ -1,17 +1,18 @@
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { DocumentStore } from '../../database/entities/DocumentStore'
-import * as fs from 'fs'
 import * as path from 'path'
 import {
     addArrayFilesToStorage,
     addSingleFileToStorage,
     getFileFromStorage,
+    getFileFromUpload,
     ICommonObject,
     IDocument,
     mapExtToInputField,
     mapMimeTypeToInputField,
     removeFilesFromStorage,
-    removeSpecificFileFromStorage
+    removeSpecificFileFromStorage,
+    removeSpecificFileFromUpload
 } from 'flowise-components'
 import {
     addLoaderSource,
@@ -24,7 +25,8 @@ import {
     IDocumentStoreRefreshData,
     IDocumentStoreUpsertData,
     IDocumentStoreWhereUsed,
-    INodeData
+    INodeData,
+    IOverrideConfig
 } from '../../Interface'
 import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
 import { v4 as uuidv4 } from 'uuid'
@@ -40,6 +42,8 @@ import { App } from '../../index'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { cloneDeep, omit } from 'lodash'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
+import { DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR } from '../../utils/prompt'
+import { INPUT_PARAMS_TYPE } from '../../utils/constants'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
@@ -913,7 +917,7 @@ const updateVectorStoreConfigOnly = async (data: ICommonObject) => {
         )
     }
 }
-const saveVectorStoreConfig = async (data: ICommonObject) => {
+const saveVectorStoreConfig = async (data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
@@ -931,6 +935,7 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
         } else if (entity.embeddingConfig && !data.embeddingName && !data.embeddingConfig) {
             data.embeddingConfig = JSON.parse(entity.embeddingConfig)?.config
             data.embeddingName = JSON.parse(entity.embeddingConfig)?.name
+            if (isStrictSave) entity.embeddingConfig = null
         } else if (!data.embeddingName && !data.embeddingConfig) {
             entity.embeddingConfig = null
         }
@@ -943,6 +948,7 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
         } else if (entity.vectorStoreConfig && !data.vectorStoreName && !data.vectorStoreConfig) {
             data.vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)?.config
             data.vectorStoreName = JSON.parse(entity.vectorStoreConfig)?.name
+            if (isStrictSave) entity.vectorStoreConfig = null
         } else if (!data.vectorStoreName && !data.vectorStoreConfig) {
             entity.vectorStoreConfig = null
         }
@@ -955,6 +961,7 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
         } else if (entity.recordManagerConfig && !data.recordManagerName && !data.recordManagerConfig) {
             data.recordManagerConfig = JSON.parse(entity.recordManagerConfig)?.config
             data.recordManagerName = JSON.parse(entity.recordManagerConfig)?.name
+            if (isStrictSave) entity.recordManagerConfig = null
         } else if (!data.recordManagerName && !data.recordManagerConfig) {
             entity.recordManagerConfig = null
         }
@@ -974,15 +981,15 @@ const saveVectorStoreConfig = async (data: ICommonObject) => {
     }
 }
 
-const insertIntoVectorStore = async (data: ICommonObject) => {
+const insertIntoVectorStore = async (data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
-        const entity = await saveVectorStoreConfig(data)
+        const entity = await saveVectorStoreConfig(data, isStrictSave)
         entity.status = DocumentStoreStatus.UPSERTING
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
 
         // TODO: to be moved into a worker thread...
-        const indexResult = await _insertIntoVectorStoreWorkerThread(data)
+        const indexResult = await _insertIntoVectorStoreWorkerThread(data, isStrictSave)
         return indexResult
     } catch (error) {
         throw new InternalFlowiseError(
@@ -992,10 +999,10 @@ const insertIntoVectorStore = async (data: ICommonObject) => {
     }
 }
 
-const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject) => {
+const _insertIntoVectorStoreWorkerThread = async (data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
-        const entity = await saveVectorStoreConfig(data)
+        const entity = await saveVectorStoreConfig(data, isStrictSave)
         let upsertHistory: Record<string, any> = {}
         const chatflowid = data.storeId // fake chatflowid because this is not tied to any chatflow
 
@@ -1319,6 +1326,15 @@ const upsertDocStoreMiddleware = async (
 ) => {
     const appServer = getRunningExpressApp()
     const docId = data.docId
+    let metadata = {}
+    if (data.metadata) {
+        try {
+            metadata = typeof data.metadata === 'string' ? JSON.parse(data.metadata) : data.metadata
+        } catch (error) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Error: Invalid metadata`)
+        }
+    }
+    const replaceExisting = data.replaceExisting ?? false
     const newLoader = typeof data.loader === 'string' ? JSON.parse(data.loader) : data.loader
     const newSplitter = typeof data.splitter === 'string' ? JSON.parse(data.splitter) : data.splitter
     const newVectorStore = typeof data.vectorStore === 'string' ? JSON.parse(data.vectorStore) : data.vectorStore
@@ -1417,7 +1433,7 @@ const upsertDocStoreMiddleware = async (
 
     recordManagerName = newRecordManager?.name || recordManagerName
     recordManagerConfig = {
-        recordManagerConfig,
+        ...recordManagerConfig,
         ...newRecordManager?.config
     }
 
@@ -1426,7 +1442,7 @@ const upsertDocStoreMiddleware = async (
         const filesLoaderConfig: ICommonObject = {}
         for (const file of files) {
             const fileNames: string[] = []
-            const fileBuffer = fs.readFileSync(file.path)
+            const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
 
@@ -1466,12 +1482,19 @@ const upsertDocStoreMiddleware = async (
                 filesLoaderConfig[fileInputField] = JSON.stringify([storagePath])
             }
 
-            fs.unlinkSync(file.path)
+            await removeSpecificFileFromUpload(file.path ?? file.key)
         }
 
         loaderConfig = {
             ...loaderConfig,
             ...filesLoaderConfig
+        }
+    }
+
+    if (Object.keys(metadata).length > 0) {
+        loaderConfig = {
+            ...loaderConfig,
+            metadata
         }
     }
 
@@ -1499,7 +1522,7 @@ const upsertDocStoreMiddleware = async (
         splitterConfig
     }
 
-    if (isRefreshExisting) {
+    if (isRefreshExisting || replaceExisting) {
         processData.id = docId
     }
 
@@ -1519,7 +1542,7 @@ const upsertDocStoreMiddleware = async (
             recordManagerConfig
         }
 
-        const res = await insertIntoVectorStore(insertData)
+        const res = await insertIntoVectorStore(insertData, false)
         res.docId = newDocId
 
         return res
@@ -1568,6 +1591,203 @@ const refreshDocStoreMiddleware = async (storeId: string, data?: IDocumentStoreR
     }
 }
 
+const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: ICommonObject): Promise<string> => {
+    try {
+        const appServer = getRunningExpressApp()
+
+        // get matching DocumentStoreFileChunk storeId with docStoreId, and only the first 4 chunks sorted by chunkNo
+        const chunks = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).findBy({
+            storeId: docStoreId
+        })
+
+        if (!chunks?.length) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `DocumentStore ${docStoreId} chunks not found`)
+        }
+
+        // sort the chunks by chunkNo
+        chunks.sort((a, b) => a.chunkNo - b.chunkNo)
+
+        // get the first 4 chunks
+        const chunksPageContent = chunks
+            .slice(0, 4)
+            .map((chunk) => {
+                return chunk.pageContent
+            })
+            .join('\n')
+
+        if (selectedChatModel && Object.keys(selectedChatModel).length > 0) {
+            const nodeInstanceFilePath = appServer.nodesPool.componentNodes[selectedChatModel.name].filePath as string
+            const nodeModule = await import(nodeInstanceFilePath)
+            const newNodeInstance = new nodeModule.nodeClass()
+            const nodeData = {
+                credential: selectedChatModel.credential || selectedChatModel.inputs['FLOWISE_CREDENTIAL_ID'] || undefined,
+                inputs: selectedChatModel.inputs,
+                id: `${selectedChatModel.name}_0`
+            }
+            const options: ICommonObject = {
+                appDataSource: appServer.AppDataSource,
+                databaseEntities,
+                logger
+            }
+            const llmNodeInstance = await newNodeInstance.init(nodeData, '', options)
+            const response = await llmNodeInstance.invoke(
+                DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR.replace('{context}', chunksPageContent)
+            )
+            return response
+        }
+
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.generateDocStoreToolDesc - Error generating tool description`
+        )
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.generateDocStoreToolDesc - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+export const findDocStoreAvailableConfigs = async (storeId: string, docId: string) => {
+    // find the document store
+    const appServer = getRunningExpressApp()
+    const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({ id: storeId })
+
+    if (!entity) {
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${storeId} not found`)
+    }
+
+    const loaders = JSON.parse(entity.loaders)
+    const loader = loaders.find((ldr: IDocumentStoreLoader) => ldr.id === docId)
+    if (!loader) {
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document loader ${docId} not found`)
+    }
+
+    const nodes = []
+    const componentCredentials = appServer.nodesPool.componentCredentials
+
+    const loaderName = loader.loaderId
+    const loaderLabel = appServer.nodesPool.componentNodes[loaderName].label
+
+    const loaderInputs =
+        appServer.nodesPool.componentNodes[loaderName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+    nodes.push({
+        label: loaderLabel,
+        nodeId: `${loaderName}_0`,
+        inputParams: loaderInputs
+    })
+
+    const splitterName = loader.splitterId
+    if (splitterName) {
+        const splitterLabel = appServer.nodesPool.componentNodes[splitterName].label
+        const splitterInputs =
+            appServer.nodesPool.componentNodes[splitterName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+        nodes.push({
+            label: splitterLabel,
+            nodeId: `${splitterName}_0`,
+            inputParams: splitterInputs
+        })
+    }
+
+    if (entity.vectorStoreConfig) {
+        const vectorStoreName = JSON.parse(entity.vectorStoreConfig || '{}').name
+        const vectorStoreLabel = appServer.nodesPool.componentNodes[vectorStoreName].label
+        const vectorStoreInputs =
+            appServer.nodesPool.componentNodes[vectorStoreName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+        nodes.push({
+            label: vectorStoreLabel,
+            nodeId: `${vectorStoreName}_0`,
+            inputParams: vectorStoreInputs
+        })
+    }
+
+    if (entity.embeddingConfig) {
+        const embeddingName = JSON.parse(entity.embeddingConfig || '{}').name
+        const embeddingLabel = appServer.nodesPool.componentNodes[embeddingName].label
+        const embeddingInputs =
+            appServer.nodesPool.componentNodes[embeddingName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+        nodes.push({
+            label: embeddingLabel,
+            nodeId: `${embeddingName}_0`,
+            inputParams: embeddingInputs
+        })
+    }
+
+    if (entity.recordManagerConfig) {
+        const recordManagerName = JSON.parse(entity.recordManagerConfig || '{}').name
+        const recordManagerLabel = appServer.nodesPool.componentNodes[recordManagerName].label
+        const recordManagerInputs =
+            appServer.nodesPool.componentNodes[recordManagerName].inputs?.filter((input) => INPUT_PARAMS_TYPE.includes(input.type)) ?? []
+        nodes.push({
+            label: recordManagerLabel,
+            nodeId: `${recordManagerName}_0`,
+            inputParams: recordManagerInputs
+        })
+    }
+
+    const configs: IOverrideConfig[] = []
+    for (const node of nodes) {
+        const inputParams = node.inputParams
+        for (const inputParam of inputParams) {
+            let obj: IOverrideConfig
+            if (inputParam.type === 'file') {
+                obj = {
+                    node: node.label,
+                    nodeId: node.nodeId,
+                    label: inputParam.label,
+                    name: 'files',
+                    type: inputParam.fileType ?? inputParam.type
+                }
+            } else if (inputParam.type === 'options') {
+                obj = {
+                    node: node.label,
+                    nodeId: node.nodeId,
+                    label: inputParam.label,
+                    name: inputParam.name,
+                    type: inputParam.options
+                        ? inputParam.options
+                              ?.map((option) => {
+                                  return option.name
+                              })
+                              .join(', ')
+                        : 'string'
+                }
+            } else if (inputParam.type === 'credential') {
+                // get component credential inputs
+                for (const name of inputParam.credentialNames ?? []) {
+                    if (Object.prototype.hasOwnProperty.call(componentCredentials, name)) {
+                        const inputs = componentCredentials[name]?.inputs ?? []
+                        for (const input of inputs) {
+                            obj = {
+                                node: node.label,
+                                nodeId: node.nodeId,
+                                label: input.label,
+                                name: input.name,
+                                type: input.type === 'password' ? 'string' : input.type
+                            }
+                            configs.push(obj)
+                        }
+                    }
+                }
+                continue
+            } else {
+                obj = {
+                    node: node.label,
+                    nodeId: node.nodeId,
+                    label: inputParam.label,
+                    name: inputParam.name,
+                    type: inputParam.type === 'password' ? 'string' : inputParam.type
+                }
+            }
+            if (!configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
+                configs.push(obj)
+            }
+        }
+    }
+
+    return configs
+}
+
 export default {
     updateDocumentStoreUsage,
     deleteDocumentStore,
@@ -1594,5 +1814,7 @@ export default {
     deleteVectorStoreFromStore,
     updateVectorStoreConfigOnly,
     upsertDocStoreMiddleware,
-    refreshDocStoreMiddleware
+    refreshDocStoreMiddleware,
+    generateDocStoreToolDesc,
+    findDocStoreAvailableConfigs
 }

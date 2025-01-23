@@ -196,7 +196,13 @@ export class DynamicStructuredTool<
         _?: CallbackManagerForToolRun,
         flowConfig?: { sessionId?: string; chatId?: string; input?: string; state?: ICommonObject }
     ): Promise<string> {
-        let sandbox: any = {}
+        let sandbox: any = {
+            util: undefined,
+            Symbol: undefined,
+            child_process: undefined,
+            fs: undefined,
+            process: undefined
+        }
         if (typeof arg === 'object' && Object.keys(arg).length) {
             for (const item in arg) {
                 sandbox[`$${item}`] = arg[item]
@@ -237,7 +243,10 @@ export class DynamicStructuredTool<
             require: {
                 external: { modules: deps },
                 builtin: builtinDeps
-            }
+            },
+            eval: false,
+            wasm: false,
+            timeout: 10000
         } as any
 
         const vm = new NodeVM(options)

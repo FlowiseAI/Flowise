@@ -17,7 +17,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
     constructor() {
         this.label = 'OpenAI Embeddings Custom'
         this.name = 'openAIEmbeddingsCustom'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'OpenAIEmbeddingsCustom'
         this.icon = 'openai.svg'
         this.category = 'Embeddings'
@@ -59,6 +59,13 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
                 additionalParams: true
             },
             {
+                label: 'BaseOptions',
+                name: 'baseOptions',
+                type: 'json',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
@@ -81,6 +88,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
         const basePath = nodeData.inputs?.basepath as string
         const modelName = nodeData.inputs?.modelName as string
         const dimensions = nodeData.inputs?.dimensions as string
+        const baseOptions = nodeData.inputs?.baseOptions
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -95,7 +103,16 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
         if (modelName) obj.modelName = modelName
         if (dimensions) obj.dimensions = parseInt(dimensions, 10)
 
-        const model = new OpenAIEmbeddings(obj, { basePath })
+        let parsedBaseOptions: any | undefined = undefined
+        if (baseOptions) {
+            try {
+                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
+            }
+        }
+
+        const model = new OpenAIEmbeddings(obj, { baseURL: basePath, defaultHeaders: parsedBaseOptions })
         return model
     }
 }

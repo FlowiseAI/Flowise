@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as PropTypes from 'prop-types'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 // material-ui
 import {
@@ -37,6 +37,7 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import DeleteDocStoreDialog from './DeleteDocStoreDialog'
 import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+import DocStoreAPIDialog from './DocStoreAPIDialog'
 
 // API
 import documentsApi from '@/api/documentstore'
@@ -56,6 +57,7 @@ import FileChunksIcon from '@mui/icons-material/AppRegistration'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
 import SearchIcon from '@mui/icons-material/Search'
 import RefreshIcon from '@mui/icons-material/Refresh'
+import CodeIcon from '@mui/icons-material/Code'
 import doc_store_details_emptySVG from '@/assets/images/doc_store_details_empty.svg'
 
 // store
@@ -142,12 +144,13 @@ const DocumentStoreDetails = () => {
     const [documentLoaderListDialogProps, setDocumentLoaderListDialogProps] = useState({})
     const [showDeleteDocStoreDialog, setShowDeleteDocStoreDialog] = useState(false)
     const [deleteDocStoreDialogProps, setDeleteDocStoreDialogProps] = useState({})
+    const [showDocStoreAPIDialog, setShowDocStoreAPIDialog] = useState(false)
+    const [docStoreAPIDialogProps, setDocStoreAPIDialogProps] = useState({})
 
     const [anchorEl, setAnchorEl] = useState(null)
     const open = Boolean(anchorEl)
 
-    const URLpath = document.location.pathname.toString().split('/')
-    const storeId = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
+    const { storeId } = useParams()
 
     const openPreviewSettings = (id) => {
         navigate('/document-stores/' + storeId + '/' + id)
@@ -373,6 +376,16 @@ const DocumentStoreDetails = () => {
         event.preventDefault()
         event.stopPropagation()
         setAnchorEl(event.currentTarget)
+    }
+
+    const onViewUpsertAPI = (storeId, loaderId) => {
+        const props = {
+            title: `Upsert API`,
+            storeId,
+            loaderId
+        }
+        setDocStoreAPIDialogProps(props)
+        setShowDocStoreAPIDialog(true)
     }
 
     const handleClose = () => {
@@ -651,6 +664,7 @@ const DocumentStoreDetails = () => {
                                                             onChunkUpsert={() =>
                                                                 navigate(`/document-stores/vector/${documentStore.id}/${loader.id}`)
                                                             }
+                                                            onViewUpsertAPI={() => onViewUpsertAPI(documentStore.id, loader.id)}
                                                         />
                                                     ))}
                                             </>
@@ -694,6 +708,13 @@ const DocumentStoreDetails = () => {
                     dialogProps={deleteDocStoreDialogProps}
                     onCancel={() => setShowDeleteDocStoreDialog(false)}
                     onDelete={onDocStoreDelete}
+                />
+            )}
+            {showDocStoreAPIDialog && (
+                <DocStoreAPIDialog
+                    show={showDocStoreAPIDialog}
+                    dialogProps={docStoreAPIDialogProps}
+                    onCancel={() => setShowDocStoreAPIDialog(false)}
                 />
             )}
             {isBackdropLoading && <BackdropLoader open={isBackdropLoading} />}
@@ -785,6 +806,10 @@ function LoaderRow(props) {
                                 <NoteAddIcon />
                                 Upsert Chunks
                             </MenuItem>
+                            <MenuItem onClick={props.onViewUpsertAPI} disableRipple>
+                                <CodeIcon />
+                                View API
+                            </MenuItem>
                             <Divider sx={{ my: 0.5 }} />
                             <MenuItem onClick={props.onDeleteClick} disableRipple>
                                 <FileDeleteIcon />
@@ -806,6 +831,7 @@ LoaderRow.propTypes = {
     onViewChunksClick: PropTypes.func,
     onEditClick: PropTypes.func,
     onDeleteClick: PropTypes.func,
-    onChunkUpsert: PropTypes.func
+    onChunkUpsert: PropTypes.func,
+    onViewUpsertAPI: PropTypes.func
 }
 export default DocumentStoreDetails
