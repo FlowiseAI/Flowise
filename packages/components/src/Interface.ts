@@ -94,6 +94,8 @@ export interface INodeParams {
     tabIdentifier?: string
     tabs?: Array<INodeParams>
     refresh?: boolean
+    freeSolo?: boolean
+    loadPreviousNodes?: boolean
 }
 
 export interface INodeExecutionData {
@@ -183,7 +185,7 @@ export interface IMultiAgentNode {
     checkpointMemory?: any
 }
 
-type SeqAgentType = 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state' | 'llm'
+type SeqAgentType = 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state' | 'llm' | 'utilities'
 export type ConversationHistorySelection = 'user_question' | 'last_message' | 'all_messages' | 'empty'
 
 export interface ISeqAgentNode {

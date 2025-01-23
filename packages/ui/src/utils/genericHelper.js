@@ -435,7 +435,7 @@ export const getAvailableNodesForVariable = (nodes, edges, target, targetHandle)
             collectParentNodes(parentNode.id, nodes, edges)
 
             // Check and add the parent node to the list if it does not include specific names
-            const excludeNodeNames = ['seqAgent', 'seqLLMNode', 'seqToolNode']
+            const excludeNodeNames = ['seqAgent', 'seqLLMNode', 'seqToolNode', 'seqCustomFunction', 'seqExecuteFlow']
             if (excludeNodeNames.includes(parentNode.data.name)) {
                 parentNodes.push(parentNode)
             }
