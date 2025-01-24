@@ -19,6 +19,8 @@ class KCenter_Retrievers implements INode {
     credential: INodeParams
     outputs: INodeOutputsValue[]
 
+    tags: string[]
+
     constructor() {
         this.label = 'KAI Retriever'
         this.name = 'kaiRetriever'
@@ -27,6 +29,7 @@ class KCenter_Retrievers implements INode {
         this.icon = 'logo.svg'
         this.category = 'KCenter'
         this.description = 'Return results from KAI VectoreStore'
+        this.tags = ['Utilities']
         this.baseClasses = [this.type, 'BaseRetriever']
         ;(this.credential = {
             label: 'KAI Credential',

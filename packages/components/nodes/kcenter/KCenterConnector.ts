@@ -16,6 +16,7 @@ class KCenterConnector implements INode, IKCenterConnector {
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
     credential: INodeParams
+    tags: string[]
 
     constructor() {
         this.label = 'KCenter API Connector'
@@ -25,6 +26,7 @@ class KCenterConnector implements INode, IKCenterConnector {
         this.icon = 'logo.svg'
         this.category = 'KCenter'
         this.description = `KCenter API Connector`
+        this.tags = ['Utilities']
         this.baseClasses = [this.type, ...getBaseClasses(KCenterApiClient)]
 
         this.credential = {

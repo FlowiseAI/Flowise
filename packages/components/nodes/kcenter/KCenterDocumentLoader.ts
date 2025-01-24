@@ -15,6 +15,7 @@ class KCenterDocumentLoader_DocumentLoaders implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    tags: string[]
 
     constructor() {
         this.label = 'KCenter Document Loader'
@@ -24,6 +25,7 @@ class KCenterDocumentLoader_DocumentLoaders implements INode {
         this.icon = 'logo.svg'
         this.category = 'KCenter'
         this.description = `Load KCenter Documents`
+        this.tags = ['Utilities']
         this.baseClasses = [this.type]
 
         this.inputs = [
