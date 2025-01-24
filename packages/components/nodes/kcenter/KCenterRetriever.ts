@@ -2,7 +2,7 @@ import { BaseRetriever, BaseRetrieverInput } from '@langchain/core/retrievers'
 import { INode, INodeData, INodeParams, INodeOutputsValue } from '../../src/Interface'
 import { Document } from '@langchain/core/documents'
 import axios from 'axios'
-import { getCredentialData, getCredentialParam, ICommonObject } from '../../src'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters, ICommonObject } from '../../src'
 
 class KCenter_Retrievers implements INode {
     label: string
@@ -31,62 +31,46 @@ class KCenter_Retrievers implements INode {
         this.description = 'Return results from KAI VectoreStore'
         this.tags = ['Utilities']
         this.baseClasses = [this.type, 'BaseRetriever']
-        ;(this.credential = {
+        this.credential = {
             label: 'KAI Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['kcenterVsApi'],
             optional: true
-        }),
-            (this.inputs = [
-                /*
+        }
+        this.inputs = [
             {
-                label: 'KAI URL',
-                name: 'connectionString',
+                label: 'KAI KnowledgeBase',
+                name: 'collectionName',
                 type: 'string',
-                placeholder: 'Your connection string here',
-                optional: true
+                placeholder: 'my_collection'
             },
             {
-                label: 'KAI API-Key',
-                name: 'apiKey',
+                label: 'Query',
+                name: 'query',
                 type: 'string',
-                placeholder: 'api-key',
-                optional: true
+                description: 'Query to retrieve documents from retriever. If not specified, user question will be used',
+                optional: true,
+                acceptVariable: true
             },
-            */
-                {
-                    label: 'KAI KnowledgeBase',
-                    name: 'collectionName',
-                    type: 'string',
-                    placeholder: 'my_collection'
-                },
-                {
-                    label: 'Query',
-                    name: 'query',
-                    type: 'string',
-                    description: 'Query to retrieve documents from retriever. If not specified, user question will be used',
-                    optional: true,
-                    acceptVariable: true
-                },
-                {
-                    label: 'Language',
-                    name: 'language',
-                    type: 'string',
-                    description: 'Language to use',
-                    optional: true,
-                    acceptVariable: true
-                },
-                {
-                    label: 'Top K',
-                    name: 'topK',
-                    description: 'Number of top results to fetch. Default to vector store topK',
-                    placeholder: '1',
-                    type: 'number',
-                    optional: true,
-                    acceptVariable: true
-                }
-            ])
+            {
+                label: 'Language',
+                name: 'language',
+                type: 'string',
+                description: 'Language to use',
+                optional: true,
+                acceptVariable: true
+            },
+            {
+                label: 'Top K',
+                name: 'topK',
+                description: 'Number of top results to fetch. Default to vector store topK',
+                placeholder: '1',
+                type: 'number',
+                optional: true,
+                acceptVariable: true
+            }
+        ]
         this.outputs = [
             {
                 label: 'Retriever',
@@ -111,7 +95,7 @@ class KCenter_Retrievers implements INode {
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const DEFAULT_TOP_K: number = 1
 
-        console.debug('Input data: ', nodeData.inputs)
+        if (process.env.DEBUG === 'true') console.info('Input data: ', nodeData.inputs)
 
         //const connectionString = nodeData.inputs?.connectionString as string
         //const apiKey = nodeData.inputs?.apiKey as string
@@ -135,13 +119,23 @@ class KCenter_Retrievers implements INode {
             topK: k ?? DEFAULT_TOP_K
         } as KCenterRetrieverRetrieverArgs
 
-        console.debug('RetrieverConfig: ', retrieverConfig)
+        if (process.env.DEBUG === 'true') console.info('RetrieverConfig: ', retrieverConfig)
 
         const retriever = new KCenterRetriever(retrieverConfig)
 
         if (output === 'retriever') return retriever
+        else if (output === 'document') return await retriever._getRelevantDocuments(query ? query : input)
+        else if (output === 'text') {
+            let finaltext = ''
 
-        return retriever
+            const docs = await retriever._getRelevantDocuments(query ? query : input)
+
+            for (const doc of docs) finaltext += `${doc.pageContent}\n`
+
+            return handleEscapeCharacters(finaltext, false)
+        }
+
+        throw new Error(`Unknown output type '${output}'`)
     }
 }
 
@@ -186,7 +180,7 @@ class KCenterRetriever extends BaseRetriever {
         }
 
         try {
-            console.debug(`Send search request to URL ${url}: `, requestBody)
+            if (process.env.DEBUG === 'true') console.info(`Send search request to URL ${url}: `, requestBody)
 
             let returnedDocs = await axios.post(url, requestBody, requestConfig)
 
@@ -210,7 +204,7 @@ class KCenterRetriever extends BaseRetriever {
 
             const spliceResults = finalResults.splice(0, this.config.topK)
 
-            console.debug('Final result set: ', spliceResults)
+            if (process.env.DEBUG === 'true') console.info('Final result set: ', spliceResults)
 
             return spliceResults
         } catch (error) {

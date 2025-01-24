@@ -43,7 +43,7 @@ export class KCenterApiClient {
             const encodedMandator = encodeURIComponent(this.credentials.mandator)
 
             const docUrl = `${this.credentials.baseUrl}/serviceconnector/services/rest/documents/${encodedGuid}?lang=${encodedLang}&additionalData=true&mandator=${encodedMandator}`
-            console.debug('Try to fetch document with url: ' + docUrl)
+            if (process.env.DEBUG === 'true') console.info('Try to fetch document with url: ' + docUrl)
 
             const cookies = cookieJar['cookies'] ? cookieJar['cookies'].join('; ') : ''
 
@@ -52,7 +52,7 @@ export class KCenterApiClient {
             })
 
             if (res.ok) {
-                console.debug('Document fetched')
+                if (process.env.DEBUG === 'true') console.info('Document fetched')
                 let data = await res.json()
 
                 if (Array.isArray(data)) {
@@ -63,7 +63,7 @@ export class KCenterApiClient {
                     }
                 }
 
-                console.debug('[FetcDocument]: ', data)
+                if (process.env.DEBUG === 'true') console.info('[FetcDocument]: ', data)
 
                 return <IKCDocument>data
             } else {
@@ -139,7 +139,7 @@ export class KCenterApiClient {
 
             const loginUrl = `${this.credentials.baseUrl}/serviceconnector/services/rest/auth/login?gk_token=${encodedToken}&gk_providerid=${encodedProviderId}&mandator=${encodedMandator}`
 
-            console.debug('Try to login: ' + loginUrl)
+            if (process.env.DEBUG === 'true') console.info('Try to login: ' + loginUrl)
 
             const res = await fetch(loginUrl)
             if (res.ok) {
@@ -149,12 +149,12 @@ export class KCenterApiClient {
                 cookieJar['cookies'] = []
 
                 for (const header of res.headers.entries()) {
-                    console.debug('Handler cookie: ', header)
+                    if (process.env.DEBUG === 'true') console.info('Handler cookie: ', header)
                     if (header[0] === 'set-cookie') {
                         cookieJar['cookies'].push(header[1].split(';')[0])
                     }
                 }
-                console.debug(`Cookies in jar: ${cookieJar['cookies']}`)
+                if (process.env.DEBUG === 'true') console.info(`Cookies in jar: ${cookieJar['cookies']}`)
 
                 return true
             } else {
@@ -170,7 +170,7 @@ export class KCenterApiClient {
     private async logout(cookieJar: any) {
         try {
             const logoutUrl = `${this.credentials.baseUrl}/serviceconnector/services/rest/auth/logout`
-            console.info('Try to logout: ' + logoutUrl)
+            if (process.env.DEBUG === 'true') console.info('Try to logout: ' + logoutUrl)
 
             const cookies = cookieJar['cookies'] ? cookieJar['cookies'].join('; ') : ''
 
@@ -179,12 +179,12 @@ export class KCenterApiClient {
             })
 
             if (res.ok) {
-                console.info(`[Logout]: Got an OK from the server.`)
+                if (process.env.DEBUG === 'true') console.info(`[Logout]: Got an OK from the server.`)
             } else {
                 console.error(`[Logout]: Did not get an OK from the server. Code: ${res.status}, Msg: ${res.statusText}`)
             }
         } catch (error) {
-            console.log('Error: ', error)
+            console.error('Error: ', error)
         }
     }
 
@@ -199,7 +199,7 @@ export class KCenterApiClient {
         try {
             const docData = this.fetchDocument(docGuid, lang, cookieJar)
 
-            console.debug('Fetched docData: ', docData)
+            if (process.env.DEBUG === 'true') console.info('Fetched docData: ', docData)
 
             return docData
         } catch (error) {

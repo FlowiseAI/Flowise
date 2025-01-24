@@ -1,5 +1,5 @@
 import { TextSplitter } from 'langchain/text_splitter'
-import { handleEscapeCharacters, INode, INodeData, INodeOutputsValue, INodeParams, ICommonObject } from '../../src'
+import { handleEscapeCharacters, INode, INodeData, INodeOutputsValue, INodeParams } from '../../src'
 import { IKCDocument, KCenterApiClient } from './KCenterApiClient'
 import { NodeHtmlMarkdown } from 'node-html-markdown'
 import { Document } from '@langchain/core/documents'
@@ -57,7 +57,7 @@ class KCenterDocumentLoader_DocumentLoaders implements INode {
         this.outputs = [
             {
                 label: 'Document',
-                name: 'documenta',
+                name: 'document',
                 description: 'Array of document object containing metadata and pageContent',
                 baseClasses: [...this.baseClasses, 'json']
             },
@@ -76,18 +76,18 @@ class KCenterDocumentLoader_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const docGuid = nodeData.inputs?.docGuid as string
         const docLang = nodeData.inputs?.docLang as string
-        const metadata = nodeData.inputs?.metadata
+        //const metadata = nodeData.inputs?.metadata
         const apiClient = nodeData.inputs?.kcenterConnector as KCenterApiClient
         const output = nodeData.outputs?.output as string
 
         // TODO: load KCenter Document
         const kcDoc: IKCDocument = await apiClient.loadDocument(docGuid, docLang)
 
-        console.info('[KCenter]: kcDoc loaded')
+        if (process.env.DEBUG === 'true') console.info('[KCenter]: kcDoc loaded')
 
         if (output === 'kcdoc') {
             return this.handleOutputType_kcdoc(kcDoc)
@@ -95,8 +95,10 @@ class KCenterDocumentLoader_DocumentLoaders implements INode {
 
         let alldocs: Document[] = []
 
-        const markdownContent = NodeHtmlMarkdown.translate(kcDoc.content, {})
-        console.info('[KCenter]: Content as markdown: ' + markdownContent)
+        const markdownContent = this.convertKcDocumentContent(kcDoc)
+
+        if (process.env.DEBUG === 'true') console.info('[KCenter]: Content as markdown: ' + markdownContent)
+
         const newKcDoc = {
             id: docGuid + '_' + docLang,
             pageContent: markdownContent,
@@ -108,9 +110,9 @@ class KCenterDocumentLoader_DocumentLoaders implements INode {
         }
 
         if (textSplitter) {
-            console.info('[KCenter]: splitt document')
+            if (process.env.DEBUG === 'true') console.info('[KCenter]: splitt document')
             let splittedDocuments = await textSplitter.splitDocuments([newKcDoc])
-            console.debug('[KCenter]: splitt document into ' + splittedDocuments.length)
+            if (process.env.DEBUG === 'true') console.info('[KCenter]: splitt document into ' + splittedDocuments.length)
             for (const doc of splittedDocuments) {
                 alldocs.push(doc)
             }
@@ -118,11 +120,22 @@ class KCenterDocumentLoader_DocumentLoaders implements INode {
             alldocs.push(newKcDoc)
         }
 
+        if (output === 'document') {
+            return alldocs
+        }
+
         if (output === 'text') {
             return this.handleOutputType_text(alldocs)
         }
 
-        return alldocs
+        throw new Error(`Unknown output type '${output}'`)
+    }
+
+    private convertKcDocumentContent(kcDoc: IKCDocument): string {
+        //TODO: handle different document formats here
+        const markdownContent = NodeHtmlMarkdown.translate(kcDoc.content, {})
+
+        return markdownContent
     }
 
     private handleOutputType_text(kcdocs: Document[]): string {
