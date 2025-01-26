@@ -560,7 +560,6 @@ export const buildFlow = async ({
             if (isUpsert) upsertHistory['flowData'] = saveUpsertFlowData(flowNodeData, upsertHistory)
 
             const reactFlowNodeData: INodeData = await resolveVariables(
-                appDataSource,
                 flowNodeData,
                 flowNodes,
                 question,
@@ -762,10 +761,9 @@ export const clearSessionMemory = async (
 }
 
 const getGlobalVariable = async (
-    appDataSource: DataSource,
     overrideConfig?: ICommonObject,
     availableVariables: IVariable[] = [],
-    variableOverrides?: ICommonObject[]
+    variableOverrides: ICommonObject[] = []
 ) => {
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
@@ -826,13 +824,12 @@ const getGlobalVariable = async (
  * @returns {string}
  */
 export const getVariableValue = async (
-    appDataSource: DataSource,
     paramValue: string | object,
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
     isAcceptVariable = false,
-    flowData?: ICommonObject,
+    flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
@@ -877,17 +874,17 @@ export const getVariableValue = async (
             }
 
             if (variableFullPath.startsWith('$vars.')) {
-                const vars = await getGlobalVariable(appDataSource, flowData, availableVariables, variableOverrides)
+                const vars = await getGlobalVariable(flowConfig, availableVariables, variableOverrides)
                 const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
-                if (variableValue) {
+                if (variableValue != null) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
                 }
             }
 
-            if (variableFullPath.startsWith('$flow.') && flowData) {
-                const variableValue = get(flowData, variableFullPath.replace('$flow.', ''))
-                if (variableValue) {
+            if (variableFullPath.startsWith('$flow.') && flowConfig) {
+                const variableValue = get(flowConfig, variableFullPath.replace('$flow.', ''))
+                if (variableValue != null) {
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
                 }
@@ -980,12 +977,11 @@ export const getVariableValue = async (
  * @returns {INodeData}
  */
 export const resolveVariables = async (
-    appDataSource: DataSource,
     reactFlowNodeData: INodeData,
     reactFlowNodes: IReactFlowNode[],
     question: string,
     chatHistory: IMessage[],
-    flowData?: ICommonObject,
+    flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
@@ -1000,13 +996,12 @@ export const resolveVariables = async (
                 const resolvedInstances = []
                 for (const param of paramValue) {
                     const resolvedInstance = await getVariableValue(
-                        appDataSource,
                         param,
                         reactFlowNodes,
                         question,
                         chatHistory,
                         undefined,
-                        flowData,
+                        flowConfig,
                         uploadedFilesContent,
                         availableVariables,
                         variableOverrides
@@ -1017,13 +1012,12 @@ export const resolveVariables = async (
             } else {
                 const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
                 const resolvedInstance = await getVariableValue(
-                    appDataSource,
                     paramValue,
                     reactFlowNodes,
                     question,
                     chatHistory,
                     isAcceptVariable,
-                    flowData,
+                    flowConfig,
                     uploadedFilesContent,
                     availableVariables,
                     variableOverrides
@@ -1067,12 +1061,12 @@ export const replaceInputsWithConfig = (
              * Several conditions:
              * 1. If config is 'analytics', always allow it
              * 2. If config is 'vars', check its object and filter out the variables that are not enabled for override
-             * 3. If typeof config is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
+             * 3. If typeof config's value is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
              * Example:
              * "systemMessagePrompt": {
              *  "chatPromptTemplate_0": "You are an assistant"
              * }
-             * 4. If typeof config is a string, check if the parameter is enabled
+             * 4. If typeof config's value is a string, check if the parameter is enabled
              * Example:
              * "systemMessagePrompt": "You are an assistant"
              */
@@ -1110,8 +1104,11 @@ export const replaceInputsWithConfig = (
                     continue
                 }
             } else {
-                // Only proceed if the parameter is enabled
-                if (!isParameterEnabled(flowNodeData.label, config)) {
+                // Skip if it is an override "files" input, such as pdfFile, txtFile, etc
+                if (typeof overrideConfig[config] === 'string' && overrideConfig[config].includes('FILE-STORAGE::')) {
+                    // pass
+                } else if (!isParameterEnabled(flowNodeData.label, config)) {
+                    // Only proceed if the parameter is enabled
                     continue
                 }
             }
@@ -1743,15 +1740,6 @@ export const convertToValidFilename = (word: string) => {
         .replace(/[/|\\:*?"<>]/g, ' ')
         .replace(' ', '')
         .toLowerCase()
-}
-
-export const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
-    const date = new Date(dateTimeStr)
-    if (isNaN(date.getTime())) {
-        return undefined
-    }
-    setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
-    return date
 }
 
 export const aMonthAgo = () => {

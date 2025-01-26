@@ -94,6 +94,8 @@ export interface INodeParams {
     tabIdentifier?: string
     tabs?: Array<INodeParams>
     refresh?: boolean
+    freeSolo?: boolean
+    loadPreviousNodes?: boolean
 }
 
 export interface INodeExecutionData {
@@ -183,7 +185,7 @@ export interface IMultiAgentNode {
     checkpointMemory?: any
 }
 
-type SeqAgentType = 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state' | 'llm'
+type SeqAgentType = 'agent' | 'condition' | 'end' | 'start' | 'tool' | 'state' | 'llm' | 'utilities'
 export type ConversationHistorySelection = 'user_question' | 'last_message' | 'all_messages' | 'empty'
 
 export interface ISeqAgentNode {
@@ -404,12 +406,9 @@ export interface IStateWithMessages extends ICommonObject {
 }
 
 export interface IServerSideEventStreamer {
-    streamEvent(chatId: string, data: string): void
     streamStartEvent(chatId: string, data: any): void
-
     streamTokenEvent(chatId: string, data: string): void
     streamCustomEvent(chatId: string, eventType: string, data: any): void
-
     streamSourceDocumentsEvent(chatId: string, data: any): void
     streamUsedToolsEvent(chatId: string, data: any): void
     streamFileAnnotationsEvent(chatId: string, data: any): void

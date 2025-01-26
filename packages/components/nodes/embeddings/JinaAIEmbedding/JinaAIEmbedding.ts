@@ -1,6 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { JinaEmbeddings, JinaEmbeddingsParams } from '@langchain/community/embeddings/jina'
+import { JinaEmbeddings } from '@langchain/community/embeddings/jina'
 
 class JinaAIEmbedding_Embeddings implements INode {
     label: string
@@ -45,12 +45,11 @@ class JinaAIEmbedding_Embeddings implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('jinaAIAPIKey', credentialData, nodeData)
 
-        const obj: JinaEmbeddingsParams = {
+        const model = new JinaEmbeddings({
             apiKey: apiKey,
             model: modelName
-        }
+        })
 
-        const model = new JinaEmbeddings(obj)
         return model
     }
 }

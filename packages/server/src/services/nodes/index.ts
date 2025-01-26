@@ -123,6 +123,13 @@ const executeCustomFunction = async (requestBody: any) => {
         const functionInputVariables = Object.fromEntries(
             [...(body?.javascriptFunction ?? '').matchAll(/\$([a-zA-Z0-9_]+)/g)].map((g) => [g[1], undefined])
         )
+        if (functionInputVariables && Object.keys(functionInputVariables).length) {
+            for (const key in functionInputVariables) {
+                if (key.includes('vars')) {
+                    delete functionInputVariables[key]
+                }
+            }
+        }
         const nodeData = { inputs: { functionInputVariables, ...body } }
         if (Object.prototype.hasOwnProperty.call(appServer.nodesPool.componentNodes, 'customFunction')) {
             try {

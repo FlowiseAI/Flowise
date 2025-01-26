@@ -167,28 +167,32 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     let storagePath = ''
 
     const onStartDateSelected = (date) => {
-        setStartDate(date)
+        const updatedDate = new Date(date)
+        updatedDate.setHours(0, 0, 0, 0)
+        setStartDate(updatedDate)
         getChatmessageApi.request(dialogProps.chatflow.id, {
-            startDate: date,
+            startDate: updatedDate,
             endDate: endDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
         getStatsApi.request(dialogProps.chatflow.id, {
-            startDate: date,
+            startDate: updatedDate,
             endDate: endDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
     }
 
     const onEndDateSelected = (date) => {
-        setEndDate(date)
+        const updatedDate = new Date(date)
+        updatedDate.setHours(23, 59, 59, 999)
+        setEndDate(updatedDate)
         getChatmessageApi.request(dialogProps.chatflow.id, {
-            endDate: date,
+            endDate: updatedDate,
             startDate: startDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
         getStatsApi.request(dialogProps.chatflow.id, {
-            endDate: date,
+            endDate: updatedDate,
             startDate: startDate,
             chatType: chatTypeFilter.length ? chatTypeFilter : undefined
         })
