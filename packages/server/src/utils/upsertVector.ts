@@ -2,7 +2,6 @@ import { Request } from 'express'
 import * as path from 'path'
 import { cloneDeep, omit } from 'lodash'
 import {
-    ICommonObject,
     IMessage,
     addArrayFilesToStorage,
     mapMimeTypeToInputField,
@@ -47,7 +46,7 @@ export const executeUpsert = async ({
     files
 }: IExecuteFlowParams) => {
     const question = incomingInput.question
-    const overrideConfig = incomingInput.overrideConfig ?? {}
+    let overrideConfig = incomingInput.overrideConfig ?? {}
     let stopNodeId = incomingInput?.stopNodeId ?? ''
     const chatHistory: IMessage[] = []
     const isUpsert = true
@@ -55,7 +54,7 @@ export const executeUpsert = async ({
     const apiMessageId = uuidv4()
 
     if (files?.length) {
-        const overrideConfig: ICommonObject = { ...incomingInput }
+        overrideConfig = { ...incomingInput }
         for (const file of files) {
             const fileNames: string[] = []
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
