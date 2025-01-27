@@ -238,7 +238,7 @@ export const executeFlow = async ({
     signal
 }: IExecuteFlowParams) => {
     const question = incomingInput.question
-    const overrideConfig = incomingInput.overrideConfig ?? {}
+    let overrideConfig = incomingInput.overrideConfig ?? {}
     const uploads = incomingInput.uploads
     const prependMessages = incomingInput.history ?? []
     const streaming = incomingInput.streaming
@@ -316,7 +316,7 @@ export const executeFlow = async ({
 
     // Process form data body with files
     if (files?.length) {
-        const overrideConfig: ICommonObject = { ...incomingInput }
+        overrideConfig = { ...incomingInput }
         for (const file of files) {
             const fileNames: string[] = []
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
