@@ -2,7 +2,7 @@ import swaggerJSDoc from 'swagger-jsdoc'
 
 const swaggerUiOptions = {
     failOnErrors: true, // Throw when parsing errors
-    baseDir: __dirname, // Base directory which we use to locate your JSDOC files
+    baseDir: 'saved-agents', // Base directory which we use to locate your JSDOC files
     exposeApiDocs: true,
     definition: {
         openapi: '3.0.3',
