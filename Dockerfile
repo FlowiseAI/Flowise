@@ -23,7 +23,11 @@ ENV NODE_OPTIONS=--max-old-space-size=8192
 WORKDIR /usr/src
 
 # Copy app source
-COPY . .
+COPY ./packages ./packages/
+COPY ./*.json ./
+COPY ./pnpm-*.yaml ./
+COPY ./.npmrc ./.npmrc
+
 
 RUN pnpm install
 

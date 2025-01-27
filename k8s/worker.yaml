@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flowise-worker
+  namespace: xheal-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flowise-worker
+  template:
+    metadata:
+      labels:
+        app: flowise-worker
+    spec:
+      containers:
+        - name: app
+          image: 050451365515.dkr.ecr.eu-central-1.amazonaws.com/xheal/flowise:latest
+          command:
+            - pnpm
+          args:
+            - start-worker
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: ENV
+              value: "prod"
+            - name: DEBUG
+              value: "true"
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: DATABASE_TYPE
+              value: "postgres"
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_HOST
+              value: "xheal-instance-1.cvi2wc6cabc0.eu-central-1.rds.amazonaws.com"
+            - name: DATABASE_NAME
+              value: "flowise"
+            - name: DATABASE_SSL
+              value: "false"
+            - name: DATABASE_USER
+              value: "postgres"
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: database_pass
+            - name: FLOWISE_USERNAME
+              value: "d8sdkjad"
+            - name: FLOWISE_PASSWORD
+              value: "e88fa53e7ce641f4c)e78eac6fdac1af2!"
+            - name: FLOWISE_FILE_SIZE_LIMIT
+              value: "50mb"
+            - name: STORAGE_TYPE
+              value: "s3"
+            - name: S3_STORAGE_BUCKET_NAME
+              value: "xheal-flowise"
+            - name: S3_STORAGE_ACCESS_KEY_ID
+              value: "AKIAQXPZCX2FXZYB3ZHO"
+            - name: S3_STORAGE_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: s3_storage_secret_access_key
+            - name: S3_STORAGE_REGION
+              value: "eu-central-1"
+            - name: MODE
+              value: "queue"
+            - name: QUEUE_NAME
+              value: "flowise-queue"
+            - name: WORKER_CONCURRENCY
+              value: "10000"
+            - name: REDIS_HOST
+              value: "xheal-flowise.nif9dl.ng.0001.euc1.cache.amazonaws.com"
+            - name: REDIS_PORT
+              value: "6379"
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+            requests:
+              cpu: 256m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ping
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /api/v1/ping
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          startupProbe:
+            httpGet:
+              path: /api/v1/ping
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      terminationGracePeriodSeconds: 360

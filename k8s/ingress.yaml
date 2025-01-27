@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: flowise
+  namespace: xheal-prod
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80,"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-central-1:050451365515:certificate/931ef0fa-2140-4fca-8a3c-eb81f0432296
+    alb.ingress.kubernetes.io/load-balancer-attributes: routing.http2.enabled=false,routing.http.drop_invalid_header_fields.enabled=true
+  labels:
+    app: flowise
+spec:
+  ingressClassName: "alb"
+  rules:
+    - host: ai-dashboard.xheal.ai
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: flowise
+                port:
+                  number: 3000
