@@ -50,5 +50,5 @@ services:
         ports:
             - '${PORT}:${PORT}'
         volumes:
-            - /root/.flowise/saved-agents
+            - ~/.flowise:/root/.flowise/saved-agents
         entrypoint: /bin/sh -c "sleep 3; flowise start"
