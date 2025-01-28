@@ -245,13 +245,6 @@ export const executeFlow = async ({
     const userMessageDateTime = new Date()
     const chatflowid = chatflow.id
 
-    // Logi Symphony session ID override config injection check.
-    if (process.env.LOGI_SYMPHONY_URL) {
-        const importPath = './LogiSymphony/logisymphony'
-        const logiSymphony = await import(importPath)
-        logiSymphony.checkSessionIdOverrideConfig(req, incomingInput)
-    }
-
     /* Process file uploads from the chat
      * - Images
      * - Files
@@ -770,6 +763,13 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const files = (req.files as Express.Multer.File[]) || []
     const abortControllerId = `${chatflow.id}_${chatId}`
+
+    // Logi Symphony session ID override config injection check.
+    if (process.env.LOGI_SYMPHONY_URL) {
+        const importPath = './LogiSymphony/logisymphony'
+        const logiSymphony = await import(importPath)
+        logiSymphony.checkSessionIdOverrideConfig(req, incomingInput)
+    }
 
     try {
         // Validate API Key if its external API request

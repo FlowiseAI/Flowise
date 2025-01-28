@@ -121,6 +121,17 @@ export class App {
     }
 
     async config() {
+        // Logi Symphony authorization check.
+        if (process.env.LOGI_SYMPHONY_URL) {
+            const importPath = './utils/LogiSymphony/logisymphony'
+            const logiSymphony = await import(importPath)
+            await logiSymphony.setupRequestAuthorization(this.app)
+        }
+
+        // Get the subpath from the environment, or assume it's at the root.
+        // Modified to default to /aichatbot.
+        const appPath = process.env.SUBPATH ?? '/aichatbot'
+
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))
@@ -246,7 +257,7 @@ export class App {
             }
         }
 
-        this.app.use('/api/v1', flowiseApiV1Router)
+        this.app.use(appPath + '/api/v1', flowiseApiV1Router)
 
         // ----------------------------------------
         // Configure number of proxies in Host Environment
@@ -259,7 +270,7 @@ export class App {
         })
 
         if (process.env.MODE === MODE.QUEUE) {
-            this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
+            this.app.use(appPath + '/admin/queues', this.queueManager.getBullBoardRouter())
         }
 
         // ----------------------------------------
@@ -302,8 +313,6 @@ export async function start(): Promise<void> {
 
     const host = process.env.HOST
     const port = parseInt(process.env.PORT || '', 10) || 3000
-    const basesubpath = process.env.SUBPATH || '/aichatbot'
-    const subpath = `${basesubpath}${basesubpath === '/' ? '' : '/'}socket.io`
     const server = http.createServer(serverApp.app)
 
     await serverApp.initDatabase()

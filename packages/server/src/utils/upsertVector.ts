@@ -207,13 +207,6 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
     try {
         const chatflowid = req.params.id
 
-        // Logi Symphony session ID override config injection check.
-        if (process.env.LOGI_SYMPHONY_URL) {
-            const importPath = './LogiSymphony/logisymphony'
-            const logiSymphony = await import(importPath)
-            logiSymphony.checkSessionIdOverrideConfig(req, incomingInput)
-        }
-
         // Check if chatflow exists
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowid
@@ -227,6 +220,13 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         const incomingInput: IncomingInput = req.body
         const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
         const files = (req.files as Express.Multer.File[]) || []
+
+        // Logi Symphony session ID override config injection check.
+        if (process.env.LOGI_SYMPHONY_URL) {
+            const importPath = './LogiSymphony/logisymphony'
+            const logiSymphony = await import(importPath)
+            logiSymphony.checkSessionIdOverrideConfig(req, incomingInput)
+        }
 
         if (!isInternal) {
             const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
