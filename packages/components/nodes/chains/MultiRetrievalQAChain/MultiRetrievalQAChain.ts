@@ -74,7 +74,7 @@ class MultiRetrievalQAChain_Chains implements INode {
             retrieverNames,
             retrieverDescriptions,
             retrievers,
-            retrievalQAChainOpts: { verbose: process.env.DEBUG === 'true' ? true : false, returnSourceDocuments }
+            retrievalQAChainOpts: { verbose: process.env.DEBUG === 'true', returnSourceDocuments }
         })
         return chain
     }

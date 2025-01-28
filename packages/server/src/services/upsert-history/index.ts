@@ -1,4 +1,4 @@
-import { MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
+import { MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
@@ -14,26 +14,20 @@ const getAllUpsertHistory = async (
     try {
         const appServer = getRunningExpressApp()
 
-        const setDateToStartOrEndOfDay = (dateTimeStr: string, setHours: 'start' | 'end') => {
-            const date = new Date(dateTimeStr)
-            if (isNaN(date.getTime())) {
-                return undefined
+        let createdDateQuery
+        if (startDate || endDate) {
+            if (startDate && endDate) {
+                createdDateQuery = Between(new Date(startDate), new Date(endDate))
+            } else if (startDate) {
+                createdDateQuery = MoreThanOrEqual(new Date(startDate))
+            } else if (endDate) {
+                createdDateQuery = LessThanOrEqual(new Date(endDate))
             }
-            setHours === 'start' ? date.setHours(0, 0, 0, 0) : date.setHours(23, 59, 59, 999)
-            return date
         }
-
-        let fromDate
-        if (startDate) fromDate = setDateToStartOrEndOfDay(startDate, 'start')
-
-        let toDate
-        if (endDate) toDate = setDateToStartOrEndOfDay(endDate, 'end')
-
         let upsertHistory = await appServer.AppDataSource.getRepository(UpsertHistory).find({
             where: {
                 chatflowid,
-                ...(fromDate && { date: MoreThanOrEqual(fromDate) }),
-                ...(toDate && { date: LessThanOrEqual(toDate) })
+                date: createdDateQuery
             },
             order: {
                 date: sortOrder === 'DESC' ? 'DESC' : 'ASC'

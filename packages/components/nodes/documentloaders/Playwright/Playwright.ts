@@ -8,7 +8,7 @@ import {
     PlaywrightWebBaseLoaderOptions
 } from '@langchain/community/document_loaders/web/playwright'
 import { test } from 'linkifyjs'
-import { webCrawl, xmlScrape } from '../../../src'
+import { handleEscapeCharacters, INodeOutputsValue, webCrawl, xmlScrape } from '../../../src'
 
 class Playwright_DocumentLoaders implements INode {
     label: string
@@ -20,11 +20,12 @@ class Playwright_DocumentLoaders implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Playwright Web Scraper'
         this.name = 'playwrightWebScraper'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'playwright.svg'
         this.category = 'Document Loaders'
@@ -132,6 +133,20 @@ class Playwright_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -143,6 +158,7 @@ class Playwright_DocumentLoaders implements INode {
         let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as 'load' | 'domcontentloaded' | 'networkidle' | 'commit' | undefined
         let waitForSelector = nodeData.inputs?.waitForSelector as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const output = nodeData.outputs?.output as string
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -251,7 +267,15 @@ class Playwright_DocumentLoaders implements INode {
             }))
         }
 
-        return docs
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 

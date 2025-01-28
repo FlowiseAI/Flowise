@@ -1,6 +1,6 @@
 import { omit } from 'lodash'
-import { INode, INodeData, INodeParams, ICommonObject } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from '../../../src/Interface'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { TextSplitter } from 'langchain/text_splitter'
 import { ApifyDatasetLoader } from '@langchain/community/document_loaders/web/apify_dataset'
 import { Document } from '@langchain/core/documents'
@@ -16,16 +16,23 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Apify Website Content Crawler'
         this.name = 'apifyWebsiteContentCrawler'
         this.type = 'Document'
         this.icon = 'apify-symbol-transparent.svg'
-        this.version = 2.0
+        this.version = 3.0
         this.category = 'Document Loaders'
         this.description = 'Load data from Apify Website Content Crawler'
         this.baseClasses = [this.type]
+        this.credential = {
+            label: 'Connect Apify API',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['apifyApi']
+        }
         this.inputs = [
             {
                 label: 'Text Splitter',
@@ -112,18 +119,27 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
-        this.credential = {
-            label: 'Connect Apify API',
-            name: 'credential',
-            type: 'credential',
-            credentialNames: ['apifyApi']
-        }
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const output = nodeData.outputs?.output as string
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -203,7 +219,15 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
             }))
         }
 
-        return docs
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 

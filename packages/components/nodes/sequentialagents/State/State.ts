@@ -196,7 +196,13 @@ class State_SeqAgents implements INode {
                 input
             }
 
-            let sandbox: any = {}
+            let sandbox: any = {
+                util: undefined,
+                Symbol: undefined,
+                child_process: undefined,
+                fs: undefined,
+                process: undefined
+            }
             sandbox['$vars'] = prepareSandboxVars(variables)
             sandbox['$flow'] = flow
 
@@ -212,7 +218,10 @@ class State_SeqAgents implements INode {
                 require: {
                     external: { modules: deps },
                     builtin: builtinDeps
-                }
+                },
+                eval: false,
+                wasm: false,
+                timeout: 10000
             } as any
 
             const vm = new NodeVM(nodeVMOptions)

@@ -117,7 +117,14 @@ class CustomFunction_Utilities implements INode {
             }
         }
 
-        let sandbox: any = { $input: input }
+        let sandbox: any = {
+            $input: input,
+            util: undefined,
+            Symbol: undefined,
+            child_process: undefined,
+            fs: undefined,
+            process: undefined
+        }
         sandbox['$vars'] = prepareSandboxVars(variables)
         sandbox['$flow'] = flow
         sandbox['$tools'] = tools
@@ -140,7 +147,10 @@ class CustomFunction_Utilities implements INode {
             require: {
                 external: { modules: deps },
                 builtin: builtinDeps
-            }
+            },
+            eval: false,
+            wasm: false,
+            timeout: 10000
         } as any
 
         const vm = new NodeVM(nodeVMOptions)

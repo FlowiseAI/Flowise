@@ -15,7 +15,6 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
-    badge: string
 
     constructor() {
         this.label = 'AWS Bedrock Knowledge Base Retriever'
@@ -24,7 +23,6 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
         this.type = 'AWSBedrockKBRetriever'
         this.icon = 'AWSBedrockKBRetriever.svg'
         this.category = 'Retrievers'
-        this.badge = 'NEW'
         this.description = 'Connect to AWS Bedrock Knowledge Base API and retrieve relevant chunks'
         this.baseClasses = [this.type, 'BaseRetriever']
         this.credential = {

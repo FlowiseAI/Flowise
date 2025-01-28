@@ -14,10 +14,6 @@ export default defineConfig(async ({ mode }) => {
                 '^/api(/|$).*': {
                     target: `http://${serverHost}:${serverPort}`,
                     changeOrigin: true
-                },
-                '/socket.io': {
-                    target: `http://${serverHost}:${serverPort}`,
-                    changeOrigin: true
                 }
             }
         }

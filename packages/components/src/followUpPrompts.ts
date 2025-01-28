@@ -7,6 +7,8 @@ import { ChatOpenAI } from '@langchain/openai'
 import { z } from 'zod'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { StructuredOutputParser } from '@langchain/core/output_parsers'
+import { ChatGroq } from '@langchain/groq'
+import ollama from 'ollama'
 
 const FollowUpPromptType = z
     .object({
@@ -94,6 +96,7 @@ export const generateFollowUpPrompts = async (
                     model: providerConfig.modelName,
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
+                // @ts-ignore
                 const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
                 return structuredResponse
@@ -107,6 +110,48 @@ export const generateFollowUpPrompts = async (
                 const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
                 return structuredResponse
+            }
+            case FollowUpPromptProvider.GROQ: {
+                const llm = new ChatGroq({
+                    apiKey: credentialData.groqApiKey,
+                    model: providerConfig.modelName,
+                    temperature: parseFloat(`${providerConfig.temperature}`)
+                })
+                const structuredLLM = llm.withStructuredOutput(FollowUpPromptType)
+                const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
+                return structuredResponse
+            }
+            case FollowUpPromptProvider.OLLAMA: {
+                const response = await ollama.chat({
+                    model: providerConfig.modelName,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: followUpPromptsPrompt
+                        }
+                    ],
+                    format: {
+                        type: 'object',
+                        properties: {
+                            questions: {
+                                type: 'array',
+                                items: {
+                                    type: 'string'
+                                },
+                                minItems: 3,
+                                maxItems: 3,
+                                description: 'Three follow-up questions based on the conversation history'
+                            }
+                        },
+                        required: ['questions'],
+                        additionalProperties: false
+                    },
+                    options: {
+                        temperature: parseFloat(`${providerConfig.temperature}`)
+                    }
+                })
+                const result = FollowUpPromptType.parse(JSON.parse(response.message.content))
+                return result
             }
         }
     } else {
