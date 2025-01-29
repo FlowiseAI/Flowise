@@ -51,29 +51,33 @@ export class KCenterApiClient {
                 headers: { Cookie: cookies }
             })
 
-            if (res.ok) {
-                if (process.env.DEBUG === 'true') console.info('Document fetched')
-                let data = await res.json()
-
-                if (Array.isArray(data)) {
-                    if (data.length > 0) {
-                        data = data[0]
-                    } else {
-                        data = null
-                    }
-                }
-
-                if (process.env.DEBUG === 'true') console.info('[FetcDocument]: ', data)
-
-                return <IKCDocument>data
-            } else {
-                console.error(`FetchDocument: Did not get an OK from the server. Code: ${res.status}, Msg: ${res.statusText}`)
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}, message: ${res.statusText}`)
             }
+
+            if (process.env.DEBUG === 'true') console.info('Document fetched')
+            let data = await res.json()
+
+            if (Array.isArray(data)) {
+                if (data.length > 0) {
+                    data = data[0]
+                } else {
+                    throw new Error('No document data received (empty array)')
+                }
+            }
+
+            if (data === null) {
+                throw new Error('No document data received (null)')
+            }
+
+            if (process.env.DEBUG === 'true') console.info('[FetcDocument]: ', data)
+
+            return data as IKCDocument
         } catch (error) {
             console.warn('Error: ', error)
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+            throw new Error(`Failed to fetch document (guid: ${guid}): ${errorMessage}`)
         }
-
-        throw new Error('Could not fetch document!')
     }
 
     private base64url(source: CryptoJS.lib.WordArray): string {
@@ -190,28 +194,29 @@ export class KCenterApiClient {
 
     async loadDocument(docGuid: string, lang: string): Promise<IKCDocument> {
         const cookieJar = {}
-        const loginSuccess = await this.login(cookieJar)
-
-        if (!loginSuccess) {
-            throw new Error('Could not login!')
-        }
 
         try {
-            const docData = this.fetchDocument(docGuid, lang, cookieJar)
+            const loginSuccess = await this.login(cookieJar)
+
+            if (!loginSuccess) {
+                throw new Error('Could not login!')
+            }
+
+            const docData = await this.fetchDocument(docGuid, lang, cookieJar)
 
             if (process.env.DEBUG === 'true') console.info('Fetched docData: ', docData)
 
             return docData
         } catch (error) {
             console.warn('Error: ', error)
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+            throw new Error(`Failed to load document (guid: ${docGuid}): ${errorMessage}`)
         } finally {
             try {
                 await this.logout(cookieJar)
             } catch (error) {
-                console.warn('Could not logout: ', error)
+                console.warn('Could not logout: ', error instanceof Error ? error.message : error)
             }
         }
-
-        throw new Error('Could not load document')
     }
 }

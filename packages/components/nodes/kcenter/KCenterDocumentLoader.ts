@@ -77,58 +77,61 @@ class KCenterDocumentLoader_DocumentLoaders implements INode {
     }
 
     async init(nodeData: INodeData, _: string): Promise<any> {
-        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
-        const docGuid = nodeData.inputs?.docGuid as string
-        const docLang = nodeData.inputs?.docLang as string
-        //const metadata = nodeData.inputs?.metadata
-        const apiClient = nodeData.inputs?.kcenterConnector as KCenterApiClient
-        const output = nodeData.outputs?.output as string
+        try {
+            const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+            const docGuid = nodeData.inputs?.docGuid as string
+            const docLang = nodeData.inputs?.docLang as string
+            //const metadata = nodeData.inputs?.metadata
+            const apiClient = nodeData.inputs?.kcenterConnector as KCenterApiClient
+            const output = nodeData.outputs?.output as string
 
-        // TODO: load KCenter Document
-        const kcDoc: IKCDocument = await apiClient.loadDocument(docGuid, docLang)
+            // TODO: load KCenter Document
+            const kcDoc: IKCDocument = await apiClient.loadDocument(docGuid, docLang)
+            if (process.env.DEBUG === 'true') console.info('[KCenter]: kcDoc loaded')
 
-        if (process.env.DEBUG === 'true') console.info('[KCenter]: kcDoc loaded')
-
-        if (output === 'kcdoc') {
-            return this.handleOutputType_kcdoc(kcDoc)
-        }
-
-        let alldocs: Document[] = []
-
-        const markdownContent = this.convertKcDocumentContent(kcDoc)
-
-        if (process.env.DEBUG === 'true') console.info('[KCenter]: Content as markdown: ' + markdownContent)
-
-        const newKcDoc = {
-            id: docGuid + '_' + docLang,
-            pageContent: markdownContent,
-            metadata: {
-                lang: docLang,
-                guid: docGuid,
-                title: kcDoc.title
+            // Handle kcdoc output type early
+            if (output === 'kcdoc') {
+                return this.handleOutputType_kcdoc(kcDoc)
             }
-        }
 
-        if (textSplitter) {
-            if (process.env.DEBUG === 'true') console.info('[KCenter]: splitt document')
-            let splittedDocuments = await textSplitter.splitDocuments([newKcDoc])
-            if (process.env.DEBUG === 'true') console.info('[KCenter]: splitt document into ' + splittedDocuments.length)
-            for (const doc of splittedDocuments) {
-                alldocs.push(doc)
+            //TODO: should we convert into markdown here or should we make it configurable somehow?
+            const newKcDoc = {
+                id: docGuid + '_' + docLang,
+                pageContent: this.convertKcDocumentContent(kcDoc),
+                metadata: {
+                    lang: docLang,
+                    guid: docGuid,
+                    title: kcDoc.title
+                }
             }
-        } else {
-            alldocs.push(newKcDoc)
-        }
 
-        if (output === 'document') {
-            return alldocs
-        }
+            if (process.env.DEBUG === 'true') console.info('[KCenter]: Content as markdown: ' + newKcDoc.pageContent)
 
-        if (output === 'text') {
-            return this.handleOutputType_text(alldocs)
-        }
+            let documents: Document[] = []
+            if (textSplitter) {
+                if (process.env.DEBUG === 'true') console.info('[KCenter]: splitt document')
+                let splittedDocuments = await textSplitter.splitDocuments([newKcDoc])
+                if (process.env.DEBUG === 'true') console.info('[KCenter]: splitt document into ' + splittedDocuments.length)
+                for (const doc of splittedDocuments) {
+                    documents.push(doc)
+                }
+            } else {
+                documents.push(newKcDoc)
+            }
 
-        throw new Error(`Unknown output type '${output}'`)
+            // Output Handling
+            switch (output) {
+                case 'document':
+                    return documents
+                case 'text':
+                    return this.handleOutputType_text(documents)
+                default:
+                    throw new Error(`Unsupported output type: '${output}'`)
+            }
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+            throw new Error(`Failed to initialize KCenter node: ${errorMessage}`)
+        }
     }
 
     private convertKcDocumentContent(kcDoc: IKCDocument): string {
