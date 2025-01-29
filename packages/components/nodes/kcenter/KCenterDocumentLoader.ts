@@ -52,6 +52,13 @@ class KCenterDocumentLoader_DocumentLoaders implements INode {
                 placeholder: `<language>`,
                 acceptVariable: true,
                 optional: true
+            },
+            {
+                label: 'Text Splitter',
+                name: 'textSplitter',
+                type: 'TextSplitter',
+                description: `The text splitter that is used to split the document content. Is ignored when returned as a KCDocument.`,
+                optional: true
             }
         ]
         this.outputs = [
