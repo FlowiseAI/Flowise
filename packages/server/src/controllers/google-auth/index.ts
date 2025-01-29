@@ -21,7 +21,9 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
                 'https://www.googleapis.com/auth/userinfo.profile',
                 'https://www.googleapis.com/auth/userinfo.email',
                 'https://www.googleapis.com/auth/gmail.readonly',
-                'https://www.googleapis.com/auth/gmail.labels'
+                'https://www.googleapis.com/auth/gmail.labels',
+                'https://www.googleapis.com/auth/calendar.readonly',
+                'https://www.googleapis.com/auth/calendar.events.readonly'
             ],
             accessType: 'offline',
             prompt: 'consent'
