@@ -37,6 +37,12 @@ class HumanInTheLoop_SeqAgents implements INode {
         this.baseClasses = [this.type]
         this.inputs = [
             {
+                label: 'Input Node',
+                name: 'input',
+                type: 'SeqAgentNode',
+                list: true
+            },
+            {
                 label: 'Name',
                 name: 'hilNodeName',
                 type: 'string',
