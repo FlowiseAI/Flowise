@@ -456,12 +456,9 @@ export interface IActionRequest {
     session_id?: string
     status: 'pending' | 'completed' | 'expired' | 'cancelled'
     output_types: string[]
-    context: {
-        question: string
-        metadata: any
-    }
-    args?: Record<string, any>
-    response?: Record<string, any>
+    context: any
+    args?: any
+    response?: any
     created_at?: Date
     updated_at?: Date
 }

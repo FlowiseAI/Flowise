@@ -932,7 +932,7 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
     } else if (selectedTab === 'updateStateMemoryCode' && updateStateMemoryCode) {
         const vm = await getVM(appDataSource, databaseEntities, nodeData, flow)
         try {
-            const response = await vm.run(`module.exports = async function() {${updateStateMemoryCode}}()`, __dirname)
+            const response = await vm.run(`module.exports = async function() {${updateStateMemoryCode}}()`, __dirname) as any
             if (typeof response !== 'object') throw new Error('Return output must be an object')
             return response
         } catch (e) {

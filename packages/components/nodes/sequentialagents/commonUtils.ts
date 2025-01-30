@@ -240,7 +240,8 @@ export const convertStructuredSchemaToZod = (schema: string | object): ICommonOb
         }
         return zodObj
     } catch (e) {
-        throw new Error(e)
+        const errorMessage = e instanceof Error ? e.message : String(e)
+        throw new Error(errorMessage)
     }
 }
 
@@ -423,7 +424,7 @@ export const checkMessageHistory = async (
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const vm = await getVM(appDataSource, databaseEntities, nodeData, {})
         try {
-            const response = await vm.run(`module.exports = async function() {${messageHistory}}()`, __dirname)
+            const response = await vm.run(`module.exports = async function() {${messageHistory}}()`, __dirname) as string[]
             if (!Array.isArray(response)) throw new Error('Returned message history must be an array')
             if (sysPrompt) {
                 promptArrays.splice(1, 0, ...response)
@@ -432,7 +433,7 @@ export const checkMessageHistory = async (
             }
             prompt = ChatPromptTemplate.fromMessages(promptArrays)
         } catch (e) {
-            throw new Error(e)
+            throw new Error(e as any)
         }
     }
     return prompt
@@ -443,12 +444,9 @@ export const createActionRequest = async (
     sessionId: string,
     nodeId: string,
     outputTypes: string[],
-    context: {
-        question: string
-        metadata: any
-    },
-    args?: Record<string, any>
-): Promise<IActionRequest>  => {
+    context: any,
+    args?: any
+): Promise<IActionRequest> => {
     return {
         id: uuidv4(),
         flow_id: flowId,
@@ -456,8 +454,8 @@ export const createActionRequest = async (
         session_id: sessionId,
         status: 'pending',
         output_types: outputTypes,
-        context: context,
-        args: args
+        context,
+        args
     }
 }
 

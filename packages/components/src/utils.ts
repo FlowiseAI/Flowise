@@ -15,6 +15,7 @@ import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig
 import { customGet } from '../nodes/sequentialagents/commonUtils'
 import { TextSplitter } from 'langchain/text_splitter'
 import { DocumentLoader } from 'langchain/document_loaders/base'
+import { getDataSource } from '../../server/src/DataSource'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -345,7 +346,8 @@ export const getAvailableURLs = async (url: string, limit: number) => {
 
         return availableUrls
     } catch (err) {
-        throw new Error(`getAvailableURLs: ${err?.message}`)
+        const errorMessage = err instanceof Error ? err.message : String(err)
+        throw new Error(`getAvailableURLs: ${errorMessage}`)
     }
 }
 
@@ -364,7 +366,10 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
             const urlObj = new URL(linkElement.href, baseURL)
             urls.push(urlObj.href)
         } catch (err) {
-            if (process.env.DEBUG === 'true') console.error(`error with scraped URL: ${err.message}`)
+            if (process.env.DEBUG === 'true') {
+                const errorMessage = err instanceof Error ? err.message : String(err)
+                console.error(`error with scraped URL: ${errorMessage}`)
+            }
             continue
         }
     }
@@ -430,7 +435,10 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
             pages = await crawl(baseURL, nextURL, pages, limit)
         }
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+        if (process.env.DEBUG === 'true') {
+            const errorMessage = err instanceof Error ? err.message : String(err)
+            console.error(`error in fetch url: ${errorMessage}, on page: ${currentURL}`)
+        }
     }
     return pages
 }
@@ -481,7 +489,10 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
         const xmlBody = await resp.text()
         urls = getURLsFromXML(xmlBody, limit)
     } catch (err) {
-        if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
+        if (process.env.DEBUG === 'true') {
+            const errorMessage = err instanceof Error ? err.message : String(err)
+            console.error(`error in fetch url: ${errorMessage}, on page: ${currentURL}`)
+        }
     }
     return urls
 }
@@ -493,7 +504,7 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
  */
 export const getEnvironmentVariable = (name: string): string | undefined => {
     try {
-        return process.env[name] ?? undefined
+        return typeof process !== 'undefined' ? process.env?.[name] : undefined
     } catch (e) {
         return undefined
     }
@@ -538,7 +549,8 @@ const getEncryptionKey = async (): Promise<string> => {
     try {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
     } catch (error) {
-        throw new Error(error)
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        throw new Error(errorMessage)
     }
 }
 
@@ -579,7 +591,8 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
         return JSON.parse(decryptedDataStr)
     } catch (e) {
         console.error(e)
-        throw new Error('Credentials could not be decrypted.')
+        const errorMessage = e instanceof Error ? e.message : String(e)
+        throw new Error('Credentials could not be decrypted: ' + errorMessage)
     }
 }
 
@@ -609,7 +622,8 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
 
         return decryptedCredentialData
     } catch (e) {
-        throw new Error(e)
+        const errorMessage = e instanceof Error ? e.message : String(e)
+        throw new Error(errorMessage)
     }
 }
 
@@ -823,7 +837,8 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
         }
         return zodObj
     } catch (e) {
-        throw new Error(e)
+        const errorMessage = e instanceof Error ? e.message : String(e)
+        throw new Error(errorMessage)
     }
 }
 
@@ -1172,34 +1187,51 @@ export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, text
     return docs
 }
 
-export const actionRequestToString = (request: IActionRequest): string => {
-
-    const flowId = typeof request.flow_id === 'string' ? request.flow_id : 'invalid'
-
-    const nodeId = typeof request.node_id === 'string' ? request.node_id : 'invalid'
-
-    return `ActionRequest(id=${request.id}, flow_id=${flowId}, node_id=${nodeId})`
-
+export const actionRequestToString = (request: any): string => {
+    return `ActionRequest(id=${request.id}, flow_id=${request.flow_id}, node_id=${request.node_id})`
 }
 
-export const formatActionRequestResponse = (response: Record<string, any>): string => {
-
+export const formatActionRequestResponse = (response: any): string => {
     try {
-
         return JSON.stringify(response, null, 2)
-
-    } catch (error) {
-
+    } catch (e) {
         return 'Error formatting response'
-
     }
+}
 
+function tryGetJsonSpaces() {
+    try {
+        return parseInt(getEnvironmentVariable('LOG_JSON_SPACES') ?? '2')
+    } catch (err) {
+        return 2
+    }
 }
 
 function tryJsonStringify(obj: any, fallback: string) {
     try {
         return JSON.stringify(obj, null, tryGetJsonSpaces())
-    } catch (err: any) {
+    } catch (err) {
         return fallback
+    }
+}
+
+export const getCredentialFromDB = async (selectedCredentialId?: string): Promise<ICommonObject> => {
+    try {
+        if (!selectedCredentialId) return {}
+
+        const appDataSource = await getDataSource()
+        const credential = await appDataSource.getRepository('Credential').findOneBy({
+            id: selectedCredentialId
+        })
+
+        if (!credential) return {}
+
+        // Decrypt credentialData
+        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+
+        return decryptedCredentialData
+    } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : String(e)
+        throw new Error(errorMessage)
     }
 }

@@ -425,7 +425,8 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
         }
         return callbacks
     } catch (e) {
-        throw new Error(e)
+        const errorMessage = e instanceof Error ? e.message : String(e)
+        throw new Error(errorMessage)
     }
 }
 
@@ -502,7 +503,8 @@ export class AnalyticHandler {
                 }
             }
         } catch (e) {
-            throw new Error(e)
+            const errorMessage = e instanceof Error ? e.message : String(e)
+            throw new Error(errorMessage)
         }
     }
 
@@ -742,7 +744,7 @@ export class AnalyticHandler {
         }
     }
 
-    async onLLMStart(name: string, input: any, parentIds: ICommonObject) {
+    async onLLMStart(name: string, input: string, parentIds: ICommonObject) {
         const returnIds: ICommonObject = {
             langSmith: {},
             langFuse: {},
@@ -1011,7 +1013,7 @@ export class AnalyticHandler {
         }
     }
 
-    async onToolError(returnIds: ICommonObject, error: any) {
+    async onToolError(returnIds: ICommonObject, error: string | object) {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
             const toolRun: RunTree | undefined = this.handlers['langSmith'].toolRun[returnIds['langSmith'].toolRun]
             if (toolRun) {
