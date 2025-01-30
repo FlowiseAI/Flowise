@@ -156,7 +156,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [hardDeleteDialogProps, setHardDeleteDialogProps] = useState({})
     const [chatTypeFilter, setChatTypeFilter] = useState([])
     const [feedbackTypeFilter, setFeedbackTypeFilter] = useState([])
-    const [startDate, setStartDate] = useState(new Date().setMonth(new Date().getMonth() - 1))
+    const [startDate, setStartDate] = useState(new Date(new Date().setMonth(new Date().getMonth() - 1)))
     const [endDate, setEndDate] = useState(new Date())
     const [leadEmail, setLeadEmail] = useState('')
 
@@ -701,7 +701,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setFeedbackTypeFilter([])
             setSelectedMessageIndex(0)
             setSelectedChatId('')
-            setStartDate(new Date().setMonth(new Date().getMonth() - 1))
+            setStartDate(new Date(new Date().setMonth(new Date().getMonth() - 1)))
             setEndDate(new Date())
             setStats([])
             setLeadEmail('')
