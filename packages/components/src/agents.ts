@@ -7,7 +7,7 @@ import { OutputParserException, BaseOutputParser, BaseLLMOutputParser } from '@l
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { CallbackManager, CallbackManagerForChainRun, Callbacks } from '@langchain/core/callbacks/manager'
 import { ToolInputParsingException, Tool, StructuredToolInterface } from '@langchain/core/tools'
-import { Runnable, RunnableSequence, RunnablePassthrough } from '@langchain/core/runnables'
+import { Runnable, RunnableSequence, RunnablePassthrough, type RunnableConfig } from '@langchain/core/runnables'
 import { Serializable } from '@langchain/core/load/serializable'
 import { renderTemplate } from '@langchain/core/prompts'
 import { ChatGeneration } from '@langchain/core/outputs'
@@ -36,6 +36,7 @@ type AgentExecutorOutput = ChainValues
 interface AgentExecutorIteratorInput {
     agentExecutor: AgentExecutor
     inputs: Record<string, string>
+    config?: RunnableConfig
     callbacks?: Callbacks
     tags?: string[]
     metadata?: Record<string, unknown>
@@ -50,6 +51,8 @@ export class AgentExecutorIterator extends Serializable implements AgentExecutor
     agentExecutor: AgentExecutor
 
     inputs: Record<string, string>
+
+    config?: RunnableConfig
 
     callbacks: Callbacks
 
@@ -95,6 +98,7 @@ export class AgentExecutorIterator extends Serializable implements AgentExecutor
         this.metadata = fields.metadata
         this.runName = fields.runName
         this.runManager = fields.runManager
+        this.config = fields.config
     }
 
     /**
@@ -276,6 +280,8 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
     */
     handleParsingErrors: boolean | string | ((e: OutputParserException | ToolInputParsingException) => string) = false
 
+    handleToolRuntimeErrors?: (e: Error) => string
+
     get inputKeys() {
         return this.agent.inputKeys
     }
@@ -340,7 +346,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         return this.maxIterations === undefined || iterations < this.maxIterations
     }
 
-    async _call(inputs: ChainValues, runManager?: CallbackManagerForChainRun): Promise<AgentExecutorOutput> {
+    async _call(inputs: ChainValues, runManager?: CallbackManagerForChainRun, config?: RunnableConfig): Promise<AgentExecutorOutput> {
         const toolsByName = Object.fromEntries(this.tools.map((t) => [t.name?.toLowerCase(), t]))
 
         const steps: AgentStep[] = []
@@ -365,7 +371,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         while (this.shouldContinue(iterations)) {
             let output
             try {
-                output = await this.agent.plan(steps, inputs, runManager?.getChild())
+                output = await this.agent.plan(steps, inputs, runManager?.getChild(), config)
             } catch (e) {
                 if (e instanceof OutputParserException) {
                     let observation
@@ -509,11 +515,12 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         nameToolMap: Record<string, Tool>,
         inputs: ChainValues,
         intermediateSteps: AgentStep[],
-        runManager?: CallbackManagerForChainRun
+        runManager?: CallbackManagerForChainRun,
+        config?: RunnableConfig
     ): Promise<AgentFinish | AgentStep[]> {
         let output
         try {
-            output = await this.agent.plan(intermediateSteps, inputs, runManager?.getChild())
+            output = await this.agent.plan(intermediateSteps, inputs, runManager?.getChild(), config)
         } catch (e) {
             if (e instanceof OutputParserException) {
                 let observation
@@ -656,10 +663,11 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         throw new Error(`Got unsupported early_stopping_method: ${earlyStoppingMethod}`)
     }
 
-    async *_streamIterator(inputs: Record<string, any>): AsyncGenerator<ChainValues> {
+    async *_streamIterator(inputs: Record<string, any>, options?: Partial<RunnableConfig>): AsyncGenerator<ChainValues> {
         const agentExecutorIterator = new AgentExecutorIterator({
             inputs,
             agentExecutor: this,
+            config: options,
             metadata: this.metadata,
             tags: this.tags,
             callbacks: this.callbacks

@@ -1,13 +1,22 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { buildFlow, constructGraphs, databaseEntities, getEndingNodes, getStartingNodes, resolveVariables } from '../../utils'
+import {
+    buildFlow,
+    constructGraphs,
+    databaseEntities,
+    getAPIOverrideConfig,
+    getEndingNodes,
+    getStartingNodes,
+    resolveVariables
+} from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { IDepthQueue, IReactFlowNode } from '../../Interface'
 import { ICommonObject, INodeData } from 'flowise-components'
 import { convertToOpenAIFunction } from '@langchain/core/utils/function_calling'
 import { v4 as uuidv4 } from 'uuid'
+import { Variable } from '../../database/entities/Variable'
 
 const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
@@ -51,6 +60,9 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     }
     startingNodeIds = [...new Set(startingNodeIds)]
 
+    const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
+    const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+
     const reactFlowNodes = await buildFlow({
         startingNodeIds,
         reactFlowNodes: nodes,
@@ -64,7 +76,11 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
         sessionId: chatId,
         chatflowid,
         apiMessageId,
-        appDataSource: appServer.AppDataSource
+        appDataSource: appServer.AppDataSource,
+        apiOverrideStatus,
+        nodeOverrides,
+        availableVariables,
+        variableOverrides
     })
 
     const nodeToExecute =
@@ -77,13 +93,16 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     }
 
     const flowDataObj: ICommonObject = { chatflowid, chatId }
+
     const reactFlowNodeData: INodeData = await resolveVariables(
-        appServer.AppDataSource,
         nodeToExecute.data,
         reactFlowNodes,
         '',
         [],
-        flowDataObj
+        flowDataObj,
+        '',
+        availableVariables,
+        variableOverrides
     )
     let nodeToExecuteData = reactFlowNodeData
 

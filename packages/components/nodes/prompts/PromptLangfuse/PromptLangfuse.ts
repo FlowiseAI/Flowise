@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams, PromptTemplate } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam, getInputVariables } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, getInputVariables, transformBracesWithColon } from '../../../src/utils'
 import { PromptTemplateInput } from '@langchain/core/prompts'
 import { Langfuse } from 'langfuse'
 
@@ -64,7 +64,7 @@ class PromptLangfuse_Prompts implements INode {
         })
 
         const langfusePrompt = await langfuse.getPrompt(nodeData.inputs?.template as string)
-        const template = langfusePrompt.getLangchainPrompt()
+        let template = langfusePrompt.getLangchainPrompt()
 
         const promptValuesStr = nodeData.inputs?.promptValues
 
@@ -78,6 +78,7 @@ class PromptLangfuse_Prompts implements INode {
         }
 
         const inputVariables = getInputVariables(template)
+        template = transformBracesWithColon(template)
 
         try {
             const options: PromptTemplateInput = {

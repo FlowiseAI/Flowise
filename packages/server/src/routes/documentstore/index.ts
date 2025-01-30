@@ -1,6 +1,12 @@
 import express from 'express'
 import documentStoreController from '../../controllers/documentstore'
+import { getMulterStorage } from '../../utils'
+
 const router = express.Router()
+
+router.post(['/upsert/', '/upsert/:id'], getMulterStorage().array('files'), documentStoreController.upsertDocStoreMiddleware)
+
+router.post(['/refresh/', '/refresh/:id'], documentStoreController.refreshDocStoreMiddleware)
 
 /** Document Store Routes */
 // Create document store
@@ -13,6 +19,8 @@ router.get('/store/:id', documentStoreController.getDocumentStoreById)
 router.put('/store/:id', documentStoreController.updateDocumentStore)
 // Delete documentStore
 router.delete('/store/:id', documentStoreController.deleteDocumentStore)
+// Get document store configs
+router.get('/store-configs/:id/:loaderId', documentStoreController.getDocStoreConfigs)
 
 /** Component Nodes = Document Store - Loaders */
 // Get all loaders
@@ -22,8 +30,10 @@ router.get('/components/loaders', documentStoreController.getDocumentLoaders)
 router.delete('/loader/:id/:loaderId', documentStoreController.deleteLoaderFromDocumentStore)
 // chunking preview
 router.post('/loader/preview', documentStoreController.previewFileChunks)
+// saving process
+router.post('/loader/save', documentStoreController.saveProcessingLoader)
 // chunking process
-router.post('/loader/process', documentStoreController.processFileChunks)
+router.post('/loader/process/:loaderId', documentStoreController.processLoader)
 
 /** Document Store - Loaders - Chunks */
 // delete specific file chunk from the store
@@ -50,5 +60,8 @@ router.get('/components/recordmanager', documentStoreController.getRecordManager
 
 // update the selected vector store from the playground
 router.post('/vectorstore/update', documentStoreController.updateVectorStoreConfigOnly)
+
+// generate docstore tool description
+router.post('/generate-tool-desc/:id', documentStoreController.generateDocStoreToolDesc)
 
 export default router

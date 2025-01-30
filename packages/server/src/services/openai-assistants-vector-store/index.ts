@@ -1,11 +1,11 @@
 import OpenAI from 'openai'
 import { StatusCodes } from 'http-status-codes'
-import fs from 'fs'
 import { Credential } from '../../database/entities/Credential'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { decryptCredentialData } from '../../utils'
+import { getFileFromUpload, removeSpecificFileFromUpload } from 'flowise-components'
 
 const getAssistantVectorStore = async (credentialId: string, vectorStoreId: string) => {
     try {
@@ -178,13 +178,14 @@ const uploadFilesToAssistantVectorStore = async (
         const openai = new OpenAI({ apiKey: openAIApiKey })
         const uploadedFiles = []
         for (const file of files) {
-            const toFile = await OpenAI.toFile(fs.readFileSync(file.filePath), file.fileName)
+            const fileBuffer = await getFileFromUpload(file.filePath)
+            const toFile = await OpenAI.toFile(fileBuffer, file.fileName)
             const createdFile = await openai.files.create({
                 file: toFile,
                 purpose: 'assistants'
             })
             uploadedFiles.push(createdFile)
-            fs.unlinkSync(file.filePath)
+            await removeSpecificFileFromUpload(file.filePath)
         }
 
         const file_ids = [...uploadedFiles.map((file) => file.id)]

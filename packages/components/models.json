@@ -4,6 +4,11 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-3-5-haiku-20241022-v1:0",
+                    "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model"
+                },
+                {
                     "label": "anthropic.claude-3.5-sonnet-20241022-v2:0",
                     "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
                     "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model"
@@ -226,6 +231,14 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "o1-preview",
+                    "name": "o1-preview"
+                },
+                {
+                    "label": "o1-mini",
+                    "name": "o1-mini"
+                },
+                {
                     "label": "gpt-4o-mini",
                     "name": "gpt-4o-mini"
                 },
@@ -299,6 +312,11 @@
         {
             "name": "chatAnthropic",
             "models": [
+                {
+                    "label": "claude-3-5-haiku-latest",
+                    "name": "claude-3-5-haiku-latest",
+                    "description": "Most recent snapshot version of Claude Haiku 3.5 - fastest model"
+                },
                 {
                     "label": "claude-3.5-sonnet-latest",
                     "name": "claude-3-5-sonnet-latest",
@@ -408,21 +426,8 @@
                     "name": "gemini-1.5-pro-002"
                 },
                 {
-                    "label": "gemini-pro",
-                    "name": "gemini-pro"
-                },
-                {
-                    "label": "gemini-pro-vision",
-                    "name": "gemini-pro-vision"
-                }
-            ]
-        },
-        {
-            "name": "chatGooglePaLM",
-            "models": [
-                {
-                    "label": "models/chat-bison-001",
-                    "name": "models/chat-bison-001"
+                    "label": "gemini-1.0-pro-latest (deprecated)",
+                    "name": "gemini-1.0-pro-latest"
                 }
             ]
         },
@@ -439,12 +444,20 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
-                    "label": "gemini-1.5-flash",
-                    "name": "gemini-1.5-flash-preview-0514"
+                    "label": "gemini-1.5-flash-002",
+                    "name": "gemini-1.5-flash-002"
                 },
                 {
-                    "label": "gemini-1.5-pro",
-                    "name": "gemini-1.5-pro-preview-0409"
+                    "label": "gemini-1.5-flash-001",
+                    "name": "gemini-1.5-flash-001"
+                },
+                {
+                    "label": "gemini-1.5-pro-002",
+                    "name": "gemini-1.5-pro-002"
+                },
+                {
+                    "label": "gemini-1.5-pro-001",
+                    "name": "gemini-1.5-pro-001"
                 },
                 {
                     "label": "gemini-1.0-pro",
@@ -453,6 +466,11 @@
                 {
                     "label": "gemini-1.0-pro-vision",
                     "name": "gemini-1.0-pro-vision"
+                },
+                {
+                    "label": "claude-3-5-haiku@20241022",
+                    "name": "claude-3-5-haiku@20241022",
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model"
                 },
                 {
                     "label": "claude-3-5-sonnet-v2@20241022",
@@ -473,28 +491,20 @@
                     "label": "claude-3-haiku@20240307",
                     "name": "claude-3-haiku@20240307",
                     "description": "Fastest and most compact model for near-instant responsiveness"
-                },
-                {
-                    "label": "chat-bison",
-                    "name": "chat-bison"
-                },
-                {
-                    "label": "codechat-bison",
-                    "name": "codechat-bison"
-                },
-                {
-                    "label": "chat-bison-32k",
-                    "name": "chat-bison-32k"
-                },
-                {
-                    "label": "codechat-bison-32k",
-                    "name": "codechat-bison-32k"
                 }
             ]
         },
         {
             "name": "groqChat",
             "models": [
+                {
+                    "label": "llama-3.3-70b-versatile",
+                    "name": "llama-3.3-70b-versatile"
+                },
+                {
+                    "label": "llama-3.3-70b-specdec",
+                    "name": "llama-3.3-70b-specdec"
+                },
                 {
                     "label": "llama-3.2-1b-preview",
                     "name": "llama-3.2-1b-preview"
@@ -563,6 +573,19 @@
             ]
         },
         {
+            "name": "deepseek",
+            "models": [
+                {
+                    "label": "deepseek-chat",
+                    "name": "deepseek-chat"
+                },
+                {
+                    "label": "deepseek-reasoner",
+                    "name": "deepseek-reasoner"
+                }
+            ]
+        },
+        {
             "name": "chatOpenAI",
             "models": [
                 {
@@ -576,6 +599,10 @@
                 {
                     "label": "gpt-4o (latest)",
                     "name": "gpt-4o"
+                },
+                {
+                    "label": "gpt-4o-2024-11-20",
+                    "name": "gpt-4o-2024-11-20"
                 },
                 {
                     "label": "gpt-4o-2024-08-06",
@@ -1086,15 +1113,6 @@
             ]
         },
         {
-            "name": "GooglePaLM",
-            "models": [
-                {
-                    "label": "models/text-bison-001",
-                    "name": "models/text-bison-001"
-                }
-            ]
-        },
-        {
             "name": "googlevertexai",
             "models": [
                 {
@@ -1189,6 +1207,16 @@
             "name": "voyageAIEmbeddings",
             "models": [
                 {
+                    "label": "voyage-3",
+                    "name": "voyage-3",
+                    "description": "High-performance embedding model with excellent retrieval quality, 32K token context, and 1024 dimension size."
+                },
+                {
+                    "label": "voyage-3-lite",
+                    "name": "voyage-3-lite",
+                    "description": "Lightweight embedding model optimized for low latency and cost, 32K token context, and 512 dimension size."
+                },
+                {
                     "label": "voyage-2",
                     "name": "voyage-2",
                     "description": "General-purpose embedding model optimized for a balance between cost, latency, and retrieval quality."
@@ -1231,17 +1259,20 @@
             ]
         },
         {
-            "name": "googlePaLMEmbeddings",
-            "models": [
-                {
-                    "label": "models/embedding-gecko-001",
-                    "name": "models/embedding-gecko-001"
-                }
-            ]
-        },
-        {
             "name": "googlevertexaiEmbeddings",
             "models": [
+                {
+                    "label": "multimodalembedding",
+                    "name": "multimodalembedding"
+                },
+                {
+                    "label": "text-embedding-004",
+                    "name": "text-embedding-004"
+                },
+                {
+                    "label": "text-multilingual-embedding-002",
+                    "name": "text-multilingual-embedding-002"
+                },
                 {
                     "label": "textembedding-gecko@001",
                     "name": "textembedding-gecko@001"

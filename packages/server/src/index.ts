@@ -4,17 +4,16 @@ import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
-import { Server } from 'socket.io'
 import { DataSource } from 'typeorm'
-import { IChatFlow } from './Interface'
+import { MODE } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
-import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { initializeRateLimiter } from './utils/rateLimit'
+import { AbortControllerPool } from './AbortControllerPool'
+import { RateLimiterManager } from './utils/rateLimit'
 import { getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
@@ -22,11 +21,29 @@ import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { validateAPIKey } from './utils/validateKey'
+import { IMetricsProvider } from './Interface.Metrics'
+import { Prometheus } from './metrics/Prometheus'
+import { OpenTelemetry } from './metrics/OpenTelemetry'
+import { QueueManager } from './queue/QueueManager'
+import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
+import { WHITELIST_URLS } from './utils/constants'
+import 'global-agent/bootstrap'
 
 declare global {
     namespace Express {
-        interface Request {
-            io?: Server
+        namespace Multer {
+            interface File {
+                bucket: string
+                key: string
+                acl: string
+                contentType: string
+                contentDisposition: null
+                storageClass: string
+                serverSideEncryption: null
+                metadata: any
+                location: string
+                etag: string
+            }
         }
     }
 }
@@ -34,11 +51,15 @@ declare global {
 export class App {
     app: express.Application
     nodesPool: NodesPool
-    chatflowPool: ChatflowPool
+    abortControllerPool: AbortControllerPool
     cachePool: CachePool
     telemetry: Telemetry
+    rateLimiterManager: RateLimiterManager
     AppDataSource: DataSource = getDataSource()
     sseStreamer: SSEStreamer
+    metricsProvider: IMetricsProvider
+    queueManager: QueueManager
+    redisSubscriber: RedisEventSubscriber
 
     constructor() {
         this.app = express()
@@ -57,8 +78,8 @@ export class App {
             this.nodesPool = new NodesPool()
             await this.nodesPool.initialize()
 
-            // Initialize chatflow pool
-            this.chatflowPool = new ChatflowPool()
+            // Initialize abort controllers pool
+            this.abortControllerPool = new AbortControllerPool()
 
             // Initialize API keys
             await getAPIKeys()
@@ -67,21 +88,39 @@ export class App {
             await getEncryptionKey()
 
             // Initialize Rate Limit
-            const AllChatFlow: IChatFlow[] = await getAllChatFlow()
-            await initializeRateLimiter(AllChatFlow)
+            this.rateLimiterManager = RateLimiterManager.getInstance()
+            await this.rateLimiterManager.initializeRateLimiters(await getDataSource().getRepository(ChatFlow).find())
 
             // Initialize cache pool
             this.cachePool = new CachePool()
 
             // Initialize telemetry
             this.telemetry = new Telemetry()
+
+            // Initialize SSE Streamer
+            this.sseStreamer = new SSEStreamer()
+
+            // Init Queues
+            if (process.env.MODE === MODE.QUEUE) {
+                this.queueManager = QueueManager.getInstance()
+                this.queueManager.setupAllQueues({
+                    componentNodes: this.nodesPool.componentNodes,
+                    telemetry: this.telemetry,
+                    cachePool: this.cachePool,
+                    appDataSource: this.AppDataSource,
+                    abortControllerPool: this.abortControllerPool
+                })
+                this.redisSubscriber = new RedisEventSubscriber(this.sseStreamer)
+                await this.redisSubscriber.connect()
+            }
+
             logger.info('📦 [server]: Data Source has been initialized!')
         } catch (error) {
             logger.error('❌ [server]: Error during Data Source initialization:', error)
         }
     }
 
-    async config(socketIO?: Server) {
+    async config() {
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))
@@ -113,32 +152,7 @@ export class App {
         // Add the sanitizeMiddleware to guard against XSS
         this.app.use(sanitizeMiddleware)
 
-        // Make io accessible to our router on req.io
-        this.app.use((req, res, next) => {
-            req.io = socketIO
-            next()
-        })
-
-        const whitelistURLs = [
-            '/api/v1/verify/apikey/',
-            '/api/v1/chatflows/apikey/',
-            '/api/v1/public-chatflows',
-            '/api/v1/public-chatbotConfig',
-            '/api/v1/prediction/',
-            '/api/v1/vector/upsert/',
-            '/api/v1/node-icon/',
-            '/api/v1/components-credentials-icon/',
-            '/api/v1/chatflows-streaming',
-            '/api/v1/chatflows-uploads',
-            '/api/v1/openai-assistants-file/download',
-            '/api/v1/feedback',
-            '/api/v1/leads',
-            '/api/v1/get-upload-file',
-            '/api/v1/ip',
-            '/api/v1/ping',
-            '/api/v1/version',
-            '/api/v1/attachments'
-        ]
+        const whitelistURLs = WHITELIST_URLS
         const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
         const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
 
@@ -203,8 +217,29 @@ export class App {
             })
         }
 
+        if (process.env.ENABLE_METRICS === 'true') {
+            switch (process.env.METRICS_PROVIDER) {
+                // default to prometheus
+                case 'prometheus':
+                case undefined:
+                    this.metricsProvider = new Prometheus(this.app)
+                    break
+                case 'open_telemetry':
+                    this.metricsProvider = new OpenTelemetry(this.app)
+                    break
+                // add more cases for other metrics providers here
+            }
+            if (this.metricsProvider) {
+                await this.metricsProvider.initializeCounters()
+                logger.info(`📊 [server]: Metrics Provider [${this.metricsProvider.getName()}] has been initialized!`)
+            } else {
+                logger.error(
+                    "❌ [server]: Metrics collection is enabled, but failed to initialize provider (valid values are 'prometheus' or 'open_telemetry'."
+                )
+            }
+        }
+
         this.app.use('/api/v1', flowiseApiV1Router)
-        this.sseStreamer = new SSEStreamer(this.app)
 
         // ----------------------------------------
         // Configure number of proxies in Host Environment
@@ -215,6 +250,10 @@ export class App {
                 msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
             })
         })
+
+        if (process.env.MODE === MODE.QUEUE) {
+            this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
+        }
 
         // ----------------------------------------
         // Serve UI static
@@ -239,6 +278,9 @@ export class App {
         try {
             const removePromises: any[] = []
             removePromises.push(this.telemetry.flush())
+            if (this.queueManager) {
+                removePromises.push(this.redisSubscriber.disconnect())
+            }
             await Promise.all(removePromises)
         } catch (e) {
             logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
@@ -248,10 +290,6 @@ export class App {
 
 let serverApp: App | undefined
 
-export async function getAllChatFlow(): Promise<IChatFlow[]> {
-    return await getDataSource().getRepository(ChatFlow).find()
-}
-
 export async function start(): Promise<void> {
     serverApp = new App()
 
@@ -259,12 +297,8 @@ export async function start(): Promise<void> {
     const port = parseInt(process.env.PORT || '', 10) || 3000
     const server = http.createServer(serverApp.app)
 
-    const io = new Server(server, {
-        cors: getCorsOptions()
-    })
-
     await serverApp.initDatabase()
-    await serverApp.config(io)
+    await serverApp.config()
 
     server.listen(port, host, () => {
         logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)

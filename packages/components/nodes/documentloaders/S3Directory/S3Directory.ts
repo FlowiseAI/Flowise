@@ -1,6 +1,11 @@
-import { omit } from 'lodash'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import {
+    getCredentialData,
+    getCredentialParam,
+    handleDocumentLoaderDocuments,
+    handleDocumentLoaderMetadata,
+    handleDocumentLoaderOutput
+} from '../../../src/utils'
 import { S3Client, GetObjectCommand, S3ClientConfig, ListObjectsV2Command, ListObjectsV2Output } from '@aws-sdk/client-s3'
 import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { Readable } from 'node:stream'
@@ -10,11 +15,12 @@ import * as os from 'node:os'
 
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory'
 import { JSONLoader } from 'langchain/document_loaders/fs/json'
-import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { TextSplitter } from 'langchain/text_splitter'
+
+import { CSVLoader } from '../Csv/CsvLoader'
 
 class S3_DocumentLoaders implements INode {
     label: string
@@ -27,11 +33,12 @@ class S3_DocumentLoaders implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs?: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'S3 Directory'
         this.name = 's3Directory'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Document'
         this.icon = 's3.svg'
         this.category = 'Document Loaders'
@@ -117,6 +124,20 @@ class S3_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     loadMethods = {
@@ -134,11 +155,7 @@ class S3_DocumentLoaders implements INode {
         const pdfUsage = nodeData.inputs?.pdfUsage
         const metadata = nodeData.inputs?.metadata
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
-
-        let omitMetadataKeys: string[] = []
-        if (_omitMetadataKeys) {
-            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
-        }
+        const output = nodeData.outputs?.output as string
 
         let credentials: S3ClientConfig['credentials'] | undefined
 
@@ -225,11 +242,11 @@ class S3_DocumentLoaders implements INode {
                     '.csv': (path) => new CSVLoader(path),
                     '.docx': (path) => new DocxLoader(path),
                     '.pdf': (path) =>
-                        pdfUsage === 'perFile'
-                            ? // @ts-ignore
-                              new PDFLoader(path, { splitPages: false, pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') })
-                            : // @ts-ignore
-                              new PDFLoader(path, { pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') }),
+                        new PDFLoader(path, {
+                            splitPages: pdfUsage !== 'perFile',
+                            // @ts-ignore
+                            pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                        }),
                     '.aspx': (path) => new TextLoader(path),
                     '.asp': (path) => new TextLoader(path),
                     '.cpp': (path) => new TextLoader(path), // C++
@@ -268,55 +285,16 @@ class S3_DocumentLoaders implements INode {
                 true
             )
 
-            let docs = []
+            let docs = await handleDocumentLoaderDocuments(loader, textSplitter)
 
-            if (textSplitter) {
-                let splittedDocs = await loader.load()
-                splittedDocs = await textSplitter.splitDocuments(splittedDocs)
-                docs.push(...splittedDocs)
-            } else {
-                docs = await loader.load()
-            }
+            docs = handleDocumentLoaderMetadata(docs, _omitMetadataKeys, metadata)
 
-            if (metadata) {
-                const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-                docs = docs.map((doc) => ({
-                    ...doc,
-                    metadata:
-                        _omitMetadataKeys === '*'
-                            ? {
-                                  ...parsedMetadata
-                              }
-                            : omit(
-                                  {
-                                      ...doc.metadata,
-                                      ...parsedMetadata
-                                  },
-                                  omitMetadataKeys
-                              )
-                }))
-            } else {
-                docs = docs.map((doc) => ({
-                    ...doc,
-                    metadata:
-                        _omitMetadataKeys === '*'
-                            ? {}
-                            : omit(
-                                  {
-                                      ...doc.metadata
-                                  },
-                                  omitMetadataKeys
-                              )
-                }))
-            }
-
+            return handleDocumentLoaderOutput(docs, output)
+        } catch (e: any) {
+            throw new Error(`Failed to load data from bucket ${bucketName}: ${e.message}`)
+        } finally {
             // remove the temp directory before returning docs
             fsDefault.rmSync(tempDir, { recursive: true })
-
-            return docs
-        } catch (e: any) {
-            fsDefault.rmSync(tempDir, { recursive: true })
-            throw new Error(`Failed to load data from bucket ${bucketName}: ${e.message}`)
         }
     }
 }

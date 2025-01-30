@@ -19,11 +19,11 @@ class ChatCerebras_ChatModels implements INode {
     constructor() {
         this.label = 'ChatCerebras'
         this.name = 'chatCerebras'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatCerebras'
         this.icon = 'cerebras.png'
         this.category = 'Chat Models'
-        this.description = 'Models available via Cerebras'
+        this.description = 'Wrapper around Cerebras Inference API'
         this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
@@ -52,6 +52,14 @@ class ChatCerebras_ChatModels implements INode {
                 step: 0.1,
                 default: 0.9,
                 optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Max Tokens',
@@ -127,7 +135,7 @@ class ChatCerebras_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const cerebrasAIApiKey = getCredentialParam('cerebrasApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { cerebrasAIApiKey?: string } = {
+        const obj: Partial<OpenAIChatInput> & BaseLLMParams = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: cerebrasAIApiKey,

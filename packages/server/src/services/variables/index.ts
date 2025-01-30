@@ -3,6 +3,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { QueryRunner } from 'typeorm'
 
 const createVariable = async (newVariable: Variable) => {
     try {
@@ -73,9 +74,10 @@ const updateVariable = async (variable: Variable, updatedVariable: Variable) => 
     }
 }
 
-const importVariables = async (newVariables: Partial<Variable>[]): Promise<any> => {
+const importVariables = async (newVariables: Partial<Variable>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
+        const repository = queryRunner ? queryRunner.manager.getRepository(Variable) : appServer.AppDataSource.getRepository(Variable)
 
         // step 1 - check whether array is zero
         if (newVariables.length == 0) return
@@ -91,11 +93,7 @@ const importVariables = async (newVariables: Partial<Variable>[]): Promise<any> 
             count += 1
         })
 
-        const selectResponse = await appServer.AppDataSource.getRepository(Variable)
-            .createQueryBuilder('v')
-            .select('v.id')
-            .where(`v.id IN ${ids}`)
-            .getMany()
+        const selectResponse = await repository.createQueryBuilder('v').select('v.id').where(`v.id IN ${ids}`).getMany()
         const foundIds = selectResponse.map((response) => {
             return response.id
         })
@@ -112,7 +110,7 @@ const importVariables = async (newVariables: Partial<Variable>[]): Promise<any> 
         })
 
         // step 4 - transactional insert array of entities
-        const insertResponse = await appServer.AppDataSource.getRepository(Variable).insert(prepVariables)
+        const insertResponse = await repository.insert(prepVariables)
 
         return insertResponse
     } catch (error) {

@@ -18,7 +18,7 @@ class CustomTool_Tools implements INode {
     constructor() {
         this.label = 'Custom Tool'
         this.name = 'customTool'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'CustomTool'
         this.icon = 'customtool.svg'
         this.category = 'Tools'
@@ -36,6 +36,30 @@ class CustomTool_Tools implements INode {
                 description: 'Return the output of the tool directly to the user',
                 type: 'boolean',
                 optional: true
+            },
+            {
+                label: 'Custom Tool Name',
+                name: 'customToolName',
+                type: 'string',
+                hidden: true
+            },
+            {
+                label: 'Custom Tool Description',
+                name: 'customToolDesc',
+                type: 'string',
+                hidden: true
+            },
+            {
+                label: 'Custom Tool Schema',
+                name: 'customToolSchema',
+                type: 'string',
+                hidden: true
+            },
+            {
+                label: 'Custom Tool Func',
+                name: 'customToolFunc',
+                type: 'string',
+                hidden: true
             }
         ]
         this.baseClasses = [this.type, 'Tool', ...getBaseClasses(DynamicStructuredTool)]
