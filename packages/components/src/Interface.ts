@@ -444,3 +444,24 @@ export type FollowUpPromptConfig = {
     status: boolean
     selectedProvider: FollowUpPromptProvider
 } & FollowUpPromptProviderConfig
+
+/**
+ * Action Request interface for human-in-the-loop interactions
+ */
+export interface IActionRequest {
+    id: string
+    flow_id: string
+    session_id: string
+    node_id: string
+    status: 'pending' | 'completed' | 'expired' | 'cancelled'
+    output_types: string[]
+    context: {
+        question: string
+        metadata: any
+    }
+    args?: Record<string, any>
+    response?: Record<string, any>
+    created_at?: Date
+    updated_at?: Date
+    deleted_at?: Date | null
+}

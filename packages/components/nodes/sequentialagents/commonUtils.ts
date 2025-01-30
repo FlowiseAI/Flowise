@@ -15,7 +15,8 @@ import {
     INodeData,
     ISeqAgentsState,
     IVisionChatModal,
-    ConversationHistorySelection
+    ConversationHistorySelection,
+    IActionRequest
 } from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
 import { ChatPromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
@@ -437,4 +438,68 @@ export const checkMessageHistory = async (
     }
 
     return prompt
+}
+
+/**
+ * Create an action request for human-in-the-loop interaction
+ */
+export const createActionRequest = async (
+    flowId: string,
+    sessionId: string,
+    nodeId: string,
+    outputTypes: string[],
+    context: {
+        question: string
+        metadata: any
+    },
+    args?: Record<string, any>
+): Promise<IActionRequest> => {
+    const actionRequest: Partial<IActionRequest> = {
+        flow_id: flowId,
+        session_id: sessionId,
+        node_id: nodeId,
+        status: 'pending',
+        output_types: outputTypes,
+        context,
+        args
+    }
+    return actionRequest as IActionRequest
+}
+
+/**
+ * Check if an action request is completed
+ * @param {IActionRequest} request - The action request to check
+ * @returns {boolean}
+ */
+export const isActionRequestCompleted = (request: IActionRequest): boolean => {
+    return request.status === 'completed'
+}
+
+/**
+ * Check if an action request is expired
+ * @param {IActionRequest} request - The action request to check
+ * @returns {boolean}
+ */
+export const isActionRequestExpired = (request: IActionRequest): boolean => {
+    return request.status === 'expired'
+}
+
+/**
+ * Check if an action request is cancelled
+ * @param {IActionRequest} request - The action request to check
+ * @returns {boolean}
+ */
+export const isActionRequestCancelled = (request: IActionRequest): boolean => {
+    return request.status === 'cancelled'
+}
+
+/**
+ * Validate action request response against expected output types
+ * @param {IActionRequest} request - The action request
+ * @param {Record<string, any>} response - The response to validate
+ * @returns {boolean}
+ */
+export const validateActionRequestResponse = (request: IActionRequest, response: Record<string, any>): boolean => {
+    if (!response) return false
+    return request.output_types.every(type => response.hasOwnProperty(type))
 }

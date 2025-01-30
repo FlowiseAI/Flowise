@@ -42,6 +42,7 @@ import variablesRouter from './variables'
 import vectorRouter from './vectors'
 import verifyRouter from './verify'
 import versionRouter from './versions'
+import actionRequestRoutes from './actionRequest'
 
 const router = express.Router()
 
@@ -88,5 +89,6 @@ router.use('/vector', vectorRouter)
 router.use('/verify', verifyRouter)
 router.use('/version', versionRouter)
 router.use('/upsert-history', upsertHistoryRouter)
+router.use('/api/v1/action-requests', actionRequestRoutes)
 
 export default router

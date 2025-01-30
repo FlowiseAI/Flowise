@@ -5,7 +5,7 @@ import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
+import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl, IActionRequest } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { omit } from 'lodash'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
@@ -1170,4 +1170,26 @@ export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, text
     }
 
     return docs
+}
+
+/**
+ * Convert ActionRequest to string for logging
+ * @param {IActionRequest} request
+ * @returns {string}
+ */
+export const actionRequestToString = (request: IActionRequest): string => {
+    return `ActionRequest(id=${request.id}, flow_id=${request.flow_id}, node_id=${request.node_id}, status=${request.status})`
+}
+
+/**
+ * Format action request response for storage
+ * @param {Record<string, any>} response
+ * @returns {string}
+ */
+export const formatActionRequestResponse = (response: Record<string, any>): string => {
+    try {
+        return JSON.stringify(response)
+    } catch (error) {
+        return ''
+    }
 }
