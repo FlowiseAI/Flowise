@@ -198,28 +198,15 @@ export function serializeQueryParams(params: any, skipIndex?: boolean): string {
  * Handle error from try catch
  *
  * @export
- * @param {any} error
+ * @param {unknown} error
  * @returns {string}
  */
-export function handleErrorMessage(error: any): string {
-    let errorMessage = ''
-
-    if (error.message) {
-        errorMessage += error.message + '. '
+export function handleErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message
+    if (typeof error === 'object' && error !== null && 'message' in error) {
+        return String(error.message)
     }
-
-    if (error.response && error.response.data) {
-        if (error.response.data.error) {
-            if (typeof error.response.data.error === 'object') errorMessage += JSON.stringify(error.response.data.error) + '. '
-            else if (typeof error.response.data.error === 'string') errorMessage += error.response.data.error + '. '
-        } else if (error.response.data.msg) errorMessage += error.response.data.msg + '. '
-        else if (error.response.data.Message) errorMessage += error.response.data.Message + '. '
-        else if (typeof error.response.data === 'string') errorMessage += error.response.data + '. '
-    }
-
-    if (!errorMessage) errorMessage = 'Unexpected Error.'
-
-    return errorMessage
+    return typeof error === 'string' ? error : 'Unknown error occurred'
 }
 
 /**
@@ -492,11 +479,8 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
  * @returns {string | undefined}
  */
 export const getEnvironmentVariable = (name: string): string | undefined => {
-    try {
-        return typeof process !== 'undefined' ? process.env?.[name] : undefined
-    } catch (e) {
-        return undefined
-    }
+    const value = process.env[name]
+    return typeof value === 'string' ? value : undefined
 }
 
 /**
@@ -532,13 +516,20 @@ export const getEncryptionKeyPath = (): string => {
  * @returns {Promise<string>}
  */
 const getEncryptionKey = async (): Promise<string> => {
-    if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
-        return process.env.FLOWISE_SECRETKEY_OVERWRITE
+    const envKey = process.env.FLOWISE_SECRETKEY_OVERWRITE
+    if (typeof envKey === 'string' && envKey.length > 0) {
+        return envKey
     }
+    
     try {
-        return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+        const key = await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
+        if (typeof key !== 'string') throw new Error('Invalid key format')
+        return key
     } catch (error) {
-        throw new Error(error)
+        if (error instanceof Error) {
+            throw new Error(`Encryption key error: ${error.message}`)
+        }
+        throw new Error('Failed to retrieve encryption key')
     }
 }
 
@@ -963,8 +954,10 @@ export const getVersion: () => Promise<{ version: string }> = async () => {
         try {
             const content = await fs.promises.readFile(checkPath, 'utf8')
             const parsedContent = JSON.parse(content)
-            version = parsedContent.version
-            return { version }
+            if (typeof parsedContent.version === 'string') {
+                version = parsedContent.version
+                return { version }
+            }
         } catch {
             continue
         }
@@ -1108,15 +1101,8 @@ export const resolveFlowObjValue = (obj: any, sourceObj: any): any => {
 }
 
 export const handleDocumentLoaderOutput = (docs: Document[], output: string) => {
-    if (output === 'document') {
-        return docs
-    } else {
-        let finaltext = ''
-        for (const doc of docs) {
-            finaltext += `${doc.pageContent}\n`
-        }
-        return handleEscapeCharacters(finaltext, false)
-    }
+    const finalText = docs.map(doc => doc.pageContent).join('\n')
+    return output === 'document' ? docs : handleEscapeCharacters(finalText, false)
 }
 
 export const parseDocumentLoaderMetadata = (metadata: object | string): object => {
@@ -1178,7 +1164,9 @@ export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, text
  * @returns {string}
  */
 export const actionRequestToString = (request: IActionRequest): string => {
-    return `ActionRequest(id=${request.id}, flow_id=${request.flow_id}, node_id=${request.node_id}, status=${request.status})`
+    const flowId = typeof request.flow_id === 'string' ? request.flow_id : 'invalid'
+    const nodeId = typeof request.node_id === 'string' ? request.node_id : 'invalid'
+    return `ActionRequest(id=${request.id}, flow_id=${flowId}, node_id=${nodeId})`
 }
 
 /**
@@ -1190,6 +1178,20 @@ export const formatActionRequestResponse = (response: Record<string, any>): stri
     try {
         return JSON.stringify(response)
     } catch (error) {
+        if (error instanceof Error) {
+            console.error('Error formatting response:', error.message)
+        }
         return ''
     }
+}
+
+// Fix other error handling
+export const handleError = (error: unknown): string => {
+    if (error instanceof Error) {
+        return error.message
+    }
+    if (typeof error === 'string') {
+        return error
+    }
+    return 'An unknown error occurred'
 }

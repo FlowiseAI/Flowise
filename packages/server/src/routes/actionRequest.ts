@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { ActionRequestController } from '../controllers/ActionRequestController'
 import { validateActionRequestParams, validateUpdateActionRequest } from '../middlewares/actionRequest'
 
@@ -6,15 +6,15 @@ const router = express.Router()
 const actionRequestController = new ActionRequestController()
 
 // Get all action requests for a flow
-router.get('/flow/:flowId', validateActionRequestParams, (req, res) => actionRequestController.getFlowActionRequests(req, res))
+router.get('/flow/:flowId', validateActionRequestParams, (req: Request, res: Response) => actionRequestController.getFlowActionRequests(req, res))
 
 // Get action request by ID
-router.get('/:actionId', validateActionRequestParams, (req, res) => actionRequestController.getActionRequest(req, res))
+router.get('/:actionId', validateActionRequestParams, (req: Request, res: Response) => actionRequestController.getActionRequest(req, res))
 
 // Update action request
-router.put('/:actionId', [validateActionRequestParams, validateUpdateActionRequest], (req, res) => actionRequestController.updateActionRequest(req, res))
+router.put('/:actionId', [validateActionRequestParams, validateUpdateActionRequest], (req: Request, res: Response) => actionRequestController.updateActionRequest(req, res))
 
 // Get pending action requests for a session
-router.get('/session/:sessionId/pending', validateActionRequestParams, (req, res) => actionRequestController.getSessionPendingRequests(req, res))
+router.get('/session/:sessionId/pending', validateActionRequestParams, (req: Request, res: Response) => actionRequestController.getSessionPendingRequests(req, res))
 
 export default router 

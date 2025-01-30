@@ -105,7 +105,10 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     }
                     return ''
                 } catch (error) {
-                    throw error.response?.data || error
+                    if (error instanceof Error) {
+                        throw new Error(`Google Cloud Speech recognition error: ${error.message}`)
+                    }
+                    throw new Error('Google Cloud Speech recognition failed with unknown error')
                 }
             }
             case SpeechToTextType.GROQ_WHISPER: {

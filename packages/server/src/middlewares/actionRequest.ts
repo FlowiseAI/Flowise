@@ -12,10 +12,13 @@ export const validateUpdateActionRequest = (req: Request, res: Response, next: N
         updateActionRequestSchema.parse(req.body)
         next()
     } catch (error) {
-        return res.status(400).json({
-            error: 'Invalid request body',
-            details: error.errors
-        })
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({
+                error: 'Invalid request body',
+                details: error.errors
+            })
+        }
+        return res.status(400).json({ error: 'Invalid request body' })
     }
 }
 

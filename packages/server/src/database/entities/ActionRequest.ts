@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Entity, Column, PrimaryGeneratedColumn, Index, CreateDateColumn, DeleteDateColumn, UpdateDateColumn } from 'typeorm'
-import { IActionRequest } from '../../Interface'
+import { IActionRequest } from '../../../../components/src/Interface'
 
 export type ActionRequestStatus = 'pending' | 'completed' | 'expired' | 'cancelled'
 
@@ -29,24 +29,27 @@ export class ActionRequest implements IActionRequest {
     })
     status: ActionRequestStatus
 
-    @Column({ type: 'simple-json' })
+    @Column('simple-json')
     output_types: string[]
 
-    @Column({ type: 'simple-json' })
-    context: Record<string, any>
+    @Column('simple-json')
+    context: {
+        question: string
+        metadata: any
+    }
 
-    @Column({ type: 'simple-json', nullable: true })
+    @Column('simple-json', { nullable: true })
     args?: Record<string, any>
 
-    @Column({ type: 'simple-json', nullable: true })
+    @Column('simple-json', { nullable: true })
     response?: Record<string, any>
 
-    @CreateDateColumn({ name: 'created_at' })
+    @CreateDateColumn()
     created_at: Date
 
-    @UpdateDateColumn({ name: 'updated_at' })
+    @UpdateDateColumn()
     updated_at: Date
 
-    @DeleteDateColumn({ name: 'deleted_at' })
-    deleted_at?: Date
+    @DeleteDateColumn()
+    deleted_at?: Date | null
 } 

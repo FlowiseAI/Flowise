@@ -11,7 +11,7 @@ import { postgresMigrations } from './database/migrations/postgres'
 
 let appDataSource: DataSource
 
-export const init = async (): Promise<void> => {
+export const init = async (): Promise<DataSource> => {
     let homePath
     let flowisePath = path.join(getUserHome(), '.flowise')
     if (!fs.existsSync(flowisePath)) {
@@ -88,14 +88,19 @@ export const init = async (): Promise<void> => {
             })
             break
     }
+
+    await appDataSource.initialize()
+    return appDataSource
 }
 
 export function getDataSource(): DataSource {
-    if (appDataSource === undefined) {
-        init()
+    if (!appDataSource) {
+        throw new Error('DataSource not initialized')
     }
     return appDataSource
 }
+
+export { appDataSource as AppDataSource }
 
 const getDatabaseSSLFromEnv = () => {
     if (process.env.DATABASE_SSL_KEY_BASE64) {

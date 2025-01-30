@@ -1,3 +1,5 @@
+import { Request, Response, NextFunction } from 'express'
+
 // Add ActionRequest error types
 export class ActionRequestError extends Error {
     constructor(message: string) {
@@ -21,21 +23,23 @@ export class ActionRequestValidationError extends ActionRequestError {
 }
 
 // Update error handler middleware
-export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
-    // ... existing error handling ...
-
+export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction): void => {
     // Handle ActionRequest errors
     if (err instanceof ActionRequestNotFoundError) {
-        return res.status(404).json({ error: err.message })
+        res.status(404).json({ error: err.message })
+        return
     }
 
     if (err instanceof ActionRequestValidationError) {
-        return res.status(400).json({ error: err.message })
+        res.status(400).json({ error: err.message })
+        return
     }
 
     if (err instanceof ActionRequestError) {
-        return res.status(500).json({ error: err.message })
+        res.status(500).json({ error: err.message })
+        return
     }
 
-    // ... existing error handling ...
+    // Default error handler
+    res.status(500).json({ error: 'Internal server error' })
 } 

@@ -20,6 +20,7 @@ import {
 } from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
 import { ChatPromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
+import { v4 as uuidv4 } from 'uuid'
 
 export const checkCondition = (input: string | number | undefined, condition: string, value: string | number = ''): boolean => {
     if (!input && condition === 'Is Empty') return true
@@ -417,27 +418,40 @@ export const checkMessageHistory = async (
     sysPrompt: string
 ) => {
     const messageHistory = nodeData.inputs?.messageHistory
+    if (typeof messageHistory !== 'string') return prompt
 
-    if (messageHistory) {
+    try {
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const vm = await getVM(appDataSource, databaseEntities, nodeData, {})
-        try {
-            const response = await vm.run(`module.exports = async function() {${messageHistory}}()`, __dirname)
-            if (!Array.isArray(response)) throw new Error('Returned message history must be an array')
-            if (sysPrompt) {
-                // insert at index 1
-                promptArrays.splice(1, 0, ...response)
-            } else {
-                promptArrays.unshift(...response)
-            }
-            prompt = ChatPromptTemplate.fromMessages(promptArrays)
-        } catch (e) {
-            throw new Error(e)
+        const response = await vm.run(`module.exports = async function() {${messageHistory}}()`, __dirname)
+        if (!Array.isArray(response) || !response.every(msg => isMessageTemplate(msg))) {
+            throw new Error('Invalid message history format')
         }
+        if (sysPrompt) {
+            // insert at index 1
+            promptArrays.splice(1, 0, ...response)
+        } else {
+            promptArrays.unshift(...response)
+        }
+        prompt = ChatPromptTemplate.fromMessages(promptArrays)
+    } catch (error) {
+        if (error instanceof Error) {
+            throw new Error(`Message history error: ${error.message}`)
+        }
+        throw new Error('Unknown error processing message history')
     }
 
     return prompt
+}
+
+// Add type guard for message templates
+const isMessageTemplate = (msg: any): msg is BaseMessagePromptTemplateLike => {
+    return typeof msg === 'object' && 
+           'role' in msg && 
+           'content' in msg && 
+           typeof msg.role === 'string' && 
+           typeof msg.content === 'string'
 }
 
 /**
@@ -454,10 +468,15 @@ export const createActionRequest = async (
     },
     args?: Record<string, any>
 ): Promise<IActionRequest> => {
+    // Validate required string parameters
+    const validatedFlowId = typeof flowId === 'string' ? flowId : ''
+    const validatedSessionId = typeof sessionId === 'string' ? sessionId : uuidv4()
+    const validatedNodeId = typeof nodeId === 'string' ? nodeId : ''
+
     const actionRequest: Partial<IActionRequest> = {
-        flow_id: flowId,
-        session_id: sessionId,
-        node_id: nodeId,
+        flow_id: validatedFlowId,
+        session_id: validatedSessionId,
+        node_id: validatedNodeId,
         status: 'pending',
         output_types: outputTypes,
         context,
