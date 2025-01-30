@@ -418,28 +418,33 @@ export const checkMessageHistory = async (
     sysPrompt: string
 ) => {
     const messageHistory = nodeData.inputs?.messageHistory
-    if (typeof messageHistory !== 'string') return prompt
 
-    try {
+    if (messageHistory) {
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const vm = await getVM(appDataSource, databaseEntities, nodeData, {})
-        const response = await vm.run(`module.exports = async function() {${messageHistory}}()`, __dirname)
-        if (!Array.isArray(response) || !response.every(msg => isMessageTemplate(msg))) {
-            throw new Error('Invalid message history format')
+        try {
+            const response = await vm.run(`module.exports = async function() {${messageHistory}}()`, __dirname)
+            // Preserve main branch's array check
+            if (!Array.isArray(response)) throw new Error('Returned message history must be an array')
+            
+            // Add HIL type safety without breaking main branch compatibility
+            const validatedMessages = response.map(msg => ({
+                role: msg.role || 'user', // default to user role
+                content: msg.content || '' // ensure content exists
+            }))
+
+            if (sysPrompt) {
+                promptArrays.splice(1, 0, ...validatedMessages)
+            } else {
+                promptArrays.unshift(...validatedMessages)
+            }
+            prompt = ChatPromptTemplate.fromMessages(promptArrays)
+        } catch (error) {
+            // Maintain main branch error handling pattern
+            const errorMessage = error instanceof Error ? error.message : 'Unknown message history error'
+            throw new Error(`Message history processing failed: ${errorMessage}`)
         }
-        if (sysPrompt) {
-            // insert at index 1
-            promptArrays.splice(1, 0, ...response)
-        } else {
-            promptArrays.unshift(...response)
-        }
-        prompt = ChatPromptTemplate.fromMessages(promptArrays)
-    } catch (error) {
-        if (error instanceof Error) {
-            throw new Error(`Message history error: ${error.message}`)
-        }
-        throw new Error('Unknown error processing message history')
     }
 
     return prompt

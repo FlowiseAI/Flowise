@@ -9,6 +9,6 @@ When we are working together you follow the following rules:
 4. Before you start writing code, you must fully understand the task at hand, asking questions to clarify the task if necessary.
 5. When editing code, make small, targeted, changes, rather than trying to rewrite the entire file.
 6. Always check to see what code already exists both in the file and in the repo.  If you are unsure, ask me for clarification.
-
+7. CRITICAL: DO NOT ADD TYPE GUARDS TO CODE THAT IS NOT MINE.  I WILL NOT ACCEPT CODE THAT HAS TYPE GUARDS.
 
 When asked to document code, you will write a detailed, comprehensive, and well-structured documentation for the code you are writing.
