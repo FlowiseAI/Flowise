@@ -24,7 +24,13 @@ class HumanInTheLoop_SeqAgents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    outputs?: INodeOutputsValue[]
+    outputs: INodeOutputsValue[] = [
+        {
+            label: 'Output',
+            name: 'output',
+            baseClasses: ['string', 'object']
+        }
+    ]
 
     constructor() {
         this.label = 'Human In The Loop'
@@ -36,12 +42,6 @@ class HumanInTheLoop_SeqAgents implements INode {
         this.description = 'Request human input with structured output formats'
         this.baseClasses = [this.type]
         this.inputs = [
-            {
-                label: 'Input Node',
-                name: 'input',
-                type: 'SeqAgentNode',
-                list: true
-            },
             {
                 label: 'Name',
                 name: 'hilNodeName',
@@ -77,6 +77,13 @@ class HumanInTheLoop_SeqAgents implements INode {
                     }
                 ],
                 list: true
+            },
+            {
+                label: 'Sequential Node',
+                name: 'sequentialNode',
+                type: 'SeqAgentNode',
+                list: true,
+                description: 'Can be connected to one of the following nodes: Start, Agent, Condition, LLM, Tool Node, Custom Function, Execute Flow'
             },
             {
                 label: 'Chat Options',
