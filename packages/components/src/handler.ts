@@ -20,16 +20,6 @@ import { DataSource } from 'typeorm'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { AIMessageChunk } from '@langchain/core/messages'
 
-interface AnalyticConfig {
-    [key: string]: {
-        status: boolean
-        credentialId?: string
-        projectName?: string
-        release?: string
-        // Add other provider-specific fields as needed
-    }
-}
-
 interface AgentRun extends Run {
     actions: AgentAction[]
 }
@@ -347,7 +337,8 @@ class ExtendedLunaryHandler extends LunaryHandler {
 export const additionalCallbacks = async (nodeData: INodeData, options: ICommonObject) => {
     try {
         if (!options.analytic) return []
-        const analytic = JSON.parse(options.analytic) as AnalyticConfig
+
+        const analytic = JSON.parse(options.analytic)
         const callbacks: any = []
 
         for (const provider in analytic) {
@@ -434,10 +425,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
         }
         return callbacks
     } catch (e) {
-        if (e instanceof Error) {
-            throw new Error(`Analytic callback error: ${e.message}`)
-        }
-        throw new Error('Unknown analytic configuration error')
+        throw new Error(e)
     }
 }
 
@@ -754,7 +742,7 @@ export class AnalyticHandler {
         }
     }
 
-    async onLLMStart(name: string, input: unknown, parentIds: ICommonObject) {
+    async onLLMStart(name: string, input: string, parentIds: ICommonObject) {
         const returnIds: ICommonObject = {
             langSmith: {},
             langFuse: {},
@@ -762,11 +750,6 @@ export class AnalyticHandler {
             langWatch: {}
         }
 
-        // Validate input type
-        const validatedInput = typeof input === 'string' ? input : 
-                             typeof input === 'object' ? JSON.stringify(input) : 
-                             String(input)
-        
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
             const parentRun: RunTree | undefined = this.handlers['langSmith'].chainRun[parentIds['langSmith'].chainRun]
             if (parentRun) {
@@ -774,7 +757,7 @@ export class AnalyticHandler {
                     name,
                     run_type: 'llm',
                     inputs: {
-                        prompts: [validatedInput]
+                        prompts: [input]
                     }
                 })
                 await childLLMRun.postRun()
@@ -788,7 +771,7 @@ export class AnalyticHandler {
             if (trace) {
                 const generation = trace.generation({
                     name,
-                    input: validatedInput
+                    input: input
                 })
                 this.handlers['langFuse'].generation = { [generation.id]: generation }
                 returnIds['langFuse'].generation = generation.id
@@ -805,7 +788,7 @@ export class AnalyticHandler {
                     runId,
                     parentRunId: chainEventId,
                     name,
-                    input: validatedInput
+                    input
                 })
                 this.handlers['lunary'].llmEvent = { [runId]: runId }
                 returnIds['lunary'].llmEvent = runId
@@ -817,7 +800,7 @@ export class AnalyticHandler {
             if (trace) {
                 const span = trace.startLLMSpan({
                     name,
-                    input: autoconvertTypedValues(validatedInput)
+                    input: autoconvertTypedValues(input)
                 })
                 this.handlers['langWatch'].span = { [span.spanId]: span }
                 returnIds['langWatch'].span = span.spanId

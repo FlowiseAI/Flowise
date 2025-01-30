@@ -44,6 +44,7 @@ export interface IVariable {
 
 export type IDatabaseEntity = {
     [key: string]: any
+    ActionRequest?: IActionRequest
 }
 
 export interface IAttachment {
@@ -451,8 +452,8 @@ export type FollowUpPromptConfig = {
 export interface IActionRequest {
     id: string
     flow_id: string
-    session_id: string
     node_id: string
+    session_id?: string
     status: 'pending' | 'completed' | 'expired' | 'cancelled'
     output_types: string[]
     context: {
@@ -463,5 +464,4 @@ export interface IActionRequest {
     response?: Record<string, any>
     created_at?: Date
     updated_at?: Date
-    deleted_at?: Date | null
 }

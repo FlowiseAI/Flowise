@@ -1,5 +1,6 @@
 import { get } from 'lodash'
 import { z } from 'zod'
+import { v4 as uuidv4 } from 'uuid'
 import { DataSource } from 'typeorm'
 import { NodeVM } from '@flowiseai/nodevm'
 import { StructuredTool } from '@langchain/core/tools'
@@ -20,7 +21,6 @@ import {
 } from '../../src/Interface'
 import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../src/utils'
 import { ChatPromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
-import { v4 as uuidv4 } from 'uuid'
 
 export const checkCondition = (input: string | number | undefined, condition: string, value: string | number = ''): boolean => {
     if (!input && condition === 'Is Empty') return true
@@ -425,43 +425,22 @@ export const checkMessageHistory = async (
         const vm = await getVM(appDataSource, databaseEntities, nodeData, {})
         try {
             const response = await vm.run(`module.exports = async function() {${messageHistory}}()`, __dirname)
-            // Preserve main branch's array check
             if (!Array.isArray(response)) throw new Error('Returned message history must be an array')
-            
-            // Add HIL type safety without breaking main branch compatibility
-            const validatedMessages = response.map(msg => ({
-                role: msg.role || 'user', // default to user role
-                content: msg.content || '' // ensure content exists
-            }))
-
             if (sysPrompt) {
-                promptArrays.splice(1, 0, ...validatedMessages)
+                // insert at index 1
+                promptArrays.splice(1, 0, ...response)
             } else {
-                promptArrays.unshift(...validatedMessages)
+                promptArrays.unshift(...response)
             }
             prompt = ChatPromptTemplate.fromMessages(promptArrays)
-        } catch (error) {
-            // Maintain main branch error handling pattern
-            const errorMessage = error instanceof Error ? error.message : 'Unknown message history error'
-            throw new Error(`Message history processing failed: ${errorMessage}`)
+        } catch (e) {
+            throw new Error(e)
         }
     }
 
     return prompt
 }
 
-// Add type guard for message templates
-const isMessageTemplate = (msg: any): msg is BaseMessagePromptTemplateLike => {
-    return typeof msg === 'object' && 
-           'role' in msg && 
-           'content' in msg && 
-           typeof msg.role === 'string' && 
-           typeof msg.content === 'string'
-}
-
-/**
- * Create an action request for human-in-the-loop interaction
- */
 export const createActionRequest = async (
     flowId: string,
     sessionId: string,
@@ -472,58 +451,37 @@ export const createActionRequest = async (
         metadata: any
     },
     args?: Record<string, any>
-): Promise<IActionRequest> => {
-    // Validate required string parameters
-    const validatedFlowId = typeof flowId === 'string' ? flowId : ''
-    const validatedSessionId = typeof sessionId === 'string' ? sessionId : uuidv4()
-    const validatedNodeId = typeof nodeId === 'string' ? nodeId : ''
-
-    const actionRequest: Partial<IActionRequest> = {
-        flow_id: validatedFlowId,
-        session_id: validatedSessionId,
-        node_id: validatedNodeId,
+): Promise<IActionRequest>  => {
+    return {
+        id: uuidv4(),
+        flow_id: flowId,
+        node_id: nodeId,
+        session_id: sessionId,
         status: 'pending',
         output_types: outputTypes,
-        context,
-        args
+        context: context,
+        args: args
     }
-    return actionRequest as IActionRequest
 }
 
-/**
- * Check if an action request is completed
- * @param {IActionRequest} request - The action request to check
- * @returns {boolean}
- */
 export const isActionRequestCompleted = (request: IActionRequest): boolean => {
+
     return request.status === 'completed'
+
 }
 
-/**
- * Check if an action request is expired
- * @param {IActionRequest} request - The action request to check
- * @returns {boolean}
- */
-export const isActionRequestExpired = (request: IActionRequest): boolean => {
-    return request.status === 'expired'
-}
-
-/**
- * Check if an action request is cancelled
- * @param {IActionRequest} request - The action request to check
- * @returns {boolean}
- */
 export const isActionRequestCancelled = (request: IActionRequest): boolean => {
+
     return request.status === 'cancelled'
+
 }
 
-/**
- * Validate action request response against expected output types
- * @param {IActionRequest} request - The action request
- * @param {Record<string, any>} response - The response to validate
- * @returns {boolean}
- */
-export const validateActionRequestResponse = (request: IActionRequest, response: Record<string, any>): boolean => {
-    if (!response) return false
-    return request.output_types.every(type => response.hasOwnProperty(type))
+
+
+
+export const isActionRequestExpired = (request: IActionRequest): boolean => {
+
+    return request.status === 'expired'
+
 }
+

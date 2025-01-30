@@ -11,7 +11,7 @@ import {
     IActionRequest
 } from '../../../src/Interface'
 import { enhancePrompt } from './core'
-import { createActionRequest, isActionRequestCompleted, validateActionRequestResponse } from '../commonUtils'
+import { createActionRequest, isActionRequestCompleted } from '../commonUtils'
 import { actionRequestToString, formatActionRequestResponse } from '../../../src/utils'
 
 class HumanInTheLoop_SeqAgents implements INode {
