@@ -203,7 +203,7 @@ export function serializeQueryParams(params: any, skipIndex?: boolean): string {
  */
 export function handleErrorMessage(error: any): string {
     let errorMessage = ''
-
+    
     if (error.message) {
         errorMessage += error.message + '. '
     }
@@ -493,7 +493,7 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
  */
 export const getEnvironmentVariable = (name: string): string | undefined => {
     try {
-        return typeof process !== 'undefined' ? process.env?.[name] : undefined
+        return process.env[name] ?? undefined
     } catch (e) {
         return undefined
     }
@@ -1194,4 +1194,12 @@ export const formatActionRequestResponse = (response: Record<string, any>): stri
 
     }
 
+}
+
+function tryJsonStringify(obj: any, fallback: string) {
+    try {
+        return JSON.stringify(obj, null, tryGetJsonSpaces())
+    } catch (err: any) {
+        return fallback
+    }
 }

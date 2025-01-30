@@ -742,7 +742,7 @@ export class AnalyticHandler {
         }
     }
 
-    async onLLMStart(name: string, input: string, parentIds: ICommonObject) {
+    async onLLMStart(name: string, input: any, parentIds: ICommonObject) {
         const returnIds: ICommonObject = {
             langSmith: {},
             langFuse: {},
@@ -1011,7 +1011,7 @@ export class AnalyticHandler {
         }
     }
 
-    async onToolError(returnIds: ICommonObject, error: string | object) {
+    async onToolError(returnIds: ICommonObject, error: any) {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
             const toolRun: RunTree | undefined = this.handlers['langSmith'].toolRun[returnIds['langSmith'].toolRun]
             if (toolRun) {

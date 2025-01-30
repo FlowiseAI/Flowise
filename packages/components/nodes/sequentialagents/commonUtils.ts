@@ -418,7 +418,6 @@ export const checkMessageHistory = async (
     sysPrompt: string
 ) => {
     const messageHistory = nodeData.inputs?.messageHistory
-
     if (messageHistory) {
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
@@ -427,7 +426,6 @@ export const checkMessageHistory = async (
             const response = await vm.run(`module.exports = async function() {${messageHistory}}()`, __dirname)
             if (!Array.isArray(response)) throw new Error('Returned message history must be an array')
             if (sysPrompt) {
-                // insert at index 1
                 promptArrays.splice(1, 0, ...response)
             } else {
                 promptArrays.unshift(...response)
@@ -437,7 +435,6 @@ export const checkMessageHistory = async (
             throw new Error(e)
         }
     }
-
     return prompt
 }
 
