@@ -498,6 +498,10 @@
             "name": "groqChat",
             "models": [
                 {
+                    "label": "deepseek-r1-distill-llama-70b",
+                    "name": "deepseek-r1-distill-llama-70b"
+                },
+                {
                     "label": "llama-3.3-70b-versatile",
                     "name": "llama-3.3-70b-versatile"
                 },
