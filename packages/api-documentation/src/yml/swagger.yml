@@ -679,6 +679,11 @@ paths:
                                         type: string
                                         format: binary
                                     description: Files to be uploaded
+                                docId:
+                                    type: string
+                                    nullable: true
+                                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                                    description: Document ID to use existing configuration
                                 loader:
                                     type: string
                                     nullable: true
@@ -704,6 +709,32 @@ paths:
                                     nullable: true
                                     example: '{"name":"postgresRecordManager"}'
                                     description: Record Manager configurations
+                                metadata:
+                                    type: object
+                                    nullable: true
+                                    description: Metadata associated with the document
+                                    example: { 'foo': 'bar' }
+                                replaceExisting:
+                                    type: boolean
+                                    nullable: true
+                                    description: Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store
+                                createNewDocStore:
+                                    type: boolean
+                                    nullable: true
+                                    description: Whether to create a new document store
+                                docStore:
+                                    type: object
+                                    nullable: true
+                                    description: Only when createNewDocStore is true, pass in the new document store configuration
+                                    properties:
+                                        name:
+                                            type: string
+                                            example: plainText
+                                            description: Name of the new document store to be created
+                                        description:
+                                            type: string
+                                            example: plainText
+                                            description: Description of the new document store to be created
                             required:
                                 - files
                 required: true
@@ -2350,16 +2381,37 @@ components:
                 docId:
                     type: string
                     format: uuid
+                    nullable: true
                     description: Document ID within the store. If provided, existing configuration from the document will be used for the new document
                 metadata:
                     type: object
+                    nullable: true
                     description: Metadata associated with the document
                     example: { 'foo': 'bar' }
                 replaceExisting:
                     type: boolean
+                    nullable: true
                     description: Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store
+                createNewDocStore:
+                    type: boolean
+                    nullable: true
+                    description: Whether to create a new document store
+                docStore:
+                    type: object
+                    nullable: true
+                    description: Only when createNewDocStore is true, pass in the new document store configuration
+                    properties:
+                        name:
+                            type: string
+                            example: plainText
+                            description: Name of the new document store to be created
+                        description:
+                            type: string
+                            example: plainText
+                            description: Description of the new document store to be created
                 loader:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2370,6 +2422,7 @@ components:
                             description: Configuration for the loader
                 splitter:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2380,6 +2433,7 @@ components:
                             description: Configuration for the text splitter
                 embedding:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2390,6 +2444,7 @@ components:
                             description: Configuration for the embedding generator
                 vectorStore:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2400,6 +2455,7 @@ components:
                             description: Configuration for the vector store
                 recordManager:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
