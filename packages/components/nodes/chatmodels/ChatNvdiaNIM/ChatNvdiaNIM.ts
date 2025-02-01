@@ -137,7 +137,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
         const obj: Partial<OpenAIChatInput> & BaseLLMParams & { nvidiaNIMApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
-            openAIApiKey: nvidiaNIMApiKey,
+            openAIApiKey: nvidiaNIMApiKey ?? 'sk-',
             streaming: streaming ?? true
         }
 
