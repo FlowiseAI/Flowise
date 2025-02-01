@@ -78,7 +78,9 @@ const getContainer = async (req: Request, res: Response, next: NextFunction) => 
         if (!image.container) {
             return res.status(404).send(`Container of ${imageTag} not found`)
         }
-        return res.json(image.container)
+        const container = image.container
+        container.image = image.name
+        return res.json(container)
     } catch (error) {
         next(error)
     }

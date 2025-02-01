@@ -50,6 +50,12 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
             const imageResponse = await axios.post('/api/v1/nvidia-nim/get-image', { imageTag })
             console.log('imageResponse =', imageResponse.data)
 
+            if (imageResponse.data && imageResponse.data.tag === imageTag) {
+                setLoading(false)
+                setActiveStep(2)
+                return
+            }
+
             // Get token first
             const tokenResponse = await axios.get('/api/v1/nvidia-nim/get-token')
             const apiKey = tokenResponse.data.access_token
@@ -98,6 +104,14 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
 
             const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
             console.log('containerResponse =', containerResponse.data)
+
+            if (containerResponse.data && containerResponse.data && containerResponse.data.status === 'running') {
+                setContainerInfo(containerResponse.data)
+                setLoading(false)
+                onComplete(containerResponse.data)
+                onClose()
+                return
+            }
 
             const tokenResponse = await axios.get('/api/v1/nvidia-nim/get-token')
             const apiKey = tokenResponse.data.access_token
