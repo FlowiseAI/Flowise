@@ -22,6 +22,15 @@ const getToken = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
+const preload = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await NimContainerManager.preload()
+        return res.send('Preloaded NIM')
+    } catch (error) {
+        next(error)
+    }
+}
+
 const downloadInstaller = async (req: Request, res: Response, next: NextFunction) => {
     try {
         await NimContainerManager.downloadInstaller()
@@ -87,6 +96,7 @@ const getContainer = async (req: Request, res: Response, next: NextFunction) => 
 }
 
 export default {
+    preload,
     getToken,
     downloadInstaller,
     pullImage,

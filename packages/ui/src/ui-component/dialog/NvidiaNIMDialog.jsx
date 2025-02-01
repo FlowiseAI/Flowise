@@ -21,7 +21,6 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const [activeStep, setActiveStep] = useState(0)
     const [loading, setLoading] = useState(false)
     const [imageTag, setImageTag] = useState('')
-    const [containerInfo, setContainerInfo] = useState(null)
     const [pollInterval, setPollInterval] = useState(null)
 
     const steps = ['Download Installer', 'Pull Image', 'Start Container']
@@ -43,16 +42,39 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
         }
     }
 
+    const preload = async () => {
+        try {
+            setLoading(true)
+            await axios.get('/api/v1/nvidia-nim/preload')
+            setLoading(false)
+            setActiveStep(1)
+        } catch (err) {
+            let errorData = err.message
+            if (typeof err === 'string') {
+                errorData = err
+            } else if (err.response?.data) {
+                errorData = err.response.data.message
+            }
+            alert('Failed to preload: ' + errorData)
+            setLoading(false)
+        }
+    }
+
     const handlePullImage = async () => {
         try {
             setLoading(true)
-            // check if image already exists
-            const imageResponse = await axios.post('/api/v1/nvidia-nim/get-image', { imageTag })
-
-            if (imageResponse.data && imageResponse.data.tag === imageTag) {
-                setLoading(false)
-                setActiveStep(2)
-                return
+            try {
+                const imageResponse = await axios.post('/api/v1/nvidia-nim/get-image', { imageTag })
+                if (imageResponse.data && imageResponse.data.tag === imageTag) {
+                    setLoading(false)
+                    setActiveStep(2)
+                    return
+                }
+            } catch (err) {
+                // Continue if image not found
+                if (err.response?.status !== 404) {
+                    throw err
+                }
             }
 
             // Get token first
@@ -100,15 +122,19 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const handleStartContainer = async () => {
         try {
             setLoading(true)
-
-            const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
-
-            if (containerResponse.data && containerResponse.data && containerResponse.data.status === 'running') {
-                setContainerInfo(containerResponse.data)
-                setLoading(false)
-                onComplete(containerResponse.data)
-                onClose()
-                return
+            try {
+                const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
+                if (containerResponse.data && containerResponse.data && containerResponse.data.status === 'running') {
+                    setLoading(false)
+                    onComplete(containerResponse.data)
+                    onClose()
+                    return
+                }
+            } catch (err) {
+                // Continue if container not found
+                if (err.response?.status !== 404) {
+                    throw err
+                }
             }
 
             const tokenResponse = await axios.get('/api/v1/nvidia-nim/get-token')
@@ -125,7 +151,6 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                     const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
                     if (containerResponse.data) {
                         clearInterval(interval)
-                        setContainerInfo(containerResponse.data)
                         setLoading(false)
                         onComplete(containerResponse.data)
                         onClose()
@@ -153,10 +178,6 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
         }
     }
 
-    const handleSkip = () => {
-        setActiveStep(1)
-    }
-
     const handleNext = () => {
         if (activeStep === 1 && !imageTag) {
             alert('Please enter an image tag')
@@ -164,6 +185,9 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
         }
 
         switch (activeStep) {
+            case 0:
+                preload()
+                break
             case 1:
                 handlePullImage()
                 break
@@ -190,7 +214,6 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
             setActiveStep(0)
             setLoading(false)
             setImageTag('')
-            setContainerInfo(null)
         }
     }, [open])
 
@@ -209,7 +232,7 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                 {activeStep === 0 && (
                     <div style={{ marginTop: 20 }}>
                         <p style={{ marginBottom: 20 }}>
-                            Would you like to download the NIM installer? You can skip this if it has been installed
+                            Would you like to download the NIM installer? Click Next if it has been installed
                         </p>
                         {loading && <CircularProgress />}
                     </div>
@@ -254,8 +277,8 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                     Cancel
                 </Button>
                 {activeStep === 0 && (
-                    <Button onClick={handleSkip} variant='outline'>
-                        Skip
+                    <Button onClick={handleNext} variant='outline' color='secondary'>
+                        Next
                     </Button>
                 )}
                 <Button onClick={activeStep === 0 ? handleDownloadInstaller : handleNext} disabled={loading}>
