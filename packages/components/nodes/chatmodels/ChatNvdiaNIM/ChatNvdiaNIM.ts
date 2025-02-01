@@ -17,10 +17,10 @@ class ChatNvdiaNIM_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Chat Nvdia NIM'
-        this.name = 'chatNvdiaNIM'
+        this.label = 'Chat Nvidia NIM'
+        this.name = 'chatNvidiaNIM'
         this.version = 1.0
-        this.type = 'ChatNvdiaNIM'
+        this.type = 'ChatNvidiaNIM'
         this.icon = 'nvdia.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Nvdia NIM Inference API'
@@ -29,7 +29,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['nvdiaNIMApi'],
+            credentialNames: ['nvidiaNIMApi'],
             optional: true
         }
         this.inputs = [
@@ -46,19 +46,19 @@ class ChatNvdiaNIM_ChatModels implements INode {
                 placeholder: 'microsoft/phi-3-mini-4k-instruct'
             },
             {
+                label: 'Base Path',
+                name: 'basePath',
+                type: 'string',
+                description: 'Specify the URL of the deployed NIM Inference API',
+                placeholder: 'https://integrate.api.nvidia.com/v1'
+            },
+            {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
                 default: 0.9,
                 optional: true
-            },
-            {
-                label: 'Base Path',
-                name: 'basePath',
-                type: 'string',
-                description: 'Specify the URL of the deployed NIM Inference API',
-                placeholder: 'https://integrate.api.nvidia.com/v1'
             },
             {
                 label: 'Streaming',
@@ -132,12 +132,12 @@ class ChatNvdiaNIM_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const nvdiaNIMApiKey = getCredentialParam('nvdiaNIMApiKey', credentialData, nodeData)
+        const nvidiaNIMApiKey = getCredentialParam('nvidiaNIMApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { nvdiaNIMApiKey?: string } = {
+        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { nvidiaNIMApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
-            openAIApiKey: nvdiaNIMApiKey,
+            openAIApiKey: nvidiaNIMApiKey,
             streaming: streaming ?? true
         }
 

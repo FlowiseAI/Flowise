@@ -611,6 +611,9 @@ importers:
             mysql2:
                 specifier: ^3.11.3
                 version: 3.11.4
+            nim-container-manager:
+                specifier: ^1.0.2
+                version: 1.0.2
             openai:
                 specifier: 4.57.3
                 version: 4.57.3(encoding@0.1.13)(zod@3.22.4)
@@ -640,7 +643,7 @@ importers:
                 version: 5.1.7
             typeorm:
                 specifier: ^0.3.6
-                version: 0.3.20(ioredis@5.3.2)(mongodb@6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1))(mysql2@3.11.4)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))
+                version: 0.3.20(ioredis@5.4.2)(mongodb@6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1))(mysql2@3.11.4)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))
             uuid:
                 specifier: ^9.0.1
                 version: 9.0.1
@@ -2634,6 +2637,9 @@ packages:
     '@baiducloud/qianfan@0.1.9':
         resolution: { integrity: sha512-p+pvfMVGHrjgPxkL5O5RAL2xWoSH/bIjxNOfk5KA6oqPAeJzSUMyKswwlCgFxLvt6flsgJmJ6PYVBCDNPhnYcQ== }
 
+    '@balena/dockerignore@1.0.2':
+        resolution: { integrity: sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q== }
+
     '@bcoe/v8-coverage@0.2.3':
         resolution: { integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw== }
 
@@ -3312,14 +3318,13 @@ packages:
         resolution: { integrity: sha512-vYVqYzHicDqyKB+NQhAc54I1QWCBLCrYG6unqOIcBTHx+7x8C9lcoLj3KVJXs2VB4lUbpWY+Kk9NipcbXYWmvg== }
         engines: { node: '>=12.10.0' }
 
+    '@grpc/grpc-js@1.12.5':
+        resolution: { integrity: sha512-d3iiHxdpg5+ZcJ6jnDSOT8Z0O0VMVGy34jAnYLUX8yd36b1qn8f1TwOA/Lc7TsOh03IkPJ38eGI5qD2EjNkoEA== }
+        engines: { node: '>=12.10.0' }
+
     '@grpc/grpc-js@1.8.17':
         resolution: { integrity: sha512-DGuSbtMFbaRsyffMf+VEkVu8HkSXEUfO3UyGJNtqxW9ABdtTIA+2UXAJpwbJS+xfQxuwqLUeELmL6FuZkOqPxw== }
         engines: { node: ^8.13.0 || >=10.10.0 }
-
-    '@grpc/proto-loader@0.7.10':
-        resolution: { integrity: sha512-CAqDfoaQ8ykFd9zqBDn4k6iWT9loLAlc2ETmDFS9JCD70gDcnA4L3AFEo2iV7KyAtAAHFW9ftq1Fz+Vsgq80RQ== }
-        engines: { node: '>=6' }
-        hasBin: true
 
     '@grpc/proto-loader@0.7.13':
         resolution: { integrity: sha512-AiXO/bfe9bmxBjxxtYxFAXGZvMaN5s8kO+jBHAJCON8rJoB5YS/D6X7ZNc6XQkuHNmyl4CYaMI1fJ/Gn27RGGw== }
@@ -7595,6 +7600,10 @@ packages:
         resolution: { integrity: sha512-4T53u4PdgsXqKaIctwF8ifXlRTTmEPJ8iEPWFdGZvcf7sbwYo6FKFEX9eNNAnzFZ7EzJAQ3CJeOtCRA4rDp7Pw== }
         engines: { node: '>=6.14.2' }
 
+    buildcheck@0.0.6:
+        resolution: { integrity: sha512-8f9ZJCUXyT1M35Jx7MkBgmBMo3oHTTBIPLiY9xyL0pl3T5RwcPEY8cUHr5LBNfu/fk6c2T4DJZuVM/8ZZT2D2A== }
+        engines: { node: '>=10.0.0' }
+
     builtin-modules@3.3.0:
         resolution: { integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw== }
         engines: { node: '>=6' }
@@ -8232,6 +8241,10 @@ packages:
         resolution: { integrity: sha512-7U0FTKIgp8mKfm3ZSqafQpQFIH0t1NannxZDjCGA43HdVvv5n0kGR9KfmdWgVK++QmQqhnh98C2AaSgpXZka/w== }
         engines: { node: '>=16' }
 
+    cpu-features@0.0.10:
+        resolution: { integrity: sha512-9IkYqtX3YHPCzoVg1Py+o9057a3i0fp7S530UWokCSaFVTc7CwXPRiOjRjBQQ18ZCNafx78YfnG+HALxtVmOGA== }
+        engines: { node: '>=10.0.0' }
+
     create-require@1.1.1:
         resolution: { integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ== }
 
@@ -8770,6 +8783,14 @@ packages:
     dns-packet@5.6.1:
         resolution: { integrity: sha512-l4gcSouhcgIKRvyy99RNVOgxXiicE+2jZoNmaNmZ6JXiGajBOJAesk1OBlJuM5k2c+eudGdLxDqXuPCKIj6kpw== }
         engines: { node: '>=6' }
+
+    docker-modem@5.0.6:
+        resolution: { integrity: sha512-ens7BiayssQz/uAxGzH8zGXCtiV24rRWXdjNha5V4zSOcxmAZsfGVm/PPFbwQdqEkDnhG+SyR9E3zSHUbOKXBQ== }
+        engines: { node: '>= 8.0' }
+
+    dockerode@4.0.4:
+        resolution: { integrity: sha512-6GYP/EdzEY50HaOxTVTJ2p+mB5xDHTMJhS+UoGrVyS6VC+iQRh7kZ4FRpUYq6nziby7hPqWhOrFFUFTMUZJJ5w== }
+        engines: { node: '>= 8.0' }
 
     doctrine@2.1.0:
         resolution: { integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw== }
@@ -12353,6 +12374,9 @@ packages:
     nan@2.19.0:
         resolution: { integrity: sha512-nO1xXxfh/RWNxfd/XPfbIfFk5vgLsAxUR9y5O0cHMJu/AW9U95JLXqthYHjEp+8gQ5p96K9jUp8nbVOxCdRbtw== }
 
+    nan@2.22.0:
+        resolution: { integrity: sha512-nbajikzWTMwsW+eSsNm3QwlOs7het9gGJU5dDZzRTQGk03vyBOauxgI4VakDzE0PtsGTmXPsXTbbjVhRwR5mpw== }
+
     nanoclone@0.2.1:
         resolution: { integrity: sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA== }
 
@@ -12409,6 +12433,9 @@ packages:
 
     next-tick@1.1.0:
         resolution: { integrity: sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ== }
+
+    nim-container-manager@1.0.2:
+        resolution: { integrity: sha512-gataWCKyfpMn7C7KDaF2U82uKjHOjj8Jgykf+zKo98uzFjdpxorl34gUXOanxe8E8UXsc7QjCwEt5XqBL7gWwg== }
 
     no-case@3.0.4:
         resolution: { integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg== }
@@ -15081,6 +15108,9 @@ packages:
         resolution: { integrity: sha512-sJrL3/wHzNwJRLBdf6CjJWIlxC04iYKkyXvYSVsWVOiC2DSkHmxsqOhEeMsBA9XK+CHuNcsdkbFDnoUfAsmp9g== }
         hasBin: true
 
+    split-ca@1.0.1:
+        resolution: { integrity: sha512-Q5thBSxp5t8WPTTJQS59LrGqOZqOsrhDGDVm8azCqIBjSBd7nd9o2PM+mDulQQkh8h//4U6hFZnc/mul8t5pWQ== }
+
     split-on-first@3.0.0:
         resolution: { integrity: sha512-qxQJTx2ryR0Dw0ITYyekNQWpz6f8dGd7vffGNflQQ3Iqj9NJ6qiZ7ELpZsJ/QBhIVAiDfXdag3+Gp8RvWa62AA== }
         engines: { node: '>=12' }
@@ -15112,6 +15142,10 @@ packages:
     srt-parser-2@1.2.3:
         resolution: { integrity: sha512-dANP1AyJTI503H0/kXwRza+7QxDB3BqeFvEKTF4MI9lQcBe8JbRUQTKVIGzGABJCwBovEYavZ2Qsdm/s8XKz8A== }
         hasBin: true
+
+    ssh2@1.16.0:
+        resolution: { integrity: sha512-r1X4KsBGedJqo7h8F5c4Ybpcr5RjyP+aWIG007uBPRjmdQWfEiVLzSK71Zji1B9sKxwaCvD8y8cwSkYrlLiRRg== }
+        engines: { node: '>=10.16.0' }
 
     sshpk@1.18.0:
         resolution: { integrity: sha512-2p2KJZTSqQ/I3+HX42EpYOa2l3f8Erv8MWKsy2I9uf4wA7yFIkXRffYdsx86y6z4vHtV8u7g+pPlr8/4ouAxsQ== }
@@ -15476,6 +15510,9 @@ packages:
     tapable@2.2.1:
         resolution: { integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ== }
         engines: { node: '>=6' }
+
+    tar-fs@2.0.1:
+        resolution: { integrity: sha512-6tzWDMeroL87uF/+lin46k+Q+46rAJ0SyPGz7OW7wTgblI273hsBqk2C1j0/xNadNLKDTUL9BukSjB7cwgmlPA== }
 
     tar-fs@2.1.1:
         resolution: { integrity: sha512-V0r2Y9scmbDRLCNex/+hYzvp/zyYjvFbHPNgVTKfQvVrb6guiE/fxP+XblDNR011utopbkex2nM4dHNV6GDsng== }
@@ -20391,6 +20428,8 @@ snapshots:
             - encoding
             - supports-color
 
+    '@balena/dockerignore@1.0.2': {}
+
     '@bcoe/v8-coverage@0.2.3': {}
 
     '@browserbasehq/sdk@2.0.0(encoding@0.1.13)':
@@ -21045,7 +21084,7 @@ snapshots:
 
     '@grpc/grpc-js@1.10.0':
         dependencies:
-            '@grpc/proto-loader': 0.7.10
+            '@grpc/proto-loader': 0.7.13
             '@types/node': 20.12.12
 
     '@grpc/grpc-js@1.10.10':
@@ -21058,17 +21097,15 @@ snapshots:
             '@grpc/proto-loader': 0.7.13
             '@js-sdsl/ordered-map': 4.4.2
 
+    '@grpc/grpc-js@1.12.5':
+        dependencies:
+            '@grpc/proto-loader': 0.7.13
+            '@js-sdsl/ordered-map': 4.4.2
+
     '@grpc/grpc-js@1.8.17':
         dependencies:
-            '@grpc/proto-loader': 0.7.7
+            '@grpc/proto-loader': 0.7.13
             '@types/node': 20.12.12
-
-    '@grpc/proto-loader@0.7.10':
-        dependencies:
-            lodash.camelcase: 4.3.0
-            long: 5.2.3
-            protobufjs: 7.4.0
-            yargs: 17.7.2
 
     '@grpc/proto-loader@0.7.13':
         dependencies:
@@ -22489,7 +22526,7 @@ snapshots:
 
     '@opentelemetry/exporter-logs-otlp-grpc@0.54.0(@opentelemetry/api@1.9.0)':
         dependencies:
-            '@grpc/grpc-js': 1.10.10
+            '@grpc/grpc-js': 1.12.5
             '@opentelemetry/api': 1.9.0
             '@opentelemetry/core': 1.27.0(@opentelemetry/api@1.9.0)
             '@opentelemetry/otlp-grpc-exporter-base': 0.54.0(@opentelemetry/api@1.9.0)
@@ -22939,7 +22976,7 @@ snapshots:
 
     '@opentelemetry/otlp-grpc-exporter-base@0.54.0(@opentelemetry/api@1.9.0)':
         dependencies:
-            '@grpc/grpc-js': 1.10.10
+            '@grpc/grpc-js': 1.12.5
             '@opentelemetry/api': 1.9.0
             '@opentelemetry/core': 1.27.0(@opentelemetry/api@1.9.0)
             '@opentelemetry/otlp-exporter-base': 0.54.0(@opentelemetry/api@1.9.0)
@@ -25443,7 +25480,7 @@ snapshots:
 
     '@zilliz/milvus2-sdk-node@2.4.2':
         dependencies:
-            '@grpc/grpc-js': 1.10.10
+            '@grpc/grpc-js': 1.12.5
             '@grpc/proto-loader': 0.7.13
             '@petamoriken/float16': 3.8.7
             dayjs: 1.11.10
@@ -26518,6 +26555,9 @@ snapshots:
             node-gyp-build: 4.8.1
         optional: true
 
+    buildcheck@0.0.6:
+        optional: true
+
     builtin-modules@3.3.0: {}
 
     builtins@1.0.3: {}
@@ -27257,6 +27297,12 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
+    cpu-features@0.0.10:
+        dependencies:
+            buildcheck: 0.0.6
+            nan: 2.22.0
+        optional: true
+
     create-require@1.1.1: {}
 
     crelt@1.0.6: {}
@@ -27826,6 +27872,27 @@ snapshots:
     dns-packet@5.6.1:
         dependencies:
             '@leichtgewicht/ip-codec': 2.0.4
+
+    docker-modem@5.0.6:
+        dependencies:
+            debug: 4.3.7(supports-color@5.5.0)
+            readable-stream: 3.6.2
+            split-ca: 1.0.1
+            ssh2: 1.16.0
+        transitivePeerDependencies:
+            - supports-color
+
+    dockerode@4.0.4:
+        dependencies:
+            '@balena/dockerignore': 1.0.2
+            '@grpc/grpc-js': 1.12.5
+            '@grpc/proto-loader': 0.7.13
+            docker-modem: 5.0.6
+            protobufjs: 7.4.0
+            tar-fs: 2.0.1
+            uuid: 10.0.0
+        transitivePeerDependencies:
+            - supports-color
 
     doctrine@2.1.0:
         dependencies:
@@ -29354,7 +29421,7 @@ snapshots:
     fsevents@1.2.13:
         dependencies:
             bindings: 1.5.0
-            nan: 2.19.0
+            nan: 2.22.0
         optional: true
 
     fsevents@2.3.2:
@@ -32797,6 +32864,9 @@ snapshots:
     nan@2.19.0:
         optional: true
 
+    nan@2.22.0:
+        optional: true
+
     nanoclone@0.2.1: {}
 
     nanoid@3.3.6: {}
@@ -32850,6 +32920,13 @@ snapshots:
     netmask@2.0.2: {}
 
     next-tick@1.1.0: {}
+
+    nim-container-manager@1.0.2:
+        dependencies:
+            dockerode: 4.0.4
+            express: 4.21.1
+        transitivePeerDependencies:
+            - supports-color
 
     no-case@3.0.4:
         dependencies:
@@ -36079,6 +36156,8 @@ snapshots:
             wicked-good-xpath: 1.3.0
             xmldom-sre: 0.1.31
 
+    split-ca@1.0.1: {}
+
     split-on-first@3.0.0: {}
 
     split-string@3.1.0:
@@ -36110,6 +36189,14 @@ snapshots:
     sqlstring@2.3.3: {}
 
     srt-parser-2@1.2.3: {}
+
+    ssh2@1.16.0:
+        dependencies:
+            asn1: 0.2.6
+            bcrypt-pbkdf: 1.0.2
+        optionalDependencies:
+            cpu-features: 0.0.10
+            nan: 2.22.0
 
     sshpk@1.18.0:
         dependencies:
@@ -36353,7 +36440,7 @@ snapshots:
     stripe@17.3.1:
         dependencies:
             '@types/node': 20.12.12
-            qs: 6.12.1
+            qs: 6.13.0
 
     strnum@1.0.5: {}
 
@@ -36561,6 +36648,13 @@ snapshots:
     tapable@1.1.3: {}
 
     tapable@2.2.1: {}
+
+    tar-fs@2.0.1:
+        dependencies:
+            chownr: 1.1.4
+            mkdirp-classic: 0.5.3
+            pump: 3.0.0
+            tar-stream: 2.2.0
 
     tar-fs@2.1.1:
         dependencies:
@@ -37011,6 +37105,34 @@ snapshots:
             yargs: 17.7.2
         optionalDependencies:
             ioredis: 5.3.2
+            mongodb: 6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1)
+            mysql2: 3.11.4
+            pg: 8.11.3
+            redis: 4.6.13
+            sqlite3: 5.1.7
+            ts-node: 10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)
+        transitivePeerDependencies:
+            - supports-color
+
+    typeorm@0.3.20(ioredis@5.4.2)(mongodb@6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1))(mysql2@3.11.4)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)):
+        dependencies:
+            '@sqltools/formatter': 1.2.5
+            app-root-path: 3.1.0
+            buffer: 6.0.3
+            chalk: 4.1.2
+            cli-highlight: 2.1.11
+            dayjs: 1.11.10
+            debug: 4.3.4(supports-color@8.1.1)
+            dotenv: 16.4.5
+            glob: 10.3.10
+            mkdirp: 2.1.6
+            reflect-metadata: 0.2.1
+            sha.js: 2.4.11
+            tslib: 2.6.2
+            uuid: 9.0.1
+            yargs: 17.7.2
+        optionalDependencies:
+            ioredis: 5.4.2
             mongodb: 6.3.0(gcp-metadata@6.1.0(encoding@0.1.13))(socks@2.8.1)
             mysql2: 3.11.4
             pg: 8.11.3
