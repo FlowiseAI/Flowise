@@ -19,15 +19,25 @@ import {
     IDatabaseEntity,
     IUsedTool,
     IDocument,
-    IStateWithMessages
+    IStateWithMessages,
+    ConversationHistorySelection
 } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX, ARTIFACTS_PREFIX } from '../../../src/agents'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, removeInvalidImageMarkdown } from '../../../src/utils'
+import {
+    extractOutputFromArray,
+    getInputVariables,
+    getVars,
+    handleEscapeCharacters,
+    prepareSandboxVars,
+    removeInvalidImageMarkdown,
+    transformBracesWithColon
+} from '../../../src/utils'
 import {
     customGet,
     getVM,
     processImageMessage,
     transformObjectPropertyToFunction,
+    filterConversationHistory,
     restructureMessages,
     MessagesState,
     RunnableCallable,
@@ -195,7 +205,7 @@ class Agent_SeqAgents implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'seqAgent'
-        this.version = 3.1
+        this.version = 4.1
         this.type = 'Agent'
         this.icon = 'seqAgent.png'
         this.category = 'Sequential Agents'
@@ -218,22 +228,58 @@ class Agent_SeqAgents implements INode {
                 default: examplePrompt
             },
             {
+                label: 'Prepend Messages History',
+                name: 'messageHistory',
+                description:
+                    'Prepend a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
+                type: 'code',
+                hideCodeExecute: true,
+                codeExample: messageHistoryExample,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Conversation History',
+                name: 'conversationHistorySelection',
+                type: 'options',
+                options: [
+                    {
+                        label: 'User Question',
+                        name: 'user_question',
+                        description: 'Use the user question from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Last Conversation Message',
+                        name: 'last_message',
+                        description: 'Use the last conversation message from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'All Conversation Messages',
+                        name: 'all_messages',
+                        description: 'Use all conversation messages from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Empty',
+                        name: 'empty',
+                        description:
+                            'Do not use any messages from the conversation history. ' +
+                            'Ensure to use either System Prompt, Human Prompt, or Messages History.'
+                    }
+                ],
+                default: 'all_messages',
+                optional: true,
+                description:
+                    'Select which messages from the conversation history to include in the prompt. ' +
+                    'The selected messages will be inserted between the System Prompt (if defined) and ' +
+                    '[Messages History, Human Prompt].',
+                additionalParams: true
+            },
+            {
                 label: 'Human Prompt',
                 name: 'humanMessagePrompt',
                 type: 'string',
                 description: 'This prompt will be added at the end of the messages as human message',
                 rows: 4,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Messages History',
-                name: 'messageHistory',
-                description:
-                    'Return a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
-                type: 'code',
-                hideCodeExecute: true,
-                codeExample: messageHistoryExample,
                 optional: true,
                 additionalParams: true
             },
@@ -245,9 +291,11 @@ class Agent_SeqAgents implements INode {
                 optional: true
             },
             {
-                label: 'Start | Agent | Condition | LLM | Tool Node',
+                label: 'Sequential Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | Condition | LLMNode | ToolNode',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
+                description:
+                    'Can be connected to one of the following nodes: Start, Agent, Condition, LLM Node, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {
@@ -260,7 +308,12 @@ class Agent_SeqAgents implements INode {
             {
                 label: 'Require Approval',
                 name: 'interrupt',
-                description: 'Require approval before executing tools. Will proceed when tools are not called',
+                description:
+                    'Pause execution and request user approval before running tools.\n' +
+                    'If enabled, the agent will prompt the user with customizable approve/reject options\n' +
+                    'and will proceed only after approval. This requires a configured agent memory to manage\n' +
+                    'the state and handle approval requests.\n' +
+                    'If no tools are invoked, the agent proceeds without interruption.',
                 type: 'boolean',
                 optional: true
             },
@@ -406,7 +459,9 @@ class Agent_SeqAgents implements INode {
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
         let agentSystemPrompt = nodeData.inputs?.systemMessagePrompt as string
+        agentSystemPrompt = transformBracesWithColon(agentSystemPrompt)
         let agentHumanPrompt = nodeData.inputs?.humanMessagePrompt as string
+        agentHumanPrompt = transformBracesWithColon(agentHumanPrompt)
         const agentLabel = nodeData.inputs?.agentName as string
         const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
         const maxIterations = nodeData.inputs?.maxIterations as string
@@ -625,7 +680,7 @@ async function createAgent(
             sessionId: flowObj?.sessionId,
             chatId: flowObj?.chatId,
             input: flowObj?.input,
-            verbose: process.env.DEBUG === 'true' ? true : false,
+            verbose: process.env.DEBUG === 'true',
             maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
         })
         return executor
@@ -727,6 +782,9 @@ async function agentNode(
             throw new Error('Aborted!')
         }
 
+        const historySelection = (nodeData.inputs?.conversationHistorySelection || 'all_messages') as ConversationHistorySelection
+        // @ts-ignore
+        state.messages = filterConversationHistory(historySelection, input, state)
         // @ts-ignore
         state.messages = restructureMessages(llm, state)
 
@@ -734,10 +792,10 @@ async function agentNode(
 
         if (interrupt) {
             const messages = state.messages as unknown as BaseMessage[]
-            const lastMessage = messages[messages.length - 1]
+            const lastMessage = messages.length ? messages[messages.length - 1] : null
 
             // If the last message is a tool message and is an interrupted message, format output into standard agent output
-            if (lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
+            if (lastMessage && lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
                 let formattedAgentResult: {
                     output?: string
                     usedTools?: IUsedTool[]
@@ -781,6 +839,7 @@ async function agentNode(
         }
 
         let outputContent = typeof result === 'string' ? result : result.content || result.output
+        outputContent = extractOutputFromArray(outputContent)
         outputContent = removeInvalidImageMarkdown(outputContent)
 
         if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {

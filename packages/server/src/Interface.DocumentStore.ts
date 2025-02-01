@@ -1,5 +1,9 @@
 import { ICommonObject } from 'flowise-components'
 import { DocumentStore } from './database/entities/DocumentStore'
+import { DataSource } from 'typeorm'
+import { IComponentNodes } from './Interface'
+import { Telemetry } from './utils/telemetry'
+import { CachePool } from './CachePool'
 
 export enum DocumentStoreStatus {
     EMPTY_SYNC = 'EMPTY',
@@ -70,6 +74,8 @@ export interface IDocumentStoreLoaderForPreview extends IDocumentStoreLoader {
 
 export interface IDocumentStoreUpsertData {
     docId: string
+    metadata?: string | object
+    replaceExisting?: boolean
     loader?: {
         name: string
         config: ICommonObject
@@ -108,6 +114,38 @@ export interface IDocumentStoreLoaderFile {
 export interface IDocumentStoreWhereUsed {
     id: string
     name: string
+}
+
+export interface IUpsertQueueAppServer {
+    appDataSource: DataSource
+    componentNodes: IComponentNodes
+    telemetry: Telemetry
+    cachePool?: CachePool
+}
+
+export interface IExecuteDocStoreUpsert extends IUpsertQueueAppServer {
+    storeId: string
+    totalItems: IDocumentStoreUpsertData[]
+    files: Express.Multer.File[]
+    isRefreshAPI: boolean
+}
+
+export interface IExecutePreviewLoader extends Omit<IUpsertQueueAppServer, 'telemetry'> {
+    data: IDocumentStoreLoaderForPreview
+    isPreviewOnly: boolean
+    telemetry?: Telemetry
+}
+
+export interface IExecuteProcessLoader extends IUpsertQueueAppServer {
+    data: IDocumentStoreLoaderForPreview
+    docLoaderId: string
+    isProcessWithoutUpsert: boolean
+}
+
+export interface IExecuteVectorStoreInsert extends IUpsertQueueAppServer {
+    data: ICommonObject
+    isStrictSave: boolean
+    isVectorStoreInsert: boolean
 }
 
 const getFileName = (fileBase64: string) => {
@@ -154,19 +192,19 @@ export const addLoaderSource = (loader: IDocumentStoreLoader, isGetFileNameOnly 
         case 'jsonlinesFile':
         case 'txtFile':
             source = isGetFileNameOnly
-                ? getFileName(loader.loaderConfig[loader.loaderId])
-                : loader.loaderConfig[loader.loaderId]?.replace('FILE-STORAGE::', '') || 'None'
+                ? getFileName(loader.loaderConfig?.[loader.loaderId])
+                : loader.loaderConfig?.[loader.loaderId]?.replace('FILE-STORAGE::', '') || 'None'
             break
         case 'apiLoader':
-            source = loader.loaderConfig.url + ' (' + loader.loaderConfig.method + ')'
+            source = loader.loaderConfig?.url + ' (' + loader.loaderConfig?.method + ')'
             break
         case 'cheerioWebScraper':
         case 'playwrightWebScraper':
         case 'puppeteerWebScraper':
-            source = loader.loaderConfig.url || 'None'
+            source = loader.loaderConfig?.url || 'None'
             break
         case 'unstructuredFileLoader':
-            source = handleUnstructuredFileLoader(loader.loaderConfig, isGetFileNameOnly)
+            source = handleUnstructuredFileLoader(loader.loaderConfig || {}, isGetFileNameOnly)
             break
         default:
             source = 'None'

@@ -20,7 +20,7 @@ class ChatOllama_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOllama'
         this.name = 'chatOllama'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'ChatOllama'
         this.icon = 'Ollama.svg'
         this.category = 'Chat Models'
@@ -59,9 +59,18 @@ class ChatOllama_ChatModels implements INode {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
-                description: 'Allow image uploads for multimodal models. e.g. llama3.2-vision',
+                description:
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'JSON Mode',
@@ -223,13 +232,15 @@ class ChatOllama_ChatModels implements INode {
         const tfsZ = nodeData.inputs?.tfsZ as string
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const jsonMode = nodeData.inputs?.jsonMode as boolean
+        const streaming = nodeData.inputs?.streaming as boolean
 
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: ChatOllamaInput & BaseChatModelParams = {
             baseUrl,
             temperature: parseFloat(temperature),
-            model: modelName
+            model: modelName,
+            streaming: streaming ?? true
         }
 
         if (topP) obj.topP = parseFloat(topP)

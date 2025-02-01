@@ -12,7 +12,6 @@ class DocStore_VectorStores implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
-    badge: string
 
     constructor() {
         this.label = 'Document Store (Vector)'
@@ -20,7 +19,6 @@ class DocStore_VectorStores implements INode {
         this.version = 1.0
         this.type = 'DocumentStoreVS'
         this.icon = 'dstore.svg'
-        this.badge = 'New'
         this.category = 'Vector Stores'
         this.description = `Search and retrieve documents from Document Store`
         this.baseClasses = [this.type]

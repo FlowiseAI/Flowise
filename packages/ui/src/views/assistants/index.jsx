@@ -1,190 +1,131 @@
-import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 // material-ui
-import { Box, Stack, Button, Skeleton } from '@mui/material'
+import { Card, CardContent, Stack } from '@mui/material'
+import { useTheme, styled } from '@mui/material/styles'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import ItemCard from '@/ui-component/cards/ItemCard'
-import { gridSpacing } from '@/store/constant'
-import AssistantEmptySVG from '@/assets/images/assistant_empty.svg'
-import { StyledButton } from '@/ui-component/button/StyledButton'
-import AssistantDialog from './AssistantDialog'
-import LoadAssistantDialog from './LoadAssistantDialog'
-
-// API
-import assistantsApi from '@/api/assistants'
-
-// Hooks
-import useApi from '@/hooks/useApi'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
 
 // icons
-import { IconPlus, IconFileUpload } from '@tabler/icons-react'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
+import { IconRobotFace, IconBrandOpenai, IconBrandAzure } from '@tabler/icons-react'
 
-// ==============================|| CHATFLOWS ||============================== //
+const cards = [
+    {
+        title: 'Custom Assistant',
+        description: 'Create custom assistant using your choice of LLMs',
+        icon: <IconRobotFace />,
+        iconText: 'Custom',
+        gradient: 'linear-gradient(135deg, #fff8e14e 0%, #ffcc802f 100%)'
+    },
+    {
+        title: 'OpenAI Assistant',
+        description: 'Create assistant using OpenAI Assistant API',
+        icon: <IconBrandOpenai />,
+        iconText: 'OpenAI',
+        gradient: 'linear-gradient(135deg, #c9ffd85f 0%, #a0f0b567 100%)'
+    },
+    {
+        title: 'Azure Assistant (Coming Soon)',
+        description: 'Create assistant using Azure Assistant API',
+        icon: <IconBrandAzure />,
+        iconText: 'Azure',
+        gradient: 'linear-gradient(135deg, #c4e1ff57 0%, #80b7ff5a 100%)'
+    }
+]
+
+const StyledCard = styled(Card)(({ gradient }) => ({
+    height: '300px',
+    background: gradient,
+    position: 'relative',
+    overflow: 'hidden',
+    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+    cursor: 'pointer'
+}))
+
+const FeatureIcon = styled('div')(() => ({
+    display: 'inline-flex',
+    padding: '4px 8px',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    borderRadius: '4px',
+    marginBottom: '16px',
+    '& svg': {
+        width: '1.2rem',
+        height: '1.2rem',
+        marginRight: '8px'
+    }
+}))
+
+const FeatureCards = () => {
+    const navigate = useNavigate()
+    const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
+
+    const onCardClick = (index) => {
+        if (index === 0) navigate('/assistants/custom')
+        if (index === 1) navigate('/assistants/openai')
+        if (index === 2) alert('Under Development')
+    }
+
+    return (
+        <Stack
+            spacing={3}
+            direction='row'
+            sx={{
+                width: '100%',
+                justifyContent: 'space-between'
+            }}
+        >
+            {cards.map((card, index) => (
+                <StyledCard
+                    key={index}
+                    gradient={card.gradient}
+                    sx={{
+                        flex: 1,
+                        maxWidth: 'calc((100% - 2 * 16px) / 3)',
+                        height: 'auto',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        border: 1,
+                        borderColor: theme.palette.grey[900] + 25,
+                        borderRadius: 2,
+                        color: customization.isDarkMode ? theme.palette.common.white : '#333333',
+                        cursor: index === 2 ? 'not-allowed' : 'pointer',
+                        opacity: index === 2 ? 0.6 : 1,
+                        '&:hover': {
+                            boxShadow: index === 2 ? 'none' : '0 4px 20px rgba(0, 0, 0, 0.1)'
+                        }
+                    }}
+                    onClick={() => index !== 2 && onCardClick(index)}
+                >
+                    <CardContent className='h-full relative z-10'>
+                        <FeatureIcon>
+                            {card.icon}
+                            <span className='text-xs uppercase'>{card.iconText}</span>
+                        </FeatureIcon>
+                        <h2 className='text-2xl font-bold mb-2'>{card.title}</h2>
+                        <p className='text-gray-600'>{card.description}</p>
+                    </CardContent>
+                </StyledCard>
+            ))}
+        </Stack>
+    )
+}
+
+// ==============================|| ASSISTANTS ||============================== //
 
 const Assistants = () => {
-    const getAllAssistantsApi = useApi(assistantsApi.getAllAssistants)
-
-    const [isLoading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    const [showDialog, setShowDialog] = useState(false)
-    const [dialogProps, setDialogProps] = useState({})
-    const [showLoadDialog, setShowLoadDialog] = useState(false)
-    const [loadDialogProps, setLoadDialogProps] = useState({})
-
-    const loadExisting = () => {
-        const dialogProp = {
-            title: 'Load Existing Assistant'
-        }
-        setLoadDialogProps(dialogProp)
-        setShowLoadDialog(true)
-    }
-
-    const [search, setSearch] = useState('')
-    const onSearchChange = (event) => {
-        setSearch(event.target.value)
-    }
-
-    const onAssistantSelected = (selectedOpenAIAssistantId, credential) => {
-        setShowLoadDialog(false)
-        addNew(selectedOpenAIAssistantId, credential)
-    }
-
-    const addNew = (selectedOpenAIAssistantId, credential) => {
-        const dialogProp = {
-            title: 'Add New Assistant',
-            type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
-            selectedOpenAIAssistantId,
-            credential
-        }
-        setDialogProps(dialogProp)
-        setShowDialog(true)
-    }
-
-    const edit = (selectedAssistant) => {
-        const dialogProp = {
-            title: 'Edit Assistant',
-            type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
-            data: selectedAssistant
-        }
-        setDialogProps(dialogProp)
-        setShowDialog(true)
-    }
-
-    const onConfirm = () => {
-        setShowDialog(false)
-        getAllAssistantsApi.request()
-    }
-
-    function filterAssistants(data) {
-        const parsedData = JSON.parse(data.details)
-        return parsedData && parsedData.name && parsedData.name.toLowerCase().indexOf(search.toLowerCase()) > -1
-    }
-
-    useEffect(() => {
-        getAllAssistantsApi.request()
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-
-    useEffect(() => {
-        setLoading(getAllAssistantsApi.loading)
-    }, [getAllAssistantsApi.loading])
-
-    useEffect(() => {
-        if (getAllAssistantsApi.error) {
-            setError(getAllAssistantsApi.error)
-        }
-    }, [getAllAssistantsApi.error])
-
     return (
         <>
             <MainCard>
-                {error ? (
-                    <ErrorBoundary error={error} />
-                ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Assistants'
-                            title='OpenAI Assistants'
-                        >
-                            <Button
-                                variant='outlined'
-                                onClick={loadExisting}
-                                startIcon={<IconFileUpload />}
-                                sx={{ borderRadius: 2, height: 40 }}
-                            >
-                                Load
-                            </Button>
-                            <StyledButton
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: 40 }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                            >
-                                Add
-                            </StyledButton>
-                        </ViewHeader>
-                        {isLoading ? (
-                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                            </Box>
-                        ) : (
-                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                {getAllAssistantsApi.data &&
-                                    getAllAssistantsApi.data?.filter(filterAssistants).map((data, index) => (
-                                        <ItemCard
-                                            data={{
-                                                name: JSON.parse(data.details)?.name,
-                                                description: JSON.parse(data.details)?.instructions,
-                                                iconSrc: data.iconSrc
-                                            }}
-                                            key={index}
-                                            onClick={() => edit(data)}
-                                        />
-                                    ))}
-                            </Box>
-                        )}
-                        {!isLoading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={AssistantEmptySVG}
-                                        alt='AssistantEmptySVG'
-                                    />
-                                </Box>
-                                <div>No Assistants Added Yet</div>
-                            </Stack>
-                        )}
-                    </Stack>
-                )}
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
+                    <ViewHeader title='Assistants' />
+                    <FeatureCards />
+                </Stack>
             </MainCard>
-            <LoadAssistantDialog
-                show={showLoadDialog}
-                dialogProps={loadDialogProps}
-                onCancel={() => setShowLoadDialog(false)}
-                onAssistantSelected={onAssistantSelected}
-                setError={setError}
-            ></LoadAssistantDialog>
-            <AssistantDialog
-                show={showDialog}
-                dialogProps={dialogProps}
-                onCancel={() => setShowDialog(false)}
-                onConfirm={onConfirm}
-                setError={setError}
-            ></AssistantDialog>
         </>
     )
 }
