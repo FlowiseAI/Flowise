@@ -125,6 +125,8 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
             try {
                 const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
                 if (containerResponse.data && containerResponse.data && containerResponse.data.status === 'running') {
+                    // wait additional 10 seconds for container to be ready
+                    await new Promise((resolve) => setTimeout(resolve, 10000))
                     setLoading(false)
                     onComplete(containerResponse.data)
                     onClose()
@@ -218,7 +220,7 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     }, [open])
 
     const component = open ? (
-        <Dialog open={open} onClose={onClose}>
+        <Dialog open={open}>
             <DialogTitle>NIM Setup</DialogTitle>
             <DialogContent>
                 <Stepper activeStep={activeStep}>

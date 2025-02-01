@@ -612,8 +612,8 @@ importers:
                 specifier: ^3.11.3
                 version: 3.11.4
             nim-container-manager:
-                specifier: ^1.0.3
-                version: 1.0.3
+                specifier: ^1.0.4
+                version: 1.0.4
             openai:
                 specifier: 4.57.3
                 version: 4.57.3(encoding@0.1.13)(zod@3.22.4)
@@ -12434,8 +12434,8 @@ packages:
     next-tick@1.1.0:
         resolution: { integrity: sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ== }
 
-    nim-container-manager@1.0.3:
-        resolution: { integrity: sha512-cVxdGNSeORetXmcryAQgP3JRbKjtzE3rhYCg0dHei9WXW4Qd8NmAI11bckYVUeI58n8SLpT63dpSB/HNZEE3SQ== }
+    nim-container-manager@1.0.4:
+        resolution: { integrity: sha512-OJgP279SGRVDoUBmXug1GuXTohCt+udCAb8EEIaTEQ6/aXg+/XOSjSp4REg5ne/Tl6sfnhvhzwyPHjPjJ+DUoA== }
 
     no-case@3.0.4:
         resolution: { integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg== }
@@ -32921,7 +32921,7 @@ snapshots:
 
     next-tick@1.1.0: {}
 
-    nim-container-manager@1.0.3:
+    nim-container-manager@1.0.4:
         dependencies:
             dockerode: 4.0.4
             express: 4.21.1
