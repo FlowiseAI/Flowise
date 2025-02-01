@@ -617,6 +617,10 @@
                     "name": "gpt-4o-2024-05-13"
                 },
                 {
+                    "label": "o3-mini",
+                    "name": "o3-mini"
+                },
+                {
                     "label": "o1-preview (latest)",
                     "name": "o1-preview"
                 },
