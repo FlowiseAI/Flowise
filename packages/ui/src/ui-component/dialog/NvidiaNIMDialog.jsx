@@ -48,7 +48,6 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
             setLoading(true)
             // check if image already exists
             const imageResponse = await axios.post('/api/v1/nvidia-nim/get-image', { imageTag })
-            console.log('imageResponse =', imageResponse.data)
 
             if (imageResponse.data && imageResponse.data.tag === imageTag) {
                 setLoading(false)
@@ -103,7 +102,6 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
             setLoading(true)
 
             const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
-            console.log('containerResponse =', containerResponse.data)
 
             if (containerResponse.data && containerResponse.data && containerResponse.data.status === 'running') {
                 setContainerInfo(containerResponse.data)
@@ -197,10 +195,10 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     }, [open])
 
     const component = open ? (
-        <Dialog open={open} onClose={onClose} className='w-full max-w-md'>
+        <Dialog open={open} onClose={onClose}>
             <DialogTitle>NIM Setup</DialogTitle>
-            <DialogContent className='mt-4'>
-                <Stepper activeStep={activeStep} className='mb-8'>
+            <DialogContent>
+                <Stepper activeStep={activeStep}>
                     {steps.map((label) => (
                         <Step key={label}>
                             <StepLabel>{label}</StepLabel>
@@ -210,7 +208,9 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
 
                 {activeStep === 0 && (
                     <div style={{ marginTop: 20 }}>
-                        <p style={{ marginBottom: 20 }}>Would you like to download the NIM installer?</p>
+                        <p style={{ marginBottom: 20 }}>
+                            Would you like to download the NIM installer? You can skip this if it has been installed
+                        </p>
                         {loading && <CircularProgress />}
                     </div>
                 )}
@@ -223,7 +223,7 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                             onChange={(e) => setImageTag(e.target.value)}
                             fullWidth
                             sx={{ mt: 2 }}
-                            className='mb-4'
+                            placeholder='nvcr.io/nim/microsoft/phi-3-mini-4k-instruct:latest'
                         />
                         {loading && (
                             <div>
@@ -249,7 +249,7 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                     </div>
                 )}
             </DialogContent>
-            <DialogActions className='p-4'>
+            <DialogActions>
                 <Button onClick={onClose} variant='outline'>
                     Cancel
                 </Button>

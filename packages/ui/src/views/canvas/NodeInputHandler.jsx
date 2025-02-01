@@ -446,7 +446,6 @@ const NodeInputHandler = ({
     }
 
     const handleNvidiaNIMDialogComplete = (containerData) => {
-        alert(containerData)
         if (containerData) {
             data.inputs['basePath'] = containerData.baseUrl
             data.inputs['modelName'] = containerData.image
