@@ -1,4 +1,4 @@
-import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
+import { ClientOptions, OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -93,7 +93,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string } = {
+        const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string; configuration?: ClientOptions } = {
             openAIApiKey
         }
 
@@ -112,7 +112,14 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
             }
         }
 
-        const model = new OpenAIEmbeddings(obj, { baseURL: basePath, defaultHeaders: parsedBaseOptions })
+        if (basePath || parsedBaseOptions) {
+            obj.configuration = {
+                baseURL: basePath,
+                defaultHeaders: parsedBaseOptions
+            }
+        }
+
+        const model = new OpenAIEmbeddings(obj)
         return model
     }
 }

@@ -1,11 +1,9 @@
-import { AzureOpenAIInput, ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput, ClientOptions, LegacyOpenAIInput } from '@langchain/openai'
+import { AzureOpenAIInput, ChatOpenAI as LangchainChatOpenAI, ChatOpenAIFields, OpenAIClient } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
-import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
-import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 
 const serverCredentialsExists =
     !!process.env.AZURE_OPENAI_API_KEY &&
@@ -155,6 +153,29 @@ class AzureChatOpenAI_ChatModels implements INode {
                 default: 'low',
                 optional: false,
                 additionalParams: true
+            },
+            {
+                label: 'Reasoning Effort',
+                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 models',
+                name: 'reasoningEffort',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'low'
+                    },
+                    {
+                        label: 'Medium',
+                        name: 'medium'
+                    },
+                    {
+                        label: 'High',
+                        name: 'high'
+                    }
+                ],
+                default: 'low',
+                optional: false,
+                additionalParams: true
             }
         ]
     }
@@ -178,6 +199,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
+        const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.Chat.ChatCompletionReasoningEffort
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const azureOpenAIApiKey = getCredentialParam('azureOpenAIApiKey', credentialData, nodeData)
@@ -188,10 +210,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const imageResolution = nodeData.inputs?.imageResolution as string
 
-        const obj: Partial<AzureOpenAIInput> &
-            BaseLLMParams &
-            Partial<OpenAIChatInput> &
-            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput } = {
+        const obj: ChatOpenAIFields & Partial<AzureOpenAIInput> = {
             temperature: parseFloat(temperature),
             modelName,
             azureOpenAIApiKey,
@@ -217,6 +236,12 @@ class AzureChatOpenAI_ChatModels implements INode {
             } catch (exception) {
                 console.error('Error parsing base options', exception)
             }
+        }
+        if (modelName === 'o3-mini') {
+            delete obj.temperature
+        }
+        if ((modelName.includes('o1') || modelName.includes('o3')) && reasoningEffort) {
+            obj.reasoningEffort = reasoningEffort
         }
 
         const multiModalOption: IMultiModalOption = {

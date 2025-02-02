@@ -231,6 +231,14 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "o3-mini",
+                    "name": "o3-mini"
+                },
+                {
+                    "label": "o1",
+                    "name": "o1"
+                },
+                {
                     "label": "o1-preview",
                     "name": "o1-preview"
                 },
@@ -397,6 +405,10 @@
         {
             "name": "chatGoogleGenerativeAI",
             "models": [
+                {
+                    "label": "gemini-2.0-flash-exp",
+                    "name": "gemini-2.0-flash-exp"
+                },
                 {
                     "label": "gemini-1.5-flash-latest",
                     "name": "gemini-1.5-flash-latest"
