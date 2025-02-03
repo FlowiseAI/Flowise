@@ -617,16 +617,20 @@
                     "name": "gpt-4o-2024-05-13"
                 },
                 {
-                    "label": "o3-mini",
+                    "label": "o3-mini (latest)",
                     "name": "o3-mini"
                 },
                 {
-                    "label": "o1-preview (latest)",
-                    "name": "o1-preview"
+                    "label": "o3-mini-2025-01-31",
+                    "name": "o3-mini-2025-01-31"
                 },
                 {
-                    "label": "o1-preview-2024-09-12",
-                    "name": "o1-preview-2024-09-12"
+                    "label": "o1 (latest)",
+                    "name": "o1"
+                },
+                {
+                    "label": "o1-2024-12-17",
+                    "name": "o1-2024-12-17"
                 },
                 {
                     "label": "o1-mini (latest)",
@@ -635,6 +639,14 @@
                 {
                     "label": "o1-mini-2024-09-12",
                     "name": "o1-mini-2024-09-12"
+                },
+                {
+                    "label": "o1-preview (latest)",
+                    "name": "o1-preview"
+                },
+                {
+                    "label": "o1-preview-2024-09-12",
+                    "name": "o1-preview-2024-09-12"
                 },
                 {
                     "label": "gpt-4 (latest)",
