@@ -17,7 +17,7 @@ class JinaAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'Jina Embeddings'
         this.name = 'jinaEmbeddings'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'JinaEmbeddings'
         this.icon = 'JinaAIEmbedding.svg'
         this.category = 'Embeddings'
