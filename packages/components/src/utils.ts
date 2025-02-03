@@ -379,7 +379,7 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
 function normalizeURL(urlString: string): string {
     const urlObj = new URL(urlString)
     const port = urlObj.port ? `:${urlObj.port}` : ''
-    const hostPath = urlObj.hostname + port + urlObj.pathname + urlObj.search    
+    const hostPath = urlObj.hostname + port + urlObj.pathname + urlObj.search
     if (hostPath.length > 0 && hostPath.slice(-1) == '/') {
         // handling trailing slash
         return hostPath.slice(0, -1)
