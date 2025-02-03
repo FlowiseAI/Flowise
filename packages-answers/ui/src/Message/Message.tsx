@@ -32,11 +32,18 @@ import { Accordion, AccordionSummary, AccordionDetails } from '../Accordion'
 import FeedbackModal from '@ui/FeedbackModal'
 import { AppService, Document, Message, FileUpload } from 'types'
 import { Rating } from 'db/generated/prisma-client'
-import { CircularProgress, Tooltip } from '@mui/material'
+import { Card, CardContent, Chip, CircularProgress, Stack, Tooltip } from '@mui/material'
 import { CodePreview } from './CodePreview'
 import { PreviewDialog } from './PreviewDialog'
 import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
 import { CodeCard } from './CodeCard'
+import nextAgentGIF from './../../../../packages/ui/src/assets/images/next-agent.gif'
+import multiagent_supervisorPNG from './../../../../packages/ui/src/assets/images/multiagent_supervisor.png'
+import multiagent_workerPNG from './../../../../packages/ui/src/assets/images/multiagent_worker.png'
+import { isValidURL, removeDuplicateURL } from '../../../../packages/ui/src/utils/genericHelper.js'
+import dynamic from 'next/dynamic'
+
+const SourceDocDialog = dynamic(() => import('../../../../packages/ui/src/ui-component/dialog/SourceDocDialog'))
 
 interface MessageExtra {
     prompt?: string
@@ -75,6 +82,41 @@ const getLanguageFromClassName = (className: string | undefined) => {
     if (!className) return 'text'
     const match = className.match(/language-(\w+)/)
     return match ? match[1] : 'text'
+}
+
+const getAgentIcon = (nodeName: string | undefined, instructions: string | undefined) => {
+    if (nodeName) {
+        const baseURL = 'https://lr-staging.studio.theanswer.ai'
+        return `${baseURL}/api/v1/node-icon/${nodeName}`
+    } else if (instructions) {
+        return multiagent_supervisorPNG
+    } else {
+        return multiagent_workerPNG
+    }
+}
+
+const getLabel = (URL: any, source: any) => {
+    if (URL && typeof URL === 'object') {
+        if (URL.pathname && typeof URL.pathname === 'string') {
+            if (URL.pathname.substring(0, 15) === '/') {
+                return URL.host || ''
+            } else {
+                return `${URL.pathname.substring(0, 15)}...`
+            }
+        } else if (URL.host) {
+            return URL.host
+        }
+    }
+
+    if (source && source.pageContent && typeof source.pageContent === 'string') {
+        return `${source.pageContent.substring(0, 15)}...`
+    }
+
+    return ''
+}
+
+const onURLClick = (data: any) => {
+    window.open(data, '_blank')
 }
 
 export const MessageCard = ({
@@ -119,6 +161,12 @@ export const MessageCard = ({
         [contextDocuments]
     )
     const [showFeedback, setShowFeedback] = useState(false)
+    const [sourceDialogProps, setSourceDialogProps] = useState<{ data: any; title: string } | null>({
+        data: null,
+        title: ''
+    })
+    const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
+
     const services: { [key: string]: AppService } =
         appSettings?.services?.reduce((acc, service) => ({ ...acc, [service.id]: service }), {}) ?? {}
 
@@ -191,6 +239,11 @@ export const MessageCard = ({
             (doc.metadata?.filePath && doc.metadata?.repo ? `${doc.metadata?.repo}/${doc.metadata?.filePath}` : null) ??
             doc.metadata?.source
         )
+    }
+
+    const onSourceDialogClick = (data: any, title: string) => {
+        setSourceDialogProps({ data, title })
+        setSourceDialogOpen(true)
     }
 
     const parsedFileUploads = React.useMemo(() => {
@@ -507,6 +560,258 @@ export const MessageCard = ({
                     </Box>
                 ) : null}
             </Box>
+
+            {other.agentReasoning && (
+                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
+                    {other.agentReasoning.map((agent: any, index: number) => {
+                        return agent.nextAgent ? (
+                            <Card
+                                key={index}
+                                sx={{
+                                    // border: customization.isDarkMode ? 'none' : '1px solid #e0e0e0',
+                                    // borderRadius: `${customization.borderRadius}px`,
+                                    // background: customization.isDarkMode
+                                    //     ? `linear-gradient(to top, #303030, #212121)`
+                                    //     : `linear-gradient(to top, #f6f3fb, #f2f8fc)`,
+                                    mb: 1
+                                }}
+                            >
+                                <CardContent>
+                                    <Stack
+                                        sx={{
+                                            alignItems: 'center',
+                                            justifyContent: 'flex-start',
+                                            width: '100%'
+                                        }}
+                                        flexDirection='row'
+                                    >
+                                        <Box sx={{ height: 'auto', pr: 1 }}>
+                                            <Image
+                                                style={{
+                                                    objectFit: 'cover',
+                                                    height: '35px',
+                                                    width: 'auto'
+                                                }}
+                                                src={nextAgentGIF}
+                                                alt='agentPNG'
+                                            />
+                                        </Box>
+                                        <div>{agent.nextAgent}</div>
+                                    </Stack>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <Card
+                                key={index}
+                                sx={{
+                                    // border: customization.isDarkMode ? 'none' : '1px solid #e0e0e0',
+                                    // borderRadius: `${customization.borderRadius}px`,
+                                    // background: customization.isDarkMode
+                                    //     ? `linear-gradient(to top, #303030, #212121)`
+                                    //     : `linear-gradient(to top, #f6f3fb, #f2f8fc)`,
+                                    mb: 1
+                                }}
+                            >
+                                <CardContent>
+                                    <Stack
+                                        sx={{
+                                            alignItems: 'center',
+                                            justifyContent: 'flex-start',
+                                            width: '100%'
+                                        }}
+                                        flexDirection='row'
+                                    >
+                                        <Box sx={{ height: 'auto', pr: 1 }}>
+                                            <Image
+                                                style={{
+                                                    objectFit: 'cover',
+                                                    height: '25px',
+                                                    width: 'auto'
+                                                }}
+                                                src={getAgentIcon(agent.nodeName, agent.instructions)}
+                                                alt='agentPNG'
+                                            />
+                                        </Box>
+                                        <div>{agent.agentName}</div>
+                                    </Stack>
+                                    {agent.usedTools && agent.usedTools.length > 0 && (
+                                        <div
+                                            style={{
+                                                display: 'block',
+                                                flexDirection: 'row',
+                                                width: '100%'
+                                            }}
+                                        >
+                                            {agent.usedTools.map((tool, index) => {
+                                                return tool !== null ? (
+                                                    <Chip
+                                                        size='small'
+                                                        key={index}
+                                                        label={tool.tool}
+                                                        component='a'
+                                                        sx={{ mr: 1, mt: 1 }}
+                                                        variant='outlined'
+                                                        clickable
+                                                        // icon={<IconTool size={15} />}
+                                                        onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                    />
+                                                ) : null
+                                            })}
+                                        </div>
+                                    )}
+                                    {agent.state && Object.keys(agent.state).length > 0 && (
+                                        <div
+                                            style={{
+                                                display: 'block',
+                                                flexDirection: 'row',
+                                                width: '100%'
+                                            }}
+                                        >
+                                            <Chip
+                                                size='small'
+                                                label={'State'}
+                                                component='a'
+                                                sx={{ mr: 1, mt: 1 }}
+                                                variant='outlined'
+                                                clickable
+                                                // icon={<IconDeviceSdCard size={15} />}
+                                                onClick={() => onSourceDialogClick(agent.state, 'State')}
+                                            />
+                                        </div>
+                                    )}
+                                    {agent.messages.length > 0 && (
+                                        <ReactMarkdown
+                                            components={{
+                                                p: (paragraph: any) => {
+                                                    const { node } = paragraph
+
+                                                    if (node.children[0].tagName === 'img') {
+                                                        const image = node.children[0]
+                                                        const metastring = image.properties.alt
+                                                        const alt = metastring?.replace(/ *\{[^)]*\} */g, '')
+                                                        const metaWidth = metastring.match(/{([^}]+)x/)
+                                                        const metaHeight = metastring.match(/x([^}]+)}/)
+                                                        const width = metaWidth ? metaWidth[1] : undefined
+                                                        const height = metaHeight ? metaHeight[1] : undefined
+                                                        const isPriority = metastring?.toLowerCase().match('{priority}')
+                                                        const hasCaption = metastring?.toLowerCase().includes('{caption:')
+                                                        const caption = metastring?.match(/{caption: (.*?)}/)?.pop()
+
+                                                        return (
+                                                            <Box
+                                                                component='a'
+                                                                href={image.properties.src}
+                                                                target='_blank'
+                                                                sx={{
+                                                                    display: 'block',
+                                                                    height: '40vh',
+                                                                    width: '100%',
+                                                                    img: { objectFit: 'contain' }
+                                                                }}
+                                                            >
+                                                                <Image
+                                                                    src={image.properties.src}
+                                                                    // width={width}
+                                                                    // height={height}
+                                                                    layout='fill'
+                                                                    className='postImg'
+                                                                    alt={alt}
+                                                                    priority={isPriority}
+                                                                />
+                                                                {hasCaption ? (
+                                                                    <div className='caption' aria-label={caption}>
+                                                                        {caption}
+                                                                    </div>
+                                                                ) : null}
+                                                            </Box>
+                                                        )
+                                                    }
+                                                    return <p>{paragraph.children}</p>
+                                                },
+
+                                                code({ node, inline, className, children, ...props }) {
+                                                    const codeExample = String(children).replace(/\n$/, '')
+
+                                                    if (!inline) {
+                                                        const language = getLanguageFromClassName(className)
+                                                        const canPreview =
+                                                            ['html', 'jsx', 'tsx'].includes(language) ||
+                                                            (language === 'javascript' && isReactComponent(codeExample))
+
+                                                        // Show all non-inline code as CodeCard
+                                                        return (
+                                                            <Box sx={{ my: 2 }}>
+                                                                <CodeCard
+                                                                    code={codeExample}
+                                                                    language={language}
+                                                                    title='Code'
+                                                                    onCopy={() => handleCopyCodeClick(codeExample)}
+                                                                    onPreview={() =>
+                                                                        setPreviewCode?.({
+                                                                            code: codeExample,
+                                                                            language,
+                                                                            getHTMLPreview,
+                                                                            getReactPreview,
+                                                                            title: 'Code'
+                                                                        })
+                                                                    }
+                                                                    expandable={true}
+                                                                />
+                                                            </Box>
+                                                        )
+                                                    }
+
+                                                    return (
+                                                        <code className={className} {...props}>
+                                                            {children}
+                                                        </code>
+                                                    )
+                                                }
+                                            }}
+                                        >
+                                            {agent.messages.length > 1 ? agent.messages.join('\\n') : agent.messages[0]}
+                                        </ReactMarkdown>
+                                    )}
+                                    {agent.instructions && <p>{agent.instructions}</p>}
+                                    {agent.messages.length === 0 && !agent.instructions && <p>Finished</p>}
+                                    {agent.sourceDocuments && agent.sourceDocuments.length > 0 && (
+                                        <div
+                                            style={{
+                                                display: 'block',
+                                                flexDirection: 'row',
+                                                width: '100%'
+                                            }}
+                                        >
+                                            {removeDuplicateURL(agent).map((source, index) => {
+                                                const URL =
+                                                    source && source.metadata && source.metadata.source
+                                                        ? isValidURL(source.metadata.source)
+                                                        : undefined
+                                                return (
+                                                    <Chip
+                                                        size='small'
+                                                        key={index}
+                                                        label={getLabel(URL, source) || ''}
+                                                        component='a'
+                                                        sx={{ mr: 1, mb: 1 }}
+                                                        variant='outlined'
+                                                        clickable
+                                                        onClick={() =>
+                                                            URL ? onURLClick(source.metadata.source) : onSourceDialogClick(source, 'Source')
+                                                        }
+                                                    />
+                                                )
+                                            })}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        )
+                    })}
+                </div>
+            )}
+
+            <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
 
             {/* 
             // TODO: Add feedback buttons

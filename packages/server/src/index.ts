@@ -20,7 +20,11 @@ import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
 
 import authenticationHandlerMiddleware from './middlewares/authentication'
+import passport from 'passport'
+import passportConfig from './config/passport'
+import session from 'express-session'
 
+passportConfig(passport)
 export class App {
     app: express.Application
     nodesPool: NodesPool
@@ -81,6 +85,20 @@ export class App {
         // Allow access from specified domains
         this.app.use(cors(getCorsOptions()))
 
+        // Passport Middleware
+        this.app.use(
+            session({
+                secret: process.env.SESSION_SECRET ?? 'theanswerai',
+                resave: false,
+                saveUninitialized: false,
+                cookie: {
+                    secure: process.env.NODE_ENV === 'production'
+                }
+            })
+        )
+        this.app.use(passport.initialize())
+        this.app.use(passport.session())
+
         // Allow embedding from specified domains.
         this.app.use((req, res, next) => {
             const allowedOrigins = getAllowedIframeOrigins()
@@ -108,6 +126,8 @@ export class App {
             next()
         })
         const whitelistURLs = [
+            '/api/v1/google-auth',
+            process.env.GOOGLE_CALLBACK_URL ?? '/api/v1/google-auth/callback',
             '/api/v1/verify/apikey/',
             '/api/v1/chatflows/apikey/',
             '/api/v1/public-chatflows',

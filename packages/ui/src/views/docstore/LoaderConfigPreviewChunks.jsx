@@ -73,7 +73,8 @@ const LoaderConfigPreviewChunks = () => {
     const storeId = URLpath[URLpath.length - 2] === 'document-stores' ? '' : URLpath[URLpath.length - 2]
 
     const [selectedDocumentLoader, setSelectedDocumentLoader] = useState({})
-
+    const [selectedCredential, setSelectedCredential] = useState(null)
+    const [selectedCredentialData, setSelectedCredentialData] = useState(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
 
@@ -153,6 +154,7 @@ const LoaderConfigPreviewChunks = () => {
         if (checkMandatoryFields()) {
             setLoading(true)
             const config = prepareConfig()
+            config.loaderId === 'googleDrive' && (config.credential = JSON.stringify(selectedCredentialData))
             config.previewChunkCount = previewChunkCount
 
             try {
@@ -187,6 +189,7 @@ const LoaderConfigPreviewChunks = () => {
         if (checkMandatoryFields()) {
             setLoading(true)
             const config = prepareConfig()
+            config.loaderId === 'googleDrive' && (config.credential = JSON.stringify(selectedCredentialData))
             try {
                 const processResp = await documentStoreApi.processChunks(config)
                 setLoading(false)
@@ -371,6 +374,14 @@ const LoaderConfigPreviewChunks = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getNodesByCategoryApi.error])
 
+    const handleCredentialChange = (credentialId) => {
+        setSelectedCredential(credentialId)
+    }
+
+    const handleCredentialDataChange = (credentialData) => {
+        setSelectedCredentialData(credentialData)
+    }
+
     return (
         <>
             <MainCard>
@@ -455,6 +466,10 @@ const LoaderConfigPreviewChunks = () => {
                                                         key={index}
                                                         inputParam={inputParam}
                                                         data={selectedDocumentLoader}
+                                                        handleCredentialChange={handleCredentialChange}
+                                                        selectedCredential={selectedCredential}
+                                                        handleCredentialDataChange={handleCredentialDataChange}
+                                                        selectedCredentialData={selectedCredentialData}
                                                     />
                                                 ))}
                                         {textSplitterNodes && textSplitterNodes.length > 0 && (

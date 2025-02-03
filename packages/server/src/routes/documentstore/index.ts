@@ -32,6 +32,8 @@ router.delete('/chunks/:storeId/:loaderId/:chunkId', documentStoreController.del
 router.put('/chunks/:storeId/:loaderId/:chunkId', documentStoreController.editDocumentStoreFileChunk)
 // Get all file chunks from the store
 router.get('/chunks/:storeId/:fileId/:pageNo', documentStoreController.getDocumentStoreFileChunks)
+// sync and refresh chunks
+router.post('/chunks/sync/:storeId/:fileId', documentStoreController.syncAndRefreshChunks)
 
 // add chunks to the selected vector store
 router.post('/vectorstore/insert', documentStoreController.insertIntoVectorStore)
