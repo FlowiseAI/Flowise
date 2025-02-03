@@ -207,7 +207,7 @@ class ChatOpenAI_ChatModels implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
-        const reasoningEffort = nodeData.inputs?.reasoningEffort as string
+        const reasoningEffort = nodeData.inputs?.reasoningEffort as "low" | "medium" | "high";
         const topP = nodeData.inputs?.topP as string
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
@@ -240,7 +240,9 @@ class ChatOpenAI_ChatModels implements INode {
 
         if (modelName === 'o3-mini') {
             delete obj.temperature
-            obj.reasoning_effort = reasoningEffort;
+            if (reasoningEffort) {
+                obj.reasoning_effort = reasoningEffort;
+            }
         }
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
