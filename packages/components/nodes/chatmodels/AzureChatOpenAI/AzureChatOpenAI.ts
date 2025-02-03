@@ -1,9 +1,9 @@
-import { AzureOpenAIInput, ChatOpenAI as LangchainChatOpenAI, ChatOpenAIFields, OpenAIClient } from '@langchain/openai'
+import { AzureOpenAIInput, AzureChatOpenAI as LangchainAzureChatOpenAI, ChatOpenAIFields, OpenAIClient } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatOpenAI } from '../ChatOpenAI/FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+import { AzureChatOpenAI } from './FlowiseAzureChatOpenAI'
 
 const serverCredentialsExists =
     !!process.env.AZURE_OPENAI_API_KEY &&
@@ -31,7 +31,7 @@ class AzureChatOpenAI_ChatModels implements INode {
         this.icon = 'Azure.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Azure OpenAI large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(LangchainChatOpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(LangchainAzureChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -251,7 +251,7 @@ class AzureChatOpenAI_ChatModels implements INode {
             }
         }
 
-        const model = new ChatOpenAI(nodeData.id, obj)
+        const model = new AzureChatOpenAI(nodeData.id, obj)
         model.setMultiModalOption(multiModalOption)
         return model
     }
