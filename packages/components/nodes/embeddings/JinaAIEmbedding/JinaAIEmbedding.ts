@@ -56,7 +56,7 @@ class JinaAIEmbedding_Embeddings implements INode {
         const model = new JinaEmbeddings({
             apiKey: apiKey,
             model: modelName,
-            dimensions: modelDimensions,
+            dimensions: modelDimensions
         })
 
         return model
