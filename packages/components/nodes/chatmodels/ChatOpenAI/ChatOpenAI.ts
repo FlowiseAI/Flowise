@@ -23,7 +23,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 8.0
+        this.version = 8.1
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -72,6 +72,27 @@ class ChatOpenAI_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Reasoning Effort',
+                description: 'Only used for reasoning models (currently only o3-mini). This gives the model guidance on how many reasoning tokens it should generate before creating a response to the prompt. "low" will favor speed and economical token usage, and "high" will favor more complete reasoning at the cost of more tokens generated and slower responses. The default value is medium, which is a balance between speed and reasoning accuracy.',
+                name: 'reasoningEffort',
+                optional: true,
+                type: 'options',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'low'
+                    },
+                    {
+                        label: 'Medium',
+                        name: 'medium'
+                    },
+                    {
+                        label: 'High',
+                        name: 'high'
+                    }
+                ],
             },
             {
                 label: 'Top Probability',
@@ -181,6 +202,7 @@ class ChatOpenAI_ChatModels implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
+        const reasoningEffort = nodeData.inputs?.reasoningEffort as string
         const topP = nodeData.inputs?.topP as string
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
@@ -213,6 +235,7 @@ class ChatOpenAI_ChatModels implements INode {
 
         if (modelName === 'o3-mini') {
             delete obj.temperature
+            obj.reasoningEffort = reasoningEffort;
         }
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
