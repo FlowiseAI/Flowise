@@ -17,4 +17,7 @@ router.put(['/', '/:id'], enforceAbility('Credential'), credentialsController.up
 // DELETE
 router.delete(['/', '/:id'], enforceAbility('Credential'), credentialsController.deleteCredentials)
 
+// UPDATE REFRESH TOKEN
+router.post('/refresh-token', enforceAbility('Credential'), credentialsController.updateAndRefreshToken)
+
 export default router

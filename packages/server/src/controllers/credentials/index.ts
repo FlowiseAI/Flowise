@@ -78,10 +78,20 @@ const updateCredential = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+const updateAndRefreshToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await credentialsService.updateAndRefreshToken(req.body.credentialId, req.user?.id)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     createCredential,
     deleteCredentials,
     getAllCredentials,
     getCredentialById,
-    updateCredential
+    updateCredential,
+    updateAndRefreshToken
 }

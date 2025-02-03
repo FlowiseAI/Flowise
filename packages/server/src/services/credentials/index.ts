@@ -7,6 +7,7 @@ import { ICredentialReturnResponse, IUser } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { FindOptionsWhere, IsNull, Like } from 'typeorm'
+import { GoogleOauth2Client } from '../../utils/refreshGoogleAccessToken'
 
 const createCredential = async (requestBody: any, userId?: string, organizationId?: string) => {
     try {
@@ -169,10 +170,48 @@ const updateCredential = async (credentialId: string, requestBody: any, userId?:
     }
 }
 
+const updateAndRefreshToken = async (credentialId: string, userId?: string): Promise<any> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({ id: credentialId })
+        if (!credential) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
+        }
+        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+        const googleOauth2Client = new GoogleOauth2Client({
+            googleAccessToken: decryptedCredentialData.googleAccessToken,
+            googleRefreshToken: decryptedCredentialData.googleRefreshToken
+        })
+        const { expiry_date } = await googleOauth2Client.refreshToken()
+
+        const updateBody = {
+            name: credential.name,
+            credentialName: credential.credentialName,
+            plainDataObj: {
+                ...decryptedCredentialData,
+                expiresAt: new Date(expiry_date)
+                // expiresAt: new Date(Date.now() + 1 * 60 * 1000)
+            },
+            userId: credential.userId,
+            organizationId: credential.organizationId
+        }
+        const updateCredentialEntity = await transformToCredentialEntity(updateBody)
+        await appServer.AppDataSource.getRepository(Credential).merge(credential, updateCredentialEntity)
+        const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
+        return dbResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: credentialsService.updateRefreshToken - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     createCredential,
     deleteCredentials,
     getAllCredentials,
     getCredentialById,
-    updateCredential
+    updateCredential,
+    updateAndRefreshToken
 }

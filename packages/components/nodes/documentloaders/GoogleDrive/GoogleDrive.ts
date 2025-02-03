@@ -63,14 +63,14 @@ class GoogleDrive implements INode {
                 ],
                 default: 'perPage'
             },
-            {
-                label: 'CSV Column Extraction',
-                name: 'columnName',
-                type: 'string',
-                description: 'Extract specific column from CSV files',
-                placeholder: 'Enter column name',
-                optional: true
-            },
+            // {
+            //     label: 'CSV Column Extraction',
+            //     name: 'columnName',
+            //     type: 'string',
+            //     description: 'Extract specific column from CSV files',
+            //     placeholder: 'Enter column name',
+            //     optional: true
+            // },
             {
                 label: 'Additional Metadata',
                 name: 'metadata',
@@ -93,7 +93,8 @@ class GoogleDrive implements INode {
     async init(nodeData: INodeData): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
-        const selectedFiles = nodeData.inputs?.selectedFiles as string
+        const selectedFiles = nodeData.inputs?.selectedFiles && JSON.parse(nodeData.inputs?.selectedFiles)
+        const fileIds = selectedFiles.map((file: any) => file.fileId)
         const pdfUsage = nodeData.inputs?.pdfUsage as string
         const columnName = nodeData.inputs?.columnName as string
         const credentialData = nodeData.credential ? JSON.parse(nodeData.credential).plainDataObj : {}
@@ -109,12 +110,11 @@ class GoogleDrive implements INode {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             redirectUrl: process.env.GOOGLE_CALLBACK_URL,
             accessToken: credentialData.googleAccessToken,
-            refreshToken: credentialData.refreshToken,
-            expiryDate: credentialData.expiryDate
+            refreshToken: credentialData.googleRefreshToken,
+            expiresAt: credentialData.expiresAt
         }
 
         const driveService = new DriveService(credentials)
-        const fileIds = JSON.parse(selectedFiles)
         const documents: Document[] = []
 
         for (const fileId of fileIds) {
@@ -148,6 +148,7 @@ class GoogleDrive implements INode {
                                   source: `gdrive://${file.id}`,
                                   fileId: file.id,
                                   fileName: file.name,
+                                  iconUrl: selectedFiles.find((f: any) => f.fileId === file.id)?.iconUrl,
                                   mimeType: file.mimeType,
                                   ...metadata
                               },
@@ -164,7 +165,8 @@ class GoogleDrive implements INode {
     async syncAndRefresh(nodeData: INodeData): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
-        const selectedFiles = nodeData.inputs?.selectedFiles as string
+        const selectedFiles = nodeData.inputs?.selectedFiles && JSON.parse(nodeData.inputs?.selectedFiles)
+        const fileIds = selectedFiles.map((file: any) => file.fileId)
         const pdfUsage = nodeData.inputs?.pdfUsage as string
         const columnName = nodeData.inputs?.columnName as string
         const credentialData = nodeData.credential ? JSON.parse(nodeData.credential).plainDataObj : {}
@@ -185,7 +187,6 @@ class GoogleDrive implements INode {
         }
 
         const driveService = new DriveService(credentials)
-        const fileIds = JSON.parse(selectedFiles)
         const documents: Document[] = []
 
         for (const fileId of fileIds) {
@@ -221,6 +222,7 @@ class GoogleDrive implements INode {
                                   source: `gdrive://${file.id}`,
                                   fileId: file.id,
                                   fileName: file.name,
+                                  iconUrl: selectedFiles.find((f: any) => f.fileId === file.id)?.iconUrl,
                                   mimeType: file.mimeType,
                                   lastModified,
                                   ...metadata

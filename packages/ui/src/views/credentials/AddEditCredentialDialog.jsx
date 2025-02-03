@@ -45,6 +45,7 @@ import { baseURL, REDACTED_CREDENTIAL_VALUE } from '@/store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { useFlags } from 'flagsmith/react'
+import { GoogleAuthButton } from '@/ui-component/button/GoogleAuthButton'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
@@ -375,34 +376,13 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                     componentCredential.inputs.map((inputParam, index) => (
                         <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />
                     ))}
-                {componentCredential && componentCredential.name === 'googleOAuth' && (
-                    <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
-                        <StyledButton
-                            variant='contained'
-                            onClick={handleGoogleOAuth}
-                            disabled={componentCredential.name === 'googleOAuth' && !name}
-                            startIcon={
-                                <img
-                                    alt={componentCredential.name}
-                                    src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
-                                    style={{ width: 20, height: 20 }}
-                                />
-                            }
-                            sx={{
-                                backgroundColor: 'white',
-                                color: 'black',
-                                '&:hover': {
-                                    backgroundColor: 'lightgray'
-                                },
-                                '&:disabled': {
-                                    backgroundColor: 'lightgray',
-                                    color: 'gray'
-                                }
-                            }}
-                        >
-                            Authorize with Google
-                        </StyledButton>
-                    </Box>
+                {componentCredential && (
+                    <GoogleAuthButton
+                        componentCredential={componentCredential}
+                        name={name}
+                        handleGoogleOAuth={handleGoogleOAuth}
+                        baseURL={baseURL}
+                    />
                 )}
                 <Box sx={{ p: 2 }}>
                     <Typography variant='h4' sx={{ mb: 1 }}>

@@ -199,16 +199,17 @@ const DocStoreInputHandler = ({
                                 </div>
                             </>
                         )}
-                        {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
-                            <Input
-                                key={data.inputs[inputParam.name]}
-                                disabled={disabled}
-                                inputParam={inputParam}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                                nodeId={data.id}
-                            />
-                        )}
+                        {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') &&
+                            !(data.name === 'googleDrive' && inputParam.type === 'string' && inputParam.name === 'selectedFiles') && (
+                                <Input
+                                    key={data.inputs[inputParam.name]}
+                                    disabled={disabled}
+                                    inputParam={inputParam}
+                                    onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                    nodeId={data.id}
+                                />
+                            )}
                         {inputParam.type === 'json' && (
                             <JsonEditorInput
                                 disabled={disabled}
