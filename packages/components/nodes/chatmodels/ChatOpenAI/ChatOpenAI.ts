@@ -8,6 +8,11 @@ import { ChatOpenAI } from './FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
+// Extend OpenAIChatInput to include reasoning_effort
+interface ExtendedOpenAIChatInput extends OpenAIChatInput {
+    reasoning_effort?: 'low' | 'medium' | 'high';
+}
+
 class ChatOpenAI_ChatModels implements INode {
     label: string
     name: string
@@ -224,7 +229,7 @@ class ChatOpenAI_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<OpenAIChatInput> &
+        const obj: Partial<ExtendedOpenAIChatInput> &
             Partial<AzureOpenAIInput> &
             BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput } = {
             temperature: parseFloat(temperature),
@@ -235,7 +240,7 @@ class ChatOpenAI_ChatModels implements INode {
 
         if (modelName === 'o3-mini') {
             delete obj.temperature
-            obj.reasoningEffort = reasoningEffort;
+            obj.reasoning_effort = reasoningEffort;
         }
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
