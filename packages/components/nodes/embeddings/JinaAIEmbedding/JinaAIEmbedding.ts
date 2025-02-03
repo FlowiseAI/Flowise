@@ -42,7 +42,8 @@ class JinaAIEmbedding_Embeddings implements INode {
                 name: 'modelDimensions',
                 type: 'number',
                 default: 1024,
-                description: 'Refer to <a href="https://jina.ai/embeddings/" target="_blank">JinaAI documentation</a> for available models'
+                description:
+                    'Refer to <a href="https://jina.ai/embeddings/" target="_blank">JinaAI documentation</a> for available dimensions'
             }
         ]
     }
