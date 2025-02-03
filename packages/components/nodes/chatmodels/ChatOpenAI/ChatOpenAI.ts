@@ -57,6 +57,7 @@ class ChatOpenAI_ChatModels implements INode {
             {
                 label: 'Temperature',
                 name: 'temperature',
+                description: 'Temperature is ignored when a reasoning model is selected as it is currently not supported.',
                 type: 'number',
                 step: 0.1,
                 default: 0.9,
@@ -83,6 +84,7 @@ class ChatOpenAI_ChatModels implements INode {
                 description: 'Only used for reasoning models (currently only o3-mini). This gives the model guidance on how many reasoning tokens it should generate before creating a response to the prompt. "low" will favor speed and economical token usage, and "high" will favor more complete reasoning at the cost of more tokens generated and slower responses. The default value is medium, which is a balance between speed and reasoning accuracy.',
                 name: 'reasoningEffort',
                 optional: true,
+                additionalParams: true,
                 type: 'options',
                 options: [
                     {
