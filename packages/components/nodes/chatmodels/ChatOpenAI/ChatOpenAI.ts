@@ -81,7 +81,7 @@ class ChatOpenAI_ChatModels implements INode {
             },
             {
                 label: 'Reasoning Effort',
-                description: 'Only used for reasoning models (currently only o3-mini). This gives the model guidance on how many reasoning tokens it should generate before creating a response to the prompt. "low" will favor speed and economical token usage, and "high" will favor more complete reasoning at the cost of more tokens generated and slower responses. The default value is medium, which is a balance between speed and reasoning accuracy.',
+                description: 'Only used for reasoning models (o1 & o3-mini). This gives the model guidance on how many reasoning tokens it should generate before creating a response to the prompt. "low" will favor speed and economical token usage, and "high" will favor more complete reasoning at the cost of more tokens generated and slower responses. The default value is medium, which is a balance between speed and reasoning accuracy.',
                 name: 'reasoningEffort',
                 optional: true,
                 additionalParams: true,
@@ -240,7 +240,7 @@ class ChatOpenAI_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (modelName === 'o3-mini') {
+        if (modelName.includes('o1') || modelName.includes('o3')) {
             delete obj.temperature
             if (reasoningEffort) {
                 obj.reasoning_effort = reasoningEffort;
