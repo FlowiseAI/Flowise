@@ -2,12 +2,10 @@ import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, Update
 import { ChatFlow } from './ChatFlow'
 import { OneToMany } from 'typeorm'
 
-/* eslint-disable */
-
 export enum UserRole {
-  STOCK = 'STOCK',
-  UNI = 'UNI',
-  ADMIN = 'ADMIN'
+  MASTER_ADMIN = 'MASTER_ADMIN',
+  ADMIN = 'ADMIN',
+  USER = 'USER'
 }
 
 @Entity('users')
@@ -25,6 +23,9 @@ export class User {
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.ADMIN })
   role: UserRole
+
+  @Column('varchar', { nullable: true, default: '' })
+  groupname: string
 
   @Column('varchar', { nullable: true })
   displayPrefixes: string

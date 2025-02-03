@@ -4,6 +4,7 @@ import userService from '../../services/user'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 
 // Register user
+
 const registerUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await userService.registerUser(req.body)
@@ -16,11 +17,12 @@ const registerUser = async (req: Request, res: Response, next: NextFunction) => 
 // Login user
 const loginUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { username, password } = req.body
-    if (!username || !password) {
+    const { username, password, email } = req.body
+    const account = username || email || ''
+    if (!account || !password) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Username and password must be provided')
     }
-    const { user, accessToken, refreshToken } = await userService.loginUser(username, password)
+    const { user, accessToken, refreshToken } = await userService.loginUser(username || '', email || '', password || '')
     return res.json({ user, accessToken, refreshToken })
   } catch (error) {
     next(error)
@@ -41,8 +43,49 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   }
 }
 
+// Remove user
+const removeUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params
+    if (!id) {
+      throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'User ID must be provided')
+    }
+    await userService.removeUser(req, id)
+    return res.status(StatusCodes.NO_CONTENT).send()
+  } catch (error) {
+    next(error)
+  }
+}
+
+// Get users by group
+const getUsersByGroup = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { groupname } = req.params
+    if (!groupname) {
+      throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Group name must be provided')
+    }
+    const users = await userService.getUsersByGroup(groupname)
+    return res.json(users)
+  } catch (error) {
+    next(error)
+  }
+}
+
+// Get all users grouped by groupname
+const getAllUsersGroupedByGroupname = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const groupedUsers = await userService.getAllUsersGroupedByGroupname()
+    return res.json(groupedUsers)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export default {
   registerUser,
   loginUser,
-  getUserById
+  getUserById,
+  removeUser,
+  getUsersByGroup,
+  getAllUsersGroupedByGroupname
 }

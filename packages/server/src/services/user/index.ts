@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { User } from '../../database/entities/User'
+import { User, UserRole } from '../../database/entities/User'
 import { IUser } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -14,8 +14,8 @@ const registerUser = async (body: Partial<IUser>) => {
 
     const newUser = new User()
     Object.assign(newUser, body)
-    if (!body.username || !body.password) {
-      throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Username and password are required')
+    if (!body.username || !body.password || !body.email) {
+      throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Username, email and password are required')
     }
     const appServer = getRunningExpressApp()
     const existingUser = await appServer.AppDataSource.getRepository(User).findOne({
@@ -41,12 +41,13 @@ const registerUser = async (body: Partial<IUser>) => {
   }
 }
 
-const loginUser = async (username: string, password: string) => {
+const loginUser = async (username: string, email: string, password: string) => {
   try {
     const appServer = getRunningExpressApp()
     const user = await appServer.AppDataSource.getRepository(User).findOne({
       where: {
-        username
+        ...(username && { username }),
+        ...(email && { email })
       }
     })
     if (!user) {
@@ -88,8 +89,80 @@ const getUserById = async (id: string) => {
   }
 }
 
+const removeUser = async (req: any, id: string) => {
+  try {
+    const { user } = req
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const appServer = getRunningExpressApp()
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const foundUserToRemove = await appServer.AppDataSource.getRepository(User).findOne({
+      where: {
+        id
+      }
+    })
+    if (!foundUserToRemove) {
+      throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+    const isAuthorizedToRemove =
+      foundUser.role === UserRole.MASTER_ADMIN || (foundUser.role === UserRole.ADMIN && foundUser.groupname === foundUserToRemove.groupname)
+
+    if (isAuthorizedToRemove) {
+      await appServer.AppDataSource.getRepository(User).remove(foundUserToRemove)
+      return { message: 'User removed successfully' }
+    }
+  } catch (error) {
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.removeUser - ${getErrorMessage(error)}`)
+  }
+}
+
+//getUsersByGroup
+const getUsersByGroup = async (groupname: string) => {
+  try {
+    const appServer = getRunningExpressApp()
+    const users = await appServer.AppDataSource.getRepository(User).find({
+      where: {
+        groupname
+      }
+    })
+
+    return users
+  } catch (error) {
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.getUsersByGroup - ${getErrorMessage(error)}`)
+  }
+}
+
+const getAllUsersGroupedByGroupname = async () => {
+  try {
+    const appServer = getRunningExpressApp()
+    const users = await appServer.AppDataSource.getRepository(User).find()
+
+    const groupedUsers = users.reduce((acc, user) => {
+      if (!acc[user.groupname]) {
+        acc[user.groupname] = []
+      }
+      acc[user.groupname].push(user)
+      return acc
+    }, {} as Record<string, User[]>)
+
+    return groupedUsers
+  } catch (error) {
+    throw new InternalFlowiseError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      `Error: userService.getAllUsersGroupedByGroupname - ${getErrorMessage(error)}`
+    )
+  }
+}
+
 export default {
   registerUser,
   loginUser,
-  getUserById
+  getUserById,
+  removeUser,
+  getUsersByGroup,
+  getAllUsersGroupedByGroupname
 }

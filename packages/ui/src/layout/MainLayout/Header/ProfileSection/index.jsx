@@ -51,6 +51,8 @@ import exportImportApi from '@/api/exportimport'
 import useApi from '@/hooks/useApi'
 import { getErrorMessage } from '@/utils/errorHandler'
 import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { IconUsers } from '@tabler/icons-react'
 
 const dataToExport = ['Chatflows', 'Agentflows', 'Tools', 'Variables', 'Assistants']
 
@@ -380,6 +382,14 @@ const ProfileSection = ({ username, handleLogout }) => {
                           }
                         }}
                       >
+                        <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }}>
+                          <ListItemIcon>
+                            <IconUsers stroke={1.5} size='1.3rem' />
+                          </ListItemIcon>
+                          <Link to='/admin-account'>
+                            <ListItemText primary={<Typography variant='body2'>Admin account</Typography>} />
+                          </Link>
+                        </ListItemButton>
                         <ListItemButton
                           sx={{ borderRadius: `${customization.borderRadius}px` }}
                           onClick={() => {
