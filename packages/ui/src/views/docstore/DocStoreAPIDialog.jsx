@@ -326,6 +326,22 @@ curl -X POST http://localhost:3000/api/v1/document-store/upsert/${dialogProps.st
                                     {children}
                                 </code>
                             )
+                        },
+                        think({ children, ...props }) {
+                            return (
+                                <blockquote
+                                    {...props}
+                                    style={{
+                                        fontStyle: 'italic',
+                                        color: 'gray',
+                                        borderLeft: '2px solid #ccc',
+                                        paddingLeft: '1rem',
+                                        margin: '1rem 0'
+                                    }}
+                                >
+                                    {children}
+                                </blockquote>
+                            )
                         }
                     }}
                 >

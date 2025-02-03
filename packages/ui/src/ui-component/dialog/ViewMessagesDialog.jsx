@@ -795,6 +795,22 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                     {children}
                                 </code>
                             )
+                        },
+                        think({ children, ...props }) {
+                            return (
+                                <blockquote
+                                    {...props}
+                                    style={{
+                                        fontStyle: 'italic',
+                                        color: 'gray',
+                                        borderLeft: '2px solid #ccc',
+                                        paddingLeft: '1rem',
+                                        margin: '1rem 0'
+                                    }}
+                                >
+                                    {children}
+                                </blockquote>
+                            )
                         }
                     }}
                 >
@@ -1288,6 +1304,23 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                                 {children}
                                                                                                             </code>
                                                                                                         )
+                                                                                                    },
+                                                                                                    think({ children, ...props }) {
+                                                                                                        return (
+                                                                                                            <blockquote
+                                                                                                                {...props}
+                                                                                                                style={{
+                                                                                                                    fontStyle: 'italic',
+                                                                                                                    color: 'gray',
+                                                                                                                    borderLeft:
+                                                                                                                        '2px solid #ccc',
+                                                                                                                    paddingLeft: '1rem',
+                                                                                                                    margin: '1rem 0'
+                                                                                                                }}
+                                                                                                            >
+                                                                                                                {children}
+                                                                                                            </blockquote>
+                                                                                                        )
                                                                                                     }
                                                                                                 }}
                                                                                             >
@@ -1421,6 +1454,22 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                     <code className={className} {...props}>
                                                                                         {children}
                                                                                     </code>
+                                                                                )
+                                                                            },
+                                                                            think({ children, ...props }) {
+                                                                                return (
+                                                                                    <blockquote
+                                                                                        {...props}
+                                                                                        style={{
+                                                                                            fontStyle: 'italic',
+                                                                                            color: 'gray',
+                                                                                            borderLeft: '2px solid #ccc',
+                                                                                            paddingLeft: '1rem',
+                                                                                            margin: '1rem 0'
+                                                                                        }}
+                                                                                    >
+                                                                                        {children}
+                                                                                    </blockquote>
                                                                                 )
                                                                             }
                                                                         }}
