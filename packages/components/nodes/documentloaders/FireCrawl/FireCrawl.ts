@@ -266,7 +266,7 @@ class FireCrawl_DocumentLoaders implements INode {
         this.name = 'fireCrawl'
         this.type = 'Document'
         this.icon = 'firecrawl.png'
-        this.version = 2.0
+        this.version = 2.1
         this.category = 'Document Loaders'
         this.description = 'Load data from URL using FireCrawl'
         this.baseClasses = [this.type]
@@ -307,6 +307,42 @@ class FireCrawl_DocumentLoaders implements INode {
                     }
                 ],
                 default: 'crawl'
+            },
+            {
+                // maxCrawlPages
+                label: 'Max Crawl Pages',
+                name: 'maxCrawlPages',
+                type: 'string',
+                description: 'Maximum number of pages to crawl',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                // generateImgAltText
+                label: 'Generate Image Alt Text',
+                name: 'generateImgAltText',
+                type: 'boolean',
+                description: 'Generate alt text for images',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                // returnOnlyUrls
+                label: 'Return Only URLs',
+                name: 'returnOnlyUrls',
+                type: 'boolean',
+                description: 'Return only URLs of the crawled pages',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                // onlyMainContent
+                label: 'Only Main Content',
+                name: 'onlyMainContent',
+                type: 'boolean',
+                description: 'Extract only the main content of the page',
+                optional: true,
+                additionalParams: true
             }
             // ... (other input parameters)
         ]

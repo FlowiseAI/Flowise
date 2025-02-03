@@ -498,6 +498,10 @@
             "name": "groqChat",
             "models": [
                 {
+                    "label": "deepseek-r1-distill-llama-70b",
+                    "name": "deepseek-r1-distill-llama-70b"
+                },
+                {
                     "label": "llama-3.3-70b-versatile",
                     "name": "llama-3.3-70b-versatile"
                 },
@@ -611,6 +615,10 @@
                 {
                     "label": "gpt-4o-2024-05-13",
                     "name": "gpt-4o-2024-05-13"
+                },
+                {
+                    "label": "o3-mini",
+                    "name": "o3-mini"
                 },
                 {
                     "label": "o1-preview (latest)",

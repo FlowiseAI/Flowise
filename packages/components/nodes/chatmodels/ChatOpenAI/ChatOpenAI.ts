@@ -211,6 +211,9 @@ class ChatOpenAI_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
+        if (modelName === 'o3-mini') {
+            delete obj.temperature
+        }
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)

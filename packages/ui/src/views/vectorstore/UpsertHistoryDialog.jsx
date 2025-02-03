@@ -197,7 +197,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [chatflowUpsertHistory, setChatflowUpsertHistory] = useState([])
-    const [startDate, setStartDate] = useState(new Date().setMonth(new Date().getMonth() - 1))
+    const [startDate, setStartDate] = useState(new Date(new Date().setMonth(new Date().getMonth() - 1)))
     const [endDate, setEndDate] = useState(new Date())
     const [selected, setSelected] = useState([])
 
@@ -297,7 +297,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
 
         return () => {
             setChatflowUpsertHistory([])
-            setStartDate(new Date().setMonth(new Date().getMonth() - 1))
+            setStartDate(new Date(new Date().setMonth(new Date().getMonth() - 1)))
             setEndDate(new Date())
         }
 
