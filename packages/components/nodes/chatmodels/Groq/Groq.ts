@@ -60,7 +60,14 @@ class Groq_ChatModels implements INode {
     //@ts-ignore
     loadMethods = {
         async listModels(): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.CHAT, 'groqChat')
+            return await getModels(MODEL_TYPE.CHAT, 'groqChat').then((models) => [
+                ...models,
+                {
+                    label: 'DeepSeek-R1-Distill-Llama-70b',
+                    name: 'DeepSeek-R1-Distill-Llama-70b',
+                    description: 'DeepSeek-R1-Distill-Llama-70b'
+                }
+            ])
         }
     }
 
