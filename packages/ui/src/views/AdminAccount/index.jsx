@@ -21,6 +21,9 @@ import {
 import { Add, Delete } from '@mui/icons-material'
 import { useSelector } from 'react-redux'
 import PopupAddMember from './PopupAddMember'
+import PopupAddGroup from './PopupAddGroup'
+import userApi from '@/api/user'
+import useApi from '@/hooks/useApi'
 
 const theme = createTheme({
   palette: {
@@ -73,24 +76,38 @@ const AdminAccount = () => {
     }
   ])
   const [selectedGroup, setSelectedGroup] = useState(userGroups[1])
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogOpenAddUser, setDialogOpenAddUser] = useState(false)
+  const [dialogOpenAddGroup, setDialogOpenAddGroup] = useState(false)
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState(null)
-  const user = useSelector((state) => state.user)
+  const [groupToDelete, setGroupToDelete] = useState(null)
+  // const user = useSelector((state) => state.user)
   const isMasterAdmin = true
   const isGroupAdmin = false
 
+  const getAllUsersGroupedByGroupname = useApi(userApi.getAllUsersGroupedByGroupname)
+
+  const getUsersByGroup = useApi(userApi.getUsersByGroup)
+
+  const getAllGroupUsers = useApi(userApi.getAllGroupUsers)
+
   const handleAddUser = () => {
-    setDialogOpen(true)
+    setDialogOpenAddUser(true)
+  }
+
+  const handleAddGroup = () => {
+    setDialogOpenAddGroup(true)
   }
 
   const handleDialogClose = () => {
-    setDialogOpen(false)
+    if (dialogOpenAddGroup) setDialogOpenAddGroup(false)
+    if (dialogOpenAddUser) setDialogOpenAddUser(false)
   }
 
   const handleConfirmDialogClose = () => {
     setConfirmDialogOpen(false)
     setUserToDelete(null)
+    setGroupToDelete(null)
   }
 
   const handleRemoveUser = (groupId, userId) => {
@@ -102,10 +119,25 @@ const AdminAccount = () => {
     handleConfirmDialogClose()
   }
 
-  const handleDeleteClick = (groupId, userId) => {
-    setUserToDelete({ groupId, userId })
+  const handleDeleteClick = (groupId, userId, type) => {
+    if (type === 'remove_group') {
+      setUserGroups((prevGroups) => prevGroups.filter((group) => group.id !== groupId))
+      return
+    }
+
+    if (type === 'remove_user') {
+      setUserGroups((prevGroups) => prevGroups.filter((group) => group.id !== groupId))
+      setUserToDelete({ groupId, userId })
+
+      return
+    }
     setConfirmDialogOpen(true)
   }
+
+  useEffect(() => {
+    const resUserByGroups = getAllUsersGroupedByGroupname.request()
+    console.log('🚀 ~ useEffect ~ resUserByGroups:', resUserByGroups)
+  }, [])
 
   return (
     <ThemeProvider theme={theme}>
@@ -122,17 +154,30 @@ const AdminAccount = () => {
                 </Typography>
                 <List>
                   {userGroups.map((group) => (
-                    <ListItem button key={group.id} onClick={() => setSelectedGroup(group)}>
+                    <ListItem key={group.id} onClick={() => setSelectedGroup(group)}>
                       <ListItemText primary={group.name} />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge='end'
+                          aria-label='delete'
+                          onClick={() => handleDeleteClick(group.id, group.adminId, 'remove_group')}
+                          className='text-red-500'
+                        >
+                          <Delete />
+                        </IconButton>
+                      </ListItemSecondaryAction>
                     </ListItem>
                   ))}
                 </List>
+                <Button variant='contained' color='primary' startIcon={<Add />} onClick={handleAddGroup}>
+                  Add Group
+                </Button>
               </Paper>
             </Grid>
           )}
           <Grid item xs={12} md={isMasterAdmin ? 8 : 12}>
             <Typography variant='h6' gutterBottom>
-              Thành viên {selectedGroup.name}:
+              Members of {selectedGroup.name}:
             </Typography>
             <Paper elevation={3}>
               <List>
@@ -144,7 +189,7 @@ const AdminAccount = () => {
                         <IconButton
                           edge='end'
                           aria-label='delete'
-                          onClick={() => handleDeleteClick(selectedGroup.id, member.id)}
+                          onClick={() => handleDeleteClick(selectedGroup.id, member.id, 'remove_user')}
                           className='text-red-500'
                         >
                           <Delete />
@@ -162,7 +207,8 @@ const AdminAccount = () => {
             </Paper>
           </Grid>
         </Grid>
-        <PopupAddMember open={dialogOpen} onClose={handleDialogClose} />
+        <PopupAddGroup open={dialogOpenAddGroup} onClose={handleDialogClose} />
+        <PopupAddMember open={dialogOpenAddUser} onClose={handleDialogClose} />
         <Dialog
           open={confirmDialogOpen}
           onClose={handleConfirmDialogClose}
@@ -171,7 +217,7 @@ const AdminAccount = () => {
         >
           <DialogTitle id='confirm-dialog-title'>Confirm Deletion</DialogTitle>
           <DialogContent>
-            <DialogContentText id='confirm-dialog-description'>Are you sure you want to delete this item?</DialogContentText>
+            <DialogContentText id='confirm-dialog-description'>Bạn có chắc chắn xóa này không?</DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleConfirmDialogClose} color='primary'>

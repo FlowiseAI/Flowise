@@ -12,6 +12,7 @@ import { UpsertHistory } from './UpsertHistory'
 import { ApiKey } from './ApiKey'
 import { CustomTemplate } from './CustomTemplate'
 import { User } from './User'
+import { GroupUsers } from './GroupUser'
 
 export const entities = {
   ChatFlow,
@@ -27,5 +28,6 @@ export const entities = {
   UpsertHistory,
   ApiKey,
   CustomTemplate,
-  User
+  User,
+  GroupUsers
 }

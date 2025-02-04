@@ -7,6 +7,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { GroupUsers } from '../../database/entities/GroupUser'
 
 const registerUser = async (body: Partial<IUser>) => {
   try {
@@ -158,11 +159,55 @@ const getAllUsersGroupedByGroupname = async () => {
   }
 }
 
+const getAllGroupUsers = async () => {
+  try {
+    const appServer = getRunningExpressApp()
+    const groupUsers = await appServer.AppDataSource.getRepository(GroupUsers).find()
+    return groupUsers
+  } catch (error) {
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.getAllGroupUsers - ${getErrorMessage(error)}`)
+  }
+}
+
+const addGroupUser = async (groupname: string) => {
+  try {
+    const appServer = getRunningExpressApp()
+    const newGroupUser = new GroupUsers()
+    Object.assign(newGroupUser, { groupname })
+    const groupUser = appServer.AppDataSource.getRepository(GroupUsers).create(newGroupUser)
+    const dbResponse = await appServer.AppDataSource.getRepository(GroupUsers).save(groupUser)
+    return dbResponse
+  } catch (error) {
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.addGroupUser - ${getErrorMessage(error)}`)
+  }
+}
+
+const deleteGroupUser = async (id: string) => {
+  try {
+    const appServer = getRunningExpressApp()
+    const groupUser = await appServer.AppDataSource.getRepository(GroupUsers).findOne({
+      where: {
+        id
+      }
+    })
+    if (!groupUser) {
+      throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Group user not found')
+    }
+    await appServer.AppDataSource.getRepository(GroupUsers).remove(groupUser)
+    return { message: 'Group user removed successfully' }
+  } catch (error) {
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.deleteGroupUser - ${getErrorMessage(error)}`)
+  }
+}
+
 export default {
   registerUser,
   loginUser,
   getUserById,
   removeUser,
   getUsersByGroup,
-  getAllUsersGroupedByGroupname
+  getAllUsersGroupedByGroupname,
+  getAllGroupUsers,
+  addGroupUser,
+  deleteGroupUser
 }

@@ -26,60 +26,37 @@ const theme = createTheme({
   spacing: 8
 })
 
-const PopupAddMember = ({ open, onClose }) => {
-  const [newUser, setNewUser] = useState({ username: '', password: '', email: '' })
+const PopupAddGroup = ({ open, onClose }) => {
+  const [groupName, setGroupName] = useState('')
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setNewUser((prev) => ({ ...prev, [name]: value }))
+    const { value } = e.target
+    setGroupName(value)
   }
 
   const handleSubmit = async () => {
     // Add user to group logic here
     // Example: await addUserToGroup(selectedGroup.id, newUser)
     onClose()
+    setGroupName('')
   }
 
   return (
     <ThemeProvider theme={theme}>
       <Dialog open={open} onClose={onClose} fullWidth maxWidth='sm'>
-        <DialogTitle>Add New Member</DialogTitle>
+        <DialogTitle>Add New Group</DialogTitle>
         <DialogContent>
-          <DialogContentText>Please enter the details of the new member.</DialogContentText>
+          <DialogContentText>Please enter the details of the new Group.</DialogContentText>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
                 margin='dense'
-                name='username'
-                label='Username'
+                name='groupname'
+                label='Tên group'
                 type='text'
                 fullWidth
                 variant='standard'
-                value={newUser.username}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                margin='dense'
-                name='password'
-                label='Password'
-                type='password'
-                fullWidth
-                variant='standard'
-                value={newUser.password}
-                onChange={handleChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                margin='dense'
-                name='email'
-                label='Email Address'
-                type='email'
-                fullWidth
-                variant='standard'
-                value={newUser.email}
+                value={groupName}
                 onChange={handleChange}
               />
             </Grid>
@@ -98,9 +75,9 @@ const PopupAddMember = ({ open, onClose }) => {
   )
 }
 
-PopupAddMember.propTypes = {
+PopupAddGroup.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired
 }
 
-export default PopupAddMember
+export default PopupAddGroup

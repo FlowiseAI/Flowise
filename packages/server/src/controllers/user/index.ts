@@ -81,11 +81,52 @@ const getAllUsersGroupedByGroupname = async (req: Request, res: Response, next: 
   }
 }
 
+// Get all users in a group
+const getAllGroupUsers = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const users = await userService.getAllGroupUsers()
+    return res.json(users)
+  } catch (error) {
+    next(error)
+  }
+}
+
+// Add user to a group
+const addGroupUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { groupname } = req.body
+    if (!groupname) {
+      throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Group name and user ID must be provided')
+    }
+    const user = await userService.addGroupUser(groupname)
+    return res.status(StatusCodes.CREATED).json(user)
+  } catch (error) {
+    next(error)
+  }
+}
+
+// Delete user from a group
+const deleteGroupUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { idGroupname } = req.params
+    if (!idGroupname) {
+      throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Group name and user ID must be provided')
+    }
+    await userService.deleteGroupUser(idGroupname)
+    return res.status(StatusCodes.NO_CONTENT).send()
+  } catch (error) {
+    next(error)
+  }
+}
+
 export default {
   registerUser,
   loginUser,
   getUserById,
   removeUser,
   getUsersByGroup,
-  getAllUsersGroupedByGroupname
+  getAllUsersGroupedByGroupname,
+  getAllGroupUsers,
+  addGroupUser,
+  deleteGroupUser
 }
