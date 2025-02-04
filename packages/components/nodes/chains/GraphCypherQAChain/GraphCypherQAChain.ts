@@ -23,7 +23,7 @@ class GraphCypherQA_Chain implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Graph Cypher QA Chain'
         this.name = 'graphCypherQAChain'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'GraphCypherQAChain'
         this.icon = 'graphqa.svg'
         this.category = 'Chains'
@@ -47,7 +47,8 @@ class GraphCypherQA_Chain implements INode {
                 name: 'cypherPrompt',
                 optional: true,
                 type: 'BasePromptTemplate',
-                description: 'Prompt template for generating Cypher queries. Must include {schema} and {question} variables'
+                description:
+                    'Prompt template for generating Cypher queries. Must include {schema} and {question} variables. If not provided, default prompt will be used.'
             },
             {
                 label: 'Cypher Generation Model',
@@ -61,7 +62,8 @@ class GraphCypherQA_Chain implements INode {
                 name: 'qaPrompt',
                 optional: true,
                 type: 'BasePromptTemplate',
-                description: 'Prompt template for generating answers. Must include {context} and {question} variables'
+                description:
+                    'Prompt template for generating answers. Must include {context} and {question} variables. If not provided, default prompt will be used.'
             },
             {
                 label: 'QA Model',
@@ -111,6 +113,10 @@ class GraphCypherQA_Chain implements INode {
         const returnDirect = nodeData.inputs?.returnDirect as boolean
         const output = nodeData.outputs?.output as string
 
+        if (!model) {
+            throw new Error('Language Model is required')
+        }
+
         // Handle prompt values if they exist
         let cypherPromptTemplate: PromptTemplate | FewShotPromptTemplate | undefined
         let qaPromptTemplate: PromptTemplate | undefined
@@ -147,10 +153,6 @@ class GraphCypherQA_Chain implements INode {
             })
         }
 
-        if ((!cypherModel || !qaModel) && !model) {
-            throw new Error('Language Model is required when Cypher Model or QA Model are not provided')
-        }
-
         // Validate required variables in prompts
         if (
             cypherPromptTemplate &&
@@ -165,13 +167,13 @@ class GraphCypherQA_Chain implements INode {
             returnDirect
         }
 
-        if (cypherModel && cypherPromptTemplate) {
-            fromLLMInput['cypherLLM'] = cypherModel
+        if (cypherPromptTemplate) {
+            fromLLMInput['cypherLLM'] = cypherModel ?? model
             fromLLMInput['cypherPrompt'] = cypherPromptTemplate
         }
 
-        if (qaModel && qaPromptTemplate) {
-            fromLLMInput['qaLLM'] = qaModel
+        if (qaPromptTemplate) {
+            fromLLMInput['qaLLM'] = qaModel ?? model
             fromLLMInput['qaPrompt'] = qaPromptTemplate
         }
 

@@ -3,7 +3,7 @@ import { getCredentialData } from './utils'
 import { ChatAnthropic } from '@langchain/anthropic'
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 import { ChatMistralAI } from '@langchain/mistralai'
-import { ChatOpenAI } from '@langchain/openai'
+import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai'
 import { z } from 'zod'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { StructuredOutputParser } from '@langchain/core/output_parsers'
@@ -46,7 +46,7 @@ export const generateFollowUpPrompts = async (
                 const azureOpenAIApiDeploymentName = credentialData['azureOpenAIApiDeploymentName']
                 const azureOpenAIApiVersion = credentialData['azureOpenAIApiVersion']
 
-                const llm = new ChatOpenAI({
+                const llm = new AzureChatOpenAI({
                     azureOpenAIApiKey,
                     azureOpenAIApiInstanceName,
                     azureOpenAIApiDeploymentName,
