@@ -146,3 +146,7 @@ video {
 img[alt='agentPNG'] {
   height: 25px !important;
 }
+
+.MuiTooltip-popper.fixzindex {
+  z-index: 999 !important;
+}

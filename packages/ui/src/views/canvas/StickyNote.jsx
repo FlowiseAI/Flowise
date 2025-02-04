@@ -43,6 +43,7 @@ const StickyNote = ({ data }) => {
         border={false}
       >
         <NodeTooltip
+          className={'fixzindex'}
           open={!canvas.canvasDialogShow && open}
           onClose={handleClose}
           onOpen={handleOpen}

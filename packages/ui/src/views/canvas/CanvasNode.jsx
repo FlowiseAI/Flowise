@@ -107,6 +107,7 @@ const CanvasNode = ({ data }) => {
         className='shadow hover:shadow-xl'
       >
         <NodeTooltip
+          className={'fixzindex'}
           open={getNodeInfoOpenStatus()}
           onClose={handleClose}
           onOpen={handleOpen}
