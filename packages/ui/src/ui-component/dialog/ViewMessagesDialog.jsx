@@ -247,7 +247,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             const obj = { chatflowid, isClearFromViewMessageDialog: true }
 
             let _chatTypeFilter = chatTypeFilter
-            if (typeof chatTypeFilter === 'string') {
+            if (typeof chatTypeFilter === 'string' && chatTypeFilter.startsWith('[') && chatTypeFilter.endsWith(']')) {
                 _chatTypeFilter = JSON.parse(chatTypeFilter)
             }
             if (_chatTypeFilter.length === 1) {
@@ -255,7 +255,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             }
 
             let _feedbackTypeFilter = feedbackTypeFilter
-            if (typeof feedbackTypeFilter === 'string') {
+            if (typeof feedbackTypeFilter === 'string' && feedbackTypeFilter.startsWith('[') && feedbackTypeFilter.endsWith(']')) {
                 _feedbackTypeFilter = JSON.parse(feedbackTypeFilter)
             }
             if (_feedbackTypeFilter.length === 1) {
