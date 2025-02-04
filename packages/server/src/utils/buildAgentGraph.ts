@@ -966,15 +966,34 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
                 return END
             }
 
-            for (const toolCall of lastMessage.tool_calls) {
-                for (const toolNode of connectedToolNodes) {
-                    const tools = (toolNode.node?.tools as StructuredTool[]) || ((toolNode as any).tools as StructuredTool[])
-                    if (tools.some((tool) => tool.name === toolCall.name)) {
-                        return toolNode.name
+            try {
+                // Track tool calls that need responses
+                const pendingToolCalls = new Set(lastMessage.tool_calls.map((tc) => tc.id))
+
+                for (const toolCall of lastMessage.tool_calls) {
+                    for (const toolNode of connectedToolNodes) {
+                        const tools = (toolNode.node?.tools as StructuredTool[]) || ((toolNode as any).tools as StructuredTool[])
+                        if (tools.some((tool) => tool.name === toolCall.name)) {
+                            // Mark this tool call as handled
+                            pendingToolCalls.delete(toolCall.id)
+                            return toolNode.name
+                        }
                     }
                 }
+
+                // If there are still pending tool calls, throw specific error
+                if (pendingToolCalls.size > 0) {
+                    const pendingIds = Array.from(pendingToolCalls).join(', ')
+                    throw new Error(`Missing tool responses for: ${pendingIds}`)
+                }
+
+                return END
+            } catch (error) {
+                // Ensure we handle the error gracefully
+                logger.error('Error in routeMessage:', error)
+                // Re-throw with more context to help with debugging
+                throw new Error(`Tool routing error: ${(error as Error).message}`)
             }
-            return END
         }
 
         seqGraph.addConditionalEdges(
