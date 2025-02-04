@@ -21518,7 +21518,7 @@ snapshots:
             '@langchain/core': 0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))
             fast-xml-parser: 4.4.1
             zod: 3.22.4
-            zod-to-json-schema: 3.24.1(zod@3.22.4)
+            zod-to-json-schema: 3.23.1(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
 
@@ -21765,7 +21765,7 @@ snapshots:
             js-tiktoken: 1.0.12
             openai: 4.82.0(encoding@0.1.13)(ws@8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)
             zod: 3.22.4
-            zod-to-json-schema: 3.23.1(zod@3.22.4)
+            zod-to-json-schema: 3.24.1(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
             - ws
