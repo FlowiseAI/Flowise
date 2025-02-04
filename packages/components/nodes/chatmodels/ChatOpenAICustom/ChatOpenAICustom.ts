@@ -1,6 +1,5 @@
-import { ChatOpenAI, OpenAIChatInput } from '@langchain/openai'
+import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
-import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -134,7 +133,7 @@ class ChatOpenAICustom_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } = {
+        const obj: ChatOpenAIFields = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -157,10 +156,15 @@ class ChatOpenAICustom_ChatModels implements INode {
                 throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
             }
         }
-        const model = new ChatOpenAI(obj, {
-            basePath,
-            baseOptions: parsedBaseOptions
-        })
+
+        if (basePath || parsedBaseOptions) {
+            obj.configuration = {
+                baseURL: basePath,
+                defaultHeaders: parsedBaseOptions
+            }
+        }
+
+        const model = new ChatOpenAI(obj)
         return model
     }
 }
