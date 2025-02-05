@@ -205,6 +205,9 @@ export const buildAgentGraph = async (
         })
       } else {
         isSequential = true
+
+        console.time('perf: compileSeqAgentsGraph')
+
         streamResults = compileSeqAgentsGraph({
           depthQueue,
           chatflow,
@@ -220,6 +223,8 @@ export const buildAgentGraph = async (
           action: incomingInput.action,
           uploadedFilesContent
         })
+
+        console.timeEnd(`perf(${chatId}): compileSeqAgentsGraph`)
       }
 
       if (streamResults) {
@@ -229,9 +234,37 @@ export const buildAgentGraph = async (
         let streamable = false
         let sendLoadingMessageFnId: any = -1
         const allOutputs: string[] = []
+        let perf = {
+          time: performance.now(),
+          event: '',
+          total: 0
+        }
+        // Track event start times and durations
+        const eventStartTimes: Record<string, number> = {}
+        const eventDurations: Record<string, number> = {}
 
         for await (const output of await streamResults) {
           if (isSequential) {
+            if (output.event !== perf.event) {
+              const offsetPerfTime = performance.now() - perf.time
+              // Track event start/end times
+              if (output.event.endsWith('_start')) {
+                eventStartTimes[output.event] = performance.now()
+              } else if (output.event.endsWith('_end')) {
+                const startEvent = output.event.replace('_end', '_start')
+                const startTime = eventStartTimes[startEvent]
+                if (startTime) {
+                  const duration = performance.now() - startTime
+                  eventDurations[output.event.replace('_end', '')] = duration
+                  console.log(`perf(${chatId}): ${output.event.replace('_end', '')} completed in ${duration.toFixed(2)}ms`)
+                }
+              }
+              console.log(`perf(${chatId}): ${output.event}`, offsetPerfTime)
+              perf.time = performance.now()
+              perf.event = output.event
+              perf.total += offsetPerfTime
+            }
+
             if (shouldStreamResponse) {
               if (!isStreamingStarted) {
                 isStreamingStarted = true
@@ -401,6 +434,10 @@ export const buildAgentGraph = async (
             }
           }
         }
+
+        console.log(`perf${chatId}: total`, perf.total)
+        // Log final event durations summary
+        console.log(`perf${chatId}: event durations:`, JSON.stringify(eventDurations, null, 2))
 
         if (process.env.LOCAL_DEBUG) {
           fs.writeFileSync('stream_outputs.jsonl', allOutputs.join('\r\n'))
