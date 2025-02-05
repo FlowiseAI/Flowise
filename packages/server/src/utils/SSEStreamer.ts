@@ -98,6 +98,8 @@ export class SSEStreamer implements IServerSideEventStreamer {
             if (doc?.metadata?.source?.endsWith('.pdf')) return true
             // console.log('doc:', doc)
 
+            // if (doc?.pageContent) return true
+
             return false
           })
           .map((doc: any) => {

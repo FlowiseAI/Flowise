@@ -12,7 +12,7 @@ import {
   ITeamState,
   IUsedTool
 } from 'flowise-components'
-import { cloneDeep, flatten, omit, uniq } from 'lodash'
+import { cloneDeep, flatten, forEach, omit, uniq } from 'lodash'
 import { END, START, StateGraph } from '@langchain/langgraph'
 import { StatusCodes } from 'http-status-codes'
 import { v4 as uuidv4 } from 'uuid'
@@ -240,7 +240,27 @@ export const buildAgentGraph = async (
 
               // console.log('content', output.data?.chunk?.content)
               // console.log('tags', output.tags)
-              // console.log('output.event', output.event)
+
+              if (output.event === 'on_chain_end') {
+                forEach(output.data?.output, (toolResult) => {
+                  forEach(toolResult?.messages, (message) => {
+                    forEach(message.additional_kwargs?.usedTools, (usedTool) => {
+                      try {
+                        const toolOutputs = JSON.parse(usedTool.toolOutput)
+                        if (Array.isArray(toolOutputs)) {
+                          forEach(toolOutputs, (toolOutput) => {
+                            if ('pageContent' in toolOutput) {
+                              totalSourceDocuments.push(toolOutput)
+                            }
+                          })
+                        }
+                      } catch {
+                        // ignore
+                      }
+                    })
+                  })
+                })
+              }
 
               if (sseStreamer) {
                 if (
