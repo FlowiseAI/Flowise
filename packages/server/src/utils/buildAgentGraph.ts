@@ -44,6 +44,7 @@ import { replaceInputsWithConfig, resolveVariables } from '.'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { getErrorMessage } from '../errors/utils'
 import logger from './logger'
+import fs from 'fs'
 
 /**
  * Build Agent Graph
@@ -227,6 +228,7 @@ export const buildAgentGraph = async (
         let streamText = ''
         let streamable = false
         let sendLoadingMessageFnId: any = -1
+        const allOutputs: string[] = []
 
         for await (const output of await streamResults) {
           if (isSequential) {
@@ -238,27 +240,18 @@ export const buildAgentGraph = async (
                 }
               }
 
+              if (process.env.LOCAL_DEBUG) {
+                allOutputs.push(JSON.stringify(output))
+              }
+
               // console.log('content', output.data?.chunk?.content)
               // console.log('tags', output.tags)
 
-              if (output.event === 'on_chain_end') {
-                forEach(output.data?.output, (toolResult) => {
-                  forEach(toolResult?.messages, (message) => {
-                    forEach(message.additional_kwargs?.usedTools, (usedTool) => {
-                      try {
-                        const toolOutputs = JSON.parse(usedTool.toolOutput)
-                        if (Array.isArray(toolOutputs)) {
-                          forEach(toolOutputs, (toolOutput) => {
-                            if ('pageContent' in toolOutput) {
-                              totalSourceDocuments.push(toolOutput)
-                            }
-                          })
-                        }
-                      } catch {
-                        // ignore
-                      }
-                    })
-                  })
+              if (output.event === 'on_retriever_end') {
+                forEach(output.data?.output, (retrieverOutput) => {
+                  if ('pageContent' in retrieverOutput) {
+                    totalSourceDocuments.push(retrieverOutput)
+                  }
                 })
               }
 
@@ -407,6 +400,10 @@ export const buildAgentGraph = async (
               }
             }
           }
+        }
+
+        if (process.env.LOCAL_DEBUG) {
+          fs.writeFileSync('stream_outputs.jsonl', allOutputs.join('\r\n'))
         }
 
         clearTimeout(sendLoadingMessageFnId)
