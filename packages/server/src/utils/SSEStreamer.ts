@@ -89,28 +89,37 @@ export class SSEStreamer implements IServerSideEventStreamer {
   streamSourceDocumentsEvent(chatId: string, data: any) {
     const client = this.clients[chatId]
     if (client) {
+      // Create a set to track PDF sources we've seen so far.
+      const seenPdfSources = new Set<string>()
+
+      const filteredDocs = data
+        .filter((doc: any) => {
+          // If this is a PDF document, check if its source has already been seen.
+          if (doc?.metadata?.source?.endsWith('.pdf')) {
+            if (seenPdfSources.has(doc.metadata.source)) {
+              return false // Already seen, skip this duplicate.
+            }
+            seenPdfSources.add(doc.metadata.source)
+            return true
+          }
+          // For non-PDF documents, include them if they have a URL.
+          if (doc?.metadata?.url) return true
+          return false
+        })
+        .map((doc: any) => {
+          if (doc?.metadata?.source?.endsWith('.pdf')) {
+            return doc
+          }
+          // For non-PDF documents, set additional metadata properties.
+          doc.metadata['source'] = doc.metadata.url
+          doc.metadata['x-amz-bedrock-kb-source-uri'] = doc.metadata.url
+          delete doc.metadata['pageContent']
+          return doc
+        })
+
       const clientResponse = {
         event: 'sourceDocuments',
-        data: data
-          .filter((doc: any) => {
-            if (doc?.metadata?.url) return true
-
-            if (doc?.metadata?.source?.endsWith('.pdf')) return true
-            // console.log('doc:', doc)
-
-            // if (doc?.pageContent) return true
-
-            return false
-          })
-          .map((doc: any) => {
-            if (doc?.metadata?.source?.endsWith('.pdf')) {
-              return doc
-            }
-            doc.metadata['source'] = doc.metadata.url
-            doc.metadata['x-amz-bedrock-kb-source-uri'] = doc.metadata.url
-            delete doc.metadata['pageContent']
-            return doc
-          })
+        data: filteredDocs
       }
       client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
     }
