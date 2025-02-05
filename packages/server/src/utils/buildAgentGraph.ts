@@ -996,6 +996,7 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
 
 <administrator>
 ### Responses-Format (except for "Final Answer:" which is mandatory, the rest can be combined with the user's prompt above):
+
 Format your responses following this template:
 
 - thought: consider what step we're on and what to do next (briefly under 30 words) - optional
@@ -1008,9 +1009,14 @@ Format your responses following this template:
 - Final Answer:
 
 
-"Final Answer:" is a REQUIRED keyword, please ensure that this keyword always appears before your final answer so that the system can extract your final answer.
-the \`Final Answer\` cannot contain \`thought\`, \`action\`, \`action input\`, or \`observation information\`, is the final Markdown-formatted answer after synthesizing from those processes.
+### Constraint:
+- "Final Answer:" is a REQUIRED keyword, please ensure that this keyword always appears before your final answer so that the system can extract your final answer.
+- The \`Final Answer\` cannot contain \`thought\`, \`action\`, \`action input\`, or \`observation information\`. The content behind the keyword \`Final Answer:\` is the final Markdown-formatted answer after synthesizing from those processes.
 </administrator>${retryTimes > 0 ? '\n\nYou are missing the "Final Answer:" keyword in your final answer.' : ''}`
+
+  if (retryTimes > 0) {
+    console.log('retryTimes', retryTimes)
+  }
 
   /*** Start processing every Agent nodes ***/
   for (const agentNodeId of getSortedDepthNodes(depthQueue)) {
