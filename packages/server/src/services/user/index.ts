@@ -12,10 +12,9 @@ import { GroupUsers } from '../../database/entities/GroupUser'
 const registerUser = async (body: Partial<IUser>) => {
   try {
     const userId = uuidv4()
-
     const newUser = new User()
     Object.assign(newUser, body)
-    if (!body.username || !body.password || !body.email) {
+    if (!body.username || !body.password || !body.email || !body.groupname) {
       throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Username, email and password are required')
     }
     const appServer = getRunningExpressApp()
@@ -33,12 +32,13 @@ const registerUser = async (body: Partial<IUser>) => {
 
     Object.assign(newUser, { password: hashedPassword })
     Object.assign(newUser, { id: userId })
+    Object.assign(newUser, { role: UserRole.USER })
 
     const user = appServer.AppDataSource.getRepository(User).create(newUser)
     const dbResponse = await appServer.AppDataSource.getRepository(User).save(user)
     return dbResponse
   } catch (error) {
-    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.registerUser - ${getErrorMessage(error)}`)
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
   }
 }
 
@@ -69,7 +69,7 @@ const loginUser = async (username: string, email: string, password: string) => {
 
     return { user, accessToken, refreshToken }
   } catch (error) {
-    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.loginUser - ${getErrorMessage(error)}`)
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
   }
 }
 
@@ -86,11 +86,11 @@ const getUserById = async (id: string) => {
     }
     return user
   } catch (error) {
-    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.getUserById - ${getErrorMessage(error)}`)
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
   }
 }
 
-const removeUser = async (req: any, id: string) => {
+const removeUser = async (req: any, id: any) => {
   try {
     const { user } = req
     if (!user.id) {
@@ -115,32 +115,37 @@ const removeUser = async (req: any, id: string) => {
     if (isAuthorizedToRemove) {
       await appServer.AppDataSource.getRepository(User).remove(foundUserToRemove)
       return { message: 'User removed successfully' }
+    } else {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Không có quyền xóa user này')
     }
   } catch (error) {
-    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.removeUser - ${getErrorMessage(error)}`)
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
   }
 }
 
 //getUsersByGroup
-const getUsersByGroup = async (groupname: string) => {
+const getUsersByGroup = async (groupname: any) => {
   try {
     const appServer = getRunningExpressApp()
-    const users = await appServer.AppDataSource.getRepository(User).find({
+    const users = await appServer.AppDataSource.getRepository(GroupUsers).find({
       where: {
         groupname
-      }
+      },
+      relations: ['users']
     })
 
     return users
   } catch (error) {
-    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.getUsersByGroup - ${getErrorMessage(error)}`)
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
   }
 }
 
 const getAllUsersGroupedByGroupname = async () => {
   try {
     const appServer = getRunningExpressApp()
-    const users = await appServer.AppDataSource.getRepository(User).find()
+    const users = await appServer.AppDataSource.getRepository(User).find({
+      relations: ['group']
+    })
 
     const groupedUsers = users.reduce((acc, user) => {
       if (!acc[user.groupname]) {
@@ -152,20 +157,22 @@ const getAllUsersGroupedByGroupname = async () => {
 
     return groupedUsers
   } catch (error) {
-    throw new InternalFlowiseError(
-      StatusCodes.INTERNAL_SERVER_ERROR,
-      `Error: userService.getAllUsersGroupedByGroupname - ${getErrorMessage(error)}`
-    )
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
   }
 }
 
 const getAllGroupUsers = async () => {
   try {
     const appServer = getRunningExpressApp()
-    const groupUsers = await appServer.AppDataSource.getRepository(GroupUsers).find()
+    const groupUsers = await appServer.AppDataSource.getRepository(GroupUsers).find({
+      relations: ['users'],
+      order: {
+        createdDate: 'ASC'
+      }
+    })
     return groupUsers
   } catch (error) {
-    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.getAllGroupUsers - ${getErrorMessage(error)}`)
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
   }
 }
 
@@ -178,11 +185,11 @@ const addGroupUser = async (groupname: string) => {
     const dbResponse = await appServer.AppDataSource.getRepository(GroupUsers).save(groupUser)
     return dbResponse
   } catch (error) {
-    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.addGroupUser - ${getErrorMessage(error)}`)
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
   }
 }
 
-const deleteGroupUser = async (id: string) => {
+const deleteGroupUser = async (id: any) => {
   try {
     const appServer = getRunningExpressApp()
     const groupUser = await appServer.AppDataSource.getRepository(GroupUsers).findOne({
@@ -196,7 +203,44 @@ const deleteGroupUser = async (id: string) => {
     await appServer.AppDataSource.getRepository(GroupUsers).remove(groupUser)
     return { message: 'Group user removed successfully' }
   } catch (error) {
-    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: userService.deleteGroupUser - ${getErrorMessage(error)}`)
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+  }
+}
+
+const updateUser = async (req: any, id: any) => {
+  try {
+    const { user, body } = req
+    const { role } = body
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const appServer = getRunningExpressApp()
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const foundUserToUpdate = await appServer.AppDataSource.getRepository(User).findOne({
+      where: {
+        id
+      }
+    })
+    if (!foundUserToUpdate) {
+      throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'User not found')
+    }
+
+    const isAuthorizedToRemove =
+      foundUser.role === UserRole.MASTER_ADMIN || (foundUser.role === UserRole.ADMIN && foundUser.groupname === foundUserToUpdate.groupname)
+
+    Object.assign(foundUserToUpdate, { role })
+
+    if (isAuthorizedToRemove) {
+      const updatedUser = await appServer.AppDataSource.getRepository(User).save(foundUserToUpdate)
+      return updatedUser
+    } else {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Không có quyền update user này')
+    }
+  } catch (error) {
+    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
   }
 }
 
@@ -209,5 +253,6 @@ export default {
   getAllUsersGroupedByGroupname,
   getAllGroupUsers,
   addGroupUser,
-  deleteGroupUser
+  deleteGroupUser,
+  updateUser
 }

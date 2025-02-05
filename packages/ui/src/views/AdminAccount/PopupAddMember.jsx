@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, TextField, Grid } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, TextField, Grid, MenuItem } from '@mui/material'
 import PropTypes from 'prop-types'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import userApi from '@/api/user'
-import useApi from '@/hooks/useApi'
+import { useDispatch } from 'react-redux'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
+import { IconX } from '@tabler/icons-react'
 
 const theme = createTheme({
   palette: {
@@ -26,8 +28,13 @@ const theme = createTheme({
   spacing: 8
 })
 
-const PopupAddMember = ({ open, onClose }) => {
-  const [newUser, setNewUser] = useState({ username: '', password: '', email: '' })
+const PopupAddMember = ({ open, onClose, userGroups, selectedGroup, setUserGroups, setSelectedGroup }) => {
+  const dispatch = useDispatch()
+
+  const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+  const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+
+  const [newUser, setNewUser] = useState({ username: '', password: '', email: '', groupname: selectedGroup?.groupname })
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -35,14 +42,73 @@ const PopupAddMember = ({ open, onClose }) => {
   }
 
   const handleSubmit = async () => {
-    // Add user to group logic here
-    // Example: await addUserToGroup(selectedGroup.id, newUser)
-    onClose()
+    try {
+      if (!newUser.username || !newUser.password) {
+        return enqueueSnackbar({
+          message: 'Vui lòng điền đầy đủ username và password.',
+          options: {
+            variant: 'error',
+            action: (key) => (
+              <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                <IconX />
+              </Button>
+            )
+          }
+        })
+      }
+      const resRegisterUser = await userApi.registerUser(newUser)
+      const resData = resRegisterUser?.data
+      if (resData) {
+        setUserGroups((prev) =>
+          prev.map((item) => (item.groupname === resData.groupname ? { ...item, users: [...item.users, resData] } : item))
+        )
+        setSelectedGroup((prev) => ({ ...prev, users: [...prev.users, resData] }))
+        enqueueSnackbar({
+          message: 'Đăng kí thành công.',
+          options: {
+            variant: 'success',
+            action: (key) => (
+              <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                <IconX />
+              </Button>
+            )
+          }
+        })
+      }
+      return onClose()
+    } catch (error) {
+      const msg = error?.response?.data?.message ? error.response.data.message : 'Đăng kí thất bại.'
+      return enqueueSnackbar({
+        message: msg,
+        options: {
+          variant: 'error',
+          action: (key) => (
+            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+              <IconX />
+            </Button>
+          )
+        }
+      })
+    }
   }
+
+  useEffect(() => {
+    if (selectedGroup) {
+      setNewUser((prev) => ({ ...prev, groupname: selectedGroup.groupname }))
+    }
+  }, [selectedGroup])
 
   return (
     <ThemeProvider theme={theme}>
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth='sm'>
+      <Dialog
+        open={open}
+        onClose={() => {
+          onClose()
+          setNewUser({ username: '', password: '', email: '', groupname: selectedGroup?.groupname })
+        }}
+        fullWidth
+        maxWidth='sm'
+      >
         <DialogTitle>Add New Member</DialogTitle>
         <DialogContent>
           <DialogContentText>Please enter the details of the new member.</DialogContentText>
@@ -83,10 +149,39 @@ const PopupAddMember = ({ open, onClose }) => {
                 onChange={handleChange}
               />
             </Grid>
+            <Grid item xs={12}>
+              <TextField
+                select
+                margin='dense'
+                name='groupname'
+                label='Group'
+                fullWidth
+                variant='standard'
+                defaultValue={newUser?.groupname || ''}
+                onChange={handleChange}
+                disabled
+              >
+                {Array.isArray(userGroups) && userGroups.length > 0 ? (
+                  userGroups.map((group) => (
+                    <MenuItem key={group.id} value={group.groupname}>
+                      {group.groupname}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>No groups available</MenuItem>
+                )}
+              </TextField>
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} color='secondary'>
+          <Button
+            onClick={() => {
+              onClose()
+              setNewUser({ username: '', password: '', email: '', groupname: selectedGroup?.groupname })
+            }}
+            color='secondary'
+          >
             Hủy
           </Button>
           <Button onClick={handleSubmit} color='primary'>
@@ -100,7 +195,11 @@ const PopupAddMember = ({ open, onClose }) => {
 
 PopupAddMember.propTypes = {
   open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  userGroups: PropTypes.array.isRequired,
+  selectedGroup: PropTypes.object,
+  setUserGroups: PropTypes.func.isRequired,
+  setSelectedGroup: PropTypes.func.isRequired
 }
 
 export default PopupAddMember

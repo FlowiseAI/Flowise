@@ -46,7 +46,7 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
 // Remove user
 const removeUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params
+    const { id } = req.query
     if (!id) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'User ID must be provided')
     }
@@ -60,7 +60,8 @@ const removeUser = async (req: Request, res: Response, next: NextFunction) => {
 // Get users by group
 const getUsersByGroup = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { groupname } = req.params
+    const { groupname } = req.query
+
     if (!groupname) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Group name must be provided')
     }
@@ -108,12 +109,26 @@ const addGroupUser = async (req: Request, res: Response, next: NextFunction) => 
 // Delete user from a group
 const deleteGroupUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { idGroupname } = req.params
+    const { idGroupname } = req.query
     if (!idGroupname) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Group name and user ID must be provided')
     }
     await userService.deleteGroupUser(idGroupname)
     return res.status(StatusCodes.NO_CONTENT).send()
+  } catch (error) {
+    next(error)
+  }
+}
+
+// Update user
+const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.query
+    if (!id) {
+      throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'User ID must be provided')
+    }
+    const updatedUser = await userService.updateUser(req, id)
+    return res.json(updatedUser)
   } catch (error) {
     next(error)
   }
@@ -128,5 +143,6 @@ export default {
   getAllUsersGroupedByGroupname,
   getAllGroupUsers,
   addGroupUser,
-  deleteGroupUser
+  deleteGroupUser,
+  updateUser
 }
