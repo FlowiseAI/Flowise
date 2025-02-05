@@ -69,6 +69,8 @@
     "@opentelemetry/sdk-node": "^0.54.0",
     "@opentelemetry/sdk-trace-base": "1.27.0",
     "@opentelemetry/semantic-conventions": "1.27.0",
+    "@sentry/node": "^8.54.0",
+    "@sentry/profiling-node": "^8.54.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/lodash": "^4.14.202",
