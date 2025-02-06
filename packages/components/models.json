@@ -424,10 +424,6 @@
                 {
                     "label": "gemini-1.5-pro",
                     "name": "gemini-1.5-pro"
-                },
-                {
-                    "label": "Experimental Model (Additional Parameters)",
-                    "name": ""
                 }
             ]
         },
