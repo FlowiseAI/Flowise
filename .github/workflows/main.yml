@@ -26,14 +26,14 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.node-version }}
-                  check-latest: false
                   cache: 'pnpm'
-            - run: npm i -g pnpm
+                  cache-dependency-path: 'pnpm-lock.yaml'
             - run: pnpm install
-            - run: ./node_modules/.bin/cypress install
             - run: pnpm lint
             - run: pnpm build
-            - name: Install dependencies
+            - name: Cypress install
+              run: pnpm cypress install
+            - name: Install dependencies (Cypress Action)
               uses: cypress-io/github-action@v6
               with:
                   working-directory: ./
