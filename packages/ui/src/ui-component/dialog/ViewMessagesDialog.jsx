@@ -173,12 +173,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         getChatmessageApi.request(dialogProps.chatflow.id, {
             startDate: updatedDate,
             endDate: endDate,
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
         })
         getStatsApi.request(dialogProps.chatflow.id, {
             startDate: updatedDate,
             endDate: endDate,
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
         })
     }
 
@@ -189,12 +191,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         getChatmessageApi.request(dialogProps.chatflow.id, {
             endDate: updatedDate,
             startDate: startDate,
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
         })
         getStatsApi.request(dialogProps.chatflow.id, {
             endDate: updatedDate,
             startDate: startDate,
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
         })
     }
 
@@ -203,12 +207,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         getChatmessageApi.request(dialogProps.chatflow.id, {
             chatType: chatTypes.length ? chatTypes : undefined,
             startDate: startDate,
-            endDate: endDate
+            endDate: endDate,
+            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
         })
         getStatsApi.request(dialogProps.chatflow.id, {
             chatType: chatTypes.length ? chatTypes : undefined,
             startDate: startDate,
-            endDate: endDate
+            endDate: endDate,
+            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
         })
     }
 
@@ -282,12 +288,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             getChatmessageApi.request(chatflowid, {
                 chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
                 startDate: startDate,
-                endDate: endDate
+                endDate: endDate,
+                feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
             })
             getStatsApi.request(chatflowid, {
                 chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
                 startDate: startDate,
-                endDate: endDate
+                endDate: endDate,
+                feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
             })
         } catch (error) {
             console.error(error)
@@ -427,8 +435,18 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                         )
                     }
                 })
-                getChatmessageApi.request(chatflowid)
-                getStatsApi.request(chatflowid) // update stats
+                getChatmessageApi.request(chatflowid, {
+                    startDate: startDate,
+                    endDate: endDate,
+                    chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+                    feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
+                })
+                getStatsApi.request(chatflowid, {
+                    startDate: startDate,
+                    endDate: endDate,
+                    chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+                    feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
+                })
             } catch (error) {
                 enqueueSnackbar({
                     message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
@@ -689,8 +707,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     useEffect(() => {
         if (dialogProps.chatflow) {
-            getChatmessageApi.request(dialogProps.chatflow.id)
-            getStatsApi.request(dialogProps.chatflow.id)
+            getChatmessageApi.request(dialogProps.chatflow.id, {
+                startDate: startDate,
+                endDate: endDate
+            })
+            getStatsApi.request(dialogProps.chatflow.id, {
+                startDate: startDate,
+                endDate: endDate
+            })
         }
 
         return () => {
@@ -720,8 +744,16 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         if (dialogProps.chatflow) {
             // when the filter is cleared fetch all messages
             if (feedbackTypeFilter.length === 0) {
-                getChatmessageApi.request(dialogProps.chatflow.id)
-                getStatsApi.request(dialogProps.chatflow.id)
+                getChatmessageApi.request(dialogProps.chatflow.id, {
+                    startDate: startDate,
+                    endDate: endDate,
+                    chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+                })
+                getStatsApi.request(dialogProps.chatflow.id, {
+                    startDate: startDate,
+                    endDate: endDate,
+                    chatType: chatTypeFilter.length ? chatTypeFilter : undefined
+                })
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
