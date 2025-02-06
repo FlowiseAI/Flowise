@@ -120,7 +120,7 @@ const Chatflows = () => {
             title={
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
-                  <Tab label={isMasterAdmin ? 'Master Admin' : user.groupname} {...a11yProps(0)} />
+                  {isLogin && <Tab label={isMasterAdmin ? 'Master Admin' : user.groupname} {...a11yProps(0)} />}
                   <Tab label='Đã publish' {...a11yProps(1)} />
                   <Tab label='Cá nhân' {...a11yProps(2)} />
                 </Tabs>
