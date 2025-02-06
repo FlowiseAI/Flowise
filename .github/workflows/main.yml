@@ -19,6 +19,9 @@ jobs:
             PUPPETEER_SKIP_DOWNLOAD: true
         steps:
             - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v3
+              with:
+                  version: 9.0.4
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v4
               with:
