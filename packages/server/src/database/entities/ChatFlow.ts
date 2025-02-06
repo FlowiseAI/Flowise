@@ -38,6 +38,9 @@ export class ChatFlow implements IChatFlow {
   @Column({ nullable: true, type: 'text' })
   followUpPrompts?: string
 
+  @Column('varchar', { nullable: true, default: '' })
+  groupname: string
+
   @Column({ nullable: true, type: 'text' })
   category?: string
 

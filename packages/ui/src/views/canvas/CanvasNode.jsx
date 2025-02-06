@@ -93,14 +93,17 @@ const CanvasNode = ({ data }) => {
 
   useEffect(() => {
     if (
-      !isAdminPage &&
-      (user?.role === 'MASTER_ADMIN' ||
-        chatflow?.userId === user?.id ||
-        (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname))
+      user?.role === 'MASTER_ADMIN' ||
+      (user?.role === 'USER' && chatflow?.userId === user?.id) ||
+      (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname) ||
+      pathname === '/canvas' ||
+      pathname === '/agentcanvas'
     ) {
       setIsAdminPage(true)
+    } else {
+      setIsAdminPage(false)
     }
-  }, [canvas, isAdminPage, user, chatflow])
+  }, [user, chatflow])
 
   return (
     <>

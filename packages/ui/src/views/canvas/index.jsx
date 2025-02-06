@@ -226,7 +226,7 @@ const Canvas = () => {
     }
   }
 
-  const handleSaveFlow = (chatflowName) => {
+  const handleSaveFlow = async (chatflowName) => {
     if (reactFlowInstance) {
       const nodes = reactFlowInstance.getNodes().map((node) => {
         const nodeData = cloneDeep(node.data)
@@ -253,13 +253,13 @@ const Canvas = () => {
           flowData,
           type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW'
         }
-        createNewChatflowApi.request(newChatflowBody)
+        await createNewChatflowApi.request(newChatflowBody)
       } else {
         const updateBody = {
           name: chatflowName,
           flowData
         }
-        updateChatflowApi.request(chatflow.id, updateBody)
+        await updateChatflowApi.request(chatflow.id, updateBody)
       }
     }
   }
@@ -429,21 +429,6 @@ const Canvas = () => {
   useEffect(() => {
     if (getSpecificChatflowApi?.data) {
       const chatflow = getSpecificChatflowApi.data
-      if (
-        !chatflow?.isPublic &&
-        ((user?.role !== 'USER' && chatflow?.userId !== user?.id) ||
-          (user?.role === 'ADMIN' && user.groupname !== chatflow?.user?.groupname))
-      ) {
-        return navigate(isAgentCanvas ? '/agentflows' : '/')
-      }
-      if (
-        !isAdminPage &&
-        (user?.role === 'MASTER_ADMIN' ||
-          chatflow?.userId === user?.id ||
-          (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname))
-      ) {
-        setIsAdminPage(true)
-      }
 
       const initialFlow = chatflow?.flowData ? JSON.parse(chatflow.flowData) : []
       setNodes(initialFlow.nodes || [])
@@ -456,13 +441,39 @@ const Canvas = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getSpecificChatflowApi.data, getSpecificChatflowApi.error])
 
+  useEffect(() => {
+    if (chatflow) {
+      if (
+        !chatflow?.isPublic &&
+        ((user?.role === 'USER' && chatflow?.userId !== user?.id) ||
+          (user?.role === 'ADMIN' && user.groupname !== chatflow?.user?.groupname)) &&
+        pathname !== '/canvas' &&
+        pathname !== '/agentcanvas'
+      ) {
+        return navigate(isAgentCanvas ? '/agentflows' : '/')
+      }
+      if (
+        user?.role === 'MASTER_ADMIN' ||
+        (user?.role === 'USER' && chatflow?.userId === user?.id) ||
+        (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname) ||
+        pathname === '/canvas' ||
+        pathname === '/agentcanvas'
+      ) {
+        setIsAdminPage(true)
+      } else {
+        setIsAdminPage(false)
+      }
+    }
+  }, [chatflow, user])
+
   // Create new chatflow successful
   useEffect(() => {
     if (createNewChatflowApi.data) {
       const chatflow = createNewChatflowApi.data
-      dispatch({ type: SET_CHATFLOW, chatflow })
+      getSpecificChatflowApi.request(chatflow?.id)
+      // dispatch({ type: SET_CHATFLOW, chatflow })
       saveChatflowSuccess()
-      window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
+      window.history.replaceState(state, null, `/${isAgentCanvas ? 'c-agent/agentcanvas' : 'c-agent/canvas'}/${chatflow.id}`)
     } else if (createNewChatflowApi.error) {
       errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
     }
@@ -514,9 +525,7 @@ const Canvas = () => {
         }
       })
     }
-
     getNodesApi.request()
-
     // Clear dirty state before leaving and remove any ongoing test triggers and webhooks
     return () => {
       setTimeout(() => dispatch({ type: REMOVE_DIRTY }), 0)
@@ -582,147 +591,149 @@ const Canvas = () => {
         <Box sx={{ pt: '67px', height: '100vh', width: '100%' }}>
           <div className='reactflow-parent-wrapper'>
             <div className='reactflow-wrapper' ref={reactFlowWrapper}>
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onNodeClick={onNodeClick}
-                onEdgesChange={onEdgesChange}
-                onDrop={onDrop}
-                onDragOver={onDragOver}
-                onNodeDragStop={setDirty}
-                nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
-                onConnect={onConnect}
-                onInit={setReactFlowInstance}
-                fitView
-                deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
-                minZoom={0.1}
-                className='chatflow-canvas'
-                defaultEdgeOptions={{
-                  style: { strokeWidth: 2, stroke: '#D0D5DD' }
-                }}
-                {...(!isAdminPage && {
-                  nodesDraggable: false,
-                  nodesConnectable: false,
-                  edgesUpdatable: false,
-                  panOnScroll: false,
-                  zoomOnScroll: false
-                })}
-              >
-                {isAdminPage && (
-                  <Controls
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)'
-                    }}
-                  >
-                    <ControlButton
-                      onClick={async () => {
-                        const elk = new ELK()
-                        const nodes = reactFlowInstance.getNodes()
-                        const edges = reactFlowInstance.getEdges()
-                        const elkGraph = {
-                          id: 'root',
-                          layoutOptions: {
-                            'elk.algorithm': 'layered',
-                            'elk.layered.spacing.nodeNodeBetweenLayers': '128',
-                            'elk.spacing.nodeNode': '64',
-                            'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX'
-                          },
-                          children: nodes.map((node) => ({
-                            id: node.id,
-                            width: node.width,
-                            height: node.height,
-                            targetPosition: 'left',
-                            sourcePosition: 'right',
-                            labels: [{ text: node.id }]
-                          })),
-                          edges: edges.map((edge) => ({
-                            id: edge.id,
-                            sources: [edge.source],
-                            targets: [edge.target]
-                          }))
-                        }
-
-                        const layout = await elk.layout(elkGraph)
-
-                        // Find the smallest y-coordinate among all nodes
-                        let minY = Infinity
-                        layout.children?.forEach((child) => {
-                          if (child.y < minY) {
-                            minY = child.y
-                          }
-                        })
-
-                        // Group nodes by x-coordinate
-                        const nodesByX = {}
-                        layout.children?.forEach((child) => {
-                          const xCoord = Math.round(child.x) // Round to handle floating point imprecision
-                          if (!nodesByX[xCoord]) {
-                            nodesByX[xCoord] = []
-                          }
-                          nodesByX[xCoord].push(child)
-                        })
-
-                        // Position nodes, handling overlaps
-                        Object.values(nodesByX).forEach((nodesAtX) => {
-                          let currentY = minY
-                          nodesAtX.forEach((child) => {
-                            const index = nodes.findIndex((e) => e.id === child.id)
-                            if (index > -1) {
-                              nodes[index].position = {
-                                x: child.x,
-                                y: currentY
-                              }
-                              // Update currentY for next node, adding a small gap of 20px between nodes
-                              currentY += child.height + 64
-                            }
-                          })
-                        })
-
-                        reactFlowInstance.setNodes(nodes)
+              {Boolean(chatflow) && (
+                <ReactFlow
+                  nodes={nodes}
+                  edges={edges}
+                  onNodesChange={onNodesChange}
+                  onNodeClick={onNodeClick}
+                  onEdgesChange={onEdgesChange}
+                  onDrop={onDrop}
+                  onDragOver={onDragOver}
+                  onNodeDragStop={setDirty}
+                  nodeTypes={nodeTypes}
+                  edgeTypes={edgeTypes}
+                  onConnect={onConnect}
+                  onInit={setReactFlowInstance}
+                  fitView
+                  deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
+                  minZoom={0.1}
+                  className='chatflow-canvas'
+                  defaultEdgeOptions={{
+                    style: { strokeWidth: 2, stroke: '#D0D5DD' }
+                  }}
+                  {...(isAdminPage && {
+                    nodesDraggable: true,
+                    nodesConnectable: true,
+                    edgesUpdatable: true,
+                    panOnScroll: true,
+                    zoomOnScroll: true
+                  })}
+                >
+                  {isAdminPage && (
+                    <Controls
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)'
                       }}
                     >
-                      <IconArrowsShuffle size={14} />
-                    </ControlButton>
-                  </Controls>
-                )}
-                <Background
-                  color='#aaa'
-                  gap={24}
-                  style={
-                    {
-                      // background: isDark ? '#1B2531' : '#F0F2F7'
-                    }
-                  }
-                />
-                {isAdminPage && <AddNodes isAgentCanvas={isAgentCanvas} nodesData={nodesData} node={selectedNode} />}
-                {isSyncNodesButtonEnabled && (
-                  <Fab
-                    sx={{
-                      left: 40,
-                      top: 20,
-                      color: 'white',
-                      background: 'orange',
-                      '&:hover': {
-                        background: 'orange',
-                        backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
+                      <ControlButton
+                        onClick={async () => {
+                          const elk = new ELK()
+                          const nodes = reactFlowInstance.getNodes()
+                          const edges = reactFlowInstance.getEdges()
+                          const elkGraph = {
+                            id: 'root',
+                            layoutOptions: {
+                              'elk.algorithm': 'layered',
+                              'elk.layered.spacing.nodeNodeBetweenLayers': '128',
+                              'elk.spacing.nodeNode': '64',
+                              'org.eclipse.elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX'
+                            },
+                            children: nodes.map((node) => ({
+                              id: node.id,
+                              width: node.width,
+                              height: node.height,
+                              targetPosition: 'left',
+                              sourcePosition: 'right',
+                              labels: [{ text: node.id }]
+                            })),
+                            edges: edges.map((edge) => ({
+                              id: edge.id,
+                              sources: [edge.source],
+                              targets: [edge.target]
+                            }))
+                          }
+
+                          const layout = await elk.layout(elkGraph)
+
+                          // Find the smallest y-coordinate among all nodes
+                          let minY = Infinity
+                          layout.children?.forEach((child) => {
+                            if (child.y < minY) {
+                              minY = child.y
+                            }
+                          })
+
+                          // Group nodes by x-coordinate
+                          const nodesByX = {}
+                          layout.children?.forEach((child) => {
+                            const xCoord = Math.round(child.x) // Round to handle floating point imprecision
+                            if (!nodesByX[xCoord]) {
+                              nodesByX[xCoord] = []
+                            }
+                            nodesByX[xCoord].push(child)
+                          })
+
+                          // Position nodes, handling overlaps
+                          Object.values(nodesByX).forEach((nodesAtX) => {
+                            let currentY = minY
+                            nodesAtX.forEach((child) => {
+                              const index = nodes.findIndex((e) => e.id === child.id)
+                              if (index > -1) {
+                                nodes[index].position = {
+                                  x: child.x,
+                                  y: currentY
+                                }
+                                // Update currentY for next node, adding a small gap of 20px between nodes
+                                currentY += child.height + 64
+                              }
+                            })
+                          })
+
+                          reactFlowInstance.setNodes(nodes)
+                        }}
+                      >
+                        <IconArrowsShuffle size={14} />
+                      </ControlButton>
+                    </Controls>
+                  )}
+                  <Background
+                    color='#aaa'
+                    gap={24}
+                    style={
+                      {
+                        // background: isDark ? '#1B2531' : '#F0F2F7'
                       }
-                    }}
-                    size='small'
-                    aria-label='sync'
-                    title='Sync Nodes'
-                    onClick={() => syncNodes()}
-                  >
-                    <IconRefreshAlert />
-                  </Fab>
-                )}
-                {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
-                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
-              </ReactFlow>
+                    }
+                  />
+                  {isAdminPage && <AddNodes isAgentCanvas={isAgentCanvas} nodesData={nodesData} node={selectedNode} />}
+                  {isSyncNodesButtonEnabled && (
+                    <Fab
+                      sx={{
+                        left: 40,
+                        top: 20,
+                        color: 'white',
+                        background: 'orange',
+                        '&:hover': {
+                          background: 'orange',
+                          backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
+                        }
+                      }}
+                      size='small'
+                      aria-label='sync'
+                      title='Sync Nodes'
+                      onClick={() => syncNodes()}
+                    >
+                      <IconRefreshAlert />
+                    </Fab>
+                  )}
+                  {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
+                  <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
+                </ReactFlow>
+              )}
             </div>
           </div>
         </Box>

@@ -2,124 +2,106 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { styled } from '@mui/material/styles'
-import { Box, Grid, Typography, useTheme } from '@mui/material'
+import { styled, useTheme } from '@mui/material/styles'
+import { Box, Grid, Typography } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
-  background: theme.palette.card.main,
-  color: theme.darkTextPrimary,
+  background: theme.palette.background.paper,
+  color: theme.palette.text.primary,
   overflow: 'auto',
   position: 'relative',
-  boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
+  boxShadow: theme.shadows[3],
   cursor: 'pointer',
   '&:hover': {
-    background: theme.palette.card.hover,
-    boxShadow: '0 2px 14px 0 rgb(32 40 45 / 20%)'
+    background: theme.palette.action.hover,
+    boxShadow: theme.shadows[6]
   },
   height: '100%',
-  minHeight: '160px',
+  minHeight: '120px',
   maxHeight: '300px',
   width: '100%',
   overflowWrap: 'break-word',
-  whiteSpace: 'pre-line'
+  whiteSpace: 'pre-line',
+  borderRadius: theme.shape.borderRadius,
+  border: `1px solid ${theme.palette.divider}`,
+  padding: '0px !important'
 }))
-
-// ===========================|| CONTRACT CARD ||=========================== //
 
 const ItemCard = ({ data, images, onClick }) => {
   const theme = useTheme()
   const customization = useSelector((state) => state.customization)
 
   return (
-    <CardWrapper content={false} onClick={onClick} sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}>
-      <Box sx={{ height: '100%', p: 2.25 }}>
-        <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
+    <CardWrapper onClick={onClick}>
+      <Box sx={{ height: '100%', pt: 2 }}>
+        <Grid container direction='column' sx={{ height: '100%', gap: 1.5 }}>
           <Box display='flex' flexDirection='column' sx={{ width: '100%' }}>
-            <div
-              style={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                overflow: 'hidden'
-              }}
-            >
-              {data.iconSrc && (
-                <div
-                  style={{
+            <Box display='flex' alignItems='center' sx={{ mb: 1.5 }}>
+              {data.iconSrc ? (
+                <Box
+                  component='img'
+                  src={data.iconSrc}
+                  alt='icon'
+                  sx={{
                     width: 35,
                     height: 35,
-                    display: 'flex',
-                    flexShrink: 0,
-                    marginRight: 10,
                     borderRadius: '50%',
-                    backgroundImage: `url(${data.iconSrc})`,
-                    backgroundSize: 'contain',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center center'
+                    mr: 1.5,
+                    objectFit: 'contain'
                   }}
-                ></div>
-              )}
-              {!data.iconSrc && data.color && (
-                <div
-                  style={{
-                    width: 35,
-                    height: 35,
-                    display: 'flex',
-                    flexShrink: 0,
-                    marginRight: 10,
-                    borderRadius: '50%',
-                    background: data.color
-                  }}
-                ></div>
+                />
+              ) : (
+                data.color && (
+                  <Box
+                    sx={{
+                      width: 35,
+                      height: 35,
+                      borderRadius: '50%',
+                      mr: 1.5,
+                      backgroundColor: data.color
+                    }}
+                  />
+                )
               )}
               <Typography
+                variant='h6'
                 sx={{
                   display: '-webkit-box',
-                  fontSize: '1.25rem',
-                  fontWeight: 500,
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  overflow: 'hidden'
+                  fontSize: '20px'
                 }}
               >
                 {data.templateName || data.name}
               </Typography>
-            </div>
+            </Box>
             {data.description && (
-              <span
-                style={{
+              <Typography
+                variant='body2'
+                sx={{
                   display: '-webkit-box',
-                  marginTop: 10,
-                  overflowWrap: 'break-word',
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  overflow: 'hidden'
+                  mb: 1.5
                 }}
               >
                 {data.description}
-              </span>
+              </Typography>
             )}
             {data?.user?.username && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginTop: 10,
-                  overflowWrap: 'break-word',
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: 'vertical',
-                  textOverflow: 'ellipsis',
-                  overflow: 'hidden'
-                }}
-              >
-                <span>{data?.user?.username || ''}</span>
-              </div>
+              <Typography variant='body2' sx={{ mb: 0.5 }}>
+                User: {data.user.username}
+              </Typography>
+            )}
+            {(data?.user?.groupname || data?.groupname) && (
+              <Typography variant='body2'>Group: {data.user?.groupname || data.groupname}</Typography>
             )}
           </Box>
           {images && (
@@ -127,28 +109,33 @@ const ItemCard = ({ data, images, onClick }) => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'start',
                 gap: 1
               }}
             >
-              {images.slice(0, images.length > 3 ? 3 : images.length).map((img) => (
+              {images.slice(0, 3).map((img, index) => (
                 <Box
-                  key={img}
+                  key={index}
                   sx={{
                     width: 30,
                     height: 30,
                     borderRadius: '50%',
-                    backgroundColor: customization.isDarkMode ? theme.palette.common.white : theme.palette.grey[300] + 75
+                    backgroundColor: customization.isDarkMode ? theme.palette.common.white : theme.palette.grey[300]
                   }}
                 >
-                  <img style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }} alt='' src={img} />
+                  <Box
+                    component='img'
+                    src={img}
+                    alt=''
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      padding: 0.5,
+                      objectFit: 'contain'
+                    }}
+                  />
                 </Box>
               ))}
-              {images.length > 3 && (
-                <Typography sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}>
-                  + {images.length - 3} More
-                </Typography>
-              )}
+              {images.length > 3 && <Typography variant='body2'>+ {images.length - 3} More</Typography>}
             </Box>
           )}
         </Grid>
@@ -158,7 +145,7 @@ const ItemCard = ({ data, images, onClick }) => {
 }
 
 ItemCard.propTypes = {
-  data: PropTypes.object,
+  data: PropTypes.object.isRequired,
   images: PropTypes.array,
   onClick: PropTypes.func
 }

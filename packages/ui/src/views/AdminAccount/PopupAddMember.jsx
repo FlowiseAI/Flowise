@@ -75,6 +75,7 @@ const PopupAddMember = ({ open, onClose, userGroups, selectedGroup, setUserGroup
           }
         })
       }
+      setNewUser({ username: '', password: '', email: '', groupname: selectedGroup?.groupname })
       return onClose()
     } catch (error) {
       const msg = error?.response?.data?.message ? error.response.data.message : 'Đăng kí thất bại.'

@@ -158,7 +158,7 @@ const getControlChatflowsOfAdminGroup = async (req: any): Promise<any[]> => {
       .createQueryBuilder('cf')
       .leftJoinAndSelect('cf.user', 'user')
       .where('cf.type = :type', { type })
-      .andWhere('user.groupname = :groupname', { groupname })
+      .andWhere('(user.groupname = :groupname OR cf.groupname = :groupname)', { groupname })
       .getMany()
 
     return dbResponse

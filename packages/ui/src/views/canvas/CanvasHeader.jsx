@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button, Switch } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button, Switch, MenuItem } from '@mui/material'
 
 // icons
 import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
@@ -20,6 +20,7 @@ import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import userApi from '@/api/user'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -63,6 +64,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
   const [viewLeadsDialogProps, setViewLeadsDialogProps] = useState({})
   const [upsertHistoryDialogOpen, setUpsertHistoryDialogOpen] = useState(false)
   const [upsertHistoryDialogProps, setUpsertHistoryDialogProps] = useState({})
+  const [groupUser, setGroupUser] = useState([])
   const [chatflowConfigurationDialogOpen, setChatflowConfigurationDialogOpen] = useState(false)
   const [chatflowConfigurationDialogProps, setChatflowConfigurationDialogProps] = useState({})
 
@@ -75,6 +77,17 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
 
   const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
   const canvas = useSelector((state) => state.canvas)
+
+  const handleGetGroupUser = async () => {
+    try {
+      const groupUserResp = await userApi.getAllGroupUsers()
+      if (groupUserResp.data) {
+        setGroupUser(groupUserResp.data)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   const onSettingsItemClick = (setting) => {
     setSettingsOpen(false)
@@ -271,6 +284,44 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
           )
         }
       })
+      setChatflowIsPublic(!checked)
+    }
+  }
+
+  const handleChangeGroupFlow = async (groupname) => {
+    try {
+      const saveResp = await chatflowsApi.updateChatflow(chatflow.id, { groupname })
+      if (saveResp.data) {
+        enqueueSnackbar({
+          message: 'Chatbot Configuration Saved',
+          options: {
+            key: new Date().getTime() + Math.random(),
+            variant: 'success',
+            action: (key) => (
+              <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                <IconX />
+              </Button>
+            )
+          }
+        })
+        dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+      }
+    } catch (error) {
+      enqueueSnackbar({
+        message: `Failed to save Chatbot Configuration: ${
+          typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+        }`,
+        options: {
+          key: new Date().getTime() + Math.random(),
+          variant: 'error',
+          persist: true,
+          action: (key) => (
+            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+              <IconX />
+            </Button>
+          )
+        }
+      })
     }
   }
 
@@ -286,6 +337,22 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
 
   useEffect(() => {
     if (chatflow) {
+      if (
+        user?.role === 'MASTER_ADMIN' ||
+        (user?.role === 'USER' && chatflow?.userId === user?.id) ||
+        (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname) ||
+        pathname === '/canvas' ||
+        pathname === '/agentcanvas'
+      ) {
+        setIsAdminPage(true)
+      } else {
+        setIsAdminPage(false)
+      }
+    }
+  }, [user, chatflow])
+
+  useEffect(() => {
+    if (chatflow) {
       setChatflowIsPublic(chatflow?.isPublic)
       setFlowName(chatflow.name)
       // if configuration dialog is open, update its data
@@ -295,16 +362,14 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
           chatflow
         })
       }
-      if (
-        !isAdminPage &&
-        (user?.role === 'MASTER_ADMIN' ||
-          chatflow?.userId === user?.id ||
-          (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname))
-      ) {
-        setIsAdminPage(true)
-      }
     }
-  }, [chatflow, title, chatflowConfigurationDialogOpen, isAdminPage, user])
+  }, [chatflow, chatflowConfigurationDialogOpen, title])
+
+  useEffect(() => {
+    if (user) {
+      handleGetGroupUser()
+    }
+  }, [user])
 
   return (
     <>
@@ -467,6 +532,57 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                   />
                 </div>
               )}
+            </div>
+          )}
+          {(chatflow?.groupname || chatflow?.user?.groupname) && (
+            <div className='flex flex-row gap-1'>
+              <Typography
+                sx={{
+                  fontSize: '1rem',
+                  fontWeight: 500,
+                  ml: 2,
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  alignSelf: 'center'
+                }}
+              >
+                Group:
+              </Typography>
+              <TextField
+                select
+                value={chatflow?.groupname || chatflow?.user?.groupname}
+                onChange={(e) => {
+                  const selectedGroup = e.target.value
+                  handleChangeGroupFlow(selectedGroup)
+                }}
+                variant='standard'
+                size='small'
+                sx={{
+                  ml: 1,
+                  '& .MuiInputBase-input': {
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    paddingBottom: 0,
+                    alignContent: 'center'
+                  },
+                  ...(!isAdminPage && {
+                    '& .MuiSelect-icon': {
+                      display: 'none'
+                    },
+                    '& .MuiInput-underline:before, & .MuiInput-underline:after': {
+                      display: 'none' // Removes the underline
+                    }
+                  })
+                }}
+                disabled={!isAdminPage}
+              >
+                {groupUser.map((group) => (
+                  <MenuItem key={group.id} value={group.groupname}>
+                    {group.groupname}
+                  </MenuItem>
+                ))}
+              </TextField>
             </div>
           )}
         </Stack>
