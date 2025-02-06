@@ -154,6 +154,15 @@ export class App {
             }
         })
 
+        // Middleware to add HSTS headers
+        this.app.use((req, res, next) => {
+            const isHttps = req.secure || req.get('X-Forwarded-Proto') === 'https';
+            if (isHttps) {
+            res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+            }
+            next();
+        });
+
         // Switch off the default 'X-Powered-By: Express' header
         this.app.disable('x-powered-by')
 
