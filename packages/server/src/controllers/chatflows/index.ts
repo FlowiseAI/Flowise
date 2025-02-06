@@ -59,6 +59,15 @@ const getControlChatflowsOfAdmin = async (req: Request, res: Response, next: Nex
   }
 }
 
+const getControlChatflowsOfAdminGroup = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const apiResponse = await chatflowsService.getControlChatflowsOfAdminGroup(req)
+    return res.json(apiResponse)
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getAllPublicChatflows = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const apiResponse = await chatflowsService.getAllPublicChatflows(req)
@@ -203,5 +212,6 @@ export default {
   updateChatflow,
   getSinglePublicChatflow,
   getSinglePublicChatbotConfig,
-  getControlChatflowsOfAdmin
+  getControlChatflowsOfAdmin,
+  getControlChatflowsOfAdminGroup
 }

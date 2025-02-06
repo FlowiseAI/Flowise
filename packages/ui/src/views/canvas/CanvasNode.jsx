@@ -29,11 +29,15 @@ const CanvasNode = ({ data }) => {
   const user = useSelector((state) => state.user)
   const { pathname } = useLocation()
   const canvas = useSelector((state) => state.canvas)
+  const chatflow = canvas.chatflow
   const { deleteNode, duplicateNode } = useContext(flowContext)
 
   const [isAdminPage, setIsAdminPage] = useState(
-    pathname === '/canvas' || pathname === '/agentcanvas' ? true : user?.role === 'ADMIN' ? true : false
+    pathname === '/canvas' || pathname === '/agentcanvas'
+      ? true
+      : user?.role === 'MASTER_ADMIN' || (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname)
   )
+
   const [showDialog, setShowDialog] = useState(false)
   const [dialogProps, setDialogProps] = useState({})
   const [showInfoDialog, setShowInfoDialog] = useState(false)
@@ -88,10 +92,15 @@ const CanvasNode = ({ data }) => {
   }, [canvas.componentNodes, data.name, data.version])
 
   useEffect(() => {
-    if (canvas?.chatflow && user?.role !== 'ADMIN' && canvas?.chatflow?.userId === user?.id && !isAdminPage) {
+    if (
+      !isAdminPage &&
+      (user?.role === 'MASTER_ADMIN' ||
+        chatflow?.userId === user?.id ||
+        (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname))
+    ) {
       setIsAdminPage(true)
     }
-  }, [canvas, isAdminPage])
+  }, [canvas, isAdminPage, user, chatflow])
 
   return (
     <>

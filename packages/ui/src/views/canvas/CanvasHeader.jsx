@@ -44,9 +44,11 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
   const user = useSelector((state) => state.user)
   const { pathname } = useLocation()
   const [isAdminPage, setIsAdminPage] = useState(
-    pathname === '/canvas' || pathname === '/agentcanvas' ? true : user?.role === 'ADMIN' ? true : false
+    pathname === '/canvas' || pathname === '/agentcanvas'
+      ? true
+      : user?.role === 'MASTER_ADMIN' || (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname)
   )
-  const isAdmin = user?.role === 'ADMIN'
+  const isAdmin = user?.role === 'MASTER_ADMIN' || (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname)
 
   const [isPublicChatflow, setChatflowIsPublic] = useState(chatflow?.isPublic ?? false)
   const [isEditingFlowName, setEditingFlowName] = useState(null)
@@ -293,11 +295,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
           chatflow
         })
       }
-      if (user?.role !== 'ADMIN' && chatflow?.userId === user?.id && !isAdminPage) {
+      if (
+        !isAdminPage &&
+        (user?.role === 'MASTER_ADMIN' ||
+          chatflow?.userId === user?.id ||
+          (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname))
+      ) {
         setIsAdminPage(true)
       }
     }
-  }, [chatflow, title, chatflowConfigurationDialogOpen, isAdminPage])
+  }, [chatflow, title, chatflowConfigurationDialogOpen, isAdminPage, user])
 
   return (
     <>

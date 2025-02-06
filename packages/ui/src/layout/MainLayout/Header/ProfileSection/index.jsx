@@ -32,11 +32,7 @@ import {
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
-// third-party
-import PerfectScrollbar from 'react-perfect-scrollbar'
-
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
 import AboutDialog from '@/ui-component/dialog/AboutDialog'
 import Transitions from '@/ui-component/extended/Transitions'
 
@@ -155,8 +151,6 @@ const ProfileSection = ({ username, handleLogout }) => {
   const user = useSelector((state) => state.user)
   const isUser = user?.role === 'USER'
   const theme = useTheme()
-
-  const customization = useSelector((state) => state.customization)
 
   const [open, setOpen] = useState(false)
   const [aboutDialogOpen, setAboutDialogOpen] = useState(false)

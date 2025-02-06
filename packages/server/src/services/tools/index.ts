@@ -88,7 +88,7 @@ const getToolById = async (req: any): Promise<any> => {
       throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
     }
     let dbResponse
-    if (foundUser.role !== UserRole.ADMIN) {
+    if (foundUser.role !== UserRole.MASTER_ADMIN) {
       dbResponse = await appServer.AppDataSource.getRepository(Tool).findOneBy({
         id: toolId,
         userId: user.id

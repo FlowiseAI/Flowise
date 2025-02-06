@@ -82,7 +82,7 @@ const getVariableById = async (req: any) => {
       throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
     }
     let dbResponse
-    if (foundUser.role !== UserRole.ADMIN) {
+    if (foundUser.role !== UserRole.MASTER_ADMIN) {
       dbResponse = await appServer.AppDataSource.getRepository(Variable).findOneBy({
         id: variableId,
         userId: user.id

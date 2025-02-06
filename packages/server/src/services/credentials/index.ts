@@ -111,7 +111,7 @@ const getCredentialById = async (req: any): Promise<any> => {
       throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
     }
     let credential
-    if (foundUser.role !== UserRole.ADMIN) {
+    if (foundUser.role !== UserRole.MASTER_ADMIN) {
       credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
         id: credentialId,
         userId: user.id

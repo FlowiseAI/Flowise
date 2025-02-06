@@ -31,6 +31,7 @@ import RenderContent from '../chatflows/RenderContent'
 const Agentflows = () => {
   const [value, setValue] = useState(0)
   const user = useSelector((state) => state.user)
+  const isMasterAdmin = user?.role === 'MASTER_ADMIN'
   const isAdmin = user?.role === 'ADMIN'
   const isLogin = Boolean(user?.id)
   const navigate = useNavigate()
@@ -43,7 +44,8 @@ const Agentflows = () => {
 
   const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
   const getAllPublicAgentflows = useApi(chatflowsApi.getAllPublicAgentflows)
-  const getAllAgentflowsOfAdmin = useApi(chatflowsApi.getAllAgentflowsOfAdmin)
+  const getAllAgentflowsOfMasterAdmin = useApi(chatflowsApi.getAllAgentflowsOfAdmin)
+  const getAllAgentOfAdminGroup = useApi(chatflowsApi.getAllAgentOfAdminGroup)
 
   const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
 
@@ -80,7 +82,8 @@ const Agentflows = () => {
     if (isLogin) {
       getAllAgentflows.request()
       getAllPublicAgentflows.request()
-      if (isAdmin) getAllAgentflowsOfAdmin.request()
+      if (isMasterAdmin) getAllAgentflowsOfMasterAdmin.request()
+      if (isAdmin && user) getAllAgentOfAdminGroup.request(user.groupname)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLogin])
@@ -128,7 +131,7 @@ const Agentflows = () => {
                 <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
                   <Tab label='Đã publish' {...a11yProps(0)} />
                   <Tab label='Cá nhân' {...a11yProps(1)} />
-                  {isAdmin && <Tab label='Admin' {...a11yProps(2)} />}
+                  {(isMasterAdmin || isAdmin) && <Tab label='Admin' {...a11yProps(2)} />}
                 </Tabs>
               </Box>
             }
@@ -205,15 +208,15 @@ const Agentflows = () => {
           <CustomTabPanel value={value} index={2}>
             {isLogin ? (
               <RenderContent
-                data={getAllAgentflowsOfAdmin.data}
+                data={isAdmin ? getAllAgentOfAdminGroup.data : getAllAgentflowsOfMasterAdmin.data}
                 isLoading={isLoading}
                 filterFunction={filterFlows}
                 goToCanvas={goToCanvas}
                 images={images}
                 view={view}
                 setError={setError}
-                updateFlowsApi={getAllAgentflowsOfAdmin}
-                isAdmin
+                updateFlowsApi={isAdmin ? getAllAgentOfAdminGroup : getAllAgentflowsOfMasterAdmin}
+                isAdmin={isMasterAdmin || isAdmin}
               />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>

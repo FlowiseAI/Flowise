@@ -31,6 +31,7 @@ import RenderContent from './RenderContent'
 const Chatflows = () => {
   const [value, setValue] = useState(0)
   const user = useSelector((state) => state.user)
+  const isMasterAdmin = user?.role === 'MASTER_ADMIN'
   const isAdmin = user?.role === 'ADMIN'
   const isLogin = Boolean(user?.id)
   const navigate = useNavigate()
@@ -44,6 +45,7 @@ const Chatflows = () => {
   const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
   const getAllPublicChatflows = useApi(chatflowsApi.getAllPublicChatflows)
   const getAllChatflowsOfAdmin = useApi(chatflowsApi.getAllChatflowsOfAdmin)
+  const getAllChatflowsOfAdminGroup = useApi(chatflowsApi.getAllChatflowsOfAdminGroup)
 
   const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
 
@@ -78,9 +80,10 @@ const Chatflows = () => {
     if (isLogin) {
       getAllChatflowsApi.request()
       getAllPublicChatflows.request()
-      if (isAdmin) getAllChatflowsOfAdmin.request()
+      if (isMasterAdmin) getAllChatflowsOfAdmin.request()
+      if (isAdmin && user) getAllChatflowsOfAdminGroup.request(user.groupname)
     }
-  }, [isLogin])
+  }, [isLogin, user])
 
   useEffect(() => {
     setLoading(getAllPublicChatflows.loading)
@@ -118,7 +121,7 @@ const Chatflows = () => {
                 <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
                   <Tab label='Đã publish' {...a11yProps(0)} />
                   <Tab label='Cá nhân' {...a11yProps(1)} />
-                  {isAdmin && <Tab label='Admin' {...a11yProps(2)} />}
+                  {(isMasterAdmin || isAdmin) && <Tab label='Admin' {...a11yProps(2)} />}
                 </Tabs>
               </Box>
             }
@@ -195,15 +198,15 @@ const Chatflows = () => {
           <CustomTabPanel value={value} index={2}>
             {isLogin ? (
               <RenderContent
-                data={getAllChatflowsOfAdmin.data}
+                data={isAdmin ? getAllChatflowsOfAdminGroup.data : getAllChatflowsOfAdmin.data}
                 isLoading={isLoading}
                 filterFunction={filterFlows}
                 goToCanvas={goToCanvas}
                 images={images}
                 view={view}
                 setError={setError}
-                updateFlowsApi={getAllChatflowsOfAdmin}
-                isAdmin
+                updateFlowsApi={isAdmin ? getAllChatflowsOfAdminGroup : getAllChatflowsOfAdmin}
+                isAdmin={isMasterAdmin || isAdmin}
               />
             ) : (
               <div>Đăng nhập để xem danh sách Chatflows</div>
