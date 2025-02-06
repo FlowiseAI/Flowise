@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux'
 import { loginAction } from '@/store/actions'
 import useApi from '@/hooks/useApi'
 import userApi from '@/api/user'
+import AdminRoutes from './AdminRoutes'
 
 // ==============================|| ROUTING RENDER ||============================== //
 
@@ -36,5 +37,5 @@ export default function ThemeRoutes() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataLogin])
-  return useRoutes([MainRoutes, CanvasRoutes, ChatbotRoutes])
+  return useRoutes([MainRoutes, CanvasRoutes, ChatbotRoutes, AdminRoutes])
 }

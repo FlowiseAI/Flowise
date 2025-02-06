@@ -17,7 +17,6 @@ import { IconMenu2 } from '@tabler/icons-react'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_DARKMODE, logoutAction } from '@/store/actions'
 import LoginDialog from '@/ui-component/dialog/LoginDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import useApi from '@/hooks/useApi'
 
 // api
 import userApi from '@/api/user'
@@ -34,6 +33,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
   const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
   const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
   const logout = (...args) => dispatch(logoutAction(...args))
+  const [isLoading, setIsLoading] = useState(false)
 
   const user = useSelector((state) => state.user)
   const isLogin = user?.id ? true : false
@@ -43,8 +43,6 @@ const Header = ({ handleLeftDrawerToggle }) => {
     title: 'Login',
     confirmButtonName: 'Login'
   })
-
-  const loginApi = useApi(userApi.loginUser)
 
   const theme = useTheme()
   const navigate = useNavigate()
@@ -65,13 +63,33 @@ const Header = ({ handleLeftDrawerToggle }) => {
   }
 
   const onLoginClick = async (username, password) => {
-    const resData = await loginApi.request({ username, password })
-    if (loginApi.error) {
+    setIsLoading(true)
+    try {
+      let resData = await userApi.loginUser({ username, password })
+      resData = resData.data
+      if (resData) {
+        localStorage.setItem('dataLogin', JSON.stringify(resData))
+        // login(resData?.user)
+        setLoginDialogOpen(false)
+        enqueueSnackbar({
+          message: 'Đăng nhập thành công.',
+          options: {
+            variant: 'success',
+            action: (key) => (
+              <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                <IconX />
+              </Button>
+            )
+          }
+        })
+        navigate(0)
+      }
+    } catch (error) {
       localStorage.removeItem('dataLogin')
       logout({})
-      if (loginApi.error.response.data.message) {
+      if (error.response.data.message) {
         return enqueueSnackbar({
-          message: loginApi.error.response.data.message,
+          message: error.response.data.message,
           options: {
             variant: 'error',
             action: (key) => (
@@ -93,24 +111,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
           )
         }
       })
-    }
-
-    if (resData) {
-      localStorage.setItem('dataLogin', JSON.stringify(resData))
-      // login(resData?.user)
-      setLoginDialogOpen(false)
-      enqueueSnackbar({
-        message: 'Đăng nhập thành công.',
-        options: {
-          variant: 'success',
-          action: (key) => (
-            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-              <IconX />
-            </Button>
-          )
-        }
-      })
-      navigate(0)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -188,7 +190,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             dialogProps={loginDialogProps}
             onConfirm={onLoginClick}
             onClose={() => setLoginDialogOpen(false)}
-            disableBtn={loginApi.loading || undefined}
+            disableBtn={isLoading || undefined}
           />
           <ConfirmDialog />
         </>

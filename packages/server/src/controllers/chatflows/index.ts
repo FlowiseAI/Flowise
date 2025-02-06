@@ -59,6 +59,15 @@ const getControlChatflowsOfAdmin = async (req: Request, res: Response, next: Nex
   }
 }
 
+const getControlChatflowsOfAdminGroup = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const apiResponse = await chatflowsService.getControlChatflowsOfAdminGroup(req)
+    return res.json(apiResponse)
+  } catch (error) {
+    next(error)
+  }
+}
+
 const getAllPublicChatflows = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const apiResponse = await chatflowsService.getAllPublicChatflows(req)
@@ -120,18 +129,34 @@ const saveChatflow = async (req: any, res: Response, next: NextFunction) => {
     if (!body) {
       throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.saveChatflow - body not provided!`)
     }
+
     const newChatFlow = new ChatFlow()
     Object.assign(newChatFlow, body)
-    const apiResponse = await chatflowsService.saveChatflow({ ...newChatFlow, userId: foundUser.id })
+    const apiResponse = await chatflowsService.saveChatflow({ ...newChatFlow, userId: foundUser.id, groupname: foundUser.groupname })
     return res.json(apiResponse)
   } catch (error) {
     next(error)
   }
 }
 
-const importChatflows = async (req: Request, res: Response, next: NextFunction) => {
+const importChatflows = async (req: any, res: Response, next: NextFunction) => {
   try {
-    const chatflows: Partial<ChatFlow>[] = req.body.Chatflows
+    const { body, user } = req
+    if (!user.id) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    const appServer = getRunningExpressApp()
+    const foundUser = await appServer.AppDataSource.getRepository(User).findOneBy({ id: user.id })
+    if (!foundUser) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
+    }
+    if (!body) {
+      throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.saveChatflow - body not provided!`)
+    }
+
+    let chatflows: Partial<ChatFlow>[] = req.body.Chatflows
+    chatflows = chatflows.map((flow) => ({ ...flow, groupname: foundUser?.groupname }))
+
     const apiResponse = await chatflowsService.importChatflows(chatflows)
     return res.json(apiResponse)
   } catch (error) {
@@ -203,5 +228,6 @@ export default {
   updateChatflow,
   getSinglePublicChatflow,
   getSinglePublicChatbotConfig,
-  getControlChatflowsOfAdmin
+  getControlChatflowsOfAdmin,
+  getControlChatflowsOfAdminGroup
 }

@@ -310,6 +310,7 @@ export interface IUser {
   username?: string
   email?: string
   role?: UserRole
+  groupname?: string
   password?: string
   createdDate?: Date
   updatedDate?: Date

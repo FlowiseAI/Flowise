@@ -12,6 +12,10 @@ const getAllChatflowsOfAdmin = () => client.get('/chatflows/admin/all?type=CHATF
 
 const getAllAgentflowsOfAdmin = () => client.get('/chatflows/admin/all?type=MULTIAGENT')
 
+const getAllChatflowsOfAdminGroup = (groupname) => client.get(`/chatflows/admin/group?type=CHATFLOW&groupname=${groupname}`)
+
+const getAllAgentOfAdminGroup = (groupname) => client.get(`/chatflows/admin/group?type=MULTIAGENT&groupname=${groupname}`)
+
 const getSpecificChatflow = (id) => client.get(`/chatflows/${id}`)
 
 const getSpecificChatflowFromPublicEndpoint = (id) => client.get(`/public-chatflows/${id}`)
@@ -42,5 +46,7 @@ export default {
   getAllowChatflowUploads,
   getAllPublicChatflows,
   getAllChatflowsOfAdmin,
-  getAllAgentflowsOfAdmin
+  getAllAgentflowsOfAdmin,
+  getAllChatflowsOfAdminGroup,
+  getAllAgentOfAdminGroup
 }

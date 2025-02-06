@@ -27,15 +27,12 @@ import {
   Paper,
   Popper,
   Stack,
+  styled,
   Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
-// third-party
-import PerfectScrollbar from 'react-perfect-scrollbar'
-
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
 import AboutDialog from '@/ui-component/dialog/AboutDialog'
 import Transitions from '@/ui-component/extended/Transitions'
 
@@ -51,12 +48,13 @@ import exportImportApi from '@/api/exportimport'
 import useApi from '@/hooks/useApi'
 import { getErrorMessage } from '@/utils/errorHandler'
 import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { IconUsers } from '@tabler/icons-react'
 
 const dataToExport = ['Chatflows', 'Agentflows', 'Tools', 'Variables', 'Assistants']
 
 const ExportDialog = ({ show, onCancel, onExport }) => {
   const portalElement = document.getElementById('portal')
-
   const [selectedData, setSelectedData] = useState(['Chatflows', 'Agentflows', 'Tools', 'Variables', 'Assistants'])
   const [isExporting, setIsExporting] = useState(false)
 
@@ -150,9 +148,9 @@ ExportDialog.propTypes = {
 // ==============================|| PROFILE MENU ||============================== //
 
 const ProfileSection = ({ username, handleLogout }) => {
+  const user = useSelector((state) => state.user)
+  const isUser = user?.role === 'USER'
   const theme = useTheme()
-
-  const customization = useSelector((state) => state.customization)
 
   const [open, setOpen] = useState(false)
   const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
@@ -248,6 +246,17 @@ const ProfileSection = ({ username, handleLogout }) => {
     exportAllApi.request(body)
   }
 
+  const renderTextBio = () => {
+    switch (user.role) {
+      case 'MASTER_ADMIN':
+        return 'Bạn là master-admin'
+      case 'ADMIN':
+        return `Bạn là admin nhóm ${user.groupname}`
+      default:
+        return `Bạn là user nhóm ${user.groupname}`
+    }
+  }
+
   useEffect(() => {
     if (importAllApi.data) {
       importAllSuccess()
@@ -309,6 +318,15 @@ const ProfileSection = ({ username, handleLogout }) => {
     prevOpen.current = open
   }, [open])
 
+  const StyledListItem = styled(ListItemButton)(({ theme }) => ({
+    borderRadius: theme.shape.borderRadius,
+    transition: 'all 0.3s',
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+      transform: 'translateY(-2px)'
+    }
+  }))
+
   return (
     <>
       <ButtonBase ref={anchorRef} sx={{ borderRadius: '12px', overflow: 'hidden' }}>
@@ -351,70 +369,50 @@ const ProfileSection = ({ username, handleLogout }) => {
       >
         {({ TransitionProps }) => (
           <Transitions in={open} {...TransitionProps}>
-            <Paper>
+            <Paper elevation={8} sx={{ borderRadius: 3, overflow: 'hidden', minWidth: 250 }}>
               <ClickAwayListener onClickAway={handleClose}>
-                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
+                <Box sx={{ p: 2 }}>
                   {username && (
-                    <Box sx={{ p: 2 }}>
-                      <Typography component='span' variant='h4'>
-                        user: {username}
-                      </Typography>
-                    </Box>
+                    <Typography variant='h5' fontWeight={600} gutterBottom>
+                      Tên: {username}
+                    </Typography>
                   )}
-                  <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 250px)', overflowX: 'hidden' }}>
-                    <Box sx={{ p: 2 }}>
-                      {username && <Divider />}
-                      <List
-                        component='nav'
-                        sx={{
-                          width: '100%',
-                          maxWidth: 250,
-                          minWidth: 200,
-                          backgroundColor: theme.palette.background.paper,
-                          borderRadius: '10px',
-                          [theme.breakpoints.down('md')]: {
-                            minWidth: '100%'
-                          },
-                          '& .MuiListItemButton-root': {
-                            mt: 0.5
-                          }
-                        }}
-                      >
-                        <ListItemButton
-                          sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          onClick={() => {
-                            setExportDialogOpen(true)
-                          }}
-                        >
-                          <ListItemIcon>
-                            <IconFileExport stroke={1.5} size='1.3rem' />
-                          </ListItemIcon>
-                          <ListItemText primary={<Typography variant='body2'>Export</Typography>} />
-                        </ListItemButton>
-                        <ListItemButton
-                          sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          onClick={() => {
-                            importAll()
-                          }}
-                        >
-                          <ListItemIcon>
-                            <IconFileUpload stroke={1.5} size='1.3rem' />
-                          </ListItemIcon>
-                          <ListItemText primary={<Typography variant='body2'>Import</Typography>} />
-                        </ListItemButton>
-                        <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
-                        {username && (
-                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }} onClick={handleLogout}>
-                            <ListItemIcon>
-                              <IconLogout stroke={1.5} size='1.3rem' />
-                            </ListItemIcon>
-                            <ListItemText primary={<Typography variant='body2'>Logout</Typography>} />
-                          </ListItemButton>
-                        )}
-                      </List>
-                    </Box>
-                  </PerfectScrollbar>
-                </MainCard>
+                  <Typography variant='body2' color='text.secondary'>
+                    {renderTextBio()}
+                  </Typography>
+                  <Divider sx={{ my: 2 }} />
+                  <List>
+                    {!isUser && (
+                      <StyledListItem component={Link} to='/admin-account'>
+                        <ListItemIcon>
+                          <IconUsers size='1.3rem' />
+                        </ListItemIcon>
+                        <ListItemText primary='Admin account' />
+                      </StyledListItem>
+                    )}
+                    <StyledListItem onClick={() => setExportDialogOpen(true)}>
+                      <ListItemIcon>
+                        <IconFileExport size='1.3rem' />
+                      </ListItemIcon>
+                      <ListItemText primary='Export' />
+                    </StyledListItem>
+                    <StyledListItem onClick={importAll}>
+                      <ListItemIcon>
+                        <IconFileUpload size='1.3rem' />
+                      </ListItemIcon>
+                      <ListItemText primary='Import' />
+                    </StyledListItem>
+                    <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
+                    {username && (
+                      <StyledListItem onClick={handleLogout}>
+                        <ListItemIcon>
+                          <IconLogout size='1.3rem' />
+                        </ListItemIcon>
+                        <ListItemText primary='Logout' />
+                      </StyledListItem>
+                    )}
+                  </List>
+                </Box>
               </ClickAwayListener>
             </Paper>
           </Transitions>

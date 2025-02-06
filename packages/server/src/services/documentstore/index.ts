@@ -86,7 +86,7 @@ const getAllDocumentStores = async (req: any) => {
 
     let entities
 
-    if (foundUser.role === UserRole.ADMIN) {
+    if (foundUser.role === UserRole.MASTER_ADMIN) {
       entities = await appServer.AppDataSource.getRepository(DocumentStore).find()
     } else {
       entities = await appServer.AppDataSource.getRepository(DocumentStore).findBy({ userId: user.id })

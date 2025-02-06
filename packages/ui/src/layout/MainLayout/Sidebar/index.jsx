@@ -12,14 +12,13 @@ import { BrowserView, MobileView } from 'react-device-detect'
 import MenuList from './MenuList'
 import LogoSection from '../LogoSection'
 import { drawerWidth, headerHeight } from '@/store/constant'
-import { useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
 const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
   const user = useSelector((state) => state.user)
-  const { pathname } = useLocation()
-  const isAdminPage = pathname === '/canvas' || pathname === '/agentcanvas' ? true : user?.role === 'ADMIN' ? true : false
+  const isMasterAdminPage = user?.role === 'MASTER_ADMIN' ? true : false
+  const isAdminPage = user?.role === 'ADMIN' ? true : false
 
   const theme = useTheme()
   const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
@@ -47,12 +46,12 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
           }}
         >
           <MenuList />
-          {isAdminPage && (
+          {(isAdminPage || isMasterAdminPage) && (
             <span
-              className='flex items-center justify-center text-[36px]'
+              className='flex items-center justify-center text-[26px]'
               style={{ color: theme.palette.primary.dark, fontWeight: 'bold', marginBottom: '26px' }}
             >
-              Admin
+              {isAdminPage ? `Admin ${user.groupname}` : 'Master Admin'}
             </span>
           )}
         </PerfectScrollbar>

@@ -97,7 +97,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                 User
               </StyledTableCell>
               <StyledTableCell style={{ width: '25%' }} key='2'>
-                Category
+                Group
               </StyledTableCell>
               <StyledTableCell style={{ width: '15%' }} key='3'>
                 Nodes
@@ -199,10 +199,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                         }}
                       >
                         &nbsp;
-                        {row.category &&
-                          row.category
-                            .split(';')
-                            .map((tag, index) => <Chip key={index} label={tag} style={{ marginRight: 5, marginBottom: 5 }} />)}
+                        {row?.groupname || row?.user?.groupname}
                       </div>
                     </StyledTableCell>
                     <StyledTableCell key='3'>
