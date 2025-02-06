@@ -924,14 +924,12 @@ async function handleToolSubmission(params: ToolSubmissionParams): Promise<ToolS
         chatId,
         options,
         input,
-        usedTools,
-        text,
-        isStreamingStarted
+        usedTools
     } = params
 
     let updatedText = params.text
     let updatedIsStreamingStarted = params.isStreamingStarted
-    
+
     const stream = openai.beta.threads.runs.submitToolOutputsStream(threadId, runThreadId, {
         tool_outputs: submitToolOutputs
     })
@@ -955,7 +953,7 @@ async function handleToolSubmission(params: ToolSubmissionParams): Promise<ToolS
             } else if (event.event === 'thread.run.requires_action') {
                 if (event.data.required_action?.submit_tool_outputs.tool_calls) {
                     const actions: ICommonObject[] = []
-                    
+
                     event.data.required_action.submit_tool_outputs.tool_calls.forEach((item) => {
                         const functionCall = item.function
                         let args = {}
@@ -976,7 +974,7 @@ async function handleToolSubmission(params: ToolSubmissionParams): Promise<ToolS
                         const tool = tools.find((tool: any) => tool.name === actions[i].tool)
                         if (!tool) continue
 
-                        const toolIds = await analyticHandlers.onToolStart(tool.name, actions[i].toolInput, parentIds )
+                        const toolIds = await analyticHandlers.onToolStart(tool.name, actions[i].toolInput, parentIds)
 
                         try {
                             const toolOutput = await tool.call(actions[i].toolInput, undefined, undefined, {
@@ -997,9 +995,7 @@ async function handleToolSubmission(params: ToolSubmissionParams): Promise<ToolS
                         } catch (e) {
                             await analyticHandlers.onToolEnd(toolIds, e)
                             console.error('Error executing tool', e)
-                            throw new Error(
-                                `Error executing tool. Tool: ${tool.name}. Thread ID: ${threadId}. Run ID: ${runThreadId}`
-                            )
+                            throw new Error(`Error executing tool. Tool: ${tool.name}. Thread ID: ${threadId}. Run ID: ${runThreadId}`)
                         }
                     }
 
@@ -1093,7 +1089,7 @@ const formatToOpenAIAssistantTool = (tool: any): OpenAI.Beta.FunctionTool => {
 
     // Add strict property if the tool is marked as strict
     if (tool instanceof DynamicStructuredTool && tool.isStrict()) {
-        (functionTool.function as any).strict = true
+        ;(functionTool.function as any).strict = true
     }
 
     return functionTool

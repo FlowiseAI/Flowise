@@ -8,7 +8,7 @@ import { availableDependencies, defaultAllowBuiltInDep, prepareSandboxVars } fro
 import { ICommonObject } from '../../../src/Interface'
 
 const removeNulls = (obj: Record<string, any>) => {
-    Object.keys(obj).forEach(key => {
+    Object.keys(obj).forEach((key) => {
         if (obj[key] === null) {
             delete obj[key]
         } else if (typeof obj[key] === 'object' && obj[key] !== null) {
@@ -225,11 +225,11 @@ export class DynamicStructuredTool<
             process: undefined
         }
         let processedArg = { ...arg }
-        
+
         if (this.removeNulls && typeof processedArg === 'object' && processedArg !== null) {
             processedArg = removeNulls(processedArg)
         }
-        
+
         if (typeof processedArg === 'object' && Object.keys(processedArg).length) {
             for (const item in processedArg) {
                 sandbox[`$${item}`] = processedArg[item]

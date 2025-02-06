@@ -5,7 +5,6 @@ import $RefParser from '@apidevtools/json-schema-ref-parser'
 import { z, ZodSchema, ZodTypeAny } from 'zod'
 import { defaultCode, DynamicStructuredTool, howToUseCode } from './core'
 import { DataSource } from 'typeorm'
-import { zodToJsonSchema } from 'zod-to-json-schema'
 
 class OpenAPIToolkit_Tools implements INode {
     label: string
@@ -114,7 +113,7 @@ class OpenAPIToolkit_Tools implements INode {
         const variables = await getVars(appDataSource, databaseEntities, nodeData)
 
         const flow = { chatflowId: options.chatflowid }
-        
+
         const tools = getTools(_data.paths, baseUrl, headers, variables, flow, toolReturnDirect, customCode, removeNulls)
         return tools
     }
@@ -153,7 +152,10 @@ const jsonSchemaToZodSchema = (schema: any, requiredList: string[], keyName: str
     } else if (schema.type === 'boolean') {
         return requiredList.includes(keyName)
             ? z.boolean({ required_error: `${keyName} required` }).describe(schema?.description ?? keyName)
-            : z.boolean().describe(schema?.description ?? keyName).optional()
+            : z
+                  .boolean()
+                  .describe(schema?.description ?? keyName)
+                  .optional()
     } else if (schema.type === 'number') {
         let numberSchema = z.number()
         if (typeof schema.minimum === 'number') {
@@ -173,7 +175,7 @@ const jsonSchemaToZodSchema = (schema: any, requiredList: string[], keyName: str
     } else if (schema.type === 'null') {
         return z.null()
     }
-    console.error(`jsonSchemaToZodSchema returns UNKNOWN! ${keyName}`, schema);
+    console.error(`jsonSchemaToZodSchema returns UNKNOWN! ${keyName}`, schema)
     // Fallback to unknown type if unrecognized
     return z.unknown()
 }
@@ -182,20 +184,19 @@ const extractParameters = (param: ICommonObject, paramZodObj: ICommonObject) => 
     const paramSchema = param.schema
     const paramName = param.name
     const paramDesc = paramSchema.description || paramSchema.title || param.description || param.name
-    
+
     if (paramSchema.enum) {
         const enumValues = paramSchema.enum as string[]
         // Combine title and description from schema
-        const enumDesc = [
-            paramSchema.title,
-            paramSchema.description,
-            `Valid values: ${enumValues.join(', ')}`
-        ].filter(Boolean).join('. ')
-        
+        const enumDesc = [paramSchema.title, paramSchema.description, `Valid values: ${enumValues.join(', ')}`].filter(Boolean).join('. ')
+
         if (param.required) {
             paramZodObj[paramName] = z.enum(enumValues as [string, ...string[]]).describe(enumDesc)
         } else {
-            paramZodObj[paramName] = z.enum(enumValues as [string, ...string[]]).describe(enumDesc).optional()
+            paramZodObj[paramName] = z
+                .enum(enumValues as [string, ...string[]])
+                .describe(enumDesc)
+                .optional()
         }
         return paramZodObj
     } else if (paramSchema.type === 'string') {
@@ -209,14 +210,14 @@ const extractParameters = (param: ICommonObject, paramZodObj: ICommonObject) => 
             paramZodObj[paramName] = z.number({ required_error: `${paramName} required` }).describe(paramDesc)
         } else {
             paramZodObj[paramName] = z.number().describe(paramDesc).optional()
-        }            
+        }
     } else if (paramSchema.type === 'boolean') {
         if (param.required) {
             paramZodObj[paramName] = z.boolean({ required_error: `${paramName} required` }).describe(paramDesc)
         } else {
             paramZodObj[paramName] = z.boolean().describe(paramDesc).optional()
         }
-    } else if ( paramSchema.anyOf || (paramSchema.type === 'anyOf')) {
+    } else if (paramSchema.anyOf || paramSchema.type === 'anyOf') {
         // Handle anyOf by using jsonSchemaToZodSchema
         const requiredList = param.required ? [paramName] : []
         paramZodObj[paramName] = jsonSchemaToZodSchema(paramSchema, requiredList, paramName)
