@@ -44,6 +44,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
 
   const user = useSelector((state) => state.user)
   const { pathname } = useLocation()
+  const isMasterAdmin = user?.role === 'MASTER_ADMIN'
   const [isAdminPage, setIsAdminPage] = useState(
     pathname === '/canvas' || pathname === '/agentcanvas'
       ? true
@@ -566,7 +567,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                     paddingBottom: 0,
                     alignContent: 'center'
                   },
-                  ...(!isAdminPage && {
+                  ...(!isMasterAdmin && {
                     '& .MuiSelect-icon': {
                       display: 'none'
                     },
@@ -575,7 +576,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                     }
                   })
                 }}
-                disabled={!isAdminPage}
+                disabled={!isMasterAdmin}
               >
                 {groupUser.map((group) => (
                   <MenuItem key={group.id} value={group.groupname}>
