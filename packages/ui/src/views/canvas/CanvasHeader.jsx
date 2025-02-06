@@ -50,7 +50,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
       ? true
       : user?.role === 'MASTER_ADMIN' || (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname)
   )
-  const isAdmin = user?.role === 'MASTER_ADMIN' || (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname)
+  const isAdmin =
+    user?.role === 'MASTER_ADMIN' ||
+    (user?.role === 'ADMIN' && (user?.groupname === chatflow?.user?.groupname || user?.groupname === chatflow?.groupname))
 
   const [isPublicChatflow, setChatflowIsPublic] = useState(chatflow?.isPublic ?? false)
   const [isEditingFlowName, setEditingFlowName] = useState(null)
@@ -341,7 +343,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
       if (
         user?.role === 'MASTER_ADMIN' ||
         (user?.role === 'USER' && chatflow?.userId === user?.id) ||
-        (user?.role === 'ADMIN' && user.groupname === chatflow?.user?.groupname) ||
+        (user?.role === 'ADMIN' && (user?.groupname === chatflow?.user?.groupname || user?.groupname === chatflow?.groupname)) ||
         pathname === '/canvas' ||
         pathname === '/agentcanvas'
       ) {

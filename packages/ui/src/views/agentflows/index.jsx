@@ -32,6 +32,7 @@ const Agentflows = () => {
   const [value, setValue] = useState(0)
   const user = useSelector((state) => state.user)
   const isMasterAdmin = user?.role === 'MASTER_ADMIN'
+  const isUser = user?.role === 'USER'
   const isAdmin = user?.role === 'ADMIN'
   const isLogin = Boolean(user?.id)
   const navigate = useNavigate()
@@ -79,14 +80,14 @@ const Agentflows = () => {
   }
 
   useEffect(() => {
-    if (isLogin) {
+    if (isLogin && user) {
       getAllAgentflows.request()
       getAllPublicAgentflows.request()
       if (isMasterAdmin) getAllAgentflowsOfMasterAdmin.request()
-      if (isAdmin && user) getAllAgentOfAdminGroup.request(user.groupname)
+      if (isAdmin || isUser) getAllAgentOfAdminGroup.request(user.groupname)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLogin])
+  }, [isLogin, user])
 
   useEffect(() => {
     setLoading(getAllPublicAgentflows.loading)
@@ -129,9 +130,9 @@ const Agentflows = () => {
             title={
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
-                  <Tab label='Đã publish' {...a11yProps(0)} />
-                  <Tab label='Cá nhân' {...a11yProps(1)} />
-                  {(isMasterAdmin || isAdmin) && <Tab label='Admin' {...a11yProps(2)} />}
+                  <Tab label={isMasterAdmin ? 'Master Admin' : user.groupname} {...a11yProps(0)} />
+                  <Tab label='Đã publish' {...a11yProps(1)} />
+                  <Tab label='Cá nhân' {...a11yProps(2)} />
                 </Tabs>
               </Box>
             }
@@ -176,6 +177,24 @@ const Agentflows = () => {
           <CustomTabPanel value={value} index={0}>
             {isLogin ? (
               <RenderContent
+                data={isAdmin || isUser ? getAllAgentOfAdminGroup.data : getAllAgentflowsOfMasterAdmin.data}
+                isLoading={isLoading}
+                filterFunction={filterFlows}
+                goToCanvas={goToCanvas}
+                images={images}
+                view={view}
+                setError={setError}
+                updateFlowsApi={isAdmin || isUser ? getAllAgentOfAdminGroup : getAllAgentflowsOfMasterAdmin}
+                isAdmin={isMasterAdmin || isAdmin}
+                isUser={isUser}
+              />
+            ) : (
+              <div>Đăng nhập để xem danh sách Agents</div>
+            )}
+          </CustomTabPanel>
+          <CustomTabPanel value={value} index={1}>
+            {isLogin ? (
+              <RenderContent
                 data={getAllPublicAgentflows.data}
                 isLoading={isLoading}
                 filterFunction={filterFlows}
@@ -189,7 +208,7 @@ const Agentflows = () => {
               <div>Đăng nhập để xem danh sách Agents</div>
             )}
           </CustomTabPanel>
-          <CustomTabPanel value={value} index={1}>
+          <CustomTabPanel value={value} index={2}>
             {isLogin ? (
               <RenderContent
                 data={getAllAgentflows.data}
@@ -200,23 +219,6 @@ const Agentflows = () => {
                 view={view}
                 setError={setError}
                 updateFlowsApi={getAllAgentflows}
-              />
-            ) : (
-              <div>Đăng nhập để xem danh sách Agents</div>
-            )}
-          </CustomTabPanel>
-          <CustomTabPanel value={value} index={2}>
-            {isLogin ? (
-              <RenderContent
-                data={isAdmin ? getAllAgentOfAdminGroup.data : getAllAgentflowsOfMasterAdmin.data}
-                isLoading={isLoading}
-                filterFunction={filterFlows}
-                goToCanvas={goToCanvas}
-                images={images}
-                view={view}
-                setError={setError}
-                updateFlowsApi={isAdmin ? getAllAgentOfAdminGroup : getAllAgentflowsOfMasterAdmin}
-                isAdmin={isMasterAdmin || isAdmin}
               />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>

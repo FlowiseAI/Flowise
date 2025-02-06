@@ -150,16 +150,14 @@ const getControlChatflowsOfAdminGroup = async (req: any): Promise<any[]> => {
       throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: documentStoreServices.getAllDocumentStores - User not found')
     }
 
-    if (foundUser.role !== UserRole.ADMIN) {
-      throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Error: documentStoreServices.getAllDocumentStores - Access denied')
-    }
-
     const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
       .createQueryBuilder('cf')
       .leftJoinAndSelect('cf.user', 'user')
       .where('cf.type = :type', { type })
       .andWhere('(user.groupname = :groupname OR cf.groupname = :groupname)', { groupname })
       .getMany()
+
+    console.log('🚀 ~ getControlChatflowsOfAdminGroup ~ dbResponse:', dbResponse)
 
     return dbResponse
   } catch (error) {

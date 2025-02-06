@@ -15,10 +15,11 @@ const RenderContent = ({
   view,
   goToCanvas,
   images,
-  setError
+  setError,
+  isUser
 }) => {
   const [data, setData] = useState([])
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter] = useState(isUser ? 'publish' : 'all')
 
   useEffect(() => {
     if (dataInput && filter === 'publish') {
@@ -91,6 +92,7 @@ RenderContent.propTypes = {
   filterFunction: PropTypes.func.isRequired,
   updateFlowsApi: PropTypes.object.isRequired,
   isAdmin: PropTypes.bool,
+  isUser: PropTypes.bool,
   view: PropTypes.string.isRequired,
   goToCanvas: PropTypes.func.isRequired,
   images: PropTypes.object.isRequired,

@@ -32,6 +32,7 @@ const Chatflows = () => {
   const [value, setValue] = useState(0)
   const user = useSelector((state) => state.user)
   const isMasterAdmin = user?.role === 'MASTER_ADMIN'
+  const isUser = user?.role === 'USER'
   const isAdmin = user?.role === 'ADMIN'
   const isLogin = Boolean(user?.id)
   const navigate = useNavigate()
@@ -77,11 +78,11 @@ const Chatflows = () => {
   }
 
   useEffect(() => {
-    if (isLogin) {
+    if (isLogin && user) {
       getAllChatflowsApi.request()
       getAllPublicChatflows.request()
       if (isMasterAdmin) getAllChatflowsOfAdmin.request()
-      if (isAdmin && user) getAllChatflowsOfAdminGroup.request(user.groupname)
+      if (isAdmin || isUser) getAllChatflowsOfAdminGroup.request(user.groupname)
     }
   }, [isLogin, user])
 
@@ -119,9 +120,9 @@ const Chatflows = () => {
             title={
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
-                  <Tab label='Đã publish' {...a11yProps(0)} />
-                  <Tab label='Cá nhân' {...a11yProps(1)} />
-                  {(isMasterAdmin || isAdmin) && <Tab label='Admin' {...a11yProps(2)} />}
+                  <Tab label={isMasterAdmin ? 'Master Admin' : user.groupname} {...a11yProps(0)} />
+                  <Tab label='Đã publish' {...a11yProps(1)} />
+                  <Tab label='Cá nhân' {...a11yProps(2)} />
                 </Tabs>
               </Box>
             }
@@ -166,6 +167,24 @@ const Chatflows = () => {
           <CustomTabPanel value={value} index={0}>
             {isLogin ? (
               <RenderContent
+                data={isAdmin || isUser ? getAllChatflowsOfAdminGroup.data : getAllChatflowsOfAdmin.data}
+                isLoading={isLoading}
+                filterFunction={filterFlows}
+                goToCanvas={goToCanvas}
+                images={images}
+                view={view}
+                setError={setError}
+                updateFlowsApi={isAdmin || isUser ? getAllChatflowsOfAdminGroup : getAllChatflowsOfAdmin}
+                isAdmin={isMasterAdmin || isAdmin}
+                isUser={isUser}
+              />
+            ) : (
+              <div>Đăng nhập để xem danh sách Chatflows</div>
+            )}
+          </CustomTabPanel>
+          <CustomTabPanel value={value} index={1}>
+            {isLogin ? (
+              <RenderContent
                 data={getAllPublicChatflows.data}
                 isLoading={isLoading}
                 filterFunction={filterFlows}
@@ -179,7 +198,7 @@ const Chatflows = () => {
               <div>Đăng nhập để xem danh sách Chatflows</div>
             )}
           </CustomTabPanel>
-          <CustomTabPanel value={value} index={1}>
+          <CustomTabPanel value={value} index={2}>
             {isLogin ? (
               <RenderContent
                 data={getAllChatflowsApi.data}
@@ -190,23 +209,6 @@ const Chatflows = () => {
                 view={view}
                 setError={setError}
                 updateFlowsApi={getAllChatflowsApi}
-              />
-            ) : (
-              <div>Đăng nhập để xem danh sách Chatflows</div>
-            )}
-          </CustomTabPanel>
-          <CustomTabPanel value={value} index={2}>
-            {isLogin ? (
-              <RenderContent
-                data={isAdmin ? getAllChatflowsOfAdminGroup.data : getAllChatflowsOfAdmin.data}
-                isLoading={isLoading}
-                filterFunction={filterFlows}
-                goToCanvas={goToCanvas}
-                images={images}
-                view={view}
-                setError={setError}
-                updateFlowsApi={isAdmin ? getAllChatflowsOfAdminGroup : getAllChatflowsOfAdmin}
-                isAdmin={isMasterAdmin || isAdmin}
               />
             ) : (
               <div>Đăng nhập để xem danh sách Chatflows</div>
