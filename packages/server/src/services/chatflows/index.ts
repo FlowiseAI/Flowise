@@ -157,8 +157,6 @@ const getControlChatflowsOfAdminGroup = async (req: any): Promise<any[]> => {
       .andWhere('(user.groupname = :groupname OR cf.groupname = :groupname)', { groupname })
       .getMany()
 
-    console.log('🚀 ~ getControlChatflowsOfAdminGroup ~ dbResponse:', dbResponse)
-
     return dbResponse
   } catch (error) {
     throw new InternalFlowiseError(

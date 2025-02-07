@@ -50,7 +50,7 @@ export class ChatFlow implements IChatFlow {
   @Column({ type: 'uuid', nullable: true })
   userId: string
 
-  @ManyToOne(() => User, (user) => user.chatFlows, { nullable: true })
+  @ManyToOne(() => User, (user) => user.chatFlows, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User
 

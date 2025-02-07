@@ -74,6 +74,7 @@ const Settings = ({ chatflow, isSettingsOpen, anchorEl, isAgentCanvas, onSetting
       user?.role === 'MASTER_ADMIN' ||
       (user?.role === 'USER' && chatflow?.userId === user?.id) ||
       (user?.role === 'ADMIN' && (user?.groupname === chatflow?.user?.groupname || user?.groupname === chatflow?.groupname)) ||
+      pathname === '/canvas' ||
       pathname === '/agentcanvas'
     ) {
       setIsAdminPage(true)
