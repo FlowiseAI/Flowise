@@ -100,8 +100,8 @@ const ItemCard = ({ data, images, onClick }) => {
                 User: {data.user.username}
               </Typography>
             )}
-            {(data?.user?.groupname || data?.groupname) && (
-              <Typography variant='body2'>Group: {data.user?.groupname || data.groupname}</Typography>
+            {(data?.groupname || data?.user?.groupname) && (
+              <Typography variant='body2'>Group: {data?.groupname || data?.user?.groupname}</Typography>
             )}
           </Box>
           {images && (

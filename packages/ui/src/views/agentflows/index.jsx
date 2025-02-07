@@ -187,6 +187,7 @@ const Agentflows = () => {
                 updateFlowsApi={isAdmin || isUser ? getAllAgentOfAdminGroup : getAllAgentflowsOfMasterAdmin}
                 isAdmin={isMasterAdmin || isAdmin}
                 isUser={isUser}
+                msgEmpty={`Người dùng chưa tạo agentflows nào trong nhóm ${user.groupname}, tạo mới agentflows`}
               />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>

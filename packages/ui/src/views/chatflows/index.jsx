@@ -177,6 +177,7 @@ const Chatflows = () => {
                 updateFlowsApi={isAdmin || isUser ? getAllChatflowsOfAdminGroup : getAllChatflowsOfAdmin}
                 isAdmin={isMasterAdmin || isAdmin}
                 isUser={isUser}
+                msgEmpty={`Người dùng chưa tạo chatflow nào trong nhóm ${user.groupname}, tạo mới chatflow`}
               />
             ) : (
               <div>Đăng nhập để xem danh sách Chatflows</div>

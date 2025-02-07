@@ -16,7 +16,8 @@ const RenderContent = ({
   goToCanvas,
   images,
   setError,
-  isUser
+  isUser,
+  msgEmpty
 }) => {
   const [data, setData] = useState([])
   const [filter, setFilter] = useState(isUser ? 'publish' : 'all')
@@ -79,7 +80,7 @@ const RenderContent = ({
           <Box sx={{ p: 2, height: 'auto' }}>
             <img style={{ objectFit: 'cover', height: '25vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />
           </Box>
-          <div>Người dùng chưa tạo chatflow nào, tạo mới chatflow</div>
+          <div>{msgEmpty || 'Người dùng chưa tạo chatflow nào, tạo mới chatflow'}</div>
         </Stack>
       )}
     </div>
@@ -96,7 +97,8 @@ RenderContent.propTypes = {
   view: PropTypes.string.isRequired,
   goToCanvas: PropTypes.func.isRequired,
   images: PropTypes.object.isRequired,
-  setError: PropTypes.func.isRequired
+  setError: PropTypes.func.isRequired,
+  msgEmpty: PropTypes.string
 }
 
 export default RenderContent
