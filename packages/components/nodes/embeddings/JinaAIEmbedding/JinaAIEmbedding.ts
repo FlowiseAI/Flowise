@@ -6,20 +6,16 @@ class ExtendedJinaEmbeddings extends JinaEmbeddings {
     private late_chunking: boolean
 
     constructor(fields: ConstructorParameters<typeof JinaEmbeddings>[0] & { late_chunking?: boolean }) {
-        const { late_chunking, ...restFields } = fields
+        const { late_chunking = false, ...restFields } = fields
         super(restFields)
-        this.late_chunking = late_chunking ?? false
+        this.late_chunking = late_chunking
     }
 
     public override async embedDocuments(texts: string[]): Promise<number[][]> {
-        // eslint-disable-next-line no-self-assign
-        this.late_chunking = this.late_chunking
         return super.embedDocuments(texts)
     }
 
     public override async embedQuery(text: string): Promise<number[]> {
-        // eslint-disable-next-line no-self-assign
-        this.late_chunking = this.late_chunking
         return super.embedQuery(text)
     }
 }
