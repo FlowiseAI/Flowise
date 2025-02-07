@@ -10,14 +10,6 @@ class ExtendedJinaEmbeddings extends JinaEmbeddings {
         super(restFields)
         this.late_chunking = late_chunking
     }
-
-    public override async embedDocuments(texts: string[]): Promise<number[][]> {
-        return super.embedDocuments(texts)
-    }
-
-    public override async embedQuery(text: string): Promise<number[]> {
-        return super.embedQuery(text)
-    }
 }
 
 class JinaAIEmbedding_Embeddings implements INode {
