@@ -1,6 +1,5 @@
-import { ChatOpenAI, OpenAIChatInput } from '@langchain/openai'
+import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
-import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -17,7 +16,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatNvdiaNIM'
+        this.label = 'Chat Nvdia NIM'
         this.name = 'chatNvdiaNIM'
         this.version = 1.0
         this.type = 'ChatNvdiaNIM'
@@ -134,7 +133,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const nvdiaNIMApiKey = getCredentialParam('nvdiaNIMApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { nvdiaNIMApiKey?: string } = {
+        const obj: ChatOpenAIFields & { nvdiaNIMApiKey?: string } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: nvdiaNIMApiKey,
@@ -154,14 +153,18 @@ class ChatNvdiaNIM_ChatModels implements INode {
             try {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
             } catch (exception) {
-                throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
+                throw new Error("Invalid JSON in the ChatNvidiaNIM's baseOptions: " + exception)
             }
         }
 
-        const model = new ChatOpenAI(obj, {
-            basePath,
-            baseOptions: parsedBaseOptions
-        })
+        if (basePath || parsedBaseOptions) {
+            obj.configuration = {
+                baseURL: basePath,
+                defaultHeaders: parsedBaseOptions
+            }
+        }
+
+        const model = new ChatOpenAI(obj)
         return model
     }
 }

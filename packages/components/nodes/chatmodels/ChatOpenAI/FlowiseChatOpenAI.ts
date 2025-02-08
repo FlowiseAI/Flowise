@@ -1,6 +1,4 @@
-import type { ClientOptions } from 'openai'
-import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput, LegacyOpenAIInput, AzureOpenAIInput } from '@langchain/openai'
-import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
+import { ChatOpenAI as LangchainChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { IMultiModalOption, IVisionChatModal } from '../../../src'
 
 export class ChatOpenAI extends LangchainChatOpenAI implements IVisionChatModal {
@@ -9,15 +7,8 @@ export class ChatOpenAI extends LangchainChatOpenAI implements IVisionChatModal 
     multiModalOption: IMultiModalOption
     id: string
 
-    constructor(
-        id: string,
-        fields?: Partial<OpenAIChatInput> &
-            Partial<AzureOpenAIInput> &
-            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput },
-        /** @deprecated */
-        configuration?: ClientOptions & LegacyOpenAIInput
-    ) {
-        super(fields, configuration)
+    constructor(id: string, fields?: ChatOpenAIFields) {
+        super(fields)
         this.id = id
         this.configuredModel = fields?.modelName ?? ''
         this.configuredMaxToken = fields?.maxTokens

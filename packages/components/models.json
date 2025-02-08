@@ -231,6 +231,14 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "o3-mini",
+                    "name": "o3-mini"
+                },
+                {
+                    "label": "o1",
+                    "name": "o1"
+                },
+                {
                     "label": "o1-preview",
                     "name": "o1-preview"
                 },
@@ -398,36 +406,24 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
-                    "label": "gemini-1.5-flash-latest",
-                    "name": "gemini-1.5-flash-latest"
+                    "label": "gemini-2.0-flash-001",
+                    "name": "gemini-2.0-flash-001"
                 },
                 {
-                    "label": "gemini-1.5-flash-001",
-                    "name": "gemini-1.5-flash-001"
+                    "label": "gemini-2.0-flash-lite-preview-02-05",
+                    "name": "gemini-2.0-flash-lite-preview-02-05"
                 },
                 {
-                    "label": "gemini-1.5-flash-002",
-                    "name": "gemini-1.5-flash-002"
+                    "label": "gemini-1.5-flash",
+                    "name": "gemini-1.5-flash"
                 },
                 {
                     "label": "gemini-1.5-flash-8b",
                     "name": "gemini-1.5-flash-8b"
                 },
                 {
-                    "label": "gemini-1.5-pro-latest",
-                    "name": "gemini-1.5-pro-latest"
-                },
-                {
-                    "label": "gemini-1.5-pro-001",
-                    "name": "gemini-1.5-pro-001"
-                },
-                {
-                    "label": "gemini-1.5-pro-002",
-                    "name": "gemini-1.5-pro-002"
-                },
-                {
-                    "label": "gemini-1.0-pro-latest (deprecated)",
-                    "name": "gemini-1.0-pro-latest"
+                    "label": "gemini-1.5-pro",
+                    "name": "gemini-1.5-pro"
                 }
             ]
         },
@@ -497,6 +493,10 @@
         {
             "name": "groqChat",
             "models": [
+                {
+                    "label": "deepseek-r1-distill-llama-70b",
+                    "name": "deepseek-r1-distill-llama-70b"
+                },
                 {
                     "label": "llama-3.3-70b-versatile",
                     "name": "llama-3.3-70b-versatile"
@@ -611,6 +611,10 @@
                 {
                     "label": "gpt-4o-2024-05-13",
                     "name": "gpt-4o-2024-05-13"
+                },
+                {
+                    "label": "o3-mini",
+                    "name": "o3-mini"
                 },
                 {
                     "label": "o1-preview (latest)",

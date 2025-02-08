@@ -20,7 +20,7 @@ class ExaSearch_Tools implements INode {
     constructor() {
         this.label = 'Exa Search'
         this.name = 'exaSearch'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'ExaSearch'
         this.icon = 'exa.svg'
         this.category = 'Tools'
@@ -58,8 +58,8 @@ class ExaSearch_Tools implements INode {
                         name: 'neural'
                     },
                     {
-                        label: 'magic',
-                        name: 'magic',
+                        label: 'auto',
+                        name: 'auto',
                         description: 'decides between keyword and neural'
                     }
                 ],
@@ -200,7 +200,7 @@ class ExaSearch_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const description = nodeData.inputs?.description as string
         const numResults = nodeData.inputs?.numResults as string
-        const type = nodeData.inputs?.type as string
+        const type = nodeData.inputs?.type as 'keyword' | 'neural' | 'auto' | undefined
         const useAutoprompt = nodeData.inputs?.useAutoprompt as boolean
         const category = nodeData.inputs?.category as string
         const includeDomains = nodeData.inputs?.includeDomains as string
@@ -219,7 +219,7 @@ class ExaSearch_Tools implements INode {
                 numResults: numResults ? parseFloat(numResults) : undefined,
                 type: type || undefined,
                 useAutoprompt: useAutoprompt || undefined,
-                category: category || undefined,
+                category: (category as any) || undefined,
                 includeDomains: includeDomains ? includeDomains.split(',') : undefined,
                 excludeDomains: excludeDomains ? excludeDomains.split(',') : undefined,
                 startCrawlDate: startCrawlDate || undefined,
