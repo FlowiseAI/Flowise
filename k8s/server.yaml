@@ -4,7 +4,7 @@ metadata:
   name: flowise
   namespace: xheal-prod
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: flowise
@@ -76,6 +76,9 @@ spec:
               value: "xheal-flowise.nif9dl.ng.0001.euc1.cache.amazonaws.com"
             - name: REDIS_PORT
               value: "6379"
+          volumeMounts:
+          - name: api-keys-config
+            mountPath: /usr/src
           resources:
             limits:
               cpu: 1000m
