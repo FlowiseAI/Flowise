@@ -104,6 +104,10 @@ spec:
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 20
+      volumes:
+      - name: api-keys-config
+        configMap:
+          name: api-keys-config
       terminationGracePeriodSeconds: 360
 
 ---
