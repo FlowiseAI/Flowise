@@ -78,7 +78,9 @@ spec:
               value: "6379"
           volumeMounts:
           - name: api-keys-config
-            mountPath: /usr/src
+            mountPath: /usr/src/packages/server/api.json
+            subPath: "api.json"
+            readOnly: false
           resources:
             limits:
               cpu: 1000m
