@@ -167,6 +167,20 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
     try {
       await updateChatflowApi.request(chatflow.id, updateBody)
       await updateFlowsApi.request()
+      setFlowDialogOpen(false)
+      enqueueSnackbar({
+        message: 'Đổi tên thành công.',
+        options: {
+          key: new Date().getTime() + Math.random(),
+          variant: 'success',
+          persist: true,
+          action: (key) => (
+            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+              <IconX />
+            </Button>
+          )
+        }
+      })
     } catch (error) {
       if (setError) setError(error)
       enqueueSnackbar({
@@ -359,6 +373,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         }}
         onCancel={() => setFlowDialogOpen(false)}
         onConfirm={saveFlowRename}
+        isLoadingRename={updateChatflowApi.loading}
       />
       <TagDialog
         isOpen={categoryDialogOpen}
