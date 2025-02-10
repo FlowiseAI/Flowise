@@ -71,7 +71,7 @@
         "@zilliz/milvus2-sdk-node": "^2.2.24",
         "apify-client": "^2.7.1",
         "assemblyai": "^4.2.2",
-        "axios": "1.6.2",
+        "axios": "1.7.9",
         "cheerio": "^1.0.0-rc.12",
         "chromadb": "^1.10.0",
         "cohere-ai": "^7.7.5",
@@ -129,7 +129,7 @@
         "typeorm": "^0.3.6",
         "weaviate-ts-client": "^1.1.0",
         "winston": "^3.9.0",
-        "ws": "^8.9.0",
+        "ws": "^8.18.0",
         "zod": "3.22.4",
         "zod-to-json-schema": "^3.21.4"
     },
