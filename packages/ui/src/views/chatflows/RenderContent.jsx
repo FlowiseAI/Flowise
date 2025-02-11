@@ -77,7 +77,7 @@ const RenderContent = ({
           isAgentCanvas={isAgentCanvas}
         />
       )}
-      {!isLoading && (!data || data.length === 0) && (
+      {data?.length === 0 && (
         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
           <Box sx={{ p: 2, height: 'auto' }}>
             <img style={{ objectFit: 'cover', height: '25vh', width: 'auto' }} src={WorkflowEmptySVG} alt='WorkflowEmptySVG' />

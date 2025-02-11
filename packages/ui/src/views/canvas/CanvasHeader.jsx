@@ -395,7 +395,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                     }
                   }}
                   color='inherit'
-                  onClick={() => (window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true }))}
+                  onClick={() => (isAgentCanvas ? navigate('/agentflows') : navigate('/', { replace: true }))}
                 >
                   <IconChevronLeft stroke={1.5} size='1.3rem' />
                 </Avatar>

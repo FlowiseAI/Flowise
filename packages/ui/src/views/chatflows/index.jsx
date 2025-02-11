@@ -38,7 +38,7 @@ const Chatflows = () => {
   const navigate = useNavigate()
   const theme = useTheme()
 
-  const [isLoading, setLoading] = useState(true)
+  // const [isLoading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [images, setImages] = useState({})
   const [search, setSearch] = useState('')
@@ -86,9 +86,9 @@ const Chatflows = () => {
     }
   }, [isLogin, user])
 
-  useEffect(() => {
-    setLoading(getAllPublicChatflows.loading)
-  }, [getAllPublicChatflows.loading])
+  // useEffect(() => {
+  //   setLoading(getAllPublicChatflows.loading)
+  // }, [getAllPublicChatflows.loading])
 
   useEffect(() => {
     if (getAllChatflowsApi.data) {
@@ -168,13 +168,22 @@ const Chatflows = () => {
             {isLogin ? (
               <RenderContent
                 data={isAdmin || isUser ? getAllChatflowsOfAdminGroup.data : getAllChatflowsOfAdmin.data}
-                isLoading={isLoading}
+                // isLoading={isLoading}
+                isLoading={getAllChatflowsOfAdminGroup.loading || getAllChatflowsOfAdmin.loading}
                 filterFunction={filterFlows}
                 goToCanvas={goToCanvas}
                 images={images}
                 view={view}
                 setError={setError}
-                updateFlowsApi={isAdmin || isUser ? getAllChatflowsOfAdminGroup : getAllChatflowsOfAdmin}
+                updateFlowsApi={
+                  isAdmin || isUser
+                    ? {
+                        request: async () => {
+                          return await getAllChatflowsOfAdminGroup.request(user.groupname)
+                        }
+                      }
+                    : getAllChatflowsOfAdmin
+                }
                 isAdmin={isMasterAdmin || isAdmin}
                 isUser={isUser}
                 msgEmpty={`Người dùng chưa tạo chatflow nào trong nhóm ${user.groupname}, tạo mới chatflow`}
@@ -187,7 +196,8 @@ const Chatflows = () => {
             {isLogin ? (
               <RenderContent
                 data={getAllPublicChatflows.data}
-                isLoading={isLoading}
+                // isLoading={isLoading}
+                isLoading={getAllPublicChatflows.loading}
                 filterFunction={filterFlows}
                 goToCanvas={goToCanvas}
                 images={images}
@@ -203,7 +213,8 @@ const Chatflows = () => {
             {isLogin ? (
               <RenderContent
                 data={getAllChatflowsApi.data}
-                isLoading={isLoading}
+                // isLoading={isLoading}
+                isLoading={getAllChatflowsApi.loading}
                 filterFunction={filterFlows}
                 goToCanvas={goToCanvas}
                 images={images}
