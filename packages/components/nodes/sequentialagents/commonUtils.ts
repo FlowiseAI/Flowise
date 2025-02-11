@@ -209,10 +209,13 @@ export const convertStructuredSchemaToZod = (schema: string | object): ICommonOb
 }
 
 export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) => {
-  const isAI = (message?: BaseMessage) => message && ['AIMessageChunk', 'AIMessage'].includes(message.constructor.name)
+  const isAI = (message?: BaseMessage) => message && ['AIMessageChunk'].includes(message.constructor.name)
   const isHuman = (message?: BaseMessage) => message && ['HumanMessage', 'HumanMessageChunk'].includes(message.constructor.name)
 
   const messages: BaseMessage[] = []
+
+  // console.log('state.messages')
+  // fs.writeFileSync('state.messages.json', JSON.stringify(state.messages, null, 2))
 
   for (const message of state.messages as unknown as BaseMessage[]) {
     // Sometimes Anthropic can return a message with content types of array, ignore that EXECEPT when tool calls are present
