@@ -160,17 +160,53 @@ class RetrieveCalendarEvent_Tools implements INode {
         }
         this.inputs = [
             {
-                label: 'Calendar ID',
+                label: 'Select Calendar',
                 name: 'calendarId',
-                type: 'string',
+                type: 'asyncOptions',
                 optional: true,
-                placeholder: 'primary'
+                placeholder: 'primary',
+                description: 'Choose which calendar to retrieve events from',
+                loadMethod: 'listCalendars',
+                loadOptionsOnOpen: true
             }
         ]
     }
 
+    //@ts-ignore
+    loadMethods = {
+        async listCalendars(nodeData: INodeData): Promise<{ label: string; name: string }[]> {
+            try {
+                const credentialData = nodeData.credential ? JSON.parse(nodeData.credential) : null
+                if (!credentialData?.googleAccessToken) {
+                    throw new Error('Google access token not found in credentials')
+                }
+
+                const auth = new google.auth.OAuth2()
+                auth.setCredentials({ access_token: credentialData.googleAccessToken })
+                const calendar = google.calendar({ version: 'v3', auth })
+
+                const response = await calendar.calendarList.list()
+                const calendars = response.data.items || []
+
+                return calendars.map((cal) => ({
+                    label: cal.summary || 'Unnamed Calendar',
+                    name: cal.id || ''
+                }))
+            } catch (error) {
+                console.error('Error fetching calendars:', error)
+                return [{ label: 'Primary Calendar', name: 'primary' }]
+            }
+        }
+    }
+
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = nodeData.credential ? JSON.parse(nodeData.credential) : null
+        let credentialData = nodeData.credential ? JSON.parse(nodeData.credential) : null
+
+        // Check for credential override
+        if (nodeData.inputs?.overrideCredential && nodeData.inputs?.alternativeCredential) {
+            credentialData = JSON.parse(nodeData.inputs.alternativeCredential as string)
+        }
+
         if (!credentialData) {
             throw new Error('Failed to retrieve credentials')
         }
