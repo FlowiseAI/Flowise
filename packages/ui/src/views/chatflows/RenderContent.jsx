@@ -20,7 +20,7 @@ const RenderContent = ({
   msgEmpty,
   isAgentCanvas
 }) => {
-  const [data, setData] = useState([])
+  const [data, setData] = useState(null)
   const [filter, setFilter] = useState(isUser ? 'publish' : 'all')
 
   useEffect(() => {
@@ -60,13 +60,16 @@ const RenderContent = ({
             <Skeleton variant='rounded' height={160} />
           </Box>
         ) : (
-          <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-            {data?.filter(filterFunction).map((item, index) => (
-              <ItemCard key={index} onClick={() => goToCanvas(item)} data={item} images={images[item.id]} />
-            ))}
-          </Box>
+          data?.length > 0 && (
+            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+              {data?.filter(filterFunction).map((item, index) => (
+                <ItemCard key={index} onClick={() => goToCanvas(item)} data={item} images={images[item.id]} />
+              ))}
+            </Box>
+          )
         )
       ) : (
+        // data?.length > 0 && (
         <FlowListTable
           data={data}
           images={images}
@@ -76,6 +79,7 @@ const RenderContent = ({
           setError={setError}
           isAgentCanvas={isAgentCanvas}
         />
+        // )
       )}
       {data?.length === 0 && (
         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>

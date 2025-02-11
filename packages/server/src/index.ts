@@ -26,6 +26,10 @@ import { IMetricsProvider } from './Interface.Metrics'
 import { Prometheus } from './metrics/Prometheus'
 import { OpenTelemetry } from './metrics/OpenTelemetry'
 import 'global-agent/bootstrap'
+import { getRunningExpressApp } from './utils/getRunningExpressApp'
+import { User } from './database/entities/User'
+import { StatusCodes } from 'http-status-codes'
+import { InternalFlowiseError } from './errors/internalFlowiseError'
 
 declare global {
   namespace Express {
@@ -197,6 +201,15 @@ export class App {
             } else {
               const valueDecoded = await validateAPIKey(req)
               if (!valueDecoded) {
+                return res.status(401).json({ error: 'Unauthorized Access' })
+              }
+              const appServer = getRunningExpressApp()
+              const user = await appServer.AppDataSource.getRepository(User).findOne({
+                where: {
+                  id: valueDecoded.id
+                }
+              })
+              if (!user) {
                 return res.status(401).json({ error: 'Unauthorized Access' })
               }
               req.user = valueDecoded
