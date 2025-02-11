@@ -188,6 +188,7 @@ const Agentflows = () => {
                 isAdmin={isMasterAdmin || isAdmin}
                 isUser={isUser}
                 msgEmpty={`Người dùng chưa tạo agentflows nào trong nhóm ${user.groupname}, tạo mới agentflows`}
+                isAgentCanvas
               />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>
@@ -204,6 +205,7 @@ const Agentflows = () => {
                 view={view}
                 setError={setError}
                 updateFlowsApi={getAllPublicAgentflows}
+                isAgentCanvas
               />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>
@@ -220,6 +222,7 @@ const Agentflows = () => {
                 view={view}
                 setError={setError}
                 updateFlowsApi={getAllAgentflows}
+                isAgentCanvas
               />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>
