@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 
 import { styled, alpha } from '@mui/material/styles'
@@ -77,7 +77,14 @@ const StyledMenu = styled((props) => (
 export default function FlowListMenu({ chatflow, isAgentCanvas, setError, updateFlowsApi }) {
   const { confirm } = useConfirm()
   const dispatch = useDispatch()
+  const user = useSelector((state) => state.user)
   const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
+
+  const isAdminGroup = user?.role === 'ADMIN'
+  const isMasterAdmin = user?.role === 'MASTER_ADMIN'
+  const isUser = user?.role === 'USER'
+
+  const isOwner = isMasterAdmin || chatflow.userId === user?.id || (isAdminGroup && chatflow?.groupname === user?.groupname)
 
   useNotifier()
   const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -321,10 +328,12 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         open={open}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleFlowRename} disableRipple>
-          <EditIcon />
-          Rename
-        </MenuItem>
+        {isOwner && (
+          <MenuItem onClick={handleFlowRename} disableRipple>
+            <EditIcon />
+            Rename
+          </MenuItem>
+        )}
         <MenuItem onClick={handleDuplicate} disableRipple>
           <FileCopyIcon />
           Duplicate
@@ -337,32 +346,38 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
           <ExportTemplateOutlinedIcon />
           Save As Template
         </MenuItem>
-        <Divider sx={{ my: 0.5 }} />
-        <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
-          <PictureInPictureAltIcon />
-          Starter Prompts
-        </MenuItem>
-        <MenuItem onClick={handleFlowChatFeedback} disableRipple>
-          <ThumbsUpDownOutlinedIcon />
-          Chat Feedback
-        </MenuItem>
-        <MenuItem onClick={handleAllowedDomains} disableRipple>
-          <VpnLockOutlinedIcon />
-          Allowed Domains
-        </MenuItem>
-        <MenuItem onClick={handleSpeechToText} disableRipple>
-          <MicNoneOutlinedIcon />
-          Speech To Text
-        </MenuItem>
-        <MenuItem onClick={handleFlowCategory} disableRipple>
-          <FileCategoryIcon />
-          Update Category
-        </MenuItem>
-        <Divider sx={{ my: 0.5 }} />
-        <MenuItem onClick={handleDelete} disableRipple>
-          <FileDeleteIcon />
-          Delete
-        </MenuItem>
+        {isOwner && (
+          <>
+            <Divider sx={{ my: 0.5 }} />
+            <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
+              <PictureInPictureAltIcon />
+              Starter Prompts
+            </MenuItem>
+            <MenuItem onClick={handleFlowChatFeedback} disableRipple>
+              <ThumbsUpDownOutlinedIcon />
+              Chat Feedback
+            </MenuItem>
+            <MenuItem onClick={handleAllowedDomains} disableRipple>
+              <VpnLockOutlinedIcon />
+              Allowed Domains
+            </MenuItem>
+            <MenuItem onClick={handleSpeechToText} disableRipple>
+              <MicNoneOutlinedIcon />
+              Speech To Text
+            </MenuItem>
+            <MenuItem onClick={handleFlowCategory} disableRipple>
+              <FileCategoryIcon />
+              Update Category
+            </MenuItem>
+            <Divider sx={{ my: 0.5 }} />
+          </>
+        )}
+        {isOwner && (
+          <MenuItem onClick={handleDelete} disableRipple>
+            <FileDeleteIcon />
+            Delete
+          </MenuItem>
+        )}
       </StyledMenu>
       <SaveChatflowDialog
         show={flowDialogOpen}
