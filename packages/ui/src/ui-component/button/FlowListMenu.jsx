@@ -23,7 +23,6 @@ import { IconX } from '@tabler/icons-react'
 import chatflowsApi from '@/api/chatflows'
 
 import useApi from '@/hooks/useApi'
-import useConfirm from '@/hooks/useConfirm'
 import { uiBaseURL } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
@@ -76,7 +75,6 @@ const StyledMenu = styled((props) => (
 }))
 
 export default function FlowListMenu({ chatflow, isAgentCanvas, setError, updateFlowsApi }) {
-  const { confirm } = useConfirm()
   const dispatch = useDispatch()
   const user = useSelector((state) => state.user)
   const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
