@@ -37,6 +37,7 @@ import ChatFeedbackDialog from '../dialog/ChatFeedbackDialog'
 import AllowedDomainsDialog from '../dialog/AllowedDomainsDialog'
 import SpeechToTextDialog from '../dialog/SpeechToTextDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
+import DeleteFlow from '../dialog/DeleteFlow'
 
 const StyledMenu = styled((props) => (
   <Menu
@@ -82,9 +83,11 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
 
   const isAdminGroup = user?.role === 'ADMIN'
   const isMasterAdmin = user?.role === 'MASTER_ADMIN'
-  const isUser = user?.role === 'USER'
 
-  const isOwner = isMasterAdmin || chatflow.userId === user?.id || (isAdminGroup && chatflow?.groupname === user?.groupname)
+  const isOwner =
+    isMasterAdmin ||
+    chatflow.userId === user?.id ||
+    (isAdminGroup && (chatflow?.groupname === user?.groupname || chatflow?.user?.groupname === user?.groupname))
 
   useNotifier()
   const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -95,6 +98,8 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
   const [categoryDialogProps, setCategoryDialogProps] = useState({})
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isLoadingDeleteFlow, setIsLoadingDeleteFlow] = useState(false)
   const [conversationStartersDialogOpen, setConversationStartersDialogOpen] = useState(false)
   const [conversationStartersDialogProps, setConversationStartersDialogProps] = useState({})
   const [chatFeedbackDialogOpen, setChatFeedbackDialogOpen] = useState(false)
@@ -108,6 +113,11 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
   const [exportTemplateDialogProps, setExportTemplateDialogProps] = useState({})
 
   const title = isAgentCanvas ? 'Agents' : 'Chatflow'
+
+  const handleOpenDialogDelete = () => {
+    setAnchorEl(null)
+    setDeleteDialogOpen(true)
+  }
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget)
@@ -246,35 +256,28 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
   }
 
   const handleDelete = async () => {
-    setAnchorEl(null)
-    const confirmPayload = {
-      title: `Delete`,
-      description: `Delete ${title} ${chatflow.name}?`,
-      confirmButtonName: 'Delete',
-      cancelButtonName: 'Cancel'
-    }
-    const isConfirmed = await confirm(confirmPayload)
-
-    if (isConfirmed) {
-      try {
-        await chatflowsApi.deleteChatflow(chatflow.id)
-        await updateFlowsApi.request()
-      } catch (error) {
-        if (setError) setError(error)
-        enqueueSnackbar({
-          message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
-          options: {
-            key: new Date().getTime() + Math.random(),
-            variant: 'error',
-            persist: true,
-            action: (key) => (
-              <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                <IconX />
-              </Button>
-            )
-          }
-        })
-      }
+    try {
+      setIsLoadingDeleteFlow(true)
+      await chatflowsApi.deleteChatflow(chatflow.id)
+      await updateFlowsApi.request()
+    } catch (error) {
+      if (setError) setError(error)
+      enqueueSnackbar({
+        message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
+        options: {
+          key: new Date().getTime() + Math.random(),
+          variant: 'error',
+          persist: true,
+          action: (key) => (
+            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+              <IconX />
+            </Button>
+          )
+        }
+      })
+    } finally {
+      setIsLoadingDeleteFlow(false)
+      setDeleteDialogOpen(false)
     }
   }
 
@@ -373,12 +376,24 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
           </>
         )}
         {isOwner && (
-          <MenuItem onClick={handleDelete} disableRipple>
+          <MenuItem onClick={handleOpenDialogDelete} disableRipple>
             <FileDeleteIcon />
             Delete
           </MenuItem>
         )}
       </StyledMenu>
+      <DeleteFlow
+        show={deleteDialogOpen}
+        dialogProps={{
+          title: `Delete`,
+          description: `Delete ${title} ${chatflow.name}?`,
+          confirmButtonName: 'Delete',
+          cancelButtonName: 'Cancel'
+        }}
+        onCancel={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDelete}
+        isLoadingRename={isLoadingDeleteFlow}
+      />
       <SaveChatflowDialog
         show={flowDialogOpen}
         dialogProps={{
