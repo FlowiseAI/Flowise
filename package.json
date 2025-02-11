@@ -27,7 +27,8 @@
     "migration:create": "pnpm typeorm migration:create",
     "dev:server": "pnpm --filter ./packages/server dev",
     "dev:ui": "pnpm --filter ./packages/ui dev",
-    "dev:components": "pnpm --filter ./packages/components dev"
+    "dev:components": "pnpm --filter ./packages/components dev",
+    "bench:model": "bun run ./benchModel.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
