@@ -17,7 +17,8 @@ const RenderContent = ({
   images,
   setError,
   isUser,
-  msgEmpty
+  msgEmpty,
+  isAgentCanvas
 }) => {
   const [data, setData] = useState([])
   const [filter, setFilter] = useState(isUser ? 'publish' : 'all')
@@ -73,6 +74,7 @@ const RenderContent = ({
           filterFunction={filterFunction}
           updateFlowsApi={updateFlowsApi}
           setError={setError}
+          isAgentCanvas={isAgentCanvas}
         />
       )}
       {!isLoading && (!data || data.length === 0) && (
@@ -98,7 +100,8 @@ RenderContent.propTypes = {
   goToCanvas: PropTypes.func.isRequired,
   images: PropTypes.object.isRequired,
   setError: PropTypes.func.isRequired,
-  msgEmpty: PropTypes.string
+  msgEmpty: PropTypes.string,
+  isAgentCanvas: PropTypes.bool
 }
 
 export default RenderContent
