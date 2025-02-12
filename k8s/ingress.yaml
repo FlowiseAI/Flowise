@@ -14,6 +14,26 @@ metadata:
 spec:
   ingressClassName: "alb"
   rules:
+  - host: temporal.xheal.ai
+    http:
+      paths:
+        - backend:
+            service:
+              name: temporal-nodeport
+              port:
+                number: 8080
+          path: /*
+          pathType: ImplementationSpecific
+    - host: api.xheal.ai
+      http:
+        paths:
+          - backend:
+              service:
+                name: api-service  # You'll need to adjust this to your actual service name
+                port:
+                  number: 8080    # You'll need to adjust this to your actual port
+            path: /*
+            pathType: ImplementationSpecific
     - host: ai-dashboard.xheal.ai
       http:
         paths:
