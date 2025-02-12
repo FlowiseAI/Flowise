@@ -156,7 +156,7 @@ class AzureChatOpenAI_ChatModels implements INode {
             },
             {
                 label: 'Reasoning Effort',
-                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 models',
+                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.',
                 name: 'reasoningEffort',
                 type: 'options',
                 options: [
@@ -173,7 +173,7 @@ class AzureChatOpenAI_ChatModels implements INode {
                         name: 'high'
                     }
                 ],
-                default: 'low',
+                default: 'medium',
                 optional: false,
                 additionalParams: true
             }
