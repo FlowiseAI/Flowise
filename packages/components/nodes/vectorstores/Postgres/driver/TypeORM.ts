@@ -51,9 +51,7 @@ export class TypeORMDriver extends VectorStoreDriver {
     }
 
     async instanciate(metadataFilters?: any) {
-        // @ts-ignore
-        const instance = new TypeORMVectorStore(this.getEmbeddings(), await this.getArgs())
-        return this.adaptInstance(instance, metadataFilters)
+        return this.adaptInstance(await TypeORMVectorStore.fromDataSource(this.getEmbeddings(), await this.getArgs()), metadataFilters)
     }
 
     async fromDocuments(documents: Document[]) {
@@ -79,8 +77,7 @@ export class TypeORMDriver extends VectorStoreDriver {
             [ERROR]: uncaughtException:  Illegal invocation TypeError: Illegal invocation at Socket.ref (node:net:1524:18) at Connection.ref (.../node_modules/pg/lib/connection.js:183:17) at Client.ref (.../node_modules/pg/lib/client.js:591:21) at BoundPool._pulseQueue (/node_modules/pg-pool/index.js:148:28) at .../node_modules/pg-pool/index.js:184:37 at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
         */
         instance.similaritySearchVectorWithScore = async (query: number[], k: number, filter?: any) => {
-            await instance.appDataSource.initialize()
-            const res = await TypeORMDriver.similaritySearchVectorWithScore(
+            return await TypeORMDriver.similaritySearchVectorWithScore(
                 query,
                 k,
                 tableName,
@@ -88,8 +85,6 @@ export class TypeORMDriver extends VectorStoreDriver {
                 filter ?? metadataFilters,
                 this.computedOperatorString
             )
-            await instance.appDataSource.destroy()
-            return res
         }
 
         instance.delete = async (params: { ids: string[] }): Promise<void> => {
@@ -97,12 +92,9 @@ export class TypeORMDriver extends VectorStoreDriver {
 
             if (ids?.length) {
                 try {
-                    await instance.appDataSource.initialize()
                     instance.appDataSource.getRepository(instance.documentEntity).delete(ids)
                 } catch (e) {
                     console.error('Failed to delete')
-                } finally {
-                    await instance.appDataSource.destroy()
                 }
             }
         }
@@ -110,10 +102,7 @@ export class TypeORMDriver extends VectorStoreDriver {
         const baseAddVectorsFn = instance.addVectors.bind(instance)
 
         instance.addVectors = async (vectors, documents) => {
-            await instance.appDataSource.initialize()
-            const res = baseAddVectorsFn(vectors, this.sanitizeDocuments(documents))
-            await instance.appDataSource.destroy()
-            return res
+            return baseAddVectorsFn(vectors, this.sanitizeDocuments(documents))
         }
 
         return instance
