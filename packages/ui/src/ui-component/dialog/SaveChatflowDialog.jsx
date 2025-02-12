@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import { Button, Dialog, DialogActions, DialogContent, OutlinedInput, DialogTitle } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
-const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm, isLoadingRename }) => {
   const portalElement = document.getElementById('portal')
 
   const [chatflowName, setChatflowName] = useState('')
@@ -21,7 +21,10 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
       open={show}
       fullWidth
       maxWidth='xs'
-      onClose={onCancel}
+      onClose={() => {
+        onCancel()
+        setChatflowName('')
+      }}
       aria-labelledby='alert-dialog-title'
       aria-describedby='alert-dialog-description'
       disableRestoreFocus // needed due to StrictMode
@@ -47,7 +50,7 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onCancel}>{dialogProps.cancelButtonName}</Button>
-        <StyledButton disabled={!isReadyToSave} variant='contained' onClick={() => onConfirm(chatflowName)}>
+        <StyledButton disabled={!isReadyToSave || isLoadingRename} variant='contained' onClick={() => onConfirm(chatflowName)}>
           {dialogProps.confirmButtonName}
         </StyledButton>
       </DialogActions>
@@ -61,7 +64,8 @@ SaveChatflowDialog.propTypes = {
   show: PropTypes.bool,
   dialogProps: PropTypes.object,
   onCancel: PropTypes.func,
-  onConfirm: PropTypes.func
+  onConfirm: PropTypes.func,
+  isLoadingRename: PropTypes.bool
 }
 
 export default SaveChatflowDialog

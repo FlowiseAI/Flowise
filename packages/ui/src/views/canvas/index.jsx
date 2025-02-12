@@ -442,7 +442,7 @@ const Canvas = () => {
   }, [getSpecificChatflowApi.data, getSpecificChatflowApi.error])
 
   useEffect(() => {
-    if (chatflow) {
+    if (chatflow?.id) {
       if (
         !chatflow?.isPublic &&
         ((user?.role === 'USER' && chatflow?.userId !== user?.id) ||
@@ -464,7 +464,7 @@ const Canvas = () => {
         setIsAdminPage(false)
       }
     }
-  }, [chatflow, user])
+  }, [chatflow, user, pathname, isAgentCanvas])
 
   // Create new chatflow successful
   useEffect(() => {

@@ -446,35 +446,39 @@ export const buildAgentGraph = async (
         clearTimeout(sendLoadingMessageFnId)
 
         if (isSequential && !streamable) {
-          if (retryTimes < 3) {
-            return buildAgentGraph(
-              chatflow,
-              chatId,
-              apiMessageId,
-              sessionId,
-              incomingInput,
-              isInternal,
-              baseURL,
-              sseStreamer,
-              shouldStreamResponse,
-              uploadedFilesContent,
-              retryTimes + 1
-            )
-          }
+          console.log('no final answer:', JSON.stringify(totalStreamText))
 
-          try {
-            //  {"sub_queries":["Xin chào! Để tôi có thể hỗ trợ bạn tốt hơn về vấn đề học phí, tôi cần biết thêm một số thông tin. Bạn có thể cho tôi biết tên và số điện thoại của bạn được không?"],"convesation_related":false,"worker_call":false,"name":"None","phone_number":"None","human_support":false,"unsatisfied_times":0}
-            const jsonAnswer = JSON.parse(totalStreamText)
-            if (jsonAnswer.sub_queries[0]) {
-              totalStreamText = jsonAnswer.sub_queries[0]
-            }
-          } catch {
-            // ignore
-          }
+          sseStreamer?.streamTokenEvent(chatId, totalStreamText)
 
-          if (sseStreamer) {
-            sseStreamer.streamTokenEvent(chatId, totalStreamText)
-          }
+          //   if (retryTimes < 3) {
+          //     return buildAgentGraph(
+          //       chatflow,
+          //       chatId,
+          //       apiMessageId,
+          //       sessionId,
+          //       incomingInput,
+          //       isInternal,
+          //       baseURL,
+          //       sseStreamer,
+          //       shouldStreamResponse,
+          //       uploadedFilesContent,
+          //       retryTimes + 1
+          //     )
+          //   }
+          //
+          //   try {
+          //     //  {"sub_queries":["Xin chào! Để tôi có thể hỗ trợ bạn tốt hơn về vấn đề học phí, tôi cần biết thêm một số thông tin. Bạn có thể cho tôi biết tên và số điện thoại của bạn được không?"],"convesation_related":false,"worker_call":false,"name":"None","phone_number":"None","human_support":false,"unsatisfied_times":0}
+          //     const jsonAnswer = JSON.parse(totalStreamText)
+          //     if (jsonAnswer.sub_queries[0]) {
+          //       totalStreamText = jsonAnswer.sub_queries[0]
+          //     }
+          //   } catch {
+          //     // ignore
+          //   }
+          //
+          //   if (sseStreamer) {
+          //     sseStreamer.streamTokenEvent(chatId, totalStreamText)
+          //   }
         }
 
         // console.log('totalStreamText:', JSON.stringify(totalStreamText))
@@ -1049,11 +1053,7 @@ Format your responses following this template:
 ### Constraint:
 - "Final Answer:" is a REQUIRED keyword, please ensure that this keyword always appears before your final answer so that the system can extract your final answer.
 - The \`Final Answer\` cannot contain \`thought\`, \`action\`, \`action input\`, or \`observation information\`. The content behind the keyword \`Final Answer:\` is the final Markdown-formatted answer after synthesizing from those processes.
-</administrator>${retryTimes > 0 ? '\n\nYou are missing the "Final Answer:" keyword in your final answer.' : ''}`
-
-  if (retryTimes > 0) {
-    console.log('retryTimes', retryTimes)
-  }
+</administrator>`
 
   /*** Start processing every Agent nodes ***/
   for (const agentNodeId of getSortedDepthNodes(depthQueue)) {
@@ -1061,9 +1061,9 @@ Format your responses following this template:
     if (!agentNode) continue
 
     if (agentNode.data.inputs?.['systemMessagePrompt']) {
-      if (!agentNode.data.inputs['systemMessagePrompt'].endsWith(systemHideToolCall)) {
-        agentNode.data.inputs['systemMessagePrompt'] += systemHideToolCall
-      }
+      // if (agentNode.data.inputs['systemMessagePrompt'].includes('Final Answer:')) {
+      //   agentNode.data.inputs['systemMessagePrompt'] += systemHideToolCall
+      // }
     }
     // console.log('agentNode', agentNode)
 

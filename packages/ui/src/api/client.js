@@ -13,17 +13,18 @@ export const apiClient = axios.create({
 })
 
 apiClient.interceptors.request.use(function (config) {
-  // const username = localStorage.getItem('username')
-  // const password = localStorage.getItem('password')
-
-  // if (username && password) {
-  //   config.auth = {
-  //     username,
-  //     password
-  //   }
-  // }
-
   return config
 })
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.data && error.response.data.error === 'Unauthorized Access') {
+      localStorage.removeItem('dataLogin')
+      window.location.href = '/c-agent/'
+    }
+    return Promise.reject(error)
+  }
+)
 
 export default apiClient

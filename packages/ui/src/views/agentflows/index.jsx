@@ -38,7 +38,7 @@ const Agentflows = () => {
   const navigate = useNavigate()
   const theme = useTheme()
 
-  const [isLoading, setLoading] = useState(true)
+  // const [isLoading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [images, setImages] = useState({})
   const [search, setSearch] = useState('')
@@ -89,9 +89,9 @@ const Agentflows = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLogin, user])
 
-  useEffect(() => {
-    setLoading(getAllPublicAgentflows.loading)
-  }, [getAllPublicAgentflows.loading])
+  // useEffect(() => {
+  //   setLoading(getAllPublicAgentflows.loading)
+  // }, [getAllPublicAgentflows.loading])
 
   useEffect(() => {
     if (getAllAgentflows.data) {
@@ -178,16 +178,26 @@ const Agentflows = () => {
             {isLogin ? (
               <RenderContent
                 data={isAdmin || isUser ? getAllAgentOfAdminGroup.data : getAllAgentflowsOfMasterAdmin.data}
-                isLoading={isLoading}
+                // isLoading={isLoading}
+                isLoading={getAllAgentOfAdminGroup.loading || getAllAgentflowsOfMasterAdmin.loading}
                 filterFunction={filterFlows}
                 goToCanvas={goToCanvas}
                 images={images}
                 view={view}
                 setError={setError}
-                updateFlowsApi={isAdmin || isUser ? getAllAgentOfAdminGroup : getAllAgentflowsOfMasterAdmin}
+                updateFlowsApi={
+                  isAdmin || isUser
+                    ? {
+                        request: async () => {
+                          return await getAllAgentOfAdminGroup.request(user.groupname)
+                        }
+                      }
+                    : getAllAgentflowsOfMasterAdmin
+                }
                 isAdmin={isMasterAdmin || isAdmin}
                 isUser={isUser}
                 msgEmpty={`Người dùng chưa tạo agentflows nào trong nhóm ${user.groupname}, tạo mới agentflows`}
+                isAgentCanvas
               />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>
@@ -197,13 +207,15 @@ const Agentflows = () => {
             {isLogin ? (
               <RenderContent
                 data={getAllPublicAgentflows.data}
-                isLoading={isLoading}
+                // isLoading={isLoading}
+                isLoading={getAllPublicAgentflows.loading}
                 filterFunction={filterFlows}
                 goToCanvas={goToCanvas}
                 images={images}
                 view={view}
                 setError={setError}
                 updateFlowsApi={getAllPublicAgentflows}
+                isAgentCanvas
               />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>
@@ -213,13 +225,15 @@ const Agentflows = () => {
             {isLogin ? (
               <RenderContent
                 data={getAllAgentflows.data}
-                isLoading={isLoading}
+                // isLoading={isLoading}
+                isLoading={getAllAgentflows.loading}
                 filterFunction={filterFlows}
                 goToCanvas={goToCanvas}
                 images={images}
                 view={view}
                 setError={setError}
                 updateFlowsApi={getAllAgentflows}
+                isAgentCanvas
               />
             ) : (
               <div>Đăng nhập để xem danh sách Agents</div>
