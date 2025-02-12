@@ -21,7 +21,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response && error.response.data && error.response.data.error === 'Unauthorized Access') {
       localStorage.removeItem('dataLogin')
-      window.location.href = '/'
+      window.location.href = '/c-agent/'
     }
     return Promise.reject(error)
   }
