@@ -155,7 +155,7 @@ const importChatflows = async (req: any, res: Response, next: NextFunction) => {
     }
 
     let chatflows: Partial<ChatFlow>[] = req.body.Chatflows
-    chatflows = chatflows.map((flow) => ({ ...flow, groupname: foundUser?.groupname }))
+    chatflows = chatflows.map((flow) => ({ ...flow, groupname: foundUser?.groupname, userId: foundUser?.id }))
 
     const apiResponse = await chatflowsService.importChatflows(chatflows)
     return res.json(apiResponse)

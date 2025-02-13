@@ -3,7 +3,7 @@ import exportImportService from '../../services/export-import'
 
 const exportData = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const apiResponse = await exportImportService.exportData(exportImportService.convertExportInput(req.body))
+    const apiResponse = await exportImportService.exportData(req, exportImportService.convertExportInput(req.body))
     return res.json(apiResponse)
   } catch (error) {
     next(error)
@@ -13,7 +13,7 @@ const exportData = async (req: Request, res: Response, next: NextFunction) => {
 const importData = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const importData = req.body
-    await exportImportService.importData(importData)
+    await exportImportService.importData(req, importData)
     return res.json({ message: 'success' })
   } catch (error) {
     next(error)
