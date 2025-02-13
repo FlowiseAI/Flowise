@@ -43,7 +43,7 @@ const defaultConfig = {
 }
 
 const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
-  const baseURL = baseURLString + '/c-agent'
+  const baseURL = baseURLString.includes('/c-agent/') ? baseURL : baseURL + '/c-agent'
   const dispatch = useDispatch()
   const theme = useTheme()
   const chatflow = useSelector((state) => state.canvas.chatflow)
