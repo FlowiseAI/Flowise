@@ -16,7 +16,7 @@ const getDomainFromHostName = (hostname: string) => {
 
 import { RequestHandler } from 'express';
 
-export const sessionMiddleware: RequestHandler = session({
+export const sessionMiddleware: any = session({
   store: new PgSession({
     pool: pgPool,
     tableName: 'sessions',
