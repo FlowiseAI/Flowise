@@ -7,19 +7,16 @@ import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
 import AttachFileIcon from '@mui/icons-material/PermMedia'
 import MicIcon from '@mui/icons-material/Mic'
-import StopIcon from '@mui/icons-material/Stop'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconCircleDot } from '@tabler/icons-react'
-import Typography from '@mui/material/Typography'
-import SendIcon from '@mui/icons-material/Send'
 
 import { throttle } from '@utils/throttle'
 import { useAnswers } from './AnswersContext'
 
 import type { Sidekick, StarterPrompt } from 'types'
 import { DefaultPrompts } from './DefaultPrompts'
-import { FileUpload, SendMessageParams } from './AnswersContext'
+import { FileUpload } from './AnswersContext'
 
 const constraints = {
     isImageUploadAllowed: true,
@@ -325,14 +322,11 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         setSourceDialogProps({ data, title })
         setSourceDialogOpen(true)
     }
-    // const getFileType = () => {
-    //     if (props.uploadsConfig?.fileUploadSizeAndTypes?.length) {
-    //       const allowedFileTypes = props.uploadsConfig?.fileUploadSizeAndTypes.map((allowed) => allowed.fileTypes).join(',');
-    //       if (allowedFileTypes.includes('*')) return '*';
-    //       else return allowedFileTypes;
-    //     }
-    //     return '*';
-    //   };
+
+    const handlePromptSelected = (prompt: StarterPrompt) => {
+        sendMessage({ content: prompt.prompt, sidekick, gptModel })
+        setInputValue('')
+    }
 
     const handleStopAndSend = () => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
@@ -402,6 +396,12 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
         >
+            {!messages?.length ? (
+                <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', alignItems: 'flex-end' }}>
+                    <DefaultPrompts prompts={chatbotConfig?.starterPrompts} onPromptSelected={handlePromptSelected} />
+                </Box>
+            ) : null}
+
             {isDragging && (
                 <Box
                     sx={{
