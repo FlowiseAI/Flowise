@@ -27,6 +27,8 @@ import { OpenTelemetry } from './metrics/OpenTelemetry'
 import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import { WHITELIST_URLS } from './utils/constants'
+import { sessionMiddleware, sessionHostMiddleware } from './internal/middleware/session'
+
 import 'global-agent/bootstrap'
 
 declare global {
@@ -151,6 +153,9 @@ export class App {
 
         // Add the sanitizeMiddleware to guard against XSS
         this.app.use(sanitizeMiddleware)
+        this.app.use(sessionMiddleware)
+        this.app.use(sessionHostMiddleware)
+        // this.app.use(auth0Routes)
 
         const whitelistURLs = WHITELIST_URLS
         const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
@@ -251,6 +256,7 @@ export class App {
             })
         })
 
+
         if (process.env.MODE === MODE.QUEUE) {
             this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
         }
@@ -263,12 +269,12 @@ export class App {
         const uiBuildPath = path.join(packagePath, 'build')
         const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
 
-        this.app.use('/', express.static(uiBuildPath))
+        // this.app.use('/', express.static(uiBuildPath))
 
-        // All other requests not handled will return React app
-        this.app.use((req: Request, res: Response) => {
-            res.sendFile(uiHtmlPath)
-        })
+        // // All other requests not handled will return React app
+        // this.app.use((req: Request, res: Response) => {
+        //     res.sendFile(uiHtmlPath)
+        // })
 
         // Error handling
         this.app.use(errorHandlerMiddleware)

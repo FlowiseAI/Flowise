@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title><%= title %></title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+    />
+  </head>
+  <body>
+    <!--[if IE 8]>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/ie8/0.2.5/ie8.js"></script>
+    <![endif]-->
+
+    <!--[if lte IE 9]>
+      <script src="https://cdn.auth0.com/js/base64.js"></script>
+      <script src="https://cdn.auth0.com/js/es5-shim.min.js"></script>
+    <![endif]-->
+
+    <script src="https://cdn.auth0.com/js/lock/12.5/lock.min.js"></script>
+    <script>
+      var clientID = '<%= auth0ClientID %>';
+      var auth0Domain = '<%= auth0IssuerBaseURL %>';
+
+      var options = {
+        rememberLastLogin: true,
+        avatar: null,
+        allowSignUp: false,
+        languageDictionary: {
+          title: 'AI Chatbot',
+          loginSubmitLabel: 'Sign in',
+          lastLoginInstructions: 'Last time you Signed In with',
+          emailInputPlaceholder: 'yours@example.com',
+          passwordInputPlaceholder: 'your password',
+        },
+        auth: {
+          redirectUrl: '<%= callbackURL %>',
+          responseType: 'code',
+          authorizationParams: {
+            response_type: 'code', // Ensure the response type includes 'code'
+            scope: 'openid profile email', // Ensure 'openid' scope is included
+          },
+          params: {
+            scope: 'openid profile email', // Ensure 'openid' scope is included
+          },
+        },
+        theme: {
+          primaryColor: '#2279A6',
+          logo: 'https://selfservice.tylertech.com/custom/images/tyler.png',
+        },
+      };
+
+      // Available Lock configuration options: https://auth0.com/docs/libraries/lock/lock-configuration
+      var lock = new Auth0Lock(clientID, auth0Domain, options);
+      lock.show();
+    </script>
+  </body>
+</html>
