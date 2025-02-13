@@ -1,9 +1,8 @@
 import React, { Suspense } from 'react'
-import { Box, Button, Card, CardContent, Typography, Stack } from '@mui/material'
+import { Box, Button } from '@mui/material'
 import type { Message, Sidekick } from 'types'
 import { MessageCard } from './Message'
 import AssistantInfoCard from './AssistantInfoCard'
-import { useAnswers } from './AnswersContext'
 
 interface ChatRoomProps {
     messages: Message[] | null | undefined
@@ -15,7 +14,6 @@ interface ChatRoomProps {
     sidekicks: Sidekick[]
     scrollRef: React.RefObject<HTMLDivElement>
     selectedSidekick?: Sidekick
-    setPreviewCode: any
 }
 
 export const ChatRoom: React.FC<ChatRoomProps> = ({
@@ -30,23 +28,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     selectedSidekick,
     setPreviewCode
 }) => {
-    const { sendMessage, gptModel } = useAnswers()
-
-    // Starter prompts configuration
-    const starterPrompts = {
-        title: 'Get Started',
-        prompts: chatbotConfig?.starterPrompts
-    }
-
-    const handleStarterPromptClick = (prompt: string) => {
-        sendMessage({
-            content: prompt,
-            sidekick: selectedSidekick,
-            gptModel,
-            files: []
-        })
-    }
-
     return (
         <Box
             sx={{
@@ -61,42 +42,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                     <AssistantInfoCard sidekick={selectedSidekick} followers={208000} onShare={() => {}} onSearch={() => {}} />
                 </Box>
 
-                <Box sx={{ width: '100%' }}>
-                    {!isLoading && starterPrompts.prompts.length > 0 && (
-                        <Stack spacing={2} sx={{ width: '100%', my: 4 }}>
-                            <Card variant='outlined'>
-                                <CardContent>
-                                    <Typography variant='h6' gutterBottom>
-                                        {starterPrompts.title}
-                                    </Typography>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            flexWrap: 'wrap',
-                                            gap: 1
-                                        }}
-                                    >
-                                        {starterPrompts.prompts.map(({ prompt }: { prompt: string }, promptIndex: number) => (
-                                            <Button
-                                                key={promptIndex}
-                                                variant='outlined'
-                                                size='medium'
-                                                onClick={() => handleStarterPromptClick(prompt)}
-                                                sx={{
-                                                    borderRadius: 2,
-                                                    textTransform: 'none',
-                                                    minHeight: 40
-                                                }}
-                                            >
-                                                {prompt}
-                                            </Button>
-                                        ))}
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Stack>
-                    )}
-
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {messages?.map((message, index) => (
                         <MessageCard
                             {...message}
