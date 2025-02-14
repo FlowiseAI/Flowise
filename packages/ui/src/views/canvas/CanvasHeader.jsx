@@ -355,9 +355,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
   }, [user, chatflow])
 
   useEffect(() => {
-    if (chatflow) {
+    if (chatflow?.id) {
       setChatflowIsPublic(chatflow?.isPublic)
-      setFlowName(chatflow.name)
+      setFlowName(chatflow?.name)
       // if configuration dialog is open, update its data
       if (chatflowConfigurationDialogOpen) {
         setChatflowConfigurationDialogProps({

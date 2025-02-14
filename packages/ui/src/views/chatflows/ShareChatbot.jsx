@@ -9,6 +9,7 @@ import { useTheme } from '@mui/material/styles'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // Icons
 import { IconArrowUpRightCircle, IconCopy, IconX } from '@tabler/icons-react'
@@ -20,7 +21,7 @@ import chatflowsApi from '@/api/chatflows'
 import useNotifier from '@/utils/useNotifier'
 
 // Const
-import { baseURL } from '@/store/constant'
+import { baseURL as baseURLString } from '@/store/constant'
 
 const defaultConfig = {
   backgroundColor: '#ffffff',
@@ -42,6 +43,7 @@ const defaultConfig = {
 }
 
 const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
+  const baseURL = baseURLString
   const dispatch = useDispatch()
   const theme = useTheme()
   const chatflow = useSelector((state) => state.canvas.chatflow)
@@ -52,6 +54,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
 
   const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
   const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+  const [isPublicChatflow, setChatflowIsPublic] = useState(chatflow?.isPublish ?? false)
 
   const [generateNewSession, setGenerateNewSession] = useState(chatbotConfig?.generateNewSession ?? false)
   const [renderHTML, setRenderHTML] = useState(chatbotConfig?.renderHTML ?? false)
@@ -160,6 +163,43 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
       const saveResp = await chatflowsApi.updateChatflow(chatflowid, {
         chatbotConfig: JSON.stringify(formatObj())
       })
+      if (saveResp.data) {
+        enqueueSnackbar({
+          message: 'Chatbot Configuration Saved',
+          options: {
+            key: new Date().getTime() + Math.random(),
+            variant: 'success',
+            action: (key) => (
+              <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                <IconX />
+              </Button>
+            )
+          }
+        })
+        dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+      }
+    } catch (error) {
+      enqueueSnackbar({
+        message: `Failed to save Chatbot Configuration: ${
+          typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+        }`,
+        options: {
+          key: new Date().getTime() + Math.random(),
+          variant: 'error',
+          persist: true,
+          action: (key) => (
+            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+              <IconX />
+            </Button>
+          )
+        }
+      })
+    }
+  }
+
+  const onSwitchChange = async (checked) => {
+    try {
+      const saveResp = await chatflowsApi.updateChatflow(chatflowid, { isPublish: checked })
       if (saveResp.data) {
         enqueueSnackbar({
           message: 'Chatbot Configuration Saved',
@@ -380,6 +420,20 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
           <IconArrowUpRightCircle />
         </IconButton>
         <div style={{ flex: 1 }} />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Switch
+            checked={isPublicChatflow}
+            onChange={(event) => {
+              setChatflowIsPublic(event.target.checked)
+              onSwitchChange(event.target.checked)
+            }}
+          />
+          <Typography>Make Publish</Typography>
+          <TooltipWithParser
+            style={{ marginLeft: 10 }}
+            title={'Making public will allow anyone to access the chatbot without username & password'}
+          />
+        </div>
       </Stack>
       {textField(title, 'title', 'Title', 'string', 'Agent Studio Assistant')}
       {textField(

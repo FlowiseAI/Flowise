@@ -369,20 +369,20 @@ const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
     const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
       id: chatflowId
     })
-    if (dbResponse && dbResponse.isPublic) {
+    if (!dbResponse) {
+      throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+    }
+    if (dbResponse && dbResponse.isPublish) {
       return dbResponse
-    } else if (dbResponse && !dbResponse.isPublic) {
-      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+    } else if (dbResponse && !dbResponse.isPublish) {
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Flow ${dbResponse?.name} chưa được publish`)
     }
     throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
   } catch (error) {
     if (error instanceof InternalFlowiseError && error.statusCode === StatusCodes.UNAUTHORIZED) {
       throw error
     } else {
-      throw new InternalFlowiseError(
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        `Error: chatflowsService.getSinglePublicChatflow - ${getErrorMessage(error)}`
-      )
+      throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
     }
   }
 }
