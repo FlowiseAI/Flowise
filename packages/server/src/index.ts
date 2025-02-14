@@ -1,5 +1,4 @@
 import express from 'express'
-import { Request, Response } from 'express'
 import path from 'path'
 import cors from 'cors'
 import http from 'http'
@@ -134,9 +133,8 @@ export class App {
 
         // Allow access from specified domains
         this.app.use(cors(getCorsOptions()))
-        this.app.set('view engine', 'ejs');
-        console.log("========> ", path.join(__dirname, '..','views'))
-        this.app.set('views', path.join(__dirname, '..' ,'views'));
+        this.app.set('view engine', 'ejs')
+        this.app.set('views', path.join(__dirname, '..', 'views'))
         // Allow embedding from specified domains.
         this.app.use((req, res, next) => {
             const allowedOrigins = getAllowedIframeOrigins()
@@ -266,7 +264,6 @@ export class App {
                 msg: 'test my route.'
             })
         })
-
 
         if (process.env.MODE === MODE.QUEUE) {
             this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
