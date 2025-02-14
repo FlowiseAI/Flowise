@@ -13,6 +13,9 @@ export class ChatFlow implements IChatFlow {
     @Column({ type: 'text' })
     flowData: string
 
+    @Column({ type: 'text' })
+    domain: string
+
     @Column({ nullable: true })
     deployed?: boolean
 

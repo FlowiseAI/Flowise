@@ -105,17 +105,18 @@ const deleteChatflow = async (chatflowId: string): Promise<any> => {
     }
 }
 
-const getAllChatflows = async (type?: ChatflowType): Promise<ChatFlow[]> => {
+const getAllChatflows = async (type?: ChatflowType, domain?: string): Promise<ChatFlow[]> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
+        const domainWiseChatFlows = dbResponse.filter((chatflow) => chatflow.domain === domain)
         if (type === 'MULTIAGENT') {
-            return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
+            return domainWiseChatFlows.filter((chatflow) => chatflow.type === 'MULTIAGENT')
         } else if (type === 'CHATFLOW') {
             // fetch all chatflows that are not agentflow
-            return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
+            return domainWiseChatFlows.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
         }
-        return dbResponse
+        return domainWiseChatFlows
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

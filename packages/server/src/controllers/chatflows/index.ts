@@ -51,7 +51,7 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
 
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType)
+        const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType, req.hostname as string)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -97,7 +97,7 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         }
         const body = req.body
         const newChatFlow = new ChatFlow()
-        Object.assign(newChatFlow, body)
+        Object.assign(newChatFlow, { ...body, domain: req.hostname })
         const apiResponse = await chatflowsService.saveChatflow(newChatFlow)
         return res.json(apiResponse)
     } catch (error) {

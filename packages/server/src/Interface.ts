@@ -38,6 +38,7 @@ export interface IChatFlow {
     id: string
     name: string
     flowData: string
+    domain: string
     updatedDate: Date
     createdDate: Date
     deployed?: boolean
