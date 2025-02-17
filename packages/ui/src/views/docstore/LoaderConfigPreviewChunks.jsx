@@ -9,7 +9,7 @@ import ReactJson from 'flowise-react-json-view'
 import useApi from '@/hooks/useApi'
 
 // Material-UI
-import { Skeleton, Toolbar, Box, Button, Card, CardContent, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
+import { Skeleton, Toolbar, Box, Button, Card, CardContent, Grid, OutlinedInput, Stack, Typography, TextField } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 import { IconScissors, IconArrowLeft, IconDatabaseImport, IconBook, IconX, IconEye } from '@tabler/icons-react'
 
@@ -72,6 +72,7 @@ const LoaderConfigPreviewChunks = () => {
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
+    const [loaderName, setLoaderName] = useState('')
 
     const [textSplitterNodes, setTextSplitterNodes] = useState([])
     const [splitterOptions, setTextSplitterOptions] = useState([])
@@ -236,7 +237,7 @@ const LoaderConfigPreviewChunks = () => {
 
         // Set store id & loader name
         config.storeId = storeId
-        config.loaderName = selectedDocumentLoader?.label
+        config.loaderName = loaderName
 
         // Set loader config
         if (selectedDocumentLoader.inputs) {
@@ -444,6 +445,17 @@ const LoaderConfigPreviewChunks = () => {
                                             paddingRight: 15
                                         }}
                                     >
+                                        <TextField
+                                            size='small'
+                                            label={
+                                                selectedDocumentLoader?.label?.toLowerCase().includes('loader')
+                                                    ? selectedDocumentLoader.label + ' name'
+                                                    : selectedDocumentLoader?.label + ' Loader Name'
+                                            }
+                                            value={loaderName}
+                                            onChange={(e) => setLoaderName(e.target.value)}
+                                            sx={{ m: 2, width: '90%' }}
+                                        />
                                         {selectedDocumentLoader &&
                                             Object.keys(selectedDocumentLoader).length > 0 &&
                                             (selectedDocumentLoader.inputParams ?? [])
