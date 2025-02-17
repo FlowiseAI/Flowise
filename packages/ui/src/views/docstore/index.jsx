@@ -46,7 +46,7 @@ import 'dccxx-s3-explorer/dist/style.css'
 // TODO: hard env
 // import.meta.env.VITE_DOCUMENT_STORE_TYPE = import.meta.env.VITE_DOCUMENT_STORE_TYPE || 's3'
 import.meta.env.VITE_DOCUMENT_STORE_TYPE = 'default'
-import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'https://stock.cmcts.ai/c-agent/s3e'
+import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'https://s3-explorer.cmcts1.studio.ai.vn'
 
 // eslint-disable-next-line react/prop-types
 const Documents = ({ storeType = import.meta.env.VITE_DOCUMENT_STORE_TYPE }) => {
