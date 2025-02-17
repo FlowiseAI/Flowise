@@ -59,7 +59,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
   const handleLogout = () => {
     localStorage.removeItem('dataLogin')
     logout({})
-    navigate(0)
+    window.location.href('/c-agent/')
+    window.location.reload()
   }
 
   const onLoginClick = async (username, password) => {

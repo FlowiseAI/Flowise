@@ -28,13 +28,17 @@ const registerUser = async (body: Partial<IUser>) => {
       throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'User already exists')
     }
 
-    const hashedPassword = await bcrypt.hash(body.password, 10)
+    const hashedPassword = await bcrypt.hash(body.password.trim(), 10)
 
     Object.assign(newUser, { password: hashedPassword })
     Object.assign(newUser, { id: userId })
     Object.assign(newUser, { role: UserRole.USER })
 
-    const user = appServer.AppDataSource.getRepository(User).create(newUser)
+    const user = appServer.AppDataSource.getRepository(User).create({
+      ...newUser,
+      email: newUser.email.trim(),
+      username: newUser.username.trim()
+    })
     const dbResponse = await appServer.AppDataSource.getRepository(User).save(user)
     return dbResponse
   } catch (error) {
@@ -47,15 +51,15 @@ const loginUser = async (username: string, email: string, password: string) => {
     const appServer = getRunningExpressApp()
     const user = await appServer.AppDataSource.getRepository(User).findOne({
       where: {
-        ...(username && { username }),
-        ...(email && { email })
+        ...(username && { username: username.trim() }),
+        ...(email && { email: email.trim() })
       }
     })
     if (!user) {
       throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Invalid username or password')
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password)
+    const isPasswordValid = await bcrypt.compare(password.trim(), user.password)
     if (!isPasswordValid) {
       throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Invalid username or password')
     }
@@ -64,8 +68,8 @@ const loginUser = async (username: string, email: string, password: string) => {
       throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Token secrets are not defined')
     }
 
-    const accessToken = jwt.sign({ id: user.id, username: user.username }, process.env.ACCESS_TOKEN_SECRET)
-    const refreshToken = jwt.sign({ id: user.id, username: user.username }, process.env.REFRESH_TOKEN_SECRET)
+    const accessToken = jwt.sign({ id: user.id, username: user.username.trim() }, process.env.ACCESS_TOKEN_SECRET)
+    const refreshToken = jwt.sign({ id: user.id, username: user.username.trim() }, process.env.REFRESH_TOKEN_SECRET)
 
     return { user, accessToken, refreshToken }
   } catch (error) {

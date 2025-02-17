@@ -106,7 +106,7 @@ const PopupEditMember = ({ open, onClose, setUserGroups, setSelectedGroup, userT
         fullWidth
         maxWidth='sm'
       >
-        <DialogTitle>Add New Member</DialogTitle>
+        <DialogTitle>Edit Member</DialogTitle>
         <DialogContent>
           <DialogContentText>Please enter the detail of user.</DialogContentText>
           <Grid container spacing={2}>
