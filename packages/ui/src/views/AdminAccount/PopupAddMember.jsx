@@ -43,7 +43,7 @@ const PopupAddMember = ({ open, onClose, userGroups, selectedGroup, setUserGroup
 
   const handleSubmit = async () => {
     try {
-      if (!newUser.username || !newUser.password) {
+      if (!newUser.username.trim() || !newUser.password.trim()) {
         return enqueueSnackbar({
           message: 'Vui lòng điền đầy đủ username và password.',
           options: {
