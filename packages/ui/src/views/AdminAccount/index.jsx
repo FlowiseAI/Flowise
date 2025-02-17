@@ -68,7 +68,7 @@ const AdminAccount = () => {
 
   useEffect(() => {
     if (isUser || !user.id) {
-      window.location.href = '/'
+      window.location.href = '/c-agent/'
     }
   }, [isUser, user])
 
