@@ -48,7 +48,7 @@ const RenderContent = ({
           >
             <FormControlLabel value='all' control={<Radio />} label='Tất cả' />
             <FormControlLabel value='publish' control={<Radio />} label='Đã public' />
-            <FormControlLabel value='unpublish' control={<Radio />} label='Chưa publish' />
+            <FormControlLabel value='unpublish' control={<Radio />} label='Chưa public' />
           </RadioGroup>
         </FormControl>
       )}
