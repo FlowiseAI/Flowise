@@ -28,6 +28,8 @@ import langsmithPNG from '@/assets/images/langchain.png'
 import langfuseSVG from '@/assets/images/langfuse.svg'
 import lunarySVG from '@/assets/images/lunary.svg'
 import langwatchSVG from '@/assets/images/langwatch.svg'
+import arizePNG from '@/assets/images/arize.png'
+import phoenixPNG from '@/assets/images/phoenix.png'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -122,6 +124,62 @@ const analyticProviders = [
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['langwatchApi']
+            },
+            {
+                label: 'On/Off',
+                name: 'status',
+                type: 'boolean',
+                optional: true
+            }
+        ]
+    },
+    {
+        label: 'Arize',
+        name: 'arize',
+        icon: arizePNG,
+        url: 'https://arize.com',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['arizeApi']
+            },
+            {
+                label: 'Project Name',
+                name: 'projectName',
+                type: 'string',
+                optional: true,
+                description: 'If not provided, default will be used.',
+                placeholder: 'default'
+            },
+            {
+                label: 'On/Off',
+                name: 'status',
+                type: 'boolean',
+                optional: true
+            }
+        ]
+    },
+    {
+        label: 'Phoenix',
+        name: 'phoenix',
+        icon: phoenixPNG,
+        url: 'https://phoenix.arize.com',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['phoenixApi']
+            },
+            {
+                label: 'Project Name',
+                name: 'projectName',
+                type: 'string',
+                optional: true,
+                description: 'If not provided, default will be used.',
+                placeholder: 'default'
             },
             {
                 label: 'On/Off',
