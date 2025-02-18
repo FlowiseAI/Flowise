@@ -251,7 +251,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             scrollbars=yes
         `.replace(/\s/g, '')
 
-        const authWindow = window.open(`${baseURL}/api/v1/google-auth`, 'Google Auth', features)
+        window.open(`${baseURL}/api/v1/google-auth`, 'Google Auth', features)
 
         // Listen for messages from the popup
         const handleMessage = (event) => {
@@ -271,7 +271,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                         )
                     }
                 })
-                authWindow?.close()
+                // authWindow?.close()
             }
             if (event.data?.type === 'AUTH_ERROR') {
                 console.error('Authentication error:', event.data.error)
