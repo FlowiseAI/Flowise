@@ -21,6 +21,7 @@
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
         "@apidevtools/json-schema-ref-parser": "^11.7.0",
+        "@arizeai/openinference-instrumentation-langchain": "^2.0.0",
         "@aws-sdk/client-bedrock-runtime": "3.422.0",
         "@aws-sdk/client-dynamodb": "^3.360.0",
         "@aws-sdk/client-s3": "^3.427.0",
