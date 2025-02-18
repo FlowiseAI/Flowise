@@ -18,14 +18,6 @@ import type { Sidekick, StarterPrompt } from 'types'
 import { DefaultPrompts } from './DefaultPrompts'
 import { FileUpload } from './AnswersContext'
 
-const constraints = {
-    isImageUploadAllowed: true,
-    imgUploadSizeAndTypes: [
-        { fileTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], maxUploadSize: 5 },
-        { fileTypes: ['audio/mpeg', 'audio/wav', 'audio/webm'], maxUploadSize: 10 }
-    ]
-}
-
 interface ChatInputProps {
     scrollRef?: React.RefObject<HTMLDivElement>
     isWidget?: boolean
@@ -47,6 +39,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const recordingIntervalRef = useRef<number | undefined>(undefined)
     const { chat, journey, messages, sendMessage, isLoading, sidekick, gptModel, startNewChat, chatbotConfig } = useAnswers()
+    const constraints = sidekick?.constraints
     const [isMessageStopping, setIsMessageStopping] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
@@ -130,10 +123,10 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
 
     const isFileAllowedForUpload = (file: File) => {
         let acceptFile = false
-        if (constraints.isImageUploadAllowed) {
+        if (constraints?.isImageUploadAllowed) {
             const fileType = file.type
             const sizeInMB = file.size / 1024 / 1024
-            constraints.imgUploadSizeAndTypes.forEach((allowed) => {
+            constraints?.uploadSizeAndTypes?.forEach((allowed) => {
                 if (allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
                     acceptFile = true
                 }
@@ -560,7 +553,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                             display: 'flex',
                             paddingBottom: 2
                         },
-                        startAdornment: (
+                        startAdornment: constraints?.isImageUploadAllowed && (
                             <Tooltip title='Attach image'>
                                 <IconButton component='label' sx={{ minWidth: 0 }}>
                                     <AttachFileIcon />
@@ -570,11 +563,13 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                         ),
                         endAdornment: (
                             <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Tooltip title={isRecording ? 'Stop Recording' : 'Record Audio'}>
-                                    <IconButton onClick={handleAudioRecordStart}>
-                                        <MicIcon />
-                                    </IconButton>
-                                </Tooltip>
+                                {constraints?.isSpeechToTextEnabled && (
+                                    <Tooltip title={isRecording ? 'Stop Recording' : 'Record Audio'}>
+                                        <IconButton onClick={handleAudioRecordStart}>
+                                            <MicIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
 
                                 <Button variant='contained' color='primary' onClick={handleSubmit}>
                                     Send

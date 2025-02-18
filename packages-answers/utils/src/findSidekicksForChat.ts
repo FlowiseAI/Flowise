@@ -17,6 +17,14 @@ interface Sidekick {
     category: string
     isAvailable: boolean
     isFavorite: boolean
+    constraints: {
+        isSpeechToTextEnabled: boolean
+        isImageUploadAllowed: boolean
+        uploadSizeAndTypes: {
+            fileTypes: string[]
+            maxUploadSize: number
+        }[]
+    }
 }
 
 export async function findSidekicksForChat(user: User) {
@@ -62,11 +70,58 @@ export async function findSidekicksForChat(user: User) {
         if (response.ok) {
             const result = await response.json()
 
+            const uploadAllowedNodes = [
+                'llmChain',
+                'conversationChain',
+                'reactAgentChat',
+                'conversationalAgent',
+                'toolAgent',
+                'supervisor',
+                'seqStart'
+            ]
+            const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI', 'chatGoogleGenerativeAI']
+
             const sidekicks: Sidekick[] = result.map((chatflow: any) => {
+                let isSpeechToTextEnabled = false
+                if (chatflow.speechToText) {
+                    const speechToTextProviders = JSON.parse(chatflow.speechToText)
+                    for (const provider in speechToTextProviders) {
+                        if (provider !== 'none') {
+                            const providerObj = speechToTextProviders[provider]
+                            if (providerObj.status) {
+                                isSpeechToTextEnabled = true
+                                break
+                            }
+                        }
+                    }
+                }
+
+                const flowData = parseFlowData(chatflow.flowData)
+                const nodes = flowData.nodes || []
+                const imgUploadSizeAndTypes: any[] = []
+                let isImageUploadAllowed = false
+
+                if (nodes.some((node) => uploadAllowedNodes.includes(node.data.name))) {
+                    nodes.forEach((node) => {
+                        if (uploadProcessingNodes.includes(node.data.name)) {
+                            node.data.inputParams.forEach((param: INodeParams) => {
+                                if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
+                                    imgUploadSizeAndTypes.push({
+                                        fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
+                                        maxUploadSize: 5
+                                    })
+                                    isImageUploadAllowed = true
+                                }
+                            })
+                        }
+                    })
+                }
+
                 const categories = (chatflow.categories || chatflow.category ? [chatflow.category] : [])
                     .filter(Boolean)
                     .map((c) => c.trim().split(';'))
                     .flat()
+
                 return {
                     id: chatflow.id || '',
                     label: chatflow.name || '',
@@ -81,7 +136,15 @@ export async function findSidekicksForChat(user: User) {
                     category: chatflow.category,
                     categories,
                     isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
-                    isFavorite: false // This will be managed client-side
+                    isFavorite: false,
+                    constraints: {
+                        isSpeechToTextEnabled,
+                        isImageUploadAllowed,
+                        uploadSizeAndTypes: [
+                            ...imgUploadSizeAndTypes,
+                            { fileTypes: ['audio/mpeg', 'audio/wav', 'audio/webm'], maxUploadSize: 10 }
+                        ]
+                    }
                 }
             })
 
