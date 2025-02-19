@@ -30,7 +30,7 @@ const ProcessingHistory = ({ user }: { user: User }) => {
                             <Chip
                                 label={run.status}
                                 variant='outlined'
-                                color={run.status === 'success' ? 'success' : run.status === 'pending' ? 'warning' : 'error'}
+                                color={run.status === 'complete' ? 'success' : run.status === 'pending' ? 'warning' : 'error'}
                             />
                         </Stack>
                         <Stack flexDirection='column' sx={{ gap: 2 }}>

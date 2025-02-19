@@ -39,9 +39,10 @@ const processRow = async (row: AppCsvParseRows): Promise<any> => {
         return
     } catch (err) {
         console.error(`Error processing row ${row.id}`, err)
+        // TODO: add error message to row
         await prisma.appCsvParseRows.update({
             where: { id: row.id },
-            data: { status: 'completeWithError' }
+            data: { status: 'completeWithError', errorMessage: err.message }
         })
         throw err
     }
@@ -76,6 +77,7 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
             limit = Math.min(rowsRequested, limit, rowsRemaining)
         }
 
+        // TODO: Add inProgress rows so we can account for them in the limit of rows to process
         const rows = await prisma.appCsvParseRows.findMany({
             where: {
                 csvParseRunId: csvParseRun.id,
@@ -126,7 +128,7 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
         console.error(`Error processing run ${csvParseRun.id}`, err)
         await prisma.appCsvParseRuns.update({
             where: { id: csvParseRun.id },
-            data: { status: 'completeWithErrors' }
+            data: { status: 'completeWithErrors', errorMessages: [err.message] }
         })
         throw err
     }
