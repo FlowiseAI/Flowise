@@ -10,6 +10,8 @@ import { useSelector } from 'react-redux'
 
 import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'https://s3-explorer.cmcts1.studio.ai.vn'
 
+const selectedFilesSet = new Set()
+
 export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
   const user = useSelector((state) => state.user)
   const displayPrefixes = user?.displayPrefixes ? JSON?.parse(user?.displayPrefixes.replace(/'/g, '"')) : []
@@ -23,6 +25,11 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
   const isKnowledgeFilesInput = useMemo(() => {
     return inputParam.name === 'knowledgeBaseFiles'
   }, [inputParam])
+
+  if (nodeId.startsWith('awsBedrockKBRetriever') && value.startsWith('[{')) {
+    const file = JSON.parse(value)
+    selectedFilesSet.add(file[0].key)
+  }
 
   const handleCloseVariableDialog = () => {
     setOpenVariableDialog(false)
@@ -176,6 +183,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
             asSelector={true}
             onSelected={handleS3FilesSelected}
             displayPrefixes={displayPrefixes}
+            preSelectedFiles={selectedFilesSet}
           />
         </Dialog>
       )}
