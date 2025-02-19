@@ -493,6 +493,7 @@ model AppCsvParseRuns {
   originalCsvUrl String
   processedCsvUrl String?
   chatflowChatId String
+  includeOriginalColumns Boolean @default(true)
   status AppCsvParseRunstatus @default(pending)
   errorMessages String[] @default([])
   user   User     @relation(fields: [userId], references: [id])
@@ -512,6 +513,7 @@ model AppCsvParseRows {
   csvParseRunId String
   rowNumber Int
   rowData Json
+  generatedData Json?
   status AppCsvParseRowStatus @default(pending)
   errorMessage String?
   createdAt DateTime @default(now())

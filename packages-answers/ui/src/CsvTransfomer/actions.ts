@@ -2,33 +2,63 @@
 
 // @ts-ignore
 import { prisma } from '@db/client'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+// @ts-ignore
+import { getUniqueDocumentPath } from '@utils/getUniqueDocumentPath'
 
 export async function createCsvParseRun({
     userId,
     orgId,
     name,
     configuration,
-    originalCsvUrl,
     chatflowChatId,
-    rowsRequested
+    rowsRequested,
+    file,
+    includeOriginalColumns
 }: {
     userId: string
     orgId: string
     name: string
     configuration: any
-    originalCsvUrl: string
     chatflowChatId: string
     rowsRequested: number
+    file: string | null
+    includeOriginalColumns: boolean
 }) {
+    if (!file) return
+    const uniqueDocumentPath = getUniqueDocumentPath({ organizationId: orgId, title: name })
+    const key = `${uniqueDocumentPath}.csv`
+    // Convert data URL to Buffer
+    const base64Data = file.replace(/^data:text\/csv;base64,/, '')
+    const fileBuffer = Buffer.from(base64Data, 'base64')
+
+    // Upload file to S3
+    const s3 = new S3Client({
+        region: process.env.AWS_REGION ?? '',
+        credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? ''
+        }
+    })
+    await s3.send(
+        new PutObjectCommand({
+            Bucket: process.env.AWS_S3_BUCKET ?? '',
+            Key: key,
+            Body: fileBuffer,
+            ContentType: 'text/csv'
+        })
+    )
+
     const csvParseRun = await prisma.appCsvParseRuns.create({
         data: {
             userId,
             orgId,
             name,
             configuration,
-            originalCsvUrl,
+            originalCsvUrl: `s3://${process.env.AWS_S3_BUCKET}/${key}`,
             chatflowChatId,
-            rowsRequested
+            rowsRequested,
+            includeOriginalColumns
         }
     })
     return csvParseRun

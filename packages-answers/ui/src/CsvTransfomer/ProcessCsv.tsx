@@ -19,6 +19,7 @@ import {
     FormControl,
     FormGroup,
     Checkbox,
+    Switch,
     IconButton,
     Snackbar,
     Backdrop,
@@ -49,12 +50,14 @@ interface IFormInput {
     rowsRequested: number
     context: string
     sourceColumns: string[]
+    includeOriginalColumns: boolean
 }
 
 const ProcessCsv = ({ chatflows, user }: { chatflows: any[]; user: User }) => {
     const theme = useTheme()
     const [headers, setHeaders] = useState<string[]>([])
     const [rows, setRows] = useState<string[][]>([])
+    const [file, setFile] = useState<string | null>(null)
     const [fileName, setFileName] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
     const [snackbarOpen, setSnackbarOpen] = useState(false)
@@ -74,7 +77,8 @@ const ProcessCsv = ({ chatflows, user }: { chatflows: any[]; user: User }) => {
             processorId: '',
             rowsRequested: 0,
             context: '',
-            sourceColumns: []
+            sourceColumns: [],
+            includeOriginalColumns: true
         }
     })
 
@@ -82,22 +86,27 @@ const ProcessCsv = ({ chatflows, user }: { chatflows: any[]; user: User }) => {
     const onDrop = useCallback((acceptedFiles: any) => {
         // Do something with the files
         const file = acceptedFiles[0]
+        setFile(file)
         setFileName(file.name)
         const reader = new FileReader()
 
         reader.onload = (event) => {
-            const content = event.target?.result as string
-            // Parse CSV content
-            const lines = content
-                .split('\n')
-                .map((line) => line.trim())
-                .filter((line) => line.length > 0)
-                .map((line) => line.split(',').map((cell) => cell.trim()))
-            const [headers, ...rows] = lines
-            setHeaders(headers)
-            setRows(rows)
+            if (reader.result?.toString().startsWith('data')) {
+                setFile(reader.result?.toString())
+            } else {
+                const content = event.target?.result as string
+                // Parse CSV content
+                const lines = content
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter((line) => line.length > 0)
+                    .map((line) => line.split(',').map((cell) => cell.trim()))
+                const [headers, ...rows] = lines
+                setHeaders(headers)
+                setRows(rows)
+                reader.readAsDataURL(file)
+            }
         }
-
         reader.readAsText(file)
     }, [])
 
@@ -128,42 +137,57 @@ const ProcessCsv = ({ chatflows, user }: { chatflows: any[]; user: User }) => {
 
     const handleClearFile = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation()
+        reset()
         setFileName(null)
         setHeaders([])
         setRows([])
+        setFile(null)
     }
 
     const handleProcessCsv = async (data: IFormInput) => {
         /*
         TODO:
-        - Upload file to S3
-        - Create a csv parse run [DONE]
-        - Create a csv parse row for each row in the csv [DONE]
-        - Show success message [DONE]
-        - Clean up the form [DONE]
+        - Add column mapping
         */
+
         try {
             setLoading(true)
+            const indexToCol = new Map<number, string>()
+            data.sourceColumns?.forEach((col: string) => {
+                const index = headers.indexOf(col)
+                if (index !== -1) {
+                    indexToCol.set(index, col)
+                }
+            })
+
             const result = await createCsvParseRun({
                 userId: user.id,
                 orgId: user.org_id,
                 name: data.name,
                 configuration: {
                     context: data.context,
-                    sourceColumns: data.sourceColumns
+                    sourceColumns: Object.fromEntries(indexToCol.entries())
                 },
-                originalCsvUrl: 'http://localhost:3000/test.csv',
                 chatflowChatId: data.processorId,
-                rowsRequested: Number(data.rowsRequested)
+                rowsRequested: Number(data.rowsRequested),
+                file: file,
+                includeOriginalColumns: data.includeOriginalColumns
             })
             if (result.id) {
-                const promises = rows.map((row, index) =>
-                    createCsvParseRows({
+                const promises = rows.map((row, index) => {
+                    const rowData = row.reduce((acc, cell, index) => {
+                        if (indexToCol.has(index) && indexToCol.has(index)) {
+                            // @ts-ignore
+                            acc[indexToCol.get(index)] = cell
+                        }
+                        return acc
+                    }, {})
+                    return createCsvParseRows({
                         csvParseRunId: result.id,
                         rowNumber: index,
-                        rowData: row
+                        rowData: rowData
                     })
-                )
+                })
                 await Promise.all(promises)
             }
             setSnackbarMessage('Your CSV is being processed.')
@@ -172,7 +196,9 @@ const ProcessCsv = ({ chatflows, user }: { chatflows: any[]; user: User }) => {
             setFileName(null)
             setHeaders([])
             setRows([])
+            setFile(null)
         } catch (err) {
+            console.log(err)
             setSnackbarMessage('There was an error processing your CSV.')
             setSnackbarOpen(true)
         } finally {
@@ -211,7 +237,19 @@ const ProcessCsv = ({ chatflows, user }: { chatflows: any[]; user: User }) => {
             </Box>
             {!!headers?.length && (
                 <Stack flexDirection='column' sx={{ gap: 2 }}>
-                    <Typography variant='h3'>Original Columns</Typography>
+                    <Stack flexDirection='row' justifyContent='space-between' sx={{ gap: 2 }}>
+                        <Typography variant='h3'>Original Columns</Typography>
+                        <Controller
+                            name='includeOriginalColumns'
+                            control={control}
+                            render={({ field }) => (
+                                <FormControlLabel
+                                    control={<Switch {...field} defaultChecked={true} color='secondary' />}
+                                    label='Include in output'
+                                />
+                            )}
+                        />
+                    </Stack>
                     <Stack flexDirection='row' sx={{ gap: 2 }}>
                         {headers.map((header) => (
                             <Chip key={header} label={header} variant='filled' color='primary' />

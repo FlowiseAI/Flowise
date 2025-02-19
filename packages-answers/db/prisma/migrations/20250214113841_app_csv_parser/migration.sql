@@ -20,6 +20,7 @@ CREATE TABLE "AppCsvParseRuns" (
     "chatflowChatId" TEXT NOT NULL,
     "status" "AppCsvParseRunstatus" NOT NULL DEFAULT 'pending',
     "errorMessages" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "includeOriginalColumns" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "AppCsvParseRuns_pkey" PRIMARY KEY ("id")
 );
@@ -30,6 +31,7 @@ CREATE TABLE "AppCsvParseRows" (
     "csvParseRunId" TEXT NOT NULL,
     "rowNumber" INTEGER NOT NULL,
     "rowData" JSONB NOT NULL,
+    "generatedData" JSONB,
     "status" "AppCsvParseRowStatus" NOT NULL DEFAULT 'pending',
     "errorMessage" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
