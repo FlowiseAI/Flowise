@@ -3,7 +3,6 @@ import { StyledButton } from './StyledButton'
 import PropTypes from 'prop-types'
 
 export const GoogleAuthButton = ({ componentCredential, name, handleGoogleOAuth, baseURL }) => {
-    console.log('componentCredential', componentCredential, name)
     if (!componentCredential || componentCredential.name !== 'googleOAuth') return null
 
     return (
