@@ -743,8 +743,8 @@ importers:
         specifier: 1.0.11
         version: 1.0.11(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.11(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       dccxx-s3-explorer:
-        specifier: ^1.0.28
-        version: 1.0.28(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
+        specifier: ^1.0.30
+        version: 1.0.30(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
       dotenv:
         specifier: ^16.0.0
         version: 16.4.5
@@ -8978,8 +8978,8 @@ packages:
   dayjs@1.11.13:
     resolution: {integrity: sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==}
 
-  dccxx-s3-explorer@1.0.28:
-    resolution: {integrity: sha512-gz77Vhia6DooSUQ0heQXEWn1NOnjyNGi0/QfPOu7otvFxZ3YPVoo6rBqe/ipYBym9L83ny6bSU/WbcHlRBUmMA==}
+  dccxx-s3-explorer@1.0.30:
+    resolution: {integrity: sha512-m2w+oEkr9qPqwQK/kuIXN997cVvd9WXUTy2/rwQomZIsNwQke5Pe2h5HZdHPV0FhGhedsMvhooLT5tgeXLS69g==}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -20957,7 +20957,7 @@ snapshots:
   '@emotion/babel-plugin@11.11.0':
     dependencies:
       '@babel/helper-module-imports': 7.25.9(supports-color@5.5.0)
-      '@babel/runtime': 7.24.0
+      '@babel/runtime': 7.26.0
       '@emotion/hash': 0.9.1
       '@emotion/memoize': 0.8.1
       '@emotion/serialize': 1.1.3
@@ -21353,7 +21353,7 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hookform/resolvers@3.9.1(react-hook-form@7.54.1(react@18.2.0))':
+  '@hookform/resolvers@3.9.1(react-hook-form@7.54.1(react@18.3.1))':
     dependencies:
       react-hook-form: 7.54.1(react@18.3.1)
 
@@ -22203,7 +22203,7 @@ snapshots:
   '@mui/utils@5.15.12(@types/react@18.2.65)(react@18.2.0)':
     dependencies:
       '@babel/runtime': 7.26.0
-      '@types/prop-types': 15.7.11
+      '@types/prop-types': 15.7.14
       prop-types: 15.8.1
       react: 18.2.0
       react-is: 18.2.0
@@ -22213,7 +22213,7 @@ snapshots:
   '@mui/utils@5.16.0(@types/react@18.2.65)(react@18.2.0)':
     dependencies:
       '@babel/runtime': 7.26.0
-      '@types/prop-types': 15.7.11
+      '@types/prop-types': 15.7.14
       prop-types: 15.8.1
       react: 18.2.0
       react-is: 18.2.0
@@ -25275,7 +25275,7 @@ snapshots:
   '@testing-library/dom@9.3.4':
     dependencies:
       '@babel/code-frame': 7.26.2
-      '@babel/runtime': 7.24.0
+      '@babel/runtime': 7.26.0
       '@types/aria-query': 5.0.4
       aria-query: 5.1.3
       chalk: 4.1.2
@@ -28584,9 +28584,9 @@ snapshots:
 
   dayjs@1.11.13: {}
 
-  dccxx-s3-explorer@1.0.28(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))):
+  dccxx-s3-explorer@1.0.30(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))):
     dependencies:
-      '@hookform/resolvers': 3.9.1(react-hook-form@7.54.1(react@18.2.0))
+      '@hookform/resolvers': 3.9.1(react-hook-form@7.54.1(react@18.3.1))
       '@nivo/bar': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@nivo/core': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@nivo/line': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
