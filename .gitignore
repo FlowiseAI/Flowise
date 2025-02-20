@@ -33,6 +33,7 @@
 .env.test.local
 .env.production.local
 .env
+!.env.template
 
 ## turbo
 .turbo

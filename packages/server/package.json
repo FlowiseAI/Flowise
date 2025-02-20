@@ -21,7 +21,7 @@
     },
     "scripts": {
         "build": "tsc",
-        "start": "run-script-os",
+        "start": "PORT=4000 run-script-os",
         "clean": "rimraf dist",
         "nuke": "rimraf dist node_modules .turbo",
         "start:windows": "cd bin && run start",
