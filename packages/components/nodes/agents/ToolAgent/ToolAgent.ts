@@ -56,13 +56,21 @@ class ToolAgent_Agents implements INode {
                     'Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat'
             },
             {
+                label: 'Prompt',
+                name: 'prompt',
+                type: 'BasePromptTemplate',
+                optional: true,
+                description: 'Custom prompt for the agent. If not provided, default system message will be used'
+            },
+            {
                 label: 'System Message',
                 name: 'systemMessage',
                 type: 'string',
                 default: `You are a helpful AI assistant.`,
                 rows: 4,
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                description: 'Used only if no custom prompt is provided'
             },
             {
                 label: 'Input Moderation',
@@ -191,18 +199,41 @@ const prepareAgent = async (
     const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
     const systemMessage = nodeData.inputs?.systemMessage as string
+    const customPrompt = nodeData.inputs?.prompt
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
     const prependMessages = options?.prependMessages
 
-    const prompt = ChatPromptTemplate.fromMessages([
-        ['system', systemMessage],
-        new MessagesPlaceholder(memoryKey),
-        ['human', `{${inputKey}}`],
-        new MessagesPlaceholder('agent_scratchpad')
-    ])
+    let prompt: ChatPromptTemplate
+
+    if (customPrompt) {
+        if (customPrompt instanceof ChatPromptTemplate) {
+            prompt = customPrompt
+            if (!prompt.promptMessages.some((msg) => msg instanceof MessagesPlaceholder && msg.variableName === 'agent_scratchpad')) {
+                prompt.promptMessages.push(new MessagesPlaceholder('agent_scratchpad'))
+            }
+        } else if (customPrompt instanceof PromptTemplate) {
+            // Convert PromptTemplate to ChatPromptTemplate
+            prompt = ChatPromptTemplate.fromMessages([
+                ['system', systemMessage],
+                new MessagesPlaceholder(memoryKey),
+                HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`),
+                new MessagesPlaceholder('agent_scratchpad')
+            ])
+        } else {
+            throw new Error('Unsupported prompt type. Please use ChatPromptTemplate or PromptTemplate.')
+        }
+    } else {
+        // Use default prompt
+        prompt = ChatPromptTemplate.fromMessages([
+            ['system', systemMessage],
+            new MessagesPlaceholder(memoryKey),
+            ['human', `{${inputKey}}`],
+            new MessagesPlaceholder('agent_scratchpad')
+        ])
+    }
 
     if (llmSupportsVision(model)) {
         const visionChatModel = model as IVisionChatModal
@@ -211,23 +242,30 @@ const prepareAgent = async (
         if (messageContent?.length) {
             visionChatModel.setVisionModel()
 
-            // Pop the `agent_scratchpad` MessagePlaceHolder
-            let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
+            const agentScratchpad = prompt.promptMessages.pop() as MessagesPlaceholder
+
             if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
                 const lastMessage = prompt.promptMessages.pop() as HumanMessagePromptTemplate
                 const template = (lastMessage.prompt as PromptTemplate).template as string
                 const msg = HumanMessagePromptTemplate.fromTemplate([
                     ...messageContent,
                     {
-                        text: template
+                        text: typeof template === 'string' ? template : `{${inputKey}}`
                     }
                 ])
                 msg.inputVariables = lastMessage.inputVariables
                 prompt.promptMessages.push(msg)
+            } else {
+                const msg = HumanMessagePromptTemplate.fromTemplate([
+                    ...messageContent,
+                    {
+                        text: `{${inputKey}}`
+                    }
+                ])
+                prompt.promptMessages.push(msg)
             }
 
-            // Add the `agent_scratchpad` MessagePlaceHolder back
-            prompt.promptMessages.push(messagePlaceholder)
+            prompt.promptMessages.push(agentScratchpad)
         } else {
             visionChatModel.revertToOriginalModel()
         }
