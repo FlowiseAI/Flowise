@@ -9,7 +9,6 @@ import { useTheme } from '@mui/material/styles'
 
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
-import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // Icons
 import { IconX, IconCopy, IconArrowUpRightCircle } from '@tabler/icons-react'
@@ -399,21 +398,6 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                 <IconButton title='Open New Tab' color='primary' onClick={() => window.open(`${baseURL}/chatbot/${chatflowid}`, '_blank')}>
                     <IconArrowUpRightCircle />
                 </IconButton>
-                <div style={{ flex: 1 }} />
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Switch
-                        checked={isPublicChatflow}
-                        onChange={(event) => {
-                            setChatflowIsPublic(event.target.checked)
-                            onSwitchChange(event.target.checked)
-                        }}
-                    />
-                    <Typography>Make Public</Typography>
-                    <TooltipWithParser
-                        style={{ marginLeft: 10 }}
-                        title={'Making public will allow anyone to access the chatbot without username & password'}
-                    />
-                </div>
             </Stack>
             {textField(title, 'title', 'Title', 'string', 'AnswerAI Sidekick')}
             {textField(

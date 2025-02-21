@@ -15,7 +15,8 @@ import {
     AccordionSummary,
     AccordionDetails,
     Typography,
-    Stack
+    Stack,
+    Switch
 } from '@mui/material'
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -24,6 +25,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import ShareChatbot from './ShareChatbot'
 import EmbedChat from './EmbedChat'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
 // Const
 import { baseURL } from '@/store/constant'
@@ -93,6 +95,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const [checkboxVal, setCheckbox] = useState(false)
     const [nodeConfig, setNodeConfig] = useState({})
     const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
+    const [isPublicChatflow, setIsPublicChatflow] = useState(dialogProps.chatflow?.isPublic ?? false)
 
     const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -565,6 +568,17 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [show])
 
+    const onSwitchChange = async (checked) => {
+        try {
+            const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflowid, { isPublic: checked })
+            if (saveResp.data) {
+                dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+            }
+        } catch (error) {
+            console.error('Failed to save Chatbot Configuration:', error)
+        }
+    }
+
     const component = show ? (
         <Dialog
             open={show}
@@ -594,19 +608,34 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                             ))}
                         </Tabs>
                     </div>
-                    <div style={{ flex: 20 }}>
-                        <Dropdown
-                            name='SelectKey'
-                            disableClearable={true}
-                            options={keyOptions}
-                            onSelect={(newValue) => onApiKeySelected(newValue)}
-                            value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
-                        />
-                    </div>
                 </div>
                 <div style={{ marginTop: 10 }}></div>
+
                 {codes.map((codeLang, index) => (
                     <TabPanel key={index} value={value} index={index}>
+                        <Box sx={{ justifyContent: 'space-between', display: 'flex', flexDirection: 'row', gap: 2, mb: 2 }}>
+                            <Dropdown
+                                name='SelectKey'
+                                disableClearable={true}
+                                options={keyOptions}
+                                onSelect={(newValue) => onApiKeySelected(newValue)}
+                                value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
+                            />
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <Switch
+                                    checked={isPublicChatflow}
+                                    onChange={(event) => {
+                                        setIsPublicChatflow(event.target.checked)
+                                        onSwitchChange(event.target.checked)
+                                    }}
+                                />
+                                <Typography>Make Public</Typography>
+                                <TooltipWithParser
+                                    style={{ marginLeft: 10 }}
+                                    title={'Making public will allow anyone to access the chatbot without username & password'}
+                                />
+                            </div>
+                        </Box>
                         {(codeLang === 'Embed' || codeLang === 'Share Chatbot') && chatflowApiKeyId && (
                             <>
                                 <p>You cannot use API key while embedding/sharing chatbot.</p>
