@@ -70,6 +70,11 @@
 
             "outputMode": "new-only"
         },
+        "test:auth": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**", "build/**", ".next/**"],
+            "outputMode": "new-only"
+        },
         "db:generate": {
             "cache": false,
             "dependsOn": ["db:deploy"],

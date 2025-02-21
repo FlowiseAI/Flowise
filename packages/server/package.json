@@ -42,7 +42,8 @@
         "cypress:run": "cypress run",
         "e2e": "start-server-and-test dev http://localhost:3000 cypress:run",
         "cypress:ci": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start https-get://localhost:3000 cypress:run",
-        "test": "jest"
+        "test": "jest",
+        "test:auth": "mocha -r ts-node/register test/auth/**/*.test.ts --timeout 10000"
     },
     "keywords": [],
     "homepage": "https://flowiseai.com",
@@ -99,16 +100,21 @@
         "winston": "^3.9.0"
     },
     "devDependencies": {
+        "@types/chai": "^4.3.0",
         "@types/content-disposition": "0.5.8",
         "@types/cors": "^2.8.12",
         "@types/crypto-js": "^4.1.1",
+        "@types/express": "^4.17.13",
         "@types/express-session": "^1.18.1",
+        "@types/mocha": "^10.0.6",
         "@types/multer": "^1.4.7",
         "@types/passport": "^1.0.17",
         "@types/passport-google-oauth20": "^2.0.16",
         "@types/sanitize-html": "^2.9.5",
+        "chai": "^4.3.4",
         "concurrently": "^7.1.0",
         "cypress": "^13.13.0",
+        "mocha": "^10.3.0",
         "nodemon": "^2.0.22",
         "oclif": "^3",
         "rimraf": "^5.0.5",

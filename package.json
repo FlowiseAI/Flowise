@@ -6,7 +6,7 @@
     "scripts": {
         "build": "turbo run build ",
         "build-force": "pnpm clean && turbo run build --force",
-        "dev": "turbo run dev dev-docker",
+        "dev": "dotenv -- turbo run dev dev-docker",
         "dev-docker": "docker-compose  -f \"./docker-compose.dev.yml\" up -d",
         "start": "run-script-os",
         "start:windows": "cd packages/server/bin && run start",
@@ -29,6 +29,7 @@
         "db:run:script": "dotenv -- pnpm --filter db run:script",
         "db:studio": "dotenv -- pnpm db studio",
         "db:seed": "dotenv -- pnpm db db seed",
+        "test": "pnpm turbo run test:auth",
         "test:e2e": "pnpm cypress run",
         "test:cmp": "pnpm cypress run --component",
         "logs": "docker-compose logs -f",
