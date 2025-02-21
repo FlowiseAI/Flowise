@@ -17,9 +17,7 @@ const sidekick = async (row: AppCsvParseRows) => {
 
     if (response.ok) {
         const data = await response.json()
-        // return data.output
-        console.log('data => ', data)
-        return { colx: 'val1', coly: 'val2', colz: 'val3' }
+        return data.json ?? {}
     } else {
         console.error(`Error processing row ${row.id}`, response)
         throw new Error(`Error processing row ${row.id}`)
