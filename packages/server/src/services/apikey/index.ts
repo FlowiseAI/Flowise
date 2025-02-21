@@ -235,23 +235,30 @@ const importKeys = async (body: any, user: IUser) => {
     }
 }
 
-const verifyApiKey = async (paramApiKey: string): Promise<string> => {
+const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
     try {
         if (_apikeysStoredInJson()) {
-            const apiKey = await getApiKey_json(paramApiKey)
-            if (!apiKey) {
+            const apiKeyData = await getApiKey_json(paramApiKey)
+            if (!apiKeyData) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
-            return 'OK'
+            // Convert JSON data to ApiKey entity
+            const apiKey = new ApiKey()
+            Object.assign(apiKey, apiKeyData)
+            return apiKey
         } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
             const apiKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-                apiKey: paramApiKey
+                apiKey: paramApiKey,
+                isActive: true
             })
             if (!apiKey) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
-            return 'OK'
+            // Update lastUsedAt
+            apiKey.lastUsedAt = new Date()
+            await appServer.AppDataSource.getRepository(ApiKey).save(apiKey)
+            return apiKey
         } else {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `UNKNOWN APIKEY_STORAGE_TYPE`)
         }
