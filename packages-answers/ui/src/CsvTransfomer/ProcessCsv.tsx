@@ -30,7 +30,7 @@ import DownloadOutlined from '@mui/icons-material/DownloadOutlined'
 import CloseOutlined from '@mui/icons-material/CloseOutlined'
 import FilePresentOutlined from '@mui/icons-material/FilePresentOutlined'
 
-import { createCsvParseRows, createCsvParseRun } from './actions'
+import { createCsvParseRun } from './actions'
 
 const baseStyle = {
     flex: 1,
@@ -145,11 +145,6 @@ const ProcessCsv = ({ chatflows, user }: { chatflows: any[]; user: User }) => {
     }
 
     const handleProcessCsv = async (data: IFormInput) => {
-        /*
-        TODO:
-        - Add column mapping
-        */
-
         try {
             setLoading(true)
             const indexToCol = new Map<number, string>()
@@ -160,7 +155,7 @@ const ProcessCsv = ({ chatflows, user }: { chatflows: any[]; user: User }) => {
                 }
             })
 
-            const result = await createCsvParseRun({
+            await createCsvParseRun({
                 userId: user.id,
                 orgId: user.org_id,
                 name: data.name,
@@ -173,23 +168,6 @@ const ProcessCsv = ({ chatflows, user }: { chatflows: any[]; user: User }) => {
                 file: file,
                 includeOriginalColumns: data.includeOriginalColumns
             })
-            if (result.id) {
-                const promises = rows.map((row, index) => {
-                    const rowData = row.reduce((acc, cell, index) => {
-                        if (indexToCol.has(index) && indexToCol.has(index)) {
-                            // @ts-ignore
-                            acc[indexToCol.get(index)] = cell
-                        }
-                        return acc
-                    }, {})
-                    return createCsvParseRows({
-                        csvParseRunId: result.id,
-                        rowNumber: index,
-                        rowData: rowData
-                    })
-                })
-                await Promise.all(promises)
-            }
             setSnackbarMessage('Your CSV is being processed.')
             setSnackbarOpen(true)
             reset()

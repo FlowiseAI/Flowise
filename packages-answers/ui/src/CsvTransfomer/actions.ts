@@ -27,7 +27,7 @@ export async function createCsvParseRun({
 }) {
     if (!file) return
     const uniqueDocumentPath = getUniqueDocumentPath({ organizationId: orgId, title: name })
-    const key = `${uniqueDocumentPath}.csv`
+    const key = `csv-parse-runs/${uniqueDocumentPath}.csv`
     // Convert data URL to Buffer
     const base64Data = file.replace(/^data:text\/csv;base64,/, '')
     const fileBuffer = Buffer.from(base64Data, 'base64')

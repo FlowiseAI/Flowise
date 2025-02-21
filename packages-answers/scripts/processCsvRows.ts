@@ -1,12 +1,29 @@
+import fetch from 'node-fetch'
 import { AppCsvParseRuns, AppCsvParseRows } from '../db/generated/prisma-client'
 import { prisma } from '../db/src/client'
 
 const BATCH_SIZE = 10
 
-const sidekick = async () => {
-    // TODO: Replace with actual sidekick call
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    return { colx: 'val1', coly: 'val2', colz: 'val3' }
+const sidekick = async (row: AppCsvParseRows) => {
+    const response = await fetch('https://ias-prod.flowise.theanswer.ai/api/v1/prediction/47bb4c0a-dad8-409a-800a-772d54f5549c', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question: row.rowData
+        })
+    })
+
+    if (response.ok) {
+        const data = await response.json()
+        // return data.output
+        console.log('data => ', data)
+        return { colx: 'val1', coly: 'val2', colz: 'val3' }
+    } else {
+        console.error(`Error processing row ${row.id}`, response)
+        throw new Error(`Error processing row ${row.id}`)
+    }
 }
 
 const processRow = async (row: AppCsvParseRows): Promise<any> => {
@@ -18,7 +35,7 @@ const processRow = async (row: AppCsvParseRows): Promise<any> => {
         })
         // Call sidekick
         try {
-            const result = await sidekick()
+            const result = await sidekick(row)
             // Store result on row, upsert rowData
             await prisma.appCsvParseRows.update({
                 where: { id: row.id },
@@ -40,9 +57,16 @@ const processRow = async (row: AppCsvParseRows): Promise<any> => {
     } catch (err) {
         console.error(`Error processing row ${row.id}`, err)
         // TODO: add error message to row
+        let errorMessage: string = ''
+        if (err instanceof Error) {
+            errorMessage = err.message
+        }
         await prisma.appCsvParseRows.update({
             where: { id: row.id },
-            data: { status: 'completeWithError', errorMessage: err.message }
+            data: {
+                status: 'completeWithError',
+                errorMessage
+            }
         })
         throw err
     }
@@ -61,7 +85,7 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
         }
 
         const rowsRequested = csvParseRun.rowsRequested ?? 0
-        const rowsProcessed = csvParseRun.rowsProcessed ?? 0
+        let rowsProcessed = csvParseRun.rowsProcessed ?? 0
 
         const count = await prisma.appCsvParseRows.count({
             where: {
@@ -70,11 +94,29 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
             }
         })
 
+        const inProgressRows = await prisma.appCsvParseRows.count({
+            where: {
+                csvParseRunId: csvParseRun.id,
+                status: 'inProgress'
+            }
+        })
+
+        rowsProcessed += inProgressRows
+
         let rowsRemaining = count - (rowsProcessed ?? 0)
 
         let limit = BATCH_SIZE
         if (rowsRequested > 0) {
             limit = Math.min(rowsRequested, limit, rowsRemaining)
+        }
+
+        if (limit <= 0) {
+            console.log(`No rows to process for run ${csvParseRun.id}, marking as complete`)
+            await prisma.appCsvParseRuns.update({
+                where: { id: csvParseRun.id },
+                data: { status: 'complete' }
+            })
+            return
         }
 
         // TODO: Add inProgress rows so we can account for them in the limit of rows to process
@@ -83,7 +125,10 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
                 csvParseRunId: csvParseRun.id,
                 status: 'pending'
             },
-            take: limit
+            take: limit,
+            orderBy: {
+                rowNumber: 'asc'
+            }
         })
 
         // If no rows, mark run as complete
@@ -126,9 +171,16 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
         return
     } catch (err) {
         console.error(`Error processing run ${csvParseRun.id}`, err)
+        let errorMessages: string[] = []
+        if (err instanceof Error) {
+            errorMessages.push(err.message)
+        }
         await prisma.appCsvParseRuns.update({
             where: { id: csvParseRun.id },
-            data: { status: 'completeWithErrors', errorMessages: [err.message] }
+            data: {
+                status: 'completeWithErrors',
+                errorMessages
+            }
         })
         throw err
     }
@@ -138,11 +190,11 @@ const main = async () => {
     try {
         console.log('start processing csv rows')
 
-        // Get list of pending or inProgress Runs
+        // Get list of inProgress Runs
         const csvParseRuns = await prisma.appCsvParseRuns.findMany({
             where: {
                 status: {
-                    in: ['pending', 'inProgress']
+                    in: ['inProgress']
                 }
             },
             orderBy: {

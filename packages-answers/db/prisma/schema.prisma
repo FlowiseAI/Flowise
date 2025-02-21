@@ -478,6 +478,8 @@ enum AppCsvParseRunstatus {
   inProgress
   completeWithErrors
   complete
+  generatingCsv
+  ready
 }
 
 model AppCsvParseRuns {

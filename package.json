@@ -47,7 +47,9 @@
         "test:cmp": "pnpm cypress run --component",
         "logs": "docker-compose logs -f",
         "dev-inngest": "npx inngest-cli@latest dev -u http://localhost:3001/api/inngest --no-discovery > /dev/null 2>&1",
-        "scripts:processCsvRows": "dotenv -- ts-node ./packages-answers/scripts/processCsvRows.ts"
+        "scripts:processCsvRows": "dotenv -- ts-node ./packages-answers/scripts/processCsvRows.ts",
+        "scripts:generateCsv": "dotenv -- ts-node ./packages-answers/scripts/generateCsv.ts",
+        "scripts:initCsvRun": "dotenv -- ts-node ./packages-answers/scripts/initCsvRun.ts"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"

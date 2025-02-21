@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "AppCsvParseRunstatus" AS ENUM ('pending', 'inProgress', 'completeWithErrors', 'complete');
+CREATE TYPE "AppCsvParseRunstatus" AS ENUM ('pending', 'inProgress', 'completeWithErrors', 'complete', 'ready', 'generatingCsv');
 
 -- CreateEnum
 CREATE TYPE "AppCsvParseRowStatus" AS ENUM ('pending', 'inProgress', 'completeWithError', 'complete');
