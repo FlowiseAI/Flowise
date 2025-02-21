@@ -1,4 +1,3 @@
-import express from 'express'
 import { Response } from 'express'
 import { IServerSideEventStreamer } from 'flowise-components'
 
@@ -13,11 +12,6 @@ type Client = {
 
 export class SSEStreamer implements IServerSideEventStreamer {
     clients: { [id: string]: Client } = {}
-    app: express.Application
-
-    constructor(app: express.Application) {
-        this.app = app
-    }
 
     addExternalClient(chatId: string, res: Response) {
         this.clients[chatId] = { clientType: 'EXTERNAL', response: res, started: false }
@@ -37,18 +31,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
             client.response.write('message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
             client.response.end()
             delete this.clients[chatId]
-        }
-    }
-
-    // Send SSE message to a specific client
-    streamEvent(chatId: string, data: string) {
-        const client = this.clients[chatId]
-        if (client) {
-            const clientResponse = {
-                event: 'start',
-                data: data
-            }
-            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
     }
 
@@ -212,7 +194,12 @@ export class SSEStreamer implements IServerSideEventStreamer {
             metadataJson['memoryType'] = apiResponse.memoryType
         }
         if (apiResponse.followUpPrompts) {
-            metadataJson['followUpPrompts'] = JSON.parse(apiResponse.followUpPrompts)
+            metadataJson['followUpPrompts'] =
+                typeof apiResponse.followUpPrompts === 'string' ? JSON.parse(apiResponse.followUpPrompts) : apiResponse.followUpPrompts
+        }
+        if (apiResponse.flowVariables) {
+            metadataJson['flowVariables'] =
+                typeof apiResponse.flowVariables === 'string' ? JSON.parse(apiResponse.flowVariables) : apiResponse.flowVariables
         }
         if (Object.keys(metadataJson).length > 0) {
             this.streamCustomEvent(chatId, 'metadata', metadataJson)

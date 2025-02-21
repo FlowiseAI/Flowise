@@ -38,7 +38,7 @@ import cURLSVG from '@/assets/images/cURL.svg'
 import EmbedSVG from '@/assets/images/embed.svg'
 import ShareChatbotSVG from '@/assets/images/sharing.png'
 import settingsSVG from '@/assets/images/settings.svg'
-import { IconBulb, IconBox, IconVariable } from '@tabler/icons-react'
+import { IconBulb, IconBox, IconVariable, IconExclamationCircle } from '@tabler/icons-react'
 
 // API
 import apiKeyApi from '@/api/apikey'
@@ -726,9 +726,44 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                 <CheckboxInput label='Show Override Config' value={checkboxVal} onChange={onCheckBoxChanged} />
                                 {checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
                                     <>
-                                        <Typography sx={{ mt: 2, mb: 3 }}>
+                                        <Typography sx={{ mt: 2 }}>
                                             You can override existing input configuration of the chatflow with overrideConfig property.
                                         </Typography>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                borderRadius: 10,
+                                                background: 'rgb(254,252,191)',
+                                                padding: 10,
+                                                marginTop: 10,
+                                                marginBottom: 10
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center'
+                                                }}
+                                            >
+                                                <IconExclamationCircle size={30} color='rgb(116,66,16)' />
+                                                <span style={{ color: 'rgb(116,66,16)', marginLeft: 10, fontWeight: 500 }}>
+                                                    {
+                                                        'For security reason, override config is disabled by default. You can change this by going into Chatflow Configuration -> Security tab, and enable the property you want to override.'
+                                                    }
+                                                    &nbsp;Refer{' '}
+                                                    <a
+                                                        rel='noreferrer'
+                                                        target='_blank'
+                                                        href='https://docs.flowiseai.com/using-flowise/api#override-config'
+                                                    >
+                                                        here
+                                                    </a>{' '}
+                                                    for more details
+                                                </span>
+                                            </div>
+                                        </div>
                                         <Stack direction='column' spacing={2} sx={{ width: '100%', my: 2 }}>
                                             <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
                                                 <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>

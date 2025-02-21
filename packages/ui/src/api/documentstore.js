@@ -6,6 +6,7 @@ const getSpecificDocumentStore = (id) => client.get(`/document-store/store/${id}
 const createDocumentStore = (body) => client.post(`/document-store/store`, body)
 const updateDocumentStore = (id, body) => client.put(`/document-store/store/${id}`, body)
 const deleteDocumentStore = (id) => client.delete(`/document-store/store/${id}`)
+const getDocumentStoreConfig = (storeId, loaderId) => client.get(`/document-store/store-configs/${storeId}/${loaderId}`)
 
 const deleteLoaderFromStore = (id, fileId) => client.delete(`/document-store/loader/${id}/${fileId}`)
 const deleteChunkFromStore = (storeId, loaderId, chunkId) => client.delete(`/document-store/chunks/${storeId}/${loaderId}/${chunkId}`)
@@ -52,5 +53,6 @@ export default {
     updateVectorStoreConfig,
     saveProcessingLoader,
     refreshLoader,
-    generateDocStoreToolDesc
+    generateDocStoreToolDesc,
+    getDocumentStoreConfig
 }

@@ -62,12 +62,14 @@ paths:
                   name: startDate
                   schema:
                       type: string
+                      example: 2025-01-01T11:28:36.000Z
                   format: date-time
                   description: Filter by start date
                 - in: query
                   name: endDate
                   schema:
                       type: string
+                      example: 2025-01-13T11:28:36.000Z
                   format: date-time
                   description: Filter by end date
                 - in: query
@@ -80,7 +82,7 @@ paths:
                   schema:
                       type: string
                       enum: [THUMBS_UP, THUMBS_DOWN]
-                  description: Filter by feedback type
+                  description: Filter by feedback type. Only applicable if feedback is true
             responses:
                 '200':
                     description: A list of chat messages
@@ -130,6 +132,29 @@ paths:
                       type: string
                       enum: [INTERNAL, EXTERNAL]
                   description: Filter by chat type
+                - in: query
+                  name: startDate
+                  schema:
+                      type: string
+                      example: 2025-01-01T11:28:36.000Z
+                  description: Filter by start date
+                - in: query
+                  name: endDate
+                  schema:
+                      type: string
+                      example: 2025-01-13T11:28:36.000Z
+                  description: Filter by end date
+                - in: query
+                  name: feedbackType
+                  schema:
+                      type: string
+                      enum: [THUMBS_UP, THUMBS_DOWN]
+                  description: Filter by feedback type
+                - in: query
+                  name: hardDelete
+                  schema:
+                      type: boolean
+                  description: If hardDelete is true, messages will be deleted from the third party service as well
             responses:
                 '200':
                     description: Chat messages deleted successfully
@@ -553,7 +578,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             responses:
                 '200':
                     description: Successfully retrieved document store
@@ -580,7 +605,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             requestBody:
                 content:
                     application/json:
@@ -613,7 +638,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             responses:
                 '200':
                     description: Successfully deleted document store
@@ -628,8 +653,8 @@ paths:
                 - document-store
             security:
                 - bearerAuth: []
-            summary: Upsert new document to document store
-            description: Upsert new document to document store
+            summary: Upsert document to document store
+            description: Upsert document to document store
             operationId: upsertDocument
             parameters:
                 - in: path
@@ -638,7 +663,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             requestBody:
                 content:
                     application/json:
@@ -654,6 +679,11 @@ paths:
                                         type: string
                                         format: binary
                                     description: Files to be uploaded
+                                docId:
+                                    type: string
+                                    nullable: true
+                                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                                    description: Document ID to use existing configuration
                                 loader:
                                     type: string
                                     nullable: true
@@ -679,6 +709,32 @@ paths:
                                     nullable: true
                                     example: '{"name":"postgresRecordManager"}'
                                     description: Record Manager configurations
+                                metadata:
+                                    type: object
+                                    nullable: true
+                                    description: Metadata associated with the document
+                                    example: { 'foo': 'bar' }
+                                replaceExisting:
+                                    type: boolean
+                                    nullable: true
+                                    description: Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store
+                                createNewDocStore:
+                                    type: boolean
+                                    nullable: true
+                                    description: Whether to create a new document store
+                                docStore:
+                                    type: object
+                                    nullable: true
+                                    description: Only when createNewDocStore is true, pass in the new document store configuration
+                                    properties:
+                                        name:
+                                            type: string
+                                            example: plainText
+                                            description: Name of the new document store to be created
+                                        description:
+                                            type: string
+                                            example: plainText
+                                            description: Description of the new document store to be created
                             required:
                                 - files
                 required: true
@@ -711,7 +767,7 @@ paths:
                   schema:
                       type: string
                       format: uuid
-                  description: Document store ID
+                  description: Document Store ID
             requestBody:
                 content:
                     application/json:
@@ -752,7 +808,7 @@ paths:
                             properties:
                                 storeId:
                                     type: string
-                                    description: Document store ID
+                                    description: Document Store ID
                                     example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
                                 query:
                                     type: string
@@ -779,6 +835,38 @@ paths:
                 '500':
                     description: Internal server error
 
+    /document-store/loader/{storeId}/{loaderId}:
+        delete:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Delete specific document loader and associated chunks from document store
+            description: Delete specific document loader and associated chunks from document store. This does not delete data from vector store.
+            operationId: deleteLoaderFromDocumentStore
+            parameters:
+                - in: path
+                  name: storeId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Store ID
+                - in: path
+                  name: loaderId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Loader ID
+            responses:
+                '200':
+                    description: Successfully deleted loader from document store
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Document Store not found
+                '500':
+                    description: Internal server error
+
     /document-store/vectorstore/{id}:
         delete:
             tags:
@@ -798,6 +886,131 @@ paths:
             responses:
                 '200':
                     description: Successfully deleted data from vector store
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Document Store not found
+                '500':
+                    description: Internal server error
+
+    /document-store/chunks/{storeId}/{loaderId}/{pageNo}:
+        get:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Get chunks from a specific document loader
+            description: Get chunks from a specific document loader within a document store
+            operationId: getDocumentStoreFileChunks
+            parameters:
+                - in: path
+                  name: storeId
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document Store ID
+                - in: path
+                  name: loaderId
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document loader ID
+                - in: path
+                  name: pageNo
+                  required: true
+                  schema:
+                      type: string
+                  description: Pagination number
+            responses:
+                '200':
+                    description: Successfully retrieved chunks from document loader
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DocumentStoreFileChunkPagedResponse'
+                '404':
+                    description: Document store not found
+                '500':
+                    description: Internal server error
+
+    /document-store/chunks/{storeId}/{loaderId}/{chunkId}:
+        put:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Update a specific chunk
+            description: Updates a specific chunk from a document loader
+            operationId: editDocumentStoreFileChunk
+            parameters:
+                - in: path
+                  name: storeId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Store ID
+                - in: path
+                  name: loaderId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Loader ID
+                - in: path
+                  name: chunkId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Chunk ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Document'
+                required: true
+            responses:
+                '200':
+                    description: Successfully updated chunk
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DocumentStoreFileChunkPagedResponse'
+                '404':
+                    description: Document store not found
+                '500':
+                    description: Internal server error
+
+        delete:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Delete a specific chunk from a document loader
+            description: Delete a specific chunk from a document loader
+            operationId: deleteDocumentStoreFileChunk
+            parameters:
+                - in: path
+                  name: storeId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Store ID
+                - in: path
+                  name: loaderId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Loader ID
+                - in: path
+                  name: chunkId
+                  required: true
+                  schema:
+                      type: string
+                  description: Document Chunk ID
+            responses:
+                '200':
+                    description: Successfully deleted chunk
                 '400':
                     description: Invalid ID provided
                 '404':
@@ -2049,7 +2262,7 @@ components:
                 storeId:
                     type: string
                     format: uuid
-                    description: Document store ID
+                    description: Document Store ID
                 chunkNo:
                     type: integer
                     description: Chunk number within the document
@@ -2168,9 +2381,37 @@ components:
                 docId:
                     type: string
                     format: uuid
+                    nullable: true
                     description: Document ID within the store. If provided, existing configuration from the document will be used for the new document
+                metadata:
+                    type: object
+                    nullable: true
+                    description: Metadata associated with the document
+                    example: { 'foo': 'bar' }
+                replaceExisting:
+                    type: boolean
+                    nullable: true
+                    description: Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store
+                createNewDocStore:
+                    type: boolean
+                    nullable: true
+                    description: Whether to create a new document store
+                docStore:
+                    type: object
+                    nullable: true
+                    description: Only when createNewDocStore is true, pass in the new document store configuration
+                    properties:
+                        name:
+                            type: string
+                            example: plainText
+                            description: Name of the new document store to be created
+                        description:
+                            type: string
+                            example: plainText
+                            description: Description of the new document store to be created
                 loader:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2181,6 +2422,7 @@ components:
                             description: Configuration for the loader
                 splitter:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2191,6 +2433,7 @@ components:
                             description: Configuration for the text splitter
                 embedding:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2201,6 +2444,7 @@ components:
                             description: Configuration for the embedding generator
                 vectorStore:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2211,6 +2455,7 @@ components:
                             description: Configuration for the vector store
                 recordManager:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
