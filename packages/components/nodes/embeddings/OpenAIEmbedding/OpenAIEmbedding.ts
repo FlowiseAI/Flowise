@@ -1,4 +1,4 @@
-import { OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
+import { ClientOptions, OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
@@ -97,7 +97,7 @@ class OpenAIEmbedding_Embeddings implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string } = {
+        const obj: Partial<OpenAIEmbeddingsParams> & { openAIApiKey?: string; configuration?: ClientOptions } = {
             openAIApiKey,
             modelName
         }
@@ -107,7 +107,13 @@ class OpenAIEmbedding_Embeddings implements INode {
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (dimensions) obj.dimensions = parseInt(dimensions, 10)
 
-        const model = new OpenAIEmbeddings(obj, { basePath })
+        if (basePath) {
+            obj.configuration = {
+                baseURL: basePath
+            }
+        }
+
+        const model = new OpenAIEmbeddings(obj)
         return model
     }
 }

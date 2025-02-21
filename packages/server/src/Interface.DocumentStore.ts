@@ -76,6 +76,8 @@ export interface IDocumentStoreUpsertData {
     docId: string
     metadata?: string | object
     replaceExisting?: boolean
+    createNewDocStore?: boolean
+    docStore?: IDocumentStore
     loader?: {
         name: string
         config: ICommonObject

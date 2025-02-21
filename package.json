@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.2.4",
+    "version": "2.2.5",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -71,9 +71,9 @@
     },
     "resolutions": {
         "@google/generative-ai": "^0.15.0",
-        "@langchain/core": "0.3.29",
+        "@langchain/core": "0.3.37",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
-        "openai": "4.57.3",
+        "openai": "4.82.0",
         "protobufjs": "7.4.0"
     },
     "eslintIgnore": [
