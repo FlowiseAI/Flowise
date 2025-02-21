@@ -240,11 +240,13 @@ const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
         if (_apikeysStoredInJson()) {
             const apiKeyData = await getApiKey_json(paramApiKey)
             if (!apiKeyData) {
+                console.log(`[ApiKey] Failed verification attempt with key: ${paramApiKey.substring(0, 8)}...`)
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
             // Convert JSON data to ApiKey entity
             const apiKey = new ApiKey()
             Object.assign(apiKey, apiKeyData)
+            console.log(`[ApiKey] Successfully verified key: ${apiKey.keyName} (${apiKey.id})`)
             return apiKey
         } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
@@ -253,19 +255,23 @@ const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
                 isActive: true
             })
             if (!apiKey) {
+                console.log(`[ApiKey] Failed verification attempt with key: ${paramApiKey.substring(0, 8)}...`)
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
             // Update lastUsedAt
             apiKey.lastUsedAt = new Date()
             await appServer.AppDataSource.getRepository(ApiKey).save(apiKey)
+            console.log(`[ApiKey] Successfully verified key: ${apiKey.userId}  ${apiKey.keyName} (${apiKey.id})`)
             return apiKey
         } else {
+            console.error('[ApiKey] Unknown storage type configuration')
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `UNKNOWN APIKEY_STORAGE_TYPE`)
         }
     } catch (error) {
         if (error instanceof InternalFlowiseError && error.statusCode === StatusCodes.UNAUTHORIZED) {
             throw error
         } else {
+            console.error(`[ApiKey] Verification error:`, error)
             throw new InternalFlowiseError(
                 StatusCodes.INTERNAL_SERVER_ERROR,
                 `Error: apikeyService.verifyApiKey - ${getErrorMessage(error)}`
