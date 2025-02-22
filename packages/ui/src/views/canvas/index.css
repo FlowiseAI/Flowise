@@ -1,12 +1,14 @@
 .edgebutton {
     width: 20px;
     height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
     background: #eee;
     border: 1px solid #fff;
     cursor: pointer;
     border-radius: 50%;
-    font-size: 12px;
-    line-height: 1;
 }
 
 .edgebutton:hover {

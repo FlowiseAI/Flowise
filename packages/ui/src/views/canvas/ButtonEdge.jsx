@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux'
 import { useContext } from 'react'
 import { SET_DIRTY } from '@/store/actions'
 import { flowContext } from '@/store/context/ReactFlowContext'
+import { IconX } from '@tabler/icons-react'
 
 import './index.css'
 
@@ -53,7 +54,7 @@ const ButtonEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
             >
                 <div>
                     <button className='edgebutton' onClick={(event) => onEdgeClick(event, id)}>
-                        ×
+                        <IconX stroke={2} size='12' />
                     </button>
                 </div>
             </foreignObject>
