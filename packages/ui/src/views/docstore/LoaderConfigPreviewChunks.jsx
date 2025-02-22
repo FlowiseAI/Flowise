@@ -237,7 +237,7 @@ const LoaderConfigPreviewChunks = () => {
 
         // Set store id & loader name
         config.storeId = storeId
-        config.loaderName = loaderName
+        config.loaderName = loaderName || selectedDocumentLoader?.label
 
         // Set loader config
         if (selectedDocumentLoader.inputs) {
@@ -283,6 +283,7 @@ const LoaderConfigPreviewChunks = () => {
             // If this is a document store edit config, set the existing input values
             if (existingLoaderFromDocStoreTable && existingLoaderFromDocStoreTable.loaderConfig) {
                 nodeData.inputs = existingLoaderFromDocStoreTable.loaderConfig
+                setLoaderName(existingLoaderFromDocStoreTable.loaderName)
             }
             setSelectedDocumentLoader(nodeData)
 
@@ -445,17 +446,20 @@ const LoaderConfigPreviewChunks = () => {
                                             paddingRight: 15
                                         }}
                                     >
-                                        <TextField
-                                            size='small'
-                                            label={
-                                                selectedDocumentLoader?.label?.toLowerCase().includes('loader')
-                                                    ? selectedDocumentLoader.label + ' name'
-                                                    : selectedDocumentLoader?.label + ' Loader Name'
-                                            }
-                                            value={loaderName}
-                                            onChange={(e) => setLoaderName(e.target.value)}
-                                            sx={{ m: 2, width: '90%' }}
-                                        />
+                                        <Box sx={{ p: 2 }}>
+                                            <TextField
+                                                fullWidth
+                                                sx={{ mt: 1 }}
+                                                size='small'
+                                                label={
+                                                    selectedDocumentLoader?.label?.toLowerCase().includes('loader')
+                                                        ? selectedDocumentLoader.label + ' name'
+                                                        : selectedDocumentLoader?.label + ' Loader Name'
+                                                }
+                                                value={loaderName}
+                                                onChange={(e) => setLoaderName(e.target.value)}
+                                            />
+                                        </Box>
                                         {selectedDocumentLoader &&
                                             Object.keys(selectedDocumentLoader).length > 0 &&
                                             (selectedDocumentLoader.inputParams ?? [])
