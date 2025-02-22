@@ -49,6 +49,13 @@ class OpenAPIToolkit_Tools implements INode {
                 optional: true
             },
             {
+                label: 'Remove null parameters',
+                name: 'removeNulls',
+                type: 'boolean',
+                optional: true,
+                description: 'Remove all keys with null values from the parsed arguments'
+            },
+            {
                 label: 'Custom Code',
                 name: 'customCode',
                 type: 'code',
@@ -71,6 +78,7 @@ class OpenAPIToolkit_Tools implements INode {
         const yamlFileBase64 = nodeData.inputs?.yamlFile as string
         const customCode = nodeData.inputs?.customCode as string
         const _headers = nodeData.inputs?.headers as string
+        const removeNulls = nodeData.inputs?.removeNulls as boolean
 
         const headers = typeof _headers === 'object' ? _headers : _headers ? JSON.parse(_headers) : {}
 
@@ -106,7 +114,7 @@ class OpenAPIToolkit_Tools implements INode {
 
         const flow = { chatflowId: options.chatflowid }
 
-        const tools = getTools(_data.paths, baseUrl, headers, variables, flow, toolReturnDirect, customCode)
+        const tools = getTools(_data.paths, baseUrl, headers, variables, flow, toolReturnDirect, customCode, removeNulls)
         return tools
     }
 }
@@ -119,17 +127,18 @@ const jsonSchemaToZodSchema = (schema: any, requiredList: string[], keyName: str
             zodShape[key] = jsonSchemaToZodSchema(schema.properties[key], requiredList, key)
         }
         return z.object(zodShape)
-    } else if (schema.oneOf) {
-        // Handle oneOf by mapping each option to a Zod schema
-        const zodSchemas = schema.oneOf.map((subSchema: any) => jsonSchemaToZodSchema(subSchema, requiredList, keyName))
-        return z.union(zodSchemas)
+    } else if (schema.oneOf || schema.anyOf) {
+        // Handle oneOf/anyOf by mapping each option to a Zod schema
+        const schemas = schema.oneOf || schema.anyOf
+        const zodSchemas = schemas.map((subSchema: any) => jsonSchemaToZodSchema(subSchema, requiredList, keyName))
+        return z.union(zodSchemas).describe(schema?.description ?? schema?.title ?? keyName)
     } else if (schema.enum) {
-        // Handle enum types
+        // Handle enum types with their title and description
         return requiredList.includes(keyName)
-            ? z.enum(schema.enum).describe(schema?.description ?? keyName)
+            ? z.enum(schema.enum).describe(schema?.description ?? schema?.title ?? keyName)
             : z
                   .enum(schema.enum)
-                  .describe(schema?.description ?? keyName)
+                  .describe(schema?.description ?? schema?.title ?? keyName)
                   .optional()
     } else if (schema.type === 'string') {
         return requiredList.includes(keyName)
@@ -142,20 +151,31 @@ const jsonSchemaToZodSchema = (schema: any, requiredList: string[], keyName: str
         return z.array(jsonSchemaToZodSchema(schema.items, requiredList, keyName))
     } else if (schema.type === 'boolean') {
         return requiredList.includes(keyName)
-            ? z.number({ required_error: `${keyName} required` }).describe(schema?.description ?? keyName)
-            : z
-                  .number()
-                  .describe(schema?.description ?? keyName)
-                  .optional()
-    } else if (schema.type === 'number') {
-        return requiredList.includes(keyName)
             ? z.boolean({ required_error: `${keyName} required` }).describe(schema?.description ?? keyName)
             : z
                   .boolean()
                   .describe(schema?.description ?? keyName)
                   .optional()
+    } else if (schema.type === 'number') {
+        let numberSchema = z.number()
+        if (typeof schema.minimum === 'number') {
+            numberSchema = numberSchema.min(schema.minimum)
+        }
+        if (typeof schema.maximum === 'number') {
+            numberSchema = numberSchema.max(schema.maximum)
+        }
+        return requiredList.includes(keyName)
+            ? numberSchema.describe(schema?.description ?? keyName)
+            : numberSchema.describe(schema?.description ?? keyName).optional()
+    } else if (schema.type === 'integer') {
+        let numberSchema = z.number().int()
+        return requiredList.includes(keyName)
+            ? numberSchema.describe(schema?.description ?? keyName)
+            : numberSchema.describe(schema?.description ?? keyName).optional()
+    } else if (schema.type === 'null') {
+        return z.null()
     }
-
+    console.error(`jsonSchemaToZodSchema returns UNKNOWN! ${keyName}`, schema)
     // Fallback to unknown type if unrecognized
     return z.unknown()
 }
@@ -163,9 +183,23 @@ const jsonSchemaToZodSchema = (schema: any, requiredList: string[], keyName: str
 const extractParameters = (param: ICommonObject, paramZodObj: ICommonObject) => {
     const paramSchema = param.schema
     const paramName = param.name
-    const paramDesc = param.description || param.name
+    const paramDesc = paramSchema.description || paramSchema.title || param.description || param.name
 
-    if (paramSchema.type === 'string') {
+    if (paramSchema.enum) {
+        const enumValues = paramSchema.enum as string[]
+        // Combine title and description from schema
+        const enumDesc = [paramSchema.title, paramSchema.description, `Valid values: ${enumValues.join(', ')}`].filter(Boolean).join('. ')
+
+        if (param.required) {
+            paramZodObj[paramName] = z.enum(enumValues as [string, ...string[]]).describe(enumDesc)
+        } else {
+            paramZodObj[paramName] = z
+                .enum(enumValues as [string, ...string[]])
+                .describe(enumDesc)
+                .optional()
+        }
+        return paramZodObj
+    } else if (paramSchema.type === 'string') {
         if (param.required) {
             paramZodObj[paramName] = z.string({ required_error: `${paramName} required` }).describe(paramDesc)
         } else {
@@ -183,6 +217,10 @@ const extractParameters = (param: ICommonObject, paramZodObj: ICommonObject) => 
         } else {
             paramZodObj[paramName] = z.boolean().describe(paramDesc).optional()
         }
+    } else if (paramSchema.anyOf || paramSchema.type === 'anyOf') {
+        // Handle anyOf by using jsonSchemaToZodSchema
+        const requiredList = param.required ? [paramName] : []
+        paramZodObj[paramName] = jsonSchemaToZodSchema(paramSchema, requiredList, paramName)
     }
 
     return paramZodObj
@@ -195,7 +233,8 @@ const getTools = (
     variables: IVariable[],
     flow: ICommonObject,
     returnDirect: boolean,
-    customCode?: string
+    customCode?: string,
+    removeNulls?: boolean
 ) => {
     const tools = []
     for (const path in paths) {
@@ -269,7 +308,9 @@ const getTools = (
                 baseUrl: `${baseUrl}${path}`,
                 method: method,
                 headers,
-                customCode
+                customCode,
+                strict: spec['x-strict'] === true,
+                removeNulls
             }
 
             const dynamicStructuredTool = new DynamicStructuredTool(toolObj)
