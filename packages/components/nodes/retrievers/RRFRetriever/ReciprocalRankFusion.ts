@@ -50,7 +50,7 @@ export class ReciprocalRankFusion extends BaseDocumentCompressor {
         })
         const docList: Document<Record<string, any>>[][] = []
         for (let i = 0; i < queries.length; i++) {
-            const resultOne = await this.baseRetriever.vectorStore.similaritySearch(queries[i], 5)
+            const resultOne = await this.baseRetriever.vectorStore.similaritySearch(queries[i], 5, this.baseRetriever.filter)
             const docs: any[] = []
             resultOne.forEach((doc) => {
                 docs.push(doc)
