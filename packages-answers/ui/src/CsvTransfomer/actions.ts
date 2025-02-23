@@ -2,7 +2,7 @@
 
 // @ts-ignore
 import { prisma } from '@db/client'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 // @ts-ignore
 import { getUniqueDocumentPath } from '@utils/getUniqueDocumentPath'
 
@@ -103,4 +103,45 @@ export async function fetchCsvParseRows({ csvParseRunId }: { csvParseRunId: stri
         }
     })
     return csvParseRows
+}
+
+export async function downloadProcessedCsv({ csvParseRunId }: { csvParseRunId: string }) {
+    const csvParseRun = await prisma.appCsvParseRuns.findUnique({
+        where: { id: csvParseRunId }
+    })
+    if (!csvParseRun) return
+    const s3 = new S3Client({
+        region: process.env.AWS_REGION ?? '',
+        credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? ''
+        }
+    })
+    console.log(csvParseRun.processedCsvUrl)
+    const command = new GetObjectCommand({
+        Bucket: process.env.AWS_S3_BUCKET ?? '',
+        Key: csvParseRun.processedCsvUrl
+    })
+    const response = await s3.send(command)
+    const csv = await response.Body?.transformToString()
+    return csv
+}
+
+export async function rerunCsvParseRun({ csvParseRunId }: { csvParseRunId: string }) {
+    const csvParseRun = await prisma.appCsvParseRuns.findUnique({
+        where: { id: csvParseRunId }
+    })
+    if (!csvParseRun) return
+    await prisma.appCsvParseRuns.create({
+        data: {
+            userId: csvParseRun.userId,
+            orgId: csvParseRun.orgId,
+            name: csvParseRun.name,
+            configuration: csvParseRun.configuration,
+            originalCsvUrl: csvParseRun.originalCsvUrl,
+            chatflowChatId: csvParseRun.chatflowChatId,
+            rowsRequested: csvParseRun.rowsRequested,
+            includeOriginalColumns: csvParseRun.includeOriginalColumns
+        }
+    })
 }

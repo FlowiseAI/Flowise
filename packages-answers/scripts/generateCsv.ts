@@ -107,7 +107,7 @@ const generateCsv = async (csvParseRun: AppCsvParseRuns) => {
         // update csvParseRun with generatedCsvUrl
         await prisma.appCsvParseRuns.update({
             where: { id: csvParseRun.id },
-            data: { processedCsvUrl: key, status: 'ready' }
+            data: { processedCsvUrl: key, status: 'ready', completedAt: new Date() }
         })
     } catch (error) {
         console.error('Error generating csv', error)

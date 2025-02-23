@@ -4,7 +4,8 @@ import { prisma } from '../db/src/client'
 
 const BATCH_SIZE = 10
 
-const sidekick = async (row: AppCsvParseRows) => {
+const runChatFlow = async (row: AppCsvParseRows, chatflowChatId: string) => {
+    // TODO: use chatflowChatId instead of hardcoded id
     const response = await fetch('https://ias-prod.flowise.theanswer.ai/api/v1/prediction/47bb4c0a-dad8-409a-800a-772d54f5549c', {
         method: 'POST',
         headers: {
@@ -24,7 +25,7 @@ const sidekick = async (row: AppCsvParseRows) => {
     }
 }
 
-const processRow = async (row: AppCsvParseRows): Promise<any> => {
+const processRow = async (row: AppCsvParseRows, chatflowChatId: string): Promise<any> => {
     try {
         console.log(`Processing row ${row.id}`)
         await prisma.appCsvParseRows.update({
@@ -33,7 +34,7 @@ const processRow = async (row: AppCsvParseRows): Promise<any> => {
         })
         // Call sidekick
         try {
-            const result = await sidekick(row)
+            const result = await runChatFlow(row, chatflowChatId)
             // Store result on row, upsert rowData
             await prisma.appCsvParseRows.update({
                 where: { id: row.id },
@@ -142,7 +143,7 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
         console.log(`Found ${count} pending rows for run ${csvParseRun.id}`)
 
         // Process rows
-        const promises = rows.map(processRow)
+        const promises = rows.map((row) => processRow(row, csvParseRun.chatflowChatId))
         const results = await Promise.allSettled(promises)
 
         results.forEach((result, index) => {
