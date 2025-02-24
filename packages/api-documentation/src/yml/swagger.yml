@@ -778,11 +778,11 @@ paths:
                 '200':
                     description: Successfully execute refresh operation
                     content:
-                      application/json:
-                        schema:
-                            type: array
-                            items:
-                                $ref: '#/components/schemas/VectorUpsertResponse'
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/VectorUpsertResponse'
 
                 '400':
                     description: Invalid request body
@@ -1036,11 +1036,11 @@ paths:
                 required: true
             responses:
                 '200':
-                  description: Feedback successfully created
-                  content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ChatMessageFeedback'
+                    description: Feedback successfully created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatMessageFeedback'
                 '400':
                     description: Invalid input provided
                 '500':
