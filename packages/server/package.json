@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.2.4",
+    "version": "2.2.5",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -97,7 +97,7 @@
         "multer": "^1.4.5-lts.1",
         "multer-s3": "^3.0.1",
         "mysql2": "^3.11.3",
-        "openai": "^4.57.3",
+        "openai": "^4.82.0",
         "pg": "^8.11.1",
         "posthog-node": "^3.5.0",
         "prom-client": "^15.1.3",
