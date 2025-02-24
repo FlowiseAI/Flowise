@@ -749,7 +749,7 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
             if (typeof input !== 'string') {
                 continue
             }
-            if (input.startsWith('[') && input.endsWith(']')) {
+            if (keys[i] !== 'skipInferTableTypes' && input.startsWith('[') && input.endsWith(']')) {
                 const files = JSON.parse(input)
                 const fileNames: string[] = []
                 for (let j = 0; j < files.length; j++) {
