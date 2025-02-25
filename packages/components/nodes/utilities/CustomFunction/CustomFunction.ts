@@ -88,6 +88,7 @@ class CustomFunction_Utilities implements INode {
             chatflowId: options.chatflowid,
             sessionId: options.sessionId,
             chatId: options.chatId,
+            rawOutput: options.rawOutput || '',
             input
         }
 
