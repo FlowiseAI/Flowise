@@ -318,6 +318,12 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
     mergedMessages.pop()
   }
 
+  // Post-processing: Ensure conversation always starts with a user message
+  if (mergedMessages.length > 0 && !isHumanMessage(mergedMessages[0])) {
+    // Remove the first message if it's not from a user
+    mergedMessages.shift()
+  }
+
   // console.log('mergedMessages:', mergedMessages)
 
   return mergedMessages
