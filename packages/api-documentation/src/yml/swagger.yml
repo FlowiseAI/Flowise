@@ -63,14 +63,14 @@ paths:
                   schema:
                       type: string
                       example: 2025-01-01T11:28:36.000Z
-                  format: date-time
+                      format: date-time
                   description: Filter by start date
                 - in: query
                   name: endDate
                   schema:
                       type: string
                       example: 2025-01-13T11:28:36.000Z
-                  format: date-time
+                      format: date-time
                   description: Filter by end date
                 - in: query
                   name: feedback
@@ -206,7 +206,7 @@ paths:
                             schema:
                                 type: array
                                 items:
-                                $ref: '#/components/schemas/Assistant'
+                                    $ref: '#/components/schemas/Assistant'
                 '500':
                     description: Internal error
     /assistants/{id}:
@@ -264,7 +264,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/assistant'
+                                $ref: '#/components/schemas/Assistant'
                 '400':
                     description: The specified ID is invalid or body is missing
                 '404':
@@ -553,12 +553,12 @@ paths:
             responses:
                 '200':
                     description: A list of document stores
-                content:
-                    application/json:
-                        schema:
-                            type: array
-                            items:
-                                $ref: '#/components/schemas/DocumentStore'
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/DocumentStore'
                 '500':
                     description: Internal server error
 
@@ -779,9 +779,10 @@ paths:
                     description: Successfully execute refresh operation
                     content:
                         application/json:
-                            type: array
-                            items:
-                                $ref: '#/components/schemas/VectorUpsertResponse'
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/VectorUpsertResponse'
 
                 '400':
                     description: Invalid request body
@@ -1036,10 +1037,10 @@ paths:
             responses:
                 '200':
                     description: Feedback successfully created
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ChatMessageFeedback'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatMessageFeedback'
                 '400':
                     description: Invalid input provided
                 '500':
@@ -1447,7 +1448,7 @@ paths:
             parameters:
                 - in: path
                   name: id
-                  required: false
+                  required: true
                   schema:
                       type: string
                   description: Chatflow ID to filter records by
@@ -2036,7 +2037,7 @@ components:
                         properties:
                             type:
                                 type: string
-                                enum: [audio, url, file, file:rag, file:full]
+                                enum: [audio, url, file, 'file:rag', 'file:full']
                                 description: The type of file upload
                                 example: file
                             name:

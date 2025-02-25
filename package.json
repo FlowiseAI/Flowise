@@ -71,6 +71,7 @@
     },
     "resolutions": {
         "@google/generative-ai": "^0.15.0",
+        "@grpc/grpc-js": "^1.10.10",
         "@langchain/core": "0.3.37",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
         "openai": "4.82.0",
