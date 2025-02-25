@@ -142,7 +142,12 @@ const PostProcessing = ({ dialogProps }) => {
                     </span>
                 </div>
             </div>
-            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
+            <StyledButton
+                style={{ marginBottom: 10, marginTop: 10 }}
+                variant='contained'
+                disabled={!postProcessingFunction || postProcessingFunction?.trim().length === 0}
+                onClick={onSave}
+            >
                 Save
             </StyledButton>
         </>
