@@ -749,7 +749,7 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
             if (typeof input !== 'string') {
                 continue
             }
-            if (keys[i] !== 'skipInferTableTypes' && input.startsWith('[') && input.endsWith(']')) {
+            if (input.startsWith('[') && input.endsWith(']')) {
                 const files = JSON.parse(input)
                 const fileNames: string[] = []
                 for (let j = 0; j < files.length; j++) {
@@ -760,7 +760,7 @@ const _saveChunksToStorage = async (data: IDocumentStoreLoaderForPreview, entity
                         filesWithMetadata.push(fileMetadata)
                     }
                 }
-                data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
+                if (fileNames.length) data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
             } else if (re.test(input)) {
                 const fileNames: string[] = []
                 const fileMetadata = await _saveFileToStorage(input, entity)
