@@ -2,14 +2,14 @@ import { cloneDeep } from 'lodash'
 import { useEffect, useState } from 'react'
 import { validate as uuidValidate, v4 as uuidv4 } from 'uuid'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import ReactJson from 'flowise-react-json-view'
 
 // Hooks
 import useApi from '@/hooks/useApi'
 
 // Material-UI
-import { Skeleton, Toolbar, Box, Button, Card, CardContent, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
+import { Skeleton, Toolbar, Box, Button, Card, CardContent, Grid, OutlinedInput, Stack, Typography, TextField } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 import { IconScissors, IconArrowLeft, IconDatabaseImport, IconBook, IconX, IconEye } from '@tabler/icons-react'
 
@@ -66,14 +66,13 @@ const LoaderConfigPreviewChunks = () => {
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
     const getSpecificDocumentStoreApi = useApi(documentsApi.getSpecificDocumentStore)
 
-    const URLpath = document.location.pathname.toString().split('/')
-    const docLoaderNodeName = URLpath[URLpath.length - 1] === 'document-stores' ? '' : URLpath[URLpath.length - 1]
-    const storeId = URLpath[URLpath.length - 2] === 'document-stores' ? '' : URLpath[URLpath.length - 2]
+    const { storeId, name: docLoaderNodeName } = useParams()
 
     const [selectedDocumentLoader, setSelectedDocumentLoader] = useState({})
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
+    const [loaderName, setLoaderName] = useState('')
 
     const [textSplitterNodes, setTextSplitterNodes] = useState([])
     const [splitterOptions, setTextSplitterOptions] = useState([])
@@ -238,7 +237,7 @@ const LoaderConfigPreviewChunks = () => {
 
         // Set store id & loader name
         config.storeId = storeId
-        config.loaderName = selectedDocumentLoader?.label
+        config.loaderName = loaderName || selectedDocumentLoader?.label
 
         // Set loader config
         if (selectedDocumentLoader.inputs) {
@@ -284,6 +283,7 @@ const LoaderConfigPreviewChunks = () => {
             // If this is a document store edit config, set the existing input values
             if (existingLoaderFromDocStoreTable && existingLoaderFromDocStoreTable.loaderConfig) {
                 nodeData.inputs = existingLoaderFromDocStoreTable.loaderConfig
+                setLoaderName(existingLoaderFromDocStoreTable.loaderName)
             }
             setSelectedDocumentLoader(nodeData)
 
@@ -446,6 +446,20 @@ const LoaderConfigPreviewChunks = () => {
                                             paddingRight: 15
                                         }}
                                     >
+                                        <Box sx={{ p: 2 }}>
+                                            <TextField
+                                                fullWidth
+                                                sx={{ mt: 1 }}
+                                                size='small'
+                                                label={
+                                                    selectedDocumentLoader?.label?.toLowerCase().includes('loader')
+                                                        ? selectedDocumentLoader.label + ' name'
+                                                        : selectedDocumentLoader?.label + ' Loader Name'
+                                                }
+                                                value={loaderName}
+                                                onChange={(e) => setLoaderName(e.target.value)}
+                                            />
+                                        </Box>
                                         {selectedDocumentLoader &&
                                             Object.keys(selectedDocumentLoader).length > 0 &&
                                             (selectedDocumentLoader.inputParams ?? [])

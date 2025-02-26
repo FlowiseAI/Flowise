@@ -23,7 +23,7 @@ import { CheckboxInput } from '@/ui-component/checkbox/Checkbox'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import { TableViewOnly } from '@/ui-component/table/Table'
 
-import { IconX, IconBulb } from '@tabler/icons-react'
+import { IconX, IconBulb, IconExclamationCircle } from '@tabler/icons-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import pythonSVG from '@/assets/images/python.svg'
 import javascriptSVG from '@/assets/images/javascript.svg'
@@ -545,6 +545,47 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                                     showLineNumbers={false}
                                                                     wrapLines
                                                                 />
+                                                                <div
+                                                                    style={{
+                                                                        display: 'flex',
+                                                                        flexDirection: 'column',
+                                                                        borderRadius: 10,
+                                                                        background: 'rgb(254,252,191)',
+                                                                        padding: 10,
+                                                                        marginTop: 20,
+                                                                        marginBottom: 20
+                                                                    }}
+                                                                >
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            flexDirection: 'row',
+                                                                            alignItems: 'center'
+                                                                        }}
+                                                                    >
+                                                                        <IconExclamationCircle size={30} color='rgb(116,66,16)' />
+                                                                        <span
+                                                                            style={{
+                                                                                color: 'rgb(116,66,16)',
+                                                                                marginLeft: 10,
+                                                                                fontWeight: 500
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                'For security reason, override config is disabled by default. You can change this by going into Chatflow Configuration -> Security tab, and enable the property you want to override.'
+                                                                            }
+                                                                            &nbsp;Refer{' '}
+                                                                            <a
+                                                                                rel='noreferrer'
+                                                                                target='_blank'
+                                                                                href='https://docs.flowiseai.com/using-flowise/api#override-config'
+                                                                            >
+                                                                                here
+                                                                            </a>{' '}
+                                                                            for more details
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
                                                                 <div
                                                                     style={{
                                                                         display: 'flex',

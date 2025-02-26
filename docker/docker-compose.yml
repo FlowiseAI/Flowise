@@ -33,6 +33,20 @@ services:
             - GLOBAL_AGENT_HTTP_PROXY=${GLOBAL_AGENT_HTTP_PROXY}
             - GLOBAL_AGENT_HTTPS_PROXY=${GLOBAL_AGENT_HTTPS_PROXY}
             - GLOBAL_AGENT_NO_PROXY=${GLOBAL_AGENT_NO_PROXY}
+            - DISABLED_NODES=${DISABLED_NODES}
+            - MODE=${MODE}
+            - WORKER_CONCURRENCY=${WORKER_CONCURRENCY}
+            - QUEUE_NAME=${QUEUE_NAME}
+            - QUEUE_REDIS_EVENT_STREAM_MAX_LEN=${QUEUE_REDIS_EVENT_STREAM_MAX_LEN}
+            - REDIS_URL=${REDIS_URL}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - REDIS_USERNAME=${REDIS_USERNAME}
+            - REDIS_TLS=${REDIS_TLS}
+            - REDIS_CERT=${REDIS_CERT}
+            - REDIS_KEY=${REDIS_KEY}
+            - REDIS_CA=${REDIS_CA}
         ports:
             - '${PORT}:${PORT}'
         volumes:

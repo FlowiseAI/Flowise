@@ -121,10 +121,16 @@ const OverrideConfig = ({ dialogProps }) => {
         }
 
         if (overrideConfigStatus) {
+            // loop through each key in nodeOverrides and filter out the enabled ones
+            const filteredNodeOverrides = {}
+            for (const key in nodeOverrides) {
+                filteredNodeOverrides[key] = nodeOverrides[key].filter((node) => node.enabled)
+            }
+
             obj.overrideConfig = {
                 ...obj.overrideConfig,
-                nodes: nodeOverrides,
-                variables: variableOverrides
+                nodes: filteredNodeOverrides,
+                variables: variableOverrides.filter((node) => node.enabled)
             }
         }
 

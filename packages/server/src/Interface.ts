@@ -1,10 +1,26 @@
-import { IAction, ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import {
+    IAction,
+    ICommonObject,
+    IFileUpload,
+    INode,
+    INodeData as INodeDataFromComponent,
+    INodeParams,
+    IServerSideEventStreamer
+} from 'flowise-components'
+import { DataSource } from 'typeorm'
+import { CachePool } from './CachePool'
+import { Telemetry } from './utils/telemetry'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
 export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'ASSISTANT'
 
 export type AssistantType = 'CUSTOM' | 'OPENAI' | 'AZURE'
+
+export enum MODE {
+    QUEUE = 'queue',
+    MAIN = 'main'
+}
 
 export enum ChatType {
     INTERNAL = 'INTERNAL',
@@ -28,6 +44,7 @@ export interface IChatFlow {
     isPublic?: boolean
     apikeyid?: string
     analytic?: string
+    speechToText?: string
     chatbotConfig?: string
     followUpPrompts?: string
     apiConfig?: string
@@ -226,6 +243,7 @@ export interface IncomingInput {
     leadEmail?: string
     history?: IMessage[]
     action?: IAction
+    streaming?: boolean
 }
 
 export interface IActiveChatflows {
@@ -288,6 +306,34 @@ export interface ICustomTemplate {
     badge?: string
     framework?: string
     usecases?: string
+}
+
+export interface IFlowConfig {
+    chatflowid: string
+    chatId: string
+    sessionId: string
+    chatHistory: IMessage[]
+    apiMessageId: string
+    overrideConfig?: ICommonObject
+}
+
+export interface IPredictionQueueAppServer {
+    appDataSource: DataSource
+    componentNodes: IComponentNodes
+    sseStreamer: IServerSideEventStreamer
+    telemetry: Telemetry
+    cachePool: CachePool
+}
+
+export interface IExecuteFlowParams extends IPredictionQueueAppServer {
+    incomingInput: IncomingInput
+    chatflow: IChatFlow
+    chatId: string
+    baseURL: string
+    isInternal: boolean
+    signal?: AbortController
+    files?: Express.Multer.File[]
+    isUpsert?: boolean
 }
 
 export interface INodeOverrides {

@@ -7,7 +7,13 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
-import { getBaseClasses, handleEscapeCharacters, removeInvalidImageMarkdown } from '../../../src/utils'
+import {
+    extractOutputFromArray,
+    getBaseClasses,
+    handleEscapeCharacters,
+    removeInvalidImageMarkdown,
+    transformBracesWithColon
+} from '../../../src/utils'
 import {
     FlowiseMemory,
     ICommonObject,
@@ -181,12 +187,7 @@ class ToolAgent_Agents implements INode {
         }
 
         let output = res?.output
-        if (Array.isArray(output)) {
-            output = output[0]?.text || ''
-        } else if (typeof output === 'object') {
-            output = output?.text || ''
-        }
-
+        output = extractOutputFromArray(res?.output)
         output = removeInvalidImageMarkdown(output)
 
         // Claude 3 Opus tends to spit out <thinking>..</thinking> as well, discard that in final output
@@ -241,12 +242,14 @@ const prepareAgent = async (
     const model = nodeData.inputs?.model as BaseChatModel
     const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
-    const systemMessage = nodeData.inputs?.systemMessage as string
+    let systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
     const prependMessages = options?.prependMessages
+
+    systemMessage = transformBracesWithColon(systemMessage)
 
     let prompt = ChatPromptTemplate.fromMessages([
         ['system', systemMessage],
@@ -336,7 +339,7 @@ const prepareAgent = async (
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
-        verbose: process.env.DEBUG === 'true' ? true : false,
+        verbose: process.env.DEBUG === 'true',
         maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
 

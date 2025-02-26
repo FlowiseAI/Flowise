@@ -18,7 +18,14 @@ import {
     ConversationHistorySelection
 } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import {
+    extractOutputFromArray,
+    getInputVariables,
+    getVars,
+    handleEscapeCharacters,
+    prepareSandboxVars,
+    transformBracesWithColon
+} from '../../../src/utils'
 import {
     ExtractTool,
     convertStructuredSchemaToZod,
@@ -175,7 +182,7 @@ class LLMNode_SeqAgents implements INode {
     constructor() {
         this.label = 'LLM Node'
         this.name = 'seqLLMNode'
-        this.version = 4.0
+        this.version = 4.1
         this.type = 'LLMNode'
         this.icon = 'llmNode.svg'
         this.category = 'Sequential Agents'
@@ -254,9 +261,11 @@ class LLMNode_SeqAgents implements INode {
                 additionalParams: true
             },
             {
-                label: 'Start | Agent | Condition | LLM | Tool Node',
+                label: 'Sequential Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | Condition | LLMNode | ToolNode',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
+                description:
+                    'Can be connected to one of the following nodes: Start, Agent, Condition, LLM, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {
@@ -388,7 +397,9 @@ class LLMNode_SeqAgents implements INode {
         tools = flatten(tools)
 
         let systemPrompt = nodeData.inputs?.systemMessagePrompt as string
+        systemPrompt = transformBracesWithColon(systemPrompt)
         let humanPrompt = nodeData.inputs?.humanMessagePrompt as string
+        humanPrompt = transformBracesWithColon(humanPrompt)
         const llmNodeLabel = nodeData.inputs?.llmNodeName as string
         const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
         const model = nodeData.inputs?.model as BaseChatModel
@@ -607,6 +618,8 @@ async function agentNode(
             } else {
                 result.name = name
                 result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
+                let outputContent = typeof result === 'string' ? result : result.content
+                result.content = extractOutputFromArray(outputContent)
                 return {
                     ...returnedOutput,
                     messages: [result]
@@ -627,6 +640,8 @@ async function agentNode(
             } else {
                 result.name = name
                 result.additional_kwargs = { ...result.additional_kwargs, nodeId: nodeData.id }
+                let outputContent = typeof result === 'string' ? result : result.content
+                result.content = extractOutputFromArray(outputContent)
                 return {
                     messages: [result]
                 }

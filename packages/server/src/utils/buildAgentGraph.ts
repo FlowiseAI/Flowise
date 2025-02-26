@@ -19,144 +19,77 @@ import { StatusCodes } from 'http-status-codes'
 import { v4 as uuidv4 } from 'uuid'
 import { StructuredTool } from '@langchain/core/tools'
 import { BaseMessage, HumanMessage, AIMessage, AIMessageChunk, ToolMessage } from '@langchain/core/messages'
-import {
-    IChatFlow,
-    IComponentNodes,
-    IDepthQueue,
-    IReactFlowNode,
-    IReactFlowObject,
-    IReactFlowEdge,
-    IMessage,
-    IncomingInput
-} from '../Interface'
-import {
-    buildFlow,
-    getStartingNodes,
-    getEndingNodes,
-    constructGraphs,
-    databaseEntities,
-    getSessionChatHistory,
-    getMemorySessionId,
-    clearSessionMemory,
-    getAPIOverrideConfig
-} from '../utils'
-import { getRunningExpressApp } from './getRunningExpressApp'
+import { IChatFlow, IComponentNodes, IDepthQueue, IReactFlowNode, IReactFlowEdge, IMessage, IncomingInput, IFlowConfig } from '../Interface'
+import { databaseEntities, clearSessionMemory, getAPIOverrideConfig } from '../utils'
 import { replaceInputsWithConfig, resolveVariables } from '.'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { getErrorMessage } from '../errors/utils'
 import logger from './logger'
 import { Variable } from '../database/entities/Variable'
+import { DataSource } from 'typeorm'
+import { CachePool } from '../CachePool'
 
 /**
  * Build Agent Graph
- * @param {IChatFlow} chatflow
- * @param {string} chatId
- * @param {string} sessionId
- * @param {ICommonObject} incomingInput
- * @param {boolean} isInternal
- * @param {string} baseURL
  */
-export const buildAgentGraph = async (
-    chatflow: IChatFlow,
-    chatId: string,
-    apiMessageId: string,
-    sessionId: string,
-    incomingInput: IncomingInput,
-    isInternal: boolean,
-    baseURL?: string,
-    sseStreamer?: IServerSideEventStreamer,
-    shouldStreamResponse?: boolean,
-    uploadedFilesContent?: string
-): Promise<any> => {
+export const buildAgentGraph = async ({
+    agentflow,
+    flowConfig,
+    incomingInput,
+    nodes,
+    edges,
+    initializedNodes,
+    endingNodeIds,
+    startingNodeIds,
+    depthQueue,
+    chatHistory,
+    uploadedFilesContent,
+    appDataSource,
+    componentNodes,
+    sseStreamer,
+    shouldStreamResponse,
+    cachePool,
+    baseURL,
+    signal
+}: {
+    agentflow: IChatFlow
+    flowConfig: IFlowConfig
+    incomingInput: IncomingInput
+    nodes: IReactFlowNode[]
+    edges: IReactFlowEdge[]
+    initializedNodes: IReactFlowNode[]
+    endingNodeIds: string[]
+    startingNodeIds: string[]
+    depthQueue: IDepthQueue
+    chatHistory: IMessage[]
+    uploadedFilesContent: string
+    appDataSource: DataSource
+    componentNodes: IComponentNodes
+    sseStreamer: IServerSideEventStreamer
+    shouldStreamResponse: boolean
+    cachePool: CachePool
+    baseURL: string
+    signal?: AbortController
+}): Promise<any> => {
     try {
-        const appServer = getRunningExpressApp()
-        const chatflowid = chatflow.id
-
-        /*** Get chatflows and prepare data  ***/
-        const flowData = chatflow.flowData
-        const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
-        const nodes = parsedFlowData.nodes
-        const edges = parsedFlowData.edges
-
-        /*** Get Ending Node with Directed Graph  ***/
-        const { graph, nodeDependencies } = constructGraphs(nodes, edges)
-        const directedGraph = graph
-
-        const endingNodes = getEndingNodes(nodeDependencies, directedGraph, nodes)
-
-        /*** Get Starting Nodes with Reversed Graph ***/
-        const constructedObj = constructGraphs(nodes, edges, { isReversed: true })
-        const nonDirectedGraph = constructedObj.graph
-        let startingNodeIds: string[] = []
-        let depthQueue: IDepthQueue = {}
-        const endingNodeIds = endingNodes.map((n) => n.id)
-        for (const endingNodeId of endingNodeIds) {
-            const resx = getStartingNodes(nonDirectedGraph, endingNodeId)
-            startingNodeIds.push(...resx.startingNodeIds)
-            depthQueue = Object.assign(depthQueue, resx.depthQueue)
-        }
-        startingNodeIds = [...new Set(startingNodeIds)]
-
-        /*** Get Memory Node for Chat History ***/
-        let chatHistory: IMessage[] = []
-        const agentMemoryList = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory']
-        const memoryNode = nodes.find((node) => agentMemoryList.includes(node.data.name))
-        if (memoryNode) {
-            chatHistory = await getSessionChatHistory(
-                chatflowid,
-                getMemorySessionId(memoryNode, incomingInput, chatId, isInternal),
-                memoryNode,
-                appServer.nodesPool.componentNodes,
-                appServer.AppDataSource,
-                databaseEntities,
-                logger,
-                incomingInput.history
-            )
-        }
-
-        /*** Get API Config ***/
-        const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
-        const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
-
-        // Initialize nodes like ChatModels, Tools, etc.
-        const reactFlowNodes: IReactFlowNode[] = await buildFlow({
-            startingNodeIds,
-            reactFlowNodes: nodes,
-            reactFlowEdges: edges,
-            apiMessageId,
-            graph,
-            depthQueue,
-            componentNodes: appServer.nodesPool.componentNodes,
-            question: incomingInput.question,
-            uploadedFilesContent,
-            chatHistory,
-            chatId,
-            sessionId,
-            chatflowid,
-            appDataSource: appServer.AppDataSource,
-            overrideConfig: incomingInput?.overrideConfig,
-            apiOverrideStatus,
-            nodeOverrides,
-            availableVariables,
-            variableOverrides,
-            cachePool: appServer.cachePool,
-            isUpsert: false,
-            uploads: incomingInput.uploads,
-            baseURL
-        })
+        const chatflowid = flowConfig.chatflowid
+        const chatId = flowConfig.chatId
+        const sessionId = flowConfig.sessionId
+        const analytic = agentflow.analytic
+        const uploads = incomingInput.uploads
 
         const options = {
             chatId,
             sessionId,
             chatflowid,
             logger,
-            analytic: chatflow.analytic,
-            appDataSource: appServer.AppDataSource,
-            databaseEntities: databaseEntities,
-            cachePool: appServer.cachePool,
-            uploads: incomingInput.uploads,
+            analytic,
+            appDataSource,
+            databaseEntities,
+            cachePool,
+            uploads,
             baseURL,
-            signal: new AbortController()
+            signal: signal ?? new AbortController()
         }
 
         let streamResults
@@ -171,9 +104,9 @@ export const buildAgentGraph = async (
         let totalUsedTools: IUsedTool[] = []
         let totalArtifacts: ICommonObject[] = []
 
-        const workerNodes = reactFlowNodes.filter((node) => node.data.name === 'worker')
-        const supervisorNodes = reactFlowNodes.filter((node) => node.data.name === 'supervisor')
-        const seqAgentNodes = reactFlowNodes.filter((node) => node.data.category === 'Sequential Agents')
+        const workerNodes = initializedNodes.filter((node) => node.data.name === 'worker')
+        const supervisorNodes = initializedNodes.filter((node) => node.data.name === 'supervisor')
+        const seqAgentNodes = initializedNodes.filter((node) => node.data.category === 'Sequential Agents')
 
         const mapNameToLabel: Record<string, { label: string; nodeName: string }> = {}
 
@@ -189,11 +122,12 @@ export const buildAgentGraph = async (
         try {
             if (!seqAgentNodes.length) {
                 streamResults = await compileMultiAgentsGraph({
-                    chatflow,
+                    agentflow,
+                    appDataSource,
                     mapNameToLabel,
-                    reactFlowNodes,
+                    reactFlowNodes: initializedNodes,
                     workerNodeIds: endingNodeIds,
-                    componentNodes: appServer.nodesPool.componentNodes,
+                    componentNodes,
                     options,
                     startingNodeIds,
                     question: incomingInput.question,
@@ -208,10 +142,11 @@ export const buildAgentGraph = async (
                 isSequential = true
                 streamResults = await compileSeqAgentsGraph({
                     depthQueue,
-                    chatflow,
-                    reactFlowNodes,
+                    agentflow,
+                    appDataSource,
+                    reactFlowNodes: initializedNodes,
                     reactFlowEdges: edges,
-                    componentNodes: appServer.nodesPool.componentNodes,
+                    componentNodes,
                     options,
                     question: incomingInput.question,
                     prependHistoryMessages: incomingInput.history,
@@ -275,7 +210,7 @@ export const buildAgentGraph = async (
                                 )
 
                                 inputEdges.forEach((edge) => {
-                                    const parentNode = reactFlowNodes.find((nd) => nd.id === edge.source)
+                                    const parentNode = initializedNodes.find((nd) => nd.id === edge.source)
                                     if (parentNode) {
                                         if (parentNode.data.name.includes('seqCondition')) {
                                             const newMessages = messages.slice(0, -1)
@@ -366,7 +301,7 @@ export const buildAgentGraph = async (
                     // If last message is an AI Message with tool calls, that means the last node was interrupted
                     if (lastMessageRaw.tool_calls && lastMessageRaw.tool_calls.length > 0) {
                         // The last node that got interrupted
-                        const node = reactFlowNodes.find((node) => node.id === lastMessageRaw.additional_kwargs.nodeId)
+                        const node = initializedNodes.find((node) => node.id === lastMessageRaw.additional_kwargs.nodeId)
 
                         // Find the next tool node that is connected to the interrupted node, to get the approve/reject button text
                         const tooNodeId = edges.find(
@@ -374,7 +309,7 @@ export const buildAgentGraph = async (
                                 edge.target.includes('seqToolNode') &&
                                 edge.source === (lastMessageRaw.additional_kwargs && lastMessageRaw.additional_kwargs.nodeId)
                         )?.target
-                        const connectedToolNode = reactFlowNodes.find((node) => node.id === tooNodeId)
+                        const connectedToolNode = initializedNodes.find((node) => node.id === tooNodeId)
 
                         // Map raw tool calls to used tools, to be shown on interrupted message
                         const mappedToolCalls = lastMessageRaw.tool_calls.map((toolCall) => {
@@ -449,7 +384,7 @@ export const buildAgentGraph = async (
             }
         } catch (e) {
             // clear agent memory because checkpoints were saved during runtime
-            await clearSessionMemory(nodes, appServer.nodesPool.componentNodes, chatId, appServer.AppDataSource, sessionId)
+            await clearSessionMemory(nodes, componentNodes, chatId, appDataSource, sessionId)
             if (getErrorMessage(e).includes('Aborted')) {
                 if (shouldStreamResponse && sseStreamer) {
                     sseStreamer.streamAbortEvent(chatId)
@@ -466,7 +401,8 @@ export const buildAgentGraph = async (
 }
 
 type MultiAgentsGraphParams = {
-    chatflow: IChatFlow
+    agentflow: IChatFlow
+    appDataSource: DataSource
     mapNameToLabel: Record<string, { label: string; nodeName: string }>
     reactFlowNodes: IReactFlowNode[]
     workerNodeIds: string[]
@@ -484,13 +420,13 @@ type MultiAgentsGraphParams = {
 
 const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
     const {
-        chatflow,
+        agentflow,
+        appDataSource,
         mapNameToLabel,
         reactFlowNodes,
         workerNodeIds,
         componentNodes,
         options,
-        startingNodeIds,
         prependHistoryMessages = [],
         chatHistory = [],
         overrideConfig = {},
@@ -501,7 +437,6 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
 
     let question = params.question
 
-    const appServer = getRunningExpressApp()
     const channels: ITeamState = {
         messages: {
             value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
@@ -522,8 +457,8 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
     const workerNodes = reactFlowNodes.filter((node) => workerNodeIds.includes(node.data.id))
 
     /*** Get API Config ***/
-    const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
-    const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+    const availableVariables = await appDataSource.getRepository(Variable).find()
+    const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(agentflow)
 
     let supervisorWorkers: { [key: string]: IMultiAgentNode[] } = {}
 
@@ -537,7 +472,6 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
         if (overrideConfig && apiOverrideStatus)
             flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, variableOverrides)
         flowNodeData = await resolveVariables(
-            appServer.AppDataSource,
             flowNodeData,
             reactFlowNodes,
             question,
@@ -579,7 +513,6 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
         if (overrideConfig && apiOverrideStatus)
             flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, variableOverrides)
         flowNodeData = await resolveVariables(
-            appServer.AppDataSource,
             flowNodeData,
             reactFlowNodes,
             question,
@@ -626,15 +559,7 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
 
             //@ts-ignore
             workflowGraph.addEdge(START, supervisorResult.name)
-
-            // Add agentflow to pool
             ;(workflowGraph as any).signal = options.signal
-            appServer.chatflowPool.add(
-                `${chatflow.id}_${options.chatId}`,
-                workflowGraph as any,
-                reactFlowNodes.filter((node) => startingNodeIds.includes(node.id)),
-                overrideConfig
-            )
 
             // Get memory
             let memory = supervisorResult?.checkpointMemory
@@ -685,7 +610,8 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
 
 type SeqAgentsGraphParams = {
     depthQueue: IDepthQueue
-    chatflow: IChatFlow
+    agentflow: IChatFlow
+    appDataSource: DataSource
     reactFlowNodes: IReactFlowNode[]
     reactFlowEdges: IReactFlowEdge[]
     componentNodes: IComponentNodes
@@ -702,7 +628,8 @@ type SeqAgentsGraphParams = {
 const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
     const {
         depthQueue,
-        chatflow,
+        agentflow,
+        appDataSource,
         reactFlowNodes,
         reactFlowEdges,
         componentNodes,
@@ -716,8 +643,6 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
     } = params
 
     let question = params.question
-
-    const appServer = getRunningExpressApp()
 
     let channels: ISeqAgentsState = {
         messages: {
@@ -761,8 +686,8 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
     let interruptToolNodeNames = []
 
     /*** Get API Config ***/
-    const availableVariables = await appServer.AppDataSource.getRepository(Variable).find()
-    const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
+    const availableVariables = await appDataSource.getRepository(Variable).find()
+    const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(agentflow)
 
     const initiateNode = async (node: IReactFlowNode) => {
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
@@ -773,7 +698,6 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
         if (overrideConfig && apiOverrideStatus)
             flowNodeData = replaceInputsWithConfig(flowNodeData, overrideConfig, nodeOverrides, variableOverrides)
         flowNodeData = await resolveVariables(
-            appServer.AppDataSource,
             flowNodeData,
             reactFlowNodes,
             question,
@@ -904,8 +828,8 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
         const agentNode = reactFlowNodes.find((node) => node.id === agentNodeId)
         if (!agentNode) continue
 
-        const eligibleSeqNodes = ['seqAgent', 'seqEnd', 'seqLoop', 'seqToolNode', 'seqLLMNode']
-        const nodesToAdd = ['seqAgent', 'seqToolNode', 'seqLLMNode']
+        const eligibleSeqNodes = ['seqAgent', 'seqEnd', 'seqLoop', 'seqToolNode', 'seqLLMNode', 'seqCustomFunction', 'seqExecuteFlow']
+        const nodesToAdd = ['seqAgent', 'seqToolNode', 'seqLLMNode', 'seqCustomFunction', 'seqExecuteFlow']
 
         if (eligibleSeqNodes.includes(agentNode.data.name)) {
             try {
@@ -1059,14 +983,8 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
             routeMessage
         )
     }
-    /*** Add agentflow to pool ***/
+
     ;(seqGraph as any).signal = options.signal
-    appServer.chatflowPool.add(
-        `${chatflow.id}_${options.chatId}`,
-        seqGraph as any,
-        reactFlowNodes.filter((node) => startAgentNodes.map((nd) => nd.id).includes(node.id)),
-        overrideConfig
-    )
 
     /*** Get memory ***/
     const startNode = reactFlowNodes.find((node: IReactFlowNode) => node.data.name === 'seqStart')

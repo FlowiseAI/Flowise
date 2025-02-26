@@ -62,13 +62,15 @@ paths:
                   name: startDate
                   schema:
                       type: string
-                  format: date-time
+                      example: 2025-01-01T11:28:36.000Z
+                      format: date-time
                   description: Filter by start date
                 - in: query
                   name: endDate
                   schema:
                       type: string
-                  format: date-time
+                      example: 2025-01-13T11:28:36.000Z
+                      format: date-time
                   description: Filter by end date
                 - in: query
                   name: feedback
@@ -80,7 +82,7 @@ paths:
                   schema:
                       type: string
                       enum: [THUMBS_UP, THUMBS_DOWN]
-                  description: Filter by feedback type
+                  description: Filter by feedback type. Only applicable if feedback is true
             responses:
                 '200':
                     description: A list of chat messages
@@ -130,6 +132,29 @@ paths:
                       type: string
                       enum: [INTERNAL, EXTERNAL]
                   description: Filter by chat type
+                - in: query
+                  name: startDate
+                  schema:
+                      type: string
+                      example: 2025-01-01T11:28:36.000Z
+                  description: Filter by start date
+                - in: query
+                  name: endDate
+                  schema:
+                      type: string
+                      example: 2025-01-13T11:28:36.000Z
+                  description: Filter by end date
+                - in: query
+                  name: feedbackType
+                  schema:
+                      type: string
+                      enum: [THUMBS_UP, THUMBS_DOWN]
+                  description: Filter by feedback type
+                - in: query
+                  name: hardDelete
+                  schema:
+                      type: boolean
+                  description: If hardDelete is true, messages will be deleted from the third party service as well
             responses:
                 '200':
                     description: Chat messages deleted successfully
@@ -181,7 +206,7 @@ paths:
                             schema:
                                 type: array
                                 items:
-                                $ref: '#/components/schemas/Assistant'
+                                    $ref: '#/components/schemas/Assistant'
                 '500':
                     description: Internal error
     /assistants/{id}:
@@ -239,7 +264,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/assistant'
+                                $ref: '#/components/schemas/Assistant'
                 '400':
                     description: The specified ID is invalid or body is missing
                 '404':
@@ -528,12 +553,12 @@ paths:
             responses:
                 '200':
                     description: A list of document stores
-                content:
-                    application/json:
-                        schema:
-                            type: array
-                            items:
-                                $ref: '#/components/schemas/DocumentStore'
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/DocumentStore'
                 '500':
                     description: Internal server error
 
@@ -628,8 +653,8 @@ paths:
                 - document-store
             security:
                 - bearerAuth: []
-            summary: Upsert new document to document store
-            description: Upsert new document to document store
+            summary: Upsert document to document store
+            description: Upsert document to document store
             operationId: upsertDocument
             parameters:
                 - in: path
@@ -654,6 +679,11 @@ paths:
                                         type: string
                                         format: binary
                                     description: Files to be uploaded
+                                docId:
+                                    type: string
+                                    nullable: true
+                                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                                    description: Document ID to use existing configuration
                                 loader:
                                     type: string
                                     nullable: true
@@ -679,6 +709,32 @@ paths:
                                     nullable: true
                                     example: '{"name":"postgresRecordManager"}'
                                     description: Record Manager configurations
+                                metadata:
+                                    type: object
+                                    nullable: true
+                                    description: Metadata associated with the document
+                                    example: { 'foo': 'bar' }
+                                replaceExisting:
+                                    type: boolean
+                                    nullable: true
+                                    description: Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store
+                                createNewDocStore:
+                                    type: boolean
+                                    nullable: true
+                                    description: Whether to create a new document store
+                                docStore:
+                                    type: object
+                                    nullable: true
+                                    description: Only when createNewDocStore is true, pass in the new document store configuration
+                                    properties:
+                                        name:
+                                            type: string
+                                            example: plainText
+                                            description: Name of the new document store to be created
+                                        description:
+                                            type: string
+                                            example: plainText
+                                            description: Description of the new document store to be created
                             required:
                                 - files
                 required: true
@@ -723,9 +779,10 @@ paths:
                     description: Successfully execute refresh operation
                     content:
                         application/json:
-                            type: array
-                            items:
-                                $ref: '#/components/schemas/VectorUpsertResponse'
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/VectorUpsertResponse'
 
                 '400':
                     description: Invalid request body
@@ -980,10 +1037,10 @@ paths:
             responses:
                 '200':
                     description: Feedback successfully created
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ChatMessageFeedback'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatMessageFeedback'
                 '400':
                     description: Invalid input provided
                 '500':
@@ -1391,7 +1448,7 @@ paths:
             parameters:
                 - in: path
                   name: id
-                  required: false
+                  required: true
                   schema:
                       type: string
                   description: Chatflow ID to filter records by
@@ -1980,7 +2037,7 @@ components:
                         properties:
                             type:
                                 type: string
-                                enum: [audio, url, file, file:rag, file:full]
+                                enum: [audio, url, file, 'file:rag', 'file:full']
                                 description: The type of file upload
                                 example: file
                             name:
@@ -2325,9 +2382,37 @@ components:
                 docId:
                     type: string
                     format: uuid
+                    nullable: true
                     description: Document ID within the store. If provided, existing configuration from the document will be used for the new document
+                metadata:
+                    type: object
+                    nullable: true
+                    description: Metadata associated with the document
+                    example: { 'foo': 'bar' }
+                replaceExisting:
+                    type: boolean
+                    nullable: true
+                    description: Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store
+                createNewDocStore:
+                    type: boolean
+                    nullable: true
+                    description: Whether to create a new document store
+                docStore:
+                    type: object
+                    nullable: true
+                    description: Only when createNewDocStore is true, pass in the new document store configuration
+                    properties:
+                        name:
+                            type: string
+                            example: plainText
+                            description: Name of the new document store to be created
+                        description:
+                            type: string
+                            example: plainText
+                            description: Description of the new document store to be created
                 loader:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2338,6 +2423,7 @@ components:
                             description: Configuration for the loader
                 splitter:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2348,6 +2434,7 @@ components:
                             description: Configuration for the text splitter
                 embedding:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2358,6 +2445,7 @@ components:
                             description: Configuration for the embedding generator
                 vectorStore:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
@@ -2368,6 +2456,7 @@ components:
                             description: Configuration for the vector store
                 recordManager:
                     type: object
+                    nullable: true
                     properties:
                         name:
                             type: string
